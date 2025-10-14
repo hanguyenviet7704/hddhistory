@@ -1,7 +1,7 @@
 part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @LazySingleton(as: I{{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository)
-class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository implements I{{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository {
+class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository with RestfulRequestHandlerMixin implements I{{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository {
   final {{#pascalCase}}{{feature_name}}{{/pascalCase}}Api _api;
   final {{#pascalCase}}{{feature_name}}{{/pascalCase}}LocalDataSource _localDataSource;
 

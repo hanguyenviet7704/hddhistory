@@ -6,6 +6,8 @@ part of 'di.dart';
     'lib/config/services',
     'lib/src/**/data/datasources/apis',
     'lib/src/**/data/datasources/sockets',
+    'lib/src/**/data/datasources/local',
+    'lib/src/**/data/datasources/remote',
     'lib/src/**/data/repositories',
     'lib/src/**/domain/repositories',
     'lib/src/**/domain/usecases',

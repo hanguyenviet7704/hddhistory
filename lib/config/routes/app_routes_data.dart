@@ -9,23 +9,15 @@ class SplashRoute extends GoRouteData with $SplashRoute {
   Widget build(BuildContext context, GoRouterState state) => const SplashPage();
 }
 
-//* Intro Page
-@TypedGoRoute<IntroRoute>(path: RoutePath.intro, name: RouteNamed.intro)
-class IntroRoute extends GoRouteData with $IntroRoute {
-  const IntroRoute();
+//* Onboard Page
+@TypedGoRoute<OnboardRoute>(path: RoutePath.onboard, name: RouteNamed.onboard)
+class OnboardRoute extends GoRouteData with $OnboardRoute {
+  const OnboardRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const IntroPage();
+  Widget build(BuildContext context, GoRouterState state) => const OnboardPage();
 }
 
-//* No Auth Page
-@TypedGoRoute<NoAuthRoute>(path: RoutePath.noAuth, name: RouteNamed.noAuth)
-class NoAuthRoute extends GoRouteData with $NoAuthRoute {
-  const NoAuthRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => const NoAuthPage();
-}
 
 //* Auth Pages
 @TypedGoRoute<LoginRoute>(

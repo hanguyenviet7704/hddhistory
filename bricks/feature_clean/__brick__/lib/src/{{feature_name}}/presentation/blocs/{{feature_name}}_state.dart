@@ -10,4 +10,8 @@ abstract class {{#pascalCase}}{{feature_name}}{{/pascalCase}}State with _${{#pas
     {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity? selectedItem,
     String? errorMessage,
   }) = _{{#pascalCase}}{{feature_name}}{{/pascalCase}}State;
+
+  factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}State.initial() => const {{#pascalCase}}{{feature_name}}{{/pascalCase}}State();
+
+  factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}State.fromJson(Map<String, dynamic> json) => _${{#pascalCase}}{{feature_name}}{{/pascalCase}}StateFromJson(json);
 }

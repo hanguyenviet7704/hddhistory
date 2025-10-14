@@ -60,7 +60,7 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}LocalDataSourceImpl implemen
   @override
   Future<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Model?> getCached{{#pascalCase}}{{entity_name}}{{/pascalCase}}(String id) async {
     try {
-      final cacheKey = '$_cacheKey\_$id';
+      final cacheKey = '${_cacheKey}_$id';
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
 
@@ -73,7 +73,7 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}LocalDataSourceImpl implemen
   @override
   Future<void> cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}({{#pascalCase}}{{entity_name}}{{/pascalCase}}Model model) async {
     try {
-      final cacheKey = '$_cacheKey\_${model.id}';
+      final cacheKey = '${_cacheKey}_${model.id}';
       await _localStoreService.setMap(
         key: cacheKey,
         value: model.toJson(),
@@ -86,7 +86,7 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}LocalDataSourceImpl implemen
   @override
   Future<void> deleteCached{{#pascalCase}}{{entity_name}}{{/pascalCase}}(String id) async {
     try {
-      final cacheKey = '$_cacheKey\_$id';
+      final cacheKey = '${_cacheKey}_$id';
       await _localStoreService.remove(key: cacheKey);
     } catch (e) {
       // Handle error silently or log
