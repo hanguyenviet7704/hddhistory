@@ -2,8 +2,6 @@ library;
 
 //* Import all local files here
 import 'package:meup/meup.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 
 //* Export all widgets here
 //? Export all items

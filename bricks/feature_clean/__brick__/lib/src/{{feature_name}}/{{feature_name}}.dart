@@ -1,16 +1,16 @@
 library;
 
-// Single project import
+//* Single project import
 import 'package:meup/meup.dart';
 
-// Package imports
+//* Package imports
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
 
-// Parts - internal files using 'part of'
+//* Parts - internal files using 'part of'
 part 'data/models/{{#snakeCase}}{{entity_name}}{{/snakeCase}}_model.dart';
 part 'data/datasources/remote/{{#snakeCase}}{{feature_name}}{{/snakeCase}}_api.dart';
 part 'data/datasources/local/{{#snakeCase}}{{feature_name}}{{/snakeCase}}_local_data_source.dart';
@@ -22,12 +22,12 @@ part 'domain/usecases/get_all_{{#snakeCase}}{{entity_name}}{{/snakeCase}}s_useca
 part 'domain/usecases/create_{{#snakeCase}}{{entity_name}}{{/snakeCase}}_usecase.dart';
 part 'domain/usecases/update_{{#snakeCase}}{{entity_name}}{{/snakeCase}}_usecase.dart';
 part 'domain/usecases/delete_{{#snakeCase}}{{entity_name}}{{/snakeCase}}_usecase.dart';
-// State is shared between BLoC and Cubit
+//* State is shared between BLoC and Cubit
 part 'presentation/blocs/{{#snakeCase}}{{feature_name}}{{/snakeCase}}_state.dart';
 {{#use_bloc}}part 'presentation/blocs/{{#snakeCase}}{{feature_name}}{{/snakeCase}}_bloc.dart';
 part 'presentation/blocs/{{#snakeCase}}{{feature_name}}{{/snakeCase}}_event.dart';{{/use_bloc}}{{^use_bloc}}part 'presentation/cubits/{{#snakeCase}}{{feature_name}}{{/snakeCase}}_cubit.dart';{{/use_bloc}}
 part 'presentation/pages/{{#snakeCase}}{{feature_name}}{{/snakeCase}}_page.dart';
 
-// Parts for generated files
+//* Parts for generated files
 part '{{#snakeCase}}{{feature_name}}{{/snakeCase}}.freezed.dart';
 part '{{#snakeCase}}{{feature_name}}{{/snakeCase}}.g.dart';

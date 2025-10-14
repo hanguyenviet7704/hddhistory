@@ -11,7 +11,9 @@ abstract class OnboardModel with _$OnboardModel {
 
 
   factory OnboardModel.fromJson(Map<String, dynamic> json) => _$OnboardModelFromJson(json);
+}
 
+extension OnboardModelExtension on OnboardModel {
   OnboardEntity toEntity() => OnboardEntity(
         id: id,
         name: name,

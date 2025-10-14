@@ -1,4 +1,4 @@
-part of '../intro.dart';
+part of '../../onboard.dart';
 
 class SplashPage extends StatefulWidget {
   const SplashPage({super.key});
@@ -87,7 +87,7 @@ class _SplashPageState extends State<SplashPage> {
         
         _trackingDrawWelcomeScrView('first_time');
       }
-      HomeRoute().go(context);
+      OnboardRoute().go(context);
     });
   }
 

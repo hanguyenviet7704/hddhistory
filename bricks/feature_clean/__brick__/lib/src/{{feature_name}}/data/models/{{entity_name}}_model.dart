@@ -11,7 +11,9 @@ abstract class {{#pascalCase}}{{entity_name}}{{/pascalCase}}Model with _${{#pasc
 
 
   factory {{#pascalCase}}{{entity_name}}{{/pascalCase}}Model.fromJson(Map<String, dynamic> json) => _${{#pascalCase}}{{entity_name}}{{/pascalCase}}ModelFromJson(json);
+}
 
+extension {{#pascalCase}}{{entity_name}}{{/pascalCase}}ModelExtension on {{#pascalCase}}{{entity_name}}{{/pascalCase}}Model {
   {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity toEntity() => {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity(
         id: id,
         name: name,

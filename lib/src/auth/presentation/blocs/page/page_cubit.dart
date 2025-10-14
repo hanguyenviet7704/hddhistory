@@ -104,9 +104,6 @@ class PageCubit extends Cubit<PageState> {
       case RoutePath.home:
         HomeRoute().go(AppConfig.instance.context!);
         break;
-      case RoutePath.pictureStudy:
-        AppConfig.instance.context!.read<HomeCubit>().setHomeIndex(HomeModule.pictureStudy);
-        break;
     }
   }
 

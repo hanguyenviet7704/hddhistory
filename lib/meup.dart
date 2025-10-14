@@ -34,7 +34,7 @@ export 'package:logger/logger.dart';
 export 'package:path_provider/path_provider.dart';
 export 'package:share_plus/share_plus.dart';
 export 'package:smooth_page_indicator/smooth_page_indicator.dart' hide ScaleEffect, SwapEffect, SlideEffect;
-export 'package:url_launcher/url_launcher_string.dart';
+export 'package:url_launcher/url_launcher.dart';
 
 //* Export all base files here
 export 'config/config.dart';
