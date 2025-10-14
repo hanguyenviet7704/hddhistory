@@ -87,7 +87,7 @@ class _SplashPageState extends State<SplashPage> {
         
         _trackingDrawWelcomeScrView('first_time');
       }
-      OnboardRoute().go(context);
+      IntroRoute().go(context);
     });
   }
 

@@ -1,6 +1,8 @@
 library;
 
 //* Package imports
+import 'dart:ui' as ui;
+
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
