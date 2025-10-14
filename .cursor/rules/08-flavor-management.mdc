@@ -1,0 +1,425 @@
+---
+description: Flavor management rules for dev, staging, and production environments using flutter_flavorizr
+alwaysApply: false
+---
+# Flavor Management Rules
+
+## Flavor System Overview
+The project uses three flavors managed by `flutter_flavorizr` and accessed through the `F` class.
+
+### Supported Flavors
+- **dev**: Development environment with debug features
+- **stg**: Staging environment that mirrors production  
+- **prod**: Production environment for live deployment
+
+## Flavor Class Usage
+
+### Accessing Current Flavor
+```dart
+// Get current flavor enum
+Flavor? currentFlavor = F.appFlavor;
+
+// Get flavor name as string
+String flavorName = F.name; // 'dev', 'stg', or 'prod'
+
+// Get app title based on flavor
+String appTitle = F.title; // 'Meup Dev', 'Meup Staging', or 'Meup'
+
+// Get Firebase options for current flavor
+FirebaseOptions firebaseOptions = F.firebaseOptions;
+```
+
+### Environment-Specific Logic
+```dart
+// Check specific flavor
+bool isDevelopment = F.appFlavor == Flavor.dev;
+bool isStaging = F.appFlavor == Flavor.stg;  
+bool isProduction = F.appFlavor == Flavor.prod;
+
+// Environment-specific behavior using switch expressions
+String get apiBaseUrl {
+  return switch (F.appFlavor) {
+    Flavor.dev => 'https://dev.venusshop.top/api/v1',
+    Flavor.stg => 'https://dev.venusshop.top/api/v1',
+    Flavor.prod => 'https://venusshop.top/api/v1',
+    _ => 'https://venusshop.top/api/v1',
+  };
+}
+
+bool get enableDebugFeatures {
+  return switch (F.appFlavor) {
+    Flavor.dev => true,
+    Flavor.stg => false,
+    Flavor.prod => false,
+    _ => false,
+  };
+}
+
+Duration get cacheTimeout {
+  return switch (F.appFlavor) {
+    Flavor.dev => const Duration(seconds: 30), // Short cache for dev
+    Flavor.stg => const Duration(minutes: 5),  // Medium cache for staging
+    Flavor.prod => const Duration(hours: 1),   // Long cache for production
+    _ => const Duration(minutes: 5),
+  };
+}
+```
+
+## Entry Point Pattern
+
+### Flavor-Specific Main Files
+Each flavor has its own entry point that sets the flavor before calling common main:
+
+```dart
+// lib/main_dev.dart
+import 'flavors.dart';
+import 'main.dart' as runner;
+
+void main() {
+  F.appFlavor = Flavor.dev;
+  runner.main();
+}
+
+// lib/main_stg.dart  
+import 'flavors.dart';
+import 'main.dart' as runner;
+
+void main() {
+  F.appFlavor = Flavor.stg;
+  runner.main();
+}
+
+// lib/main_prod.dart
+import 'flavors.dart';
+import 'main.dart' as runner;
+
+void main() {
+  F.appFlavor = Flavor.prod;
+  runner.main();
+}
+```
+
+### Common Main Implementation
+```dart
+// lib/main.dart
+import 'package:meup/meup.dart';
+
+void main() {
+  AppService.instance.init(() => runApp(const AppProviders(child: DMainApp())));
+}
+
+class DMainApp extends StatelessWidget {
+  const DMainApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp.router(
+      debugShowCheckedModeBanner: false,
+      onGenerateTitle: (context) => context.text.appTitle,
+      title: F.title, // Uses flavor-specific title
+      // ... rest of app configuration
+    );
+  }
+}
+```
+
+## Firebase Integration
+
+### Flavor-Specific Firebase Configuration
+```dart
+// lib/flavors.dart
+class F {
+  static Flavor? appFlavor;
+  
+  static FirebaseOptions get firebaseOptions {
+    return switch (appFlavor) {
+      Flavor.dev => dev.DefaultFirebaseOptions.currentPlatform,
+      Flavor.stg => stg.DefaultFirebaseOptions.currentPlatform,
+      Flavor.prod => prod.DefaultFirebaseOptions.currentPlatform,
+      _ => throw UnsupportedError('No Firebase options set for this flavor')
+    };
+  }
+}
+```
+
+### Firebase Service Configuration
+```dart
+@lazySingleton
+class FirebaseService {
+  Future<void> initialize() async {
+    await Firebase.initializeApp(
+      options: F.firebaseOptions,
+    );
+    
+    // Configure analytics based on flavor
+    if (F.appFlavor != Flavor.dev) {
+      await FirebaseAnalytics.instance.setAnalyticsCollectionEnabled(true);
+    }
+    
+    // Configure crashlytics
+    await FirebaseCrashlytics.instance.setCrashlyticsCollectionEnabled(
+      F.appFlavor == Flavor.prod,
+    );
+  }
+}
+```
+
+## Build Configuration
+
+### Environment Files
+- `.env/.env.dev` - Development configuration
+- `.env/.env.stg` - Staging configuration  
+- `.env/.env.prod` - Production configuration
+
+### Build Commands
+```bash
+# Development build
+flutter build apk --flavor dev --dart-define-from-file=.env/.env.dev -t lib/main_dev.dart
+
+# Staging build  
+flutter build appbundle --flavor stg --dart-define-from-file=.env/.env.stg -t lib/main_stg.dart
+
+# Production build
+flutter build appbundle --flavor prod --dart-define-from-file=.env/.env.prod -t lib/main_prod.dart
+```
+
+### Using Build Scripts (Recommended)
+```bash
+# Android APK builds
+./tools/macos/build/build_apk.sh dev
+./tools/macos/build/build_apk.sh stg  
+./tools/macos/build/build_apk.sh prod
+
+# Android App Bundle builds
+./tools/macos/build/build_appbundle.sh dev
+./tools/macos/build/build_appbundle.sh stg
+./tools/macos/build/build_appbundle.sh prod
+
+# iOS builds
+./tools/macos/build/build_ipa.sh dev
+./tools/macos/build/build_ipa.sh stg
+./tools/macos/build/build_ipa.sh prod
+```
+
+## Android Flavor Configuration
+
+### Flavorizr Generated Configuration
+The `android/app/flavorizr.gradle.kts` file is automatically generated:
+
+```kotlin
+android.apply {
+    flavorDimensions("flavor-type")
+
+    productFlavors {
+        create("dev") {
+            dimension = "flavor-type"
+            applicationId = "com.eup.meup.dev"
+            resValue(type = "string", name = "app_name", value = "Meup Dev")
+            buildConfigField(type = "String", name = "API_BASE_URL", value = "\"https://dev.venusshop.top/api/v1\"")
+        }
+        create("stg") {
+            dimension = "flavor-type"
+            applicationId = "com.eup.meup.stg"  
+            resValue(type = "string", name = "app_name", value = "Meup Staging")
+            buildConfigField(type = "String", name = "API_BASE_URL", value = "\"https://dev.venusshop.top/api/v1\"")
+        }
+        create("prod") {
+            dimension = "flavor-type"
+            applicationId = "com.eup.meup"
+            resValue(type = "string", name = "app_name", value = "Meup")
+            buildConfigField(type = "String", name = "API_BASE_URL", value = "\"https://venusshop.top/api/v1\"")
+        }
+    }
+}
+```
+
+## Flavor-Specific Features
+
+### Debug Features
+```dart
+class DebugFeatures {
+  static Widget? get debugPanel {
+    if (F.appFlavor != Flavor.dev) {
+      return null;
+    }
+    
+    return FloatingActionButton(
+      onPressed: () => _showDebugMenu(),
+      backgroundColor: Colors.red,
+      child: const Icon(Icons.bug_report),
+    );
+  }
+  
+  static void _showDebugMenu() {
+    // Show debug information
+    showDialog(
+      context: navigatorKey.currentContext!,
+      builder: (context) => AlertDialog(
+        title: const Text('Debug Info'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text('Flavor: ${F.name}'),
+            Text('App Title: ${F.title}'),
+            Text('Firebase Project: ${F.firebaseOptions.projectId}'),
+          ],
+        ),
+      ),
+    );
+  }
+}
+```
+
+### Logging Configuration
+```dart
+@lazySingleton
+class LoggingService {
+  void initialize() {
+    final logLevel = switch (F.appFlavor) {
+      Flavor.dev => Level.ALL,
+      Flavor.stg => Level.INFO,
+      Flavor.prod => Level.WARNING,
+      _ => Level.WARNING,
+    };
+    
+    Logger.root.level = logLevel;
+    Logger.root.onRecord.listen((record) {
+      if (F.appFlavor == Flavor.dev) {
+        print('${record.level.name}: ${record.time}: ${record.message}');
+      }
+    });
+  }
+}
+```
+
+### Network Configuration
+```dart
+@lazySingleton
+class NetworkService {
+  Dio createDio() {
+    final dio = Dio();
+    
+    // Add interceptors based on flavor
+    if (F.appFlavor == Flavor.dev) {
+      dio.interceptors.add(LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+      ));
+    }
+    
+    // Set base URL from flavor configuration
+    dio.options.baseUrl = _getApiBaseUrl();
+    
+    return dio;
+  }
+  
+  String _getApiBaseUrl() {
+    return switch (F.appFlavor) {
+      Flavor.dev => 'https://dev.venusshop.top/api/v1',
+      Flavor.stg => 'https://dev.venusshop.top/api/v1',
+      Flavor.prod => 'https://venusshop.top/api/v1',
+      _ => 'https://venusshop.top/api/v1',
+    };
+  }
+}
+```
+
+## Testing with Flavors
+
+### Setting Flavor in Tests
+```dart
+group('Flavor-dependent behavior', () {
+  setUp(() {
+    // Set flavor for testing
+    F.appFlavor = Flavor.dev;
+  });
+  
+  test('should enable debug features in development', () {
+    expect(DebugFeatures.debugPanel, isNotNull);
+  });
+  
+  test('should use correct API URL for development', () {
+    final service = NetworkService();
+    expect(service.apiBaseUrl, equals('https://dev.venusshop.top/api/v1'));
+  });
+});
+
+group('Production flavor behavior', () {
+  setUp(() {
+    F.appFlavor = Flavor.prod;
+  });
+  
+  test('should disable debug features in production', () {
+    expect(DebugFeatures.debugPanel, isNull);
+  });
+  
+  test('should use production API URL', () {
+    final service = NetworkService();
+    expect(service.apiBaseUrl, equals('https://venusshop.top/api/v1'));
+  });
+});
+```
+
+## Flavor Generation
+
+### Updating Flavors
+After modifying `flavorizr.yaml`:
+
+```bash
+# Clean previous generation
+flutter clean
+
+# Regenerate flavors
+dart run flutter_flavorizr
+
+# Get dependencies
+flutter pub get
+```
+
+### IDE Configuration
+
+#### VS Code Launch Configurations
+```json
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "dev Debug",
+      "request": "launch", 
+      "type": "dart",
+      "args": ["--flavor", "dev", "--dart-define-from-file", ".env/.env.dev"],
+      "program": "lib/main_dev.dart"
+    },
+    {
+      "name": "stg Debug",
+      "request": "launch",
+      "type": "dart", 
+      "args": ["--flavor", "stg", "--dart-define-from-file", ".env/.env.stg"],
+      "program": "lib/main_stg.dart"
+    },
+    {
+      "name": "prod Debug",
+      "request": "launch",
+      "type": "dart",
+      "args": ["--flavor", "prod", "--dart-define-from-file", ".env/.env.prod"],
+      "program": "lib/main_prod.dart"
+    }
+  ]
+}
+```
+
+## Best Practices
+
+### Flavor Usage Guidelines
+1. **Always check flavor before flavor-specific logic**
+2. **Use switch expressions for multiple flavor conditions**  
+3. **Keep flavor-specific code minimal and isolated**
+4. **Test all flavors before releases**
+5. **Use build scripts for consistent builds**
+6. **Document flavor-specific behavior**
+
+### Security Considerations
+1. **Never expose sensitive data in development builds**
+2. **Use different Firebase projects for each flavor**
+3. **Validate API endpoints for each flavor**
+4. **Test with production-like data in staging**

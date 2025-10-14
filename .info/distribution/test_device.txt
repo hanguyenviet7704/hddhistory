@@ -1,0 +1,9 @@
+# Test Devices - One device per line
+# Format: DeviceName|DeviceID|Platform
+# Lines starting with # are comments
+#
+# Example:
+# iPhone 14 Pro|00008110-001234567890001E|iOS
+# Pixel 7 Pro|emulator-5554|Android
+# Samsung Galaxy S23|R3CR40ABCDE|Android
+

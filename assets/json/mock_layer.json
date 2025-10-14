@@ -1,0 +1,80 @@
+{
+  "data": {
+    "myLessonProgress": [
+        {
+            "merged_image_layer_id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+            "merged_image_layer": {
+                "id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+                "merged_image_id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+                "name": "mui_con_cho",
+                "order_index": 0,
+                "background_image_url": "https://example.com/image.png"
+            }
+        },
+        {
+            "merged_image_layer_id": "2afda71f-c2f5-4d1e-ad20-1ec1d612211e",
+            "merged_image_layer": {
+                "id": "2afda71f-c2f5-4d1e-ad20-1ec1d612211e",
+                "merged_image_id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+                "name": "chan_con_cho",
+                "order_index": 1,
+                "background_image_url": "https://example.com/image.png"
+            }
+        }
+    ],
+    "myRoadmapProgress": [
+        {
+            "roadmap_node_merged_image_id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+            "status": "completed",
+            "name": "Dot"
+        }
+    ],
+    "myArtworks": [
+        {
+            "image_url": "https://example.com/artwork.png",
+            "id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+            "merged_image_layer": {
+                "id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+                "name": "mui_con_cho"
+            }
+        }
+    ],
+
+    "roadmapTree": [
+      {
+        "id": "0a93435e-dded-43de-a8ea-5ce7ddfac0e4",
+        "icon_image_url": "https://d3p74813v4gzcl.cloudfront.net/meup/production/lms/68/92/6892e437-b33b-4c63-b289-9596da71de63-1_Onboarding.png",
+        "title": "Welcome",
+        "node_type": "onboarding",
+        "description": "Welcome",
+        "order_index": 0,
+        "parent_id": null,
+        "merged_image": {
+            "sample_output_url": "https://d3p74813v4gzcl.cloudfront.net/meup/production/lms/77/ee/77ee2629-942d-4777-a192-7df898864102-onboarding.png",
+            "description": "Welcome to your Drawing Course! I’m Mr. Lexis, your guide on this artistic journey. With simple, expert-designed lessons, I’ll help you unlock your creativity and build strong drawing skills from the ground up—step by step, and full of joy. Ready to begin your art adventure?",
+            "title": "Welcome"
+        },
+        "depth": 0,
+        "required_lessons": [
+          {
+            "id": "2afda71f-c2f5-4d1e-ad20-1ec1d612217e",
+            "required_layers": [
+                "mui_con_cho",
+                "chan_con_cho"
+            ],
+            "type": "BasicDrawing",
+            "title": "Welcome",
+            "description": "None",
+            "goal": "None",
+            "max_duration": null,
+            "guide_points": null,
+            "evaluation_criteria": null,
+            "available_boosters": [],
+            "topics": []
+          }
+        ]
+      }
+    ]
+  },
+  "code": "200"
+}

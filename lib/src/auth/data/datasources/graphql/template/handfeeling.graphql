@@ -1,0 +1,18 @@
+query GetBrushes($languageCode: String) {
+  brushes(languageCode: $languageCode) {
+    tool_id
+    tool_name
+    keywords
+    brush_stroke_examples {
+      images {
+        url
+      }
+    }
+    brush_tip_examples {
+      images {
+        url
+      }
+    }
+    brush_description
+  }
+}

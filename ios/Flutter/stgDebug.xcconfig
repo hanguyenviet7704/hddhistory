@@ -1,0 +1,7 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+ASSET_PREFIX=stg
+BUNDLE_NAME=Meup Staging
+BUNDLE_DISPLAY_NAME=Meup Staging
+API_BASE_URL=https://stg.api.com

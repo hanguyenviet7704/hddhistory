@@ -1,0 +1,11 @@
+Version {{version}} - {{flavor}} Build
+
+Environment: {{flavor}}
+Domain: {{domain}}
+Build Date: {{date}}
+
+What's New:
+- Only curriculumVersions: C, D
+- ARTLEXIS-1346:[Draw] Phát triển màn Preview Lecture cho phép user nhìn được trạng thái Before-After của Lecture Picture một cách trực quan (luôn đặt trước lesson 1 của mỗi lecture)
+- ARTLEXIS-1668: [FE] Khi có video guidance không hiển thị Preivew Lecture & Click vào thanh progress không di chuyển được
+- ARTLEXIS-1673: [FE] Thay đổi requirment hiển thị màn hình preview lecture

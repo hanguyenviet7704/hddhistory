@@ -1,0 +1,163 @@
+query GetWelcomeQuizWithAssessmentForLesson(
+  $languageCode: String
+  $lessonId: ID!
+  $version: String
+) {
+  welcomeQuizWithAssessmentForLesson(
+    languageCode: $languageCode
+    lessonId: $lessonId
+    version: $version
+  ) {
+    id
+    lesson_id
+    order_index
+    title
+    question
+    image_url
+    quiz_type
+    assessment_mode
+    max_score
+    passing_score
+    time_limit
+    question_type
+    correct_answer_explanation
+    incorrect_feedback
+    created_at
+    updated_at
+    options {
+      id
+      order_index
+      label
+      coordinates {
+        x
+        y
+      }
+      radius
+      preview_text
+      color_hex
+      color_meaning
+      is_correct_answer
+      detail {
+        title
+        artist
+        description
+        pro_tip
+      }
+    }
+  }
+}
+
+query GetColorPickerChallenges(
+  $lessonId: ID!
+  $languageCode: String
+  $version: String
+) {
+  colorPickerChallenges(
+    lessonId: $lessonId
+    languageCode: $languageCode
+    version: $version
+  ) {
+    id
+    lesson_id
+    famous_artwork_id
+    artwork_image_url
+    target_color_areas {
+      coordinates
+      mask_image_url
+    }
+    challenge_question
+    color_palette {
+      id
+      challenge_id
+      color_name
+      color_hex
+      area_mask_image_url
+      tolerance_percentage
+      educational_explanation
+      color_role
+      color_context_note
+    }
+    correct_colors {
+      id
+      challenge_id
+      color_hex
+      area_mask_image_url
+      tolerance_percentage
+      educational_explanation
+      color_role
+      color_context_note
+    }
+    difficulty_level
+    time_limit_seconds
+    created_at
+    trid
+  }
+}
+
+query GetArtworksGroupedByColorTheme(
+  $languageCode: String
+  $version: String!
+  $lessonId: ID
+) {
+  artworksGroupedByColorTheme(
+    languageCode: $languageCode
+    version: $version
+    lessonId: $lessonId
+  ) {
+    code
+    data {
+      color_theme_id
+      color_theme_name
+      hex_color
+      color_theme_description {
+        type
+        content
+        text
+      }
+      color_theme_order
+      artworks {
+        id
+        title
+        artist_name
+        image_url
+        thumbnail_url
+        description
+        year_created
+        art_movement
+        relevance_score
+      }
+    }
+  }
+}
+
+query GetFamousArtworkDetails(
+  $artworkId: ID!
+  $languageCode: String
+  $version: String!
+) {
+  famousArtworkDetails(
+    artworkId: $artworkId
+    languageCode: $languageCode
+    version: $version
+  ) {
+    code
+    data {
+      id
+      title
+      artist_name
+      image_url
+      thumbnail_url
+      description
+      year_created
+      content_blocks {
+        type
+        text
+        image_url
+      }
+      art_movement
+      created_at
+      public_url
+    }
+  }
+}
+

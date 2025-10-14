@@ -1,0 +1,7 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.release.xcconfig"
+#include "Generated.xcconfig"
+
+ASSET_PREFIX=prod
+BUNDLE_NAME=Meup
+BUNDLE_DISPLAY_NAME=Meup
+API_BASE_URL=https://prod.api.com

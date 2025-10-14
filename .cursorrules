@@ -1,0 +1,57 @@
+# Cursor Commit Message Generation Rules
+
+## Commit Message Format
+When generating commit messages, follow the GitFlow convention established in this project:
+
+### Format Options:
+Use the format: `type-TICKET-ID: subject` - Always include the ticket ID in the commit message
+
+### Valid Types:
+- `feature`: New feature implementation
+- `fix`: Bug fixes
+- `refactor`: Code refactoring without changing functionality
+- `style`: Code style changes (formatting, naming, etc.)
+- `docs`: Documentation changes
+- `test`: Adding or modifying tests
+- `chore`: Maintenance tasks, dependency updates
+- `perf`: Performance improvements
+
+### Commit Message Rules:
+1. **Extract ticket ID from branch name**: 
+   - For branch format `type/TICKET-ID-description`: Use `TICKET-ID`
+   - For branch format `type/TICKET-ID/TICKET-ID-description`: Use the second `TICKET-ID`
+   - For branch format `type/TICKET-ID/TICKET-ID`: Use the second `TICKET-ID`
+2. **Use imperative mood**: "Add feature" not "Added feature"
+3. **Keep subject line under 50 characters**
+4. **Capitalize first letter of subject**
+5. **No period at the end of subject line**
+6. **Separate subject from body with blank line if body is needed**
+
+### Examples based on file changes:
+- For new features: `feature-ARTLEXIS-123: Add social login functionality`
+- For bug fixes: `fix-ARTLEXIS-123: Correct email regex pattern`
+- With ticket ID: `feature-TICKET-ID: Implement new functionality`
+- For UI changes: `style-ARTLEXIS-123: Update gallery view layout`
+- For state management: `feature-ARTLEXIS-123: Add new cubit`
+
+### Context-Aware Examples:
+When files are in specific directories, use appropriate scopes:
+- `lib/src/presentation/blocs/*` → Use `bloc` or specific feature as scope
+- `lib/src/presentation/pages/*` → Use `ui` or page name as scope
+- `lib/src/presentation/widgets/*` → Use `widget` or component name as scope
+- `lib/config/routes/*` → Use `routing` as scope
+
+### For Current Branch:
+- Check the current branch name pattern (typically `type/TICKET-ID/description` or `type/TICKET-ID-description`)
+- Extract the ticket ID (e.g., `ARTLEXIS-123`) from the branch name
+- Prefer format: `feature-TICKET-ID: <description>`
+
+### Automated Suggestions:
+Based on the staged files, suggest commits like:
+1. For feature files: `feature-TICKET-ID: Add new functionality`
+2. For UI/view files: `feature-TICKET-ID: Update UI components`
+3. For routing files: `feature-TICKET-ID: Add new route`
+4. For multiple related files: `feature-TICKET-ID: Implement complete feature`
+
+## Additional Context
+This project uses GitFlow workflow. Always ensure commit messages are descriptive and follow the established convention for better traceability and project history.

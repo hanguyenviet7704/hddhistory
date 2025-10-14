@@ -1,0 +1,71 @@
+{
+  "flutter": {
+    "useFvm": true,
+    "buildArgs": {
+      "android": {
+        "apk": [
+          "--release",
+          "--obfuscate",
+          "--split-debug-info=.obfuscation"
+        ],
+        "appbundle": [
+          "--release",
+          "--obfuscate",
+          "--split-debug-info=.obfuscation"
+        ]
+      },
+      "ios": {
+        "default": [
+          "--release",
+          "--obfuscate",
+          "--split-debug-info=.obfuscation"
+        ],
+        "ipa": [
+          "--release",
+          "--obfuscate",
+          "--split-debug-info=.obfuscation",
+          "--export-options-plist=ios/ExportOptions.plist"
+        ]
+      }
+    },
+    "outputPaths": {
+      "android": {
+        "apk": "build/app/outputs/flutter-apk",
+        "appbundle": "build/app/outputs/bundle"
+      },
+      "ios": {
+        "app": "build/ios/iphoneos",
+        "ipa": "build/ios/ipa"
+      },
+      "debugInfo": ".obfuscation"
+    }
+  },
+  "version": {
+    "autoIncrement": {
+      "buildNumber": true,
+      "versionCode": true
+    },
+    "format": {
+      "pattern": "{{major}}.{{minor}}.{{patch}}+{{build}}",
+      "buildNumberFormat": "yyyyMMddHHmm"
+    }
+  },
+  "signing": {
+    "android": {
+      "enableV1Signing": true,
+      "enableV2Signing": true,
+      "enableV3Signing": true,
+      "enableV4Signing": true
+    },
+    "ios": {
+      "automaticSigning": false,
+      "provisioningProfilePath": "ios/provisioning"
+    }
+  },
+  "optimization": {
+    "treeShakeIcons": true,
+    "splitPerAbi": false,
+    "shrinkResources": true,
+    "minifyEnabled": true
+  }
+}

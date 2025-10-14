@@ -1,0 +1,158 @@
+{
+    "data": {
+        "myArtworks": [
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/3e/70/3e70c52d-ed9a-4102-bff7-f918c5b1241e-first_pizza-38.svg",
+                "id": "936e75bc-033a-475a-b876-fa5c95e81f8d",
+                "merged_image_layer": {
+                    "id": "936e75bc-033a-475a-b876-fa5c95e81f8d",
+                    "name": "vien_pizza_bai_1"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/30/3e/303ee575-319a-4246-811b-59c12c34f935-first_pizza-39.svg",
+                "id": "936e75bc-033a-475a-b876-fa5c95e81f8d",
+                "merged_image_layer": {
+                    "id": "936e75bc-033a-475a-b876-fa5c95e81f8d",
+                    "name": "dua_chuot_bai_2"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/76/c9/76c96d8a-57ab-4e64-810a-a83a303c0a7f-first_pizza-40.svg",
+                "id": "a27d9d80-397d-4349-b6c3-371e043b0132",
+                "merged_image_layer": {
+                    "id": "a27d9d80-397d-4349-b6c3-371e043b0132",
+                    "name": "jam_bong_bai_3"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/41/a1/41a1ef92-9770-43fa-ba18-3293e4ebd9f4-first_pizza-41.svg",
+                "id": "b5eb2481-9986-4c42-9237-79f1046e31c3",
+                "merged_image_layer": {
+                    "id": "b5eb2481-9986-4c42-9237-79f1046e31c3",
+                    "name": "vien_trong_pizza_bai_4"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/3b/63/3b6329db-98a9-48ef-a05e-001f16bd484d-first_pizza-42.svg",
+                "id": "8ade8184-bfc7-4429-b5be-378b7f772b17",
+                "merged_image_layer": {
+                    "id": "8ade8184-bfc7-4429-b5be-378b7f772b17",
+                    "name": "ruoc_pizza_bai_5"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/e5/f7/e5f7572a-2ff7-4afa-af80-5928b3055115-first_pizza-43.svg",
+                "id": "d5d00b0c-e75a-41c1-9895-8dc6cb39ecb9",
+                "merged_image_layer": {
+                    "id": "d5d00b0c-e75a-41c1-9895-8dc6cb39ecb9",
+                    "name": "hanh_vuong_bai_6"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/98/09/98099993-b2d0-4216-8a9f-f2e7616dd259-first_pizza-44.svg",
+                "id": "2bed42f5-074f-4b41-82ec-5131d2f6d1b9",
+                "merged_image_layer": {
+                    "id": "2bed42f5-074f-4b41-82ec-5131d2f6d1b9",
+                    "name": "ca_chua_bai_7"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/b6/1c/b61c5475-d64c-47d4-8a9c-a5fa7bf5007a-first_pizza-45.svg",
+                "id": "bad9a113-f337-4a59-810b-e515e553ef86",
+                "merged_image_layer": {
+                    "id": "bad9a113-f337-4a59-810b-e515e553ef86",
+                    "name": "ca_rot_bai_8"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/44/77/4477dd0b-4e93-4ba1-b480-640653bf7f3b-first_pizza-46.svg",
+                "id": "d9467583-c091-4592-9e3f-6dc7cc4bc20e",
+                "merged_image_layer": {
+                    "id": "d9467583-c091-4592-9e3f-6dc7cc4bc20e",
+                    "name": "hanh_chu_nhat_bai_9"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/44/77/4477dd0b-4e93-4ba1-b480-640653bf7f3b-first_pizza-46.svg",
+                "id": "7aa752de-793f-41b0-910c-b7ee41ec901b",
+                "merged_image_layer": {
+                    "id": "7aa752de-793f-41b0-910c-b7ee41ec901b",
+                    "name": "hanh_chu_nhat_bai_9"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-26.svg",
+                "id": "dau_goi_con_cho_bai_1-id",
+                "merged_image_layer": {
+                    "id": "dau_goi_con_cho_bai_1-id",
+                    "name": "dau_goi_con_cho_bai_1"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-27.svg",
+                "id": "bong_mat_con_cho_bai_2-id",
+                "merged_image_layer": {
+                    "id": "bong_mat_con_cho_bai_2-id",
+                    "name": "bong_mat_con_cho_bai_2"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-28.svg",
+                "id": "mat_con_cho_bai_3-id",
+                "merged_image_layer": {
+                    "id": "mat_con_cho_bai_3-id",
+                    "name": "mat_con_cho_bai_3"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-29.svg",
+                "id": "tai_con_cho_bai_4-id",
+                "merged_image_layer": {
+                    "id": "tai_con_cho_bai_4-id",
+                    "name": "tai_con_cho_bai_4"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-30.svg",
+                "id": "co_con_cho_bai_5-id",
+                "merged_image_layer": {
+                    "id": "co_con_cho_bai_5-id",
+                    "name": "co_con_cho_bai_5"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-31.svg",
+                "id": "mui_con_cho_bai_6-id",
+                "merged_image_layer": {
+                    "id": "mui_con_cho_bai_6-id",
+                    "name": "mui_con_cho_bai_6"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-32.svg",
+                "id": "nguc_con_cho_bai_7-id",
+                "merged_image_layer": {
+                    "id": "nguc_con_cho_bai_7-id",
+                    "name": "nguc_con_cho_bai_7"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-33.svg",
+                "id": "long_con_cho_bai_8-id",
+                "merged_image_layer": {
+                    "id": "long_con_cho_bai_8-id",
+                    "name": "long_con_cho_bai_8"
+                }
+            },
+            {
+                "image_url": "https://meup-lms.s3.us-east-1.amazonaws.com/meup/production/lms/first_chilldog-34.svg",
+                "id": "chan_con_cho_bai_9-id",
+                "merged_image_layer": {
+                    "id": "chan_con_cho_bai_9-id",
+                    "name": "chan_con_cho_bai_9"
+                }
+            }
+        ]
+    }
+}

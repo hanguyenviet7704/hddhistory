@@ -1,0 +1,21 @@
+name: feature_clean
+description: A Mason brick for generating Clean Architecture feature modules with flatter structure
+version: 1.0.0
+repository: https://github.com/your-org/meup
+
+vars:
+  feature_name:
+    type: string
+    description: The name of the feature in snake_case
+    prompt: What is the feature name?
+
+  entity_name:
+    type: string
+    description: The name of the main business object in PascalCase
+    prompt: What is the entity name?
+
+  use_bloc:
+    type: boolean
+    description: Use BLoC instead of Cubit
+    default: false
+    prompt: Use BLoC instead of Cubit?

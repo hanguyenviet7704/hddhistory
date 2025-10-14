@@ -1,0 +1,42 @@
+{
+    "extras": {
+      "quizzes": [
+        {
+          "type": "welcome_quiz",
+          "question": "Which of the following is a famous artwork by Leonardo da Vinci?",
+          "famous_artworks": [
+            {
+              "public_url": "https://example.com/artworks/mona-lisa.jpg"
+            }
+          ],
+          "options": [
+            {
+              "text": "Mona Lisa",
+              "is_correct_answer": true
+            },
+            {
+              "text": "Starry Night",
+              "is_correct_answer": false
+            },
+            {
+              "text": "The Scream",
+              "is_correct_answer": false
+            }
+          ],
+          "feedback": {
+            "correct": {
+              "id": "fb1",
+              "heading": "Correct!",
+              "body": "That's right! Mona Lisa was painted by Leonardo da Vinci."
+            },
+            "incorrect": {
+              "id": "fb2",
+              "heading": "Oops!",
+              "body": "The correct answer is Mona Lisa, painted by Leonardo da Vinci."
+            }
+          }
+        }
+      ]
+    }
+  }
+  

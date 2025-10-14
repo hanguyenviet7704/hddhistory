@@ -1,0 +1,13 @@
+part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+
+enum {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status { initial, loading, success, failure }
+
+@freezed
+abstract class {{#pascalCase}}{{feature_name}}{{/pascalCase}}State with _${{#pascalCase}}{{feature_name}}{{/pascalCase}}State {
+  const factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}State({
+    @Default({{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.initial) {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status status,
+    @Default([]) List<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity> items,
+    {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity? selectedItem,
+    String? errorMessage,
+  }) = _{{#pascalCase}}{{feature_name}}{{/pascalCase}}State;
+}

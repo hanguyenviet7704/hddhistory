@@ -1,0 +1,35 @@
+{
+  "googleSheets": {
+    "sheetId": "1AvcLhnoNk1ARxk68a53tHOidPPq-sIBYk7ov_UcUeVs",
+    "sheetGids": ["288536257"],
+    "columns": {
+      "screen": "Screen",
+      "key": "Translation key",
+      "action": "Action",
+      "en": "Lang: English",
+      "vi": "Lang: Vietnam",
+      "zh": "Lang: Chinese"
+    }
+  },
+  "languages": {
+    "mapping": {
+      "english": "en",
+      "vietnam": "vi",
+      "vietnamese": "vi",
+      "chinese": "zh",
+      "china": "zh"
+    },
+    "default": "en"
+  },
+  "paths": {
+    "arbDir": "assets/arb",
+    "moduleDir": "assets/arb/module",
+    "appDir": "assets/arb/app",
+    "l10nConfig": "l10n.yaml",
+    "outputDir": "lib/config/l10n"
+  },
+  "generation": {
+    "author": "Noname Gogeto - Flutter Dcore",
+    "encoding": "utf-8"
+  }
+}

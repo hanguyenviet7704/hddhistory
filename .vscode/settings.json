@@ -1,0 +1,16 @@
+{
+  "cmake.sourceDirectory": "/Users/biendh/StudioProjects/meup-flutter/linux",
+  "arb-editor.suppressedWarnings": [
+    "missing_messages_from_template",
+    "missing_metadata_for_key",
+    "mismatched_brackets",
+    "metadata_for_missing_key",
+    "invalid_key",
+    "invalid_placeholder",
+    "missing_other_in_icu",
+    "unknown_icu_message_type",
+    "placeholder_without_metadata",
+    "missing_placeholder_with_metadata"
+  ],
+  "dart.flutterSdkPath": ".fvm/versions/stable"
+}

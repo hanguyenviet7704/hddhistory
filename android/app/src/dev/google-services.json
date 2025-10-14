@@ -1,0 +1,67 @@
+{
+  "project_info": {
+    "project_number": "116378588635",
+    "project_id": "meup-bf64f",
+    "storage_bucket": "meup-bf64f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:116378588635:android:43bce05609390417de43fe",
+        "android_client_info": {
+          "package_name": "com.eup.meup"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTk9yC3IuQ5lCJWauMU0Z_dh2OxNmuZ9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:116378588635:android:79b919e75084c728de43fe",
+        "android_client_info": {
+          "package_name": "com.eup.meup.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTk9yC3IuQ5lCJWauMU0Z_dh2OxNmuZ9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:116378588635:android:b33fee8b8248bce5de43fe",
+        "android_client_info": {
+          "package_name": "com.eup.meup.stg"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBTk9yC3IuQ5lCJWauMU0Z_dh2OxNmuZ9Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -1,0 +1,77 @@
+{
+  "firebaseToken": "1//0gHltx_gUx_rICgYIARAAGBASNwF-L9Irf0dTW0cmRllCvlpixqiXcVvBvp5MmSpHTdEl-YLNBgh4k_OxoKXhLgF3uNWgynuYWbE",
+  "projects": {
+    "dev": "meup-bf64f",
+    "stg": "meup-bf64f",
+    "prod": "meup-bf64f"
+  },
+  "apps": {
+    "android": {
+      "dev": {
+        "appId": "1:116378588635:android:79b919e75084c728de43fe",
+        "packageName": "com.eup.meup.dev"
+      },
+      "stg": {
+        "appId": "1:116378588635:android:b33fee8b8248bce5de43fe",
+        "packageName": "com.eup.meup.stg"
+      },
+      "prod": {
+        "appId": "1:116378588635:android:43bce05609390417de43fe",
+        "packageName": "com.eup.meup"
+      }
+    },
+    "ios": {
+      "dev": {
+        "appId": "1:116378588635:ios:cd2e5cb8f51fda0ade43fe",
+        "bundleId": "com.eup.meup.dev"
+      },
+      "stg": {
+        "appId": "1:116378588635:ios:0b465590e47f1285de43fe",
+        "bundleId": "com.eup.meup.stg"
+      },
+      "prod": {
+        "appId": "1:116378588635:ios:8bf8bad76321d95ade43fe",
+        "bundleId": "com.eup.meup"
+      }
+    }
+  },
+  "distribution": {
+    "testers": {
+      "dev": [
+        "dev-team@yourcompany.com",
+        "qa-team@yourcompany.com"
+      ],
+      "stg": [
+        "staging-testers@yourcompany.com",
+        "stakeholders@yourcompany.com"
+      ],
+      "prod": [
+        "beta-testers@yourcompany.com"
+      ]
+    },
+    "groups": {
+      "dev": [
+        "meup-testers",
+        "dev-team",
+        "qa-team"
+      ],
+      "stg": [
+        "meup-testers"
+      ],
+      "prod": [
+        "meup-testers"
+      ]
+    },
+    "releaseNotes": {
+      "template": "Release notes for version {{version}} - {{flavor}} environment\n\nChanges:\n- Bug fixes and improvements\n- New features added\n\nBuild date: {{date}}"
+    }
+  },
+  "slack": {
+    "webhookUrl": "",
+    "channels": {
+      "dev": "#dev-builds",
+      "stg": "#staging-builds",
+      "prod": "#releases"
+    }
+  }
+}
