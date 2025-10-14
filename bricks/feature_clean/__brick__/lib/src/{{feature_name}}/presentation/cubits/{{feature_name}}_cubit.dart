@@ -1,7 +1,7 @@
 {{^use_bloc}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
-class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> {
+class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> with CubitUseCaseHandlerMixin<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> {
   final GetAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}sUseCase _getAllUseCase;
   final Get{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _getUseCase;
   final Create{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _createUseCase;
@@ -14,7 +14,7 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pasca
     this._createUseCase,
     this._updateUseCase,
     this._deleteUseCase,
-  ) : super(const {{#pascalCase}}{{feature_name}}{{/pascalCase}}State());
+  ) : super({{#pascalCase}}{{feature_name}}{{/pascalCase}}State.initial());
 
   Future<void> loadAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s() async {
     emit(state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading));

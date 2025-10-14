@@ -1,7 +1,7 @@
 {{#use_bloc}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
-class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalCase}}{{feature_name}}{{/pascalCase}}Event, {{#pascalCase}}{{feature_name}}{{/pascalCase}}State> {
+class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalCase}}{{feature_name}}{{/pascalCase}}Event, {{#pascalCase}}{{feature_name}}{{/pascalCase}}State> with BlocUseCaseHandlerMixin<{{#pascalCase}}{{feature_name}}{{/pascalCase}}Event, {{#pascalCase}}{{feature_name}}{{/pascalCase}}State> {
   final GetAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}sUseCase _getAllUseCase;
   final Get{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _getUseCase;
   final Create{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _createUseCase;
@@ -14,7 +14,7 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalC
     this._createUseCase,
     this._updateUseCase,
     this._deleteUseCase,
-  ) : super(const {{#pascalCase}}{{feature_name}}{{/pascalCase}}State()) {
+  ) : super({{#pascalCase}}{{feature_name}}{{/pascalCase}}State.initial()) {
     on<_LoadAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s>(_onLoadAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s);
     on<_Load{{#pascalCase}}{{entity_name}}{{/pascalCase}}>(_onLoad{{#pascalCase}}{{entity_name}}{{/pascalCase}});
     on<_Create{{#pascalCase}}{{entity_name}}{{/pascalCase}}>(_onCreate{{#pascalCase}}{{entity_name}}{{/pascalCase}});

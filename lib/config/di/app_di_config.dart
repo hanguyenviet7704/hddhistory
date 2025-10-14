@@ -12,6 +12,8 @@ part of 'di.dart';
     'lib/src/**/domain/repositories',
     'lib/src/**/domain/usecases',
     'lib/src/**/presentation/blocs',
+    'lib/src/**/presentation/cubits',
+    'lib/src/onboard/presentation/cubits'
   ],
   initializerName: 'init',
   preferRelativeImports: true,

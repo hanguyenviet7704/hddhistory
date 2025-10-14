@@ -14,7 +14,7 @@ class OnboardCubit extends Cubit<OnboardState> {
     this._createUseCase,
     this._updateUseCase,
     this._deleteUseCase,
-  ) : super(const OnboardState());
+  ) : super(OnboardState.initial());
 
   Future<void> loadAllOnboards() async {
     emit(state.copyWith(status: OnboardStatus.loading));

@@ -3,7 +3,7 @@ part of '../blocs.dart';
 @lazySingleton
 class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<UserState> {
   UserCubit(this._registerUsecase, @Named(DIKey.firebaseAnalyticsService) this._appTrackingService, this._getMyProfilesUsecase) : super(UserState.initial()) {
-    _onAutoSignUpGuest();
+    // _onAutoSignUpGuest();
   }
   final RegisterUsecase _registerUsecase;
   final GetMyProfilesUsecase _getMyProfilesUsecase;

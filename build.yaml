@@ -90,10 +90,13 @@ targets:
             - "lib/config/services/**.dart"
             - "lib/src/**/data/datasources/apis/**.dart"
             - "lib/src/**/data/datasources/sockets/**.dart"
+            - "lib/src/**/data/datasources/local/**.dart"
+            - "lib/src/**/data/datasources/remote/**.dart"
             - "lib/src/**/data/repositories/**.dart"
             - "lib/src/**/domain/repositories/**.dart"
             - "lib/src/**/domain/usecases/**.dart"
             - "lib/src/**/presentation/blocs/**.dart"
+            - "lib/src/**/presentation/cubits/**.dart"
 
       injectable_generator:injectable_config_builder:
         enabled: true

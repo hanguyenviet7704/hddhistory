@@ -30,7 +30,7 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
     // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
   
-    context.read<IAPCubit>().loadIapProducts();
+    // context.read<IAPCubit>().loadIapProducts();
     context.read<PageCubit>().setIsPassSplashScreen(true);
     // context.read<HandfeelingCubit>().getBrushes();
   }
