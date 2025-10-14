@@ -162,7 +162,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
         message: AppConfig.instance.context?.text.monetPaymentSuccessToast ?? '',
         type: MessageType.success,
       );
-      await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
+      // await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
       await paywallCubit.showFeedbackPaywallDialog();
     });
   }

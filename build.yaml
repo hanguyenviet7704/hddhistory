@@ -97,6 +97,7 @@ targets:
             - "lib/src/**/domain/usecases/**.dart"
             - "lib/src/**/presentation/blocs/**.dart"
             - "lib/src/**/presentation/cubits/**.dart"
+            - "lib/src/**/**.dart"  # Feature root hub files
 
       injectable_generator:injectable_config_builder:
         enabled: true
@@ -106,10 +107,14 @@ targets:
             - "lib/config/services/**.dart"
             - "lib/src/**/data/datasources/apis/**.dart"
             - "lib/src/**/data/datasources/sockets/**.dart"
+            - "lib/src/**/data/datasources/local/**.dart"
+            - "lib/src/**/data/datasources/remote/**.dart"
             - "lib/src/**/data/repositories/**.dart"
             - "lib/src/**/domain/repositories/**.dart"
             - "lib/src/**/domain/usecases/**.dart"
             - "lib/src/**/presentation/blocs/**.dart"
+            - "lib/src/**/presentation/cubits/**.dart"
+            # - "lib/src/**/**.dart"  # Feature root hub files
         options:
           force_auto_register: true
 

@@ -9,7 +9,7 @@ class NoInternetConnectionPage extends StatelessWidget {
       title: context.text.errorNoInternetConnection,
       description: context.text.errorOopsItLooksLikeYouAreOffline,
       buttonText: context.text.canvasTryAgain,
-      illustration: AppAsset.images.connectionError.path,
+      illustration: AppAsset.images.common.connectionError.path,
       onTryAgain: () {context.back();},
     );
   }

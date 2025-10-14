@@ -106,26 +106,26 @@ class LoginPanel extends StatelessWidget {
         20.verticalSpace,
         const DividerOr(),
         24.verticalSpace,
-        SocialLoginButton(
-          text: context.text.authSignInWithService(service: 'Google'),
-          iconPath: AppAsset.icons.logoGoogle.path,
-          onPressed: () {
-            context.read<AuthBloc>().add(LoginSSOGoogleEvent(onSuccess: () => _loginSuccess(context)));
-            AppService.instance.appTrackingService.trackEvent(TrackingKey.signinSigninGoogleClick);
-          },
-        ),
-        16.verticalSpace,
-        if (Platform.isIOS || Platform.isMacOS) ...[
-          SocialLoginButton(
-            text: context.text.authSignInWithService(service: 'Apple'),
-            iconPath: AppAsset.icons.logoApple.path,
-            onPressed: () {
-              context.read<AuthBloc>().add(LoginSSOAppleEvent(onSuccess: () => _loginSuccess(context)));
-              AppService.instance.appTrackingService.trackEvent(TrackingKey.signinSigninAppleClick);
-            },
-          ),
-          16.verticalSpace,
-        ],
+        // SocialLoginButton(
+        //   text: context.text.authSignInWithService(service: 'Google'),
+        //   iconPath: AppAsset.icons.logoGoogle.path,
+        //   onPressed: () {
+        //     context.read<AuthBloc>().add(LoginSSOGoogleEvent(onSuccess: () => _loginSuccess(context)));
+        //     AppService.instance.appTrackingService.trackEvent(TrackingKey.signinSigninGoogleClick);
+        //   },
+        // ),
+        // 16.verticalSpace,
+        // if (Platform.isIOS || Platform.isMacOS) ...[
+        //   SocialLoginButton(
+        //     text: context.text.authSignInWithService(service: 'Apple'),
+        //     iconPath: AppAsset.icons.logoApple.path,
+        //     onPressed: () {
+        //       context.read<AuthBloc>().add(LoginSSOAppleEvent(onSuccess: () => _loginSuccess(context)));
+        //       AppService.instance.appTrackingService.trackEvent(TrackingKey.signinSigninAppleClick);
+        //     },
+        //   ),
+        //   16.verticalSpace,
+        // ],
         InkWell(
           onTap: () {
             isLogin.value = false;

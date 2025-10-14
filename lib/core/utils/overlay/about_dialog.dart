@@ -15,7 +15,7 @@ void showDAboutDialog({
       title: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Image.asset(AppAsset.images.mainIcon.path, width: 50.w, height: 50.w),
+          Image.asset(AppAsset.images.common.mainIcon.path, width: 50.w, height: 50.w),
           const SizedBox(width: 16),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,

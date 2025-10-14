@@ -9,7 +9,7 @@ class CommingSoonPage extends StatelessWidget {
       body: Container(
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage(AppAsset.images.commingSoonBg.path),
+            image: AssetImage(AppAsset.images.common.commingSoonBg.path),
             fit: BoxFit.fill,
           ),
         ),
@@ -17,7 +17,7 @@ class CommingSoonPage extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             SizedBox(width: double.infinity),
-            Image.asset(AppAsset.images.commingSoonIntro.path, height: 391.h),
+            // Image.asset(AppAsset.images.common.commingSoonIntro.path, height: 391.h),
             40.verticalSpace,
             AppText(
               context.text.fakedoorComingSoon,

@@ -1,4 +1,4 @@
-part of '../intro.dart';
+part of '../../onboard.dart';
 
 class SplashContentCard extends StatelessWidget {
   const SplashContentCard({super.key});
@@ -28,7 +28,7 @@ class SplashContentCard extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.start,
               children: [
-                Image.asset(AppAsset.images.splashIntro.path, width: 58.w),
+                Image.asset(AppAsset.images.common.splashIntro.path, width: 58.w),
                 16.horizontalSpace,
                 AppText(context.text.loadingSplashReadyToUnleashInfiniteCreativity, style: AppStyle.textBold20),
               ],

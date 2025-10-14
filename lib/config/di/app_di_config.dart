@@ -13,7 +13,7 @@ part of 'di.dart';
     'lib/src/**/domain/usecases',
     'lib/src/**/presentation/blocs',
     'lib/src/**/presentation/cubits',
-    'lib/src/onboard/presentation/cubits'
+    'lib/src/onboard',
   ],
   initializerName: 'init',
   preferRelativeImports: true,

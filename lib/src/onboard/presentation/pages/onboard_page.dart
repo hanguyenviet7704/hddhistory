@@ -6,8 +6,7 @@ class OnboardPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AppDI.injector.get<OnboardCubit>()
-        ..loadAllOnboards(),
+      create: (context) => AppDI.injector.get<OnboardCubit>()..loadAllOnboards(),
       child: BlocBuilder<OnboardCubit, OnboardState>(
         builder: (context, state) {
           return Scaffold(

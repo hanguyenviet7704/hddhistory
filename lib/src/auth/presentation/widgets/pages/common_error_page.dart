@@ -9,7 +9,7 @@ class CommonErrorPage extends StatelessWidget {
       title: context.text.errorSomethingHappened,
       description: context.text.errorTakingAPauseIsAlsoPart,
       buttonText: context.text.canvasTryAgain,
-      illustration: AppAsset.images.folderResearchError.path,
+      illustration: AppAsset.images.common.folderResearchError.path,
       onTryAgain: () => HomeRoute().go(context),
     );
   }

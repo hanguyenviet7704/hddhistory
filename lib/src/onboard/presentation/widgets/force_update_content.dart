@@ -1,4 +1,4 @@
-part of '../intro.dart';
+part of '../../onboard.dart';
 
 class ForceUpdateContent extends StatelessWidget {
   final VoidCallback? onUpdatePressed;
@@ -33,7 +33,7 @@ class ForceUpdateContent extends StatelessWidget {
         ),
       ),
       child: DCachedImage(
-        url: AppAsset.images.phoneUpdate.path,
+        url: AppAsset.images.common.logo.path,
         height: 286.h,
         fit: BoxFit.contain,
       ),

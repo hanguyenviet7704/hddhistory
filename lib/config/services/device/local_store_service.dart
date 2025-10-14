@@ -17,7 +17,7 @@ abstract interface class ILocalStoreService {
   Future<Map<String, dynamic>> getMap({required String key});
 }
 
-@lazySingleton
+@LazySingleton(as: ILocalStoreService)
 class LocalStoreService implements ILocalStoreService {
   FlutterSecureStorage? _storage;
   LocalStoreService() {

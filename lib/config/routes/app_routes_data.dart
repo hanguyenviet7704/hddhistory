@@ -9,6 +9,15 @@ class SplashRoute extends GoRouteData with $SplashRoute {
   Widget build(BuildContext context, GoRouterState state) => const SplashPage();
 }
 
+//* Intro Page
+@TypedGoRoute<IntroRoute>(path: RoutePath.intro, name: RouteNamed.intro)
+class IntroRoute extends GoRouteData with $IntroRoute {
+  const IntroRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const IntroPage();
+}
+
 //* Onboard Page
 @TypedGoRoute<OnboardRoute>(path: RoutePath.onboard, name: RouteNamed.onboard)
 class OnboardRoute extends GoRouteData with $OnboardRoute {

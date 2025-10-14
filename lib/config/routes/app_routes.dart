@@ -11,6 +11,7 @@ mixin RoutePath {
 
   //* Splash
   static const String splash = '/splash';
+  static const String intro = '/intro';
   static const String onboard = '/onboard';
   static const String noAuth = '/no-auth';
 
@@ -41,6 +42,7 @@ mixin RouteNamed {
 
   //* Splash Screen
   static const String splash = 'Splash Page';
+  static const String intro = 'Intro Page';
   static const String onboard = 'Onboard Page';
   static const String noAuth = 'No Auth Page';
 

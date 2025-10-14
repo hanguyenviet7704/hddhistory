@@ -24,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               40.verticalSpace,
-              Container(padding: EdgeInsets.symmetric(vertical: 42.h), child: Image.asset(AppAsset.images.logo.path, width: 100.sp)),
+              Container(padding: EdgeInsets.symmetric(vertical: 42.h), child: Image.asset(AppAsset.images.common.logo.path, width: 100.sp)),
               AppText('context.text.register', style: AppStyle.text22.copyWith(fontWeight: FontWeight.w600)),
               10.verticalSpace,
               Align(alignment: Alignment.centerLeft, child: AppText('context.text.phone', style: AppStyle.text12.copyWith(fontWeight: FontWeight.w500))),

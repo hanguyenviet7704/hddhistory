@@ -127,7 +127,7 @@ class _SplashPageState extends State<SplashPage> {
         child: Stack(
           children: [
             Image.asset(
-              AppAsset.images.splashBg.path,
+              AppAsset.images.common.splashBg.path,
               width: 1.sw,
               height: 1.sh,
               fit: BoxFit.cover,

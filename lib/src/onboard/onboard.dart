@@ -26,5 +26,8 @@ part 'onboard.g.dart';
 //* State is shared between BLoC and Cubit
 part 'presentation/cubits/onboard_cubit.dart';
 part 'presentation/cubits/onboard_state.dart';
+part 'presentation/pages/intro_page.dart';
 part 'presentation/pages/onboard_page.dart';
 part 'presentation/pages/splash_page.dart';
+part 'presentation/widgets/force_update_content.dart';
+part 'presentation/widgets/splash_content_card.dart';

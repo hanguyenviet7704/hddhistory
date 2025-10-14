@@ -5,6 +5,6 @@ class AppLogo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(padding: EdgeInsets.symmetric(vertical: 42.h), child: Image.asset(AppAsset.images.logo.path, width: 100.sp));
+    return Container(padding: EdgeInsets.symmetric(vertical: 42.h), child: Image.asset(AppAsset.images.common.logo.path, width: 100.sp));
   }
 }

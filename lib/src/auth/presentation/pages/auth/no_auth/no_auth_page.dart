@@ -15,16 +15,16 @@ class _NoAuthPageState extends State<NoAuthPage> {
       body: Column(
         children: [
           50.verticalSpace,
-          Expanded(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 21.w),
-              child: Image.asset(
-                AppAsset.images.noAuth.path,
-                height: 348.h,
-                width: 348.w,
-              ),
-            ),
-          ),
+          // Expanded(
+          //   child: Padding(
+          //     padding: EdgeInsets.symmetric(horizontal: 21.w),
+          //     child: Image.asset(
+          //       AppAsset.images.common.noAuth.path,
+          //       height: 348.h,
+          //       width: 348.w,
+          //     ),
+          //   ),
+          // ),
           Container(
             padding: EdgeInsets.only(bottom: 30.h, left: 27.w, right: 27.w),
             width: 1.sw,

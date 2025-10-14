@@ -102,26 +102,26 @@ class RegisterPanel extends StatelessWidget {
         20.verticalSpace,
         const DividerOr(),
         24.verticalSpace,
-        SocialLoginButton(
-          text: context.text.authContinueWithService(service: 'Google'),
-          iconPath: AppAsset.icons.logoGoogle.path,
-          onPressed: () {
-            context.read<AuthBloc>().add(LoginSSOGoogleEvent(onSuccess: () => _registerSuccess(context)));
-            AppService.instance.appTrackingService.trackEvent(TrackingKey.signupGoogleContinueClick);
-          },
-        ),
-        16.verticalSpace,
-        if (Platform.isIOS || Platform.isMacOS) ...[
-          SocialLoginButton(
-            text: context.text.authContinueWithService(service: 'Apple'),
-            iconPath: AppAsset.icons.logoApple.path,
-            onPressed: () {
-              context.read<AuthBloc>().add(LoginSSOAppleEvent(onSuccess: () => _registerSuccess(context)));
-              AppService.instance.appTrackingService.trackEvent(TrackingKey.signupAppleContinueClick);
-            },
-          ),
-          16.verticalSpace,
-        ],
+        // SocialLoginButton(
+        //   text: context.text.authContinueWithService(service: 'Google'),
+        //   iconPath: AppAsset.icons.logoGoogle.path,
+        //   onPressed: () {
+        //     context.read<AuthBloc>().add(LoginSSOGoogleEvent(onSuccess: () => _registerSuccess(context)));
+        //     AppService.instance.appTrackingService.trackEvent(TrackingKey.signupGoogleContinueClick);
+        //   },
+        // ),
+        // 16.verticalSpace,
+        // if (Platform.isIOS || Platform.isMacOS) ...[
+        //   SocialLoginButton(
+        //     text: context.text.authContinueWithService(service: 'Apple'),
+        //     iconPath: AppAsset.icons.logoApple.path,
+        //     onPressed: () {
+        //       context.read<AuthBloc>().add(LoginSSOAppleEvent(onSuccess: () => _registerSuccess(context)));
+        //       AppService.instance.appTrackingService.trackEvent(TrackingKey.signupAppleContinueClick);
+        //     },
+        //   ),
+        //   16.verticalSpace,
+        // ],
         InkWell(
           onTap: () {
             isLogin.value = true;

@@ -3,6 +3,7 @@ part of '../../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 @lazySingleton
 @RestApi()
 abstract class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Api {
+  @factoryMethod
   factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}Api(@Named(DIKey.appDio) Dio dio) = _{{#pascalCase}}{{feature_name}}{{/pascalCase}}Api;
 
   @GET('/{{#snakeCase}}{{feature_name}}{{/snakeCase}}s')

@@ -33,7 +33,7 @@ class _AuthBodyState extends State<AuthBody> {
             height: 1.sh,
             padding: EdgeInsets.symmetric(horizontal: 200.w, vertical: 140.h),
             decoration: BoxDecoration(
-              image: DecorationImage(image: AssetImage(AppAsset.images.loginBg.path), fit: BoxFit.cover),
+              image: DecorationImage(image: AssetImage(AppAsset.images.common.loginBg.path), fit: BoxFit.cover),
             ),
             child: Center(
               child: Container(

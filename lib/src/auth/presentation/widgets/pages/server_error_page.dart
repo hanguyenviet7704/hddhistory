@@ -9,7 +9,7 @@ class ServerErrorPage extends StatelessWidget {
       title: context.text.errorServerError,
       description: context.text.errorOopsSomethingWentWrongWhileLoading,
       buttonText: context.text.canvasTryAgain,
-      illustration: AppAsset.images.databaseError.path,
+      illustration: AppAsset.images.common.databaseError.path,
       onTryAgain: () => HomeRoute().go(context),
     );
   }
