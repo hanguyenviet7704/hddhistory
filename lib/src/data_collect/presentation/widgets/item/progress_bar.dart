@@ -18,7 +18,7 @@ class ProgressBar extends StatelessWidget {
       height: 40.h,
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: LinearPercentIndicator(
-        width: double.infinity,
+        width: 1.sw - 40.w,
         animation: true,
         animationDuration: 500,
         lineHeight: 10.h,

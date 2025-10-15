@@ -29,6 +29,7 @@ part 'presentation/cubits/data_collect_cubit.dart';
 //* State is shared between BLoC and Cubit
 part 'presentation/cubits/data_collect_state.dart';
 part 'presentation/pages/data_collect_page.dart';
-part 'presentation/widgets/body/data_collect_body.dart';
+part 'presentation/widgets/body/age_collect_body.dart';
+part 'presentation/widgets/body/name_collect_body.dart';
 part 'presentation/widgets/item/onboarding_input.dart';
 part 'presentation/widgets/item/progress_bar.dart';

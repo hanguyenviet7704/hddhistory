@@ -1,10 +1,10 @@
 part of '../../../data_collect.dart';
 
-class DataCollectBody extends StatelessWidget {
+class AgeCollectBody extends StatelessWidget {
   final DataCollectState state;
   final int currentStep;
 
-  const DataCollectBody({
+  const AgeCollectBody({
     super.key,
     required this.state,
     required this.currentStep,
@@ -13,20 +13,20 @@ class DataCollectBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     switch (currentStep) {
-      case 1:
-        return _buildStep1();
+      case 2:
+        return _buildStep2();
       default:
         return _buildDefaultContent();
     }
   }
 
-  Widget _buildStep1() {
+  Widget _buildStep2() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // Title
         AppText(
-          'What should I call you?',
+          'How old are you?',
           style: AppStyle.textBold20.copyWith(
             color: const Color(0xFF364152), // Text/Secondary
             fontWeight: FontWeight.w500,
@@ -35,9 +35,10 @@ class DataCollectBody extends StatelessWidget {
 
         SizedBox(height: 20.h),
 
-        // Input Field
+        // Age Input Field
         const OnboardingInput(
-          hintText: 'Enter your name',
+          hintText: 'Enter your age',
+          keyboardType: TextInputType.number,
         ),
 
         SizedBox(height: 20.h),

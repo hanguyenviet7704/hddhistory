@@ -16,7 +16,7 @@ class DataCollectPage extends StatelessWidget {
                 children: [
                   // Progress Bar
                   const ProgressBar(
-                    currentStep: 1,
+                    currentStep: 2,
                     totalSteps: 10,
                   ),
 
@@ -24,9 +24,9 @@ class DataCollectPage extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.all(20.w),
-                      child: DataCollectBody(
+                      child: AgeCollectBody(
                         state: state,
-                        currentStep: 1,
+                        currentStep: 2,
                       ),
                     ),
                   ),
