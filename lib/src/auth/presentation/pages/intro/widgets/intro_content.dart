@@ -1,10 +1,10 @@
 part of '../intro.dart';
 
-class IntroContent extends StatelessWidget {
+class IntroAuthContent extends StatelessWidget {
   final String imagePath;
   final String title;
   final String description;
-  const IntroContent({super.key, required this.imagePath, required this.title, required this.description});
+  const IntroAuthContent({super.key, required this.imagePath, required this.title, required this.description});
 
   @override
   Widget build(BuildContext context) {

@@ -46,7 +46,7 @@ class GradientButton extends DButton {
   Widget get _buildGradientFilledButton {
     return Container(
       decoration: BoxDecoration(
-        gradient: gradient ?? LinearGradient(colors: AppCustomColor.gradientButton),
+        gradient: gradient ?? LinearGradient(colors: [Colors.blue]),
         borderRadius: borderRadius,
       ),
       child: FilledButton(

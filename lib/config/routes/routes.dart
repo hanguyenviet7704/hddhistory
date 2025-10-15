@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 
 //* Import all dependencies here
 import '../../src/src.dart';
+import '../di/di.dart';
 import '../services/services.dart';
 
 //* Import all dependencies here

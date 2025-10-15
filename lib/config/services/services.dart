@@ -39,7 +39,6 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:in_app_purchase_storekit/in_app_purchase_storekit.dart';
 import 'package:injectable/injectable.dart' hide Scope;
-import 'package:meup/config/themes/themes.dart';
 import 'package:meup/flavors.dart';
 import 'package:meup/src/auth/data/models/models.dart';
 import 'package:package_info_plus/package_info_plus.dart';

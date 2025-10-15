@@ -129,11 +129,11 @@ class AppButton extends StatelessWidget {
 
   Color get _colorTextPrimary => Colors.white;
 
-  Color get _colorTextSecondary => AppCustomColor.neutral500;
+  Color get _colorTextSecondary => Colors.blue;
 
-  Color get _bgColorPrimary => AppCustomColor.orange;
+  Color get _bgColorPrimary => Colors.blue;
 
-  Color get _bgColorSecondary => AppCustomColor.neutral100;
+  Color get _bgColorSecondary => Colors.blue;
 
   @override
   Widget build(BuildContext context) {

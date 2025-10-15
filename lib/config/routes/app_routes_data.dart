@@ -1,5 +1,26 @@
 part of 'routes.dart';
 
+//* General Route
+@TypedGoRoute<NoInternetConnectionRoute>(path: RoutePath.noInternetConnection, name: RouteNamed.noInternetConnection)
+class NoInternetConnectionRoute extends BaseTransitionRouteData with $NoInternetConnectionRoute {
+  const NoInternetConnectionRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const NoInternetConnectionPage();
+}
+
+@TypedGoRoute<CommingSoonRoute>(path: RoutePath.commingSoon, name: RouteNamed.commingSoon)
+class CommingSoonRoute extends GoRouteData with $CommingSoonRoute {
+  const CommingSoonRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const CommingSoonPage();
+}
+
+
 //* Splash Page
 @TypedGoRoute<SplashRoute>(path: RoutePath.splash, name: RouteNamed.splash)
 class SplashRoute extends GoRouteData with $SplashRoute {
@@ -15,7 +36,10 @@ class IntroRoute extends GoRouteData with $IntroRoute {
   const IntroRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const IntroPage();
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider(
+    create: (context) => AppDI.injector.get<IntroCubit>(),
+    child: const IntroPage(),
+  );
 }
 
 //* Onboard Page
@@ -26,7 +50,6 @@ class OnboardRoute extends GoRouteData with $OnboardRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => const OnboardPage();
 }
-
 
 //* Auth Pages
 @TypedGoRoute<LoginRoute>(
@@ -150,25 +173,4 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
       child: Container(),
     );
   }
-}
-
-//* Draw Route with custom transition
-
-@TypedGoRoute<NoInternetConnectionRoute>(path: RoutePath.noInternetConnection, name: RouteNamed.noInternetConnection)
-class NoInternetConnectionRoute extends BaseTransitionRouteData with $NoInternetConnectionRoute {
-  const NoInternetConnectionRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const NoInternetConnectionPage();
-}
-
-@TypedGoRoute<CommingSoonRoute>(path: RoutePath.commingSoon, name: RouteNamed.commingSoon)
-class CommingSoonRoute extends GoRouteData with $CommingSoonRoute {
-  const CommingSoonRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => const CommingSoonPage();
 }

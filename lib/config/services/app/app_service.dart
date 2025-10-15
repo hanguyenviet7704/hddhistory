@@ -158,7 +158,7 @@ class AppService {
       ..radius = 12.0
       ..progressColor = Colors.blue
       ..backgroundColor = Colors.white
-      ..indicatorColor = AppCustomColor.ffEC5800
+      ..indicatorColor = Colors.blue
       ..textColor = Colors.white
       ..maskColor = Colors.black.op(0.2)
       ..userInteractions = false
