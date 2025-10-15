@@ -68,13 +68,43 @@ class ChatBubble extends StatelessWidget {
               ),
             ),
           ),
-          _buildChatArrow(),
+          MessageArrowDown(),
         ],
       ),
     );
   }
+}
 
-  Widget _buildChatArrow() {
+class CharacterIllustration extends StatelessWidget {
+  final String iconPath;
+  const CharacterIllustration({super.key, this.iconPath = ''});
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 300),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        child: SizedBox(
+          key: ValueKey<String>(iconPath),
+          width: iconPath.contains('happy') ? 120.w : 183.w,
+          child: Image.asset(iconPath),
+        ),
+      ),
+    );
+  }
+}
+
+class MessageArrowDown extends StatelessWidget {
+  const MessageArrowDown({super.key});
+
+  @override
+  Widget build(BuildContext context) {
     return SizedBox(
       width: 280.w,
       height: 10.h,
@@ -94,35 +124,22 @@ class ChatBubble extends StatelessWidget {
   }
 }
 
-class CharacterIllustration extends StatelessWidget {
-  final String iconPath;
-  const CharacterIllustration({super.key, this.iconPath = ''});
+class ChatArrowPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.fill;
+
+    final path = ui.Path();
+    path.moveTo(size.width / 2, 0);
+    path.lineTo(0, size.height);
+    path.lineTo(size.width, size.height);
+    path.close();
+
+    canvas.drawPath(path, paint);
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return SizedBox(
-      width: 210.45.w,
-      height: 160.h,
-      child: Center(
-        child: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          transitionBuilder: (Widget child, Animation<double> animation) {
-            return FadeTransition(
-              opacity: animation,
-              child: child,
-            );
-          },
-          child: SizedBox(
-            key: ValueKey<String>(iconPath),
-            width: 205.29.w,
-            height: 201.802.h,
-            child: Image.asset(
-              iconPath,
-              fit: BoxFit.contain,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

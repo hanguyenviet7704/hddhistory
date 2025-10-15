@@ -33,7 +33,7 @@ class ForceUpdateContent extends StatelessWidget {
         ),
       ),
       child: DCachedImage(
-        url: AppAsset.images.common.logo.path,
+        url: AppAsset.images.common.mainIcon.path,
         height: 286.h,
         fit: BoxFit.contain,
       ),

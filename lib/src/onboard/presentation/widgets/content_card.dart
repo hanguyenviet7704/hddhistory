@@ -111,12 +111,14 @@ class PageIndicator extends StatelessWidget {
     return BlocBuilder<IntroCubit, IntroState>(
       builder: (context, state) {
         return Container(
+          width: double.infinity,
           padding: EdgeInsets.all(8.w),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(50.r),
           ),
           child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: List.generate(
               cubit.onboardContents.length,
@@ -125,7 +127,7 @@ class PageIndicator extends StatelessWidget {
                 return AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
                   margin: EdgeInsets.symmetric(horizontal: 4.w),
-                  width: isActive ? 24.w : 8.w,
+                  width: 8.w,
                   height: 8.h,
                   decoration: BoxDecoration(
                     color: isActive ? const Color(0xFF462BF4) : const Color(0xFFC1C5CD),

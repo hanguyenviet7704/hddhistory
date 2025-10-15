@@ -29,7 +29,7 @@ class _SplashPageState extends State<SplashPage> {
 
     if (!mounted) return;
     // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
-  
+
     // context.read<IAPCubit>().loadIapProducts();
     context.read<PageCubit>().setIsPassSplashScreen(true);
     // context.read<HandfeelingCubit>().getBrushes();
@@ -84,7 +84,6 @@ class _SplashPageState extends State<SplashPage> {
       if (!mounted) return;
       bool isFirstTime = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
       if (isFirstTime) {
-        
         _trackingDrawWelcomeScrView('first_time');
       }
       IntroRoute().go(context);
@@ -126,17 +125,17 @@ class _SplashPageState extends State<SplashPage> {
         top: false,
         child: Stack(
           children: [
-            Image.asset(
-              AppAsset.images.common.splashBg.path,
-              width: 1.sw,
-              height: 1.sh,
-              fit: BoxFit.cover,
-            ),
-
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: const SplashContentCard(),
-            ),
+            // Image.asset(
+            //   AppAsset.images.common.splashBg.path,
+            //   width: 1.sw,
+            //   height: 1.sh,
+            //   fit: BoxFit.cover,
+            // ),
+            Image.asset(AppAsset.images.common.mainIcon.path),
+            // Align(
+            //   alignment: Alignment.bottomCenter,
+            //   child: const SplashContentCard(),
+            // ),
           ],
         ).animate().fadeIn(duration: 0.8.seconds),
       ),

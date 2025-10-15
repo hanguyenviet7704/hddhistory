@@ -190,7 +190,7 @@ flavors:
   dev:
     app:
       name: "DCore Dev"
-      icon: "assets/images/main_icon.png"
+      icon: "assets/images/common/main_icon.png"
 
     android:
       applicationId: "com.eup.meup.dev"
@@ -227,7 +227,7 @@ flavors:
   stg:
     app:
       name: "DCore Staging"
-      icon: "assets/images/main_icon.png"
+      icon: "assets/images/common/main_icon.png"
 
     android:
       applicationId: "com.eup.meup.stg"
@@ -264,7 +264,7 @@ flavors:
   prod:
     app:
       name: "DCore"
-      icon: "assets/images/main_icon.png"
+      icon: "assets/images/common/main_icon.png"
 
     android:
       applicationId: "com.eup.meup"

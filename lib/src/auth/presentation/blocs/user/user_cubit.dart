@@ -64,6 +64,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     onDone?.call();
   }
 
+  // ignore: unused_element
   Future<void> _onAutoSignUpGuest() async {
     if (!state.isGuest || state.accessToken.isNotEmpty) return;
     final uuid = Uuid().v4();

@@ -59,7 +59,7 @@ flavors:
   dev:
     app:
       name: "Meup Dev"
-      icon: "assets/images/main_icon.png"
+      icon: "assets/images/common/main_icon.png"
 
     android:
       applicationId: "com.eup.meup.dev"
@@ -98,7 +98,7 @@ flavors:
   stg:
     app:
       name: "Meup Staging"
-      icon: "assets/images/main_icon.png"
+      icon: "assets/images/common/main_icon.png"
 
     android:
       applicationId: "com.eup.meup.stg"
@@ -137,7 +137,7 @@ flavors:
   prod:
     app:
       name: "Meup"
-      icon: "assets/images/main_icon.png"
+      icon: "assets/images/common/main_icon.png"
 
     android:
       applicationId: "com.eup.meup"
