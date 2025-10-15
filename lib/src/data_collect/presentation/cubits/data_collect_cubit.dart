@@ -1,0 +1,135 @@
+part of '../../data_collect.dart';
+
+@lazySingleton
+class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerMixin<DataCollectState> {
+  final GetAllUserCollectDatasUseCase _getAllUseCase;
+  final GetUserCollectDataUseCase _getUseCase;
+  final CreateUserCollectDataUseCase _createUseCase;
+  final UpdateUserCollectDataUseCase _updateUseCase;
+  final DeleteUserCollectDataUseCase _deleteUseCase;
+
+  DataCollectCubit(
+    this._getAllUseCase,
+    this._getUseCase,
+    this._createUseCase,
+    this._updateUseCase,
+    this._deleteUseCase,
+  ) : super(DataCollectState.initial());
+
+  Future<void> loadAllUserCollectDatas() async {
+    emit(state.copyWith(status: DataCollectStatus.loading));
+
+    final result = await _getAllUseCase().run();
+
+    result.fold(
+      (exception) => emit(
+        state.copyWith(
+          status: DataCollectStatus.failure,
+          errorMessage: exception.message,
+        ),
+      ),
+      (items) => emit(
+        state.copyWith(
+          status: DataCollectStatus.success,
+          items: items,
+        ),
+      ),
+    );
+  }
+
+  Future<void> loadUserCollectData(String id) async {
+    emit(state.copyWith(status: DataCollectStatus.loading));
+
+    final result = await _getUseCase(id).run();
+
+    result.fold(
+      (exception) => emit(
+        state.copyWith(
+          status: DataCollectStatus.failure,
+          errorMessage: exception.message,
+        ),
+      ),
+      (item) => emit(
+        state.copyWith(
+          status: DataCollectStatus.success,
+          selectedItem: item,
+        ),
+      ),
+    );
+  }
+
+  Future<void> createUserCollectData(UserCollectDataEntity entity) async {
+    emit(state.copyWith(status: DataCollectStatus.loading));
+
+    final result = await _createUseCase(entity).run();
+
+    result.fold(
+      (exception) => emit(
+        state.copyWith(
+          status: DataCollectStatus.failure,
+          errorMessage: exception.message,
+        ),
+      ),
+      (newItem) {
+        final updatedItems = [...state.items, newItem];
+        emit(
+          state.copyWith(
+            status: DataCollectStatus.success,
+            items: updatedItems,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> updateUserCollectData(UserCollectDataEntity entity) async {
+    emit(state.copyWith(status: DataCollectStatus.loading));
+
+    final result = await _updateUseCase(entity).run();
+
+    result.fold(
+      (exception) => emit(
+        state.copyWith(
+          status: DataCollectStatus.failure,
+          errorMessage: exception.message,
+        ),
+      ),
+      (updatedItem) {
+        final updatedItems = state.items
+            .map((item) => item.id == updatedItem.id ? updatedItem : item)
+            .toList();
+        emit(
+          state.copyWith(
+            status: DataCollectStatus.success,
+            items: updatedItems,
+            selectedItem: updatedItem,
+          ),
+        );
+      },
+    );
+  }
+
+  Future<void> deleteUserCollectData(String id) async {
+    emit(state.copyWith(status: DataCollectStatus.loading));
+
+    final result = await _deleteUseCase(id).run();
+
+    result.fold(
+      (exception) => emit(
+        state.copyWith(
+          status: DataCollectStatus.failure,
+          errorMessage: exception.message,
+        ),
+      ),
+      (_) {
+        final updatedItems = state.items.where((item) => item.id != id).toList();
+        emit(
+          state.copyWith(
+            status: DataCollectStatus.success,
+            items: updatedItems,
+          ),
+        );
+      },
+    );
+  }
+}

@@ -58,7 +58,7 @@ class ChatBubble extends StatelessWidget {
               child: AppText(
                 message,
                 key: ValueKey<String>(message),
-                style: AppStyle.text14.copyWith(
+                style: AppStyle.text16.copyWith(
                   fontWeight: FontWeight.w400,
                   color: const Color(0xFF364152),
                   height: 1.75,
@@ -92,7 +92,7 @@ class CharacterIllustration extends StatelessWidget {
         },
         child: SizedBox(
           key: ValueKey<String>(iconPath),
-          width: iconPath.contains('happy') ? 120.w : 183.w,
+          width: iconPath.contains('happy') ? 120.w : 210.w,
           child: Image.asset(iconPath),
         ),
       ),

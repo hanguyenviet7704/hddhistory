@@ -14,6 +14,7 @@ part of 'di.dart';
     'lib/src/**/presentation/blocs',
     'lib/src/**/presentation/cubits',
     'lib/src/onboard',
+    'lib/src/data_collect',
   ],
   initializerName: 'init',
   preferRelativeImports: true,

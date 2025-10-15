@@ -4,14 +4,12 @@ class OnboardChatItem extends StatelessWidget {
   final String title;
   final String subtitle;
   final String characterImagePath;
-  final VoidCallback? onContinue;
 
   const OnboardChatItem({
     super.key,
     required this.title,
     required this.subtitle,
     required this.characterImagePath,
-    this.onContinue,
   });
 
   @override
@@ -23,10 +21,11 @@ class OnboardChatItem extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           child: Column(
             children: [
+              20.verticalSpace,
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     ChatBubbleWidget(
                       title: title,
@@ -40,23 +39,15 @@ class OnboardChatItem extends StatelessWidget {
                   ],
                 ),
               ),
-              _buildBottomSection(context),
+              16.verticalSpace,
+              ContinueButtonWidget(
+                onPressed: () {},
+              ),
+              16.verticalSpace,
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildBottomSection(BuildContext context) {
-    return Column(
-      children: [
-        16.verticalSpace,
-        ContinueButtonWidget(
-          onPressed: onContinue,
-        ),
-        16.verticalSpace,
-      ],
     );
   }
 }

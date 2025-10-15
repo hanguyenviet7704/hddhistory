@@ -9,3 +9,4 @@ export 'auth/presentation/blocs/blocs.dart';
 export 'auth/presentation/pages/pages.dart';
 export 'auth/presentation/widgets/widgets.dart';
 export 'onboard/onboard.dart';
+export 'data_collect/data_collect.dart';

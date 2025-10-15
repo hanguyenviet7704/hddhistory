@@ -51,6 +51,15 @@ class OnboardRoute extends GoRouteData with $OnboardRoute {
   Widget build(BuildContext context, GoRouterState state) => const OnboardPage();
 }
 
+//* Data Collect Page
+@TypedGoRoute<DataCollectRoute>(path: RoutePath.dataCollect, name: RouteNamed.dataCollect)
+class DataCollectRoute extends GoRouteData with $DataCollectRoute {
+  const DataCollectRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const DataCollectPage();
+}
+
 //* Auth Pages
 @TypedGoRoute<LoginRoute>(
   path: RoutePath.login,
