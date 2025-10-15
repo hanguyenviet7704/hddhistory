@@ -20,10 +20,7 @@ class IntroPage extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: GestureDetector(
-                  onTap: () {
-                    // Navigate to the next page
-                    cubit.setPage(cubit.onboardContents.length - 1);
-                  },
+                  onTap: () => OnboardRoute().go(context),
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     child: AppText(

@@ -1,4 +1,4 @@
-part of '../../onboard.dart';
+part of '../../../onboard.dart';
 
 class SplashContentCard extends StatelessWidget {
   const SplashContentCard({super.key});
