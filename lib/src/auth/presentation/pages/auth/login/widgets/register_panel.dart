@@ -58,20 +58,20 @@ class RegisterPanel extends StatelessWidget {
           controller: emailController,
           hint: context.text.authEmail,
           type: DTextInputType.email,
-          prefix: Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: SvgPicture.asset(AppAsset.svg.app.icMail),
-          ),
+          // prefix: Padding(
+          //   padding: EdgeInsets.symmetric(vertical: 16.h),
+          //   child: SvgPicture.asset(AppAsset.svg.app.icMail),
+          // ),
         ),
         20.verticalSpace,
         DTextField(
           controller: passwordController,
           hint: context.text.authPassword,
           type: DTextInputType.password,
-          prefix: Padding(
-            padding: EdgeInsets.symmetric(vertical: 16.h),
-            child: SvgPicture.asset(AppAsset.svg.app.icLockOutline),
-          ),
+          // prefix: Padding(
+          //   padding: EdgeInsets.symmetric(vertical: 16.h),
+          //   child: SvgPicture.asset(AppAsset.svg.app.icLockOutline),
+          // ),
         ),
         if (kDebugMode) ...[
           20.verticalSpace,

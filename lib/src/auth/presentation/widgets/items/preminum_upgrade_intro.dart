@@ -44,7 +44,7 @@ class PremiumUpgradeIntro extends StatelessWidget {
                       color: AppColorLight.surface,
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: SvgPicture.asset(AppAsset.svg.app.icDiamond),
+                    // child: SvgPicture.asset(AppAsset.svg.app.icDiamond),
                   ),
                   12.horizontalSpace,
                   Flexible(

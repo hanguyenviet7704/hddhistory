@@ -36,20 +36,20 @@ class PremiumPaywallContent extends StatelessWidget {
                     ),
                     20.verticalSpace,
                     // Features list
-                    PremiumFeatureItem(
-                      icon: AppAsset.svg.app.icLightning,
-                      text: context.text.monetPremiumEnergy,
-                    ),
-                    16.verticalSpace,
-                    PremiumFeatureItem(
-                      icon: AppAsset.svg.app.icTicket,
-                      text: context.text.monetPremiumBooster,
-                    ),
-                    16.verticalSpace,
-                    PremiumFeatureItem(
-                      icon: AppAsset.svg.app.icImage,
-                      text: context.text.monetPremiumLessonAccess,
-                    ),
+                    // PremiumFeatureItem(
+                    //   icon: AppAsset.svg.app.icLightning,
+                    //   text: context.text.monetPremiumEnergy,
+                    // ),
+                    // 16.verticalSpace,
+                    // PremiumFeatureItem(
+                    //   icon: AppAsset.svg.app.icTicket,
+                    //   text: context.text.monetPremiumBooster,
+                    // ),
+                    // 16.verticalSpace,
+                    // PremiumFeatureItem(
+                    //   icon: AppAsset.svg.app.icImage,
+                    //   text: context.text.monetPremiumLessonAccess,
+                    // ),
                     40.verticalSpace,
                     Row(
                       children: [
@@ -135,7 +135,7 @@ class PremiumPaywallContent extends StatelessWidget {
                               : Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    SvgPicture.asset(AppAsset.svg.app.icMultiStar),
+                                    // SvgPicture.asset(AppAsset.svg.app.icMultiStar),
                                     8.horizontalSpace,
                                     AppText(
                                       context.text.monetStartPremium,

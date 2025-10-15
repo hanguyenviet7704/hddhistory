@@ -39,21 +39,7 @@ class AuthIntro extends StatelessWidget {
                 ),
                 maxLines: 10,
               ),
-              FeatureCard(
-                icon: AppAsset.svg.app.icDrawPad,
-                title: context.text.authDrawingMadeSimple,
-                description: context.text.authNoSpecialSkillsNeeded,
-              ),
-              FeatureCard(
-                icon: AppAsset.svg.app.icTriangleStack,
-                title: context.text.authExpertCraftedLessons,
-                description: context.text.authMasterArtFundementals,
-              ),
-              FeatureCard(
-                icon: AppAsset.svg.app.icPencilDraw,
-                title: context.text.authMasterDrawingTheFunWay,
-                description: context.text.authQuickLessonsEngagingChallenge,
-              ),
+             
             ],
           ),
         ),

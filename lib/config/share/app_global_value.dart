@@ -3,7 +3,7 @@ part of 'share.dart';
 mixin AppGlobalValue {
   static Size get uiSize => MediaQuery.sizeOf(AppConfig.instance.context!);
   static int affiliateId = 0;
-  static const Size designSize = Size(1440, 960);
+  static const Size designSize = Size(375, 812);
   static ThemeData appTheme = ThemeData();
   static String accessToken = '';
   static String refreshToken = '';

@@ -45,8 +45,8 @@ enum LocaleType {
   }
 
   String get flagCircle => switch (this) {
-    LocaleType.en => AppAsset.svg.app.icUsFlag,
-    LocaleType.vi => AppAsset.svg.app.icVnFlag,
-    LocaleType.zh => AppAsset.svg.app.icCnFlag,
+    LocaleType.en => AppAsset.svg.common.icUsFlag,
+    LocaleType.vi => AppAsset.svg.common.icVnFlag,
+    LocaleType.zh => AppAsset.svg.common.icCnFlag,
   };
 }

@@ -37,7 +37,6 @@ part 'animation/fade_up.dart';
 part 'animation/page_transition.dart';
 part 'animation/slide_stransition.dart';
 part 'button/app_button.dart';
-part 'button/app_icon_button.dart';
 //* Export all button files
 part 'button/button.dart';
 part 'button/gradient_button.dart';
