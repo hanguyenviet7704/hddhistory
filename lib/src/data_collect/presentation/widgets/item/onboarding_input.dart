@@ -1,4 +1,4 @@
-part of '../../data_collect.dart';
+part of '../../../data_collect.dart';
 
 class OnboardingInput extends StatelessWidget {
   final String hintText;

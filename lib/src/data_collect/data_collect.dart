@@ -7,6 +7,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 //* Single project import
 import 'package:meup/meup.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:retrofit/retrofit.dart';
 
 part 'data/datasources/local/data_collect_local_data_source.dart';
@@ -28,5 +29,6 @@ part 'presentation/cubits/data_collect_cubit.dart';
 //* State is shared between BLoC and Cubit
 part 'presentation/cubits/data_collect_state.dart';
 part 'presentation/pages/data_collect_page.dart';
-part 'presentation/widgets/onboarding_input.dart';
-part 'presentation/widgets/progress_bar.dart';
+part 'presentation/widgets/body/data_collect_body.dart';
+part 'presentation/widgets/item/onboarding_input.dart';
+part 'presentation/widgets/item/progress_bar.dart';
