@@ -1,4 +1,4 @@
-part of '../../../onboard.dart';
+part of '../../onboard.dart';
 
 class CharacterIllustrationWidget extends StatelessWidget {
   final String imagePath;

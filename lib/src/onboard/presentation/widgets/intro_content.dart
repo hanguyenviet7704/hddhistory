@@ -1,4 +1,4 @@
-part of '../../../onboard.dart';
+part of '../../onboard.dart';
 
 class IntroContent extends StatelessWidget {
   final OnboardContent content;

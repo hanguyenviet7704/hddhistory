@@ -1,4 +1,4 @@
-part of '../../../onboard.dart';
+part of '../../onboard.dart';
 
 class StatusBarWidget extends StatelessWidget {
   const StatusBarWidget({super.key});

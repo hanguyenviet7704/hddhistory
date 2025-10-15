@@ -1,4 +1,4 @@
-part of '../../../onboard.dart';
+part of '../../onboard.dart';
 
 class ChatBubbleWidget extends StatelessWidget {
   final String title;

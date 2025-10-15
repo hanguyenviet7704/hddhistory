@@ -1,4 +1,4 @@
-part of '../../../onboard.dart';
+part of '../../onboard.dart';
 
 class OnboardChatItem extends StatelessWidget {
   final String title;
@@ -41,7 +41,7 @@ class OnboardChatItem extends StatelessWidget {
               ),
               16.verticalSpace,
               ContinueButtonWidget(
-                onPressed: () {},
+                onPressed: () => DataCollectRoute().go(context),
               ),
               16.verticalSpace,
             ],

@@ -1,4 +1,4 @@
-part of '../../../onboard.dart';
+part of '../../onboard.dart';
 
 class HomeIndicatorWidget extends StatelessWidget {
   const HomeIndicatorWidget({super.key});

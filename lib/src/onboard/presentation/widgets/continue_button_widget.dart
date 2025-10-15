@@ -1,4 +1,4 @@
-part of '../../../onboard.dart';
+part of '../../onboard.dart';
 
 class ContinueButtonWidget extends StatelessWidget {
   final String text;
