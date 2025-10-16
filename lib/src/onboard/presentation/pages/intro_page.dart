@@ -20,7 +20,10 @@ class IntroPage extends StatelessWidget {
               Align(
                 alignment: Alignment.topRight,
                 child: GestureDetector(
-                  onTap: () => OnboardRoute().go(context),
+                  onTap: () {
+                    OnboardRoute().go(context);
+                    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
+                  },
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     child: AppText(

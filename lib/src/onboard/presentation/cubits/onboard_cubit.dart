@@ -1,7 +1,7 @@
 part of '../../onboard.dart';
 
 @lazySingleton
-class OnboardCubit extends Cubit<OnboardState> {
+class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<OnboardState> {
   final GetAllOnboardsUseCase _getAllUseCase;
   final GetOnboardUseCase _getUseCase;
   final CreateOnboardUseCase _createUseCase;
@@ -16,119 +16,89 @@ class OnboardCubit extends Cubit<OnboardState> {
     this._deleteUseCase,
   ) : super(OnboardState.initial());
 
-  Future<void> loadAllOnboards() async {
-    emit(state.copyWith(status: OnboardStatus.loading));
-
-    final result = await _getAllUseCase().run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
-          status: OnboardStatus.failure,
-          errorMessage: exception.message,
-        ),
+  void loadAllOnboards() async {
+    await runUseCaseList<OnboardEntity>(
+      usecase: () => _getAllUseCase(),
+      buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
+      buildFailureState: (error) => state.copyWith(
+        status: OnboardStatus.failure,
+        errorMessage: error,
       ),
-      (items) => emit(
-        state.copyWith(
-          status: OnboardStatus.success,
-          items: items,
-        ),
+      buildSuccessState: (items) => state.copyWith(
+        status: OnboardStatus.success,
+        items: items,
       ),
     );
   }
 
-  Future<void> loadOnboard(String id) async {
-    emit(state.copyWith(status: OnboardStatus.loading));
-
-    final result = await _getUseCase(id).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
-          status: OnboardStatus.failure,
-          errorMessage: exception.message,
-        ),
+  void loadOnboard(String id) async {
+    await runUseCase<OnboardEntity>(
+      usecase: () => _getUseCase(id),
+      buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
+      buildFailureState: (error) => state.copyWith(
+        status: OnboardStatus.failure,
+        errorMessage: error,
       ),
-      (item) => emit(
-        state.copyWith(
-          status: OnboardStatus.success,
-          selectedItem: item,
-        ),
+      buildSuccessState: (item) => state.copyWith(
+        status: OnboardStatus.success,
+        selectedItem: item,
       ),
     );
   }
 
-  Future<void> createOnboard(OnboardEntity entity) async {
-    emit(state.copyWith(status: OnboardStatus.loading));
-
-    final result = await _createUseCase(entity).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
-          status: OnboardStatus.failure,
-          errorMessage: exception.message,
-        ),
+  void createOnboard(OnboardEntity entity) async {
+    await runUseCaseWithCustomSuccess<OnboardEntity>(
+      usecase: () => _createUseCase(entity),
+      buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
+      buildFailureState: (error) => state.copyWith(
+        status: OnboardStatus.failure,
+        errorMessage: error,
       ),
-      (newItem) {
-        final updatedItems = [...state.items, newItem];
-        emit(
-          state.copyWith(
-            status: OnboardStatus.success,
-            items: updatedItems,
-          ),
-        );
+      onSuccess: (newItem, currentState) {
+        final updatedItems = [...currentState.items, newItem];
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          items: updatedItems,
+        ));
       },
     );
   }
 
-  Future<void> updateOnboard(OnboardEntity entity) async {
-    emit(state.copyWith(status: OnboardStatus.loading));
-
-    final result = await _updateUseCase(entity).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
-          status: OnboardStatus.failure,
-          errorMessage: exception.message,
-        ),
+  void updateOnboard(OnboardEntity entity) async {
+    await runUseCaseWithCustomSuccess<OnboardEntity>(
+      usecase: () => _updateUseCase(entity),
+      buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
+      buildFailureState: (error) => state.copyWith(
+        status: OnboardStatus.failure,
+        errorMessage: error,
       ),
-      (updatedItem) {
-        // final updatedItems = state.items
-        //     .map((item) => item.id == updatedItem.id ? updatedItem : item)
-        //     .toList();
-        // emit(
-        //   state.copyWith(
-        //     status: OnboardStatus.success,
-        //     items: updatedItems,
-        //     selectedItem: updatedItem,
-        //   ),
-        // );
+      onSuccess: (updatedItem, currentState) {
+        final updatedItems = currentState.items
+            .map((item) => item.id == updatedItem.id ? updatedItem : item)
+            .toList();
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          items: updatedItems,
+          selectedItem: updatedItem,
+        ));
       },
     );
   }
 
-  Future<void> deleteOnboard(String id) async {
-    emit(state.copyWith(status: OnboardStatus.loading));
-
-    final result = await _deleteUseCase(id).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
-          status: OnboardStatus.failure,
-          errorMessage: exception.message,
-        ),
+  void deleteOnboard(String id) async {
+    await runUseCaseWithCustomSuccess<Unit>(
+      usecase: () => _deleteUseCase(id),
+      buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
+      buildFailureState: (error) => state.copyWith(
+        status: OnboardStatus.failure,
+        errorMessage: error,
       ),
-      (_) {
-        // final updatedItems = state.items.where((item) => item.id != id).toList();
-        // emit(
-        //   state.copyWith(
-        //     status: OnboardStatus.success,
-        //     items: updatedItems,
-        //   ),
-        // );
+      onSuccess: (_, currentState) {
+        final updatedItems = currentState.items.where((item) => item.id != id).toList();
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          items: updatedItems,
+        ));
       },
     );
   }

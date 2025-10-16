@@ -9,56 +9,30 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
 
   @override
   TaskEither<AppException, OnboardEntity> getOnboard(String id) {
-    return TaskEither.tryCatch(
-      () async {
-        try {
-          // Try to get from API
-          final model = await _api.getOnboard(id);
-          // Cache the result
-          await _localDataSource.cacheOnboard(model.data ?? OnboardModel());
-          return model.data?.toEntity() ?? OnboardEntity();
-        } catch (e) {
-          // If API fails, try to get from cache
-          final cachedModel = await _localDataSource.getCachedOnboard(id);
-          if (cachedModel != null) {
-            return cachedModel.toEntity();
-          }
-          rethrow;
-        }
+    return callApiWithTransform<OnboardModel, OnboardEntity>(
+      apiCall: () => _api.getOnboard(id),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async => await _localDataSource.cacheOnboard(data ?? OnboardModel()),
+      onError: () async {
+        final cachedModel = await _localDataSource.getCachedOnboard(id);
+        return cachedModel?.toEntity();
       },
-      (error, stackTrace) {
-        if (error is DioException) {
-          return AppException.fromDioException(error);
-        }
-        return AppException.unexpected(error.toString());
-      },
+      defaultValue: OnboardEntity(),
     );
   }
 
   @override
   TaskEither<AppException, List<OnboardEntity>> getAllOnboards() {
-    return TaskEither.tryCatch(
-      () async {
-        try {
-          // Try to get from API
-          final models = await _api.getAllOnboards();
-          // Cache the result
-          await _localDataSource.cacheOnboards(models.data);
-          return models.data.map((model) => model.toEntity()).toList();
-        } catch (e) {
-          // If API fails, try to get from cache
-          final cachedModels = await _localDataSource.getCachedOnboards();
-          if (cachedModels.isNotEmpty) {
-            return cachedModels.map((model) => model.toEntity()).toList();
-          }
-          rethrow;
+    return callApiListWithTransform<OnboardModel, OnboardEntity>(
+      apiCall: () => _api.getAllOnboards(),
+      transform: (model) => model.toEntity(),
+      onSuccess: (models) async => await _localDataSource.cacheOnboards(models),
+      onError: () async {
+        final cachedModels = await _localDataSource.getCachedOnboards();
+        if (cachedModels.isNotEmpty) {
+          return cachedModels.map((model) => model.toEntity()).toList();
         }
-      },
-      (error, stackTrace) {
-        if (error is DioException) {
-          return AppException.fromDioException(error);
-        }
-        return AppException.unexpected(error.toString());
+        return null;
       },
     );
   }
@@ -67,56 +41,11 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
   TaskEither<AppException, OnboardEntity> createOnboard(
     OnboardEntity entity,
   ) {
-    return TaskEither.tryCatch(
-      () async {
-        final model = OnboardModel(
-          id: entity.id,
-          isNativeEnglishSpeaker: entity.isNativeEnglishSpeaker,
-          comfortableLearningTime: entity.comfortableLearningTime,
-          dailyLearningGoal: entity.dailyLearningGoal,
-          timeToBecomeSkilled: entity.timeToBecomeSkilled,
-          topicsWantToMaster: entity.topicsWantToMaster
-              .map(
-                (e) => OnboardOptionModel(
-                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-                  comfortableLearningTime: e.comfortableLearningTime,
-                  dailyLearningGoal: e.dailyLearningGoal,
-                  timeToBecomeSkilled: e.timeToBecomeSkilled,
-                ),
-              )
-              .toList(),
-          seemLikeYou: entity.seemLikeYou
-              .map(
-                (e) => OnboardOptionModel(
-                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-                  comfortableLearningTime: e.comfortableLearningTime,
-                  dailyLearningGoal: e.dailyLearningGoal,
-                  timeToBecomeSkilled: e.timeToBecomeSkilled,
-                ),
-              )
-              .toList(),
-          strugglesWhenSpeaking: entity.strugglesWhenSpeaking
-              .map(
-                (e) => OnboardOptionModel(
-                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-                  comfortableLearningTime: e.comfortableLearningTime,
-                  dailyLearningGoal: e.dailyLearningGoal,
-                  timeToBecomeSkilled: e.timeToBecomeSkilled,
-                ),
-              )
-              .toList(),
-        );
-        final result = await _api.createOnboard(model);
-        // Cache the newly created item
-        await _localDataSource.cacheOnboard(result.data ?? OnboardModel());
-        return result.data?.toEntity() ?? OnboardEntity();
-      },
-      (error, stackTrace) {
-        if (error is DioException) {
-          return AppException.fromDioException(error);
-        }
-        return AppException.unexpected(error.toString());
-      },
+    return callApiWithTransform<OnboardModel, OnboardEntity>(
+      apiCall: () => _api.createOnboard(_entityToModel(entity)),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async => await _localDataSource.cacheOnboard(data ?? OnboardModel()),
+      defaultValue: OnboardEntity(),
     );
   }
 
@@ -124,74 +53,63 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
   TaskEither<AppException, OnboardEntity> updateOnboard(
     OnboardEntity entity,
   ) {
-    return TaskEither.tryCatch(
-      () async {
-        final model = OnboardModel(
-          id: entity.id,
-          isNativeEnglishSpeaker: entity.isNativeEnglishSpeaker,
-          comfortableLearningTime: entity.comfortableLearningTime,
-          dailyLearningGoal: entity.dailyLearningGoal,
-          timeToBecomeSkilled: entity.timeToBecomeSkilled,
-          topicsWantToMaster: entity.topicsWantToMaster
-              .map(
-                (e) => OnboardOptionModel(
-                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-                  comfortableLearningTime: e.comfortableLearningTime,
-                  dailyLearningGoal: e.dailyLearningGoal,
-                  timeToBecomeSkilled: e.timeToBecomeSkilled,
-                ),
-              )
-              .toList(),
-          seemLikeYou: entity.seemLikeYou
-              .map(
-                (e) => OnboardOptionModel(
-                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-                  comfortableLearningTime: e.comfortableLearningTime,
-                  dailyLearningGoal: e.dailyLearningGoal,
-                  timeToBecomeSkilled: e.timeToBecomeSkilled,
-                ),
-              )
-              .toList(),
-          strugglesWhenSpeaking: entity.strugglesWhenSpeaking
-              .map(
-                (e) => OnboardOptionModel(
-                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-                  comfortableLearningTime: e.comfortableLearningTime,
-                  dailyLearningGoal: e.dailyLearningGoal,
-                  timeToBecomeSkilled: e.timeToBecomeSkilled,
-                ),
-              )
-              .toList(),
-        );
-        final result = await _api.updateOnboard(entity.id, model);
-        // Update cache with the updated item
-        await _localDataSource.cacheOnboard(result.data ?? OnboardModel());
-        return result.data?.toEntity() ?? OnboardEntity();
-      },
-      (error, stackTrace) {
-        if (error is DioException) {
-          return AppException.fromDioException(error);
-        }
-        return AppException.unexpected(error.toString());
-      },
+    return callApiWithTransform<OnboardModel, OnboardEntity>(
+      apiCall: () => _api.updateOnboard(entity.id, _entityToModel(entity)),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async => await _localDataSource.cacheOnboard(data ?? OnboardModel()),
+      defaultValue: OnboardEntity(),
     );
   }
 
   @override
   TaskEither<AppException, Unit> deleteOnboard(String id) {
-    return TaskEither.tryCatch(
-      () async {
-        await _api.deleteOnboard(id);
-        // Remove from cache after successful deletion
-        await _localDataSource.deleteCachedOnboard(id);
-        return unit;
-      },
-      (error, stackTrace) {
-        if (error is DioException) {
-          return AppException.fromDioException(error);
-        }
-        return AppException.unexpected(error.toString());
-      },
+    return executeApiAction(
+      apiCall: () => _api.deleteOnboard(id),
+      onSuccess: () async => await _localDataSource.deleteCachedOnboard(id),
+    );
+  }
+
+  // ==================== HELPER METHODS ====================
+
+  /// Converts OnboardEntity to OnboardModel
+  /// Reusable helper to avoid duplication in create/update methods
+  OnboardModel _entityToModel(OnboardEntity entity) {
+    return OnboardModel(
+      id: entity.id,
+      isNativeEnglishSpeaker: entity.isNativeEnglishSpeaker,
+      comfortableLearningTime: entity.comfortableLearningTime,
+      dailyLearningGoal: entity.dailyLearningGoal,
+      timeToBecomeSkilled: entity.timeToBecomeSkilled,
+      topicsWantToMaster: entity.topicsWantToMaster
+          .map(
+            (e) => OnboardOptionModel(
+              isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+              comfortableLearningTime: e.comfortableLearningTime,
+              dailyLearningGoal: e.dailyLearningGoal,
+              timeToBecomeSkilled: e.timeToBecomeSkilled,
+            ),
+          )
+          .toList(),
+      seemLikeYou: entity.seemLikeYou
+          .map(
+            (e) => OnboardOptionModel(
+              isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+              comfortableLearningTime: e.comfortableLearningTime,
+              dailyLearningGoal: e.dailyLearningGoal,
+              timeToBecomeSkilled: e.timeToBecomeSkilled,
+            ),
+          )
+          .toList(),
+      strugglesWhenSpeaking: entity.strugglesWhenSpeaking
+          .map(
+            (e) => OnboardOptionModel(
+              isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+              comfortableLearningTime: e.comfortableLearningTime,
+              dailyLearningGoal: e.dailyLearningGoal,
+              timeToBecomeSkilled: e.timeToBecomeSkilled,
+            ),
+          )
+          .toList(),
     );
   }
 }

@@ -47,7 +47,10 @@ class OnboardRoute extends GoRouteData with $OnboardRoute {
   const OnboardRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const OnboardPage();
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<OnboardCubit>(),
+    child: const OnboardPage(),
+  );
 }
 
 //* Data Collect Page
