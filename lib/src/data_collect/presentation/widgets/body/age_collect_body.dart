@@ -21,33 +21,29 @@ class AgeCollectBody extends StatelessWidget {
   }
 
   Widget _buildStep2() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Title
-        AppText(
-          'How old are you?',
-          style: AppStyle.textBold20.copyWith(
-            color: const Color(0xFF364152), // Text/Secondary
-            fontWeight: FontWeight.w500,
-          ),
-        ),
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      builder: (context, state) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Title
+            AppText(
+              "What's your age?",
+              style: AppStyle.textBold20.copyWith(
+                color: const Color(0xFF364152), // Text/Secondary
+                fontWeight: FontWeight.w500,
+              ),
+            ),
 
-        SizedBox(height: 20.h),
+            SizedBox(height: 20.h),
 
-        // Age Input Field
-        const OnboardingInput(
-          hintText: 'Enter your age',
-          keyboardType: TextInputType.number,
-        ),
-
-        SizedBox(height: 20.h),
-
-        // Existing content based on state
-        Expanded(
-          child: _buildStateContent(state),
-        ),
-      ],
+            // Age Range Options
+            Expanded(
+              child: _buildAgeOptions(context, state),
+            ),
+          ],
+        );
+      },
     );
   }
 
@@ -60,80 +56,149 @@ class AgeCollectBody extends StatelessWidget {
     );
   }
 
-  Widget _buildStateContent(DataCollectState state) {
-    switch (state.status) {
-      case DataCollectStatus.initial:
-        return const SizedBox.shrink();
-      case DataCollectStatus.loading:
-        return const Center(child: CircularProgressIndicator());
-      case DataCollectStatus.failure:
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Icon(Icons.error_outline, size: 48, color: Colors.red),
-              SizedBox(height: 16.h),
-              AppText(
-                state.errorMessage ?? 'An error occurred',
-                style: AppStyle.text16,
-                textAlign: TextAlign.center,
-              ),
-            ],
-          ),
-        );
-      case DataCollectStatus.success:
-        if (state.items.isEmpty) {
-          return const SizedBox.shrink();
-        }
-        return ListView.builder(
-          shrinkWrap: true,
-          itemCount: state.items.length,
-          itemBuilder: (context, index) {
-            final item = state.items[index];
-            return Container(
-              margin: EdgeInsets.only(bottom: 12.h),
-              padding: EdgeInsets.all(16.w),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(12.r),
-                border: Border.all(
-                  color: const Color(0xFFE3E8EF), // Neutral/200
-                  width: 1.w,
-                ),
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        AppText(
-                          item.name,
-                          style: AppStyle.textBold16.copyWith(
-                            color: const Color(0xFF364152), // Text/Secondary
-                          ),
-                        ),
-                        SizedBox(height: 4.h),
-                        AppText(
-                          'Created: ${item.createdAt}',
-                          style: AppStyle.text14.copyWith(
-                            color: const Color(0xFF7F8EA4), // Text/Tertiary
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete),
-                    onPressed: () {
-                      // Add delete logic here
-                    },
-                  ),
-                ],
-              ),
-            );
+  Widget _buildAgeOptions(BuildContext context, DataCollectState state) {
+    final cubit = context.read<DataCollectCubit>();
+
+    return Column(
+      children: [
+        _AgeOption(
+          title: '17 or younger',
+          value: '17_or_younger',
+          groupValue: state.selectedAgeRange ?? '25-34', // Default selected value
+          onChanged: (value) {
+            cubit.selectAgeRange(value!);
           },
-        );
-    }
+        ),
+        SizedBox(height: 12.h),
+        _AgeOption(
+          title: '18-24',
+          value: '18-24',
+          groupValue: state.selectedAgeRange ?? '25-34', // Default selected value
+          onChanged: (value) {
+            cubit.selectAgeRange(value!);
+          },
+        ),
+        SizedBox(height: 12.h),
+        _AgeOption(
+          title: '25-34',
+          value: '25-34',
+          groupValue: state.selectedAgeRange ?? '25-34', // Default selected value
+          onChanged: (value) {
+            cubit.selectAgeRange(value!);
+          },
+        ),
+        SizedBox(height: 12.h),
+        _AgeOption(
+          title: '35-44',
+          value: '35-44',
+          groupValue: state.selectedAgeRange ?? '25-34', // Default selected value
+          onChanged: (value) {
+            cubit.selectAgeRange(value!);
+          },
+        ),
+        SizedBox(height: 12.h),
+        _AgeOption(
+          title: '45 or older',
+          value: '45_or_older',
+          groupValue: state.selectedAgeRange ?? '25-34', // Default selected value
+          onChanged: (value) {
+            cubit.selectAgeRange(value!);
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class _AgeOption extends StatelessWidget {
+  final String title;
+  final String value;
+  final String groupValue;
+  final Function(String?) onChanged;
+
+  const _AgeOption({
+    required this.title,
+    required this.value,
+    required this.groupValue,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = value == groupValue;
+
+    return GestureDetector(
+      onTap: () => onChanged(value),
+      child: Container(
+        height: 54.h,
+        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : const Color(0xFFF5F7FB), // Background/Gray
+          borderRadius: BorderRadius.circular(16.r),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF), // Brand/Primary or Border/Default
+            width: 2.w,
+          ),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            AppText(
+              title,
+              style: AppStyle.text16.copyWith(
+                color: isSelected
+                    ? const Color(0xFF0D121C) // content/primary
+                    : const Color(0xFF7F8EA4), // Text/Tertiary
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+              ),
+            ),
+            _CustomRadio(
+              isSelected: isSelected,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CustomRadio extends StatelessWidget {
+  final bool isSelected;
+
+  const _CustomRadio({
+    required this.isSelected,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 24.w,
+      height: 24.h,
+      padding: EdgeInsets.all(2.w),
+      child: Container(
+        width: double.infinity,
+        height: double.infinity,
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF462BF4) : Colors.white, // button/primary/default or white
+          borderRadius: BorderRadius.circular(1200.r),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF462BF4) : const Color(0xFFE3E8EF), // button/primary/default or Border/Default
+            width: 2.w,
+          ),
+        ),
+        child: isSelected
+            ? Center(
+                child: Container(
+                  width: 8.229.w,
+                  height: 8.229.h,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+              )
+            : null,
+      ),
+    );
   }
 }

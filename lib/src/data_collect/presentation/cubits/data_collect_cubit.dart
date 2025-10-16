@@ -95,9 +95,7 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
         ),
       ),
       (updatedItem) {
-        final updatedItems = state.items
-            .map((item) => item.id == updatedItem.id ? updatedItem : item)
-            .toList();
+        final updatedItems = state.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
         emit(
           state.copyWith(
             status: DataCollectStatus.success,
@@ -131,5 +129,31 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
         );
       },
     );
+  }
+
+  void selectAgeRange(String ageRange) {
+    emit(state.copyWith(selectedAgeRange: ageRange));
+  }
+
+  void goToNextStep() {
+    final allSteps = DataCollectStep.values;
+    final currentIndex = allSteps.indexOf(state.currentStep);
+
+    if (currentIndex < allSteps.length - 1) {
+      emit(state.copyWith(currentStep: allSteps[currentIndex + 1]));
+    }
+  }
+
+  void goToPreviousStep() {
+    final allSteps = DataCollectStep.values;
+    final currentIndex = allSteps.indexOf(state.currentStep);
+
+    if (currentIndex > 0) {
+      emit(state.copyWith(currentStep: allSteps[currentIndex - 1]));
+    }
+  }
+
+  void goToStep(DataCollectStep step) {
+    emit(state.copyWith(currentStep: step));
   }
 }
