@@ -19,10 +19,18 @@ Future<BaseResponse<T>> requestIsolate<T>({
 mixin RestfulRequestHandlerMixin {
   void _showErrorMessage(Object e, StackTrace stackTrace) {
     AppService.instance.appTrackingService.trackError(e, errorType: 'RestfulRequestHandlerMixin', stackTrace: stackTrace);
-    if ((e as DioException).response?.statusCode == 401) return;
+    if (e is DioException) {
+      if (e.response?.statusCode == 401) return;
+      DMessage.showMessage(
+        type: MessageType.error,
+        message: e.response?.data['message'] ?? e.toString(),
+      );
+      return;
+    }
+
     DMessage.showMessage(
       type: MessageType.error,
-      message: e.response?.data['message'] ?? e.toString(),
+      message: e.toString(),
     );
   }
 

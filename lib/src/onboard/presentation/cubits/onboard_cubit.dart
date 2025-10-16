@@ -18,7 +18,7 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
 
   void loadAllOnboards() async {
     await runUseCaseList<OnboardEntity>(
-      usecase: () => _getAllUseCase(),
+      usecase: _getAllUseCase.call,
       buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
       buildFailureState: (error) => state.copyWith(
         status: OnboardStatus.failure,
@@ -56,10 +56,12 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
       ),
       onSuccess: (newItem, currentState) {
         final updatedItems = [...currentState.items, newItem];
-        emit(state.copyWith(
-          status: OnboardStatus.success,
-          items: updatedItems,
-        ));
+        emit(
+          state.copyWith(
+            status: OnboardStatus.success,
+            items: updatedItems,
+          ),
+        );
       },
     );
   }
@@ -73,14 +75,14 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
         errorMessage: error,
       ),
       onSuccess: (updatedItem, currentState) {
-        final updatedItems = currentState.items
-            .map((item) => item.id == updatedItem.id ? updatedItem : item)
-            .toList();
-        emit(state.copyWith(
-          status: OnboardStatus.success,
-          items: updatedItems,
-          selectedItem: updatedItem,
-        ));
+        final updatedItems = currentState.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
+        emit(
+          state.copyWith(
+            status: OnboardStatus.success,
+            items: updatedItems,
+            selectedItem: updatedItem,
+          ),
+        );
       },
     );
   }
@@ -95,10 +97,12 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
       ),
       onSuccess: (_, currentState) {
         final updatedItems = currentState.items.where((item) => item.id != id).toList();
-        emit(state.copyWith(
-          status: OnboardStatus.success,
-          items: updatedItems,
-        ));
+        emit(
+          state.copyWith(
+            status: OnboardStatus.success,
+            items: updatedItems,
+          ),
+        );
       },
     );
   }
