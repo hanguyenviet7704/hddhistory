@@ -50,8 +50,7 @@ class ContinueButton extends StatelessWidget {
       case DataCollectStep.englishIsYourNativeLanguage:
         return state.isNativeEnglishSpeaker != null;
       case DataCollectStep.chooseTopic:
-        // TODO: Check if topic is selected
-        return false;
+        return state.selectedTopics.isNotEmpty;
       case DataCollectStep.doesThisDescribeYou:
         // TODO: Check if option is selected
         return false;

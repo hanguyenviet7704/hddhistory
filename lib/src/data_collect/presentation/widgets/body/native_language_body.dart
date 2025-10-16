@@ -65,7 +65,7 @@ class NativeLanguageOptions extends StatelessWidget {
                       Icon(
                         Icons.check_rounded,
                         color: const Color(0xFF3A9377),
-                        size: 28.sp,
+                        size: 24.sp,
                       ),
                       16.verticalSpace,
                       // Text
