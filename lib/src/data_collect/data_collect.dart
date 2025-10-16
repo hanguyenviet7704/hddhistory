@@ -31,6 +31,7 @@ part 'presentation/cubits/data_collect_state.dart';
 part 'presentation/pages/data_collect_page.dart';
 part 'presentation/widgets/body/age_collect_body.dart';
 part 'presentation/widgets/body/best_time_to_learn_body.dart';
+part 'presentation/widgets/body/best_time_to_skilled_body.dart';
 part 'presentation/widgets/body/choose_topic_body.dart';
 part 'presentation/widgets/body/gender_collect_body.dart';
 part 'presentation/widgets/body/learning_goal_body.dart';

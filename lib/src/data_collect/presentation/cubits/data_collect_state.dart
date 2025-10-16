@@ -16,6 +16,7 @@ abstract class DataCollectState with _$DataCollectState {
     @Default([]) List<String> selectedStruggles,
     String? selectedBestTimeToLearn,
     String? selectedDailyLearningGoal,
+    String? selectedTimeToBecomeSkilled,
     @Default(DataCollectStep.name) DataCollectStep currentStep,
   }) = _DataCollectState;
 

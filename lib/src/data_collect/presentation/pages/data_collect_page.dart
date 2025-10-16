@@ -48,16 +48,7 @@ class StepBody extends StatelessWidget {
       DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => const StruggleWhenSpeakingBody(),
       DataCollectStep.bestTimeOfDayToLearn => const BestTimeToLearnBody(),
       DataCollectStep.dailyLearningGoal => const LearningGoalBody(),
-      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => _placeholderWidget('How Much Time You Want To Become Skilled'),
+      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => const BestTimeToSkilledBody(),
     };
-  }
-
-  Widget _placeholderWidget(String title) {
-    return Center(
-      child: AppText(
-        '$title step not implemented yet',
-        style: AppStyle.text16,
-      ),
-    );
   }
 }

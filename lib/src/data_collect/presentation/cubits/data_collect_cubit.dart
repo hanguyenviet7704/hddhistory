@@ -191,6 +191,10 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     emit(state.copyWith(selectedDailyLearningGoal: dailyLearningGoal));
   }
 
+  void selectTimeToBecomeSkilled(String timeToBecomeSkilled) {
+    emit(state.copyWith(selectedTimeToBecomeSkilled: timeToBecomeSkilled));
+  }
+
   void selectNativeEnglishSpeaker(bool isNative) {
     emit(state.copyWith(isNativeEnglishSpeaker: isNative));
   }

@@ -60,8 +60,7 @@ class ContinueButton extends StatelessWidget {
       case DataCollectStep.dailyLearningGoal:
         return state.selectedDailyLearningGoal != null;
       case DataCollectStep.howMuchTimeYouWantToBecomeSkilled:
-        // TODO: Check if time is selected
-        return false;
+        return state.selectedTimeToBecomeSkilled != null;
     }
   }
 }
