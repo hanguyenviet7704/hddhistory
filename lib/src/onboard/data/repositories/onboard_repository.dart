@@ -15,8 +15,8 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
           // Try to get from API
           final model = await _api.getOnboard(id);
           // Cache the result
-          await _localDataSource.cacheOnboard(model);
-          return model.toEntity();
+          await _localDataSource.cacheOnboard(model.data ?? OnboardModel());
+          return model.data?.toEntity() ?? OnboardEntity();
         } catch (e) {
           // If API fails, try to get from cache
           final cachedModel = await _localDataSource.getCachedOnboard(id);
@@ -43,8 +43,8 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
           // Try to get from API
           final models = await _api.getAllOnboards();
           // Cache the result
-          await _localDataSource.cacheOnboards(models);
-          return models.map((model) => model.toEntity()).toList();
+          await _localDataSource.cacheOnboards(models.data);
+          return models.data.map((model) => model.toEntity()).toList();
         } catch (e) {
           // If API fails, try to get from cache
           final cachedModels = await _localDataSource.getCachedOnboards();
@@ -108,8 +108,8 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
         );
         final result = await _api.createOnboard(model);
         // Cache the newly created item
-        await _localDataSource.cacheOnboard(result);
-        return result.toEntity();
+        await _localDataSource.cacheOnboard(result.data ?? OnboardModel());
+        return result.data?.toEntity() ?? OnboardEntity();
       },
       (error, stackTrace) {
         if (error is DioException) {
@@ -165,8 +165,8 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
         );
         final result = await _api.updateOnboard(entity.id, model);
         // Update cache with the updated item
-        await _localDataSource.cacheOnboard(result);
-        return result.toEntity();
+        await _localDataSource.cacheOnboard(result.data ?? OnboardModel());
+        return result.data?.toEntity() ?? OnboardEntity();
       },
       (error, stackTrace) {
         if (error is DioException) {

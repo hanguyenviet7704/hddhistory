@@ -15,8 +15,8 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository with RestfulReque
           // Try to get from API
           final model = await _api.get{{#pascalCase}}{{entity_name}}{{/pascalCase}}(id);
           // Cache the result
-          await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}(model);
-          return model.toEntity();
+          await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}(model.data ?? {{#pascalCase}}{{entity_name}}{{/pascalCase}}Model());
+          return model.data?.toEntity() ?? {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity();
         } catch (e) {
           // If API fails, try to get from cache
           final cachedModel = await _localDataSource.getCached{{#pascalCase}}{{entity_name}}{{/pascalCase}}(id);
@@ -43,8 +43,8 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository with RestfulReque
           // Try to get from API
           final models = await _api.getAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s();
           // Cache the result
-          await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}s(models);
-          return models.map((model) => model.toEntity()).toList();
+          await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}s(models.data);
+          return models.data.map((model) => model.toEntity()).toList();
         } catch (e) {
           // If API fails, try to get from cache
           final cachedModels = await _localDataSource.getCached{{#pascalCase}}{{entity_name}}{{/pascalCase}}s();
@@ -77,8 +77,8 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository with RestfulReque
         );
         final result = await _api.create{{#pascalCase}}{{entity_name}}{{/pascalCase}}(model);
         // Cache the newly created item
-        await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}(result);
-        return result.toEntity();
+        await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}(result.data ?? {{#pascalCase}}{{entity_name}}{{/pascalCase}}Model());
+        return result.data?.toEntity() ?? {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity();
       },
       (error, stackTrace) {
         if (error is DioException) {
@@ -103,8 +103,8 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Repository with RestfulReque
         );
         final result = await _api.update{{#pascalCase}}{{entity_name}}{{/pascalCase}}(entity.id, model);
         // Update cache with the updated item
-        await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}(result);
-        return result.toEntity();
+        await _localDataSource.cache{{#pascalCase}}{{entity_name}}{{/pascalCase}}(result.data ?? {{#pascalCase}}{{entity_name}}{{/pascalCase}}Model());
+        return result.data?.toEntity() ?? {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity();
       },
       (error, stackTrace) {
         if (error is DioException) {
