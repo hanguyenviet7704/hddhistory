@@ -52,8 +52,7 @@ class ContinueButton extends StatelessWidget {
       case DataCollectStep.chooseTopic:
         return state.selectedTopics.isNotEmpty;
       case DataCollectStep.doesThisDescribeYou:
-        // TODO: Check if option is selected
-        return false;
+        return state.selectedThisDescribeYouOptions.isNotEmpty;
       case DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking:
         // TODO: Check if struggle is selected
         return false;

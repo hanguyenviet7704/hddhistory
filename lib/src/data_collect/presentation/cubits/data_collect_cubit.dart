@@ -155,6 +155,20 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     selectTopic(topic);
   }
 
+  void selectThisDescribeYouOption(int index, bool value) {
+    final options = List<bool>.from(state.selectedThisDescribeYouOptions);
+    if (index < options.length) {
+      options[index] = value;
+    } else {
+      // Ensure the list has enough elements
+      while (options.length <= index) {
+        options.add(false);
+      }
+      options[index] = value;
+    }
+    emit(state.copyWith(selectedThisDescribeYouOptions: options));
+  }
+
   void selectNativeEnglishSpeaker(bool isNative) {
     emit(state.copyWith(isNativeEnglishSpeaker: isNative));
   }

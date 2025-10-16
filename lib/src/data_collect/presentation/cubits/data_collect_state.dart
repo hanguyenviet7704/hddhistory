@@ -12,6 +12,7 @@ abstract class DataCollectState with _$DataCollectState {
     String? userName,
     bool? isNativeEnglishSpeaker,
     @Default([]) List<String> selectedTopics,
+    @Default([]) List<bool> selectedThisDescribeYouOptions,
     @Default(DataCollectStep.name) DataCollectStep currentStep,
   }) = _DataCollectState;
 
