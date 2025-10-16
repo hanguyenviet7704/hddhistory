@@ -169,6 +169,28 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     emit(state.copyWith(selectedThisDescribeYouOptions: options));
   }
 
+  void selectStruggle(String struggle) {
+    final struggles = List<String>.from(state.selectedStruggles);
+    if (struggles.contains(struggle)) {
+      struggles.remove(struggle);
+    } else {
+      struggles.add(struggle);
+    }
+    emit(state.copyWith(selectedStruggles: struggles));
+  }
+
+  void toggleStruggle(String struggle) {
+    selectStruggle(struggle);
+  }
+
+  void selectBestTimeToLearn(String bestTimeToLearn) {
+    emit(state.copyWith(selectedBestTimeToLearn: bestTimeToLearn));
+  }
+
+  void selectDailyLearningGoal(String dailyLearningGoal) {
+    emit(state.copyWith(selectedDailyLearningGoal: dailyLearningGoal));
+  }
+
   void selectNativeEnglishSpeaker(bool isNative) {
     emit(state.copyWith(isNativeEnglishSpeaker: isNative));
   }

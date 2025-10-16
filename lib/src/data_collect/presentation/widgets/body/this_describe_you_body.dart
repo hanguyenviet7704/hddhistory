@@ -18,9 +18,10 @@ class ThisDescribeYouBody extends StatelessWidget {
                 color: const Color(0xFF364152), // Text/Secondary
                 fontWeight: FontWeight.w500,
               ),
+              maxLines: 10,
             ),
 
-            SizedBox(height: 20.h),
+            20.verticalSpace,
 
             // Questions
             ThisDescribeYouOptions(),

@@ -45,9 +45,9 @@ class StepBody extends StatelessWidget {
       DataCollectStep.englishIsYourNativeLanguage => const NativeLanguageBody(),
       DataCollectStep.chooseTopic => const ChooseTopicBody(),
       DataCollectStep.doesThisDescribeYou => const ThisDescribeYouBody(),
-      DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => _placeholderWidget('What Do You Usually Struggle With When Speaking'),
-      DataCollectStep.bestTimeOfDayToLearn => _placeholderWidget('Best Time Of Day To Learn'),
-      DataCollectStep.dailyLearningGoal => _placeholderWidget('Daily Learning Goal'),
+      DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => const StruggleWhenSpeakingBody(),
+      DataCollectStep.bestTimeOfDayToLearn => const BestTimeToLearnBody(),
+      DataCollectStep.dailyLearningGoal => const LearningGoalBody(),
       DataCollectStep.howMuchTimeYouWantToBecomeSkilled => _placeholderWidget('How Much Time You Want To Become Skilled'),
     };
   }

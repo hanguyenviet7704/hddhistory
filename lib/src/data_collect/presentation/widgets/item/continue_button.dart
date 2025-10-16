@@ -54,14 +54,11 @@ class ContinueButton extends StatelessWidget {
       case DataCollectStep.doesThisDescribeYou:
         return state.selectedThisDescribeYouOptions.isNotEmpty;
       case DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking:
-        // TODO: Check if struggle is selected
-        return false;
+        return state.selectedStruggles.isNotEmpty;
       case DataCollectStep.bestTimeOfDayToLearn:
-        // TODO: Check if time is selected
-        return false;
+        return state.selectedBestTimeToLearn != null;
       case DataCollectStep.dailyLearningGoal:
-        // TODO: Check if goal is selected
-        return false;
+        return state.selectedDailyLearningGoal != null;
       case DataCollectStep.howMuchTimeYouWantToBecomeSkilled:
         // TODO: Check if time is selected
         return false;

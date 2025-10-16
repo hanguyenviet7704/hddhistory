@@ -45,7 +45,6 @@ class ThisDescribeYouOption extends StatelessWidget {
                 child: Container(
                   width: 40.w,
                   height: 40.w,
-                  padding: EdgeInsets.all(16.w),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: isSelectedYes
@@ -60,7 +59,7 @@ class ThisDescribeYouOption extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8.r),
                   ),
                   child: Icon(
-                    Icons.check_rounded,
+                    Icons.close_rounded,
                     color: isSelectedYes ? const Color(0xFFDF2917) : const Color(0xFF7F8EA4), // Text/Tertiary
                     size: 28.sp,
                   ),
@@ -75,7 +74,6 @@ class ThisDescribeYouOption extends StatelessWidget {
                 child: Container(
                   width: 40.w,
                   height: 40.w,
-                  padding: EdgeInsets.all(16.w),
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: isSelectedNo
@@ -91,7 +89,7 @@ class ThisDescribeYouOption extends StatelessWidget {
                   ),
                   child: Center(
                     child: Icon(
-                      Icons.close_rounded,
+                      Icons.check_rounded,
                       color: isSelectedNo ? const Color(0xFF41AE8C) : const Color(0xFF7F8EA4), // Text/Tertiary
                       size: 28.sp,
                     ),
