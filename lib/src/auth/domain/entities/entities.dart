@@ -1,6 +1,5 @@
 library;
 
-import 'package:meup/meup.dart';
 
 //* Import all dart default libraries here
 
@@ -11,4 +10,3 @@ import 'package:meup/meup.dart';
 //* Import all entities here
 // part 'entities.freezed.dart';
 // part 'entities.g.dart';
-part 'wireframe/emoji_item_model.dart';

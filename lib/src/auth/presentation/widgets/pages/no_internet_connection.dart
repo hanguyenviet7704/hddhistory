@@ -6,9 +6,9 @@ class NoInternetConnectionPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ErrorLayout(
-      title: context.text.errorNoInternetConnection,
-      description: context.text.errorOopsItLooksLikeYouAreOffline,
-      buttonText: context.text.canvasTryAgain,
+      title: 'context.text.errorNoInternetConnection',
+      description: 'context.text.errorOopsItLooksLikeYouAreOffline',
+      buttonText: 'context.text.canvasTryAgain',
       illustration: AppAsset.images.common.connectionError.path,
       onTryAgain: () {context.back();},
     );

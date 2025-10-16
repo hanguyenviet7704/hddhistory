@@ -62,7 +62,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                       "Start today and become a better version of yourself through your voice",
                       textAlign: TextAlign.center,
                       style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF362F82).withOpacity(0.6), // Brand/Brand/Primary/700 with 60% opacity
+                        color: const Color(0xFF362F82).op(0.6), // Brand/Brand/Primary/700 with 60% opacity
                         fontWeight: FontWeight.w400,
                       ),
                     ),

@@ -83,7 +83,7 @@ class PremiumPlanCard extends StatelessWidget {
                   ),
                 ),
                 child: AppText(
-                  context.text.monetSavePercent,
+                  'context.text.monetSavePercent',
                   style: AppStyle.textBold16.copyWith(color: AppColorLight.surface),
                 ),
               ),

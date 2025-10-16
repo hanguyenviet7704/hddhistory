@@ -42,8 +42,8 @@ extension IapProductExtension on IapProduct {
 
   String period(BuildContext context) {
     return switch (id) {
-      String _ when id.contains('monthly') => context.text.monetMonthLabel,
-      String _ when id.contains('weekly') => context.text.monetWeekLabel,
+      String _ when id.contains('monthly') => 'context.text.monetMonthLabel',
+      String _ when id.contains('weekly') => 'context.text.monetWeekLabel',
       _ => 'Not found product id',
     };
   }

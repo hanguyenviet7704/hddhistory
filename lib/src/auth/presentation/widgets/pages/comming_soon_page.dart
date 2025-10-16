@@ -20,12 +20,12 @@ class CommingSoonPage extends StatelessWidget {
             // Image.asset(AppAsset.images.common.commingSoonIntro.path, height: 391.h),
             40.verticalSpace,
             AppText(
-              context.text.fakedoorComingSoon,
+              'context.text.fakedoorComingSoon',
               style: AppStyle.text40.copyWith(color: AppColorLight.surface),
             ),
             20.verticalSpace,
             AppText(
-              context.text.fakedoorFeaturesNameIsAlmostReady(featuresName: 'Art Story'),
+              'context.text.fakedoorFeaturesNameIsAlmostReady(featuresName: Art Story)',
               style: AppStyle.text24.copyWith(color: AppColorLight.surface),
               maxLines: 2,
               textAlign: TextAlign.center,
@@ -36,12 +36,12 @@ class CommingSoonPage extends StatelessWidget {
               children: [
                 AppButton.secondary(
                   onPressed: () => context.back(),
-                  child: context.text.fakedoorIDoNotWantNotifications,
+                  child: 'context.text.fakedoorIDoNotWantNotifications',
                 ),
                 24.horizontalSpace,
                 AppButton.primary(
                   onPressed: () => context.back(),
-                  child: context.text.fakedoorNotifyMe,
+                  child: 'context.text.fakedoorNotifyMe',
                 ),
               ],
             ),

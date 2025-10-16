@@ -148,7 +148,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
         String userId = AppConfig.instance.context?.read<UserCubit>().state.user.id ?? '';
         AppConfig.instance.context?.read<PaywallCubit>().addUserPremiumId(userId);
         DMessage.showMessage(
-          message: AppConfig.instance.context?.text.monetPaymentSuccessToast ?? '',
+          message: 'AppConfig.instance.context?.text.monetPaymentSuccessToast',
           type: MessageType.success,
         );
       });
@@ -159,7 +159,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
       final PaywallCubit paywallCubit = AppConfig.instance.context!.read<PaywallCubit>();
       AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       DMessage.showMessage(
-        message: AppConfig.instance.context?.text.monetPaymentSuccessToast ?? '',
+        message: 'AppConfig.instance.context?.text.monetPaymentSuccessToast',
         type: MessageType.success,
       );
       // await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
@@ -170,7 +170,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
   void _onPurchaseFailure({String error = ''}) {
     emit(state.copyWith(isLoading: false));
     _trackingService.trackPaywallStorePopupDismiss(AppConfig.instance.context!  , state.selectedProductId);
-    DMessage.showMessage(message: error.isEmpty ? AppConfig.instance.context?.text.monetPaymentFailToast ?? '' : error, type: MessageType.error);
+    DMessage.showMessage(message: error.isEmpty ? 'AppConfig.instance.context?.text.monetPaymentFailToast' : error, type: MessageType.error);
   }
 
   @override

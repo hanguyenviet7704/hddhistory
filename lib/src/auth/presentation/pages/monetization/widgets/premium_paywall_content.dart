@@ -30,7 +30,7 @@ class PremiumPaywallContent extends StatelessWidget {
                   children: [
                     24.verticalSpace,
                     AppText(
-                      context.text.monetUnlockArtlexisPremiumTitle,
+                      'context.text.monetUnlockArtlexisPremiumTitle',
                       style: AppStyle.textBold40,
                       textAlign: TextAlign.center,
                     ),
@@ -59,7 +59,7 @@ class PremiumPaywallContent extends StatelessWidget {
                         Padding(
                           padding: EdgeInsets.symmetric(horizontal: 12.w),
                           child: AppText(
-                            context.text.monetSelectPlan,
+                            'context.text.monetSelectPlan',
                             style: AppStyle.text14,
                           ),
                         ),
@@ -127,7 +127,7 @@ class PremiumPaywallContent extends StatelessWidget {
                                     ),
                                     12.horizontalSpace,
                                     AppText(
-                                      context.text.monetLoadingPaymentButton,
+                                      'context.text.monetLoadingPaymentButton',
                                       style: AppStyle.textBold20.copyWith(color: AppColorLight.onPrimary),
                                     ),
                                   ],
@@ -138,7 +138,7 @@ class PremiumPaywallContent extends StatelessWidget {
                                     // SvgPicture.asset(AppAsset.svg.app.icMultiStar),
                                     8.horizontalSpace,
                                     AppText(
-                                      context.text.monetStartPremium,
+                                      'context.text.monetStartPremium',
                                       style: AppStyle.textBold20.copyWith(color: AppColorLight.onPrimary),
                                     ),
                                   ],
@@ -151,7 +151,7 @@ class PremiumPaywallContent extends StatelessWidget {
                   16.verticalSpace,
 
                   AppText(
-                    context.text.monetCancelAnytime,
+                    'context.text.monetCancelAnytime',
                     style: AppStyle.textBold18.copyWith(color: AppCustomColor.grey69),
                     margin: EdgeInsets.symmetric(horizontal: 16.w),
                   ),

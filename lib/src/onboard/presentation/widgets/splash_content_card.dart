@@ -30,7 +30,7 @@ class SplashContentCard extends StatelessWidget {
               children: [
                 Image.asset(AppAsset.images.common.splashIntro.path, width: 58.w),
                 16.horizontalSpace,
-                AppText(context.text.loadingSplashReadyToUnleashInfiniteCreativity, style: AppStyle.textBold20),
+                AppText('context.text.loadingSplashReadyToUnleashInfiniteCreativity', style: AppStyle.textBold20),
               ],
             ),
           ),
