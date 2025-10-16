@@ -22,6 +22,7 @@ class ProgressBar extends StatelessWidget {
             width: 1.sw - 40.w,
             animation: true,
             animationDuration: 500,
+            animateFromLastPercent: true,
             lineHeight: 10.h,
             percent: progress,
             backgroundColor: const Color(0xFFE3E8EF), // Neutral/200

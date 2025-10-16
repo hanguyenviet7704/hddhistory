@@ -18,6 +18,12 @@ abstract class DataCollectState with _$DataCollectState {
     String? selectedDailyLearningGoal,
     String? selectedTimeToBecomeSkilled,
     @Default(DataCollectStep.name) DataCollectStep currentStep,
+    // Analysis progress fields
+    @Default(0.0) double personalBackgroundProgress,
+    @Default(0.0) double difficultiesProgress,
+    @Default(0.0) double learningGoalProgress,
+    @Default(0.0) double studyHabitsProgress,
+    @Default(false) bool analysisComplete,
   }) = _DataCollectState;
 
   factory DataCollectState.initial() => const DataCollectState();

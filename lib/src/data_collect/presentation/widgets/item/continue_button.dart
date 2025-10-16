@@ -12,7 +12,12 @@ class ContinueButton extends StatelessWidget {
           child: AppButton.primary(
             onPressed: _canContinue(state)
                 ? () {
-                    context.read<DataCollectCubit>().goToNextStep();
+                    // Navigate to summary page when completing data collection
+                    if (state.currentStep == DataCollectStep.howMuchTimeYouWantToBecomeSkilled) {
+                      DataCollectSummaryRoute().go(context);
+                    } else {
+                      context.read<DataCollectCubit>().goToNextStep();
+                    }
                   }
                 : null,
             fullWidthBtn: true,

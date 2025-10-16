@@ -203,6 +203,58 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     emit(state.copyWith(userName: name));
   }
 
+  void startAnalysis() {
+    emit(state.copyWith(status: DataCollectStatus.loading));
+
+    // Simulate analysis progress
+    Future.delayed(const Duration(milliseconds: 500), () {
+      emit(
+        state.copyWith(
+          personalBackgroundProgress: 0.5,
+          difficultiesProgress: 0.5,
+          learningGoalProgress: 0.5,
+          studyHabitsProgress: 0.5,
+        ),
+      );
+    });
+
+    Future.delayed(const Duration(seconds: 2), () {
+      emit(
+        state.copyWith(
+          personalBackgroundProgress: 1.0,
+          difficultiesProgress: 1.0,
+          learningGoalProgress: 0.5,
+          studyHabitsProgress: 1.0,
+        ),
+      );
+    });
+
+    Future.delayed(const Duration(seconds: 3), () {
+      emit(
+        state.copyWith(
+          personalBackgroundProgress: 1.0,
+          difficultiesProgress: 1.0,
+          learningGoalProgress: 1.0,
+          studyHabitsProgress: 1.0,
+          analysisComplete: true,
+          status: DataCollectStatus.success,
+        ),
+      );
+    });
+  }
+
+  void resetAnalysis() {
+    emit(
+      state.copyWith(
+        personalBackgroundProgress: 0.0,
+        difficultiesProgress: 0.0,
+        learningGoalProgress: 0.0,
+        studyHabitsProgress: 0.0,
+        analysisComplete: false,
+      ),
+    );
+  }
+
   void goToNextStep() {
     final allSteps = DataCollectStep.values;
     final currentIndex = allSteps.indexOf(state.currentStep);

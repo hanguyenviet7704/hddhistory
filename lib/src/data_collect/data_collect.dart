@@ -2,7 +2,7 @@ library;
 
 //* Package imports
 import 'package:dio/dio.dart';
-import 'package:fpdart/fpdart.dart';
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 //* Single project import
@@ -25,10 +25,14 @@ part 'domain/usecases/delete_user_collect_data_usecase.dart';
 part 'domain/usecases/get_all_user_collect_datas_usecase.dart';
 part 'domain/usecases/get_user_collect_data_usecase.dart';
 part 'domain/usecases/update_user_collect_data_usecase.dart';
-part 'presentation/cubits/data_collect_cubit.dart';
 //* State is shared between BLoC and Cubit
+part 'presentation/cubits/data_collect_cubit.dart';
 part 'presentation/cubits/data_collect_state.dart';
+part 'presentation/pages/data_collect_motivation_step_page.dart';
+//* Pages
 part 'presentation/pages/data_collect_page.dart';
+part 'presentation/pages/data_collect_summary_page.dart';
+//* Widgets
 part 'presentation/widgets/body/age_collect_body.dart';
 part 'presentation/widgets/body/best_time_to_learn_body.dart';
 part 'presentation/widgets/body/best_time_to_skilled_body.dart';

@@ -62,6 +62,22 @@ class DataCollectRoute extends GoRouteData with $DataCollectRoute {
   );
 }
 
+@TypedGoRoute<DataCollectMotivationStepRoute>(path: RoutePath.dataCollectMotivationStep, name: RouteNamed.dataCollectMotivationStep)
+class DataCollectMotivationStepRoute extends GoRouteData with $DataCollectMotivationStepRoute {
+  const DataCollectMotivationStepRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const DataCollectMotivationStepPage();
+}
+
+@TypedGoRoute<DataCollectSummaryRoute>(path: RoutePath.dataCollectSummary, name: RouteNamed.dataCollectSummary)
+class DataCollectSummaryRoute extends GoRouteData with $DataCollectSummaryRoute {
+  const DataCollectSummaryRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const DataCollectSummaryPage();
+}
+
 //* Auth Pages
 @TypedGoRoute<LoginRoute>(
   path: RoutePath.login,
