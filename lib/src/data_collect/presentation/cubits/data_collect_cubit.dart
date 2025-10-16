@@ -16,6 +16,9 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     this._deleteUseCase,
   ) : super(DataCollectState.initial());
 
+  TextEditingController nameController = TextEditingController();
+
+
   Future<void> loadAllUserCollectDatas() async {
     emit(state.copyWith(status: DataCollectStatus.loading));
 
@@ -133,6 +136,10 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
 
   void selectAgeRange(String ageRange) {
     emit(state.copyWith(selectedAgeRange: ageRange));
+  }
+
+  void updateUserName(String name) {
+    emit(state.copyWith(userName: name));
   }
 
   void goToNextStep() {

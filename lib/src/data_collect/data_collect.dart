@@ -31,5 +31,8 @@ part 'presentation/cubits/data_collect_state.dart';
 part 'presentation/pages/data_collect_page.dart';
 part 'presentation/widgets/body/age_collect_body.dart';
 part 'presentation/widgets/body/name_collect_body.dart';
+part 'presentation/widgets/item/age_option.dart';
+part 'presentation/widgets/item/continue_button.dart';
+part 'presentation/widgets/item/custom_radio.dart';
 part 'presentation/widgets/item/onboarding_input.dart';
 part 'presentation/widgets/item/progress_bar.dart';

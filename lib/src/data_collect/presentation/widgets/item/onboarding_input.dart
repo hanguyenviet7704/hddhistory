@@ -40,6 +40,7 @@ class OnboardingInput extends StatelessWidget {
         keyboardType: keyboardType,
         obscureText: obscureText,
         maxLines: maxLines,
+        textAlign: TextAlign.center,
         style: AppStyle.text20.copyWith(
           color: const Color(0xFF917FF6), // Brand/Brand/Primary/300
           fontWeight: FontWeight.normal,

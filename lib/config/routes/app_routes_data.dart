@@ -20,7 +20,6 @@ class CommingSoonRoute extends GoRouteData with $CommingSoonRoute {
   Widget build(BuildContext context, GoRouterState state) => const CommingSoonPage();
 }
 
-
 //* Splash Page
 @TypedGoRoute<SplashRoute>(path: RoutePath.splash, name: RouteNamed.splash)
 class SplashRoute extends GoRouteData with $SplashRoute {
@@ -57,7 +56,10 @@ class DataCollectRoute extends GoRouteData with $DataCollectRoute {
   const DataCollectRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const DataCollectPage();
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider(
+    create: (context) => AppDI.injector.get<DataCollectCubit>(),
+    child: const DataCollectPage(),
+  );
 }
 
 //* Auth Pages

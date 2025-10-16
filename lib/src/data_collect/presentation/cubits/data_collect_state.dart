@@ -8,6 +8,7 @@ abstract class DataCollectState with _$DataCollectState {
     UserCollectDataEntity? selectedItem,
     String? errorMessage,
     String? selectedAgeRange,
+    String? userName,
     @Default(DataCollectStep.name) DataCollectStep currentStep,
   }) = _DataCollectState;
 
