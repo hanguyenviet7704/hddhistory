@@ -41,7 +41,7 @@ class StepBody extends StatelessWidget {
     return switch (currentStep) {
       DataCollectStep.name => const NameCollectBody(),
       DataCollectStep.age => const AgeCollectBody(),
-      DataCollectStep.gender => _placeholderWidget('Gender'),
+      DataCollectStep.gender => const GenderCollectBody(),
       DataCollectStep.englishIsYourNativeLanguage => _placeholderWidget('English Is Your Native Language'),
       DataCollectStep.chooseTopic => _placeholderWidget('Choose Topic'),
       DataCollectStep.doesThisDescribeYou => _placeholderWidget('Does This Describe You'),

@@ -46,8 +46,7 @@ class ContinueButton extends StatelessWidget {
       case DataCollectStep.age:
         return state.selectedAgeRange != null;
       case DataCollectStep.gender:
-        // TODO: Check if gender is selected
-        return false;
+        return state.selectedGender != null;
       case DataCollectStep.englishIsYourNativeLanguage:
         // TODO: Check if answer is selected
         return false;
