@@ -6,21 +6,21 @@ abstract class OnboardApi {
   @factoryMethod
   factory OnboardApi(@Named(DIKey.appDio) Dio dio) = _OnboardApi;
 
-  @GET('/onboards')
+  @GET(AppEndpoint.onboardings)
   Future<List<OnboardModel>> getAllOnboards();
 
-  @GET('${'/onboards'}/{id}')
+  @GET(AppEndpoint.onboardings)
   Future<OnboardModel> getOnboard(@Path('id') String id);
 
-  @POST('/onboards')
+  @POST(AppEndpoint.onboardings)
   Future<OnboardModel> createOnboard(@Body() OnboardModel model);
 
-  @PUT('${'/onboards'}/{id}')
+  @PUT(AppEndpoint.onboardingsById)
   Future<OnboardModel> updateOnboard(
     @Path('id') String id,
     @Body() OnboardModel model,
   );
 
-  @DELETE('${'/onboards'}/{id}')
+  @DELETE(AppEndpoint.onboardingsById)
   Future<void> deleteOnboard(@Path('id') String id);
 }

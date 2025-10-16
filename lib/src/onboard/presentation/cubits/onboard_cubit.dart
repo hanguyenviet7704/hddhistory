@@ -95,16 +95,16 @@ class OnboardCubit extends Cubit<OnboardState> {
         ),
       ),
       (updatedItem) {
-        final updatedItems = state.items
-            .map((item) => item.id == updatedItem.id ? updatedItem : item)
-            .toList();
-        emit(
-          state.copyWith(
-            status: OnboardStatus.success,
-            items: updatedItems,
-            selectedItem: updatedItem,
-          ),
-        );
+        // final updatedItems = state.items
+        //     .map((item) => item.id == updatedItem.id ? updatedItem : item)
+        //     .toList();
+        // emit(
+        //   state.copyWith(
+        //     status: OnboardStatus.success,
+        //     items: updatedItems,
+        //     selectedItem: updatedItem,
+        //   ),
+        // );
       },
     );
   }
@@ -122,13 +122,13 @@ class OnboardCubit extends Cubit<OnboardState> {
         ),
       ),
       (_) {
-        final updatedItems = state.items.where((item) => item.id != id).toList();
-        emit(
-          state.copyWith(
-            status: OnboardStatus.success,
-            items: updatedItems,
-          ),
-        );
+        // final updatedItems = state.items.where((item) => item.id != id).toList();
+        // emit(
+        //   state.copyWith(
+        //     status: OnboardStatus.success,
+        //     items: updatedItems,
+        //   ),
+        // );
       },
     );
   }

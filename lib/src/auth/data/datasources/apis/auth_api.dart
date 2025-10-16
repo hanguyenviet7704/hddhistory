@@ -35,5 +35,4 @@ abstract class AuthApi {
 
   @POST(AppEndpoint.deleteAccount)
   Future<BaseResponse> deleteAccount();
-
 }

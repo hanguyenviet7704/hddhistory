@@ -73,7 +73,7 @@ class OnboardLocalDataSourceImpl implements OnboardLocalDataSource {
   @override
   Future<void> cacheOnboard(OnboardModel model) async {
     try {
-      final cacheKey = '${_cacheKey}_${model.id}';
+      final cacheKey = '${_cacheKey}_${model.hashCode}';
       await _localStoreService.setMap(
         key: cacheKey,
         value: model.toJson(),

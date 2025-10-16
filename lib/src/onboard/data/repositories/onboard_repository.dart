@@ -71,9 +71,40 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
       () async {
         final model = OnboardModel(
           id: entity.id,
-          name: entity.name,
-          createdAt: entity.createdAt,
-          updatedAt: entity.updatedAt,
+          isNativeEnglishSpeaker: entity.isNativeEnglishSpeaker,
+          comfortableLearningTime: entity.comfortableLearningTime,
+          dailyLearningGoal: entity.dailyLearningGoal,
+          timeToBecomeSkilled: entity.timeToBecomeSkilled,
+          topicsWantToMaster: entity.topicsWantToMaster
+              .map(
+                (e) => OnboardOptionModel(
+                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+                  comfortableLearningTime: e.comfortableLearningTime,
+                  dailyLearningGoal: e.dailyLearningGoal,
+                  timeToBecomeSkilled: e.timeToBecomeSkilled,
+                ),
+              )
+              .toList(),
+          seemLikeYou: entity.seemLikeYou
+              .map(
+                (e) => OnboardOptionModel(
+                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+                  comfortableLearningTime: e.comfortableLearningTime,
+                  dailyLearningGoal: e.dailyLearningGoal,
+                  timeToBecomeSkilled: e.timeToBecomeSkilled,
+                ),
+              )
+              .toList(),
+          strugglesWhenSpeaking: entity.strugglesWhenSpeaking
+              .map(
+                (e) => OnboardOptionModel(
+                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+                  comfortableLearningTime: e.comfortableLearningTime,
+                  dailyLearningGoal: e.dailyLearningGoal,
+                  timeToBecomeSkilled: e.timeToBecomeSkilled,
+                ),
+              )
+              .toList(),
         );
         final result = await _api.createOnboard(model);
         // Cache the newly created item
@@ -97,9 +128,40 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
       () async {
         final model = OnboardModel(
           id: entity.id,
-          name: entity.name,
-          createdAt: entity.createdAt,
-          updatedAt: entity.updatedAt,
+          isNativeEnglishSpeaker: entity.isNativeEnglishSpeaker,
+          comfortableLearningTime: entity.comfortableLearningTime,
+          dailyLearningGoal: entity.dailyLearningGoal,
+          timeToBecomeSkilled: entity.timeToBecomeSkilled,
+          topicsWantToMaster: entity.topicsWantToMaster
+              .map(
+                (e) => OnboardOptionModel(
+                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+                  comfortableLearningTime: e.comfortableLearningTime,
+                  dailyLearningGoal: e.dailyLearningGoal,
+                  timeToBecomeSkilled: e.timeToBecomeSkilled,
+                ),
+              )
+              .toList(),
+          seemLikeYou: entity.seemLikeYou
+              .map(
+                (e) => OnboardOptionModel(
+                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+                  comfortableLearningTime: e.comfortableLearningTime,
+                  dailyLearningGoal: e.dailyLearningGoal,
+                  timeToBecomeSkilled: e.timeToBecomeSkilled,
+                ),
+              )
+              .toList(),
+          strugglesWhenSpeaking: entity.strugglesWhenSpeaking
+              .map(
+                (e) => OnboardOptionModel(
+                  isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
+                  comfortableLearningTime: e.comfortableLearningTime,
+                  dailyLearningGoal: e.dailyLearningGoal,
+                  timeToBecomeSkilled: e.timeToBecomeSkilled,
+                ),
+              )
+              .toList(),
         );
         final result = await _api.updateOnboard(entity.id, model);
         // Update cache with the updated item
