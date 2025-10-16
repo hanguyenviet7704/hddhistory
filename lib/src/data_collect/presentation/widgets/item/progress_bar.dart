@@ -1,20 +1,15 @@
 part of '../../../data_collect.dart';
 
 class ProgressBar extends StatelessWidget {
-  final int totalSteps;
-
   const ProgressBar({
     super.key,
-    required this.totalSteps,
   });
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<DataCollectCubit, DataCollectState>(
-      builder: (context, state) {
-        final currentStep = DataCollectStep.values.indexOf(state.currentStep) + 1;
-        final progress = currentStep / totalSteps;
-
+    return BlocSelector<DataCollectCubit, DataCollectState, double>(
+      selector: (state) => state.currentStep.progress,
+      builder: (context, progress) {
         return Container(
           height: 40.h,
           padding: EdgeInsets.symmetric(horizontal: 20.w),

@@ -11,9 +11,7 @@ class DataCollectPage extends StatelessWidget {
         child: Column(
           children: [
             // Progress Bar
-            ProgressBar(
-              totalSteps: DataCollectStep.values.length,
-            ),
+            ProgressBar(),
 
             // Content
             Expanded(

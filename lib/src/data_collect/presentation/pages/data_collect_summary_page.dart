@@ -5,8 +5,8 @@ class DataCollectSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppDI.injector.get<DataCollectCubit>(),
+    return BlocProvider.value(
+      value: AppDI.injector.get<DataCollectCubit>(),
       child: const _DataCollectSummaryPageBody(),
     );
   }

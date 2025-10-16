@@ -3,27 +3,35 @@ part of '../../../data_collect.dart';
 class ContinueButton extends StatelessWidget {
   const ContinueButton({super.key});
 
+  void _onPressed(BuildContext context, DataCollectState state) {
+    if (!state.canContinue) return;
+
+    if (state.currentStep == DataCollectStep.howMuchTimeYouWantToBecomeSkilled) {
+      DataCollectSummaryRoute().go(context);
+      return;
+    }
+
+    if (state.currentStep == DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking) {
+      DataCollectMotivationStepRoute().push(context);
+      return;
+    }
+
+    context.read<DataCollectCubit>().goToNextStep();
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.canContinue != current.canContinue || previous.currentStep != current.currentStep,
       builder: (context, state) {
         return Container(
           padding: EdgeInsets.all(20.w),
           child: AppButton.primary(
-            onPressed: _canContinue(state)
-                ? () {
-                    // Navigate to summary page when completing data collection
-                    if (state.currentStep == DataCollectStep.howMuchTimeYouWantToBecomeSkilled) {
-                      DataCollectSummaryRoute().go(context);
-                    } else {
-                      context.read<DataCollectCubit>().goToNextStep();
-                    }
-                  }
-                : null,
+            onPressed: () => _onPressed(context, state),
             fullWidthBtn: true,
             height: 54.h,
             decoration: BoxDecoration(
-              color: _canContinue(state)
+              color: state.canContinue
                   ? const Color(0xFF554FF0) // Brand/Primary
                   : const Color(0xFFE3E8EF), // Neutral/200
               borderRadius: BorderRadius.circular(1000.r),
@@ -31,9 +39,8 @@ class ContinueButton extends StatelessWidget {
             child: AppText(
               'Continue',
               style: AppStyle.textBold16.copyWith(
-                color: _canContinue(state)
-                    ? Colors
-                          .white // Text/White
+                color: state.canContinue
+                    ? Colors.white // Text/White
                     : const Color(0xFF7F8EA4), // Text/Tertiary
                 fontWeight: FontWeight.w600,
               ),
@@ -42,30 +49,5 @@ class ContinueButton extends StatelessWidget {
         );
       },
     );
-  }
-
-  bool _canContinue(DataCollectState state) {
-    switch (state.currentStep) {
-      case DataCollectStep.name:
-        return state.userName != null && state.userName!.isNotEmpty;
-      case DataCollectStep.age:
-        return state.selectedAgeRange != null;
-      case DataCollectStep.gender:
-        return state.selectedGender != null;
-      case DataCollectStep.englishIsYourNativeLanguage:
-        return state.isNativeEnglishSpeaker != null;
-      case DataCollectStep.chooseTopic:
-        return state.selectedTopics.isNotEmpty;
-      case DataCollectStep.doesThisDescribeYou:
-        return state.selectedThisDescribeYouOptions.isNotEmpty;
-      case DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking:
-        return state.selectedStruggles.isNotEmpty;
-      case DataCollectStep.bestTimeOfDayToLearn:
-        return state.selectedBestTimeToLearn != null;
-      case DataCollectStep.dailyLearningGoal:
-        return state.selectedDailyLearningGoal != null;
-      case DataCollectStep.howMuchTimeYouWantToBecomeSkilled:
-        return state.selectedTimeToBecomeSkilled != null;
-    }
   }
 }

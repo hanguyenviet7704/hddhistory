@@ -45,3 +45,24 @@ enum DataCollectStep {
   dailyLearningGoal,
   howMuchTimeYouWantToBecomeSkilled,
 }
+
+extension DataCollectStepExtension on DataCollectStep {
+  int get index => DataCollectStep.values.indexOf(this);
+
+  double get progress => index / DataCollectStep.values.length;
+}
+
+extension DataCollectStateExtension on DataCollectState {
+  bool get canContinue => switch (currentStep) {
+    DataCollectStep.name => userName != null && userName!.isNotEmpty,
+    DataCollectStep.age => selectedAgeRange != null,
+    DataCollectStep.gender => selectedGender != null,
+    DataCollectStep.englishIsYourNativeLanguage => isNativeEnglishSpeaker != null,
+    DataCollectStep.chooseTopic => selectedTopics.isNotEmpty,
+    DataCollectStep.doesThisDescribeYou => selectedThisDescribeYouOptions.isNotEmpty,
+    DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => selectedStruggles.isNotEmpty,
+    DataCollectStep.bestTimeOfDayToLearn => selectedBestTimeToLearn != null,
+    DataCollectStep.dailyLearningGoal => selectedDailyLearningGoal != null,
+    DataCollectStep.howMuchTimeYouWantToBecomeSkilled => selectedTimeToBecomeSkilled != null,
+  };
+}
