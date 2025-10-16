@@ -10,6 +10,7 @@ abstract class DataCollectState with _$DataCollectState {
     String? selectedAgeRange,
     String? selectedGender,
     String? userName,
+    bool? isNativeEnglishSpeaker,
     @Default(DataCollectStep.name) DataCollectStep currentStep,
   }) = _DataCollectState;
 

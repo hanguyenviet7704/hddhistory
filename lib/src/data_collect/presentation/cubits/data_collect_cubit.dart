@@ -141,6 +141,10 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     emit(state.copyWith(selectedGender: gender));
   }
 
+  void selectNativeEnglishSpeaker(bool isNative) {
+    emit(state.copyWith(isNativeEnglishSpeaker: isNative));
+  }
+
   void updateUserName(String name) {
     emit(state.copyWith(userName: name));
   }
