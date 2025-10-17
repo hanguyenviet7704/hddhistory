@@ -5,8 +5,6 @@ class IntroPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<IntroCubit>();
-
     return Container(
       decoration: BoxDecoration(
         color: const Color(0xFFCCF1EE),
@@ -15,49 +13,43 @@ class IntroPage extends StatelessWidget {
       child: Scaffold(
         backgroundColor: Colors.transparent,
         body: SafeArea(
-          child: Column(
-            children: [
-              Align(
-                alignment: Alignment.topRight,
-                child: GestureDetector(
-                  onTap: () {
-                    OnboardRoute().go(context);
-                  },
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                    child: AppText(
-                      context.text.skip,
-                      style: AppStyle.text16.copyWith(fontWeight: FontWeight.w500),
+          child: InkWell(
+            onTap: () {
+              IntroState state = context.read<IntroCubit>().state;
+              if (state.currentPage < state.intros.length - 1) {
+                context.read<IntroCubit>().setPage(state.currentPage + 1);
+                return;
+              }
+              OnboardRoute().go(context);
+            },
+            child: Column(
+              children: [
+                Align(
+                  alignment: Alignment.topRight,
+                  child: GestureDetector(
+                    onTap: () {
+                      OnboardRoute().go(context);
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                      child: AppText(
+                        context.text.skip,
+                        style: AppStyle.text16.copyWith(fontWeight: FontWeight.w500),
+                      ),
                     ),
                   ),
                 ),
-              ),
-              Flexible(
-                flex: 2,
-                child: BlocBuilder<IntroCubit, IntroState>(
-                  builder: (context, state) {
-                    final content = state.intros[state.currentPage];
-                    return GestureDetector(
-                      onHorizontalDragEnd: (details) {
-                        final velocity = details.primaryVelocity!;
-
-                        // Swiped left - next page
-                        if (velocity < 0 && state.currentPage < state.intros.length - 1) {
-                          cubit.setPage(state.currentPage + 1);
-                          return;
-                        }
-
-                        // Swiped right - previous page
-                        if (velocity > 0 && state.currentPage > 0) {
-                          cubit.setPage(state.currentPage - 1);
-                        }
-                      },
-                      child: IntroContent(content: content),
-                    );
-                  },
+                Flexible(
+                  flex: 2,
+                  child: BlocBuilder<IntroCubit, IntroState>(
+                    builder: (context, state) {
+                      final content = state.intros[state.currentPage];
+                      return IntroContent(content: content);
+                    },
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

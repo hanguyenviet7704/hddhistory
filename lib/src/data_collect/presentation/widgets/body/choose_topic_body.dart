@@ -54,10 +54,10 @@ class TopicOptions extends StatelessWidget {
 
         return Expanded(
           child: ListView.separated(
-            itemCount: state.onboardData.topicsWantToMaster.length,
+            itemCount: state.onboardData.skillsetWantToMaster.length,
             separatorBuilder: (context, index) => 12.verticalSpace,
             itemBuilder: (context, index) {
-              final topic = state.onboardData.topicsWantToMaster[index];
+              final topic = state.onboardData.skillsetWantToMaster[index];
               return TopicOption(
                 value: topic,
                 isSelected: state.isTopicSelected(topic),

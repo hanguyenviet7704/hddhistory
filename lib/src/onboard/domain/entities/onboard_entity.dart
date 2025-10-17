@@ -6,7 +6,7 @@ abstract class OnboardEntity with _$OnboardEntity {
     @Default('') String id,
     @Default([]) List<OnboardOptionEntity> age,
     @Default([]) List<OnboardOptionEntity> gender,
-    @Default([]) List<OnboardOptionEntity> topicsWantToMaster,
+    @Default([]) List<OnboardOptionEntity> skillsetWantToMaster,
     @Default([]) List<OnboardOptionEntity> seemLikeYou,
     @Default([]) List<OnboardOptionEntity> strugglesWhenSpeaking,
     @Default([]) List<OnboardOptionEntity> comfortableLearningTime,

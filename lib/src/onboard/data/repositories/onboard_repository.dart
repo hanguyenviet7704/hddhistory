@@ -93,7 +93,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
             },
           )
           .toList(),
-      'topicsWantToMaster': entity.topicsWantToMaster
+      'skillsetWantToMaster': entity.skillsetWantToMaster
           .map(
             (e) => {
               'id': e.id,

@@ -93,8 +93,7 @@ class CharacterIllustration extends StatelessWidget {
         child: DCachedImage(
           key: ValueKey<String>(iconPath),
           url: iconPath,
-          width: 210.w,
-          // width: iconPath.contains('happy') ? 120.w : 210.w,
+          height: 210.h,
         ),
       ),
     );
