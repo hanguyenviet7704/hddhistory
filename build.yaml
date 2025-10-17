@@ -33,7 +33,7 @@ targets:
           create_per_field_to_json: false
           create_to_json: true
           disallow_unrecognized_keys: false
-          field_rename: snake
+          field_rename: none
           generic_argument_factories: true
           ignore_unannotated: false
           explicit_to_json: true
@@ -55,7 +55,7 @@ targets:
           copy_with: true
           equal: true
           map: true
-          field_rename: snake
+          field_rename: none
           when:
             when: true
             maybe_when: true

@@ -5,16 +5,16 @@ abstract class DataCollectState with _$DataCollectState {
   const factory DataCollectState({
     @Default(DataCollectStatus.initial) DataCollectStatus status,
     @Default(OnboardEntity()) OnboardEntity onboardData,
+    String? userName,
     OnboardOptionEntity? selectedAgeRange,
     OnboardOptionEntity? selectedGender,
+    @Default([]) List<OnboardOptionEntity> selectedTopics,
 
 
     @Default([]) List<UserCollectDataEntity> items,
     UserCollectDataEntity? selectedItem,
     String? errorMessage,
-    String? userName,
     bool? isNativeEnglishSpeaker,
-    @Default([]) List<String> selectedTopics,
     @Default([]) List<bool> selectedThisDescribeYouOptions,
     @Default([]) List<String> selectedStruggles,
     String? selectedBestTimeToLearn,
@@ -40,9 +40,7 @@ enum DataCollectStep {
   name,
   age,
   gender,
-  englishIsYourNativeLanguage,
   chooseTopic,
-  doesThisDescribeYou,
   whatDoYouUsuallyStruggleWithWhenSpeaking,
   bestTimeOfDayToLearn,
   dailyLearningGoal,
@@ -60,12 +58,12 @@ extension DataCollectStateExtension on DataCollectState {
     DataCollectStep.name => userName != null && userName!.isNotEmpty,
     DataCollectStep.age => selectedAgeRange != null,
     DataCollectStep.gender => selectedGender != null,
-    DataCollectStep.englishIsYourNativeLanguage => isNativeEnglishSpeaker != null,
     DataCollectStep.chooseTopic => selectedTopics.isNotEmpty,
-    DataCollectStep.doesThisDescribeYou => selectedThisDescribeYouOptions.isNotEmpty,
     DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => selectedStruggles.isNotEmpty,
     DataCollectStep.bestTimeOfDayToLearn => selectedBestTimeToLearn != null,
     DataCollectStep.dailyLearningGoal => selectedDailyLearningGoal != null,
     DataCollectStep.howMuchTimeYouWantToBecomeSkilled => selectedTimeToBecomeSkilled != null,
   };
+
+  bool isTopicSelected(OnboardOptionEntity topic) => selectedTopics.contains(topic);
 }

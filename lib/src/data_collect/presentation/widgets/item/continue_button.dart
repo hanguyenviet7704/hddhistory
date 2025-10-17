@@ -12,6 +12,7 @@ class ContinueButton extends StatelessWidget {
     }
 
     if (state.currentStep == DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking) {
+      context.read<DataCollectCubit>().goToNextStep();
       DataCollectMotivationStepRoute().push(context);
       return;
     }
@@ -40,7 +41,8 @@ class ContinueButton extends StatelessWidget {
               'Continue',
               style: AppStyle.textBold16.copyWith(
                 color: state.canContinue
-                    ? Colors.white // Text/White
+                    ? Colors
+                          .white // Text/White
                     : const Color(0xFF7F8EA4), // Text/Tertiary
                 fontWeight: FontWeight.w600,
               ),

@@ -21,8 +21,16 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
   void setOnboardData(OnboardEntity onboardData) => emit(state.copyWith(onboardData: onboardData));
   void selectAgeRange(OnboardOptionEntity ageRange) => emit(state.copyWith(selectedAgeRange: ageRange));
   void selectGender(OnboardOptionEntity gender) => emit(state.copyWith(selectedGender: gender));
+  void selectTopic(OnboardOptionEntity topic) {
+    final topics = List<OnboardOptionEntity>.from(state.selectedTopics);
+    if (topics.contains(topic)) {
+      topics.remove(topic);
+    } else {
+      topics.add(topic);
+    }
+    emit(state.copyWith(selectedTopics: topics));
+  }
 
-  
 
   Future<void> loadAllUserCollectDatas() async {
     emit(state.copyWith(status: DataCollectStatus.loading));
@@ -137,20 +145,6 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
         );
       },
     );
-  }
-
-  void selectTopic(String topic) {
-    final topics = List<String>.from(state.selectedTopics);
-    if (topics.contains(topic)) {
-      topics.remove(topic);
-    } else {
-      topics.add(topic);
-    }
-    emit(state.copyWith(selectedTopics: topics));
-  }
-
-  void toggleTopic(String topic) {
-    selectTopic(topic);
   }
 
   void selectThisDescribeYouOption(int index, bool value) {

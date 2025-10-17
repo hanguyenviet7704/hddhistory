@@ -40,6 +40,7 @@ class GenderOptions extends StatelessWidget {
         return Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
+            spacing: 12.h,
             children: state.onboardData.gender
                 .map(
                   (option) => GenderOption(

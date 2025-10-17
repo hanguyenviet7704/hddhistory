@@ -12,7 +12,7 @@ class ChooseTopicBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              "Choose the topics\nyou want to master",
+              context.text.onboardingChooseSkillsetTitle,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -21,18 +21,17 @@ class ChooseTopicBody extends StatelessWidget {
               maxLines: 10,
             ),
 
-            SizedBox(height: 4.h),
-
+            4.verticalSpace,
             // Subtitle
             AppText(
-              "The choice won't limit your learning experience",
+              context.text.onboardingChooseSkillsetSubtitle,
               maxLines: 10,
               style: AppStyle.text12.copyWith(
                 color: const Color(0xFF7F8EA4), // Text/Tertiary
               ),
             ),
 
-            SizedBox(height: 20.h),
+            20.verticalSpace,
 
             // Topic Options
             TopicOptions(),
@@ -48,37 +47,21 @@ class TopicOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, List<String>>(
-      selector: (state) => state.selectedTopics,
-      builder: (context, selectedTopics) {
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedTopics != current.selectedTopics,
+      builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
-
-        final topics = [
-          'Verbal Communication',
-          'Public speaking',
-          'Active Listening',
-          'Nonverbal Communication',
-          'Emotional Intelligence',
-          'Conflict Resolution',
-          'Presentation Skills',
-          'Language',
-          'Others',
-        ];
 
         return Expanded(
           child: ListView.separated(
-            itemCount: topics.length,
+            itemCount: state.onboardData.topicsWantToMaster.length,
             separatorBuilder: (context, index) => 12.verticalSpace,
             itemBuilder: (context, index) {
-              final topic = topics[index];
-              final isSelected = selectedTopics.contains(topic);
-
+              final topic = state.onboardData.topicsWantToMaster[index];
               return TopicOption(
-                title: topic,
-                isSelected: isSelected,
-                onChanged: (isSelected) {
-                  cubit.toggleTopic(topic);
-                },
+                value: topic,
+                isSelected: state.isTopicSelected(topic),
+                onChanged: (value) => cubit.selectTopic(value ?? OnboardOptionEntity()),
               );
             },
           ),
