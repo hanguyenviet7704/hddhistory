@@ -94,13 +94,12 @@ mixin CubitActionHandlerMixin<State> on Cubit<State> {
     try {
       final response = await action();
       if (response.status && response.data != null) {
-        List<T> currentData = isInit ? [] : currentPageData.data;
+        List<T> currentData = isInit ? [] : currentPageData.items;
         final mergedPageBreak = BasePageBreak<T>(
           currentPage: response.data!.currentPage,
-          lastPage: response.data!.lastPage,
-          perPage: response.data!.perPage,
-          total: response.data!.total,
-          data: [...currentData, ...response.data!.data],
+          totalPages: response.data!.totalPages,
+          itemsPerPage: response.data!.itemsPerPage,
+          items: [...currentData, ...response.data!.items],
         );
         emit(setPageBreakState(state, mergedPageBreakData: mergedPageBreak));
         onSuccess?.call(response);

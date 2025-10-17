@@ -76,13 +76,12 @@ mixin BlocUseCaseHandlerMixin<Event, State> on BlocBase<State> {
     response.fold(
       (failure) => onFailure?.call(failure),
       (success) {
-        List<T> currentData = isInit ? [] : currentPageData.data;
+        List<T> currentData = isInit ? [] : currentPageData.items;
         final mergedPageBreak = BasePageBreak<T>(
           currentPage: success.data!.currentPage,
-          lastPage: success.data!.lastPage,
-          perPage: success.data!.perPage,
-          total: success.data!.total,
-          data: [...currentData, ...success.data!.data],
+          totalPages: success.data!.totalPages,
+          itemsPerPage: success.data!.itemsPerPage,
+          items: [...currentData, ...success.data!.items],
         );
         emit(setPageBreakState(state, mergedPageBreakData: mergedPageBreak));
         onSuccess?.call(success);
