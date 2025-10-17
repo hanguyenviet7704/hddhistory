@@ -52,7 +52,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
     OnboardEntity entity,
   ) {
     return callApiWithTransform<OnboardModel, OnboardEntity>(
-      apiCall: () => _api.createOnboard(_entityToModel(entity)),
+      apiCall: () => _api.createOnboard(_entityToJson(entity)),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheOnboard(data ?? OnboardModel()),
       defaultValue: OnboardEntity(),
@@ -64,7 +64,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
     OnboardEntity entity,
   ) {
     return callApiWithTransform<OnboardModel, OnboardEntity>(
-      apiCall: () => _api.updateOnboard(entity.id, _entityToModel(entity)),
+      apiCall: () => _api.updateOnboard(entity.id, _entityToJson(entity)),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheOnboard(data ?? OnboardModel()),
       defaultValue: OnboardEntity(),
@@ -81,45 +81,46 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
 
   // ==================== HELPER METHODS ====================
 
-  /// Converts OnboardEntity to OnboardModel
+  /// Converts OnboardEntity to JSON Map for API requests
+  /// Provides flexibility to customize the request body structure without affecting domain models
   /// Reusable helper to avoid duplication in create/update methods
-  OnboardModel _entityToModel(OnboardEntity entity) {
-    return OnboardModel(
-      id: entity.id,
-      isNativeEnglishSpeaker: entity.isNativeEnglishSpeaker,
-      comfortableLearningTime: entity.comfortableLearningTime,
-      dailyLearningGoal: entity.dailyLearningGoal,
-      timeToBecomeSkilled: entity.timeToBecomeSkilled,
-      topicsWantToMaster: entity.topicsWantToMaster
+  Map<String, dynamic> _entityToJson(OnboardEntity entity) {
+    return {
+      'id': entity.id,
+      'isNativeEnglishSpeaker': entity.isNativeEnglishSpeaker,
+      'comfortableLearningTime': entity.comfortableLearningTime,
+      'dailyLearningGoal': entity.dailyLearningGoal,
+      'timeToBecomeSkilled': entity.timeToBecomeSkilled,
+      'topicsWantToMaster': entity.topicsWantToMaster
           .map(
-            (e) => OnboardOptionModel(
-              isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-              comfortableLearningTime: e.comfortableLearningTime,
-              dailyLearningGoal: e.dailyLearningGoal,
-              timeToBecomeSkilled: e.timeToBecomeSkilled,
-            ),
+            (e) => {
+              'isNativeEnglishSpeaker': e.isNativeEnglishSpeaker,
+              'comfortableLearningTime': e.comfortableLearningTime,
+              'dailyLearningGoal': e.dailyLearningGoal,
+              'timeToBecomeSkilled': e.timeToBecomeSkilled,
+            },
           )
           .toList(),
-      seemLikeYou: entity.seemLikeYou
+      'seemLikeYou': entity.seemLikeYou
           .map(
-            (e) => OnboardOptionModel(
-              isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-              comfortableLearningTime: e.comfortableLearningTime,
-              dailyLearningGoal: e.dailyLearningGoal,
-              timeToBecomeSkilled: e.timeToBecomeSkilled,
-            ),
+            (e) => {
+              'isNativeEnglishSpeaker': e.isNativeEnglishSpeaker,
+              'comfortableLearningTime': e.comfortableLearningTime,
+              'dailyLearningGoal': e.dailyLearningGoal,
+              'timeToBecomeSkilled': e.timeToBecomeSkilled,
+            },
           )
           .toList(),
-      strugglesWhenSpeaking: entity.strugglesWhenSpeaking
+      'strugglesWhenSpeaking': entity.strugglesWhenSpeaking
           .map(
-            (e) => OnboardOptionModel(
-              isNativeEnglishSpeaker: e.isNativeEnglishSpeaker,
-              comfortableLearningTime: e.comfortableLearningTime,
-              dailyLearningGoal: e.dailyLearningGoal,
-              timeToBecomeSkilled: e.timeToBecomeSkilled,
-            ),
+            (e) => {
+              'isNativeEnglishSpeaker': e.isNativeEnglishSpeaker,
+              'comfortableLearningTime': e.comfortableLearningTime,
+              'dailyLearningGoal': e.dailyLearningGoal,
+              'timeToBecomeSkilled': e.timeToBecomeSkilled,
+            },
           )
           .toList(),
-    );
+    };
   }
 }
