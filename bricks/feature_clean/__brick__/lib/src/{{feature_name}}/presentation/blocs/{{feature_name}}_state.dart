@@ -6,7 +6,7 @@ enum {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status { initial, loading, su
 abstract class {{#pascalCase}}{{feature_name}}{{/pascalCase}}State with _${{#pascalCase}}{{feature_name}}{{/pascalCase}}State {
   const factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}State({
     @Default({{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.initial) {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status status,
-    @Default([]) List<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity> items,
+    @Default(BasePageBreak<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>()) BasePageBreak<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity> pageData,
     {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity? selectedItem,
     String? errorMessage,
   }) = _{{#pascalCase}}{{feature_name}}{{/pascalCase}}State;

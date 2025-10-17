@@ -26,23 +26,32 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalC
     _LoadAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s event,
     Emitter<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> emit,
   ) async {
-    emit(state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading));
+    // Prevent multiple simultaneous loads
+    if (!event.isInit && state.status == {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading) return;
 
-    final result = await _getAllUseCase().run();
+    // Prevent loading if already on last page (unless it's init)
+    if (!event.isInit && state.pageData.isLastPage) return;
 
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
+    PageBreakRequest pageRequest;
+    pageRequest = event.isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+
+    await runUseCasePageBreak<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
+      usecase: () => _getAllUseCase(pageRequest),
+      currentPageData: state.pageData,
+      isInit: event.isInit,
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
-          errorMessage: exception.message,
-        ),
-      ),
-      (items) => emit(
-        state.copyWith(
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (pageData) {
+        emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
-          items: items,
-        ),
-      ),
+          pageData: pageData,
+        ));
+      },
     );
   }
 
@@ -50,23 +59,21 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalC
     _Load{{#pascalCase}}{{entity_name}}{{/pascalCase}} event,
     Emitter<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> emit,
   ) async {
-    emit(state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading));
-
-    final result = await _getUseCase(event.id).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
+    await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
+      usecase: () => _getUseCase(event.id),
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
-          errorMessage: exception.message,
-        ),
-      ),
-      (item) => emit(
-        state.copyWith(
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (item) {
+        emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
           selectedItem: item,
-        ),
-      ),
+        ));
+      },
     );
   }
 
@@ -74,25 +81,22 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalC
     _Create{{#pascalCase}}{{entity_name}}{{/pascalCase}} event,
     Emitter<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> emit,
   ) async {
-    emit(state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading));
-
-    final result = await _createUseCase(event.entity).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
+    await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
+      usecase: () => _createUseCase(event.entity),
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
-          errorMessage: exception.message,
-        ),
-      ),
-      (newItem) {
-        final updatedItems = [...state.items, newItem];
-        emit(
-          state.copyWith(
-            status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
-            items: updatedItems,
-          ),
-        );
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (newItem) {
+        final updatedItems = [...state.pageData.items, newItem];
+        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
+          pageData: updatedPageData,
+        ));
       },
     );
   }
@@ -101,28 +105,23 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalC
     _Update{{#pascalCase}}{{entity_name}}{{/pascalCase}} event,
     Emitter<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> emit,
   ) async {
-    emit(state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading));
-
-    final result = await _updateUseCase(event.entity).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
+    await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
+      usecase: () => _updateUseCase(event.entity),
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
-          errorMessage: exception.message,
-        ),
-      ),
-      (updatedItem) {
-        final updatedItems = state.items
-            .map((item) => item.id == updatedItem.id ? updatedItem : item)
-            .toList();
-        emit(
-          state.copyWith(
-            status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
-            items: updatedItems,
-            selectedItem: updatedItem,
-          ),
-        );
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (updatedItem) {
+        final updatedItems = state.pageData.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
+        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
+          pageData: updatedPageData,
+          selectedItem: updatedItem,
+        ));
       },
     );
   }
@@ -131,25 +130,22 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Bloc extends Bloc<{{#pascalC
     _Delete{{#pascalCase}}{{entity_name}}{{/pascalCase}} event,
     Emitter<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> emit,
   ) async {
-    emit(state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading));
-
-    final result = await _deleteUseCase(event.id).run();
-
-    result.fold(
-      (exception) => emit(
-        state.copyWith(
+    await runUseCase<Unit>(
+      usecase: () => _deleteUseCase(event.id),
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
-          errorMessage: exception.message,
-        ),
-      ),
-      (_) {
-        final updatedItems = state.items.where((item) => item.id != event.id).toList();
-        emit(
-          state.copyWith(
-            status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
-            items: updatedItems,
-          ),
-        );
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (_) {
+        final updatedItems = state.pageData.items.where((item) => item.id != event.id).toList();
+        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
+          pageData: updatedPageData,
+        ));
       },
     );
   }
