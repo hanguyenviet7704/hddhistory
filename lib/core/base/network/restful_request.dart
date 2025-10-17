@@ -320,4 +320,68 @@ mixin RestfulRequestHandlerMixin {
       },
     );
   }
+
+  /// API call with automatic BasePageBreak handling, caching and fallback
+  ///
+  /// [apiCall] - The API function returning `BaseResponse<BasePageBreak<T>>`
+  /// [transform] - Transform each item in page data (e.g., model.toEntity())
+  /// [onSuccess] - Optional callback after successful API call (for caching)
+  /// [onError] - Optional fallback function when API fails (for cache retrieval)
+  /// [enableIsolate] - Run API call in isolate
+  /// [enableErrorMessages] - Show error messages to user
+  TaskEither<AppException, BasePageBreak<R>> callApiPageBreak<T, R>({
+    required Future<BaseResponse<BasePageBreak<T>>> Function() apiCall,
+    required R Function(T data) transform,
+    Future<void> Function(BasePageBreak<T> pageData)? onSuccess,
+    Future<BasePageBreak<R>?> Function()? onError,
+    bool enableIsolate = false,
+    bool enableErrorMessages = true,
+  }) {
+    return TaskEither.tryCatch(
+      () async {
+        try {
+          BaseResponse<BasePageBreak<T>> response;
+          if (enableIsolate) {
+            response = await Isolate.run(apiCall);
+          } else {
+            response = await apiCall();
+          }
+
+          // Execute success callback (e.g., caching)
+          if (onSuccess != null && response.data != null) {
+            await onSuccess(response.data!);
+          }
+
+          // Transform and return
+          if (response.data != null) {
+            final transformedItems = response.data!.items.map((item) => transform(item)).toList();
+            return BasePageBreak<R>(
+              totalPages: response.data!.totalPages,
+              currentPage: response.data!.currentPage,
+              itemsPerPage: response.data!.itemsPerPage,
+              items: transformedItems,
+            );
+          } else {
+            throw Exception('Response data is null');
+          }
+        } catch (e) {
+          // Try fallback (e.g., cache retrieval)
+          if (onError != null) {
+            final fallbackData = await onError();
+            if (fallbackData != null) {
+              return fallbackData;
+            }
+          }
+          rethrow;
+        }
+      },
+      (error, stackTrace) {
+        if (enableErrorMessages) _showErrorMessage(error, stackTrace);
+        if (error is DioException) {
+          return AppException.fromDioException(error);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
 }

@@ -16,18 +16,35 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
     this._deleteUseCase,
   ) : super(OnboardState.initial());
 
-  void loadAllOnboards() async {
-    await runUseCaseList<OnboardEntity>(
-      usecase: _getAllUseCase.call,
+  void loadAllOnboards({
+    bool isInit = false,
+  }) async {
+    // Prevent multiple simultaneous loads
+    if (!isInit && state.status == OnboardStatus.loading) return;
+
+    // Prevent loading if already on last page (unless it's init)
+    if (!isInit && state.pageData.isLastPage) return;
+
+    PageBreakRequest pageRequest;
+    pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+
+    await runUseCasePageBreak<OnboardEntity>(
+      usecase: () => _getAllUseCase(pageRequest),
+      currentPageData: state.pageData,
+      isInit: isInit,
       buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
-      buildFailureState: (error) => state.copyWith(
-        status: OnboardStatus.failure,
-        errorMessage: error,
-      ),
-      buildSuccessState: (items) => state.copyWith(
-        status: OnboardStatus.success,
-        items: items,
-      ),
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: OnboardStatus.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (pageData) {
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          pageData: pageData,
+        ));
+      },
     );
   }
 
@@ -35,74 +52,81 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
     await runUseCase<OnboardEntity>(
       usecase: () => _getUseCase(id),
       buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
-      buildFailureState: (error) => state.copyWith(
-        status: OnboardStatus.failure,
-        errorMessage: error,
-      ),
-      buildSuccessState: (item) => state.copyWith(
-        status: OnboardStatus.success,
-        selectedItem: item,
-      ),
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: OnboardStatus.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (item) {
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          selectedItem: item,
+        ));
+      },
     );
   }
 
   void createOnboard(OnboardEntity entity) async {
-    await runUseCaseWithCustomSuccess<OnboardEntity>(
+    await runUseCase<OnboardEntity>(
       usecase: () => _createUseCase(entity),
       buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
-      buildFailureState: (error) => state.copyWith(
-        status: OnboardStatus.failure,
-        errorMessage: error,
-      ),
-      onSuccess: (newItem, currentState) {
-        final updatedItems = [...currentState.items, newItem];
-        emit(
-          state.copyWith(
-            status: OnboardStatus.success,
-            items: updatedItems,
-          ),
-        );
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: OnboardStatus.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (newItem) {
+        final updatedItems = [...state.pageData.items, newItem];
+        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          pageData: updatedPageData,
+        ));
       },
     );
   }
 
   void updateOnboard(OnboardEntity entity) async {
-    await runUseCaseWithCustomSuccess<OnboardEntity>(
+    await runUseCase<OnboardEntity>(
       usecase: () => _updateUseCase(entity),
       buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
-      buildFailureState: (error) => state.copyWith(
-        status: OnboardStatus.failure,
-        errorMessage: error,
-      ),
-      onSuccess: (updatedItem, currentState) {
-        final updatedItems = currentState.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
-        emit(
-          state.copyWith(
-            status: OnboardStatus.success,
-            items: updatedItems,
-            selectedItem: updatedItem,
-          ),
-        );
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: OnboardStatus.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (updatedItem) {
+        final updatedItems = state.pageData.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
+        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          pageData: updatedPageData,
+          selectedItem: updatedItem,
+        ));
       },
     );
   }
 
   void deleteOnboard(String id) async {
-    await runUseCaseWithCustomSuccess<Unit>(
+    await runUseCase<Unit>(
       usecase: () => _deleteUseCase(id),
       buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
-      buildFailureState: (error) => state.copyWith(
-        status: OnboardStatus.failure,
-        errorMessage: error,
-      ),
-      onSuccess: (_, currentState) {
-        final updatedItems = currentState.items.where((item) => item.id != id).toList();
-        emit(
-          state.copyWith(
-            status: OnboardStatus.success,
-            items: updatedItems,
-          ),
-        );
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: OnboardStatus.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (_) {
+        final updatedItems = state.pageData.items.where((item) => item.id != id).toList();
+        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+        emit(state.copyWith(
+          status: OnboardStatus.success,
+          pageData: updatedPageData,
+        ));
       },
     );
   }

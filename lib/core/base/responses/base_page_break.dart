@@ -17,6 +17,13 @@ sealed class BasePageBreak<T> with _$BasePageBreak<T> {
 }
 
 extension BasePageBreakExtension on BasePageBreak {
-  bool get isLastPage => totalPages == currentPage && currentPage > 0;
+  /// Check if current page is the last page
+  /// Returns true when:
+  /// - We've loaded at least one page (currentPage > 0)
+  /// - AND (we're on the last page OR there are no results)
+  bool get isLastPage => currentPage > 0 && (currentPage >= totalPages || totalPages == 0);
+
+  /// Get the next page number
+  /// Returns current page if already on last page, otherwise increments
   int get nextPage => isLastPage ? currentPage : currentPage + 1;
 }

@@ -6,12 +6,12 @@ enum OnboardStatus { initial, loading, success, failure }
 abstract class OnboardState with _$OnboardState {
   const factory OnboardState({
     @Default(OnboardStatus.initial) OnboardStatus status,
-    @Default([]) List<OnboardEntity> items,
+    @Default(BasePageBreak<OnboardEntity>()) BasePageBreak<OnboardEntity> pageData,
     OnboardEntity? selectedItem,
     String? errorMessage,
   }) = _OnboardState;
 
-  factory OnboardState.initial() => const OnboardState();
+  factory OnboardState.initial() => OnboardState();
 
   factory OnboardState.fromJson(Map<String, dynamic> json) => _$OnboardStateFromJson(json);
 }

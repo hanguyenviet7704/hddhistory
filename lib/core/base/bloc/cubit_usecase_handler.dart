@@ -121,14 +121,14 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
   ///
   /// [usecase] - The use case that returns `TaskEither<AppException, T>`
   /// [buildLoadingState] - Function to build loading state
-  /// [buildFailureState] - Function to build failure state with error message
-  /// [buildSuccessState] - Function to build success state with result data
+  /// [onFailure] - Callback when use case fails, receives error message, should emit state
+  /// [onSuccess] - Callback when use case succeeds, receives result data, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
   Future<void> runUseCase<T>({
     required TaskEither<AppException, T> Function() usecase,
     required State Function() buildLoadingState,
-    required State Function(String errorMessage) buildFailureState,
-    required State Function(T data) buildSuccessState,
+    required void Function(String errorMessage) onFailure,
+    required void Function(T data) onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
@@ -140,8 +140,8 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
     final result = await usecase().run();
 
     result.fold(
-      (exception) => emit(buildFailureState(exception.message ?? 'Unknown error')),
-      (data) => emit(buildSuccessState(data)),
+      (exception) => onFailure(exception.message ?? 'Unknown error'),
+      (data) => onSuccess(data),
     );
 
     if (setLoadingState != null) {
@@ -155,14 +155,14 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
   ///
   /// [usecase] - The use case that returns `TaskEither<AppException, List<T>>`
   /// [buildLoadingState] - Function to build loading state
-  /// [buildFailureState] - Function to build failure state with error message
-  /// [buildSuccessState] - Function to build success state with list data
+  /// [onFailure] - Callback when use case fails, receives error message, should emit state
+  /// [onSuccess] - Callback when use case succeeds, receives list data, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
   Future<void> runUseCaseList<T>({
     required TaskEither<AppException, List<T>> Function() usecase,
     required State Function() buildLoadingState,
-    required State Function(String errorMessage) buildFailureState,
-    required State Function(List<T> data) buildSuccessState,
+    required void Function(String errorMessage) onFailure,
+    required void Function(List<T> data) onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
@@ -174,8 +174,8 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
     final result = await usecase().run();
 
     result.fold(
-      (exception) => emit(buildFailureState(exception.message ?? 'Unknown error')),
-      (data) => emit(buildSuccessState(data)),
+      (exception) => onFailure(exception.message ?? 'Unknown error'),
+      (data) => onSuccess(data),
     );
 
     if (setLoadingState != null) {
@@ -189,14 +189,14 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
   ///
   /// [usecase] - The use case that returns `TaskEither<AppException, Unit>`
   /// [buildLoadingState] - Function to build loading state
-  /// [buildFailureState] - Function to build failure state with error message
-  /// [buildSuccessState] - Function to build success state (no data parameter)
+  /// [onFailure] - Callback when use case fails, receives error message, should emit state
+  /// [onSuccess] - Callback when use case succeeds, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
   Future<void> runUseCaseVoid({
     required TaskEither<AppException, Unit> Function() usecase,
     required State Function() buildLoadingState,
-    required State Function(String errorMessage) buildFailureState,
-    required State Function() buildSuccessState,
+    required void Function(String errorMessage) onFailure,
+    required void Function() onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
@@ -208,8 +208,8 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
     final result = await usecase().run();
 
     result.fold(
-      (exception) => emit(buildFailureState(exception.message ?? 'Unknown error')),
-      (_) => emit(buildSuccessState()),
+      (exception) => onFailure(exception.message ?? 'Unknown error'),
+      (_) => onSuccess(),
     );
 
     if (setLoadingState != null) {
@@ -217,21 +217,24 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
     }
   }
 
-  /// Execute use case with custom success handler for complex state updates
+  /// Execute use case with pagination support (BasePageBreak)
   ///
-  /// Use when you need to perform additional logic before emitting success state
-  /// (e.g., merging with existing state, updating collections)
+  /// Use this for paginated list APIs. Handles automatic merging of pages.
   ///
-  /// [usecase] - The use case that returns `TaskEither<AppException, T>`
+  /// [usecase] - The use case that returns `TaskEither<AppException, BasePageBreak<T>>`
+  /// [currentPageData] - The current page data from state
+  /// [isInit] - Whether this is initial load (true) or loading more (false)
   /// [buildLoadingState] - Function to build loading state
-  /// [buildFailureState] - Function to build failure state with error message
-  /// [onSuccess] - Custom handler that receives data and current state, emits manually
+  /// [onFailure] - Callback when use case fails, receives error message, should emit state
+  /// [onSuccess] - Callback when use case succeeds, receives merged page data, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
-  Future<void> runUseCaseWithCustomSuccess<T>({
-    required TaskEither<AppException, T> Function() usecase,
+  Future<void> runUseCasePageBreak<T>({
+    required TaskEither<AppException, BasePageBreak<T>> Function() usecase,
+    required BasePageBreak<T> currentPageData,
+    required bool isInit,
     required State Function() buildLoadingState,
-    required State Function(String errorMessage) buildFailureState,
-    required void Function(T data, State currentState) onSuccess,
+    required void Function(String errorMessage) onFailure,
+    required void Function(BasePageBreak<T> mergedPageData) onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
@@ -243,42 +246,18 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
     final result = await usecase().run();
 
     result.fold(
-      (exception) => emit(buildFailureState(exception.message ?? 'Unknown error')),
-      (data) => onSuccess(data, state),
-    );
-
-    if (setLoadingState != null) {
-      emit(setLoadingState(state, isLoading: false));
-    }
-  }
-
-  /// Execute use case with custom success handler for list results
-  ///
-  /// Similar to runUseCaseWithCustomSuccess but for list results
-  ///
-  /// [usecase] - The use case that returns `TaskEither<AppException, List<T>>`
-  /// [buildLoadingState] - Function to build loading state
-  /// [buildFailureState] - Function to build failure state with error message
-  /// [onSuccess] - Custom handler that receives list data and current state, emits manually
-  /// [setLoadingState] - Optional function to control loading state separately
-  Future<void> runUseCaseListWithCustomSuccess<T>({
-    required TaskEither<AppException, List<T>> Function() usecase,
-    required State Function() buildLoadingState,
-    required State Function(String errorMessage) buildFailureState,
-    required void Function(List<T> data, State currentState) onSuccess,
-    State Function(State currentState, {required bool isLoading})? setLoadingState,
-  }) async {
-    if (setLoadingState != null) {
-      emit(setLoadingState(state, isLoading: true));
-    } else {
-      emit(buildLoadingState());
-    }
-
-    final result = await usecase().run();
-
-    result.fold(
-      (exception) => emit(buildFailureState(exception.message ?? 'Unknown error')),
-      (data) => onSuccess(data, state),
+      (exception) => onFailure(exception.message ?? 'Unknown error'),
+      (pageData) {
+        // Merge with existing data if not init
+        final List<T> existingItems = isInit ? [] : currentPageData.items;
+        final mergedPageBreak = BasePageBreak<T>(
+          currentPage: pageData.currentPage,
+          totalPages: pageData.totalPages,
+          itemsPerPage: pageData.itemsPerPage,
+          items: [...existingItems, ...pageData.items],
+        );
+        onSuccess(mergedPageBreak);
+      },
     );
 
     if (setLoadingState != null) {
