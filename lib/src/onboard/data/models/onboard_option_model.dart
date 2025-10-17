@@ -3,10 +3,9 @@ part of '../../onboard.dart';
 @freezed
 abstract class OnboardOptionModel with _$OnboardOptionModel {
   const factory OnboardOptionModel({
-    @Default(false) bool isNativeEnglishSpeaker,
-    @Default('') String comfortableLearningTime,
-    @Default('') String dailyLearningGoal,
-    @Default('') String timeToBecomeSkilled,
+    @Default(0) int id,
+    @Default('') String icon,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage label,
   }) = _OnboardOptionModel;
 
   factory OnboardOptionModel.fromJson(Map<String, dynamic> json) => _$OnboardOptionModelFromJson(json);
@@ -14,9 +13,8 @@ abstract class OnboardOptionModel with _$OnboardOptionModel {
 
 extension OnboardOptionModelExtension on OnboardOptionModel {
   OnboardOptionEntity toEntity() => OnboardOptionEntity(
-    isNativeEnglishSpeaker: isNativeEnglishSpeaker,
-    comfortableLearningTime: comfortableLearningTime,
-    dailyLearningGoal: dailyLearningGoal,
-    timeToBecomeSkilled: timeToBecomeSkilled,
+    id: id,
+    icon: icon,
+    label: label,
   );
 }

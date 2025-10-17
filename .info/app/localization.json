@@ -5,7 +5,7 @@
     "columns": {
       "screen": "Screen",
       "key": "Translation key",
-      "action": "Action",
+      "metadata": "Metadata",
       "en": "Lang: English",
       "vi": "Lang: Vietnam",
       "zh": "Lang: Chinese"

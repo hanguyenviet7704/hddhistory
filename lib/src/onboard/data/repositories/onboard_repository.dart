@@ -87,40 +87,80 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
   Map<String, dynamic> _entityToJson(OnboardEntity entity) {
     return {
       'id': entity.id,
-      'isNativeEnglishSpeaker': entity.isNativeEnglishSpeaker,
-      'comfortableLearningTime': entity.comfortableLearningTime,
-      'dailyLearningGoal': entity.dailyLearningGoal,
-      'timeToBecomeSkilled': entity.timeToBecomeSkilled,
+      'age': entity.age
+          .map(
+            (e) => {
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
+            },
+          )
+          .toList(),
+      'gender': entity.gender
+          .map(
+            (e) => {
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
+            },
+          )
+          .toList(),
       'topicsWantToMaster': entity.topicsWantToMaster
           .map(
             (e) => {
-              'isNativeEnglishSpeaker': e.isNativeEnglishSpeaker,
-              'comfortableLearningTime': e.comfortableLearningTime,
-              'dailyLearningGoal': e.dailyLearningGoal,
-              'timeToBecomeSkilled': e.timeToBecomeSkilled,
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
             },
           )
           .toList(),
       'seemLikeYou': entity.seemLikeYou
           .map(
             (e) => {
-              'isNativeEnglishSpeaker': e.isNativeEnglishSpeaker,
-              'comfortableLearningTime': e.comfortableLearningTime,
-              'dailyLearningGoal': e.dailyLearningGoal,
-              'timeToBecomeSkilled': e.timeToBecomeSkilled,
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
             },
           )
           .toList(),
       'strugglesWhenSpeaking': entity.strugglesWhenSpeaking
           .map(
             (e) => {
-              'isNativeEnglishSpeaker': e.isNativeEnglishSpeaker,
-              'comfortableLearningTime': e.comfortableLearningTime,
-              'dailyLearningGoal': e.dailyLearningGoal,
-              'timeToBecomeSkilled': e.timeToBecomeSkilled,
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
             },
           )
           .toList(),
+      'comfortableLearningTime': entity.comfortableLearningTime
+          .map(
+            (e) => {
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
+            },
+          )
+          .toList(),
+      'dailyLearningGoal': entity.dailyLearningGoal
+          .map(
+            (e) => {
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
+            },
+          )
+          .toList(),
+      'timeToBecomeSkilled': entity.timeToBecomeSkilled
+          .map(
+            (e) => {
+              'id': e.id,
+              'icon': e.icon,
+              'label': e.label.toJson(),
+            },
+          )
+          .toList(),
+      'createdAt': entity.createdAt?.toIso8601String(),
+      'updatedAt': entity.updatedAt?.toIso8601String(),
     };
   }
 }

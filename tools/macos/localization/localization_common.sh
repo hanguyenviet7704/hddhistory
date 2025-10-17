@@ -138,7 +138,7 @@ create_python_config() {
     "columns": {
         "screen": "$(get_sheet_columns screen)",
         "key": "$(get_sheet_columns key)",
-        "action": "$(get_sheet_columns action)",
+        "metadata": "$(get_sheet_columns metadata)",
         "en": "$(get_sheet_columns en)",
         "vi": "$(get_sheet_columns vi)",
         "zh": "$(get_sheet_columns zh)"

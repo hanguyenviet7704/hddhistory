@@ -96,7 +96,7 @@ def test_connection():
                 print(f"\nRow {i}:")
                 print(f"  Screen: {row.get(columns['screen'], 'N/A')}")
                 print(f"  Translation key: {row.get(columns['key'], 'N/A')}")
-                print(f"  Action: {row.get(columns['action'], 'N/A')}")
+                print(f"  Metadata: {row.get(columns['metadata'], 'N/A')}")
                 print(f"  Lang: English: {row.get(columns['en'], 'N/A')}")
                 print(f"  Lang: Vietnam: {row.get(columns['vi'], 'N/A')}")
                 print(f"  Lang: Chinese: {row.get(columns['zh'], 'N/A')}")

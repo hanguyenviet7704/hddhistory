@@ -168,7 +168,7 @@ call :get_sheet_id sheet_id
 call :get_sheet_gids sheet_gids
 call :get_sheet_columns "screen" col_screen
 call :get_sheet_columns "key" col_key
-call :get_sheet_columns "action" col_action
+call :get_sheet_columns "metadata" col_metadata
 call :get_sheet_columns "en" col_en
 call :get_sheet_columns "vi" col_vi
 call :get_sheet_columns "zh" col_zh
@@ -190,7 +190,7 @@ REM Create JSON configuration file
     echo     "columns": {
     echo         "screen": "%col_screen%",
     echo         "key": "%col_key%",
-    echo         "action": "%col_action%",
+    echo         "metadata": "%col_metadata%",
     echo         "en": "%col_en%",
     echo         "vi": "%col_vi%",
     echo         "zh": "%col_zh%"
