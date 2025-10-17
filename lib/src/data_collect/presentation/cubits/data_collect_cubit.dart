@@ -41,6 +41,10 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     emit(state.copyWith(selectedStruggles: struggles));
   }
 
+  void selectBestTimeToLearn(OnboardOptionEntity bestTimeToLearn) => emit(state.copyWith(selectedBestTimeToLearn: bestTimeToLearn));
+  void selectDailyLearningGoal(OnboardOptionEntity dailyLearningGoal) => emit(state.copyWith(selectedDailyLearningGoal: dailyLearningGoal));
+  void selectTimeToBecomeSkilled(OnboardOptionEntity timeToBecomeSkilled) => emit(state.copyWith(selectedTimeToBecomeSkilled: timeToBecomeSkilled));
+
   Future<void> loadAllUserCollectDatas() async {
     emit(state.copyWith(status: DataCollectStatus.loading));
 
@@ -170,17 +174,6 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     emit(state.copyWith(selectedThisDescribeYouOptions: options));
   }
 
-  void selectBestTimeToLearn(String bestTimeToLearn) {
-    emit(state.copyWith(selectedBestTimeToLearn: bestTimeToLearn));
-  }
-
-  void selectDailyLearningGoal(String dailyLearningGoal) {
-    emit(state.copyWith(selectedDailyLearningGoal: dailyLearningGoal));
-  }
-
-  void selectTimeToBecomeSkilled(String timeToBecomeSkilled) {
-    emit(state.copyWith(selectedTimeToBecomeSkilled: timeToBecomeSkilled));
-  }
 
   void selectNativeEnglishSpeaker(bool isNative) {
     emit(state.copyWith(isNativeEnglishSpeaker: isNative));

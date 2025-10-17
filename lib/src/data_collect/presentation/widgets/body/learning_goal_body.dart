@@ -12,7 +12,7 @@ class LearningGoalBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              "Your daily learning goal",
+              context.text.onboardingTimeSpentTitle,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -21,7 +21,7 @@ class LearningGoalBody extends StatelessWidget {
               maxLines: 10,
             ),
 
-            SizedBox(height: 20.h),
+            Spacer(),
 
             // Learning Goal Options
             LearningGoalOptions(),
@@ -37,36 +37,18 @@ class LearningGoalOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, String?>(
-      selector: (state) => state.selectedDailyLearningGoal,
-      builder: (context, selectedGoal) {
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedDailyLearningGoal != current.selectedDailyLearningGoal,
+      builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        final goalOptions = [
-          {"title": "5 min", "emoji": "📚"},
-          {"title": "10 min", "emoji": "📖"},
-          {"title": "15 min", "emoji": "📘"},
-          {"title": "20 min", "emoji": "📗"},
-        ];
-
         return Column(
-          children: goalOptions.map((goalOption) {
-            final title = goalOption["title"] as String;
-            final emoji = goalOption["emoji"] as String;
-            final isSelected = selectedGoal == title;
-
-            return Padding(
-              padding: EdgeInsets.only(bottom: 12.h),
-              child: LearningGoalOption(
-                title: title,
-                emoji: emoji,
-                isSelected: isSelected,
-                onChanged: (value) {
-                  if (value) {
-                    cubit.selectDailyLearningGoal(title);
-                  }
-                },
-              ),
+          spacing: 12.h,
+          children: state.onboardData.dailyLearningGoal.map((goalOption) {
+            return LearningGoalOption(
+              value: goalOption,
+              groupValue: state.selectedDailyLearningGoal ?? OnboardOptionEntity(),
+              onChanged: (value) => cubit.selectDailyLearningGoal(value ?? OnboardOptionEntity()),
             );
           }).toList(),
         );
@@ -76,23 +58,23 @@ class LearningGoalOptions extends StatelessWidget {
 }
 
 class LearningGoalOption extends StatelessWidget {
-  final String title;
-  final String emoji;
-  final bool isSelected;
-  final Function(bool) onChanged;
+  final OnboardOptionEntity value;
+  final OnboardOptionEntity groupValue;
+  final Function(OnboardOptionEntity?) onChanged;
 
   const LearningGoalOption({
     super.key,
-    required this.title,
-    required this.emoji,
-    required this.isSelected,
+    required this.value,
+    required this.groupValue,
     required this.onChanged,
   });
+
+  bool get isSelected => value == groupValue;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onChanged(true),
+      onTap: () => onChanged(value),
       child: Container(
         height: 54.h,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -109,26 +91,14 @@ class LearningGoalOption extends StatelessWidget {
         child: Row(
           children: [
             // Emoji
-            Container(
-              width: 24.w,
-              height: 24.h,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: const Color(0xFFC7C5FA), // Border/Brand
-                borderRadius: BorderRadius.circular(30.r),
-              ),
-              child: AppText(
-                emoji,
-                style: TextStyle(fontSize: 16.sp),
-              ),
-            ),
+            DCachedImage(url: value.icon, width: 24.w, height: 24.h),
 
             16.horizontalSpace,
 
             // Title
             Expanded(
               child: AppText(
-                title,
+                value.label.text,
                 style: AppStyle.text16.copyWith(
                   color: isSelected
                       ? const Color(0xFF0D121C) // content/primary

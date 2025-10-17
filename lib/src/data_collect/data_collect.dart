@@ -35,7 +35,7 @@ part 'presentation/pages/data_collect_summary_page.dart';
 //* Widgets
 part 'presentation/widgets/body/age_collect_body.dart';
 part 'presentation/widgets/body/best_time_to_learn_body.dart';
-part 'presentation/widgets/body/best_time_to_skilled_body.dart';
+part 'presentation/widgets/body/time_to_skilled_body.dart';
 part 'presentation/widgets/body/choose_topic_body.dart';
 part 'presentation/widgets/body/gender_collect_body.dart';
 part 'presentation/widgets/body/learning_goal_body.dart';

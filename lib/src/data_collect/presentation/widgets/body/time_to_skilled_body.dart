@@ -1,7 +1,7 @@
 part of '../../../data_collect.dart';
 
-class BestTimeToSkilledBody extends StatelessWidget {
-  const BestTimeToSkilledBody({super.key});
+class TimeToSkilledBody extends StatelessWidget {
+  const TimeToSkilledBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class BestTimeToSkilledBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              "How much time do you want\nto become skilled?",
+              context.text.onboardingBeSkilledExpectTimeQuestion,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -21,7 +21,7 @@ class BestTimeToSkilledBody extends StatelessWidget {
               maxLines: 10,
             ),
 
-            SizedBox(height: 20.h),
+            Spacer(),
 
             // Time Options
             SkilledTimeOptions(),
@@ -37,38 +37,22 @@ class SkilledTimeOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, String?>(
-      selector: (state) => state.selectedTimeToBecomeSkilled,
-      builder: (context, selectedTime) {
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedTimeToBecomeSkilled != current.selectedTimeToBecomeSkilled,
+      builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        final timeOptions = [
-          "1 month",
-          "2 months",
-          "3 months",
-        ];
-
-        return Flexible(
-          child: ListView.builder(
-            itemCount: timeOptions.length,
-            itemBuilder: (context, index) {
-              final timeOption = timeOptions[index];
-              final isSelected = selectedTime == timeOption;
-
-              return Padding(
-                padding: EdgeInsets.only(bottom: 12.h),
-                child: SkilledTimeOption(
-                  title: timeOption,
-                  isSelected: isSelected,
-                  onChanged: (value) {
-                    if (value) {
-                      cubit.selectTimeToBecomeSkilled(timeOption);
-                    }
-                  },
+        return Column(
+          spacing: 12.h,
+          children: state.onboardData.timeToBecomeSkilled
+              .map(
+                (timeOption) => SkilledTimeOption(
+                  value: timeOption,
+                  groupValue: state.selectedTimeToBecomeSkilled ?? OnboardOptionEntity(),
+                  onChanged: (value) => cubit.selectTimeToBecomeSkilled(value ?? OnboardOptionEntity()),
                 ),
-              );
-            },
-          ),
+              )
+              .toList(),
         );
       },
     );
@@ -76,21 +60,23 @@ class SkilledTimeOptions extends StatelessWidget {
 }
 
 class SkilledTimeOption extends StatelessWidget {
-  final String title;
-  final bool isSelected;
-  final Function(bool) onChanged;
+  final OnboardOptionEntity value;
+  final OnboardOptionEntity groupValue;
+  final Function(OnboardOptionEntity?) onChanged;
 
   const SkilledTimeOption({
     super.key,
-    required this.title,
-    required this.isSelected,
+    required this.value,
+    required this.groupValue,
     required this.onChanged,
   });
+
+  bool get isSelected => value == groupValue;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onChanged(true),
+      onTap: () => onChanged(value),
       child: Container(
         height: 54.h,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -106,10 +92,14 @@ class SkilledTimeOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Title
+            // Emoji
+            DCachedImage(url: value.icon, width: 24.w, height: 24.h),
+
+            16.horizontalSpace,
+
             Expanded(
               child: AppText(
-                title,
+                value.label.text,
                 style: AppStyle.text16.copyWith(
                   color: isSelected
                       ? const Color(0xFF0D121C) // content/primary

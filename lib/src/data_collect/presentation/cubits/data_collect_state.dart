@@ -10,15 +10,16 @@ abstract class DataCollectState with _$DataCollectState {
     OnboardOptionEntity? selectedGender,
     @Default([]) List<OnboardOptionEntity> selectedTopics,
     @Default([]) List<OnboardOptionEntity> selectedStruggles,
+    OnboardOptionEntity? selectedBestTimeToLearn,
+    OnboardOptionEntity? selectedDailyLearningGoal,
+    OnboardOptionEntity? selectedTimeToBecomeSkilled,
+
 
     @Default([]) List<UserCollectDataEntity> items,
     UserCollectDataEntity? selectedItem,
     String? errorMessage,
     bool? isNativeEnglishSpeaker,
     @Default([]) List<bool> selectedThisDescribeYouOptions,
-    String? selectedBestTimeToLearn,
-    String? selectedDailyLearningGoal,
-    String? selectedTimeToBecomeSkilled,
     @Default(DataCollectStep.name) DataCollectStep currentStep,
     // Analysis progress fields
     @Default(0.0) double personalBackgroundProgress,

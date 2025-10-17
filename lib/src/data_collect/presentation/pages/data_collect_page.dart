@@ -44,7 +44,7 @@ class StepBody extends StatelessWidget {
       DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => const StruggleWhenSpeakingBody(),
       DataCollectStep.bestTimeOfDayToLearn => const BestTimeToLearnBody(),
       DataCollectStep.dailyLearningGoal => const LearningGoalBody(),
-      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => const BestTimeToSkilledBody(),
+      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => const TimeToSkilledBody(),
     };
   }
 }

@@ -31,7 +31,7 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
               ),
             ),
 
-            SizedBox(height: 20.h),
+            Spacer(),
 
             // Struggle Options
             StruggleOptions(),
@@ -47,27 +47,26 @@ class StruggleOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Flexible(
-      child: BlocBuilder<DataCollectCubit, DataCollectState>(
-        buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedStruggles != current.selectedStruggles,
-        builder: (context, state) {
-          final cubit = context.read<DataCollectCubit>();
-          return ListView.separated(
-            itemCount: state.onboardData.strugglesWhenSpeaking.length,
-            separatorBuilder: (context, index) => 12.verticalSpace,
-            itemBuilder: (context, index) {
-              final struggle = state.onboardData.strugglesWhenSpeaking[index];
-              final isSelected = state.isStruggleSelected(struggle);
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedStruggles != current.selectedStruggles,
+      builder: (context, state) {
+        final cubit = context.read<DataCollectCubit>();
+        return ListView.separated(
+          itemCount: state.onboardData.strugglesWhenSpeaking.length,
+          separatorBuilder: (context, index) => 12.verticalSpace,
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            final struggle = state.onboardData.strugglesWhenSpeaking[index];
+            final isSelected = state.isStruggleSelected(struggle);
 
-              return StruggleOption(
-                value: struggle,
-                isSelected: isSelected,
-                onChanged: (value) => cubit.selectStruggle(value ?? OnboardOptionEntity()),
-              );
-            },
-          );
-        },
-      ),
+            return StruggleOption(
+              value: struggle,
+              isSelected: isSelected,
+              onChanged: (value) => cubit.selectStruggle(value ?? OnboardOptionEntity()),
+            );
+          },
+        );
+      },
     );
   }
 }

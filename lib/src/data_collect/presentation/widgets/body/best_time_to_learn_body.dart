@@ -12,7 +12,7 @@ class BestTimeToLearnBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              "What time of day is most comfortable for you to learn something new?",
+              context.text.onboardingTimeStudyQuestion,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -25,13 +25,13 @@ class BestTimeToLearnBody extends StatelessWidget {
 
             // Subtitle
             AppText(
-              "Let's set up a learning routine!",
+              context.text.onboardingTimeStudySubtitle,
               style: AppStyle.text12.copyWith(
                 color: const Color(0xFF7F8EA4), // Text/Tertiary
               ),
             ),
 
-            SizedBox(height: 20.h),
+            Spacer(),
 
             // Time Options
             TimeOptions(),
@@ -47,42 +47,23 @@ class TimeOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, String?>(
-      selector: (state) => state.selectedBestTimeToLearn,
-      builder: (context, selectedTime) {
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedBestTimeToLearn != current.selectedBestTimeToLearn,
+      builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        final timeOptions = [
-          {"title": "In the morning", "emoji": "🌅"},
-          {"title": "Quick break", "emoji": "☕"},
-          {"title": "Before bed", "emoji": "🌙"},
-          {"title": "Any spare time", "emoji": "⏰"},
-        ];
-
-        return Flexible(
-          child: ListView.builder(
-            itemCount: timeOptions.length,
-            itemBuilder: (context, index) {
-              final timeOption = timeOptions[index];
-              final title = timeOption["title"] as String;
-              final emoji = timeOption["emoji"] as String;
-              final isSelected = selectedTime == title;
-
-              return Padding(
-                padding: EdgeInsets.only(bottom: 12.h),
-                child: TimeOption(
-                  title: title,
-                  emoji: emoji,
-                  isSelected: isSelected,
-                  onChanged: (value) {
-                    if (value) {
-                      cubit.selectBestTimeToLearn(title);
-                    }
-                  },
-                ),
-              );
-            },
-          ),
+        return ListView.separated(
+          itemCount: state.onboardData.comfortableLearningTime.length,
+          separatorBuilder: (context, index) => 12.verticalSpace,
+          shrinkWrap: true,
+          itemBuilder: (context, index) {
+            final timeOption = state.onboardData.comfortableLearningTime[index];
+            return TimeOption(
+              value: timeOption,
+              groupValue: state.selectedBestTimeToLearn ?? OnboardOptionEntity(),
+              onChanged: (value) => cubit.selectBestTimeToLearn(value ?? OnboardOptionEntity()),
+            );
+          },
         );
       },
     );
@@ -90,28 +71,28 @@ class TimeOptions extends StatelessWidget {
 }
 
 class TimeOption extends StatelessWidget {
-  final String title;
-  final String emoji;
-  final bool isSelected;
-  final Function(bool) onChanged;
+  final OnboardOptionEntity value;
+  final OnboardOptionEntity groupValue;
+  final Function(OnboardOptionEntity?) onChanged;
 
   const TimeOption({
     super.key,
-    required this.title,
-    required this.emoji,
-    required this.isSelected,
+    required this.value,
+    required this.groupValue,
     required this.onChanged,
   });
+
+  bool get isSelected => value == groupValue;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onChanged(true),
+      onTap: () => onChanged(value),
       child: Container(
         height: 54.h,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white : const Color(0xFFF5F7FB), // Background/Gray
+          color: value == groupValue ? Colors.white : const Color(0xFFF5F7FB), // Background/Gray
           border: Border.all(
             color: isSelected
                 ? const Color(0xFF554FF0) // Brand/Primary
@@ -123,22 +104,14 @@ class TimeOption extends StatelessWidget {
         child: Row(
           children: [
             // Emoji
-            Container(
-              width: 24.w,
-              height: 24.h,
-              alignment: Alignment.center,
-              child: AppText(
-                emoji,
-                style: TextStyle(fontSize: 20.sp),
-              ),
-            ),
+            DCachedImage(url: value.icon, width: 24.w, height: 24.h),
 
             16.horizontalSpace,
 
             // Title
             Expanded(
               child: AppText(
-                title,
+                value.label.text,
                 style: AppStyle.text16.copyWith(
                   color: isSelected
                       ? const Color(0xFF0D121C) // content/primary
