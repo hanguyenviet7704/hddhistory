@@ -12,7 +12,7 @@ class GenderCollectBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              "What's your gender?",
+              context.text.onboardingUserGenderQuestion,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
                 fontWeight: FontWeight.w500,
@@ -33,44 +33,22 @@ class GenderOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, String?>(
-      selector: (state) => state.selectedGender,
-      builder: (context, selectedGender) {
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedGender != current.selectedGender,
+      builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
         return Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              GenderOption(
-                title: 'Male',
-                value: 'male',
-                emoji: '👨',
-                groupValue: selectedGender ?? 'others', // Default selected value
-                onChanged: (value) {
-                  cubit.selectGender(value!);
-                },
-              ),
-              SizedBox(height: 12.h),
-              GenderOption(
-                title: 'Female',
-                value: 'female',
-                emoji: '👩',
-                groupValue: selectedGender ?? 'others', // Default selected value
-                onChanged: (value) {
-                  cubit.selectGender(value!);
-                },
-              ),
-              SizedBox(height: 12.h),
-              GenderOption(
-                title: 'Others',
-                value: 'others',
-                emoji: '🧑',
-                groupValue: selectedGender ?? 'others', // Default selected value
-                onChanged: (value) {
-                  cubit.selectGender(value!);
-                },
-              ),
-            ],
+            children: state.onboardData.gender
+                .map(
+                  (option) => GenderOption(
+                    value: option,
+                    groupValue: state.selectedGender ?? OnboardOptionEntity(),
+                    onChanged: (value) => cubit.selectGender(value ?? OnboardOptionEntity()),
+                  ),
+                )
+                .toList(),
           ),
         );
       },

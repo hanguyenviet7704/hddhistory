@@ -1,18 +1,14 @@
 part of '../../../data_collect.dart';
 
 class GenderOption extends StatelessWidget {
-  final String title;
-  final String value;
-  final String groupValue;
-  final String emoji;
-  final Function(String?) onChanged;
+  final OnboardOptionEntity value;
+  final OnboardOptionEntity groupValue;
+  final Function(OnboardOptionEntity?) onChanged;
 
   const GenderOption({
     super.key,
-    required this.title,
     required this.value,
     required this.groupValue,
-    required this.emoji,
     required this.onChanged,
   });
 
@@ -38,13 +34,10 @@ class GenderOption extends StatelessWidget {
           children: [
             Row(
               children: [
-                Text(
-                  emoji,
-                  style: TextStyle(fontSize: 24.sp),
-                ),
-                SizedBox(width: 16.w),
+                AppText(value.icon, style: AppStyle.text24),
+                16.horizontalSpace,
                 AppText(
-                  title,
+                  value.label.text,
                   style: AppStyle.text16.copyWith(
                     color: isSelected
                         ? const Color(0xFF0D121C) // content/primary

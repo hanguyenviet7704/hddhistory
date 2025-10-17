@@ -5,11 +5,13 @@ abstract class DataCollectState with _$DataCollectState {
   const factory DataCollectState({
     @Default(DataCollectStatus.initial) DataCollectStatus status,
     @Default(OnboardEntity()) OnboardEntity onboardData,
+    OnboardOptionEntity? selectedAgeRange,
+    OnboardOptionEntity? selectedGender,
+
+
     @Default([]) List<UserCollectDataEntity> items,
     UserCollectDataEntity? selectedItem,
     String? errorMessage,
-    String? selectedAgeRange,
-    String? selectedGender,
     String? userName,
     bool? isNativeEnglishSpeaker,
     @Default([]) List<String> selectedTopics,

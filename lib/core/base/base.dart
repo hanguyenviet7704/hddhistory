@@ -13,7 +13,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart' show OperationException, QueryResult;
 
 //* Import all local files here
+import '../../config/di/di.dart';
 import '../../config/services/services.dart';
+import '../../src/auth/presentation/blocs/blocs.dart';
 import '../helpers/helpers.dart';
 
 //* Import all base files here

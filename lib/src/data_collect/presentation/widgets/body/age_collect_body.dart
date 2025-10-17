@@ -12,7 +12,7 @@ class AgeCollectBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              "What's your age?",
+              context.text.onboardingUserAgeQuestion,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
                 fontWeight: FontWeight.w500,
@@ -33,59 +33,23 @@ class AgeOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, String?>(
-      selector: (state) => state.selectedAgeRange,
-      builder: (context, selectedAgeRange) {
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedAgeRange != current.selectedAgeRange,
+      builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
         return Expanded(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              AgeOption(
-                title: '17 or younger',
-                value: '17_or_younger',
-                groupValue: selectedAgeRange ?? '25-34', // Default selected value
-                onChanged: (value) {
-                  cubit.selectAgeRange(value!);
-                },
-              ),
-              SizedBox(height: 12.h),
-              AgeOption(
-                title: '18-24',
-                value: '18-24',
-                groupValue: selectedAgeRange ?? '25-34', // Default selected value
-                onChanged: (value) {
-                  cubit.selectAgeRange(value!);
-                },
-              ),
-              SizedBox(height: 12.h),
-              AgeOption(
-                title: '25-34',
-                value: '25-34',
-                groupValue: selectedAgeRange ?? '25-34', // Default selected value
-                onChanged: (value) {
-                  cubit.selectAgeRange(value!);
-                },
-              ),
-              SizedBox(height: 12.h),
-              AgeOption(
-                title: '35-44',
-                value: '35-44',
-                groupValue: selectedAgeRange ?? '25-34', // Default selected value
-                onChanged: (value) {
-                  cubit.selectAgeRange(value!);
-                },
-              ),
-              SizedBox(height: 12.h),
-              AgeOption(
-                title: '45 or older',
-                value: '45_or_older',
-                groupValue: selectedAgeRange ?? '25-34', // Default selected value
-                onChanged: (value) {
-                  cubit.selectAgeRange(value!);
-                },
-              ),
-            ],
+            spacing: 12.h,
+            children: state.onboardData.age
+                .map(
+                  (option) => AgeOption(
+                    value: option,
+                    groupValue: state.selectedAgeRange ?? OnboardOptionEntity(),
+                    onChanged: (value) => cubit.selectAgeRange(value ?? OnboardOptionEntity()),
+                  ),
+                )
+                .toList(),
           ),
         );
       },

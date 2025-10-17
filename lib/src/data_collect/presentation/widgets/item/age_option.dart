@@ -1,14 +1,12 @@
 part of '../../../data_collect.dart';
 
 class AgeOption extends StatelessWidget {
-  final String title;
-  final String value;
-  final String groupValue;
-  final Function(String?) onChanged;
+  final OnboardOptionEntity value;
+  final OnboardOptionEntity groupValue;
+  final Function(OnboardOptionEntity?) onChanged;
 
   const AgeOption({
     super.key,
-    required this.title,
     required this.value,
     required this.groupValue,
     required this.onChanged,
@@ -35,7 +33,7 @@ class AgeOption extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             AppText(
-              title,
+              value.label.text,
               style: AppStyle.text16.copyWith(
                 color: isSelected
                     ? const Color(0xFF0D121C) // content/primary

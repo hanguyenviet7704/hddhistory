@@ -10,3 +10,14 @@ sealed class BaseMultiLanguage with _$BaseMultiLanguage {
 
   factory BaseMultiLanguage.fromJson(Map<String, dynamic> json) => _$BaseMultiLanguageFromJson(json);
 }
+
+extension BaseMultiLanguageExtension on BaseMultiLanguage {
+  String get text {
+    LocaleType locale = AppDI.injector.get<LocaleCubit>().state;
+    return switch (locale) {
+      LocaleType.en => en,
+      LocaleType.vi => vi,
+      LocaleType.zh => zh,
+    };
+  }
+}
