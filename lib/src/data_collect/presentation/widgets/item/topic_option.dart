@@ -31,7 +31,8 @@ class TopicOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Title
+            DCachedImage(url: value.icon, width: 24.w, height: 24.h),
+            16.horizontalSpace,
             Expanded(
               child: AppText(
                 value.label.text,

@@ -12,7 +12,7 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              "What do you usually struggle with when speaking?",
+              context.text.onboardingStruggleQuestion,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -25,7 +25,7 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
 
             // Subtitle
             AppText(
-              "Select all the options that match your situation",
+              context.text.onboardingStruggleQuestionSubtitle,
               style: AppStyle.text12.copyWith(
                 color: const Color(0xFF7F8EA4), // Text/Tertiary
               ),
@@ -34,9 +34,7 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
             SizedBox(height: 20.h),
 
             // Struggle Options
-            Expanded(
-              child: StruggleOptions(),
-            ),
+            StruggleOptions(),
           ],
         );
       },
@@ -49,39 +47,27 @@ class StruggleOptions extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, List<String>>(
-      selector: (state) => state.selectedStruggles,
-      builder: (context, selectedStruggles) {
-        final cubit = context.read<DataCollectCubit>();
+    return Flexible(
+      child: BlocBuilder<DataCollectCubit, DataCollectState>(
+        buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedStruggles != current.selectedStruggles,
+        builder: (context, state) {
+          final cubit = context.read<DataCollectCubit>();
+          return ListView.separated(
+            itemCount: state.onboardData.strugglesWhenSpeaking.length,
+            separatorBuilder: (context, index) => 12.verticalSpace,
+            itemBuilder: (context, index) {
+              final struggle = state.onboardData.strugglesWhenSpeaking[index];
+              final isSelected = state.isStruggleSelected(struggle);
 
-        final struggles = [
-          "Confidence in Speaking",
-          "Audience Engagement",
-          "Clear Idea Organization",
-          "Using voice effectively",
-          "Q&A and Feedback Handling",
-          "Nervousness Control",
-        ];
-
-        return ListView.builder(
-          itemCount: struggles.length,
-          itemBuilder: (context, index) {
-            final struggle = struggles[index];
-            final isSelected = selectedStruggles.contains(struggle);
-
-            return Padding(
-              padding: EdgeInsets.only(bottom: 12.h),
-              child: StruggleOption(
-                title: struggle,
+              return StruggleOption(
+                value: struggle,
                 isSelected: isSelected,
-                onChanged: (value) {
-                  cubit.toggleStruggle(struggle);
-                },
-              ),
-            );
-          },
-        );
-      },
+                onChanged: (value) => cubit.selectStruggle(value ?? OnboardOptionEntity()),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }

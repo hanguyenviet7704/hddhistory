@@ -9,14 +9,13 @@ abstract class DataCollectState with _$DataCollectState {
     OnboardOptionEntity? selectedAgeRange,
     OnboardOptionEntity? selectedGender,
     @Default([]) List<OnboardOptionEntity> selectedTopics,
-
+    @Default([]) List<OnboardOptionEntity> selectedStruggles,
 
     @Default([]) List<UserCollectDataEntity> items,
     UserCollectDataEntity? selectedItem,
     String? errorMessage,
     bool? isNativeEnglishSpeaker,
     @Default([]) List<bool> selectedThisDescribeYouOptions,
-    @Default([]) List<String> selectedStruggles,
     String? selectedBestTimeToLearn,
     String? selectedDailyLearningGoal,
     String? selectedTimeToBecomeSkilled,
@@ -66,4 +65,5 @@ extension DataCollectStateExtension on DataCollectState {
   };
 
   bool isTopicSelected(OnboardOptionEntity topic) => selectedTopics.contains(topic);
+  bool isStruggleSelected(OnboardOptionEntity struggle) => selectedStruggles.contains(struggle);
 }

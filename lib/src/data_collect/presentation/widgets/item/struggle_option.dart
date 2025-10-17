@@ -1,13 +1,13 @@
 part of '../../../data_collect.dart';
 
 class StruggleOption extends StatelessWidget {
-  final String title;
+  final OnboardOptionEntity value;
   final bool isSelected;
-  final Function(bool) onChanged;
+  final Function(OnboardOptionEntity?) onChanged;
 
   const StruggleOption({
     super.key,
-    required this.title,
+    required this.value,
     required this.isSelected,
     required this.onChanged,
   });
@@ -15,7 +15,7 @@ class StruggleOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => onChanged(!isSelected),
+      onTap: () => onChanged(value),
       child: Container(
         height: 54.h,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
@@ -31,10 +31,11 @@ class StruggleOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            // Title
+            DCachedImage(url: value.icon, width: 24.w, height: 24.h),
+            16.horizontalSpace,
             Expanded(
               child: AppText(
-                title,
+                value.label.text,
                 style: AppStyle.text16.copyWith(
                   color: isSelected
                       ? const Color(0xFF0D121C) // content/primary

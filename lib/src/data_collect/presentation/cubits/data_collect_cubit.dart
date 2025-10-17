@@ -31,6 +31,15 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     emit(state.copyWith(selectedTopics: topics));
   }
 
+  void selectStruggle(OnboardOptionEntity struggle) {
+    final struggles = List<OnboardOptionEntity>.from(state.selectedStruggles);
+    if (struggles.contains(struggle)) {
+      struggles.remove(struggle);
+    } else {
+      struggles.add(struggle);
+    }
+    emit(state.copyWith(selectedStruggles: struggles));
+  }
 
   Future<void> loadAllUserCollectDatas() async {
     emit(state.copyWith(status: DataCollectStatus.loading));
@@ -159,20 +168,6 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
       options[index] = value;
     }
     emit(state.copyWith(selectedThisDescribeYouOptions: options));
-  }
-
-  void selectStruggle(String struggle) {
-    final struggles = List<String>.from(state.selectedStruggles);
-    if (struggles.contains(struggle)) {
-      struggles.remove(struggle);
-    } else {
-      struggles.add(struggle);
-    }
-    emit(state.copyWith(selectedStruggles: struggles));
-  }
-
-  void toggleStruggle(String struggle) {
-    selectStruggle(struggle);
   }
 
   void selectBestTimeToLearn(String bestTimeToLearn) {
