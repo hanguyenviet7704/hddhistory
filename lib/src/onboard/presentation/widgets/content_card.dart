@@ -1,7 +1,7 @@
 part of '../../onboard.dart';
 
 class ContentCard extends StatelessWidget {
-  final OnboardContent content;
+  final OnboardIntroEntity content;
   const ContentCard({super.key, required this.content});
 
   @override
@@ -35,7 +35,7 @@ class ContentCard extends StatelessWidget {
 }
 
 class ContentText extends StatelessWidget {
-  final OnboardContent content;
+  final OnboardIntroEntity content;
   const ContentText({super.key, required this.content});
 
   @override
@@ -57,45 +57,14 @@ class ContentText extends StatelessWidget {
           ),
         );
       },
-      child: Column(
-        key: ValueKey<String>('${content.title}_${content.subtitle}_${content.description}'),
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          if (content.title.isNotEmpty)
-            AppText(
-              content.title,
-              maxLines: 2,
-              style: AppStyle.text20.copyWith(
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF0D121C),
-                height: 1.5,
-              ),
-            ),
-          if (content.subtitle.isNotEmpty) ...[
-            12.verticalSpace,
-            AppText(
-              content.subtitle,
-              maxLines: 2,
-              style: AppStyle.text20.copyWith(
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF554FF0),
-                height: 1.5,
-              ),
-            ),
-          ],
-          if (content.description.isNotEmpty) ...[
-            12.verticalSpace,
-            AppText(
-              content.description,
-              maxLines: 2,
-              style: AppStyle.text20.copyWith(
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF0D121C),
-                height: 1.5,
-              ),
-            ),
-          ],
-        ],
+      child: AppText(
+        key: ValueKey<String>('${content.title.text}_${content.content.text}'),
+        content.content.text,
+        maxLines: 10,
+        style: AppStyle.text20.copyWith(
+          fontWeight: FontWeight.w600,
+          height: 1.5,
+        ),
       ),
     );
   }
@@ -121,7 +90,7 @@ class PageIndicator extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             mainAxisSize: MainAxisSize.min,
             children: List.generate(
-              cubit.onboardContents.length,
+              cubit.state.intros.length,
               (index) {
                 final isActive = state.currentPage == index;
                 return AnimatedContainer(

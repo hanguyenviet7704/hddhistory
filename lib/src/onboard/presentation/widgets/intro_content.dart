@@ -1,7 +1,7 @@
 part of '../../onboard.dart';
 
 class IntroContent extends StatelessWidget {
-  final OnboardContent content;
+  final OnboardIntroEntity content;
   const IntroContent({super.key, required this.content});
 
   @override

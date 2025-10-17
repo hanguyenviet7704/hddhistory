@@ -12,6 +12,7 @@ abstract class OnboardEntity with _$OnboardEntity {
     @Default([]) List<OnboardOptionEntity> comfortableLearningTime,
     @Default([]) List<OnboardOptionEntity> dailyLearningGoal,
     @Default([]) List<OnboardOptionEntity> timeToBecomeSkilled,
+    @Default([]) List<OnboardIntroEntity> intro,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _OnboardEntity;

@@ -40,6 +40,7 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
         );
 
         AppDI.injector.get<DataCollectCubit>().setOnboardData(onboardData);
+        AppDI.injector.get<IntroCubit>().setIntros(onboardData.intro);
       },
     );
   }

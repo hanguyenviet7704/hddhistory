@@ -26,7 +26,7 @@ class IntroPage extends StatelessWidget {
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                     child: AppText(
-                      'Skip',
+                      context.text.skip,
                       style: AppStyle.text16.copyWith(fontWeight: FontWeight.w500),
                     ),
                   ),
@@ -36,13 +36,13 @@ class IntroPage extends StatelessWidget {
                 flex: 2,
                 child: BlocBuilder<IntroCubit, IntroState>(
                   builder: (context, state) {
-                    final content = cubit.onboardContents[state.currentPage];
+                    final content = state.intros[state.currentPage];
                     return GestureDetector(
                       onHorizontalDragEnd: (details) {
                         final velocity = details.primaryVelocity!;
 
                         // Swiped left - next page
-                        if (velocity < 0 && state.currentPage < cubit.onboardContents.length - 1) {
+                        if (velocity < 0 && state.currentPage < state.intros.length - 1) {
                           cubit.setPage(state.currentPage + 1);
                           return;
                         }

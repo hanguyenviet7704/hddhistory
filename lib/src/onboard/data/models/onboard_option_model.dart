@@ -6,6 +6,7 @@ abstract class OnboardOptionModel with _$OnboardOptionModel {
     @Default(0) int id,
     @Default('') String icon,
     @Default(BaseMultiLanguage()) BaseMultiLanguage label,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage title,
   }) = _OnboardOptionModel;
 
   factory OnboardOptionModel.fromJson(Map<String, dynamic> json) => _$OnboardOptionModelFromJson(json);

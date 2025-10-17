@@ -1,7 +1,7 @@
 part of '../../onboard.dart';
 
 class CharacterSection extends StatelessWidget {
-  final OnboardContent content;
+  final OnboardIntroEntity content;
   const CharacterSection({super.key, required this.content});
 
   @override
@@ -10,10 +10,10 @@ class CharacterSection extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ChatBubble(message: content.chatMessage),
+          ChatBubble(message: content.title.text),
           32.verticalSpace,
           CharacterIllustration(
-            iconPath: content.iconPath,
+            iconPath: content.image,
           ),
         ],
       ),
@@ -90,10 +90,11 @@ class CharacterIllustration extends StatelessWidget {
             child: child,
           );
         },
-        child: SizedBox(
+        child: DCachedImage(
           key: ValueKey<String>(iconPath),
-          width: iconPath.contains('happy') ? 120.w : 210.w,
-          child: Image.asset(iconPath),
+          url: iconPath,
+          width: 210.w,
+          // width: iconPath.contains('happy') ? 120.w : 210.w,
         ),
       ),
     );

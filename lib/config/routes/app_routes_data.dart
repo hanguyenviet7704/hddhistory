@@ -37,7 +37,7 @@ class IntroRoute extends GoRouteData with $IntroRoute {
   @override
   Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
-      BlocProvider(create: (context) => AppDI.injector.get<IntroCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<IntroCubit>()),
       BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
     ],
     child: const IntroPage(),

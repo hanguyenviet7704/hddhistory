@@ -3,7 +3,7 @@ part of '../../onboard.dart';
 @freezed
 abstract class OnboardModel with _$OnboardModel {
   const factory OnboardModel({
-    @Default('') String id,
+    @Default(0) int id,
     @Default([]) List<OnboardOptionModel> age,
     @Default([]) List<OnboardOptionModel> gender,
     @Default([]) List<OnboardOptionModel> topicsWantToMaster,
@@ -12,6 +12,7 @@ abstract class OnboardModel with _$OnboardModel {
     @Default([]) List<OnboardOptionModel> comfortableLearningTime,
     @Default([]) List<OnboardOptionModel> dailyLearningGoal,
     @Default([]) List<OnboardOptionModel> timeToBecomeSkilled,
+    @Default([]) List<OnboardIntroModel> intro,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _OnboardModel;
@@ -21,7 +22,7 @@ abstract class OnboardModel with _$OnboardModel {
 
 extension OnboardModelExtension on OnboardModel {
   OnboardEntity toEntity() => OnboardEntity(
-    id: id,
+    id: id.toString(),
     age: age.map((model) => model.toEntity()).toList(),
     gender: gender.map((model) => model.toEntity()).toList(),
     topicsWantToMaster: topicsWantToMaster.map((model) => model.toEntity()).toList(),
@@ -30,6 +31,7 @@ extension OnboardModelExtension on OnboardModel {
     comfortableLearningTime: comfortableLearningTime.map((model) => model.toEntity()).toList(),
     dailyLearningGoal: dailyLearningGoal.map((model) => model.toEntity()).toList(),
     timeToBecomeSkilled: timeToBecomeSkilled.map((model) => model.toEntity()).toList(),
+    intro: intro.map((model) => model.toEntity()).toList(),
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

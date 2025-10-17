@@ -147,6 +147,16 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
             },
           )
           .toList(),
+      'intro': entity.intro
+          .map(
+            (e) => {
+              'id': e.id,
+              'image': e.image,
+              'title': e.title.toJson(),
+              'content': e.content.toJson(),
+            },
+          )
+          .toList(),
       'createdAt': entity.createdAt?.toIso8601String(),
       'updatedAt': entity.updatedAt?.toIso8601String(),
     };

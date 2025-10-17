@@ -13,10 +13,12 @@ import 'package:retrofit/retrofit.dart';
 //* Parts - internal files using 'part of'
 part 'data/datasources/local/onboard_local_data_source.dart';
 part 'data/datasources/remote/onboard_api.dart';
+part 'data/models/onboard_intro_model.dart';
 part 'data/models/onboard_model.dart';
 part 'data/models/onboard_option_model.dart';
 part 'data/repositories/onboard_repository.dart';
 part 'domain/entities/onboard_entity.dart';
+part 'domain/entities/onboard_intro_entity.dart';
 part 'domain/entities/onboard_option_entity.dart';
 part 'domain/repositories/i_onboard_repository.dart';
 part 'domain/usecases/create_onboard_usecase.dart';
