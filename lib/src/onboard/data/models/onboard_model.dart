@@ -3,14 +3,17 @@ part of '../../onboard.dart';
 @freezed
 abstract class OnboardModel with _$OnboardModel {
   const factory OnboardModel({
-    @Default('') String id,
-    @Default(false) bool isNativeEnglishSpeaker,
-    @Default('') String comfortableLearningTime,
-    @Default('') String dailyLearningGoal,
-    @Default('') String timeToBecomeSkilled,
-    @Default([]) List<OnboardOptionModel> topicsWantToMaster,
-    @Default([]) List<OnboardOptionModel> seemLikeYou,
-    @Default([]) List<OnboardOptionModel> strugglesWhenSpeaking,
+    String id,
+    List<OnboardOptionModel> age,
+    List<OnboardOptionModel> gender,
+    List<OnboardOptionModel> topicsWantToMaster,
+    List<OnboardOptionModel> seemLikeYou,
+    List<OnboardOptionModel> strugglesWhenSpeaking,
+    List<OnboardOptionModel> comfortableLearningTime,
+    List<OnboardOptionModel> dailyLearningGoal,
+    List<OnboardOptionModel> timeToBecomeSkilled,
+    DateTime createdAt,
+    DateTime updatedAt,
   }) = _OnboardModel;
 
   factory OnboardModel.fromJson(Map<String, dynamic> json) => _$OnboardModelFromJson(json);

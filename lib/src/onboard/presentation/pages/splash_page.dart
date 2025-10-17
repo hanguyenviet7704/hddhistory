@@ -23,6 +23,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _getAppData() async {
+    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
     AppGlobalValue.accessToken = context.read<UserCubit>().state.accessToken;
     AppGlobalValue.refreshToken = context.read<UserCubit>().state.refreshToken;
     AppGlobalValue.isGuest = context.read<UserCubit>().state.isGuest;

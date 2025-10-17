@@ -22,7 +22,6 @@ class IntroPage extends StatelessWidget {
                 child: GestureDetector(
                   onTap: () {
                     OnboardRoute().go(context);
-                    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
                   },
                   child: Padding(
                     padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
