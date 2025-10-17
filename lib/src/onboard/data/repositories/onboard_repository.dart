@@ -22,28 +22,16 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
   }
 
   @override
-  TaskEither<AppException, BasePageBreak<OnboardEntity>> getAllOnboards(
-    PageBreakRequest request,
-  ) {
-    return callApiPageBreak<OnboardModel, OnboardEntity>(
-      apiCall: () => _api.getAllOnboards(request),
+  TaskEither<AppException, OnboardEntity> getAllOnboards() {
+    return callApiWithTransform<OnboardModel, OnboardEntity>(
+      apiCall: () => _api.getAllOnboard(),
       transform: (model) => model.toEntity(),
-      onSuccess: (pageData) async {
-        // Cache only the items from the current page
-        await _localDataSource.cacheOnboards(pageData.items);
-      },
+      onSuccess: (data) async => await _localDataSource.cacheOnboard(data ?? OnboardModel()),
       onError: () async {
-        final cachedModels = await _localDataSource.getCachedOnboards();
-        if (cachedModels.isNotEmpty) {
-          return BasePageBreak<OnboardEntity>(
-            currentPage: 1,
-            totalPages: 1,
-            itemsPerPage: cachedModels.length,
-            items: cachedModels.map((model) => model.toEntity()).toList(),
-          );
-        }
-        return null;
+        final cachedModel = await _localDataSource.getCachedOnboard('');
+        return cachedModel?.toEntity();
       },
+      defaultValue: OnboardEntity(),
     );
   }
 

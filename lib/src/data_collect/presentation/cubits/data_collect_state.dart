@@ -4,6 +4,7 @@ part of '../../data_collect.dart';
 abstract class DataCollectState with _$DataCollectState {
   const factory DataCollectState({
     @Default(DataCollectStatus.initial) DataCollectStatus status,
+    @Default(OnboardEntity()) OnboardEntity onboardData,
     @Default([]) List<UserCollectDataEntity> items,
     UserCollectDataEntity? selectedItem,
     String? errorMessage,

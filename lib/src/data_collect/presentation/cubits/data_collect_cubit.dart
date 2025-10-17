@@ -18,6 +18,8 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
 
   TextEditingController nameController = TextEditingController();
 
+  void setOnboardData(OnboardEntity onboardData) => emit(state.copyWith(onboardData: onboardData));
+
   Future<void> loadAllUserCollectDatas() async {
     emit(state.copyWith(status: DataCollectStatus.loading));
 

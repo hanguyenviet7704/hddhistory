@@ -7,9 +7,7 @@ abstract class OnboardApi {
   factory OnboardApi(@Named(DIKey.appDio) Dio dio) = _OnboardApi;
 
   @GET(AppEndpoint.onboardings)
-  Future<BaseResponse<BasePageBreak<OnboardModel>>> getAllOnboards(
-    @Queries() PageBreakRequest request,
-  );
+  Future<BaseResponse<OnboardModel>> getAllOnboard();
 
   @GET(AppEndpoint.onboardingsById)
   Future<BaseResponse<OnboardModel>> getOnboard(@Path('id') String id);
