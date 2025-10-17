@@ -4,6 +4,8 @@ part of '../../data_collect.dart';
 abstract class DataCollectState with _$DataCollectState {
   const factory DataCollectState({
     @Default(DataCollectStatus.initial) DataCollectStatus status,
+    @Default(DataCollectStep.name) DataCollectStep currentStep,
+    String? errorMessage,
     @Default(OnboardEntity()) OnboardEntity onboardData,
     String? userName,
     OnboardOptionEntity? selectedAgeRange,
@@ -13,14 +15,7 @@ abstract class DataCollectState with _$DataCollectState {
     OnboardOptionEntity? selectedBestTimeToLearn,
     OnboardOptionEntity? selectedDailyLearningGoal,
     OnboardOptionEntity? selectedTimeToBecomeSkilled,
-
-
-    @Default([]) List<UserCollectDataEntity> items,
-    UserCollectDataEntity? selectedItem,
-    String? errorMessage,
-    bool? isNativeEnglishSpeaker,
-    @Default([]) List<bool> selectedThisDescribeYouOptions,
-    @Default(DataCollectStep.name) DataCollectStep currentStep,
+    
     // Analysis progress fields
     @Default(0.0) double personalBackgroundProgress,
     @Default(0.0) double difficultiesProgress,
