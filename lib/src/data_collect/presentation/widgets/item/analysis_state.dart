@@ -10,9 +10,6 @@ class AnalysisState extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar space
-            SizedBox(height: 59.h),
-
             // Content
             Expanded(
               child: Padding(
@@ -42,9 +39,6 @@ class AnalysisState extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Bottom space for home indicator
-            SizedBox(height: 34.h),
           ],
         ),
       ),

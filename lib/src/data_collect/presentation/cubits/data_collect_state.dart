@@ -15,13 +15,13 @@ abstract class DataCollectState with _$DataCollectState {
     OnboardOptionEntity? selectedBestTimeToLearn,
     OnboardOptionEntity? selectedDailyLearningGoal,
     OnboardOptionEntity? selectedTimeToBecomeSkilled,
+    @Default(false) bool analysisComplete,
     
     // Analysis progress fields
     @Default(0.0) double personalBackgroundProgress,
     @Default(0.0) double difficultiesProgress,
     @Default(0.0) double learningGoalProgress,
     @Default(0.0) double studyHabitsProgress,
-    @Default(false) bool analysisComplete,
   }) = _DataCollectState;
 
   factory DataCollectState.initial() => const DataCollectState();

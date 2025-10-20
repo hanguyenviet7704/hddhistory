@@ -1,12 +1,7 @@
 part of '../../../data_collect.dart';
 
 class UserDataState extends StatelessWidget {
-  final DataCollectState state;
-
-  const UserDataState({
-    super.key,
-    required this.state,
-  });
+  const UserDataState({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -15,9 +10,6 @@ class UserDataState extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar space
-            SizedBox(height: 59.h),
-
             // Content
             Expanded(
               child: Padding(
@@ -28,35 +20,41 @@ class UserDataState extends StatelessWidget {
                     // Success illustration
                     SuccessIllustration(),
 
-                    SizedBox(height: 36.h),
+                    36.verticalSpace,
 
                     // Progress bars
-                    Column(
-                      children: [
-                        SummaryProgressBar(
-                          title: "Personal Background",
-                          progress: state.personalBackgroundProgress,
-                          progressColor: const Color(0xFF0BA5EC), // Blue
-                        ),
-                        SizedBox(height: 24.h),
-                        SummaryProgressBar(
-                          title: "Difficulties",
-                          progress: state.difficultiesProgress,
-                          progressColor: const Color(0xFF23AE86), // Green
-                        ),
-                        SizedBox(height: 24.h),
-                        SummaryProgressBar(
-                          title: "Learning Goal",
-                          progress: state.learningGoalProgress,
-                          progressColor: const Color(0xFFF99E0B), // Orange
-                        ),
-                        SizedBox(height: 24.h),
-                        SummaryProgressBar(
-                          title: "Study Habits",
-                          progress: state.studyHabitsProgress,
-                          progressColor: const Color(0xFFF04438), // Red
-                        ),
-                      ],
+                    BlocBuilder<DataCollectCubit, DataCollectState>(
+                      buildWhen: (previous, current) => previous.personalBackgroundProgress != current.personalBackgroundProgress || previous.difficultiesProgress != current.difficultiesProgress || previous.learningGoalProgress != current.learningGoalProgress || previous.studyHabitsProgress != current.studyHabitsProgress,
+                      builder: (context, state) {
+                        return Column(
+                          spacing: 24.h,
+                          children: [
+                            SummaryProgressBar(
+                              title: context.text.onboardingEvaluateBackground,
+                              progress: state.personalBackgroundProgress,
+                              progressColor: const Color(0xFF0BA5EC), // Blue
+                            ),
+
+                            SummaryProgressBar(
+                              title: context.text.onboardingEvaluateDificulty,
+                              progress: state.difficultiesProgress,
+                              progressColor: const Color(0xFF23AE86), // Green
+                            ),
+
+                            SummaryProgressBar(
+                              title: context.text.onboardingEvaluateLearningGoal,
+                              progress: state.learningGoalProgress,
+                              progressColor: const Color(0xFFF99E0B), // Orange
+                            ),
+
+                            SummaryProgressBar(
+                              title: context.text.onboardingEvaluateStudyHabits,
+                              progress: state.studyHabitsProgress,
+                              progressColor: const Color(0xFFF04438), // Red
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ],
                 ),
@@ -65,9 +63,6 @@ class UserDataState extends StatelessWidget {
 
             // Bottom CTA
             StartJourneyButton(),
-
-            // Bottom space for home indicator
-            SizedBox(height: 22.h),
           ],
         ),
       ),
