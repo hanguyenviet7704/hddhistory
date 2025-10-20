@@ -5,7 +5,6 @@ class DataCollectSummaryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    context.read<DataCollectCubit>().startAnalysis();
     return BlocSelector<DataCollectCubit, DataCollectState, bool>(
       selector: (state) => state.analysisComplete,
       builder: (context, analysisComplete) {

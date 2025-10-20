@@ -1,7 +1,35 @@
 part of '../../../data_collect.dart';
 
-class UserDataState extends StatelessWidget {
+class UserDataState extends StatefulWidget {
   const UserDataState({super.key});
+
+  @override
+  State<UserDataState> createState() => _UserDataStateState();
+}
+
+class _UserDataStateState extends State<UserDataState> {
+  late final ValueNotifier<bool> _showStartButtonNotifier;
+  int _completedAnimations = 0;
+  static const int _totalAnimations = 4; // Total number of progress bars
+
+  @override
+  void initState() {
+    super.initState();
+    _showStartButtonNotifier = ValueNotifier<bool>(false);
+  }
+
+  @override
+  void dispose() {
+    _showStartButtonNotifier.dispose();
+    super.dispose();
+  }
+
+  void _onAnimationComplete() {
+    _completedAnimations++;
+    if (_completedAnimations >= _totalAnimations) {
+      _showStartButtonNotifier.value = true;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,39 +46,58 @@ class UserDataState extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Success illustration
-                    SuccessIllustration(),
-
+                    DCachedImage(
+                      width: 103.w,
+                      url: AppAsset.images.common.birdHappy.path,
+                      fit: BoxFit.contain,
+                    ),
                     36.verticalSpace,
 
                     // Progress bars
                     BlocBuilder<DataCollectCubit, DataCollectState>(
-                      buildWhen: (previous, current) => previous.personalBackgroundProgress != current.personalBackgroundProgress || previous.difficultiesProgress != current.difficultiesProgress || previous.learningGoalProgress != current.learningGoalProgress || previous.studyHabitsProgress != current.studyHabitsProgress,
+                      buildWhen: (previous, current) =>
+                          previous.personalBackgroundProgress != current.personalBackgroundProgress ||
+                          previous.difficultiesProgress != current.difficultiesProgress ||
+                          previous.learningGoalProgress != current.learningGoalProgress ||
+                          previous.studyHabitsProgress != current.studyHabitsProgress,
                       builder: (context, state) {
                         return Column(
                           spacing: 24.h,
                           children: [
-                            SummaryProgressBar(
+                            // First progress bar - starts immediately
+                            AnimatedSummaryProgressBar(
                               title: context.text.onboardingEvaluateBackground,
                               progress: state.personalBackgroundProgress,
                               progressColor: const Color(0xFF0BA5EC), // Blue
+                              delay: Duration.zero,
+                              onAnimationComplete: _onAnimationComplete,
                             ),
 
-                            SummaryProgressBar(
+                            // Second progress bar - starts after first one completes
+                            AnimatedSummaryProgressBar(
                               title: context.text.onboardingEvaluateDificulty,
                               progress: state.difficultiesProgress,
                               progressColor: const Color(0xFF23AE86), // Green
+                              delay: const Duration(milliseconds: 1500),
+                              onAnimationComplete: _onAnimationComplete,
                             ),
 
-                            SummaryProgressBar(
+                            // Third progress bar - starts after second one completes
+                            AnimatedSummaryProgressBar(
                               title: context.text.onboardingEvaluateLearningGoal,
                               progress: state.learningGoalProgress,
                               progressColor: const Color(0xFFF99E0B), // Orange
+                              delay: const Duration(milliseconds: 3000),
+                              onAnimationComplete: _onAnimationComplete,
                             ),
 
-                            SummaryProgressBar(
+                            // Fourth progress bar - starts after third one completes
+                            AnimatedSummaryProgressBar(
                               title: context.text.onboardingEvaluateStudyHabits,
                               progress: state.studyHabitsProgress,
                               progressColor: const Color(0xFFF04438), // Red
+                              delay: const Duration(milliseconds: 4500),
+                              onAnimationComplete: _onAnimationComplete,
                             ),
                           ],
                         );
@@ -61,8 +108,13 @@ class UserDataState extends StatelessWidget {
               ),
             ),
 
-            // Bottom CTA
-            StartJourneyButton(),
+            // Bottom CTA - only show after all animations complete
+            ValueListenableBuilder<bool>(
+              valueListenable: _showStartButtonNotifier,
+              builder: (context, showButton, child) {
+                return showButton ? const StartJourneyButton() : const SizedBox.shrink();
+              },
+            ),
           ],
         ),
       ),

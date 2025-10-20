@@ -60,6 +60,8 @@ extension DataCollectStateExtension on DataCollectState {
     DataCollectStep.howMuchTimeYouWantToBecomeSkilled => selectedTimeToBecomeSkilled != null,
   };
 
+  bool get isLastStep => currentStep == DataCollectStep.howMuchTimeYouWantToBecomeSkilled;
+
   bool isTopicSelected(OnboardOptionEntity topic) => selectedTopics.contains(topic);
   bool isStruggleSelected(OnboardOptionEntity struggle) => selectedStruggles.contains(struggle);
 }

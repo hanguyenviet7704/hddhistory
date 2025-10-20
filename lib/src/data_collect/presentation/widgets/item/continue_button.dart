@@ -6,7 +6,8 @@ class ContinueButton extends StatelessWidget {
   void _onPressed(BuildContext context, DataCollectState state) {
     if (!state.canContinue) return;
 
-    if (state.currentStep == DataCollectStep.howMuchTimeYouWantToBecomeSkilled) {
+    if (state.isLastStep) {
+      context.read<DataCollectCubit>().startAnalysis();
       DataCollectSummaryRoute().go(context);
       return;
     }
@@ -38,7 +39,7 @@ class ContinueButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(1000.r),
             ),
             child: AppText(
-              'Continue',
+              context.text.onboardingSkipGreetingButton,
               style: AppStyle.textBold16.copyWith(
                 color: state.canContinue
                     ? Colors
