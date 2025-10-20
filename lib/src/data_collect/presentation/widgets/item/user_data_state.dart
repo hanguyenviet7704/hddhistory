@@ -112,7 +112,36 @@ class _UserDataStateState extends State<UserDataState> {
             ValueListenableBuilder<bool>(
               valueListenable: _showStartButtonNotifier,
               builder: (context, showButton, child) {
-                return showButton ? const StartJourneyButton() : const SizedBox.shrink();
+                return AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 500),
+                  transitionBuilder: (Widget child, Animation<double> animation) {
+                    return SlideTransition(
+                      position:
+                          Tween<Offset>(
+                            begin: const Offset(0, 1.0), // Start from bottom
+                            end: Offset.zero, // End at final position
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeOut,
+                            ),
+                          ),
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: showButton
+                      ? Container(
+                          key: const ValueKey('start_button'),
+                          child: StartJourneyButton(),
+                        )
+                      : SizedBox(
+                          key: const ValueKey('empty_space'),
+                          height: 94.h,
+                        ),
+                );
               },
             ),
           ],
