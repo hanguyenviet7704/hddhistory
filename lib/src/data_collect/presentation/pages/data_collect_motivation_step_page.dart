@@ -10,9 +10,6 @@ class DataCollectMotivationStepPage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            // Status bar space
-            SizedBox(height: 59.h),
-
             // Content
             Expanded(
               child: Padding(
@@ -21,49 +18,50 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Illustration
-                    SizedBox(
-                      height: 239.h,
+                    Image.asset(
                       width: 245.w,
-                      child: Image.asset(
-                        'assets/images/common/bird_happy.png',
-                        fit: BoxFit.contain,
-                      ),
+                      AppAsset.images.common.birdWing.path,
+                      fit: BoxFit.contain,
                     ),
 
-                    SizedBox(height: 32.h),
+                    32.verticalSpace,
 
                     // Title and subtitle
-                    Column(
-                      children: [
-                        AppText(
-                          "You're not alone!",
-                          textAlign: TextAlign.center,
-                          style: AppStyle.textBold24.copyWith(
-                            color: Colors.white, // Text/White
-                            fontWeight: FontWeight.w600,
+                    Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      child: Column(
+                        children: [
+                          AppText(
+                            context.text.onboardingAfterOnboardEncourageTitle,
+                            textAlign: TextAlign.center,
+                            maxLines: 2,
+                            style: AppStyle.textBold24.copyWith(
+                              color: Colors.white, // Text/White
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                        SizedBox(height: 12.h),
-                        AppText(
-                          "72% of our users shared the same response",
-                          textAlign: TextAlign.center,
-                          style: AppStyle.textBold20.copyWith(
-                            color: const Color(0xFF362F82), // Brand/Brand/Primary/700
-                            fontWeight: FontWeight.w600,
+
+                          AppText(
+                            context.text.onboardingAfterOnboardEncourageMessage,
+                            maxLines: 3,
+                            textAlign: TextAlign.center,
+                            style: AppStyle.textBold20.copyWith(
+                              color: const Color(0xFF362F82), // Brand/Brand/Primary/700
+                              fontWeight: FontWeight.w600,
+                            ),
                           ),
-                        ),
-                      ],
-                    ),
-
-                    SizedBox(height: 12.h),
-
-                    // Description
-                    AppText(
-                      "Start today and become a better version of yourself through your voice",
-                      textAlign: TextAlign.center,
-                      style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF362F82).op(0.6), // Brand/Brand/Primary/700 with 60% opacity
-                        fontWeight: FontWeight.w400,
+                          12.verticalSpace,
+                          // Description
+                          AppText(
+                            context.text.onboardingAfterOnboardEncourageSubText,
+                            maxLines: 3,
+                            textAlign: TextAlign.center,
+                            style: AppStyle.text14.copyWith(
+                              color: const Color(0xFF362F82).op(0.6), // Brand/Brand/Primary/700 with 60% opacity
+                              fontWeight: FontWeight.w400,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -85,7 +83,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(1000.r),
                 ),
                 child: AppText(
-                  'Continue',
+                  context.text.onboardingSkipGreetingButton,
                   style: AppStyle.textBold16.copyWith(
                     color: Colors.white, // Text/White
                     fontWeight: FontWeight.w600,
@@ -93,9 +91,6 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                 ),
               ),
             ),
-
-            // Bottom space for home indicator
-            SizedBox(height: 34.h),
           ],
         ),
       ),

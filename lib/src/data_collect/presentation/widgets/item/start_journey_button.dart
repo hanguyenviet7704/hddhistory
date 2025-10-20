@@ -8,11 +8,7 @@ class StartJourneyButton extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       child: AppButton.primary(
-        onPressed: () {
-          // Navigate to home or next screen
-          // This would be implemented based on app navigation
-          HomeRoute().go(context);
-        },
+        onPressed: () => HomeRoute().go(context),
         fullWidthBtn: true,
         height: 54.h,
         decoration: BoxDecoration(

@@ -17,5 +17,6 @@ extension OnboardOptionModelExtension on OnboardOptionModel {
     id: id,
     icon: icon,
     label: label,
+    title: title,
   );
 }

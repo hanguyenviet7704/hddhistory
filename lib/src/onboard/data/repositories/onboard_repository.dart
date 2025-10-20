@@ -81,6 +81,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
@@ -90,6 +91,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
@@ -99,6 +101,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
@@ -108,6 +111,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
@@ -117,6 +121,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
@@ -126,6 +131,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
@@ -135,6 +141,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
@@ -144,6 +151,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'id': e.id,
               'icon': e.icon,
               'label': e.label.toJson(),
+              'title': e.title.toJson(),
             },
           )
           .toList(),
