@@ -62,8 +62,8 @@ class DataCollectRoute extends GoRouteData with $DataCollectRoute {
   const DataCollectRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => BlocProvider(
-    create: (context) => AppDI.injector.get<DataCollectCubit>(),
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<DataCollectCubit>(),
     child: const DataCollectPage(),
   );
 }
@@ -81,7 +81,10 @@ class DataCollectSummaryRoute extends GoRouteData with $DataCollectSummaryRoute 
   const DataCollectSummaryRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const DataCollectSummaryPage();
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<DataCollectCubit>(),
+    child: const DataCollectSummaryPage(),
+  );
 }
 
 //* Auth Pages
