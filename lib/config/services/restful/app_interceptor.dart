@@ -68,30 +68,30 @@ class AppInterceptors extends BaseInterceptor {
           LogDev.info('$prefix Access token expired, attempting to refresh...');
 
           // Try to refresh the access token
-          final authResponse = await AppDI.injector.get<SupabaseService>().refreshAccessToken();
+          // final authResponse = await AppDI.injector.get<SupabaseService>().refreshAccessToken();
 
-          if (authResponse.session != null) {
-            LogDev.info('$prefix Token refreshed successfully, retrying original request...');
+          // if (authResponse.session != null) {
+          //   LogDev.info('$prefix Token refreshed successfully, retrying original request...');
 
-            // Update the authorization header with new token
-            err.requestOptions.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
+          //   // Update the authorization header with new token
+          //   err.requestOptions.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
 
-            // Increment retry count
-            err.requestOptions.extra[_retryCountKey] = retryCount + 1;
+          //   // Increment retry count
+          //   err.requestOptions.extra[_retryCountKey] = retryCount + 1;
 
-            // Retry the original request with new token
-            final response = await AppDI.injector.get<Dio>(instanceName: DIKey.appDio).fetch(err.requestOptions);
+          //   // Retry the original request with new token
+          //   final response = await AppDI.injector.get<Dio>(instanceName: DIKey.appDio).fetch(err.requestOptions);
 
-            LogDev.info('$prefix Retry successful after token refresh');
+          //   LogDev.info('$prefix Retry successful after token refresh');
 
-            // Return successful response
-            return handler.resolve(response);
-          } else {
-            // Refresh failed, handle as unauthorized
-            LogDev.error('$prefix Token refresh failed: No session returned');
-            _handleUnauthorized();
-            return handler.reject(err);
-          }
+          //   // Return successful response
+          //   return handler.resolve(response);
+          // } else {
+          //   // Refresh failed, handle as unauthorized
+          //   LogDev.error('$prefix Token refresh failed: No session returned');
+          //   _handleUnauthorized();
+          //   return handler.reject(err);
+          // }
         } catch (refreshError) {
           LogDev.error('$prefix Failed to refresh token: $refreshError');
 

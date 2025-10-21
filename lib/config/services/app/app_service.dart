@@ -45,8 +45,6 @@ class AppService {
 
   ILocalStoreService get localStoreService => AppDI.injector.get<ILocalStoreService>();
 
-  SupabaseService get supabaseService => AppDI.injector.get<SupabaseService>();
-
   DeviceInfoService get deviceInfoService => AppDI.injector.get<DeviceInfoService>();
 
   PackageInfoService get packageInfoService => AppDI.injector.get<PackageInfoService>();
@@ -98,7 +96,6 @@ class AppService {
     // Initialize app event services early - they now handle tracking permission internally
     await appEventService.initialize();
 
-    supabaseService.initialize();
     await firebaseRemoteConfigService.initialize();
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();

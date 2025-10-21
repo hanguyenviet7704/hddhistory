@@ -159,8 +159,8 @@ class AppGraphQLInterceptor extends IGraphQLInterceptor {
     }
 
     try {
-      final supabaseService = AppDI.injector.get<SupabaseService>();
-      await supabaseService.refreshAccessToken();
+      // final supabaseService = AppDI.injector.get<SupabaseService>();
+      // await supabaseService.refreshAccessToken();
       LogDev.info('Successfully refreshed access token in GraphQL interceptor');
       _completeRefreshQueue();
       return true;

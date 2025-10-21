@@ -3,23 +3,53 @@ part of 'repositories.dart';
 @LazySingleton(as: IAuthRepository)
 class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository {
   final AuthApi _authApi;
-  AuthRepository(this._authApi);
+  final AuthService _authService;
+  AuthRepository(this._authApi, this._authService);
 
   @override
   TaskEither<AppException, Auth> login(Map<String, dynamic> body) {
     return TaskEither.tryCatch(
       () async {
-        AuthResponse response = await AppDI.injector.get<SupabaseService>().signInWithPassword(
-          email: body['email'] as String,
-          password: body['password'] as String,
+        final userCredential = await _authService.signInWithEmail(
+          body['email'] as String,
+          body['password'] as String,
         );
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+
         return Auth(
-          accessToken: response.session?.accessToken ?? '',
-          tokenType: response.session?.tokenType ?? '',
-          expiresIn: response.session?.expiresIn ?? 0,
-          expiresAt: response.session?.expiresIn ?? 0,
-          refreshToken: response.session?.refreshToken ?? '',
-          user: AppUser.fromJson(response.user?.toJson() ?? {}),
+          accessToken: idToken,
+          tokenType: 'Bearer',
+          expiresIn: 3600, // Default to 1 hour
+          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+          refreshToken: user.refreshToken ?? '',
+          user: AppUser(
+            id: user.uid,
+            email: user.email ?? '',
+            isAnonymous: user.isAnonymous,
+            userMetadata: UserMetaData(
+              email: user.email ?? '',
+              username: user.displayName ?? '',
+              emailVerified: user.emailVerified,
+            ),
+            identities: [
+              Identity(
+                id: user.uid,
+                provider: 'email',
+                email: user.email ?? '',
+                createdAt: user.metadata.creationTime,
+                lastSignInAt: user.metadata.lastSignInTime,
+              ),
+            ],
+            createdAt: user.metadata.creationTime,
+            lastSignInAt: user.metadata.lastSignInTime,
+          ),
         );
       },
       (error, stackTrace) {
@@ -35,14 +65,43 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   TaskEither<AppException, Auth> loginSSOGoogle() {
     return TaskEither.tryCatch(
       () async {
-        AuthResponse response = await AppDI.injector.get<SupabaseService>().signInWithGoogle();
+        final userCredential = await _authService.signInWithGoogle();
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+
         return Auth(
-          accessToken: response.session?.accessToken ?? '',
-          tokenType: response.session?.tokenType ?? '',
-          expiresIn: response.session?.expiresIn ?? 0,
-          expiresAt: response.session?.expiresIn ?? 0,
-          refreshToken: response.session?.refreshToken ?? '',
-          user: AppUser.fromJson(response.user?.toJson() ?? {}),
+          accessToken: idToken,
+          tokenType: 'Bearer',
+          expiresIn: 3600, // Default to 1 hour
+          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+          refreshToken: user.refreshToken ?? '',
+          user: AppUser(
+            id: user.uid,
+            email: user.email ?? '',
+            isAnonymous: user.isAnonymous,
+            userMetadata: UserMetaData(
+              email: user.email ?? '',
+              username: user.displayName ?? '',
+              emailVerified: user.emailVerified,
+            ),
+            identities: [
+              Identity(
+                id: user.uid,
+                provider: 'google.com',
+                email: user.email ?? '',
+                createdAt: user.metadata.creationTime,
+                lastSignInAt: user.metadata.lastSignInTime,
+              ),
+            ],
+            createdAt: user.metadata.creationTime,
+            lastSignInAt: user.metadata.lastSignInTime,
+          ),
         );
       },
       (error, stackTrace) {
@@ -58,14 +117,43 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   TaskEither<AppException, Auth> loginSSOApple() {
     return TaskEither.tryCatch(
       () async {
-        AuthResponse response = await AppDI.injector.get<SupabaseService>().signInWithApple();
+        final userCredential = await _authService.signInWithApple();
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+
         return Auth(
-          accessToken: response.session?.accessToken ?? '',
-          tokenType: response.session?.tokenType ?? '',
-          expiresIn: response.session?.expiresIn ?? 0,
-          expiresAt: response.session?.expiresIn ?? 0,
-          refreshToken: response.session?.refreshToken ?? '',
-          user: AppUser.fromJson(response.user?.toJson() ?? {}),
+          accessToken: idToken,
+          tokenType: 'Bearer',
+          expiresIn: 3600, // Default to 1 hour
+          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+          refreshToken: user.refreshToken ?? '',
+          user: AppUser(
+            id: user.uid,
+            email: user.email ?? '',
+            isAnonymous: user.isAnonymous,
+            userMetadata: UserMetaData(
+              email: user.email ?? '',
+              username: user.displayName ?? '',
+              emailVerified: user.emailVerified,
+            ),
+            identities: [
+              Identity(
+                id: user.uid,
+                provider: 'apple.com',
+                email: user.email ?? '',
+                createdAt: user.metadata.creationTime,
+                lastSignInAt: user.metadata.lastSignInTime,
+              ),
+            ],
+            createdAt: user.metadata.creationTime,
+            lastSignInAt: user.metadata.lastSignInTime,
+          ),
         );
       },
       (error, stackTrace) {
@@ -81,23 +169,46 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   TaskEither<AppException, Auth> register(Map<String, dynamic> body) {
     return TaskEither.tryCatch(
       () async {
-        AuthResponse response = await AppDI.injector.get<SupabaseService>().signUp(
-          email: body['email'] as String,
-          password: body['password'] as String,
-          data: {
-            'email': body['email'] as String,
-            'username': 'user_${DateTime.now().millisecondsSinceEpoch}',
-          },
+        final userCredential = await _authService.signUpWithEmail(
+          body['email'] as String,
+          body['password'] as String,
         );
+        final user = userCredential.user;
 
-        LogDev.info('register response: ${response.user?.toJson().toString()}');
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+
         return Auth(
-          accessToken: response.session?.accessToken ?? '',
-          tokenType: response.session?.tokenType ?? '',
-          expiresIn: response.session?.expiresIn ?? 0,
-          expiresAt: response.session?.expiresIn ?? 0,
-          refreshToken: response.session?.refreshToken ?? '',
-          user: AppUser.fromJson(response.user?.toJson() ?? {}),
+          accessToken: idToken,
+          tokenType: 'Bearer',
+          expiresIn: 3600, // Default to 1 hour
+          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
+          refreshToken: user.refreshToken ?? '',
+          user: AppUser(
+            id: user.uid,
+            email: user.email ?? '',
+            isAnonymous: user.isAnonymous,
+            userMetadata: UserMetaData(
+              email: user.email ?? '',
+              username: user.displayName ?? '',
+              emailVerified: user.emailVerified,
+            ),
+            identities: [
+              Identity(
+                id: user.uid,
+                provider: 'email',
+                email: user.email ?? '',
+                createdAt: user.metadata.creationTime,
+                lastSignInAt: user.metadata.lastSignInTime,
+              ),
+            ],
+            createdAt: user.metadata.creationTime,
+            lastSignInAt: user.metadata.lastSignInTime,
+          ),
         );
       },
       (error, stackTrace) {
@@ -119,7 +230,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
     // return callApi(apiCall: () => _authApi.logout());
     return TaskEither.tryCatch(
       () async {
-        await AppDI.injector.get<SupabaseService>().signOutAndClearData();
+        await _authService.signOut();
         return BaseResponse(data: unit);
       },
       (error, stackTrace) {

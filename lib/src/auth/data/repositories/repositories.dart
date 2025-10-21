@@ -10,8 +10,6 @@ import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:injectable/injectable.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-//* Import all the local files here
-import '../../../../config/di/di.dart';
 import '../../../../config/services/services.dart';
 import '../../../../core/base/base.dart';
 import '../../../../core/constants/constants.dart';

@@ -27,4 +27,4 @@ part 'no_auth/no_auth_page.dart';
 //? OTP
 // part 'otp/pages/otp_page.dart';
 //? Register
-part 'register/pages/register_page.dart';
+part 'register/register_page.dart';

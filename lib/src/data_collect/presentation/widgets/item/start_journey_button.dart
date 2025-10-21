@@ -8,7 +8,7 @@ class StartJourneyButton extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(20.w),
       child: AppButton.primary(
-        onPressed: () => HomeRoute().go(context),
+        onPressed: () => RegisterRoute().go(context),
         fullWidthBtn: true,
         height: 54.h,
         decoration: BoxDecoration(

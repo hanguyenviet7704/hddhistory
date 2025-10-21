@@ -1,11 +1,11 @@
 part of '../../auth.dart';
 
-class SocialLoginButton extends StatelessWidget {
+class SocialLoginButton2 extends StatelessWidget {
   final String text;
   final String iconPath;
   final VoidCallback onPressed;
 
-  const SocialLoginButton({super.key, required this.text, required this.iconPath, required this.onPressed});
+  const SocialLoginButton2({super.key, required this.text, required this.iconPath, required this.onPressed});
 
   @override
   Widget build(BuildContext context) {
