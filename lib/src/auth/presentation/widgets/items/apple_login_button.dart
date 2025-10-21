@@ -11,7 +11,7 @@ class AppleLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SocialLoginButton(
-      text: 'Continue with Apple',
+      text: context.text.authAppleLabel,
       icon: Image.asset(
         AppAsset.icons.common.logoApple.path,
         width: 18.w,

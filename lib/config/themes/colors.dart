@@ -17,7 +17,6 @@ mixin AppCustomColor {
 
   static List<Color> gradientPinProduct = [Color(0xFF000000).withValues(alpha: 0.8), Color(0xFFFFFFFF).withValues(alpha: 0.8)];
 
-
   static const Color white = Color(0xFFCCF1EE);
   static const Color orangeF4 = Color(0xFFF48321);
   static const Color orangeF5 = Color(0xFFF58921);
@@ -50,6 +49,7 @@ mixin AppCustomColor {
   static const Color blueD1 = Color(0xFFD1E9FF);
   static const Color blueEF = Color(0xFFEFF8FF);
   static const Color blueB2 = Color(0xFFB2DDFF);
+  static const Color blue55 = Color(0xFF554FF0);
   static const Color black36 = Color(0xFF364152);
   static const Color black21 = Color(0xFF212121);
   static const Color black0D = Color(0xFF0D121C);

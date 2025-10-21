@@ -11,7 +11,7 @@ abstract class {{#pascalCase}}{{feature_name}}{{/pascalCase}}State with _${{#pas
     String? errorMessage,
   }) = _{{#pascalCase}}{{feature_name}}{{/pascalCase}}State;
 
-  factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}State.initial() => const {{#pascalCase}}{{feature_name}}{{/pascalCase}}State();
+  factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}State.initial() => {{#pascalCase}}{{feature_name}}{{/pascalCase}}State();
 
   factory {{#pascalCase}}{{feature_name}}{{/pascalCase}}State.fromJson(Map<String, dynamic> json) => _${{#pascalCase}}{{feature_name}}{{/pascalCase}}StateFromJson(json);
 }

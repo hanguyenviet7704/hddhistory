@@ -87,7 +87,7 @@ class _SplashPageState extends State<SplashPage> {
       if (isFirstTime) {
         _trackingDrawWelcomeScrView('first_time');
       }
-      IntroRoute().go(context);
+      ChooseLanguageRoute().go(context);
     });
   }
 

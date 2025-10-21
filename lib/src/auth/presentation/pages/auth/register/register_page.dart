@@ -24,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     AppText(
-                      'Already member?',
+                      context.text.authAlreadyMember,
                       style: AppStyle.text14.copyWith(
                         color: const Color(0xFF110751),
                         fontWeight: FontWeight.normal,
@@ -37,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         // DNavigator.goNamed(RouteNamed.login);
                       },
                       child: AppText(
-                        'Log in',
+                        context.text.authLogIn,
                         style: AppStyle.text14.copyWith(
                           color: const Color(0xFF110751),
                           fontWeight: FontWeight.w600,
@@ -73,7 +73,8 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           SizedBox(height: 24.h),
                           AppText(
-                            'Helps you grow with\nevery conversation',
+                            context.text.authHeadLine,
+                            maxLines: 5,
                             style: AppStyle.text24.copyWith(
                               color: const Color(0xFF110751),
                               fontWeight: FontWeight.w600,
@@ -125,18 +126,15 @@ class _RegisterPageState extends State<RegisterPage> {
 
               // Bottom section with privacy policy and terms
               Padding(
-                padding: EdgeInsets.only(bottom: 20.h),
-                child: Column(
-                  children: [
-                    AppText(
-                      'By continuing I agree with the Privacy Policy, Terms & Conditions',
-                      style: AppStyle.text12.copyWith(
-                        color: const Color(0xFF110751).op(0.5),
-                        height: 1.75,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                  ],
+                padding: EdgeInsets.only(bottom: 20.h, left: 50.w, right: 50.w),
+                child: AppText(
+                  context.text.authLegalNotice,
+                  maxLines: 5,
+                  style: AppStyle.text12.copyWith(
+                    color: const Color(0xFF110751).op(0.5),
+                    height: 1.75,
+                  ),
+                  textAlign: TextAlign.center,
                 ),
               ),
             ],

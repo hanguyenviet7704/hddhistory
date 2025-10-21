@@ -27,10 +27,10 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     setTrackingUser();
 
     if (auth.user.id.isEmpty) return;
-    getMyProfiles();
-    AppConfig.instance.context!.read<PaywallCubit>()
-      ..reactiveFakePremium(auth.user.id)
-      ..addUserPremiumId(auth.user.id);
+    // getMyProfiles();
+    // AppConfig.instance.context!.read<PaywallCubit>()
+    //   ..reactiveFakePremium(auth.user.id)
+    //   ..addUserPremiumId(auth.user.id);
   }
 
   void setTrackingUser() {

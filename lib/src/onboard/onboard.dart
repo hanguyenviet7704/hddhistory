@@ -34,6 +34,7 @@ part 'presentation/cubits/intro_cubit.dart';
 part 'presentation/cubits/intro_state.dart';
 part 'presentation/cubits/onboard_cubit.dart';
 part 'presentation/cubits/onboard_state.dart';
+part 'presentation/pages/choose_language_page.dart';
 part 'presentation/pages/intro_page.dart';
 part 'presentation/pages/onboard_page.dart';
 part 'presentation/pages/splash_page.dart';

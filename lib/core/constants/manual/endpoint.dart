@@ -5,7 +5,8 @@ mixin AppEndpoint {
   static const String graphql = '/graphql';
 
   //* Auth
-  static const String login = '/auth/v1/signup';
+  static const String login = '/auth/v1/login';
+  static const String loginProvider = '/api/v1/users/login/provider';
   static const String register = '/auth/v1/signup';
   static const String logout = '/logout';
   static const String forgotPassword = '/forgot-password';
