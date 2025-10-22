@@ -9,6 +9,9 @@ abstract class AuthApi {
   @POST(AppEndpoint.login)
   Future<Auth> login(@Body() Map<String, dynamic> data);
 
+  @POST(AppEndpoint.loginProvider)
+  Future<Auth> loginProvider(@Body() Map<String, dynamic> data);
+
   @POST(AppEndpoint.register)
   Future<Auth> register(@Body() Map<String, dynamic> data);
 
