@@ -15,6 +15,7 @@ part of 'di.dart';
     'lib/src/**/presentation/cubits',
     'lib/src/onboard',
     'lib/src/data_collect',
+    'lib/src/auth2',
   ],
   initializerName: 'init',
   preferRelativeImports: true,

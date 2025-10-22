@@ -88,7 +88,6 @@ class ExerciseRepository with RestfulRequestHandlerMixin implements IExerciseRep
     return {
       'id': entity.id,
       'name': entity.name,
-      // TODO: Add more fields as needed
     };
   }
 }

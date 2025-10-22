@@ -44,7 +44,7 @@ class WordGrid extends StatelessWidget {
                   height: 37,
                   margin: const EdgeInsets.symmetric(horizontal: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF554FF0).withOpacity(0.1),
+                    color: const Color(0xFF554FF0).op(0.1),
                     border: Border.all(color: const Color(0xFF554FF0), width: 2, style: BorderStyle.solid),
                     borderRadius: BorderRadius.circular(8),
                   ),

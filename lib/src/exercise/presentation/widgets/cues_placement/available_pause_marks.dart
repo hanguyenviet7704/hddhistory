@@ -19,7 +19,7 @@ class AvailablePauseMarks extends StatelessWidget {
         final isHovering = candidateData.isNotEmpty;
         return Container(
           padding: const EdgeInsets.symmetric(vertical: 20),
-          decoration: isHovering ? BoxDecoration(color: const Color(0xFF554FF0).withOpacity(0.1), borderRadius: BorderRadius.circular(12)) : null,
+          decoration: isHovering ? BoxDecoration(color: const Color(0xFF554FF0).op(0.1), borderRadius: BorderRadius.circular(12)) : null,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: List.generate(totalMarks, (index) {
@@ -37,10 +37,10 @@ class AvailablePauseMarks extends StatelessWidget {
                         width: 36,
                         height: 36,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.9),
+                          color: Colors.white.op(0.9),
                           border: Border.all(color: const Color(0xFF554FF0), width: 2),
                           borderRadius: BorderRadius.circular(8),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2))],
+                          boxShadow: [BoxShadow(color: Colors.black.op(0.2), blurRadius: 8, offset: const Offset(0, 2))],
                         ),
                         child: const Center(child: PauseMarkIcon(filled: true)),
                       ),

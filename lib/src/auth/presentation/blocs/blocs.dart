@@ -33,10 +33,7 @@ import '../../domain/repositories/repositories.dart';
 import '../../domain/usecases/usecases.dart';
 
 //* Export all the blocs here
-//? Auth Bloc
-part 'auth/auth_bloc.dart';
-part 'auth/auth_event.dart';
-part 'auth/auth_state.dart';
+
 //? Base Bloc
 part 'blocs.freezed.dart';
 part 'blocs.g.dart';

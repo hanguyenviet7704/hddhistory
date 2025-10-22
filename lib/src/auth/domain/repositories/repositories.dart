@@ -13,7 +13,6 @@ import '../../data/models/models.dart';
 import '../usecases/usecases.dart';
 
 //* Import all domain repositories here
-part 'i_auth_repository.dart';
 part 'i_feedback_repository.dart';
 part 'i_iap_repository.dart';
 part 'i_profile_repository.dart';

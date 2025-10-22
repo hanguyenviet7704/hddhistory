@@ -161,7 +161,7 @@ class AppInterceptors extends BaseInterceptor {
   }
 
   void _handleOtpNotVerify() {
-    AppConfig.instance.context?.read<AuthBloc>().add(ResendOTPEvent());
+    // AppConfig.instance.context?.read<AuthBloc>().add(ResendOTPEvent());
     OtpRoute().go(AppConfig.instance.context!);
   }
 

@@ -14,7 +14,6 @@ import '../../models/models.dart';
 
 //* Import all api file here
 part 'apis.g.dart';
-part 'auth_api.dart';
 part 'config_api.dart';
 part 'iap_api.dart';
 part 'profile_api.dart';

@@ -3,16 +3,13 @@ library;
 import 'dart:ui' as ui;
 
 //* Package imports
+//* Single project import
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:dio/dio.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
-//* Single project import
 import 'package:meup/meup.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:retrofit/retrofit.dart';
 

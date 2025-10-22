@@ -53,7 +53,6 @@ class _ExercisePageState extends State<ExercisePage> {
             body: _buildBody(context, state),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                // TODO: Navigate to create page or show create dialog
                 // Example:
                 // context.read<ExerciseCubit>().createExercise(entity);
               },
@@ -144,7 +143,6 @@ class _ExercisePageState extends State<ExercisePage> {
                 IconButton(
                   icon: const Icon(Icons.edit),
                   onPressed: () {
-                    // TODO: Navigate to edit page or show edit dialog
                     // Example:
                     // context.read<ExerciseCubit>().updateExercise(updatedEntity);
                   },
@@ -158,7 +156,6 @@ class _ExercisePageState extends State<ExercisePage> {
               ],
             ),
             onTap: () {
-              // TODO: Navigate to detail page
               // Example:
               // context.read<ExerciseCubit>().loadExercise(item.id);
             },

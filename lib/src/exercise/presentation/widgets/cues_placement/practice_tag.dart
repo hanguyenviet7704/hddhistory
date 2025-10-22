@@ -16,7 +16,7 @@ class CuesPracticeTag extends StatelessWidget {
               Container(
                 width: 20,
                 height: 20,
-                decoration: BoxDecoration(color: const Color(0xFFE9556A).withOpacity(0.1), shape: BoxShape.circle),
+                decoration: BoxDecoration(color: const Color(0xFFE9556A).op(0.1), shape: BoxShape.circle),
                 child: Icon(Icons.play_arrow, size: 12, color: Color(0xFFE9556A)),
               ),
               const SizedBox(width: 6),

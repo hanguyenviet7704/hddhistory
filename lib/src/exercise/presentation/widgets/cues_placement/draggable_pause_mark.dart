@@ -17,10 +17,10 @@ class DraggablePauseMark extends StatelessWidget {
           width: 36,
           height: 36,
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.9),
+            color: Colors.white.op(0.9),
             border: Border.all(color: const Color(0xFF554FF0), width: 2),
             borderRadius: BorderRadius.circular(8),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 8, offset: const Offset(0, 2))],
+            boxShadow: [BoxShadow(color: Colors.black.op(0.2), blurRadius: 8, offset: const Offset(0, 2))],
           ),
           child: const Center(child: PauseMarkIcon(filled: true)),
         ),
@@ -28,7 +28,7 @@ class DraggablePauseMark extends StatelessWidget {
       childWhenDragging: Container(
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
         decoration: BoxDecoration(
-          color: const Color(0xFFE3E8EF).withOpacity(0.5),
+          color: const Color(0xFFE3E8EF).op(0.5),
           border: Border.all(color: const Color(0xFFE3E8EF), width: 2),
           borderRadius: BorderRadius.circular(8),
         ),

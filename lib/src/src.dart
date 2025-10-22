@@ -10,3 +10,4 @@ export 'auth/presentation/pages/pages.dart';
 export 'auth/presentation/widgets/widgets.dart';
 export 'onboard/onboard.dart';
 export 'data_collect/data_collect.dart';
+export 'auth2/auth.dart';

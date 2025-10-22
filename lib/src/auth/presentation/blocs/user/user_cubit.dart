@@ -2,10 +2,10 @@ part of '../blocs.dart';
 
 @lazySingleton
 class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<UserState> {
-  UserCubit(this._registerUsecase, @Named(DIKey.firebaseAnalyticsService) this._appTrackingService, this._getMyProfilesUsecase) : super(UserState.initial()) {
+  UserCubit(@Named(DIKey.firebaseAnalyticsService) this._appTrackingService, this._getMyProfilesUsecase) : super(UserState.initial()) {
     // _onAutoSignUpGuest();
   }
-  final RegisterUsecase _registerUsecase;
+  // final RegisterUsecase _registerUsecase;
   final GetMyProfilesUsecase _getMyProfilesUsecase;
   final BaseTrackingService _appTrackingService;
 
@@ -68,26 +68,26 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   Future<void> _onAutoSignUpGuest() async {
     if (!state.isGuest || state.accessToken.isNotEmpty) return;
     final uuid = Uuid().v4();
-    await executeCustomUseCase(
-      usecase: () => _registerUsecase({
-        'email': 'guest_$uuid@meup.com',
-        'password': '123456',
-        'password_confirmation': '123456',
-        'data': {},
-        'gotrue_meta_security': {},
-        'code_challenge': null,
-        'code_challenge_method': null,
-      }),
-      onSuccess: (response) async {
-        AppGlobalValue.accessToken = response.accessToken;
-        AppGlobalValue.refreshToken = response.refreshToken;
-        setAuth(response);
-        _onGetMyProfiles();
-      },
-      onFailure: (failure) {
-        DMessage.showMessage(message: AppConfig.instance.context!.text.authRegistrationFailedPleaseTryAgain, type: MessageType.error);
-      },
-    );
+    // await executeCustomUseCase(
+    //   usecase: () => _registerUsecase({
+    //     'email': 'guest_$uuid@meup.com',
+    //     'password': '123456',
+    //     'password_confirmation': '123456',
+    //     'data': {},
+    //     'gotrue_meta_security': {},
+    //     'code_challenge': null,
+    //     'code_challenge_method': null,
+    //   }),
+    //   onSuccess: (response) async {
+    //     // AppGlobalValue.accessToken = response.accessToken;
+    //     // AppGlobalValue.refreshToken = response.refreshToken;
+    //     // setAuth(response);
+    //     _onGetMyProfiles();
+    //   },
+    //   onFailure: (failure) {
+    //     DMessage.showMessage(message: AppConfig.instance.context!.text.authRegistrationFailedPleaseTryAgain, type: MessageType.error);
+    //   },
+    // );
   }
 
   Future<void> _onGetMyProfiles() async {
