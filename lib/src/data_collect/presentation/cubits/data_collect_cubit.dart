@@ -2,15 +2,41 @@ part of '../../data_collect.dart';
 
 @lazySingleton
 class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerMixin<DataCollectState> {
-  // final GetAllUserCollectDatasUseCase _getAllUseCase;
-  // final GetUserCollectDataUseCase _getUseCase;
-  // final CreateUserCollectDataUseCase _createUseCase;
-  // final UpdateUserCollectDataUseCase _updateUseCase;
-  // final DeleteUserCollectDataUseCase _deleteUseCase;
+  final DeviceInfoService _deviceInfoService;
+  final LoginAnonymousUsecase _loginAnonymousUsecase;
 
-  DataCollectCubit() : super(DataCollectState.initial());
+  DataCollectCubit(this._loginAnonymousUsecase, this._deviceInfoService) : super(DataCollectState.initial());
 
   TextEditingController nameController = TextEditingController();
+
+  void loginAnonymous() async {
+    String deviceId = await _deviceInfoService.deviceToken;
+    String deviceName = await _deviceInfoService.deviceName;
+    String languageCode = AppDI.injector.get<LocaleCubit>().state.value;
+    runUseCase(
+      usecase: () => _loginAnonymousUsecase({
+        "device": {
+          "deviceId": deviceId,
+          "deviceName": deviceName,
+        },
+        "name": nameController.text,
+        "languagge": languageCode,
+        "age": state.selectedAgeRange?.label,
+        "gender": state.selectedGender?.label,
+        "onboarding": {
+          "isNativeEnglishSpeaker": true,
+          "comfortableLearningTime": state.selectedBestTimeToLearn?.label,
+          "dailyLearningGoal": state.selectedDailyLearningGoal?.label,
+          "timeToBecomeSkilled": state.selectedTimeToBecomeSkilled?.label,
+          "skillsetWantToMaster": state.selectedTopics.map((e) => e.label).toList(),
+          "seemLikeYou": state.selectedStruggles.map((e) => e.label).toList(),
+          "strugglesWhenSpeaking": state.selectedStruggles.map((e) => e.label).toList(),
+        },
+      }),
+      onSuccess: (data) {},
+      onFailure: (error) {},
+    );
+  }
 
   void goToNextStep() {
     final allSteps = DataCollectStep.values;

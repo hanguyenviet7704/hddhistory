@@ -5,6 +5,7 @@ part of '../../auth.dart';
 @lazySingleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<AuthEvent, AuthState> {
   final LoginUsecase _loginUsecase;
+  final LoginAnonymousUsecase _loginAnonymousUsecase;
   final LogoutUsecase _logoutUsecase;
   final LoginSSOGoogleUsecase _loginSSOGoogleUsecase;
   final LoginSSOAppleUsecase _loginSSOAppleUsecase;
@@ -16,6 +17,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   AuthBloc(
     this._loginUsecase,
+    this._loginAnonymousUsecase,
     this._logoutUsecase,
     this._loginSSOGoogleUsecase,
     this._loginSSOAppleUsecase,
@@ -25,22 +27,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._resendOtpUsecase,
     this._deleteAccountUsecase,
   ) : super(AuthState.initial()) {
-    on<_LoginSSOGoogle>(_onLoginSSOGoogle);
     on<_LoginAnonymous>(_onLoginAnonymous);
+    on<_LoginSSOGoogle>(_onLoginSSOGoogle);
     on<_LoginSSOApple>(_onLoginSSOApple);
     on<_Register>(_onRegister);
   }
-  
-
-  FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {
-  }
 
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
+    runUseCase(
+      usecase: () => _loginAnonymousUsecase(event.data),
+      onSuccess: (data) {},
+      onFailure: (error) {},
+    );
   }
 
-  FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {
-  }
+  FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {}
 
-  FutureOr<void> _onRegister(_Register event, Emitter<AuthState> emit) {
-  }
+  FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {}
+
+  FutureOr<void> _onRegister(_Register event, Emitter<AuthState> emit) {}
 }

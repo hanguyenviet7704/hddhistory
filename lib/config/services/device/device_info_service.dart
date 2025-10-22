@@ -1,7 +1,17 @@
 part of '../services.dart';
 
+abstract interface class IDeviceInfoService {
+  Future<String> get deviceToken;
+  Future<String> get deviceName;
+  Future<void> getAllDeviceInfo();
+  Future<int?> getAndroidSdkVersion();
+  Future<bool> isAndroid13OrHigher();
+  Future<BaseDeviceInfo?> get deviceInfo;
+}
+
+
 @lazySingleton
-class DeviceInfoService {
+class DeviceInfoService implements IDeviceInfoService {
   final DeviceInfoPlugin _deviceInfoPlugin;
 
   DeviceInfoService() : _deviceInfoPlugin = DeviceInfoPlugin();
@@ -16,6 +26,7 @@ class DeviceInfoService {
 
   /// Returns the Android SDK version as an integer.
   /// For non-Android devices, it returns null.
+  @override
   Future<int?> getAndroidSdkVersion() async {
     if (Platform.isAndroid) {
       final androidInfo = await _deviceInfoPlugin.androidInfo;
@@ -25,16 +36,19 @@ class DeviceInfoService {
   }
 
   /// Checks if the device is running Android 13 or higher
+  @override
   Future<bool> isAndroid13OrHigher() async {
     final sdkVersion = await getAndroidSdkVersion();
     return sdkVersion != null && sdkVersion > 32;
   }
 
+  @override
   Future<void> getAllDeviceInfo() async {
     final deviceInfo = await _deviceInfoPlugin.deviceInfo;
-    LogDev.one('deviceInfo: ${deviceInfo.data}');
+    LogDev.one('deviceInfo: ${deviceInfo.toMap()}');
   }
 
+  @override
   Future<String> get deviceToken async {
     // String deviceIdFromLocalStore = await LocalStoreService.instance.getString(key: LocalStoreKey.deviceTokenUID);
     String deviceIdFromLocalStore = '';
@@ -66,25 +80,14 @@ class DeviceInfoService {
     return deviceId;
   }
 
-  // Static helper methods for backward compatibility with existing code
-  static Future<int?> getAndroidSdkVersionStatic() async {
-    return await AppDI.injector.get<DeviceInfoService>().getAndroidSdkVersion();
+  @override
+  Future<String> get deviceName async {
+    final deviceInfo = await _deviceInfoPlugin.deviceInfo;
+    return deviceInfo.data['model'] as String;
   }
-
-  static Future<bool> isAndroid13OrHigherStatic() async {
-    return await AppDI.injector.get<DeviceInfoService>().isAndroid13OrHigher();
-  }
-
-  static Future<void> getAllDeviceInfoStatic() async {
-    return await AppDI.injector.get<DeviceInfoService>().getAllDeviceInfo();
-  }
-
-  static Future<String> get deviceTokenStatic async {
-    return await AppDI.injector.get<DeviceInfoService>().deviceToken;
-  }
-
-  // Static initialize method for backward compatibility
-  static void init() {
-    AppDI.injector.get<DeviceInfoService>().initialize();
+  
+  @override
+  Future<BaseDeviceInfo?> get deviceInfo async {
+    return await _deviceInfoPlugin.deviceInfo;
   }
 }

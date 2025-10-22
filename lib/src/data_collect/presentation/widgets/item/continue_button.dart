@@ -13,7 +13,9 @@ class ContinueButton extends StatelessWidget {
     }
 
     if (state.currentStep == DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking) {
-      context.read<DataCollectCubit>().goToNextStep();
+      context.read<DataCollectCubit>()
+        ..goToNextStep()
+        ..loginAnonymous();
       DataCollectMotivationStepRoute().push(context);
       return;
     }

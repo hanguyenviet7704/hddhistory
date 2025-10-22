@@ -29,6 +29,7 @@ part 'domain/repositories/i_auth_repository.dart';
 part 'domain/usecases/delete_account_usecase.dart';
 part 'domain/usecases/delete_permanent_user_usecase.dart';
 part 'domain/usecases/forgot_password_usecase.dart';
+part 'domain/usecases/login_anonymous_usecase.dart';
 part 'domain/usecases/login_sso_apple_usecase.dart';
 part 'domain/usecases/login_sso_google_usecase.dart';
 part 'domain/usecases/login_usecase.dart';

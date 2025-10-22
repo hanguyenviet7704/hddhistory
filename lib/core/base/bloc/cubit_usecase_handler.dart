@@ -120,20 +120,20 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
   /// and you want to handle entity results without BaseResponse wrapper.
   ///
   /// [usecase] - The use case that returns `TaskEither<AppException, T>`
-  /// [buildLoadingState] - Function to build loading state
+  /// [buildLoadingState] - Optional function to build loading state when not using [setLoadingState]
   /// [onFailure] - Callback when use case fails, receives error message, should emit state
   /// [onSuccess] - Callback when use case succeeds, receives result data, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
   Future<void> runUseCase<T>({
     required TaskEither<AppException, T> Function() usecase,
-    required State Function() buildLoadingState,
+    State Function()? buildLoadingState,
     required void Function(String errorMessage) onFailure,
     required void Function(T data) onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
       emit(setLoadingState(state, isLoading: true));
-    } else {
+    } else if (buildLoadingState != null) {
       emit(buildLoadingState());
     }
 
@@ -154,20 +154,20 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
   /// Similar to runUseCase but specifically for list results
   ///
   /// [usecase] - The use case that returns `TaskEither<AppException, List<T>>`
-  /// [buildLoadingState] - Function to build loading state
+  /// [buildLoadingState] - Optional function to build loading state when not using [setLoadingState]
   /// [onFailure] - Callback when use case fails, receives error message, should emit state
   /// [onSuccess] - Callback when use case succeeds, receives list data, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
   Future<void> runUseCaseList<T>({
     required TaskEither<AppException, List<T>> Function() usecase,
-    required State Function() buildLoadingState,
+    State Function()? buildLoadingState,
     required void Function(String errorMessage) onFailure,
     required void Function(List<T> data) onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
       emit(setLoadingState(state, isLoading: true));
-    } else {
+    } else if (buildLoadingState != null) {
       emit(buildLoadingState());
     }
 
@@ -188,20 +188,20 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
   /// Use for delete/update operations that don't return data
   ///
   /// [usecase] - The use case that returns `TaskEither<AppException, Unit>`
-  /// [buildLoadingState] - Function to build loading state
+  /// [buildLoadingState] - Optional function to build loading state when not using [setLoadingState]
   /// [onFailure] - Callback when use case fails, receives error message, should emit state
   /// [onSuccess] - Callback when use case succeeds, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
   Future<void> runUseCaseVoid({
     required TaskEither<AppException, Unit> Function() usecase,
-    required State Function() buildLoadingState,
+    State Function()? buildLoadingState,
     required void Function(String errorMessage) onFailure,
     required void Function() onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
       emit(setLoadingState(state, isLoading: true));
-    } else {
+    } else if (buildLoadingState != null) {
       emit(buildLoadingState());
     }
 
@@ -224,7 +224,7 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
   /// [usecase] - The use case that returns `TaskEither<AppException, BasePageBreak<T>>`
   /// [currentPageData] - The current page data from state
   /// [isInit] - Whether this is initial load (true) or loading more (false)
-  /// [buildLoadingState] - Function to build loading state
+  /// [buildLoadingState] - Optional function to build loading state when not using [setLoadingState]
   /// [onFailure] - Callback when use case fails, receives error message, should emit state
   /// [onSuccess] - Callback when use case succeeds, receives merged page data, should emit state
   /// [setLoadingState] - Optional function to control loading state separately
@@ -232,14 +232,14 @@ mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
     required TaskEither<AppException, BasePageBreak<T>> Function() usecase,
     required BasePageBreak<T> currentPageData,
     required bool isInit,
-    required State Function() buildLoadingState,
+    State Function()? buildLoadingState,
     required void Function(String errorMessage) onFailure,
     required void Function(BasePageBreak<T> mergedPageData) onSuccess,
     State Function(State currentState, {required bool isLoading})? setLoadingState,
   }) async {
     if (setLoadingState != null) {
       emit(setLoadingState(state, isLoading: true));
-    } else {
+    } else if (buildLoadingState != null) {
       emit(buildLoadingState());
     }
 
