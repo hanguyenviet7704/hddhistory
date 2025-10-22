@@ -34,13 +34,12 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   }
 
   void setTrackingUser() {
-    AppUser user = state.user;
+    UserEntity user = state.user;
     if (user.id.isEmpty) return;
     _appTrackingService.setUserId(user.id);
     _appTrackingService.setUserProperties({
       'user_id_property': user.id,
       'user_email_property': user.email,
-      'user_phone_property': user.phone,
     });
   }
 

@@ -19,9 +19,9 @@ abstract class UserState with _$UserState {
 }
 
 extension UserStateExtension on UserState {
-  AppUser get user => auth.user;
-  String get accessToken => auth.accessToken;
-  String get refreshToken => auth.refreshToken;
+  UserEntity get user => auth.user;
+  String get accessToken => auth.token.accessToken;
+  String get refreshToken => auth.token.refreshToken;
 
   bool get isGuestOrNotLogin => isGuest || auth.user.id.isEmpty;
   String get paymentStatus {
