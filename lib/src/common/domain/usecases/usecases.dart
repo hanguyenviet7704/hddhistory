@@ -22,4 +22,3 @@ part 'iap/restore_usecase.dart';
 part 'iap/verify_android_usecase.dart';
 part 'iap/verify_ios_usecase.dart';
 //? Profile usecases
-part 'profile/get_my_profiles_usecase.dart';

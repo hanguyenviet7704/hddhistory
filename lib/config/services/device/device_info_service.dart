@@ -9,17 +9,18 @@ abstract interface class IDeviceInfoService {
   Future<BaseDeviceInfo?> get deviceInfo;
 }
 
-
-@lazySingleton
+@LazySingleton(as: IDeviceInfoService)
 class DeviceInfoService implements IDeviceInfoService {
-  final DeviceInfoPlugin _deviceInfoPlugin;
+  final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
 
-  DeviceInfoService() : _deviceInfoPlugin = DeviceInfoPlugin();
+  DeviceInfoService() {
+    initialize();
+  }
 
   DeviceInfoPlugin get deviceInfoPlugin => _deviceInfoPlugin;
 
   /// Initialize the device info service
-  Future<void> initialize() async {
+  void initialize() async {
     LogDev.info('DeviceInfoService initialized');
     await getAllDeviceInfo();
   }
@@ -85,7 +86,7 @@ class DeviceInfoService implements IDeviceInfoService {
     final deviceInfo = await _deviceInfoPlugin.deviceInfo;
     return deviceInfo.data['model'] as String;
   }
-  
+
   @override
   Future<BaseDeviceInfo?> get deviceInfo async {
     return await _deviceInfoPlugin.deviceInfo;

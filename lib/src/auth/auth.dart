@@ -19,12 +19,10 @@ part 'data/datasources/remote/auth_api.dart';
 //* Data Layer - Models, Datasources, Repositories
 part 'data/models/auth_model.dart';
 part 'data/models/token_model.dart';
-part 'data/models/user_model.dart';
 part 'data/repositories/auth_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/auth_entity.dart';
 part 'domain/entities/token_entity.dart';
-part 'domain/entities/user_entity.dart';
 part 'domain/repositories/i_auth_repository.dart';
 part 'domain/usecases/delete_account_usecase.dart';
 part 'domain/usecases/delete_permanent_user_usecase.dart';

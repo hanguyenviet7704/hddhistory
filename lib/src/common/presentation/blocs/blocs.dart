@@ -17,6 +17,7 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:injectable/injectable.dart';
 import 'package:meup/src/auth/auth.dart';
+import 'package:meup/src/profile/profile.dart';
 import 'package:uuid/uuid.dart';
 
 //* Import all local files here

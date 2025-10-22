@@ -1,4 +1,4 @@
-part of '../../auth.dart';
+part of '../../profile.dart';
 
 @freezed
 abstract class UserModel with _$UserModel {

@@ -1,4 +1,4 @@
-part of '../../auth.dart';
+part of '../../profile.dart';
 
 @freezed
 abstract class UserEntity with _$UserEntity {

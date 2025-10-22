@@ -11,3 +11,4 @@ export 'common/presentation/widgets/widgets.dart';
 export 'onboard/onboard.dart';
 export 'data_collect/data_collect.dart';
 export 'auth/auth.dart';
+export 'profile/profile.dart';

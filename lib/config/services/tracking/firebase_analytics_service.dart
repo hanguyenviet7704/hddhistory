@@ -25,7 +25,7 @@ class FirebaseAnalyticsService extends BaseTrackingService {
 
   void _setDefaultEventParameters() async {
     PackageInfo packageInfo = AppDI.injector.get<PackageInfoService>().packageInfo;
-    DeviceInfoService deviceInfo = AppDI.injector.get<DeviceInfoService>();
+    IDeviceInfoService deviceInfo = AppDI.injector.get<IDeviceInfoService>();
     final userState = AppConfig.instance.context?.read<UserCubit>().state ?? UserState.initial();
     (String userId, String paymentStatus, int numberLessonCompleted, String country, DateTime? lastLessonCompletedAt) userInfo = (
       userState.user.id,

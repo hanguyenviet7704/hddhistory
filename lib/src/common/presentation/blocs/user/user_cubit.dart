@@ -2,11 +2,10 @@ part of '../blocs.dart';
 
 @lazySingleton
 class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<UserState> {
-  UserCubit(@Named(DIKey.firebaseAnalyticsService) this._appTrackingService, this._getMyProfilesUsecase) : super(UserState.initial()) {
+  UserCubit(@Named(DIKey.firebaseAnalyticsService) this._appTrackingService) : super(UserState.initial()) {
     // _onAutoSignUpGuest();
   }
   // final RegisterUsecase _registerUsecase;
-  final GetMyProfilesUsecase _getMyProfilesUsecase;
   final BaseTrackingService _appTrackingService;
 
   @override
@@ -90,28 +89,28 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   }
 
   Future<void> _onGetMyProfiles() async {
-    await executeCustomUseCase(
-      usecase: () => _getMyProfilesUsecase(),
-      onSuccess: (response) {
-        if (response.data.isEmpty) return;
-        emit(state.copyWith(guestProfileId: response.data.first.id));
-      },
-      onFailure: (p0) {
-        debugPrint('onGetMyProfiles error: $p0');
-      },
-    );
+    // await executeCustomUseCase(
+    //   usecase: () => _getMyProfilesUsecase(),
+    //   onSuccess: (response) {
+    //     if (response.data.isEmpty) return;
+    //     emit(state.copyWith(guestProfileId: response.data.first.id));
+    //   },
+    //   onFailure: (p0) {
+    //     debugPrint('onGetMyProfiles error: $p0');
+    //   },
+    // );
   }
 
   void getMyProfiles() async {
-    await executeListUseCase(
-      usecase: _getMyProfilesUsecase.call,
-      onSuccess: (response) {
-        if (response.data.isEmpty) return;
-        LogDev.info('getMyProfiles: ${response.data.first}');
-        _appTrackingService.setUserId(response.data.first.userId);
-        emit(state.copyWith(profile: response.data.first));
-      },
-    );
+    // await executeListUseCase(
+    //   usecase: _getMyProfilesUsecase.call,
+    //   onSuccess: (response) {
+    //     if (response.data.isEmpty) return;
+    //     LogDev.info('getMyProfiles: ${response.data.first}');
+    //     _appTrackingService.setUserId(response.data.first.userId);
+    //     emit(state.copyWith(profile: response.data.first));
+    //   },
+    // );
   }
 
   void setIsGuest(bool isGuest) {

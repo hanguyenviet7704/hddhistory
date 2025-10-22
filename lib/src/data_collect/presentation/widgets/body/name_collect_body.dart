@@ -13,7 +13,7 @@ class NameCollectBody extends StatelessWidget {
       children: [
         // Title
         AppText(
-          'What should I call you?',
+          context.text.onboardingUserNameQuestion,
           style: AppStyle.textBold20.copyWith(
             color: const Color(0xFF364152), // Text/Secondary
             fontWeight: FontWeight.w500,
@@ -23,7 +23,7 @@ class NameCollectBody extends StatelessWidget {
         Spacer(),
         // Input Field
         OnboardingInput(
-          hintText: 'Enter your name',
+          hintText: context.text.onboardingUserNamePlaceholder,
           controller: context.read<DataCollectCubit>().nameController,
           onChanged: (value) => context.read<DataCollectCubit>().updateUserName(value),
         ),

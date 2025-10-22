@@ -2,7 +2,7 @@ part of '../../data_collect.dart';
 
 @lazySingleton
 class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerMixin<DataCollectState> {
-  final DeviceInfoService _deviceInfoService;
+  final IDeviceInfoService _deviceInfoService;
   final LoginAnonymousUsecase _loginAnonymousUsecase;
 
   DataCollectCubit(this._loginAnonymousUsecase, this._deviceInfoService) : super(DataCollectState.initial());
@@ -21,19 +21,19 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
         },
         "name": nameController.text,
         "languagge": languageCode,
-        "age": state.selectedAgeRange?.label,
-        "gender": state.selectedGender?.label,
+        "age": state.selectedAgeRange?.label.text,
+        "gender": state.selectedGender?.label.text,
         "onboarding": {
-          "isNativeEnglishSpeaker": true,
-          "comfortableLearningTime": state.selectedBestTimeToLearn?.label,
-          "dailyLearningGoal": state.selectedDailyLearningGoal?.label,
-          "timeToBecomeSkilled": state.selectedTimeToBecomeSkilled?.label,
-          "skillsetWantToMaster": state.selectedTopics.map((e) => e.label).toList(),
-          "seemLikeYou": state.selectedStruggles.map((e) => e.label).toList(),
-          "strugglesWhenSpeaking": state.selectedStruggles.map((e) => e.label).toList(),
+          "comfortableLearningTime": state.selectedBestTimeToLearn?.id,
+          "dailyLearningGoal": state.selectedDailyLearningGoal?.id,
+          "timeToBecomeSkilled": state.selectedTimeToBecomeSkilled?.id,
+          "skillsetWantToMaster": state.selectedTopics.map((e) => e.id).toList(),
+          "strugglesWhenSpeaking": state.selectedStruggles.map((e) => e.id).toList(),
         },
       }),
-      onSuccess: (data) {},
+      onSuccess: (data) {
+        
+      },
       onFailure: (error) {},
     );
   }

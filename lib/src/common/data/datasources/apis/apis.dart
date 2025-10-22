@@ -16,4 +16,3 @@ import '../../models/models.dart';
 part 'apis.g.dart';
 part 'config_api.dart';
 part 'iap_api.dart';
-part 'profile_api.dart';

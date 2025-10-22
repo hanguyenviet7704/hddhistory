@@ -45,7 +45,7 @@ class AppService {
 
   ILocalStoreService get localStoreService => AppDI.injector.get<ILocalStoreService>();
 
-  DeviceInfoService get deviceInfoService => AppDI.injector.get<DeviceInfoService>();
+  IDeviceInfoService get deviceInfoService => AppDI.injector.get<IDeviceInfoService>();
 
   PackageInfoService get packageInfoService => AppDI.injector.get<PackageInfoService>();
 
@@ -84,7 +84,6 @@ class AppService {
 
   Future<void> _configService() async {
     // Initialize device info first for iOS version detection
-    await deviceInfoService.initialize();
 
     // Initialize Firebase first
     await HydrateBlocService.instance.initialize();
