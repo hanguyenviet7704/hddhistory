@@ -7,19 +7,22 @@ abstract class AuthApi {
   factory AuthApi(@Named(DIKey.appDio) Dio dio) = _AuthApi;
 
   @POST(AppEndpoint.login)
-  Future<Auth> login(@Body() Map<String, dynamic> data);
+  Future<BaseResponse<AuthModel>> login(@Body() Map<String, dynamic> data);
+
+  @POST(AppEndpoint.loginAnonymous)
+  Future<BaseResponse<AuthModel>> loginAnonymous(@Body() Map<String, dynamic> data);
 
   @POST(AppEndpoint.loginProvider)
-  Future<Auth> loginProvider(@Body() Map<String, dynamic> data);
+  Future<BaseResponse<AuthModel>> loginProvider(@Body() Map<String, dynamic> data);
 
   @POST(AppEndpoint.register)
-  Future<Auth> register(@Body() Map<String, dynamic> data);
+  Future<BaseResponse<AuthModel>> register(@Body() Map<String, dynamic> data);
 
   @POST(AppEndpoint.logout)
   Future<BaseResponse> logout();
 
   @POST(AppEndpoint.forgotPassword)
-  Future<BaseResponse<Auth>> forgotPassword(@Body() Map<String, dynamic> data);
+  Future<BaseResponse<AuthModel>> forgotPassword(@Body() Map<String, dynamic> data);
 
   @POST(AppEndpoint.resetPassword)
   Future<BaseResponse> resetPassword(@Body() Map<String, dynamic> data);

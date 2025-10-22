@@ -1,10 +1,10 @@
 part of '../../auth.dart';
 
 @lazySingleton
-class LoginUsecase implements UseCaseWithParams<Map<String, dynamic>, Auth> {
+class LoginUsecase implements UseCaseWithParams<Map<String, dynamic>, AuthEntity> {
   final IAuthRepository _authRepository;
   LoginUsecase(this._authRepository);
 
   @override
-  TaskEither<AppException, Auth> call(Map<String, dynamic> params) => _authRepository.login(params);
+  TaskEither<AppException, AuthEntity> call(Map<String, dynamic> params) => _authRepository.login(params);
 }

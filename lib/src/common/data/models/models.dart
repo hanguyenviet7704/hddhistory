@@ -16,7 +16,6 @@ import '../../presentation/blocs/blocs.dart';
 import '../datasources/graphql/graphql.dart';
 
 //* Import all models here
-part 'auth/auth.dart';
 part 'iap/active_product.dart';
 part 'iap/feature.dart';
 part 'iap/iap_product.dart';

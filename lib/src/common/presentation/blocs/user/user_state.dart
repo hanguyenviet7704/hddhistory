@@ -4,7 +4,7 @@ part of '../blocs.dart';
 abstract class UserState with _$UserState {
   const factory UserState({
     @Default(false) bool isLoading,
-    @Default(Auth()) Auth auth,
+    @Default(AuthEntity()) AuthEntity auth,
     @Default(Profile()) Profile profile,
     @Default(true) bool isFirstTimeUserRunApp,
     @Default(true) bool isFirstTimeUserAccessApp,

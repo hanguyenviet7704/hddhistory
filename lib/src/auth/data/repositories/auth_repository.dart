@@ -7,7 +7,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   AuthRepository(this._authApi, this._authService);
 
   @override
-  TaskEither<AppException, Auth> login(Map<String, dynamic> body) {
+  TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body) {
     return TaskEither.tryCatch(
       () async {
         final userCredential = await _authService.signInWithEmail(
@@ -23,34 +23,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
         // Get the ID token for authentication
         final idToken = await user.getIdToken() ?? '';
 
-        return Auth(
-          accessToken: idToken,
-          tokenType: 'Bearer',
-          expiresIn: 3600, // Default to 1 hour
-          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
-          refreshToken: user.refreshToken ?? '',
-          user: AppUser(
-            id: user.uid,
-            email: user.email ?? '',
-            isAnonymous: user.isAnonymous,
-            userMetadata: UserMetaData(
-              email: user.email ?? '',
-              username: user.displayName ?? '',
-              emailVerified: user.emailVerified,
-            ),
-            identities: [
-              Identity(
-                id: user.uid,
-                provider: 'email',
-                email: user.email ?? '',
-                createdAt: user.metadata.creationTime,
-                lastSignInAt: user.metadata.lastSignInTime,
-              ),
-            ],
-            createdAt: user.metadata.creationTime,
-            lastSignInAt: user.metadata.lastSignInTime,
-          ),
-        );
+        return AuthEntity();
       },
       (error, stackTrace) {
         if (error is FirebaseException) {
@@ -62,7 +35,16 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, Auth> loginSSOGoogle() {
+  TaskEither<AppException, AuthEntity> loginAnonymous(Map<String, dynamic> body) {
+    return callApiWithTransform(
+      apiCall: () => _authApi.loginAnonymous(body),
+      transform: (response) => response.toEntity(),
+      defaultValue: AuthEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, AuthEntity> loginSSOGoogle() {
     return TaskEither.tryCatch(
       () async {
         final userCredential = await _authService.signInWithGoogle();
@@ -75,34 +57,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
         // Get the ID token for authentication
         final idToken = await user.getIdToken() ?? '';
 
-        return Auth(
-          accessToken: idToken,
-          tokenType: 'Bearer',
-          expiresIn: 3600, // Default to 1 hour
-          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
-          refreshToken: user.refreshToken ?? '',
-          user: AppUser(
-            id: user.uid,
-            email: user.email ?? '',
-            isAnonymous: user.isAnonymous,
-            userMetadata: UserMetaData(
-              email: user.email ?? '',
-              username: user.displayName ?? '',
-              emailVerified: user.emailVerified,
-            ),
-            identities: [
-              Identity(
-                id: user.uid,
-                provider: 'google.com',
-                email: user.email ?? '',
-                createdAt: user.metadata.creationTime,
-                lastSignInAt: user.metadata.lastSignInTime,
-              ),
-            ],
-            createdAt: user.metadata.creationTime,
-            lastSignInAt: user.metadata.lastSignInTime,
-          ),
-        );
+        return AuthEntity();
       },
       (error, stackTrace) {
         if (error is FirebaseException) {
@@ -114,7 +69,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, Auth> loginSSOApple() {
+  TaskEither<AppException, AuthEntity> loginSSOApple() {
     return TaskEither.tryCatch(
       () async {
         final userCredential = await _authService.signInWithApple();
@@ -127,34 +82,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
         // Get the ID token for authentication
         final idToken = await user.getIdToken() ?? '';
 
-        return Auth(
-          accessToken: idToken,
-          tokenType: 'Bearer',
-          expiresIn: 3600, // Default to 1 hour
-          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
-          refreshToken: user.refreshToken ?? '',
-          user: AppUser(
-            id: user.uid,
-            email: user.email ?? '',
-            isAnonymous: user.isAnonymous,
-            userMetadata: UserMetaData(
-              email: user.email ?? '',
-              username: user.displayName ?? '',
-              emailVerified: user.emailVerified,
-            ),
-            identities: [
-              Identity(
-                id: user.uid,
-                provider: 'apple.com',
-                email: user.email ?? '',
-                createdAt: user.metadata.creationTime,
-                lastSignInAt: user.metadata.lastSignInTime,
-              ),
-            ],
-            createdAt: user.metadata.creationTime,
-            lastSignInAt: user.metadata.lastSignInTime,
-          ),
-        );
+        return AuthEntity();
       },
       (error, stackTrace) {
         if (error is FirebaseException) {
@@ -166,7 +94,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, Auth> register(Map<String, dynamic> body) {
+  TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body) {
     return TaskEither.tryCatch(
       () async {
         final userCredential = await _authService.signUpWithEmail(
@@ -182,34 +110,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
         // Get the ID token for authentication
         final idToken = await user.getIdToken() ?? '';
 
-        return Auth(
-          accessToken: idToken,
-          tokenType: 'Bearer',
-          expiresIn: 3600, // Default to 1 hour
-          expiresAt: DateTime.now().add(const Duration(hours: 1)).millisecondsSinceEpoch,
-          refreshToken: user.refreshToken ?? '',
-          user: AppUser(
-            id: user.uid,
-            email: user.email ?? '',
-            isAnonymous: user.isAnonymous,
-            userMetadata: UserMetaData(
-              email: user.email ?? '',
-              username: user.displayName ?? '',
-              emailVerified: user.emailVerified,
-            ),
-            identities: [
-              Identity(
-                id: user.uid,
-                provider: 'email',
-                email: user.email ?? '',
-                createdAt: user.metadata.creationTime,
-                lastSignInAt: user.metadata.lastSignInTime,
-              ),
-            ],
-            createdAt: user.metadata.creationTime,
-            lastSignInAt: user.metadata.lastSignInTime,
-          ),
-        );
+        return AuthEntity();
       },
       (error, stackTrace) {
         if (error is FirebaseException) {
@@ -219,11 +120,15 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
       },
     );
   }
-
-  @override
-  TaskEither<AppException, BaseResponse<Auth>> forgotPassword(Map<String, dynamic> body) {
-    return callApi(apiCall: () => _authApi.forgotPassword(body));
-  }
+  
+  // @override
+  // TaskEither<AppException, AuthEntity> forgotPassword(Map<String, dynamic> body) {
+  //   return callApiWithTransform<AuthModel, AuthEntity>(
+  //     apiCall: () => _authApi.forgotPassword(body),
+  //     transform: (response) => response.toEntity(),
+  //     defaultValue: AuthEntity(),
+  //   );
+  // }
 
   @override
   TaskEither<AppException, BaseResponse> logout() {

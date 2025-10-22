@@ -5,17 +5,18 @@ mixin AppEndpoint {
   static const String graphql = '/graphql';
 
   //* Auth
-  static const String login = '/auth/v1/login';
+  static const String login = '/api/v1/users/login';
+  static const String loginAnonymous = '/api/v1/users/anonymous';
   static const String loginProvider = '/api/v1/users/login/provider';
-  static const String register = '/auth/v1/signup';
-  static const String logout = '/logout';
-  static const String forgotPassword = '/forgot-password';
-  static const String resetPassword = '/reset-password';
+  static const String register = '/api/v1/users/register';
+  static const String logout = '/api/v1/users/logout';
+  static const String forgotPassword = '/api/v1/users/forgot-password';
+  static const String resetPassword = '/api/v1/users/reset-password';
   static const String resendOTP = '/resend-otp';
-  static const String verifyOTP = '/verify-otp';
-  static const String updatePassword = '/user/update-password';
-  static const String deletePermanentUser = '/user/delete-permanently-user';
-  static const String deleteAccount = '/functions/v1/delete-my-account';
+  static const String verifyOTP = '/api/v1/users/verify-otp';
+  static const String updatePassword = '/api/v1/users/update-password';
+  static const String deletePermanentUser = '/api/v1/users/delete-permanently-user';
+  static const String deleteAccount = '/api/v1/users/delete-my-account';
   static const String changeProfileId = '/rest/v1/rpc/p_change_user_profile_id';
 
   //* Config
