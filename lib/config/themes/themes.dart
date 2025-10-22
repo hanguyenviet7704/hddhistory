@@ -10,7 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 //* Import all local file here
 import '../../core/constants/constants.dart';
-import '../../src/auth/presentation/blocs/blocs.dart';
+import '../../src/common/presentation/blocs/blocs.dart';
 import '../services/services.dart';
 
 //* Import all theme file here

@@ -27,7 +27,7 @@ import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 import '../../config/routes/routes.dart';
 import '../../config/services/services.dart';
 import '../../config/themes/themes.dart';
-import '../../src/auth/presentation/blocs/blocs.dart';
+import '../../src/common/presentation/blocs/blocs.dart';
 import '../constants/constants.dart';
 import '../helpers/helpers.dart';
 
