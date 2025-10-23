@@ -6,10 +6,10 @@ enum ExerciseType {
   singleChoice,
   multipleChoice,
   dragAndDrop,
-  tapAndJump,
+  // tapAndJump,
   arrangeTheSequence,
   cuesPlacement,
-  record,
+  speaking,
 }
 
 @freezed
