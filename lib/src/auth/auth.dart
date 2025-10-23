@@ -8,6 +8,7 @@ import 'package:injectable/injectable.dart';
 //* Single project import
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:uuid/uuid.dart';
 
 //* Presentation Layer - Widgets
 
@@ -41,6 +42,8 @@ part 'domain/usecases/verify_otp_usecase.dart';
 part 'presentation/blocs/auth_bloc.dart';
 part 'presentation/blocs/auth_event.dart';
 part 'presentation/blocs/auth_state.dart';
+part 'presentation/cubits/user_cubit.dart';
+part 'presentation/cubits/user_state.dart';
 //* Presentation Layer - Pages
 //? Change Password
 part 'presentation/pages/change_password/change_password.dart';

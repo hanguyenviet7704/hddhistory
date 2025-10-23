@@ -64,6 +64,7 @@ import '../../core/base/base.dart';
 import '../../core/constants/constants.dart';
 import '../../core/helpers/helpers.dart';
 import '../../core/utils/utils.dart';
+import '../../src/auth/auth.dart';
 import '../../src/common/presentation/blocs/blocs.dart';
 import '../../src/common/presentation/widgets/widgets.dart';
 import '../di/di.dart';

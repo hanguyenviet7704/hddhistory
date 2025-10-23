@@ -88,7 +88,6 @@ class ProfileRepository with RestfulRequestHandlerMixin implements IProfileRepos
     return {
       'id': entity.id,
       'name': entity.name,
-      // TODO: Add more fields as needed
     };
   }
 }

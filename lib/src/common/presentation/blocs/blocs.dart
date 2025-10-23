@@ -17,8 +17,6 @@ import 'package:hydrated_bloc/hydrated_bloc.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:injectable/injectable.dart';
 import 'package:meup/src/auth/auth.dart';
-import 'package:meup/src/profile/profile.dart';
-import 'package:uuid/uuid.dart';
 
 //* Import all local files here
 import '../../../../config/di/di.dart';
@@ -58,9 +56,6 @@ part 'paywall/paywall/paywall_state.dart';
 part 'setting/locale_cubit.dart';
 part 'setting/theme_cubit.dart';
 part 'setting/theme_mode_cubit.dart';
-//? User Bloc
-part 'user/user_cubit.dart';
-part 'user/user_state.dart';
 
 //
 // part 'preview_lecture/preview_lecture_cubit.dart';

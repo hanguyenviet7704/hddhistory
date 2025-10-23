@@ -1,4 +1,4 @@
-part of '../blocs.dart';
+part of '../../auth.dart';
 
 @lazySingleton
 class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<UserState> {
@@ -88,6 +88,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     // );
   }
 
+  // ignore: unused_element
   Future<void> _onGetMyProfiles() async {
     // await executeCustomUseCase(
     //   usecase: () => _getMyProfilesUsecase(),
@@ -118,3 +119,4 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     emit(state.copyWith(isGuest: isGuest));
   }
 }
+

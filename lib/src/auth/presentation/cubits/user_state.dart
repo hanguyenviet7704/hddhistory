@@ -1,4 +1,4 @@
-part of '../blocs.dart';
+part of '../../auth.dart';
 
 @freezed
 abstract class UserState with _$UserState {

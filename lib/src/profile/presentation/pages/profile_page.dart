@@ -51,7 +51,6 @@ class _ProfilePageState extends State<ProfilePage> {
             body: _buildBody(context, state),
             floatingActionButton: FloatingActionButton(
               onPressed: () {
-                // TODO: Navigate to create page or show create dialog
                 // Example:
                 // context.read<ProfileCubit>().createUser(entity);
               },
@@ -67,6 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
       return SizedBox.shrink();
   }
 
+  // ignore: unused_element
   void _showDeleteConfirmation(BuildContext context, UserEntity item) {
     showDialog(
       context: context,
