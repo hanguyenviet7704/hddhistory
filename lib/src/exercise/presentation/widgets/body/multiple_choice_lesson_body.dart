@@ -28,12 +28,34 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
     required this.onAnswerChecked,
   });
 
+  void _showResultBottomSheet(BuildContext context, ResultType type) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => ResultBottomSheet(
+        type: type,
+        onContinue: () {
+          Navigator.of(context).pop();
+        },
+        onExplain: () {
+          Navigator.of(context).pop();
+          // TODO: Navigate to explanation screen
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<ChoiceCubit, ChoiceState>(
       listener: (context, state) {
         if (state.hasChecked) {
           onAnswerChecked(state.isCorrect);
+          _showResultBottomSheet(
+            context,
+            state.isCorrect ? ResultType.correct : ResultType.incorrect,
+          );
         }
       },
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
@@ -85,12 +107,6 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
                   text: 'Check',
                   isEnabled: canCheck,
                   showBorder: true,
-                ),
-              if (state.hasChecked)
-                ResultBottomSheet(
-                  type: state.isCorrect ? ResultType.correct : ResultType.incorrect,
-                  onContinue: () {},
-                  onExplain: () {},
                 ),
             ],
           );
