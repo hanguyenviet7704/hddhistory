@@ -46,7 +46,7 @@ class DeviceInfoService implements IDeviceInfoService {
   @override
   Future<void> getAllDeviceInfo() async {
     final deviceInfo = await _deviceInfoPlugin.deviceInfo;
-    LogDev.one('deviceInfo: ${deviceInfo.toMap()}');
+    LogDev.one('deviceInfo: ${deviceInfo.data}');
   }
 
   @override

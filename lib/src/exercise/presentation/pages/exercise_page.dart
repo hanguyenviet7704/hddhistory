@@ -6,9 +6,7 @@ class ExercisePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ExerciseLayout(
-      children: [
-        ChatInformationWidget(),
-      ],
+      body: ChatInformationWidget(),
     );
   }
 }

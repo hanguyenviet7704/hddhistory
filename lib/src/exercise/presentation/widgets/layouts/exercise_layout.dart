@@ -23,12 +23,12 @@ enum ExerciseLayoutType {
 
 class ExerciseLayout extends StatelessWidget {
   final ExerciseLayoutType type;
-  final List<Widget> children;
+  final Widget body;
   final Widget? bottom;
   const ExerciseLayout({
     super.key,
     this.type = ExerciseLayoutType.practice,
-    this.children = const [],
+    required this.body,
     this.bottom,
   });
 
@@ -41,9 +41,7 @@ class ExerciseLayout extends StatelessWidget {
             ExerciseHeader(type: type),
             Expanded(
               child: SingleChildScrollView(
-                child: Column(
-                  children: children,
-                ),
+                child: body,
               ),
             ),
             bottom ?? ExerciseContinueButton(onPressed: () {}),

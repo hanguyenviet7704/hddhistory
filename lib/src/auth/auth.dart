@@ -8,7 +8,6 @@ import 'package:injectable/injectable.dart';
 //* Single project import
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
-import 'package:uuid/uuid.dart';
 
 //* Presentation Layer - Widgets
 

@@ -2,6 +2,7 @@ part of '../../auth.dart';
 
 @lazySingleton
 class ForgotPasswordUsecase implements UseCaseWithParams<Map<String, dynamic>, BaseResponse<AuthEntity>> {
+  // ignore: unused_field
   final IAuthRepository _authRepository;
   ForgotPasswordUsecase(this._authRepository);
 

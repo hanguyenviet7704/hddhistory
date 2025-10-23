@@ -1,3 +1,5 @@
+// ignore_for_file: unused_local_variable
+
 part of '../../auth.dart';
 
 @LazySingleton(as: IAuthRepository)

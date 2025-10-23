@@ -3,9 +3,8 @@ part of '../../data_collect.dart';
 @lazySingleton
 class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerMixin<DataCollectState> {
   final IDeviceInfoService _deviceInfoService;
-  final LoginAnonymousUsecase _loginAnonymousUsecase;
 
-  DataCollectCubit(this._loginAnonymousUsecase, this._deviceInfoService) : super(DataCollectState.initial());
+  DataCollectCubit(this._deviceInfoService) : super(DataCollectState.initial());
 
   TextEditingController nameController = TextEditingController();
 

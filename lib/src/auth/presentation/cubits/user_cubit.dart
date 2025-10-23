@@ -65,7 +65,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   // ignore: unused_element
   Future<void> _onAutoSignUpGuest() async {
     if (!state.isGuest || state.accessToken.isNotEmpty) return;
-    final uuid = Uuid().v4();
+    // final uuid = Uuid().v4();
     // await executeCustomUseCase(
     //   usecase: () => _registerUsecase({
     //     'email': 'guest_$uuid@meup.com',
