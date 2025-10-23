@@ -54,15 +54,20 @@ class ChoiceAnswerCard extends StatelessWidget {
       child: GestureDetector(
         onTap: state == AnswerState.disabled ? null : onTap,
         child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: backgroundColor,
-            border: Border.all(color: borderColor, width: 2),
-            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: borderColor, width: 2.w),
+            borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Text(
+          child: AppText(
             text,
-            style: TextStyle(color: const Color(0xFF364152), fontSize: 14, fontWeight: fontWeight, height: 1.75),
+            maxLines: 10,
+            style: AppStyle.text14.copyWith(
+              color: const Color(0xFF364152),
+              fontWeight: fontWeight,
+              height: 1.75,
+            ),
           ),
         ),
       ),

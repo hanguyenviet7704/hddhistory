@@ -5,8 +5,24 @@ class ExercisePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Get the first single choice question from mock data
+    final question = mockChoiceQuestions.firstWhere(
+      (q) => !q.isMultiChoice,
+      orElse: () => mockChoiceQuestions.first,
+    );
+
     return ExerciseLayout(
-      body: ChatInformationWidget(),
+      type: ExerciseLayoutType.practice,
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 20),
+        child: SingleChoiceLessonBody(
+          question: question,
+          onAnswerChecked: (isCorrect) {
+            // Handle answer checked event
+            debugPrint('Answer is correct: $isCorrect');
+          },
+        ),
+      ),
     );
   }
 }

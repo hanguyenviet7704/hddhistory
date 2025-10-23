@@ -18,6 +18,7 @@ part of 'di.dart';
     'lib/src/auth',
     'lib/src/home',
     'lib/src/profile',
+    'lib/src/exercise',
   ],
   initializerName: 'init',
   preferRelativeImports: true,

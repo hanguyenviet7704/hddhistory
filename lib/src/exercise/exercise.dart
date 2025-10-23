@@ -34,8 +34,10 @@ part 'domain/usecases/update_exercise_usecase.dart';
 part 'exercise.freezed.dart';
 part 'exercise.g.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/cubits/exercise_cubit.dart';
-part 'presentation/cubits/exercise_state.dart';
+part 'presentation/cubits/exercise/exercise_cubit.dart';
+part 'presentation/cubits/exercise/exercise_state.dart';
+part 'presentation/cubits/choice/choice_cubit.dart';
+part 'presentation/cubits/choice/choice_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/example/arrange_the_sequence_screen.dart';
 part 'presentation/pages/example/choise_screen.dart';

@@ -1,4 +1,4 @@
-part of '../../exercise.dart';
+part of '../../../exercise.dart';
 
 @lazySingleton
 class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<ExerciseState> {
