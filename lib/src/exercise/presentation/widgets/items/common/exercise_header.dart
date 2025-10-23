@@ -9,78 +9,10 @@ class ExerciseHeader extends StatelessWidget {
     return Column(
       children: [
         ExerciseProgressBar(),
+        12.verticalSpace,
         ExerciseBadge(type: type),
+        ChatInformationWidget(),
       ],
-    );
-  }
-}
-
-class ExerciseProgressBar extends StatelessWidget {
-  const ExerciseProgressBar({
-    super.key,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocSelector<DataCollectCubit, DataCollectState, double>(
-      selector: (state) => state.currentStep.progress,
-      builder: (context, progress) {
-        return Row(
-          spacing: 10.w,
-          children: [
-            10.horizontalSpace,
-            InkWell(
-              onTap: () => context.read<DataCollectCubit>().goToPreviousStep(),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: const Color(0xFF0D121C), // Brand/Brand/Primary/300
-                size: 20.sp,
-              ),
-            ),
-            Expanded(
-              child: Container(
-                height: 40.h,
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: LinearPercentIndicator(
-                  width: 1.sw - (progress == 0 ? 40.w : 100.w),
-                  animation: true,
-                  animationDuration: 500,
-                  animateFromLastPercent: true,
-                  lineHeight: 10.h,
-                  percent: progress,
-                  backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
-                  progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
-                  barRadius: Radius.circular(30.r),
-                  padding: EdgeInsets.zero,
-                ),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class ExerciseBadge extends StatelessWidget {
-  final ExerciseLayoutType type;
-  const ExerciseBadge({super.key, required this.type});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
-      decoration: BoxDecoration(
-        color: const Color(0xFFE3E8EF), // Neutral/200
-        borderRadius: BorderRadius.circular(10.r),
-      ),
-      child: Row(
-        spacing: 6.w,
-        children: [
-          SvgPicture.asset(type.icon),
-          AppText(type.title),
-        ],
-      ),
     );
   }
 }

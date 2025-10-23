@@ -35,6 +35,9 @@ mixin RoutePath {
 
   //* Monetization
   static const String premiumPaywall = '/premium-paywall';
+
+  //* Exercise
+  static const String exercise = '/exercise';
 }
 
 mixin RouteNamed {
@@ -72,4 +75,7 @@ mixin RouteNamed {
 
   //* Monetization
   static const String premiumPaywall = 'Premium Paywall';
+
+  //* Exercise
+  static const String exercise = 'Exercise';
 }

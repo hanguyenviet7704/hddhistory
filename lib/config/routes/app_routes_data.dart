@@ -220,3 +220,14 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
     );
   }
 }
+
+@TypedGoRoute<ExerciseRoute>(path: RoutePath.exercise, name: RouteNamed.exercise)
+class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
+  const ExerciseRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const ExercisePage();
+}

@@ -1,0 +1,43 @@
+part of '../../../../exercise.dart';
+
+class ExerciseProgressBar extends StatelessWidget {
+  const ExerciseProgressBar({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      spacing: 10.w,
+      children: [
+        10.horizontalSpace,
+        InkWell(
+          onTap: () => context.read<DataCollectCubit>().goToPreviousStep(),
+          child: Icon(
+            Icons.close_rounded,
+            color: const Color(0xFF0D121C), // Brand/Brand/Primary/300
+            size: 20.sp,
+          ),
+        ),
+        Expanded(
+          child: Container(
+            height: 40.h,
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: LinearPercentIndicator(
+              width: 1.sw - 100.w,
+              animation: true,
+              animationDuration: 500,
+              animateFromLastPercent: true,
+              lineHeight: 10.h,
+              percent: .2,
+              backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
+              progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
+              barRadius: Radius.circular(30.r),
+              padding: EdgeInsets.zero,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+}

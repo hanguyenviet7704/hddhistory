@@ -1,5 +1,6 @@
 library;
 
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 //* Package imports
@@ -53,8 +54,11 @@ part 'presentation/widgets/items/choise/audio_player_widget.dart';
 part 'presentation/widgets/items/choise/choice_answer_card.dart';
 part 'presentation/widgets/items/choise/mock_data.dart';
 part 'presentation/widgets/items/choise/result_bottom_sheet.dart';
+part 'presentation/widgets/items/common/bubble_border.dart';
+part 'presentation/widgets/items/common/exercise_badge.dart';
 part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
 part 'presentation/widgets/items/common/exercise_header.dart';
+part 'presentation/widgets/items/common/exercise_progress_bar.dart';
 part 'presentation/widgets/items/cues_placement/available_pause_marks.dart';
 part 'presentation/widgets/items/cues_placement/avatar.dart';
 part 'presentation/widgets/items/cues_placement/bottom_button.dart';
