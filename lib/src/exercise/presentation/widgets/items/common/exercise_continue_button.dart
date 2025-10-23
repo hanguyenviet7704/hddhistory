@@ -1,21 +1,55 @@
 part of '../../../../exercise.dart';
 
 class ExerciseContinueButton extends StatelessWidget {
-  final VoidCallback onPressed;
-  const ExerciseContinueButton({super.key, required this.onPressed});
+  final VoidCallback? onPressed;
+  final String text;
+  final bool isEnabled;
+  final Color? backgroundColor;
+  final Color? disabledBackgroundColor;
+  final Color? textColor;
+  final Color? disabledTextColor;
+  final bool showBorder;
+
+  const ExerciseContinueButton({
+    super.key,
+    required this.onPressed,
+    this.text = 'Continue',
+    this.isEnabled = true,
+    this.backgroundColor,
+    this.disabledBackgroundColor,
+    this.textColor,
+    this.disabledTextColor,
+    this.showBorder = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final activeBgColor = backgroundColor ?? const Color(0xFF554FF0);
+    final disabledBgColor = disabledBackgroundColor ?? const Color(0xFFE3E8EF);
+    final activeTextColor = textColor ?? Colors.white;
+    final disabledTextColor = this.disabledTextColor ?? const Color(0xFF7F8EA4);
+
     return Container(
       padding: EdgeInsets.all(20.w),
+      decoration: showBorder
+          ? const BoxDecoration(
+              color: Colors.white,
+              border: Border(top: BorderSide(color: Color(0xFFE3E8EF), width: 1)),
+            )
+          : null,
       child: AppButton.primary(
-        onPressed: onPressed,
+        onPressed: isEnabled ? onPressed : null,
         fullWidthBtn: true,
         height: 54.h,
+        disabled: !isEnabled,
+        decoration: ShapeDecoration(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100.r)),
+          color: isEnabled ? activeBgColor : disabledBgColor,
+        ),
         child: AppText(
-          context.text.onboardingSkipGreetingButton,
+          text,
           style: AppStyle.textBold16.copyWith(
-            color: Colors.white,
+            color: isEnabled ? activeTextColor : disabledTextColor,
             fontWeight: FontWeight.w600,
           ),
         ),

@@ -5,9 +5,9 @@ class ExercisePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Get the first single choice question from mock data
+    // Get the first multiple choice question from mock data
     final question = mockChoiceQuestions.firstWhere(
-      (q) => !q.isMultiChoice,
+      (q) => q.isMultiChoice,
       orElse: () => mockChoiceQuestions.first,
     );
 
@@ -15,7 +15,7 @@ class ExercisePage extends StatelessWidget {
       type: ExerciseLayoutType.practice,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 20),
-        child: SingleChoiceLessonBody(
+        child: MultipleChoiceLessonBody(
           question: question,
           onAnswerChecked: (isCorrect) {
             // Handle answer checked event

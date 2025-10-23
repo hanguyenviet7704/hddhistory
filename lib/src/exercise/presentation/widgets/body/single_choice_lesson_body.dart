@@ -80,10 +80,11 @@ class _SingleChoiceLessonBodyView extends StatelessWidget {
               ),
               20.verticalSpace,
               if (!state.hasChecked)
-                BottomButton(
-                  isEnabled: canCheck,
+                ExerciseContinueButton(
                   onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
                   text: 'Check',
+                  isEnabled: canCheck,
+                  showBorder: true,
                 ),
               if (state.hasChecked)
                 ResultBottomSheet(
