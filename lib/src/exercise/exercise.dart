@@ -57,6 +57,7 @@ part 'presentation/widgets/items/choise/result_bottom_sheet.dart';
 part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/exercise_badge.dart';
 part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
+part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/exercise_header.dart';
 part 'presentation/widgets/items/common/exercise_progress_bar.dart';
 part 'presentation/widgets/items/cues_placement/available_pause_marks.dart';

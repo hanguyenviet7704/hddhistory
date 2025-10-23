@@ -14,7 +14,7 @@ enum ExerciseLayoutType {
   }
 
   String get icon {
-   return switch (this) {
+    return switch (this) {
       ExerciseLayoutType.knowledge => AppAsset.svg.app.icAim,
       ExerciseLayoutType.practice => AppAsset.svg.app.icLayer,
     };
@@ -23,7 +23,14 @@ enum ExerciseLayoutType {
 
 class ExerciseLayout extends StatelessWidget {
   final ExerciseLayoutType type;
-  const ExerciseLayout({super.key, this.type = ExerciseLayoutType.practice});
+  final List<Widget> children;
+  final Widget? bottom;
+  const ExerciseLayout({
+    super.key,
+    this.type = ExerciseLayoutType.practice,
+    this.children = const [],
+    this.bottom,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +38,15 @@ class ExerciseLayout extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            ExerciseHeader(type: type,),
+            ExerciseHeader(type: type),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Column(
+                  children: children,
+                ),
+              ),
+            ),
+            bottom ?? ExerciseContinueButton(onPressed: () {}),
           ],
         ),
       ),
