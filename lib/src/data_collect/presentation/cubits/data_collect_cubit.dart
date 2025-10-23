@@ -13,8 +13,8 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
     String deviceId = await _deviceInfoService.deviceToken;
     String deviceName = await _deviceInfoService.deviceName;
     String languageCode = AppDI.injector.get<LocaleCubit>().state.value;
-    runUseCase(
-      usecase: () => _loginAnonymousUsecase({
+    AppDI.injector.get<AuthBloc>().add(
+      AuthEvent.loginAnonymous({
         "device": {
           "deviceId": deviceId,
           "deviceName": deviceName,
@@ -31,10 +31,6 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
           "strugglesWhenSpeaking": state.selectedStruggles.map((e) => e.id).toList(),
         },
       }),
-      onSuccess: (data) {
-        
-      },
-      onFailure: (error) {},
     );
   }
 

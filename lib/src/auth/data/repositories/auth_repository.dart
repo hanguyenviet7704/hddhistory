@@ -4,7 +4,8 @@ part of '../../auth.dart';
 class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository {
   final AuthApi _authApi;
   final AuthService _authService;
-  AuthRepository(this._authApi, this._authService);
+  final IDeviceInfoService _deviceInfoService;
+  AuthRepository(this._authApi, this._authService, this._deviceInfoService);
 
   @override
   TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body) {
@@ -56,8 +57,20 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
 
         // Get the ID token for authentication
         final idToken = await user.getIdToken() ?? '';
+        AppGlobalValue.accessToken = idToken;
 
-        return AuthEntity();
+        String deviceId = await _deviceInfoService.deviceToken;
+        String deviceName = await _deviceInfoService.deviceName;
+
+        BaseResponse<AuthModel> result = await _authApi.loginProvider({
+          "device": {
+            "deviceId": deviceId,
+            "deviceName": deviceName,
+          },
+          "provider": "google.com",
+        });
+
+        return result.data?.toEntity() ?? AuthEntity();
       },
       (error, stackTrace) {
         if (error is FirebaseException) {
@@ -81,8 +94,20 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
 
         // Get the ID token for authentication
         final idToken = await user.getIdToken() ?? '';
+        AppGlobalValue.accessToken = idToken;
 
-        return AuthEntity();
+        String deviceId = await _deviceInfoService.deviceToken;
+        String deviceName = await _deviceInfoService.deviceName;
+
+        BaseResponse<AuthModel> result = await _authApi.loginProvider({
+          "device": {
+            "deviceId": deviceId,
+            "deviceName": deviceName,
+          },
+          "provider": "apple.com",
+        });
+
+        return result.data?.toEntity() ?? AuthEntity();
       },
       (error, stackTrace) {
         if (error is FirebaseException) {
@@ -120,7 +145,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
       },
     );
   }
-  
+
   // @override
   // TaskEither<AppException, AuthEntity> forgotPassword(Map<String, dynamic> body) {
   //   return callApiWithTransform<AuthModel, AuthEntity>(

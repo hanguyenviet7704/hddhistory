@@ -36,14 +36,52 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
     runUseCase(
       usecase: () => _loginAnonymousUsecase(event.data),
-      onSuccess: (data) {},
+      onSuccess: (data) {
+        AppDI.injector.get<UserCubit>().setAuth(data);
+        AppGlobalValue.accessToken = data.token.accessToken;
+        AppGlobalValue.refreshToken = data.token.refreshToken;
+      },
       onFailure: (error) {},
     );
   }
 
-  FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {}
+  FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {
+    runUseCase(
+      usecase: () => _loginSSOGoogleUsecase(),
+      onSuccess: (data) {
+        AppDI.injector.get<UserCubit>().setAuth(data);
+        AppGlobalValue.accessToken = data.token.accessToken;
+        AppGlobalValue.refreshToken = data.token.refreshToken;
+      },
+      onFailure: (error) {},
+    );
+  }
 
-  FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {}
+  FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {
+    runUseCase(
+      usecase: () => _loginSSOAppleUsecase(),
+      onSuccess: (data) {
+        AppDI.injector.get<UserCubit>().setAuth(data);
+        AppGlobalValue.accessToken = data.token.accessToken;
+        AppGlobalValue.refreshToken = data.token.refreshToken;
+      },
+      onFailure: (error) {},
+    );
+  }
 
-  FutureOr<void> _onRegister(_Register event, Emitter<AuthState> emit) {}
+  FutureOr<void> _onRegister(_Register event, Emitter<AuthState> emit) {
+    runUseCase(
+      usecase: () => _registerUsecase({
+        "email": event.email,
+        "password": event.password,
+        "passwordConfirm": event.passwordConfirm,
+      }),
+      onSuccess: (data) {
+        AppDI.injector.get<UserCubit>().setAuth(data);
+        AppGlobalValue.accessToken = data.token.accessToken;
+        AppGlobalValue.refreshToken = data.token.refreshToken;
+      },
+      onFailure: (error) {},
+    );
+  }
 }
