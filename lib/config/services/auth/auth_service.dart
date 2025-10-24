@@ -4,19 +4,35 @@ part of '../services.dart';
 class AuthService implements IAuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;
-
   @override
   Future<UserCredential> signInWithGoogle() async {
     try {
-      // Create a GoogleAuthProvider
-      final GoogleAuthProvider googleProvider = GoogleAuthProvider();
+      // Initialize Google Sign In
+      await _googleSignIn.initialize();
 
-      // Add custom scopes if needed
-      googleProvider.addScope('email');
-      googleProvider.addScope('profile');
+      // Trigger the Google Sign In flow with scope hint
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate(
+        scopeHint: ['email', 'profile'],
+      );
 
-      // Sign in with Google using Firebase Auth
-      return await _firebaseAuth.signInWithProvider(googleProvider);
+      // Obtain the auth details from the account
+      final GoogleSignInAuthentication googleAuth = googleUser.authentication;
+
+      // Get access token for the scopes
+      final GoogleSignInClientAuthorization? authorization = await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+
+      // Create a new credential with the Google tokens
+      final OAuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: authorization?.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      // Sign in to Firebase with the Google credential
+      return await _firebaseAuth.signInWithCredential(credential);
+    } on GoogleSignInException catch (e) {
+      throw AppException.generic('Google sign-in error: ${e.toString()}');
+    } on FirebaseAuthException catch (e) {
+      throw AppException.generic(_getFirebaseAuthErrorMessage(e));
     } catch (e) {
       throw AppException.generic('Failed to sign in with Google: ${e.toString()}');
     }
@@ -25,15 +41,26 @@ class AuthService implements IAuthService {
   @override
   Future<UserCredential> signInWithApple() async {
     try {
-      // Create an AppleAuthProvider
-      final AppleAuthProvider appleProvider = AppleAuthProvider();
+      // Request Apple Sign In
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
 
-      // Add custom scopes if needed
-      appleProvider.addScope('email');
-      appleProvider.addScope('name');
+      // Create OAuth credential for Firebase
+      final oauthCredential = OAuthProvider("apple.com").credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
 
-      // Sign in with Apple using Firebase Auth
-      return await _firebaseAuth.signInWithProvider(appleProvider);
+      // Sign in to Firebase with the Apple credential
+      return await _firebaseAuth.signInWithCredential(oauthCredential);
+    } on SignInWithAppleAuthorizationException catch (e) {
+      throw AppException.generic(_getAppleAuthErrorMessage(e));
+    } on FirebaseAuthException catch (e) {
+      throw AppException.generic(_getFirebaseAuthErrorMessage(e));
     } catch (e) {
       throw AppException.generic('Failed to sign in with Apple: ${e.toString()}');
     }
@@ -71,7 +98,10 @@ class AuthService implements IAuthService {
   Future<void> signOut() async {
     try {
       await _firebaseAuth.signOut();
-      await _googleSignIn.signOut();
+
+      // Sign out from Google if currently signed in
+      final googleSignIn = GoogleSignIn.instance;
+      await googleSignIn.signOut();
     } catch (e) {
       throw AppException.generic('Failed to sign out: ${e.toString()}');
     }
@@ -95,8 +125,31 @@ class AuthService implements IAuthService {
         return 'Too many requests. Try again later.';
       case 'operation-not-allowed':
         return 'Signing in with Email and Password is not enabled.';
+      case 'account-exists-with-different-credential':
+        return 'An account already exists with the same email address but different sign-in credentials.';
+      case 'invalid-credential':
+        return 'The credential is malformed or has expired.';
       default:
         return 'An authentication error occurred: ${e.message}';
+    }
+  }
+
+  String _getAppleAuthErrorMessage(SignInWithAppleAuthorizationException e) {
+    switch (e.code) {
+      case AuthorizationErrorCode.canceled:
+        return 'Apple sign-in was cancelled';
+      case AuthorizationErrorCode.failed:
+        return 'Apple sign-in failed';
+      case AuthorizationErrorCode.invalidResponse:
+        return 'Invalid response from Apple sign-in';
+      case AuthorizationErrorCode.notHandled:
+        return 'Apple sign-in was not handled';
+      case AuthorizationErrorCode.unknown:
+        return 'An unknown error occurred during Apple sign-in';
+      case AuthorizationErrorCode.notInteractive:
+        return 'Apple sign-in requires user interaction';
+      default:
+        return 'An Apple sign-in error occurred: ${e.message}';
     }
   }
 }

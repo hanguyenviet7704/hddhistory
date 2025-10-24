@@ -63,6 +63,7 @@ class DefaultFirebaseOptions {
     projectId: 'meup-bf64f',
     storageBucket: 'meup-bf64f.firebasestorage.app',
     androidClientId: '116378588635-6htd7rkoc9777o1m108oqkbvkn8mfvq8.apps.googleusercontent.com',
+    iosClientId: '116378588635-sv2pe9vmjarvp1srff7bc8v34bt37di4.apps.googleusercontent.com',
     iosBundleId: 'com.eup.meup.stg',
   );
 
