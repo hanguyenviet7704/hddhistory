@@ -71,16 +71,26 @@ class ExercisePage extends StatelessWidget {
     );
     */
 
+    // return ExerciseLayout(
+    //   type: ExerciseLayoutType.practice,
+    //   body: SpeakingLessonBody(
+    //     sentence: sentence,
+    //     audioPath: audioPath,
+    //     onAnswerChecked: (isCompleted) {
+    //       // Handle answer checked event
+    //       debugPrint('Speaking exercise completed: $isCompleted');
+    //     },
+    //   ),
+    // );
+
     return ExerciseLayout(
       type: ExerciseLayoutType.practice,
-      body: SpeakingLessonBody(
-        sentence: sentence,
-        audioPath: audioPath,
-        onAnswerChecked: (isCompleted) {
+      body: SingleChoiceLessonBody(
+        onAnswerChecked: (isCorrect) {
           // Handle answer checked event
-          debugPrint('Speaking exercise completed: $isCompleted');
+          debugPrint('Answer is correct: $isCorrect');
         },
       ),
-    );
+    );  
   }
 }

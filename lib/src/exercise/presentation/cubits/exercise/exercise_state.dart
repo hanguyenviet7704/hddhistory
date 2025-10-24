@@ -6,9 +6,9 @@ enum ExerciseStatus { initial, loading, success, failure }
 abstract class ExerciseState with _$ExerciseState {
   const factory ExerciseState({
     @Default(ExerciseStatus.initial) ExerciseStatus status,
-    @Default(QuestionTypeEnum.singleChoice) QuestionTypeEnum exerciseType,
     @Default(BasePageBreak<LearningItemEntity>()) BasePageBreak<LearningItemEntity> pageData,
-    LearningItemEntity? selectedItem,
+    @Default(LearningItemEntity()) LearningItemEntity currentLearningItem,
+    @Default(QuestionEntity()) QuestionEntity currentQuestion,
     String? errorMessage,
   }) = _ExerciseState;
 

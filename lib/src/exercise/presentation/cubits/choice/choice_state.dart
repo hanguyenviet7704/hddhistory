@@ -6,6 +6,7 @@ enum ChoiceStatus { initial, loading, success, failure }
 sealed class ChoiceState with _$ChoiceState {
   const factory ChoiceState({
     @Default(ChoiceStatus.initial) ChoiceStatus status,
+    @Default(QuestionEntity()) QuestionEntity question,
     @Default(-1) int selectedAnswerIndex,
     @Default({}) Set<int> selectedAnswers,
     @Default(false) bool hasChecked,

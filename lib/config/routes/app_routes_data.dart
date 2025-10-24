@@ -231,8 +231,15 @@ class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<ExerciseCubit>(),
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(
+        value: AppDI.injector.get<ExerciseCubit>(),
+      ),
+      BlocProvider.value(
+        value: AppDI.injector.get<ChoiceCubit>(),
+      ),
+    ],
     child: const ExercisePage(),
   );
 }

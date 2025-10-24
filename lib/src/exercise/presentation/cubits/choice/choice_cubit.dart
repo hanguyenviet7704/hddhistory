@@ -4,6 +4,8 @@ part of '../../../exercise.dart';
 class ChoiceCubit extends Cubit<ChoiceState> {
   ChoiceCubit() : super(ChoiceState.initial());
 
+  void loadQuestionData(QuestionEntity question) => emit(state.copyWith(question: question));
+
   void loadQuestion(ChoiceQuestion question) {
     emit(
       state.copyWith(

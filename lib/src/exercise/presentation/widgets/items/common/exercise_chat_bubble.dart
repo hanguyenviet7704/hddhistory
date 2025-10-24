@@ -22,7 +22,14 @@ class ChatInformationWidget extends StatelessWidget {
             ),
           ),
           8.horizontalSpace,
-          ExerciseChatBubble(text: 'Hello', isSender: false, radius: 12, tailVerticalAlignment: 0.5),
+          BlocSelector<ExerciseCubit, ExerciseState, String>(
+            selector: (state) {
+              return state.currentLearningItem.questions.first.speechBubble;
+            },
+            builder: (context, state) {
+              return ExerciseChatBubble(text: 'Hello', isSender: false, radius: 12, tailVerticalAlignment: 0.5);
+            },
+          ),
         ],
       ),
     );

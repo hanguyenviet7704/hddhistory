@@ -1,30 +1,10 @@
 part of '../../../exercise.dart';
 
 class SingleChoiceLessonBody extends StatelessWidget {
-  final ChoiceQuestion question;
   final Function(bool) onAnswerChecked;
 
   const SingleChoiceLessonBody({
     super.key,
-    required this.question,
-    required this.onAnswerChecked,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppDI.injector<ChoiceCubit>()..loadQuestion(question),
-      child: _SingleChoiceLessonBodyView(
-        onAnswerChecked: onAnswerChecked,
-      ),
-    );
-  }
-}
-
-class _SingleChoiceLessonBodyView extends StatelessWidget {
-  final Function(bool) onAnswerChecked;
-
-  const _SingleChoiceLessonBodyView({
     required this.onAnswerChecked,
   });
 

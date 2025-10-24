@@ -28,16 +28,13 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       isInit: isInit,
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
       onFailure: (error) {
-        emit(state.copyWith(
-          status: ExerciseStatus.failure,
-          errorMessage: error,
-        ));
+        emit(state.copyWith(status: ExerciseStatus.failure, errorMessage: error));
       },
       onSuccess: (pageData) {
-        emit(state.copyWith(
-          status: ExerciseStatus.success,
-          pageData: pageData,
-        ));
+        emit(state.copyWith(status: ExerciseStatus.success, pageData: pageData));
+        QuestionEntity singleChoiceQuestion = pageData.items.firstWhere((item) => item.questions.first.type == QuestionTypeEnum.singleChoice).questions.first;
+        emit(state.copyWith(currentQuestion: singleChoiceQuestion));
+        AppDI.injector.get<ChoiceCubit>().loadQuestionData(singleChoiceQuestion);
       },
     );
   }
@@ -47,19 +44,11 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       usecase: () => _getUseCase(id),
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
       onFailure: (error) {
-        emit(state.copyWith(
-          status: ExerciseStatus.failure,
-          errorMessage: error,
-        ));
+        emit(state.copyWith(status: ExerciseStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(
-          status: ExerciseStatus.success,
-          selectedItem: item,
-        ));
+        emit(state.copyWith(status: ExerciseStatus.success, currentLearningItem: item));
       },
     );
   }
-
 }
-
