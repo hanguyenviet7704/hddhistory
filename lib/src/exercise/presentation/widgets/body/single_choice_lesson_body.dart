@@ -40,7 +40,6 @@ class _SingleChoiceLessonBodyView extends StatelessWidget {
         },
         onExplain: () {
           Navigator.of(context).pop();
-          // TODO: Navigate to explanation screen
         },
       ),
     );

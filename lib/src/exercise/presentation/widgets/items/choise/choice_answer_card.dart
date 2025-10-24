@@ -1,3 +1,5 @@
+// ignore_for_file: unused_element
+
 part of '../../../../exercise.dart';
 
 enum AnswerState { normal, selected, correct, incorrect, disabled }

@@ -211,7 +211,7 @@ class SpeakingPracticeTag extends StatelessWidget {
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
           decoration: BoxDecoration(
-            color: const Color(0xFFE9556A).withOpacity(0.1),
+            color: const Color(0xFFE9556A).op(0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: Row(
@@ -606,7 +606,7 @@ class SpeakingRecordingControl extends StatelessWidget {
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: const Color(0xFF1CB0F6).withOpacity(0.2),
+                        color: const Color(0xFF1CB0F6).op(0.2),
                         blurRadius: 20,
                         offset: const Offset(0, 4),
                       ),
@@ -673,7 +673,7 @@ class SpeakingRecordingControl extends StatelessWidget {
                           activeTrackColor: const Color(0xFF1CB0F6),
                           inactiveTrackColor: const Color(0xFFE0E6ED),
                           thumbColor: const Color(0xFF1CB0F6),
-                          overlayColor: const Color(0xFF1CB0F6).withOpacity(0.2),
+                          overlayColor: const Color(0xFF1CB0F6).op(0.2),
                         ),
                         child: Slider(
                           value: currentMs.toDouble(),
