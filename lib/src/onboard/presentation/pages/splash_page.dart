@@ -24,9 +24,10 @@ class _SplashPageState extends State<SplashPage> {
 
   void _getAppData() async {
     AppDI.injector.get<OnboardCubit>().loadAllOnboards();
-    AppGlobalValue.accessToken = context.read<UserCubit>().state.accessToken;
-    AppGlobalValue.refreshToken = context.read<UserCubit>().state.refreshToken;
-    AppGlobalValue.isGuest = context.read<UserCubit>().state.isGuest;
+    UserState userState = context.read<UserCubit>().state;
+    AppGlobalValue.accessToken = userState.accessToken;
+    AppGlobalValue.refreshToken = userState.refreshToken;
+    AppGlobalValue.isGuest = userState.isGuest;
 
     if (!mounted) return;
     // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
@@ -87,8 +88,11 @@ class _SplashPageState extends State<SplashPage> {
       if (isFirstTime) {
         _trackingDrawWelcomeScrView('first_time');
       }
-      ChooseLanguageRoute().go(context);
-      // ExerciseRoute().go(context);
+      if (AppGlobalValue.accessToken.isEmpty) {
+        ChooseLanguageRoute().go(context);
+        return;
+      }
+      ExerciseRoute().go(context);
     });
   }
 

@@ -1,6 +1,6 @@
 part of '../services.dart';
 
-@lazySingleton
+@LazySingleton(as: IAuthService)
 class AuthService implements IAuthService {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn.instance;

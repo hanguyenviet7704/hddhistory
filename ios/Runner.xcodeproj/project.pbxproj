@@ -801,6 +801,7 @@
 			baseConfigurationReference = C17764FF6B630AE16EBF87FE /* prodProfile.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -861,6 +862,7 @@
 			baseConfigurationReference = 3B4BF120C8BD255350F06CE7 /* devDebug.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
@@ -874,6 +876,7 @@
 			baseConfigurationReference = AF42CE815CD708BFDFE766AF /* prodDebug.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
@@ -887,6 +890,7 @@
 			baseConfigurationReference = 43CA5FD8DAF925B4EEF8FFCB /* prodRelease.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1112,6 +1116,7 @@
 			baseConfigurationReference = E7840C65FBB4A19F6E4A03F4 /* devProfile.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
@@ -1200,6 +1205,7 @@
 			baseConfigurationReference = CBE4C0F3B182953B1E11D59D /* devRelease.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
@@ -1534,6 +1540,7 @@
 			baseConfigurationReference = D90CCE06ABD6F06911C31587 /* stgDebug.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1616,6 +1623,7 @@
 			baseConfigurationReference = BC408856D45EF2FE8F9AE168 /* stgProfile.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
@@ -1698,6 +1706,7 @@
 			baseConfigurationReference = E5FD7A8606C4148BB1F20405 /* stgRelease.xcconfig */;
 			buildSettings = {
 				BUILD_LIBRARY_FOR_DISTRIBUTION = NO;
+				CODE_SIGN_ENTITLEMENTS = Runner/Runner.entitlements;
 				DEVELOPMENT_TEAM = GK9UEKLL78;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};

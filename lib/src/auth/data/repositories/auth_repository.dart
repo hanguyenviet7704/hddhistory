@@ -5,7 +5,7 @@ part of '../../auth.dart';
 @LazySingleton(as: IAuthRepository)
 class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository {
   final AuthApi _authApi;
-  final AuthService _authService;
+  final IAuthService _authService;
   final IDeviceInfoService _deviceInfoService;
   AuthRepository(this._authApi, this._authService, this._deviceInfoService);
 
@@ -97,6 +97,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
         // Get the ID token for authentication
         final idToken = await user.getIdToken() ?? '';
         AppGlobalValue.accessToken = idToken;
+        LogDev.one('idToken: $idToken');
 
         String deviceId = await _deviceInfoService.deviceToken;
         String deviceName = await _deviceInfoService.deviceName;

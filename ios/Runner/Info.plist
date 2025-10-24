@@ -44,7 +44,7 @@
         <key>CFBundleURLSchemes</key>
         <array>
           <!-- Copied from GoogleService-Info.plist key REVERSED_CLIENT_ID -->
-          <string>com.googleusercontent.apps.997620226708-3a13ol1a4d4h6r7vnu769q8285ppvj9i</string>
+          <string>com.googleusercontent.apps.116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a</string>
         </array>
       </dict>
       <dict>
@@ -107,7 +107,7 @@
       <string>remote-notification</string>
     </array>
     <key>GIDClientID</key>
-    <string>997620226708-3a13ol1a4d4h6r7vnu769q8285ppvj9i.apps.googleusercontent.com</string>
+    <string>116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a.apps.googleusercontent.com</string>
     <!-- End of the Google Sign-in Section -->
     <key>UILaunchStoryboardName</key>
     <string>$(ASSET_PREFIX)LaunchScreen</string>
