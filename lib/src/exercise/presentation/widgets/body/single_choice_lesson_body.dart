@@ -39,26 +39,24 @@ class SingleChoiceLessonBody extends StatelessWidget {
       },
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
-          final currentQuestion = state.currentQuestion;
-          if (currentQuestion == null) return const SizedBox.shrink();
-
+          final currentQuestion = state.question;
           final canCheck = state.selectedAnswerIndex != -1 && !state.hasChecked;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (currentQuestion.hasImage && currentQuestion.imageUrl != null) ...[
-                ImageCard(imageUrl: currentQuestion.imageUrl),
+              if (currentQuestion.document.isNotEmpty) ...[
+                ImageCard(imageUrl: currentQuestion.document.first.data.url),
                 12.verticalSpace,
               ],
-              if (currentQuestion.hasAudio) ...[
-                AudioPlayerWidget(audioUrl: currentQuestion.audioUrl),
-                12.verticalSpace,
-              ],
+              // if (currentQuestion.hasAudio) ...[
+              //   AudioPlayerWidget(audioUrl: currentQuestion.audioUrl),
+              //   12.verticalSpace,
+              // ],
               Padding(
                 padding: EdgeInsets.only(top: 16.h, bottom: 8.h),
                 child: AppText(
-                  currentQuestion.instructionText,
+                  currentQuestion.explanation,
                   style: AppStyle.text12.copyWith(
                     color: const Color(0xFF7F8EA4),
                     fontWeight: FontWeight.w500,
@@ -68,11 +66,11 @@ class SingleChoiceLessonBody extends StatelessWidget {
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: currentQuestion.answers.length,
+                itemCount: currentQuestion.options.length,
                 separatorBuilder: (context, index) => 12.verticalSpace,
                 itemBuilder: (context, index) {
                   return ChoiceAnswerCard(
-                    text: currentQuestion.answers[index],
+                    option: currentQuestion.options[index],
                     isMultiChoice: false,
                     state: _getAnswerState(index, state),
                     onTap: () => context.read<ChoiceCubit>().selectAnswer(index),

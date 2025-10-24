@@ -126,20 +126,20 @@ class _ChoiseScreenState extends State<ChoiseScreen> {
                         style: const TextStyle(color: Color(0xFF7F8EA4), fontSize: 12, fontWeight: FontWeight.w500, height: 1.5),
                       ),
                     ),
-                    ListView.separated(
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      itemCount: currentQuestion.answers.length,
-                      separatorBuilder: (context, index) => const SizedBox(height: 12),
-                      itemBuilder: (context, index) {
-                        return ChoiceAnswerCard(
-                          text: currentQuestion.answers[index],
-                          isMultiChoice: currentQuestion.isMultiChoice,
-                          state: _getAnswerState(index),
-                          onTap: () => _toggleAnswer(index),
-                        );
-                      },
-                    ),
+                    // ListView.separated(
+                    //   shrinkWrap: true,
+                    //   physics: const NeverScrollableScrollPhysics(),
+                    //   itemCount: currentQuestion.answers.length,
+                    //   separatorBuilder: (context, index) => const SizedBox(height: 12),
+                    //   itemBuilder: (context, index) {
+                    //     return ChoiceAnswerCard(
+                    //       text: currentQuestion.answers[index],
+                    //       isMultiChoice: currentQuestion.isMultiChoice,
+                    //       state: _getAnswerState(index),
+                    //       onTap: () => _toggleAnswer(index),
+                    //     );
+                    //   },
+                    // ),
                     const SizedBox(height: 20),
                   ],
                 ),

@@ -4,7 +4,7 @@ part of '../../exercise.dart';
 abstract class ExerciseDocumentEntity with _$ExerciseDocumentEntity {
   const factory ExerciseDocumentEntity({
     @Default(0) int id,
-    @Default('') String type,
+    @Default(ExerciseDocumentType.text) ExerciseDocumentType type,
     @Default(DocumentDataEntity()) DocumentDataEntity data,
   }) = _ExerciseDocumentEntity;
 

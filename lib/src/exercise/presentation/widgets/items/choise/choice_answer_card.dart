@@ -5,12 +5,18 @@ part of '../../../../exercise.dart';
 enum AnswerState { normal, selected, correct, incorrect, disabled }
 
 class ChoiceAnswerCard extends StatelessWidget {
-  final String text;
+  final OptionEntity option;
   final bool isMultiChoice;
   final AnswerState state;
   final VoidCallback? onTap;
 
-  const ChoiceAnswerCard({super.key, required this.text, this.isMultiChoice = false, this.state = AnswerState.normal, this.onTap});
+  const ChoiceAnswerCard({
+    super.key,
+    required this.option,
+    this.isMultiChoice = false,
+    this.state = AnswerState.normal,
+    this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -67,7 +73,7 @@ class ChoiceAnswerCard extends StatelessWidget {
               // Checkbox for multiple choice
               Expanded(
                 child: AppText(
-                  text,
+                  option.text,
                   maxLines: 10,
                   style: AppStyle.text14.copyWith(
                     color: const Color(0xFF364152),

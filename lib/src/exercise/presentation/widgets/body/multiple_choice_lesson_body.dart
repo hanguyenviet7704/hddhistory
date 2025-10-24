@@ -85,20 +85,20 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
                   ),
                 ),
               ),
-              ListView.separated(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: currentQuestion.answers.length,
-                separatorBuilder: (context, index) => 12.verticalSpace,
-                itemBuilder: (context, index) {
-                  return ChoiceAnswerCard(
-                    text: currentQuestion.answers[index],
-                    isMultiChoice: true,
-                    state: _getAnswerState(index, state),
-                    onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
-                  );
-                },
-              ),
+              // ListView.separated(
+              //   shrinkWrap: true,
+              //   physics: const NeverScrollableScrollPhysics(),
+              //   itemCount: currentQuestion.answers.length,
+              //   separatorBuilder: (context, index) => 12.verticalSpace,
+              //   itemBuilder: (context, index) {
+              //     return ChoiceAnswerCard(
+              //       text: currentQuestion.answers[index],
+              //       isMultiChoice: true,
+              //       state: _getAnswerState(index, state),
+              //       onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
+              //     );
+              //   },
+              // ),
               20.verticalSpace,
               if (!state.hasChecked)
                 ExerciseContinueButton(

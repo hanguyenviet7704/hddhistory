@@ -23,11 +23,9 @@ class ChatInformationWidget extends StatelessWidget {
           ),
           8.horizontalSpace,
           BlocSelector<ExerciseCubit, ExerciseState, String>(
-            selector: (state) {
-              return state.currentLearningItem.questions.first.speechBubble;
-            },
-            builder: (context, state) {
-              return ExerciseChatBubble(text: 'Hello', isSender: false, radius: 12, tailVerticalAlignment: 0.5);
+            selector: (state) => state.currentQuestion.speechBubble,
+            builder: (context, speechBubble) {
+              return ExerciseChatBubble(text: speechBubble, radius: 12, tailVerticalAlignment: 0.5);
             },
           ),
         ],
@@ -45,9 +43,9 @@ class ExerciseChatBubble extends StatelessWidget {
   const ExerciseChatBubble({
     super.key,
     required this.text,
-    this.isSender = false, // Yêu cầu 2: Mặc định là receiver
-    this.radius = 16,
-    this.tailVerticalAlignment = 0.5, // Yêu cầu 1: Mặc định căn giữa
+    this.isSender = false,
+    this.radius = 20,
+    this.tailVerticalAlignment = 0.5,
   });
 
   @override
@@ -62,17 +60,13 @@ class ExerciseChatBubble extends StatelessWidget {
           radius: radius,
           tailWidth: 20,
           tailHeight: 15,
-          // Sử dụng giá trị alignment được truyền vào
           tailVerticalAlignment: tailVerticalAlignment,
-          // Bạn có thể tùy chỉnh tailWidth/tailHeight ở đây nếu muốn
-          // tailWidth: 10,
-          // tailHeight: 12,
           borderSide: BorderSide(color: Color(0xFFE3E8EF), width: 2.w),
         ),
         color: isSender ? Colors.blue[100] : Color(0xFFF5F7FB),
       ),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      child: AppText(text, style: AppStyle.textBold16),
+      child: AppText(text, style: AppStyle.textBold16, maxLines: 10),
     );
   }
 }
