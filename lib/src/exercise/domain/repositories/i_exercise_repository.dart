@@ -1,11 +1,11 @@
 part of '../../exercise.dart';
 
 abstract class IExerciseRepository {
-  TaskEither<AppException, BasePageBreak<ExerciseEntity>> getAllExercises(
+  TaskEither<AppException, BasePageBreak<LearningItemEntity>> getAllLearningItems(
     PageBreakRequest request,
   );
-  TaskEither<AppException, ExerciseEntity> getExercise(String id);
-  TaskEither<AppException, ExerciseEntity> createExercise(ExerciseEntity entity);
-  TaskEither<AppException, ExerciseEntity> updateExercise(ExerciseEntity entity);
-  TaskEither<AppException, Unit> deleteExercise(String id);
+  TaskEither<AppException, LearningItemEntity> getLearningItem(String id);
+  TaskEither<AppException, LearningItemEntity> createLearningItem(LearningItemEntity entity);
+  TaskEither<AppException, LearningItemEntity> updateLearningItem(LearningItemEntity entity);
+  TaskEither<AppException, Unit> deleteLearningItem(String id);
 }

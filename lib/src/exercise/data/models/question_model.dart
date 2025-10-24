@@ -23,14 +23,15 @@ abstract class QuestionModel with _$QuestionModel {
 
 extension QuestionModelExtension on QuestionModel {
   QuestionEntity toEntity() => QuestionEntity(
+    type: type,
     id: id,
     speechBubble: speechBubble,
     tag: tag,
-    document: document,
+    document: document.map((model) => model.toEntity()).toList(),
     explanation: explanation,
     targetArea: targetArea,
-    answer: answer,
-    options: options,
+    answer: answer.map((model) => model.toEntity()).toList(),
+    options: options.map((model) => model.toEntity()).toList(),
     level: level,
     form: form,
     record: record,

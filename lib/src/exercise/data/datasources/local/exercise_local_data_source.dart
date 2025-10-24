@@ -2,32 +2,32 @@ part of '../../../exercise.dart';
 
 /// Local data source for Exercise
 ///
-/// Handles caching of Exercise data for offline support.
+/// Handles caching of Learning Item data for offline support.
 /// Note: For paginated APIs, only the items are cached, not pagination metadata.
 /// Pagination info (currentPage, totalPages, etc.) should always come fresh from the API.
 abstract class ExerciseLocalDataSource {
-  /// Get all cached exercises
+  /// Get all cached learning_items
   ///
   /// Used as fallback when API fails. The repository will construct
   /// a BasePageBreak with these items for offline support.
-  Future<List<ExerciseModel>> getCachedExercises();
+  Future<List<LearningItemModel>> getCachedLearningItems();
 
-  /// Cache multiple exercises
+  /// Cache multiple learning_items
   ///
   /// For paginated APIs, the repository passes `pageData.items` (not the entire BasePageBreak).
   /// This keeps the cache simple and avoids stale pagination metadata.
-  Future<void> cacheExercises(List<ExerciseModel> models);
+  Future<void> cacheLearningItems(List<LearningItemModel> models);
 
-  /// Get cached exercise by id
-  Future<ExerciseModel?> getCachedExercise(String id);
+  /// Get cached learning_item by id
+  Future<LearningItemModel?> getCachedLearningItem(String id);
 
-  /// Cache single exercise
+  /// Cache single learning_item
   ///
   /// Used for caching individual items from GET, POST, PUT responses.
-  Future<void> cacheExercise(ExerciseModel model);
+  Future<void> cacheLearningItem(LearningItemModel model);
 
-  /// Delete cached exercise
-  Future<void> deleteCachedExercise(String id);
+  /// Delete cached learning_item
+  Future<void> deleteCachedLearningItem(String id);
 
   /// Clear all cached data
   Future<void> clearCache();
@@ -43,14 +43,14 @@ class ExerciseLocalDataSourceImpl implements ExerciseLocalDataSource {
   ExerciseLocalDataSourceImpl(this._localStoreService);
 
   @override
-  Future<List<ExerciseModel>> getCachedExercises() async {
+  Future<List<LearningItemModel>> getCachedLearningItems() async {
     try {
       final data = await _localStoreService.getMap(key: _cacheListKey);
       if (data.isEmpty) return [];
 
       final List<dynamic> jsonList = data['items'] ?? [];
       return jsonList
-          .map((json) => ExerciseModel.fromJson(json as Map<String, dynamic>))
+          .map((json) => LearningItemModel.fromJson(json as Map<String, dynamic>))
           .toList();
     } catch (e) {
       return [];
@@ -58,7 +58,7 @@ class ExerciseLocalDataSourceImpl implements ExerciseLocalDataSource {
   }
 
   @override
-  Future<void> cacheExercises(List<ExerciseModel> models) async {
+  Future<void> cacheLearningItems(List<LearningItemModel> models) async {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
       await _localStoreService.setMap(
@@ -71,20 +71,20 @@ class ExerciseLocalDataSourceImpl implements ExerciseLocalDataSource {
   }
 
   @override
-  Future<ExerciseModel?> getCachedExercise(String id) async {
+  Future<LearningItemModel?> getCachedLearningItem(String id) async {
     try {
       final cacheKey = '${_cacheKey}_$id';
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
 
-      return ExerciseModel.fromJson(data);
+      return LearningItemModel.fromJson(data);
     } catch (e) {
       return null;
     }
   }
 
   @override
-  Future<void> cacheExercise(ExerciseModel model) async {
+  Future<void> cacheLearningItem(LearningItemModel model) async {
     try {
       final cacheKey = '${_cacheKey}_${model.id}';
       await _localStoreService.setMap(
@@ -97,15 +97,15 @@ class ExerciseLocalDataSourceImpl implements ExerciseLocalDataSource {
   }
 
   @override
-  Future<void> deleteCachedExercise(String id) async {
+  Future<void> deleteCachedLearningItem(String id) async {
     try {
       final cacheKey = '${_cacheKey}_$id';
       await _localStoreService.remove(key: cacheKey);
 
       // Also remove from cached list if exists
-      final cachedList = await getCachedExercises();
+      final cachedList = await getCachedLearningItems();
       final updatedList = cachedList.where((item) => item.id != id).toList();
-      await cacheExercises(updatedList);
+      await cacheLearningItems(updatedList);
     } catch (e) {
       // Handle error silently or log
     }

@@ -17,8 +17,8 @@ abstract class ExerciseState with _$ExerciseState {
   const factory ExerciseState({
     @Default(ExerciseStatus.initial) ExerciseStatus status,
     @Default(ExerciseType.singleChoice) ExerciseType exerciseType,
-    @Default(BasePageBreak<ExerciseEntity>()) BasePageBreak<ExerciseEntity> pageData,
-    ExerciseEntity? selectedItem,
+    @Default(BasePageBreak<LearningItemEntity>()) BasePageBreak<LearningItemEntity> pageData,
+    LearningItemEntity? selectedItem,
     String? errorMessage,
   }) = _ExerciseState;
 

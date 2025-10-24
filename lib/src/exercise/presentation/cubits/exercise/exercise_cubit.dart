@@ -2,11 +2,11 @@ part of '../../../exercise.dart';
 
 @lazySingleton
 class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<ExerciseState> {
-  final GetAllExercisesUseCase _getAllUseCase;
-  final GetExerciseUseCase _getUseCase;
-  final CreateExerciseUseCase _createUseCase;
-  final UpdateExerciseUseCase _updateUseCase;
-  final DeleteExerciseUseCase _deleteUseCase;
+  final GetAllLearningItemsUseCase _getAllUseCase;
+  final GetLearningItemUseCase _getUseCase;
+  final CreateLearningItemUseCase _createUseCase;
+  final UpdateLearningItemUseCase _updateUseCase;
+  final DeleteLearningItemUseCase _deleteUseCase;
 
   ExerciseCubit(
     this._getAllUseCase,
@@ -16,7 +16,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     this._deleteUseCase,
   ) : super(ExerciseState.initial());
 
-  void loadAllExercises({
+  void loadAllLearningItems({
     bool isInit = false,
   }) async {
     // Prevent multiple simultaneous loads
@@ -28,7 +28,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     PageBreakRequest pageRequest;
     pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
 
-    await runUseCasePageBreak<ExerciseEntity>(
+    await runUseCasePageBreak<LearningItemEntity>(
       usecase: () => _getAllUseCase(pageRequest),
       currentPageData: state.pageData,
       isInit: isInit,
@@ -48,8 +48,8 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     );
   }
 
-  void loadExercise(String id) async {
-    await runUseCase<ExerciseEntity>(
+  void loadLearningItem(String id) async {
+    await runUseCase<LearningItemEntity>(
       usecase: () => _getUseCase(id),
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
       onFailure: (error) {
@@ -67,8 +67,8 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     );
   }
 
-  void createExercise(ExerciseEntity entity) async {
-    await runUseCase<ExerciseEntity>(
+  void createLearningItem(LearningItemEntity entity) async {
+    await runUseCase<LearningItemEntity>(
       usecase: () => _createUseCase(entity),
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
       onFailure: (error) {
@@ -88,8 +88,8 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     );
   }
 
-  void updateExercise(ExerciseEntity entity) async {
-    await runUseCase<ExerciseEntity>(
+  void updateLearningItem(LearningItemEntity entity) async {
+    await runUseCase<LearningItemEntity>(
       usecase: () => _updateUseCase(entity),
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
       onFailure: (error) {
@@ -110,7 +110,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     );
   }
 
-  void deleteExercise(String id) async {
+  void deleteLearningItem(String id) async {
     await runUseCase<Unit>(
       usecase: () => _deleteUseCase(id),
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),

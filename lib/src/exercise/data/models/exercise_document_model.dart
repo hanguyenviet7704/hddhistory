@@ -15,6 +15,6 @@ extension ExerciseDocumentModelExtension on ExerciseDocumentModel {
   ExerciseDocumentEntity toEntity() => ExerciseDocumentEntity(
     id: id,
     type: type,
-    data: data,
+    data: data.toEntity(),
   );
 }

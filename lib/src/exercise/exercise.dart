@@ -21,18 +21,24 @@ part 'data/datasources/remote/exercise_api.dart';
 part 'data/models/answer_model.dart';
 part 'data/models/document_data_model.dart';
 part 'data/models/exercise_document_model.dart';
-part 'data/models/exercise_model.dart';
+part 'data/models/learning_item_model.dart';
 part 'data/models/option_model.dart';
 part 'data/models/question_model.dart';
 part 'data/repositories/exercise_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
+part 'domain/entities/answer_entity.dart';
+part 'domain/entities/document_data_entity.dart';
+part 'domain/entities/exercise_document_entity.dart';
 part 'domain/entities/exercise_entity.dart';
+part 'domain/entities/learning_item_entity.dart';
+part 'domain/entities/option_entity.dart';
+part 'domain/entities/question_entity.dart';
 part 'domain/repositories/i_exercise_repository.dart';
-part 'domain/usecases/create_exercise_usecase.dart';
-part 'domain/usecases/delete_exercise_usecase.dart';
-part 'domain/usecases/get_all_exercises_usecase.dart';
-part 'domain/usecases/get_exercise_usecase.dart';
-part 'domain/usecases/update_exercise_usecase.dart';
+part 'domain/usecases/create_learning_item_usecase.dart';
+part 'domain/usecases/delete_learning_item_usecase.dart';
+part 'domain/usecases/get_all_learning_items_usecase.dart';
+part 'domain/usecases/get_learning_item_usecase.dart';
+part 'domain/usecases/update_learning_item_usecase.dart';
 //* Presentation Layer - Widgets
 
 //* Parts for generated files
