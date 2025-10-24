@@ -53,14 +53,14 @@ class SingleChoiceLessonBody extends StatelessWidget {
               //   AudioPlayerWidget(audioUrl: currentQuestion.audioUrl),
               //   12.verticalSpace,
               // ],
-              Padding(
-                padding: EdgeInsets.only(top: 16.h, bottom: 8.h),
-                child: AppText(
-                  currentQuestion.explanation,
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4),
-                    fontWeight: FontWeight.w500,
-                  ),
+              AppText(
+                // currentQuestion.explanation,
+                'Select the best answer',
+                margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                maxLines: 10,
+                style: AppStyle.text12.copyWith(
+                  color: const Color(0xFF7F8EA4),
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               ListView.separated(

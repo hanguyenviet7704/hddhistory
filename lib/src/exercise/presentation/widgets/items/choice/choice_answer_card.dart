@@ -63,6 +63,7 @@ class ChoiceAnswerCard extends StatelessWidget {
         onTap: state == AnswerState.disabled ? null : onTap,
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          margin: EdgeInsets.symmetric(horizontal: 20.w),
           decoration: BoxDecoration(
             color: backgroundColor,
             border: Border.all(color: borderColor, width: 2.w),
@@ -73,7 +74,7 @@ class ChoiceAnswerCard extends StatelessWidget {
               // Checkbox for multiple choice
               Expanded(
                 child: AppText(
-                  option.text,
+                  option.value,
                   maxLines: 10,
                   style: AppStyle.text14.copyWith(
                     color: const Color(0xFF364152),
