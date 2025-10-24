@@ -1,7 +1,7 @@
 part of '../base.dart';
 
 @freezed
-sealed class PageBreakRequest with _$PageBreakRequest {
+abstract class PageBreakRequest with _$PageBreakRequest {
   const factory PageBreakRequest({
     @Default(1) int page,
     @JsonKey(name: 'take') @Default(10) int limit,
