@@ -38,7 +38,6 @@ class ChooseLanguageRoute extends GoRouteData with $ChooseLanguageRoute {
   Widget build(BuildContext context, GoRouterState state) => const ChooseLanguagePage();
 }
 
-
 //* Intro Page
 @TypedGoRoute<IntroRoute>(path: RoutePath.intro, name: RouteNamed.intro)
 class IntroRoute extends GoRouteData with $IntroRoute {
@@ -229,5 +228,8 @@ class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const ExercisePage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<ExerciseCubit>(),
+    child: const ExercisePage(),
+  );
 }

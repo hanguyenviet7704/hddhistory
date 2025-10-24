@@ -4,16 +4,10 @@ part of '../../../exercise.dart';
 class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<ExerciseState> {
   final GetAllLearningItemsUseCase _getAllUseCase;
   final GetLearningItemUseCase _getUseCase;
-  final CreateLearningItemUseCase _createUseCase;
-  final UpdateLearningItemUseCase _updateUseCase;
-  final DeleteLearningItemUseCase _deleteUseCase;
 
   ExerciseCubit(
     this._getAllUseCase,
     this._getUseCase,
-    this._createUseCase,
-    this._updateUseCase,
-    this._deleteUseCase,
   ) : super(ExerciseState.initial());
 
   void loadAllLearningItems({
@@ -67,68 +61,5 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     );
   }
 
-  void createLearningItem(LearningItemEntity entity) async {
-    await runUseCase<LearningItemEntity>(
-      usecase: () => _createUseCase(entity),
-      buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
-      onFailure: (error) {
-        emit(state.copyWith(
-          status: ExerciseStatus.failure,
-          errorMessage: error,
-        ));
-      },
-      onSuccess: (newItem) {
-        final updatedItems = [...state.pageData.items, newItem];
-        final updatedPageData = state.pageData.copyWith(items: updatedItems);
-        emit(state.copyWith(
-          status: ExerciseStatus.success,
-          pageData: updatedPageData,
-        ));
-      },
-    );
-  }
-
-  void updateLearningItem(LearningItemEntity entity) async {
-    await runUseCase<LearningItemEntity>(
-      usecase: () => _updateUseCase(entity),
-      buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
-      onFailure: (error) {
-        emit(state.copyWith(
-          status: ExerciseStatus.failure,
-          errorMessage: error,
-        ));
-      },
-      onSuccess: (updatedItem) {
-        final updatedItems = state.pageData.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
-        final updatedPageData = state.pageData.copyWith(items: updatedItems);
-        emit(state.copyWith(
-          status: ExerciseStatus.success,
-          pageData: updatedPageData,
-          selectedItem: updatedItem,
-        ));
-      },
-    );
-  }
-
-  void deleteLearningItem(String id) async {
-    await runUseCase<Unit>(
-      usecase: () => _deleteUseCase(id),
-      buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
-      onFailure: (error) {
-        emit(state.copyWith(
-          status: ExerciseStatus.failure,
-          errorMessage: error,
-        ));
-      },
-      onSuccess: (_) {
-        final updatedItems = state.pageData.items.where((item) => item.id != id).toList();
-        final updatedPageData = state.pageData.copyWith(items: updatedItems);
-        emit(state.copyWith(
-          status: ExerciseStatus.success,
-          pageData: updatedPageData,
-        ));
-      },
-    );
-  }
 }
 

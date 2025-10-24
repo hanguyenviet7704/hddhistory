@@ -34,11 +34,8 @@ part 'domain/entities/learning_item_entity.dart';
 part 'domain/entities/option_entity.dart';
 part 'domain/entities/question_entity.dart';
 part 'domain/repositories/i_exercise_repository.dart';
-part 'domain/usecases/create_learning_item_usecase.dart';
-part 'domain/usecases/delete_learning_item_usecase.dart';
 part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
-part 'domain/usecases/update_learning_item_usecase.dart';
 //* Presentation Layer - Widgets
 
 //* Parts for generated files
