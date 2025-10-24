@@ -46,7 +46,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (currentQuestion.document.isNotEmpty) ...[
-                ImageCard(imageUrl: currentQuestion.document.first.data.url),
+                ChoiceDocumentWidget(documents: currentQuestion.document),
                 12.verticalSpace,
               ],
               // if (currentQuestion.hasAudio) ...[
