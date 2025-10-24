@@ -54,7 +54,7 @@ enum FormDragDropType {
 
 extension QuestionModelExtension on QuestionModel {
   QuestionEntity toEntity() => QuestionEntity(
-    type: type,
+    type: toQuestionTypeEnum,
     id: id,
     speechBubble: speechBubble,
     tag: tag,
@@ -68,4 +68,22 @@ extension QuestionModelExtension on QuestionModel {
     record: record,
     maxDuration: maxDuration,
   );
+
+  QuestionTypeEnum get toQuestionTypeEnum {
+    switch (type) {
+      case QuestionType.singleChoice:
+        return QuestionTypeEnum.singleChoice;
+      case QuestionType.multipleChoice:
+        return QuestionTypeEnum.multipleChoice;
+      case QuestionType.record:
+        return QuestionTypeEnum.speaking;
+      case QuestionType.dragAndDrop:
+        return switch (form) {
+          FormDragDropType.textGapFilling => QuestionTypeEnum.dragAndDrop,
+          FormDragDropType.cuesPlacement => QuestionTypeEnum.cuesPlacement,
+          FormDragDropType.stressPlacement => QuestionTypeEnum.stressPlacement,
+          FormDragDropType.arrangeTheSequence => QuestionTypeEnum.arrangeTheSequence,
+        };
+    }
+  }
 }

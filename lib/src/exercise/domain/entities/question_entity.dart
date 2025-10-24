@@ -3,7 +3,7 @@ part of '../../exercise.dart';
 @freezed
 abstract class QuestionEntity with _$QuestionEntity {
   const factory QuestionEntity({
-    @Default(QuestionType.singleChoice) QuestionType type,
+    @Default(QuestionTypeEnum.singleChoice) QuestionTypeEnum type,
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
     @Default('') String speechBubble,
@@ -21,3 +21,19 @@ abstract class QuestionEntity with _$QuestionEntity {
   factory QuestionEntity.fromJson(Map<String, dynamic> json) => _$QuestionEntityFromJson(json);
 }
 
+enum QuestionTypeEnum {
+  @JsonValue('single_choice')
+  singleChoice,
+  @JsonValue('multiple_choice')
+  multipleChoice,
+  @JsonValue('drag_and_drop')
+  dragAndDrop,
+  @JsonValue('arrange_the_sequence')
+  arrangeTheSequence,
+  @JsonValue('cues_placement')
+  cuesPlacement,
+  @JsonValue('stress_placement')
+  stressPlacement,
+  @JsonValue('speaking')
+  speaking,
+}

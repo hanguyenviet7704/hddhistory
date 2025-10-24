@@ -102,7 +102,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           GoogleLoginButton(
                             onPressed: () {
                               context.read<AuthBloc>().add(const AuthEvent.loginSSOGoogle());
-                              print('Google button pressed');
                             },
                           ),
 
