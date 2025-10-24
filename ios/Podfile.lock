@@ -13,6 +13,8 @@ PODS:
     - GoogleUtilities/Environment (~> 8.0)
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
+  - audio_waveforms (0.0.1):
+    - Flutter
   - awesome_notifications (0.10.0):
     - Flutter
     - IosAwnCore (~> 0.10.0)
@@ -316,6 +318,7 @@ PODS:
 DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - app_tracking_transparency (from `.symlinks/plugins/app_tracking_transparency/ios`)
+  - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
   - awesome_notifications (from `.symlinks/plugins/awesome_notifications/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
@@ -394,6 +397,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/app_links/ios"
   app_tracking_transparency:
     :path: ".symlinks/plugins/app_tracking_transparency/ios"
+  audio_waveforms:
+    :path: ".symlinks/plugins/audio_waveforms/ios"
   awesome_notifications:
     :path: ".symlinks/plugins/awesome_notifications/ios"
   connectivity_plus:
@@ -458,6 +463,7 @@ SPEC CHECKSUMS:
   app_tracking_transparency: 3d84f147f67ca82d3c15355c36b1fa6b66ca7c92
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
+  audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
   awesome_notifications: 0f432b28098d193920b11a44cfa9d2d9313a3888
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe

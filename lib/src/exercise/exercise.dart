@@ -15,10 +15,15 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:retrofit/retrofit.dart';
 
+//* Data Layer - Models, Datasources, Repositories
 part 'data/datasources/local/exercise_local_data_source.dart';
 part 'data/datasources/remote/exercise_api.dart';
-//* Data Layer - Models, Datasources, Repositories
+part 'data/models/answer_model.dart';
+part 'data/models/document_data_model.dart';
+part 'data/models/exercise_document_model.dart';
 part 'data/models/exercise_model.dart';
+part 'data/models/option_model.dart';
+part 'data/models/question_model.dart';
 part 'data/repositories/exercise_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/exercise_entity.dart';
@@ -33,31 +38,25 @@ part 'domain/usecases/update_exercise_usecase.dart';
 //* Parts for generated files
 part 'exercise.freezed.dart';
 part 'exercise.g.dart';
+part 'presentation/cubits/choice/choice_cubit.dart';
+part 'presentation/cubits/choice/choice_state.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
-part 'presentation/cubits/choice/choice_cubit.dart';
-part 'presentation/cubits/choice/choice_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/example/arrange_the_sequence_screen.dart';
 part 'presentation/pages/example/choise_screen.dart';
 part 'presentation/pages/example/cues_placement_screen.dart';
 part 'presentation/pages/example/drag_and_drop_screen.dart';
-part 'presentation/pages/exercise_page.dart';
 part 'presentation/pages/example/speaking_screen.dart';
 part 'presentation/pages/example/tap_and_jump_screen.dart';
+part 'presentation/pages/exercise_page.dart';
 part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
 part 'presentation/widgets/body/cues_placement_lesson_body.dart';
 part 'presentation/widgets/body/drag_and_drop_lesson_body.dart';
 part 'presentation/widgets/body/multiple_choice_lesson_body.dart';
 part 'presentation/widgets/body/single_choice_lesson_body.dart';
 part 'presentation/widgets/body/speaking_lesson_body.dart';
-part 'presentation/widgets/items/example/arrange_the_sequence/bottom_button.dart';
-part 'presentation/widgets/items/example/arrange_the_sequence/header.dart';
-part 'presentation/widgets/items/example/arrange_the_sequence/image_card.dart';
-part 'presentation/widgets/items/example/arrange_the_sequence/practice_tag.dart';
-part 'presentation/widgets/items/example/arrange_the_sequence/question_bubble.dart';
-part 'presentation/widgets/items/example/arrange_the_sequence/sequence_answer_card.dart';
 part 'presentation/widgets/items/choise/audio_player_widget.dart';
 part 'presentation/widgets/items/choise/choice_answer_card.dart';
 part 'presentation/widgets/items/choise/mock_data.dart';
@@ -68,6 +67,12 @@ part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
 part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/exercise_header.dart';
 part 'presentation/widgets/items/common/exercise_progress_bar.dart';
+part 'presentation/widgets/items/example/arrange_the_sequence/bottom_button.dart';
+part 'presentation/widgets/items/example/arrange_the_sequence/header.dart';
+part 'presentation/widgets/items/example/arrange_the_sequence/image_card.dart';
+part 'presentation/widgets/items/example/arrange_the_sequence/practice_tag.dart';
+part 'presentation/widgets/items/example/arrange_the_sequence/question_bubble.dart';
+part 'presentation/widgets/items/example/arrange_the_sequence/sequence_answer_card.dart';
 part 'presentation/widgets/items/example/cues_placement/available_pause_marks.dart';
 part 'presentation/widgets/items/example/cues_placement/avatar.dart';
 part 'presentation/widgets/items/example/cues_placement/bottom_button.dart';
