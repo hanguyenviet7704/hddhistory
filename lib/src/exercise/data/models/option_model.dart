@@ -4,8 +4,9 @@ part of '../../exercise.dart';
 abstract class OptionModel with _$OptionModel {
   const factory OptionModel({
     @Default(0) int id,
-    @Default('') String label,
+    @Default('') String text,
     @Default('') String value,
+    @Default(false) bool isCorrect,
   }) = _OptionModel;
 
   factory OptionModel.fromJson(Map<String, dynamic> json) => _$OptionModelFromJson(json);
@@ -14,7 +15,8 @@ abstract class OptionModel with _$OptionModel {
 extension OptionModelExtension on OptionModel {
   OptionEntity toEntity() => OptionEntity(
     id: id,
-    label: label,
+    text: text,
     value: value,
+    isCorrect: isCorrect,
   );
 }

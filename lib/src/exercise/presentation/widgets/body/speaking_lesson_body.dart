@@ -167,22 +167,12 @@ class _SpeakingLessonBodyState extends State<SpeakingLessonBody> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Practice tag
-        const SpeakingPracticeTag(),
-        const SizedBox(height: 8),
-
-        // Instruction bubble
-        SpeakingInstructionBubble(
-          instruction: 'Listen to this statement and practice',
-        ),
-        const SizedBox(height: 12),
-
         // Audio player card
         SpeakingAudioCard(
           isPlaying: _isPlayingAudio,
           onPlayPressed: _toggleAudioPlayback,
         ),
-        const SizedBox(height: 20),
+        20.verticalSpace,
 
         // Recording control
         SpeakingRecordingControl(
@@ -239,57 +229,6 @@ class SpeakingPracticeTag extends StatelessWidget {
   }
 }
 
-// Instruction bubble component
-class SpeakingInstructionBubble extends StatelessWidget {
-  final String instruction;
-
-  const SpeakingInstructionBubble({super.key, required this.instruction});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        // Avatar
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            color: const Color(0xFFE3E8EF),
-            borderRadius: BorderRadius.circular(44),
-          ),
-          child: const Icon(
-            Icons.person,
-            color: Color(0xFF7F8EA4),
-            size: 24,
-          ),
-        ),
-        const SizedBox(width: 8),
-
-        // Message bubble
-        Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: const Color(0xFFE3E8EF)),
-            ),
-            child: Text(
-              instruction,
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                color: Color(0xFF0D121C),
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
 // Audio player card component
 class SpeakingAudioCard extends StatelessWidget {
   final bool isPlaying;
@@ -304,10 +243,11 @@ class SpeakingAudioCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(16.r),
         border: Border.all(color: const Color(0xFFE3E8EF)),
       ),
       child: Row(
@@ -330,7 +270,7 @@ class SpeakingAudioCard extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(width: 12),
+          12.horizontalSpace,
 
           // Progress bar
           Expanded(

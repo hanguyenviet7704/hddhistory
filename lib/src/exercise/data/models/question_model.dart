@@ -3,7 +3,8 @@ part of '../../exercise.dart';
 @freezed
 abstract class QuestionModel with _$QuestionModel {
   const factory QuestionModel({
-    @Default('') String type,
+    @Default(QuestionType.singleChoice) QuestionType type,
+    @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
     @Default('') String speechBubble,
     @Default('') String tag,
@@ -12,13 +13,43 @@ abstract class QuestionModel with _$QuestionModel {
     @Default('') String targetArea,
     @Default([]) List<AnswerModel> answer,
     @Default([]) List<OptionModel> options,
-    @Default([]) List<String> level,
-    @Default('') String form,
+    @Default([]) List<KeypointLevelType> level,
     @Default('') String record,
     @Default(0) int maxDuration,
   }) = _QuestionModel;
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) => _$QuestionModelFromJson(json);
+}
+
+enum KeypointLevelType {
+  @JsonValue('optional_practice')
+  optionalPractice,
+  @JsonValue('more_practice')
+  morePractice,
+  @JsonValue('weak_point')
+  weakPoint,
+}
+
+enum QuestionType {
+  @JsonValue('single_choice')
+  singleChoice,
+  @JsonValue('multiple_choice')
+  multipleChoice,
+  @JsonValue('drag_drop')
+  dragAndDrop,
+  @JsonValue('record')
+  record,
+}
+
+enum FormDragDropType {
+  @JsonValue('Text Gap Filling')
+  textGapFilling,
+  @JsonValue('Cues Placement')
+  cuesPlacement,
+  @JsonValue('Stress Placement')
+  stressPlacement,
+  @JsonValue('Arrange the Sequence')
+  arrangeTheSequence,
 }
 
 extension QuestionModelExtension on QuestionModel {

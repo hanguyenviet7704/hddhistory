@@ -9,11 +9,11 @@ abstract class LearningItemModel with _$LearningItemModel {
     @Default('') String keypointId,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default('') String image,
-    @Default('') String type,
+    @Default(LearningItemType.theory) LearningItemType type,
     @Default([]) List<QuestionModel> questions,
-    // @Default() List<SubQuestionModel> subQuestions,
+    @Default([]) List<QuestionModel> subQuestions,
     // @Default() List<DocumentModel> documents,
-    // @Default() List<TagModel> tag,
+    @Default([]) List<String> tag,
     @Default(0) int index,
     @Default(false) bool isSub,
     DateTime? createdAt,
@@ -21,6 +21,13 @@ abstract class LearningItemModel with _$LearningItemModel {
   }) = _LearningItemModel;
 
   factory LearningItemModel.fromJson(Map<String, dynamic> json) => _$LearningItemModelFromJson(json);
+}
+
+enum LearningItemType {
+  @JsonValue('theory')
+  theory,
+  @JsonValue('exercise')
+  exercise,
 }
 
 extension LearningItemModelExtension on LearningItemModel {

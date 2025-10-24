@@ -78,11 +78,14 @@ class DataCollectRoute extends GoRouteData with $DataCollectRoute {
 }
 
 @TypedGoRoute<DataCollectMotivationStepRoute>(path: RoutePath.dataCollectMotivationStep, name: RouteNamed.dataCollectMotivationStep)
-class DataCollectMotivationStepRoute extends GoRouteData with $DataCollectMotivationStepRoute {
+class DataCollectMotivationStepRoute extends BaseTransitionRouteData with $DataCollectMotivationStepRoute {
   const DataCollectMotivationStepRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const DataCollectMotivationStepPage();
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const DataCollectMotivationStepPage();
 }
 
 @TypedGoRoute<DataCollectSummaryRoute>(path: RoutePath.dataCollectSummary, name: RouteNamed.dataCollectSummary)

@@ -9,7 +9,7 @@ abstract class LearningItemEntity with _$LearningItemEntity {
     @Default('') String keypointId,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default('') String image,
-    @Default('') String type,
+    @Default(LearningItemType.theory) LearningItemType type,
     @Default([]) List<QuestionEntity> questions,
     @Default(0) int index,
     @Default(false) bool isSub,
