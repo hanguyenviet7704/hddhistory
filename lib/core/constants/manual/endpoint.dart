@@ -27,14 +27,6 @@ mixin AppEndpoint {
   static const String termsOfSalePolicy = '/config/terms-of-sale-policy';
   static const String privacyPolicy = '/config/privacy-policy';
 
-  //* IAP
-  static const String packages = '/rest/v1/rpc/p_get_package';
-  static const String purchase = '/rest/v1/rpc/p_purchase_package';
-  static const String restore = '/rest/v1/rpc/p_restore_package';
-  static const String verifyIos = '/functions/v1/validate_ios_receipt';
-  static const String verifyIosV111 = '/functions/v1/validate_ios_receipt_v1_1_1';
-  static const String verifyAndroid = '/functions/v1/validate_android_receipt';
-
   //* Users API
   static const String usersRegister = '/api/v1/users/register';
   static const String usersAnonymous = '/api/v1/users/anonymous';
@@ -45,6 +37,14 @@ mixin AppEndpoint {
   static const String usersMe = '/api/v1/users/me';
   static const String users = '/api/v1/users';
   static const String usersById = '/api/v1/users/{id}';
+
+  //* IAP
+  static const String packages = '/rest/v1/rpc/p_get_package';
+  static const String purchase = '/rest/v1/rpc/p_purchase_package';
+  static const String restore = '/rest/v1/rpc/p_restore_package';
+  static const String verifyIos = '/functions/v1/validate_ios_receipt';
+  static const String verifyIosV111 = '/functions/v1/validate_ios_receipt_v1_1_1';
+  static const String verifyAndroid = '/functions/v1/validate_android_receipt';
 
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';

@@ -32,6 +32,7 @@ part 'domain/usecases/login_sso_apple_usecase.dart';
 part 'domain/usecases/login_sso_google_usecase.dart';
 part 'domain/usecases/login_usecase.dart';
 part 'domain/usecases/logout_usecase.dart';
+part 'domain/usecases/refresh_token_usecase.dart';
 part 'domain/usecases/register_usecase.dart';
 part 'domain/usecases/resend_otp_usecase.dart';
 part 'domain/usecases/reset_password_usecase.dart';

@@ -149,6 +149,15 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
     );
   }
 
+  @override
+  TaskEither<AppException, AuthEntity> refreshToken(Map<String, dynamic> body) {
+    return callApiWithTransform(
+      apiCall: () => _authApi.refreshToken(body['userId'] as String, body),
+      transform: (response) => response.toEntity(),
+      defaultValue: AuthEntity(),
+    );
+  }
+
   // @override
   // TaskEither<AppException, AuthEntity> forgotPassword(Map<String, dynamic> body) {
   //   return callApiWithTransform<AuthModel, AuthEntity>(

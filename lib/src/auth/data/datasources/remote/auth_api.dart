@@ -18,6 +18,9 @@ abstract class AuthApi {
   @POST(AppEndpoint.register)
   Future<BaseResponse<AuthModel>> register(@Body() Map<String, dynamic> data);
 
+  @POST(AppEndpoint.usersRefreshToken)
+  Future<BaseResponse<AuthModel>> refreshToken(@Path('id') String userId, @Body() Map<String, dynamic> data);
+
   @POST(AppEndpoint.logout)
   Future<BaseResponse> logout();
 

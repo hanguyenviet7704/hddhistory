@@ -62,6 +62,7 @@ part 'presentation/widgets/body/single_choice_lesson_body.dart';
 part 'presentation/widgets/body/speaking_lesson_body.dart';
 part 'presentation/widgets/items/choice/audio_player_widget.dart';
 part 'presentation/widgets/items/choice/choice_answer_card.dart';
+part 'presentation/widgets/items/choice/choice_document_item.dart';
 part 'presentation/widgets/items/choice/choice_document_widget.dart';
 part 'presentation/widgets/items/choice/mock_data.dart';
 part 'presentation/widgets/items/choice/result_bottom_sheet.dart';

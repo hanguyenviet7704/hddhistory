@@ -21,6 +21,13 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   void setIsFirstTimeUserRunApp(bool isFirstTimeUserRunApp) => emit(state.copyWith(isFirstTimeUserRunApp: isFirstTimeUserRunApp));
   void setIsAppShowRegisterRecommend(bool isAppShowRegisterRecommend) => emit(state.copyWith(isAppShowRegisterRecommend: isAppShowRegisterRecommend));
 
+  void setAccessToken(String accessToken) {
+    AppGlobalValue.accessToken = accessToken;
+    TokenEntity token = TokenEntity(accessToken: accessToken, refreshToken: state.refreshToken, expiresAt: DateTime.now().add(Duration(seconds: 30)));
+    AuthEntity auth = state.auth.copyWith(token: token);
+    emit(state.copyWith(auth: auth));
+  }
+
   void setAuth(AuthEntity auth) {
     emit(state.copyWith(auth: auth));
     setTrackingUser();

@@ -6,6 +6,7 @@ abstract interface class IAuthRepository {
   TaskEither<AppException, AuthEntity> loginSSOGoogle();
   TaskEither<AppException, AuthEntity> loginSSOApple();
   TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body);
+  TaskEither<AppException, AuthEntity> refreshToken(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> logout();
   // TaskEither<AppException, BaseResponse<AuthEntity>> forgotPassword(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> resetPassword(Map<String, dynamic> body);
