@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:just_audio/just_audio.dart' hide PlayerState;
 import 'package:meup/meup.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';

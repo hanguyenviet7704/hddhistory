@@ -57,7 +57,8 @@ class ChoiceDocumentItem extends StatelessWidget {
             ),
             16.verticalSpace,
           ],
-          AudioPlayerWidget(audioUrl: data.url),
+          // AudioPlayerWidget(audioUrl: data.url),
+          AudioPlayerWidget(audioUrl: 'https://file-examples.com/storage/fe47641ea668fe3d898fdf3/2017/11/file_example_MP3_1MG.mp3'),
         ],
       ),
     );
