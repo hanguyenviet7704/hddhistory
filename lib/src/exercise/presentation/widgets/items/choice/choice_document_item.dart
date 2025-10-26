@@ -8,75 +8,58 @@ class ChoiceDocumentItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final data = document.data;
-    final accentColor = document.type.accentColor;
-    final backgroundColor = _withOpacity(accentColor, 0.08);
-    final title = data.title.trim().isNotEmpty ? data.title.trim() : document.type.defaultTitle;
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: _withOpacity(accentColor, 0.2), width: 1.5.w),
+      decoration: ShapeDecoration(
+        color: AppColorLight.surface,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            width: 2.w,
+            color: const Color(0xFFE3E8EF),
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 12.h,
         children: [
-          _ChoiceDocumentHeader(
-            title: title,
-            type: document.type,
-            accentColor: accentColor,
-          ),
-          _ChoiceDocumentPreview(document: document),
-          if (data.caption.trim().isNotEmpty)
-            _ChoiceDocumentCaption(
-              caption: data.caption.trim(),
+          if (data.title.isNotEmpty) ...[
+            AppText(
+              data.title,
+              maxLines: 5,
+              style: AppStyle.textBold14.copyWith(
+                color: const Color(0xFF0D121C),
+              ),
             ),
+            4.horizontalSpace,
+          ],
+          if (data.content.isNotEmpty) ...[
+            AppText(
+              data.content,
+              maxLines: 50,
+              style: AppStyle.text14.copyWith(
+                color: const Color(0xFF364152),
+              ),
+            ),
+          ],
+          _ChoiceDocumentTypeTag(
+            label: 'Client',
+            accentColor: const Color(0xFFEBEAFD),
+          ),
+          if (data.thumbnail.isNotEmpty) ...[
+            DCachedImage(
+              url: data.thumbnail,
+              width: double.infinity,
+              borderRadius: BorderRadius.circular(16.r),
+              fit: BoxFit.cover,
+            ),
+            16.verticalSpace,
+          ],
+          AudioPlayerWidget(audioUrl: data.url),
         ],
       ),
-    );
-  }
-}
-
-class _ChoiceDocumentHeader extends StatelessWidget {
-  final String title;
-  final ExerciseDocumentType type;
-  final Color accentColor;
-
-  const _ChoiceDocumentHeader({
-    required this.title,
-    required this.type,
-    required this.accentColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _ChoiceDocumentIconBadge(
-          icon: type.iconData,
-          accentColor: accentColor,
-        ),
-        12.horizontalSpace,
-        Expanded(
-          child: AppText(
-            title,
-            maxLines: 2,
-            style: AppStyle.text16.copyWith(
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0D121C),
-              height: 1.35,
-            ),
-          ),
-        ),
-        _ChoiceDocumentTypeTag(
-          label: type.displayName,
-          accentColor: accentColor,
-        ),
-      ],
     );
   }
 }
@@ -335,34 +318,6 @@ class _TextPreviewCard extends StatelessWidget {
   }
 }
 
-class _ChoiceDocumentIconBadge extends StatelessWidget {
-  final IconData icon;
-  final Color accentColor;
-
-  const _ChoiceDocumentIconBadge({
-    required this.icon,
-    required this.accentColor,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 40.w,
-      height: 40.w,
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(color: _withOpacity(accentColor, 0.24), width: 1.5.w),
-      ),
-      child: Icon(
-        icon,
-        size: 22.w,
-        color: accentColor,
-      ),
-    );
-  }
-}
-
 class _ChoiceDocumentTypeTag extends StatelessWidget {
   final String label;
   final Color accentColor;
@@ -376,15 +331,15 @@ class _ChoiceDocumentTypeTag extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      margin: EdgeInsets.symmetric(vertical: 16.h),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Color(0xFFEBEAFD),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: _withOpacity(accentColor, 0.3), width: 1.2.w),
       ),
       child: AppText(
         label,
         style: AppStyle.text12.copyWith(
-          color: accentColor,
+          color: Color(0xFF554FF0),
           fontWeight: FontWeight.w600,
         ),
       ),

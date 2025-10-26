@@ -114,7 +114,7 @@ class AppInterceptors extends BaseInterceptor {
     try {
       final refreshToken = AppGlobalValue.refreshToken;
       final userCubit = AppDI.injector.get<UserCubit>();
-      final deviceInfoService = AppDI.injector.get<DeviceInfoService>();
+      final deviceInfoService = AppDI.injector.get<IDeviceInfoService>();
       final userId = userCubit.state.user.id;
       String deviceId = await deviceInfoService.deviceToken;
       String deviceName = await deviceInfoService.deviceName;
