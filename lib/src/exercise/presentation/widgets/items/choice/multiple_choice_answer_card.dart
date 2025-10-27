@@ -62,7 +62,7 @@ class MultipleChoiceAnswerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(6.r),
         ),
         child: Icon(
-          Icons.check,
+          Icons.check_rounded,
           size: 14.sp,
           color: Colors.white,
         ),
@@ -75,7 +75,7 @@ class MultipleChoiceAnswerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(6.r),
         ),
         child: Icon(
-          Icons.close,
+          Icons.close_rounded,
           size: 14.sp,
           color: Colors.white,
         ),
@@ -88,7 +88,7 @@ class MultipleChoiceAnswerCard extends StatelessWidget {
           borderRadius: BorderRadius.circular(6.r),
         ),
         child: Icon(
-          Icons.check,
+          Icons.check_rounded,
           size: 14.sp,
           color: Colors.white,
         ),
