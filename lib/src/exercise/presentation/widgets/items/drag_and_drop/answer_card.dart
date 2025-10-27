@@ -10,16 +10,31 @@ class AnswerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
       decoration: BoxDecoration(
         color: isInvisible ? const Color(0xFFEEF2F6) : Colors.white,
-        border: Border.all(color: isInvisible ? const Color(0xFFEEF2F6) : const Color(0xFFE3E8EF), width: 2),
-        borderRadius: BorderRadius.circular(12),
-        boxShadow: isDragging ? [BoxShadow(color: Colors.black.withValues(alpha: 0.1), blurRadius: 8, offset: const Offset(0, 4))] : null,
+        border: Border.all(
+          color: isInvisible ? const Color(0xFFEEF2F6) : const Color(0xFFE3E8EF),
+          width: 2,
+        ),
+        borderRadius: BorderRadius.circular(12.r),
+        boxShadow: isDragging
+            ? [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.1),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : null,
       ),
-      child: Text(
+      child: AppText(
         word,
-        style: TextStyle(fontSize: 14, fontWeight: FontWeight.w400, color: isInvisible ? Colors.transparent : const Color(0xFF364152), height: 1.5),
+        style: AppStyle.text14.copyWith(
+          fontWeight: FontWeight.w400,
+          color: isInvisible ? Colors.transparent : const Color(0xFF364152),
+          height: 1.5,
+        ),
       ),
     );
   }

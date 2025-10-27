@@ -114,9 +114,10 @@ class DragAndDropLessonBody extends StatelessWidget {
               12.verticalSpace,
               AnswerCardsArea(
                 availableWords: state.availableWords,
+                allWords: currentQuestion.options.map((option) => option.text).toList(),
                 onWordReturnedFromSlot: (word, fromIndex) {
-                  // Word is being dragged back to available area
-                  // This is handled by removeWord in the cubit
+                  // Word is being dragged back to available area from a slot
+                  context.read<DragAndDropCubit>().removeWord(fromIndex);
                 },
               ),
             ],

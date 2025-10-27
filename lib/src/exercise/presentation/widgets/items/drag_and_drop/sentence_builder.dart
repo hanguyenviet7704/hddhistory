@@ -23,19 +23,23 @@ class SentenceBuilder extends StatelessWidget {
     final parts = targetArea.split('___');
 
     for (int i = 0; i < parts.length; i++) {
-      // Add text before blank
+      // Add words from this text part, split by space
       if (parts[i].trim().isNotEmpty) {
-        widgets.add(
-          AppText(
-            parts[i].trim(),
-            maxLines: 5,
-            style: AppStyle.text20.copyWith(
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0D121C),
-              height: 1.5,
-            ),
-          ),
-        );
+        final words = parts[i].trim().split(' ');
+        for (var word in words) {
+          if (word.isNotEmpty) {
+            widgets.add(
+              AppText(
+                word,
+                style: AppStyle.text20.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0D121C),
+                  height: 1.5,
+                ),
+              ),
+            );
+          }
+        }
       }
 
       // Add blank slot if not the last part
