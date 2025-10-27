@@ -9,8 +9,8 @@ class EmptySlot extends StatelessWidget {
     return DottedBorder(
       options: RoundedRectDottedBorderOptions(
         color: isHighlighted ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
-        strokeWidth: 2,
-        dashPattern: const [6, 4],
+        strokeWidth: 2.w,
+        dashPattern: [6.w, 4.w],
         radius: Radius.circular(8.r),
         padding: EdgeInsets.zero,
       ),

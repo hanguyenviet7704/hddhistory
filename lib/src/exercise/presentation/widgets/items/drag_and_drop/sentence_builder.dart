@@ -6,6 +6,7 @@ class SentenceBuilder extends StatelessWidget {
   final int answerCount;
   final Function(int index, String word, int? fromIndex) onWordPlaced;
   final Function(int index) onWordRemoved;
+  final SlotState Function(int index) getSlotState;
 
   const SentenceBuilder({
     super.key,
@@ -14,6 +15,7 @@ class SentenceBuilder extends StatelessWidget {
     required this.answerCount,
     required this.onWordPlaced,
     required this.onWordRemoved,
+    required this.getSlotState,
   });
 
   List<Widget> _buildSentenceWidgets() {
@@ -45,6 +47,7 @@ class SentenceBuilder extends StatelessWidget {
             onWordPlaced: (word, fromIndex) => onWordPlaced(i, word, fromIndex),
             onWordRemoved: (word, fromIndex) => onWordRemoved(fromIndex),
             onDragCancelled: null,
+            slotState: getSlotState(i),
           ),
         );
       }
@@ -57,18 +60,17 @@ class SentenceBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 40),
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
       margin: EdgeInsets.symmetric(horizontal: 20.w),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFFE3E8EF).withValues(alpha: 0.5),
-            blurRadius: 4,
-            offset: const Offset(0, 4),
+      decoration: ShapeDecoration(
+        color: Colors.white /* Background-White */,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            width: 2,
+            color: const Color(0xFFE3E8EF) /* Border-border-secondary */,
           ),
-        ],
+          borderRadius: BorderRadius.circular(16),
+        ),
       ),
       child: Wrap(
         spacing: 8,

@@ -6,6 +6,7 @@ class BlankSlot extends StatelessWidget {
   final Function(String word, int? fromIndex) onWordPlaced;
   final Function(String word, int fromIndex) onWordRemoved;
   final Function(String word, int index)? onDragCancelled;
+  final SlotState slotState;
 
   const BlankSlot({
     super.key,
@@ -14,6 +15,7 @@ class BlankSlot extends StatelessWidget {
     required this.onWordPlaced,
     required this.onWordRemoved,
     this.onDragCancelled,
+    this.slotState = SlotState.normal,
   });
 
   @override
@@ -38,7 +40,7 @@ class BlankSlot extends StatelessWidget {
               borderRadius: BorderRadius.circular(8.r),
               child: Opacity(
                 opacity: 0.8,
-                child: FilledSlot(word: word, isDragging: true),
+                child: FilledSlot(word: word, isDragging: true, state: slotState),
               ),
             ),
             childWhenDragging: EmptySlot(isHighlighted: true),
@@ -48,7 +50,7 @@ class BlankSlot extends StatelessWidget {
                 onDragCancelled!(word, index);
               }
             },
-            child: FilledSlot(word: word),
+            child: FilledSlot(word: word, state: slotState),
           );
         }
 

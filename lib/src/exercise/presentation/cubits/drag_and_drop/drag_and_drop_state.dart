@@ -31,4 +31,17 @@ extension DragAndDropStateExtension on DragAndDropState {
 
   /// Get the number of drop zones based on answer count
   int get dropZoneCount => question.answer.length;
+
+  /// Get the slot state for a specific index
+  SlotState getSlotState(int index) {
+    if (!hasChecked) return SlotState.normal;
+
+    final placedAnswer = placedWords[index];
+    if (placedAnswer == null || placedAnswer.isEmpty) return SlotState.normal;
+
+    final correctAnswer = question.answer[index].correctAnswer;
+    return placedAnswer == correctAnswer ? SlotState.correct : SlotState.incorrect;
+  }
 }
+
+enum SlotState { normal, correct, incorrect }

@@ -99,10 +99,12 @@ class DragAndDropLessonBody extends StatelessWidget {
                 onWordRemoved: (index) {
                   context.read<DragAndDropCubit>().removeWord(index);
                 },
+                getSlotState: (index) => state.getSlotState(index),
               ),
-              12.verticalSpace,
+              24.verticalSpace,
               AppText(
                 context.text.exerciseGapFillingInstruction,
+                margin: EdgeInsets.symmetric(horizontal: 20.w),
                 style: AppStyle.text12.copyWith(
                   color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
                   fontWeight: FontWeight.w500,
@@ -120,35 +122,6 @@ class DragAndDropLessonBody extends StatelessWidget {
             ],
           );
         },
-      ),
-    );
-  }
-
-  Widget _buildHintText(BuildContext context) {
-    return Center(
-      child: Column(
-        children: [
-          4.verticalSpace,
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.touch_app,
-                size: 14.sp,
-                color: const Color(0xFF7F8EA4).withValues(alpha: 0.4),
-              ),
-              4.horizontalSpace,
-              AppText(
-                'Hold to drag • Drag back to remove',
-                style: AppStyle.text10.copyWith(
-                  color: const Color(0xFF7F8EA4).withValues(alpha: 0.4),
-                  fontWeight: FontWeight.w400,
-                  height: 1.5,
-                ),
-              ),
-            ],
-          ),
-        ],
       ),
     );
   }
