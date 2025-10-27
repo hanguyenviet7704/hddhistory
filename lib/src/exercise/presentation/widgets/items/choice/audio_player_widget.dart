@@ -10,7 +10,7 @@ class AudioPlayerWidget extends StatefulWidget {
 }
 
 class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
-  late final AudioPlayer _audioPlayer;
+  late final just_audio.AudioPlayer _audioPlayer;
 
   late final ValueNotifier<bool> _isPlayingNotifier;
   late final ValueNotifier<double> _progressNotifier;
@@ -24,10 +24,15 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   Duration? _duration;
   static const int _maxRetries = 3;
 
+  // Stream subscriptions for proper disposal
+  StreamSubscription? _playerStateSubscription;
+  StreamSubscription<Duration>? _positionSubscription;
+  StreamSubscription<Duration?>? _durationSubscription;
+
   @override
   void initState() {
     super.initState();
-    _audioPlayer = AudioPlayer();
+    _audioPlayer = just_audio.AudioPlayer();
     _isPlayingNotifier = ValueNotifier<bool>(false);
     _progressNotifier = ValueNotifier<double>(0.0);
     _currentTimeNotifier = ValueNotifier<String>('00:00');
@@ -42,20 +47,24 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   Future<void> _initializePlayer() async {
     if (widget.audioUrl == null || widget.audioUrl!.isEmpty) return;
 
+    // Cancel existing subscriptions before creating new ones
+    await _cancelSubscriptions();
+
     _isLoadingNotifier.value = true;
     _errorNotifier.value = '';
+    _isInitialized = false;
 
     try {
       // Set up player state listener
-      _audioPlayer.playerStateStream.listen((state) {
-        if (state.playing != _isPlayingNotifier.value) {
+      _playerStateSubscription = _audioPlayer.playerStateStream.listen((state) {
+        if (mounted && state.playing != _isPlayingNotifier.value) {
           _isPlayingNotifier.value = state.playing;
         }
       });
 
       // Set up position listener for progress updates
-      _audioPlayer.positionStream.listen((position) {
-        if (_duration != null) {
+      _positionSubscription = _audioPlayer.positionStream.listen((position) {
+        if (mounted && _duration != null && _duration!.inMilliseconds > 0) {
           _progressNotifier.value = position.inMilliseconds / _duration!.inMilliseconds;
           _currentTimeNotifier.value = _formatDuration(position);
 
@@ -65,37 +74,51 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       });
 
       // Set up duration listener
-      _audioPlayer.durationStream.listen((duration) {
-        _duration = duration;
-        if (duration != null) {
-          _remainingTimeNotifier.value = '-${_formatDuration(duration)}';
-        }
-      });
-
-      // Set up error listener
-      _audioPlayer.playerStateStream.where((state) => state.processingState == ProcessingState.idle && state.playing == false).listen((_) {
-        if (_retryCountNotifier.value < _maxRetries) {
-          _errorNotifier.value = 'Failed to load audio. Retrying... (${_retryCountNotifier.value + 1}/$_maxRetries)';
-          _retryCountNotifier.value++;
-
-          // Retry after a short delay
-          Future.delayed(const Duration(seconds: 2), () {
-            _initializePlayer();
-          });
-        } else {
-          _errorNotifier.value = 'Failed to load audio after $_maxRetries attempts. Please check your connection.';
+      _durationSubscription = _audioPlayer.durationStream.listen((duration) {
+        if (mounted) {
+          _duration = duration;
+          if (duration != null) {
+            _remainingTimeNotifier.value = '-${_formatDuration(duration)}';
+          }
         }
       });
 
       // Load audio URL (just_audio supports both local paths and network URLs)
       await _audioPlayer.setUrl(widget.audioUrl!);
-      _isInitialized = true;
-      _retryCountNotifier.value = 0; // Reset retry count on success
+
+      if (mounted) {
+        _isInitialized = true;
+        _retryCountNotifier.value = 0; // Reset retry count on success
+        _isLoadingNotifier.value = false;
+      }
     } catch (e) {
-      _errorNotifier.value = 'Error loading audio: ${e.toString()}';
-    } finally {
+      if (!mounted) return;
+
       _isLoadingNotifier.value = false;
+
+      // Handle errors with retry logic
+      if (_retryCountNotifier.value < _maxRetries) {
+        _errorNotifier.value = 'Failed to load audio. Retrying... (${_retryCountNotifier.value + 1}/$_maxRetries)';
+        _retryCountNotifier.value++;
+
+        // Retry after a short delay
+        await Future.delayed(const Duration(seconds: 2));
+        if (mounted) {
+          await _initializePlayer();
+        }
+      } else {
+        _errorNotifier.value = 'Failed to load audio. Please check the URL and your internet connection.';
+      }
     }
+  }
+
+  Future<void> _cancelSubscriptions() async {
+    await _playerStateSubscription?.cancel();
+    await _positionSubscription?.cancel();
+    await _durationSubscription?.cancel();
+    _playerStateSubscription = null;
+    _positionSubscription = null;
+    _durationSubscription = null;
   }
 
   String _formatDuration(Duration duration) {
@@ -121,6 +144,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
   @override
   void dispose() {
+    _cancelSubscriptions();
     _audioPlayer.dispose();
     _isPlayingNotifier.dispose();
     _progressNotifier.dispose();
@@ -219,90 +243,100 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
             return const SizedBox.shrink();
           },
         ),
-        Row(
-          children: [
-            GestureDetector(
-              onTap: _isLoadingNotifier.value || _errorNotifier.value.isNotEmpty ? null : _togglePlay,
-              child: Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: const Color(0xFFF5F7FB),
-                  border: Border.all(color: const Color(0xFFE3E8EF), width: 1.8),
-                  shape: BoxShape.circle,
-                ),
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: _isLoadingNotifier,
-                  builder: (context, isLoading, child) {
-                    if (isLoading) {
-                      return const SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF554FF0)),
+        ValueListenableBuilder<bool>(
+          valueListenable: _isLoadingNotifier,
+          builder: (context, isLoading, child) {
+            return ValueListenableBuilder<String>(
+              valueListenable: _errorNotifier,
+              builder: (context, error, child) {
+                return Row(
+                  children: [
+                    GestureDetector(
+                      onTap: isLoading ? null : _togglePlay,
+                      child: Container(
+                        width: 40.w,
+                        height: 40.w,
+                        decoration: BoxDecoration(
+                          border: Border.all(color: const Color(0xFFE3E8EF), width: 1.82.w),
+                          shape: BoxShape.circle,
                         ),
-                      );
-                    }
-
-                    return ValueListenableBuilder<bool>(
-                      valueListenable: _isPlayingNotifier,
-                      builder: (context, isPlaying, child) {
-                        return Icon(isPlaying ? Icons.pause : Icons.play_arrow, color: const Color(0xFF0D121C), size: 20);
-                      },
-                    );
-                  },
-                ),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                children: [
-                  Container(
-                    height: 5,
-                    decoration: BoxDecoration(color: const Color(0xFFCDD5DF), borderRadius: BorderRadius.circular(20)),
-                    child: ValueListenableBuilder<double>(
-                      valueListenable: _progressNotifier,
-                      builder: (context, progress, child) {
-                        return FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: progress,
-                          child: Container(
-                            decoration: BoxDecoration(color: const Color(0xFF554FF0), borderRadius: BorderRadius.circular(20)),
-                          ),
-                        );
-                      },
+                        child: isLoading
+                            ? Center(
+                                child: SizedBox(
+                                  width: 20.w,
+                                  height: 20.w,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2.w,
+                                    valueColor: AlwaysStoppedAnimation<Color>(Color(0xFF554FF0)),
+                                  ),
+                                ),
+                              )
+                            : ValueListenableBuilder<bool>(
+                                valueListenable: _isPlayingNotifier,
+                                builder: (context, isPlaying, child) {
+                                  return Icon(
+                                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                    color: const Color(0xFF7F8EA4),
+                                    size: 20.w,
+                                  );
+                                },
+                              ),
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      ValueListenableBuilder<String>(
-                        valueListenable: _currentTimeNotifier,
-                        builder: (context, currentTime, child) {
-                          return Text(
-                            currentTime,
-                            style: const TextStyle(color: Color(0xFF7F8EA4), fontSize: 10, fontWeight: FontWeight.w500, height: 1.5),
-                          );
-                        },
+                    12.horizontalSpace,
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Container(
+                            height: 5.h,
+                            width: double.infinity,
+                            decoration: BoxDecoration(color: const Color(0xFFCDD5DF), borderRadius: BorderRadius.circular(20)),
+                            child: ValueListenableBuilder<double>(
+                              valueListenable: _progressNotifier,
+                              builder: (context, progress, child) {
+                                return FractionallySizedBox(
+                                  alignment: Alignment.centerLeft,
+                                  widthFactor: progress,
+                                  child: Container(
+                                    decoration: BoxDecoration(color: const Color(0xFF554FF0), borderRadius: BorderRadius.circular(20)),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                          8.verticalSpace,
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              ValueListenableBuilder<String>(
+                                valueListenable: _currentTimeNotifier,
+                                builder: (context, currentTime, child) {
+                                  return AppText(
+                                    currentTime,
+                                    style: AppStyle.text10.copyWith(color: const Color(0xFF7F8EA4), fontWeight: FontWeight.w500),
+                                  );
+                                },
+                              ),
+                              ValueListenableBuilder<String>(
+                                valueListenable: _remainingTimeNotifier,
+                                builder: (context, remainingTime, child) {
+                                  return AppText(
+                                    remainingTime,
+                                    style: AppStyle.text10.copyWith(color: const Color(0xFF7F8EA4), fontWeight: FontWeight.w500),
+                                  );
+                                },
+                              ),
+                            ],
+                          ),
+                        ],
                       ),
-                      ValueListenableBuilder<String>(
-                        valueListenable: _remainingTimeNotifier,
-                        builder: (context, remainingTime, child) {
-                          return Text(
-                            remainingTime,
-                            style: const TextStyle(color: Color(0xFF7F8EA4), fontSize: 10, fontWeight: FontWeight.w500, height: 1.5),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
+                    ),
+                  ],
+                );
+              },
+            );
+          },
         ),
       ],
     );

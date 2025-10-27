@@ -9,8 +9,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   void loadQuestion(ChoiceQuestion question) {
     emit(
       state.copyWith(
-        currentQuestion: question,
-        selectedAnswerIndex: -1,
+        selectedAnswer: null,
         selectedAnswers: {},
         hasChecked: false,
         isCorrect: false,
@@ -18,39 +17,41 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     );
   }
 
-  void selectAnswer(int index) {
+  void selectAnswer(OptionEntity option) {
     if (state.hasChecked) return;
 
-    if (state.currentQuestion?.isMultiChoice == true) {
+    if (state.question.type == QuestionTypeEnum.multipleChoice) {
       // Handle multiple choice
-      final Set<int> newSelectedAnswers = Set<int>.from(state.selectedAnswers);
-      if (newSelectedAnswers.contains(index)) {
-        newSelectedAnswers.remove(index);
+      final Set<OptionEntity> newSelectedAnswers = Set<OptionEntity>.from(state.selectedAnswers);
+      if (newSelectedAnswers.contains(option)) {
+        newSelectedAnswers.remove(option);
       } else {
-        newSelectedAnswers.add(index);
+        newSelectedAnswers.add(option);
       }
       emit(state.copyWith(selectedAnswers: newSelectedAnswers));
-    } else {
-      // Handle single choice
-      emit(state.copyWith(selectedAnswerIndex: index));
+      return;
     }
+
+    // Handle single choice
+    emit(state.copyWith(selectedAnswer: option));
   }
 
   void checkAnswer() {
-    if (state.currentQuestion == null) return;
+    if (state.question.id == 0) return;
 
     bool isCorrect = false;
 
-    if (state.currentQuestion!.isMultiChoice) {
+    if (state.question.type == QuestionTypeEnum.multipleChoice) {
       // Check multiple choice answer
       if (state.selectedAnswers.isNotEmpty) {
-        final correctSet = state.currentQuestion!.correctAnswersIndices ?? {};
-        isCorrect = state.selectedAnswers.length == correctSet.length && state.selectedAnswers.every((index) => correctSet.contains(index));
+        Set<int> correctIndexes = state.correctOptions.map((option) => option.id).toSet();
+        Set<int> selectedIndexes = state.selectedAnswers.map((option) => option.id).toSet();
+        isCorrect = correctIndexes.containsAll(selectedIndexes) && selectedIndexes.containsAll(correctIndexes);
       }
     } else {
       // Check single choice answer
-      if (state.selectedAnswerIndex != -1) {
-        isCorrect = state.selectedAnswerIndex == state.currentQuestion!.correctAnswerIndex;
+      if (state.selectedAnswer != null) {
+        isCorrect = state.correctOptions.any((option) => state.selectedAnswers.contains(option));
       }
     }
 

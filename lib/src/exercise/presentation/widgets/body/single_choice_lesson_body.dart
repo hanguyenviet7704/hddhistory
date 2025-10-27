@@ -40,7 +40,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
-          final canCheck = state.selectedAnswerIndex != -1 && !state.hasChecked;
+          final canCheck = state.selectedAnswer != null && !state.hasChecked;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -72,8 +72,8 @@ class SingleChoiceLessonBody extends StatelessWidget {
                   return ChoiceAnswerCard(
                     option: currentQuestion.options[index],
                     isMultiChoice: false,
-                    state: _getAnswerState(index, state),
-                    onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
+                    state: _getAnswerState(currentQuestion.options[index], state),
+                    onTap: () => context.read<ChoiceCubit>().selectAnswer(currentQuestion.options[index]),
                   );
                 },
               ),
@@ -92,16 +92,16 @@ class SingleChoiceLessonBody extends StatelessWidget {
     );
   }
 
-  AnswerState _getAnswerState(int index, ChoiceState state) {
+  AnswerState _getAnswerState(OptionEntity option, ChoiceState state) {
     if (!state.hasChecked) {
-      return state.selectedAnswerIndex == index ? AnswerState.selected : AnswerState.normal;
+      return state.selectedAnswer == option ? AnswerState.selected : AnswerState.normal;
     }
 
-    if (state.currentQuestion == null) return AnswerState.normal;
+    if (state.question.id == 0) return AnswerState.normal;
 
-    if (index == state.currentQuestion!.correctAnswerIndex) {
+    if (state.correctOptions.any((option) => option.id == option.id)) {
       return AnswerState.correct;
-    } else if (state.selectedAnswerIndex == index) {
+    } else if (state.selectedAnswer == option) {
       return AnswerState.incorrect;
     } else {
       return AnswerState.disabled;

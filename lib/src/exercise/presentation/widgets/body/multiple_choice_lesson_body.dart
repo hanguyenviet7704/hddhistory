@@ -59,32 +59,32 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
       },
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
-          final currentQuestion = state.currentQuestion;
-          if (currentQuestion == null) return const SizedBox.shrink();
+          final currentQuestion = state.question;
+          if (currentQuestion.id == 0) return const SizedBox.shrink();
 
           final canCheck = state.selectedAnswers.isNotEmpty && !state.hasChecked;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (currentQuestion.hasImage && currentQuestion.imageUrl != null) ...[
-                ImageCard(imageUrl: currentQuestion.imageUrl),
-                12.verticalSpace,
-              ],
-              if (currentQuestion.hasAudio) ...[
-                AudioPlayerWidget(audioUrl: currentQuestion.audioUrl),
-                12.verticalSpace,
-              ],
-              Padding(
-                padding: EdgeInsets.only(top: 16.h, bottom: 8.h),
-                child: AppText(
-                  currentQuestion.instructionText,
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
+              // if (currentQuestion.hasImage && currentQuestion.imageUrl != null) ...[
+              //   ImageCard(imageUrl: currentQuestion.imageUrl),
+              //   12.verticalSpace,
+              // ],
+              // if (currentQuestion.hasAudio) ...[
+              //   AudioPlayerWidget(audioUrl: currentQuestion.audioUrl),
+              //   12.verticalSpace,
+              // ],
+              // Padding(
+              //   padding: EdgeInsets.only(top: 16.h, bottom: 8.h),
+              //   child: AppText(
+              //     currentQuestion.instructionText,
+              //     style: AppStyle.text12.copyWith(
+              //       color: const Color(0xFF7F8EA4),
+              //       fontWeight: FontWeight.w500,
+              //     ),
+              //   ),
+              // ),
               // ListView.separated(
               //   shrinkWrap: true,
               //   physics: const NeverScrollableScrollPhysics(),
@@ -114,20 +114,20 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
     );
   }
 
-  AnswerState _getAnswerState(int index, ChoiceState state) {
-    if (!state.hasChecked) {
-      return state.selectedAnswers.contains(index) ? AnswerState.selected : AnswerState.normal;
-    }
+  // AnswerState _getAnswerState(int index, ChoiceState state) {
+  //   if (!state.hasChecked) {
+  //     return state.selectedAnswers.contains(index) ? AnswerState.selected : AnswerState.normal;
+  //   }
 
-    if (state.currentQuestion == null) return AnswerState.normal;
+  //   if (state.currentQuestion == null) return AnswerState.normal;
 
-    final correctSet = state.currentQuestion!.correctAnswersIndices ?? {};
-    if (correctSet.contains(index)) {
-      return state.selectedAnswers.contains(index) ? AnswerState.correct : AnswerState.disabled;
-    } else if (state.selectedAnswers.contains(index)) {
-      return AnswerState.incorrect;
-    } else {
-      return AnswerState.disabled;
-    }
-  }
+  //   final correctSet = state.currentQuestion!.correctAnswersIndices ?? {};
+  //   if (correctSet.contains(index)) {
+  //     return state.selectedAnswers.contains(index) ? AnswerState.correct : AnswerState.disabled;
+  //   } else if (state.selectedAnswers.contains(index)) {
+  //     return AnswerState.incorrect;
+  //   } else {
+  //     return AnswerState.disabled;
+  //   }
+  // }
 }
