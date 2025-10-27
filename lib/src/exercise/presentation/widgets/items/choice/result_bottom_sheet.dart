@@ -9,14 +9,15 @@ class ResultBottomSheet extends StatelessWidget {
 
   const ResultBottomSheet({super.key, required this.type, required this.onContinue, this.onExplain});
 
+  bool get isCorrect => type == ResultType.correct;
+  Color get backgroundColor => isCorrect ? const Color(0xFFEAFFEF) : const Color(0xFFFDEAE7);
+  Color get buttonColor => isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
+  Color get iconColor => isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
+  String get title => isCorrect ? 'Correct answer!' : 'Incorrect';
+  String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
+
   @override
   Widget build(BuildContext context) {
-    final isCorrect = type == ResultType.correct;
-    final backgroundColor = isCorrect ? const Color(0xFFEAFFEF) : const Color(0xFFFDEAE7);
-    final buttonColor = isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
-    final iconColor = isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
-    final title = isCorrect ? 'Correct answer!' : 'Incorrect';
-
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -31,13 +32,8 @@ class ResultBottomSheet extends StatelessWidget {
               Expanded(
                 child: Row(
                   children: [
-                    Container(
-                      width: 24,
-                      height: 24,
-                      decoration: BoxDecoration(color: iconColor, shape: BoxShape.circle),
-                      child: Center(child: Icon(isCorrect ? Icons.check : Icons.close, color: Colors.white, size: 16)),
-                    ),
-                    const SizedBox(width: 8),
+                    Image.asset(iconAsset, width: 24.w, height: 24.w),
+                    8.horizontalSpace,
                     Expanded(
                       child: Text(
                         title,
@@ -52,13 +48,13 @@ class ResultBottomSheet extends StatelessWidget {
                   opacity: 0.5,
                   child: GestureDetector(
                     onTap: onExplain,
-                    child: const Row(
+                    child: Row(
                       children: [
-                        Icon(Icons.menu_book_outlined, color: Color(0xFF0D121C), size: 20),
-                        SizedBox(width: 8),
-                        Text(
+                        SvgPicture.asset(AppAsset.svg.app.icBook, width: 20.w, height: 20.w),
+                        8.horizontalSpace,
+                        AppText(
                           'Explain',
-                          style: TextStyle(color: Color(0xFF0D121C), fontSize: 14, fontWeight: FontWeight.w600, height: 1.5),
+                          style: AppStyle.text14.copyWith(color: const Color(0xFF0D121C), fontWeight: FontWeight.w600),
                         ),
                       ],
                     ),
@@ -66,7 +62,7 @@ class ResultBottomSheet extends StatelessWidget {
                 ),
             ],
           ),
-          const SizedBox(height: 16),
+          24.verticalSpace,
           SizedBox(
             width: double.infinity,
             height: 54,
@@ -78,9 +74,13 @@ class ResultBottomSheet extends StatelessWidget {
                 elevation: 0,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1000)),
               ),
-              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.5)),
+              child: AppText(
+                context.text.onboardingSkipGreetingButton,
+                style: AppStyle.text16.copyWith(fontWeight: FontWeight.w600, color: AppColorLight.surface),
+              ),
             ),
           ),
+          16.verticalSpace,
         ],
       ),
     );

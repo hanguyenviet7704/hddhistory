@@ -8,7 +8,6 @@ class ExerciseContinueButton extends StatelessWidget {
   final Color? disabledBackgroundColor;
   final Color? textColor;
   final Color? disabledTextColor;
-  final bool showBorder;
 
   const ExerciseContinueButton({
     super.key,
@@ -19,7 +18,6 @@ class ExerciseContinueButton extends StatelessWidget {
     this.disabledBackgroundColor,
     this.textColor,
     this.disabledTextColor,
-    this.showBorder = false,
   });
 
   @override
@@ -30,13 +28,7 @@ class ExerciseContinueButton extends StatelessWidget {
     final disabledTextColor = this.disabledTextColor ?? const Color(0xFF7F8EA4);
 
     return Container(
-      padding: EdgeInsets.all(20.w),
-      decoration: showBorder
-          ? const BoxDecoration(
-              color: Colors.white,
-              border: Border(top: BorderSide(color: Color(0xFFE3E8EF), width: 1)),
-            )
-          : null,
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
       child: AppButton.primary(
         onPressed: isEnabled ? onPressed : null,
         fullWidthBtn: true,

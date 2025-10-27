@@ -34,7 +34,6 @@ class MultipleChoiceLessonBody extends StatelessWidget {
           onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
           text: 'Check',
           isEnabled: canCheck,
-          showBorder: true,
         );
       },
     );

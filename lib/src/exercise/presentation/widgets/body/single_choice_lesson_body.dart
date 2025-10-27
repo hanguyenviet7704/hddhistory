@@ -13,13 +13,15 @@ class SingleChoiceLessonBody extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: Colors.transparent,
+      routeSettings: const RouteSettings(name: 'result_bottom_sheet'),
       builder: (context) => ResultBottomSheet(
         type: type,
         onContinue: () {
-          Navigator.of(context).pop();
+          context.back();
         },
         onExplain: () {
-          Navigator.of(context).pop();
+          context.back();
         },
       ),
     );
@@ -83,9 +85,9 @@ class SingleChoiceLessonBody extends StatelessWidget {
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<ChoiceCubit, ChoiceState>(
       builder: (context, state) {
-        if (state.hasChecked) {
-          return const SizedBox.shrink();
-        }
+        // if (state.hasChecked) {
+        //   return const SizedBox.shrink();
+        // }
 
         final canCheck = state.selectedAnswerIndex != -1;
 
@@ -93,7 +95,6 @@ class SingleChoiceLessonBody extends StatelessWidget {
           onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
           text: 'Check',
           isEnabled: canCheck,
-          showBorder: true,
         );
       },
     );

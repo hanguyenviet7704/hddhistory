@@ -59,7 +59,6 @@ class ChoiceDocumentItem extends StatelessWidget {
           ],
           if (document.type == ExerciseDocumentType.audio && data.url.isNotEmpty) ...[
             AudioPlayerWidget(audioUrl: data.url),
-            16.verticalSpace,
           ],
         ],
       ),
