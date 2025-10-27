@@ -1,4 +1,4 @@
-part of '../../../../../exercise.dart';
+part of '../../../../exercise.dart';
 
 class BlankSlot extends StatelessWidget {
   final int index;

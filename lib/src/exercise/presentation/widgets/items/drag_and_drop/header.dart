@@ -1,4 +1,4 @@
-part of '../../../../../exercise.dart';
+part of '../../../../exercise.dart';
 
 class DragDropHeader extends StatelessWidget {
   final double progress;

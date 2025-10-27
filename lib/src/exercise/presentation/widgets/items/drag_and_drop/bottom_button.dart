@@ -1,4 +1,4 @@
-part of '../../../../../exercise.dart';
+part of '../../../../exercise.dart';
 
 class DragBottomButton extends StatelessWidget {
   final bool isEnabled;

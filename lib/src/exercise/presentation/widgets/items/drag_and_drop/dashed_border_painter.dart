@@ -1,4 +1,4 @@
-part of '../../../../../exercise.dart';
+part of '../../../../exercise.dart';
 
 class DashedBorderPainter extends CustomPainter {
   final Color color;

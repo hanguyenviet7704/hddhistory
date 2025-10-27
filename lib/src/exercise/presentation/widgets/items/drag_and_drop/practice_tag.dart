@@ -1,4 +1,4 @@
-part of '../../../../../exercise.dart';
+part of '../../../../exercise.dart';
 
 class DragPracticeTag extends StatelessWidget {
   const DragPracticeTag({super.key});

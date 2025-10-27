@@ -1,4 +1,4 @@
-part of '../../../../../exercise.dart';
+part of '../../../../exercise.dart';
 
 class SentenceBuilder extends StatelessWidget {
   final List<String?> placedWords;
