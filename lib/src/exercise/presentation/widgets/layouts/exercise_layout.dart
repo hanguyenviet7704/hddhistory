@@ -25,14 +25,12 @@ class ExerciseLayout extends StatelessWidget {
   final ExerciseLayoutType type;
   final Widget body;
   final Widget? bottom;
-  final VoidCallback? onContinuePressed;
 
   const ExerciseLayout({
     super.key,
     this.type = ExerciseLayoutType.practice,
     required this.body,
     this.bottom,
-    this.onContinuePressed,
   });
 
   @override
@@ -47,7 +45,7 @@ class ExerciseLayout extends StatelessWidget {
                 child: body,
               ),
             ),
-            bottom ?? ExerciseContinueButton(onPressed: onContinuePressed ?? () {}),
+            if (bottom != null) bottom!,
           ],
         ),
       ),

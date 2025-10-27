@@ -40,7 +40,6 @@ class SingleChoiceLessonBody extends StatelessWidget {
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
-          final canCheck = state.selectedAnswerIndex != -1 && !state.hasChecked;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -73,18 +72,30 @@ class SingleChoiceLessonBody extends StatelessWidget {
                   );
                 },
               ),
-              20.verticalSpace,
-              if (!state.hasChecked)
-                ExerciseContinueButton(
-                  onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
-                  text: 'Check',
-                  isEnabled: canCheck,
-                  showBorder: true,
-                ),
             ],
           );
         },
       ),
+    );
+  }
+
+  /// Build the bottom button for single choice questions
+  Widget buildBottomButton(BuildContext context) {
+    return BlocBuilder<ChoiceCubit, ChoiceState>(
+      builder: (context, state) {
+        if (state.hasChecked) {
+          return const SizedBox.shrink();
+        }
+
+        final canCheck = state.selectedAnswerIndex != -1;
+
+        return ExerciseContinueButton(
+          onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
+          text: 'Check',
+          isEnabled: canCheck,
+          showBorder: true,
+        );
+      },
     );
   }
 }

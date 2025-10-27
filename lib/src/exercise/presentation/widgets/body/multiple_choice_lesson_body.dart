@@ -19,6 +19,26 @@ class MultipleChoiceLessonBody extends StatelessWidget {
       ),
     );
   }
+
+  /// Build the bottom button for multiple choice questions
+  Widget buildBottomButton(BuildContext context) {
+    return BlocBuilder<ChoiceCubit, ChoiceState>(
+      builder: (context, state) {
+        if (state.hasChecked) {
+          return const SizedBox.shrink();
+        }
+
+        final canCheck = state.selectedAnswersIndices.isNotEmpty;
+
+        return ExerciseContinueButton(
+          onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
+          text: 'Check',
+          isEnabled: canCheck,
+          showBorder: true,
+        );
+      },
+    );
+  }
 }
 
 class _MultipleChoiceLessonBodyView extends StatelessWidget {
@@ -62,8 +82,6 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
           final currentQuestion = state.question;
           if (currentQuestion.id == 0) return const SizedBox.shrink();
 
-          final canCheck = state.selectedAnswersIndices.isNotEmpty && !state.hasChecked;
-
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -99,14 +117,6 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
               //     );
               //   },
               // ),
-              20.verticalSpace,
-              if (!state.hasChecked)
-                ExerciseContinueButton(
-                  onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
-                  text: 'Check',
-                  isEnabled: canCheck,
-                  showBorder: true,
-                ),
             ],
           );
         },

@@ -83,14 +83,17 @@ class ExercisePage extends StatelessWidget {
     //   ),
     // );
 
+    final lessonBody = SingleChoiceLessonBody(
+      onAnswerChecked: (isCorrect) {
+        // Handle answer checked event
+        debugPrint('Answer is correct: $isCorrect');
+      },
+    );
+
     return ExerciseLayout(
       type: ExerciseLayoutType.practice,
-      body: SingleChoiceLessonBody(
-        onAnswerChecked: (isCorrect) {
-          // Handle answer checked event
-          debugPrint('Answer is correct: $isCorrect');
-        },
-      ),
-    );  
+      body: lessonBody,
+      bottom: lessonBody.buildBottomButton(context),
+    );
   }
 }
