@@ -12,6 +12,7 @@ sealed class ChoiceState with _$ChoiceState {
     @Default({}) Set<int> selectedAnswersIndices,
     @Default(false) bool hasChecked,
     @Default(false) bool isCorrect,
+    @Default(false) bool showExplanation,
   }) = _ChoiceState;
 
   factory ChoiceState.initial() => const ChoiceState();

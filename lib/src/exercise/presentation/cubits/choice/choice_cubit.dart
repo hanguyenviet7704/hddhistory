@@ -59,7 +59,12 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       state.copyWith(
         hasChecked: true,
         isCorrect: isCorrect,
+        showExplanation: false,
       ),
     );
+  }
+
+  void toggleExplanation() {
+    emit(state.copyWith(showExplanation: !state.showExplanation));
   }
 }

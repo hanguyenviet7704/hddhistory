@@ -38,6 +38,7 @@ mixin RoutePath {
 
   //* Exercise
   static const String exercise = '/exercise';
+  static const String exerciseResultPopup = '/exercise-result-popup';
 }
 
 mixin RouteNamed {
@@ -78,4 +79,5 @@ mixin RouteNamed {
 
   //* Exercise
   static const String exercise = 'Exercise';
+  static const String exerciseResultPopup = 'Exercise Result Popup';
 }

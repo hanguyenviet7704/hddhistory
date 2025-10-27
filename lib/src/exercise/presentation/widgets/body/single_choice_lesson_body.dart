@@ -14,15 +14,53 @@ class SingleChoiceLessonBody extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.transparent,
-      routeSettings: const RouteSettings(name: 'result_bottom_sheet'),
-      builder: (context) => ResultBottomSheet(
-        type: type,
-        onContinue: () {
-          context.back();
-        },
-        onExplain: () {
-          context.back();
-        },
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
+      routeSettings: const RouteSettings(name: RouteNamed.exerciseResultPopup),
+      builder: (modalContext) => BlocProvider.value(
+        value: context.read<ChoiceCubit>(),
+        child: BlocBuilder<ChoiceCubit, ChoiceState>(
+          bloc: context.read<ChoiceCubit>(),
+          builder: (context, state) {
+            return Stack(
+              children: [
+                // Animated backdrop overlay
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeInOut,
+                  opacity: state.showExplanation ? 1.0 : 0.0,
+                  child: IgnorePointer(
+                    ignoring: !state.showExplanation,
+                    child: GestureDetector(
+                      onTap: () => context.read<ChoiceCubit>().toggleExplanation(),
+                      child: Container(
+                        color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+                  ),
+                ),
+                // Result bottom sheet
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: ResultBottomSheet(
+                    type: type,
+                    showExplanation: state.showExplanation,
+                    explanationText: state.question.explanation,
+                    onContinue: () {
+                      modalContext.back();
+                    },
+                    onExplain: () {
+                      context.read<ChoiceCubit>().toggleExplanation();
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
@@ -30,14 +68,16 @@ class SingleChoiceLessonBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocListener<ChoiceCubit, ChoiceState>(
+      listenWhen: (previous, current) {
+        // Only trigger when hasChecked changes from false to true
+        return !previous.hasChecked && current.hasChecked;
+      },
       listener: (context, state) {
-        if (state.hasChecked) {
-          onAnswerChecked(state.isCorrect);
-          _showResultBottomSheet(
-            context,
-            state.isCorrect ? ResultType.correct : ResultType.incorrect,
-          );
-        }
+        onAnswerChecked(state.isCorrect);
+        _showResultBottomSheet(
+          context,
+          state.isCorrect ? ResultType.correct : ResultType.incorrect,
+        );
       },
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
