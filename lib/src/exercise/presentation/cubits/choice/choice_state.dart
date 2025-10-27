@@ -19,23 +19,47 @@ sealed class ChoiceState with _$ChoiceState {
 
 extension ChoiceStateExtension on ChoiceState {
   List<OptionEntity> get answerOptions => question.options;
-  Set<int> get correctOptionsIndices => question.options.where((option) => option.isCorrect).map((option) => option.id).toSet();
+
+  /// Returns the list indices of correct options (not option IDs)
+  Set<int> get correctOptionsIndices {
+    final Set<int> indices = {};
+    for (int i = 0; i < question.options.length; i++) {
+      if (question.options[i].isCorrect) {
+        indices.add(i);
+      }
+    }
+    return indices;
+  }
 
   AnswerState getAnswerState(int index) {
+    // Before checking answer, show selected state
     if (!hasChecked) {
-      return selectedAnswerIndex == index ? AnswerState.selected : AnswerState.normal;
+      if (question.type == QuestionTypeEnum.multipleChoice) {
+        return selectedAnswersIndices.contains(index) ? AnswerState.selected : AnswerState.normal;
+      } else {
+        return selectedAnswerIndex == index ? AnswerState.selected : AnswerState.normal;
+      }
     }
 
+    // After checking, show correct/incorrect states
     if (question.id == 0) return AnswerState.normal;
 
-    if (correctOptionsIndices.contains(index)) {
+    final bool isCorrectOption = correctOptionsIndices.contains(index);
+    final bool wasSelected = question.type == QuestionTypeEnum.multipleChoice
+        ? selectedAnswersIndices.contains(index)
+        : selectedAnswerIndex == index;
+
+    // Show correct answers
+    if (isCorrectOption) {
       return AnswerState.correct;
     }
 
-    if (selectedAnswerIndex == index) {
+    // Show incorrect selected answers
+    if (wasSelected) {
       return AnswerState.incorrect;
     }
 
+    // Disable unselected wrong answers
     return AnswerState.disabled;
   }
 }
