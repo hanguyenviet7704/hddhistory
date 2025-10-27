@@ -49,7 +49,6 @@ part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/example/arrange_the_sequence_screen.dart';
-part 'presentation/pages/example/choise_screen.dart';
 part 'presentation/pages/example/cues_placement_screen.dart';
 part 'presentation/pages/example/drag_and_drop_screen.dart';
 part 'presentation/pages/example/speaking_screen.dart';
