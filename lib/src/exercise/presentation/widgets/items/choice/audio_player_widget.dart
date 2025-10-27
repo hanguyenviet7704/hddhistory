@@ -21,6 +21,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   late final ValueNotifier<int> _retryCountNotifier;
 
   bool _isInitialized = false;
+  bool _isSeeking = false;
   Duration? _duration;
   static const int _maxRetries = 3;
 
@@ -28,6 +29,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   StreamSubscription? _playerStateSubscription;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
+  StreamSubscription? _processingStateSubscription;
 
   @override
   void initState() {
@@ -64,7 +66,7 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
 
       // Set up position listener for progress updates
       _positionSubscription = _audioPlayer.positionStream.listen((position) {
-        if (mounted && _duration != null && _duration!.inMilliseconds > 0) {
+        if (mounted && !_isSeeking && _duration != null && _duration!.inMilliseconds > 0) {
           _progressNotifier.value = position.inMilliseconds / _duration!.inMilliseconds;
           _currentTimeNotifier.value = _formatDuration(position);
 
@@ -79,6 +81,18 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           _duration = duration;
           if (duration != null) {
             _remainingTimeNotifier.value = '-${_formatDuration(duration)}';
+          }
+        }
+      });
+
+      // Set up completion listener to allow replay
+      _processingStateSubscription = _audioPlayer.processingStateStream.listen((processingState) async {
+        if (mounted && processingState == just_audio.ProcessingState.completed) {
+          // Audio finished playing, reset to beginning for replay
+          await _audioPlayer.seek(Duration.zero);
+          await _audioPlayer.pause();
+          if (mounted) {
+            _isPlayingNotifier.value = false;
           }
         }
       });
@@ -116,9 +130,11 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     await _playerStateSubscription?.cancel();
     await _positionSubscription?.cancel();
     await _durationSubscription?.cancel();
+    await _processingStateSubscription?.cancel();
     _playerStateSubscription = null;
     _positionSubscription = null;
     _durationSubscription = null;
+    _processingStateSubscription = null;
   }
 
   String _formatDuration(Duration duration) {
@@ -139,6 +155,34 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       }
     } catch (e) {
       // Handle error silently for now
+    }
+  }
+
+  void _onSeekStart(double value) {
+    _isSeeking = true;
+  }
+
+  void _onSeekChange(double value) {
+    if (_duration != null) {
+      final position = Duration(milliseconds: (value * _duration!.inMilliseconds).round());
+      _progressNotifier.value = value;
+      _currentTimeNotifier.value = _formatDuration(position);
+
+      final remaining = _duration! - position;
+      _remainingTimeNotifier.value = '-${_formatDuration(remaining)}';
+    }
+  }
+
+  Future<void> _onSeekEnd(double value) async {
+    if (!_isInitialized || _duration == null) return;
+
+    try {
+      final position = Duration(milliseconds: (value * _duration!.inMilliseconds).round());
+      await _audioPlayer.seek(position);
+    } catch (e) {
+      // Handle error silently
+    } finally {
+      _isSeeking = false;
     }
   }
 
@@ -288,24 +332,37 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Container(
-                            height: 5.h,
-                            width: double.infinity,
-                            decoration: BoxDecoration(color: const Color(0xFFCDD5DF), borderRadius: BorderRadius.circular(20)),
-                            child: ValueListenableBuilder<double>(
-                              valueListenable: _progressNotifier,
-                              builder: (context, progress, child) {
-                                return FractionallySizedBox(
-                                  alignment: Alignment.centerLeft,
-                                  widthFactor: progress,
-                                  child: Container(
-                                    decoration: BoxDecoration(color: const Color(0xFF554FF0), borderRadius: BorderRadius.circular(20)),
+                          ValueListenableBuilder<double>(
+                            valueListenable: _progressNotifier,
+                            builder: (context, progress, child) {
+                              return SliderTheme(
+                                data: SliderThemeData(
+                                  padding: EdgeInsets.symmetric(vertical: 4.h),
+                                  trackHeight: 5.h,
+                                  thumbShape: CustomSliderThumbShape(
+                                    thumbRadius: 6.w,
+                                    borderWidth: 2.5.w,
+                                    thumbColor: Colors.white,
+                                    borderColor: const Color(0xFF554FF0),
                                   ),
-                                );
-                              },
-                            ),
+                                  overlayShape: RoundSliderOverlayShape(overlayRadius: 16.r),
+                                  activeTrackColor: const Color(0xFF554FF0),
+                                  inactiveTrackColor: const Color(0xFFCDD5DF),
+                                  thumbColor: const Color(0xFF554FF0),
+                                  overlayColor: const Color(0xFF554FF0).withAlpha((0.2 * 255).round()),
+                                  trackShape: RoundedRectSliderTrackShape(),
+                                ),
+                                child: Slider(
+                                  value: progress.clamp(0.0, 1.0),
+                                  min: 0.0,
+                                  max: 1.0,
+                                  onChangeStart: _onSeekStart,
+                                  onChanged: _onSeekChange,
+                                  onChangeEnd: _onSeekEnd,
+                                ),
+                              );
+                            },
                           ),
-                          8.verticalSpace,
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
