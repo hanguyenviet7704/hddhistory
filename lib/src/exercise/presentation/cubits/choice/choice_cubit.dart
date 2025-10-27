@@ -3,37 +3,39 @@ part of '../../../exercise.dart';
 @lazySingleton
 class ChoiceCubit extends Cubit<ChoiceState> {
   ChoiceCubit() : super(ChoiceState.initial());
+  
+  void reset() => emit(ChoiceState.initial());
 
   void loadQuestionData(QuestionEntity question) => emit(state.copyWith(question: question));
 
   void loadQuestion(ChoiceQuestion question) {
     emit(
       state.copyWith(
-        selectedAnswer: null,
-        selectedAnswers: {},
+        selectedAnswerIndex: -1,
+        selectedAnswersIndices: {},
         hasChecked: false,
         isCorrect: false,
       ),
     );
   }
 
-  void selectAnswer(OptionEntity option) {
+  void selectAnswer(int index) {
     if (state.hasChecked) return;
 
     if (state.question.type == QuestionTypeEnum.multipleChoice) {
       // Handle multiple choice
-      final Set<OptionEntity> newSelectedAnswers = Set<OptionEntity>.from(state.selectedAnswers);
-      if (newSelectedAnswers.contains(option)) {
-        newSelectedAnswers.remove(option);
+      final Set<int> newSelectedAnswers = Set<int>.from(state.selectedAnswersIndices);
+      if (newSelectedAnswers.contains(index)) {
+        newSelectedAnswers.remove(index);
       } else {
-        newSelectedAnswers.add(option);
+        newSelectedAnswers.add(index);
       }
-      emit(state.copyWith(selectedAnswers: newSelectedAnswers));
+      emit(state.copyWith(selectedAnswersIndices: newSelectedAnswers));
       return;
     }
 
     // Handle single choice
-    emit(state.copyWith(selectedAnswer: option));
+    emit(state.copyWith(selectedAnswerIndex: index));
   }
 
   void checkAnswer() {
@@ -43,16 +45,14 @@ class ChoiceCubit extends Cubit<ChoiceState> {
 
     if (state.question.type == QuestionTypeEnum.multipleChoice) {
       // Check multiple choice answer
-      if (state.selectedAnswers.isNotEmpty) {
-        Set<int> correctIndexes = state.correctOptions.map((option) => option.id).toSet();
-        Set<int> selectedIndexes = state.selectedAnswers.map((option) => option.id).toSet();
-        isCorrect = correctIndexes.containsAll(selectedIndexes) && selectedIndexes.containsAll(correctIndexes);
+      if (state.selectedAnswersIndices.isNotEmpty) {
+        Set<int> correctIndexes = state.correctOptionsIndices;
+        Set<int> selectedIndexes = state.selectedAnswersIndices;
+        isCorrect = correctIndexes == selectedIndexes;
       }
     } else {
       // Check single choice answer
-      if (state.selectedAnswer != null) {
-        isCorrect = state.correctOptions.any((option) => state.selectedAnswers.contains(option));
-      }
+      isCorrect = state.correctOptionsIndices.contains(state.selectedAnswerIndex);
     }
 
     emit(
@@ -61,9 +61,5 @@ class ChoiceCubit extends Cubit<ChoiceState> {
         isCorrect: isCorrect,
       ),
     );
-  }
-
-  void reset() {
-    emit(ChoiceState.initial());
   }
 }

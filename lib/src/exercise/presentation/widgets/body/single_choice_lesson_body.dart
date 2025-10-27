@@ -40,7 +40,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
-          final canCheck = state.selectedAnswer != null && !state.hasChecked;
+          final canCheck = state.selectedAnswerIndex != -1 && !state.hasChecked;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -49,10 +49,6 @@ class SingleChoiceLessonBody extends StatelessWidget {
                 ChoiceDocumentWidget(documents: currentQuestion.document),
                 12.verticalSpace,
               ],
-              // if (currentQuestion.hasAudio) ...[
-              //   AudioPlayerWidget(audioUrl: currentQuestion.audioUrl),
-              //   12.verticalSpace,
-              // ],
               AppText(
                 // currentQuestion.explanation,
                 'Select the best answer',
@@ -72,8 +68,8 @@ class SingleChoiceLessonBody extends StatelessWidget {
                   return ChoiceAnswerCard(
                     option: currentQuestion.options[index],
                     isMultiChoice: false,
-                    state: _getAnswerState(currentQuestion.options[index], state),
-                    onTap: () => context.read<ChoiceCubit>().selectAnswer(currentQuestion.options[index]),
+                    state: state.getAnswerState(index),
+                    onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
                   );
                 },
               ),
@@ -90,21 +86,5 @@ class SingleChoiceLessonBody extends StatelessWidget {
         },
       ),
     );
-  }
-
-  AnswerState _getAnswerState(OptionEntity option, ChoiceState state) {
-    if (!state.hasChecked) {
-      return state.selectedAnswer == option ? AnswerState.selected : AnswerState.normal;
-    }
-
-    if (state.question.id == 0) return AnswerState.normal;
-
-    if (state.correctOptions.any((option) => option.id == option.id)) {
-      return AnswerState.correct;
-    } else if (state.selectedAnswer == option) {
-      return AnswerState.incorrect;
-    } else {
-      return AnswerState.disabled;
-    }
   }
 }

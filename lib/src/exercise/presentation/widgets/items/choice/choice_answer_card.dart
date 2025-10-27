@@ -2,7 +2,6 @@
 
 part of '../../../../exercise.dart';
 
-enum AnswerState { normal, selected, correct, incorrect, disabled }
 
 class ChoiceAnswerCard extends StatelessWidget {
   final OptionEntity option;

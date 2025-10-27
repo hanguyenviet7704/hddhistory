@@ -62,7 +62,7 @@ class _MultipleChoiceLessonBodyView extends StatelessWidget {
           final currentQuestion = state.question;
           if (currentQuestion.id == 0) return const SizedBox.shrink();
 
-          final canCheck = state.selectedAnswers.isNotEmpty && !state.hasChecked;
+          final canCheck = state.selectedAnswersIndices.isNotEmpty && !state.hasChecked;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
