@@ -6,6 +6,9 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
   final VoidCallback? onExplain;
   final bool showExplanation;
   final String? explanationText;
+  final String targetArea;
+  final Map<int, String> placedWords;
+  final List<String> correctAnswers;
 
   const DragAndDropResultBottomSheet({
     super.key,
@@ -14,6 +17,9 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
     this.onExplain,
     this.showExplanation = false,
     this.explanationText,
+    required this.targetArea,
+    required this.placedWords,
+    required this.correctAnswers,
   });
 
   bool get isCorrect => type == ResultType.correct;
@@ -22,6 +28,52 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
   Color get iconColor => isCorrect ? const Color(0xFF41AE8C) : const Color(0xFFE34646);
   String get title => isCorrect ? 'Correct answer!' : 'Incorrect';
   String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
+
+  /// Build sentence with highlighted correct answers
+  List<InlineSpan> _buildSentenceSpans() {
+    final spans = <InlineSpan>[];
+    final parts = targetArea.split('___');
+
+    for (int i = 0; i < parts.length; i++) {
+      // Add text before blank
+      if (parts[i].isNotEmpty) {
+        spans.add(
+          TextSpan(
+            text: parts[i],
+            style: TextStyle(
+              color: const Color(0xFF7F8EA4),
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              height: 1.5,
+            ),
+          ),
+        );
+      }
+
+      // Add placed word (if exists)
+      if (i < placedWords.length) {
+        final placedWord = placedWords[i];
+        final correctAnswer = i < correctAnswers.length ? correctAnswers[i] : null;
+        final isWordCorrect = placedWord != null && placedWord == correctAnswer;
+
+        if (placedWord != null) {
+          spans.add(
+            TextSpan(
+              text: placedWord,
+              style: TextStyle(
+                color: isWordCorrect ? const Color(0xFF0D121C) : const Color(0xFF7F8EA4),
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                height: 1.5,
+              ),
+            ),
+          );
+        }
+      }
+    }
+
+    return spans;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -56,6 +108,8 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
             child: showExplanation && explanationText != null
                 ? _DragAndDropExplanationContent(
                     key: const ValueKey('explanation'),
+                    isCorrect: isCorrect,
+                    sentenceSpans: _buildSentenceSpans(),
                     explanationText: explanationText!,
                   )
                 : const SizedBox.shrink(key: ValueKey('empty')),
@@ -149,9 +203,16 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
 }
 
 class _DragAndDropExplanationContent extends StatelessWidget {
+  final bool isCorrect;
+  final List<InlineSpan> sentenceSpans;
   final String explanationText;
 
-  const _DragAndDropExplanationContent({super.key, required this.explanationText});
+  const _DragAndDropExplanationContent({
+    super.key,
+    required this.isCorrect,
+    required this.sentenceSpans,
+    required this.explanationText,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -165,20 +226,79 @@ class _DragAndDropExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // "Correct answer" or "Incorrect" label
           AppText(
-            context.text.exerciseExplanationTitle,
-            style: AppStyle.text20.copyWith(
+            isCorrect ? 'Correct answer' : 'Incorrect',
+            style: AppStyle.text14.copyWith(
               fontWeight: FontWeight.w600,
-              color: const Color(0xFF0D121C),
+              color: isCorrect ? const Color(0xFF3A9377) : const Color(0xFFE34646),
+              height: 1.75,
+            ),
+          ),
+          4.verticalSpace,
+          // Completed sentence with highlighted words
+          RichText(
+            text: TextSpan(
+              children: sentenceSpans,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                height: 1.5,
+              ),
             ),
           ),
           16.verticalSpace,
-          AppText(
-            explanationText,
-            maxLines: 100,
-            style: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
+          // Divider line
+          Container(
+            height: 1,
+            width: double.infinity,
+            color: const Color(0xFFE3E8EF),
+          ),
+          16.verticalSpace,
+          // Explanation box
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: isCorrect ? const Color(0xFFEFF8FF) : const Color(0xFFFDEAE7),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Tag with icon
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(
+                      AppAsset.svg.app.icTennisRacket,
+                      width: 20.w,
+                      height: 20.w,
+                    ),
+                    6.horizontalSpace,
+                    AppText(
+                      'Explanation',
+                      style: AppStyle.text14.copyWith(
+                        fontWeight: FontWeight.w600,
+                        color: isCorrect ? const Color(0xFF175CD3) : const Color(0xFFE34646),
+                        height: 1.75,
+                      ),
+                    ),
+                  ],
+                ),
+                8.verticalSpace,
+                // Explanation text
+                AppText(
+                  explanationText,
+                  maxLines: 100,
+                  style: AppStyle.text14.copyWith(
+                    color: const Color(0xFF364152),
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ],

@@ -48,6 +48,9 @@ class DragAndDropLessonBody extends StatelessWidget {
                     type: type,
                     showExplanation: state.showExplanation,
                     explanationText: state.question.explanation,
+                    targetArea: state.question.targetArea,
+                    placedWords: state.placedWords,
+                    correctAnswers: state.question.answer.map((a) => a.correctAnswer).toList(),
                     onContinue: () {
                       modalContext.back();
                     },
