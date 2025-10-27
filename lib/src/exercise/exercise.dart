@@ -67,6 +67,7 @@ part 'presentation/widgets/items/choice/choice_document_item.dart';
 part 'presentation/widgets/items/choice/choice_document_widget.dart';
 part 'presentation/widgets/items/choice/custom_slider_thumb_shape.dart';
 part 'presentation/widgets/items/choice/mock_data.dart';
+part 'presentation/widgets/items/choice/multiple_choice_answer_card.dart';
 part 'presentation/widgets/items/choice/result_bottom_sheet.dart';
 part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/exercise_badge.dart';

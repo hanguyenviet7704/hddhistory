@@ -91,8 +91,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
                 12.verticalSpace,
               ],
               AppText(
-                // currentQuestion.explanation,
-                'Select the best answer',
+                context.text.exerciseSingleChoiceInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12.copyWith(

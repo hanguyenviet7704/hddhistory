@@ -5,7 +5,7 @@ class ExercisePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final lessonBody = SingleChoiceLessonBody(
+    final lessonBody = MultipleChoiceLessonBody(
       onAnswerChecked: (isCorrect) {
         // Handle answer checked event
         debugPrint('Answer is correct: $isCorrect');

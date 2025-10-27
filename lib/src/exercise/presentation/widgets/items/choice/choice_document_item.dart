@@ -33,9 +33,9 @@ class ChoiceDocumentItem extends StatelessWidget {
                 color: const Color(0xFF0D121C),
               ),
             ),
-            4.horizontalSpace,
           ],
           if (data.content.isNotEmpty) ...[
+            4.horizontalSpace,
             AppText(
               data.content,
               maxLines: 50,
@@ -44,20 +44,22 @@ class ChoiceDocumentItem extends StatelessWidget {
               ),
             ),
           ],
+          16.verticalSpace,
           _ChoiceDocumentTypeTag(
             label: 'Client',
             accentColor: const Color(0xFFEBEAFD),
           ),
           if (data.thumbnail.isNotEmpty) ...[
+            16.verticalSpace,
             DCachedImage(
               url: data.thumbnail,
               width: double.infinity,
               borderRadius: BorderRadius.circular(16.r),
               fit: BoxFit.cover,
             ),
-            16.verticalSpace,
           ],
           if (document.type == ExerciseDocumentType.audio && data.url.isNotEmpty) ...[
+            16.verticalSpace,
             AudioPlayerWidget(audioUrl: data.url),
           ],
         ],
@@ -333,7 +335,6 @@ class _ChoiceDocumentTypeTag extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      margin: EdgeInsets.symmetric(vertical: 16.h),
       decoration: BoxDecoration(
         color: Color(0xFFEBEAFD),
         borderRadius: BorderRadius.circular(999),

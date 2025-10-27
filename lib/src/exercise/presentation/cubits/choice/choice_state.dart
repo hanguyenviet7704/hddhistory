@@ -1,7 +1,7 @@
 part of '../../../exercise.dart';
 
 enum ChoiceStatus { initial, loading, success, failure }
-enum AnswerState { normal, selected, correct, incorrect, disabled }
+enum AnswerState { normal, selected, correct, incorrect, disabled, correctNotSelected }
 
 @freezed
 sealed class ChoiceState with _$ChoiceState {
@@ -52,6 +52,10 @@ extension ChoiceStateExtension on ChoiceState {
 
     // Show correct answers
     if (isCorrectOption) {
+      // For multiple choice, distinguish between selected and not selected correct answers
+      if (question.type == QuestionTypeEnum.multipleChoice && !wasSelected) {
+        return AnswerState.correctNotSelected;
+      }
       return AnswerState.correct;
     }
 
