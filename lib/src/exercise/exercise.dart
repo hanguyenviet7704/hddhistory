@@ -7,6 +7,7 @@ import 'dart:ui' as ui;
 //* Single project import
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:dio/dio.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -42,15 +43,16 @@ part 'domain/usecases/get_learning_item_usecase.dart';
 //* Parts for generated files
 part 'exercise.freezed.dart';
 part 'exercise.g.dart';
+//* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/choice/choice_cubit.dart';
 part 'presentation/cubits/choice/choice_state.dart';
-//* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
+part 'presentation/cubits/drag_and_drop/drag_and_drop_cubit.dart';
+part 'presentation/cubits/drag_and_drop/drag_and_drop_state.dart';
 part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/example/arrange_the_sequence_screen.dart';
 part 'presentation/pages/example/cues_placement_screen.dart';
-part 'presentation/pages/example/drag_and_drop_screen.dart';
 part 'presentation/pages/example/speaking_screen.dart';
 part 'presentation/pages/example/tap_and_jump_screen.dart';
 part 'presentation/pages/exercise_page.dart';
@@ -79,9 +81,12 @@ part 'presentation/widgets/items/drag_and_drop/answer_cards_area.dart';
 part 'presentation/widgets/items/drag_and_drop/blank_slot.dart';
 part 'presentation/widgets/items/drag_and_drop/bottom_button.dart';
 part 'presentation/widgets/items/drag_and_drop/dashed_border_painter.dart';
+part 'presentation/widgets/items/drag_and_drop/empty_slot.dart';
+part 'presentation/widgets/items/drag_and_drop/filled_slot.dart';
 part 'presentation/widgets/items/drag_and_drop/header.dart';
 part 'presentation/widgets/items/drag_and_drop/practice_tag.dart';
 part 'presentation/widgets/items/drag_and_drop/question_bubble.dart';
+part 'presentation/widgets/items/drag_and_drop/result_bottom_sheet.dart';
 part 'presentation/widgets/items/drag_and_drop/sentence_builder.dart';
 part 'presentation/widgets/items/example/arrange_the_sequence/bottom_button.dart';
 part 'presentation/widgets/items/example/arrange_the_sequence/header.dart';

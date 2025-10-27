@@ -1,161 +1,170 @@
 part of '../../../exercise.dart';
 
-class DragAndDropLessonBody extends StatefulWidget {
-  final String question;
-  final List<String> availableWords;
-  final List<String> correctAnswers;
-  final Function(bool isCorrect) onAnswerChecked;
+class DragAndDropLessonBody extends StatelessWidget {
+  final Function(bool) onAnswerChecked;
 
   const DragAndDropLessonBody({
     super.key,
-    required this.question,
-    required this.availableWords,
-    required this.correctAnswers,
     required this.onAnswerChecked,
   });
 
-  @override
-  State<DragAndDropLessonBody> createState() => _DragAndDropLessonBodyState();
-}
-
-class _DragAndDropLessonBodyState extends State<DragAndDropLessonBody> {
-  late List<String> _availableWords;
-  late List<String?> _placedWords;
-
-  bool get _isAllFilled => !_placedWords.contains(null);
-
-  @override
-  void initState() {
-    super.initState();
-    _availableWords = List.from(widget.availableWords);
-    _placedWords = List.filled(widget.correctAnswers.length, null);
-  }
-
-  void _onWordPlacedInSlot(int index, String word, int? fromIndex) {
-    setState(() {
-      if (fromIndex != null) {
-        _placedWords[fromIndex] = null;
-      } else {
-        _availableWords.remove(word);
-      }
-
-      _placedWords[index] = word;
-    });
-  }
-
-  void _onWordReturnedFromSlot(String word, int fromIndex) {
-    setState(() {
-      _placedWords[fromIndex] = null;
-      if (!_availableWords.contains(word)) {
-        _availableWords.add(word);
-      }
-    });
-  }
-
-  void _onDragCancelled(String word, int index) {
-    setState(() {
-      if (_placedWords[index] == null) {
-        _placedWords[index] = word;
-      }
-    });
-  }
-
-  void _checkAnswers() {
-    bool allCorrect = true;
-    for (int i = 0; i < _placedWords.length; i++) {
-      if (_placedWords[i] != widget.correctAnswers[i]) {
-        allCorrect = false;
-        break;
-      }
-    }
-
-    widget.onAnswerChecked(allCorrect);
-
-    showDialog(
+  void _showResultBottomSheet(BuildContext context, ResultType type) {
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: allCorrect ? const Color(0xFFEAFFEF) : const Color(0xFFFDEAE7),
-        title: Row(
-          children: [
-            Icon(allCorrect ? Icons.check_circle : Icons.cancel, color: allCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646), size: 24),
-            const SizedBox(width: 8),
-            Text(
-              allCorrect ? 'Correct answer!' : 'Incorrect',
-              style: TextStyle(color: allCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646), fontSize: 16, fontWeight: FontWeight.w600),
-            ),
-          ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.transparent,
+      routeSettings: const RouteSettings(name: RouteNamed.exerciseResultPopup),
+      builder: (modalContext) => BlocProvider.value(
+        value: context.read<DragAndDropCubit>(),
+        child: BlocBuilder<DragAndDropCubit, DragAndDropState>(
+          bloc: context.read<DragAndDropCubit>(),
+          builder: (context, state) {
+            return Stack(
+              children: [
+                // Animated backdrop overlay
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeInOut,
+                  opacity: state.showExplanation ? 1.0 : 0.0,
+                  child: IgnorePointer(
+                    ignoring: !state.showExplanation,
+                    child: GestureDetector(
+                      onTap: () => context.read<DragAndDropCubit>().toggleExplanation(),
+                      child: Container(
+                        color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+                  ),
+                ),
+                // Result bottom sheet
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: DragAndDropResultBottomSheet(
+                    type: type,
+                    showExplanation: state.showExplanation,
+                    explanationText: state.question.explanation,
+                    onContinue: () {
+                      modalContext.back();
+                    },
+                    onExplain: () {
+                      context.read<DragAndDropCubit>().toggleExplanation();
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         ),
-        actions: [
-          SizedBox(
-            width: double.infinity,
-            height: 54,
-            child: ElevatedButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                if (allCorrect) {
-                  Navigator.of(context).pop();
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: allCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646),
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1000)),
-              ),
-              child: const Text('Continue', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, height: 1.5)),
-            ),
-          ),
-        ],
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const DragPracticeTag(),
-        const SizedBox(height: 12),
-        DragQuestionBubble(question: widget.question),
-        const SizedBox(height: 12),
-        SentenceBuilder(
-          placedWords: _placedWords,
-          onWordPlaced: _onWordPlacedInSlot,
-          onWordRemoved: (word, fromIndex) {},
-          onDragCancelled: _onDragCancelled,
-        ),
-        const SizedBox(height: 12),
-        _buildHintText(),
-        const SizedBox(height: 12),
-        AnswerCardsArea(availableWords: _availableWords, onWordReturnedFromSlot: _onWordReturnedFromSlot),
-        const SizedBox(height: 20),
-        DragBottomButton(isEnabled: _isAllFilled, onPressed: _checkAnswers),
-      ],
+    return BlocListener<DragAndDropCubit, DragAndDropState>(
+      listenWhen: (previous, current) {
+        // Only trigger when hasChecked changes from false to true
+        return !previous.hasChecked && current.hasChecked;
+      },
+      listener: (context, state) {
+        onAnswerChecked(state.isCorrect);
+        (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultBottomSheet(
+          context,
+          state.isCorrect ? ResultType.correct : ResultType.incorrect,
+        );
+      },
+      child: BlocBuilder<DragAndDropCubit, DragAndDropState>(
+        builder: (context, state) {
+          final currentQuestion = state.question;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
+                ChoiceDocumentWidget(documents: currentQuestion.document),
+                12.verticalSpace,
+              ],
+              SentenceBuilder(
+                placedWords: state.placedWords,
+                targetArea: currentQuestion.targetArea,
+                answerCount: state.dropZoneCount,
+                onWordPlaced: (index, word, fromIndex) {
+                  context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
+                },
+                onWordRemoved: (index) {
+                  context.read<DragAndDropCubit>().removeWord(index);
+                },
+              ),
+              12.verticalSpace,
+              AppText(
+                context.text.exerciseGapFillingInstruction,
+                style: AppStyle.text12.copyWith(
+                  color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w500,
+                  height: 1.5,
+                ),
+              ),
+              12.verticalSpace,
+              AnswerCardsArea(
+                availableWords: state.availableWords,
+                onWordReturnedFromSlot: (word, fromIndex) {
+                  // Word is being dragged back to available area
+                  // This is handled by removeWord in the cubit
+                },
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  Widget _buildHintText() {
+  Widget _buildHintText(BuildContext context) {
     return Center(
       child: Column(
         children: [
-          Text(
-            'Drag to complete sentences',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: const Color(0xFF7F8EA4).withValues(alpha: 0.6), height: 1.5),
-          ),
-          const SizedBox(height: 4),
+          4.verticalSpace,
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.touch_app, size: 14, color: const Color(0xFF7F8EA4).withValues(alpha: 0.4)),
-              const SizedBox(width: 4),
-              Text(
+              Icon(
+                Icons.touch_app,
+                size: 14.sp,
+                color: const Color(0xFF7F8EA4).withValues(alpha: 0.4),
+              ),
+              4.horizontalSpace,
+              AppText(
                 'Hold to drag • Drag back to remove',
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.w400, color: const Color(0xFF7F8EA4).withValues(alpha: 0.4), height: 1.5),
+                style: AppStyle.text10.copyWith(
+                  color: const Color(0xFF7F8EA4).withValues(alpha: 0.4),
+                  fontWeight: FontWeight.w400,
+                  height: 1.5,
+                ),
               ),
             ],
           ),
         ],
       ),
+    );
+  }
+
+  /// Build the bottom button for drag and drop questions
+  Widget buildBottomButton(BuildContext context) {
+    return BlocBuilder<DragAndDropCubit, DragAndDropState>(
+      builder: (context, state) {
+        final canCheck = state.isAllFilled;
+
+        return ExerciseContinueButton(
+          onPressed: canCheck ? () => context.read<DragAndDropCubit>().checkAnswer() : null,
+          text: 'Check',
+          isEnabled: canCheck,
+        );
+      },
     );
   }
 }

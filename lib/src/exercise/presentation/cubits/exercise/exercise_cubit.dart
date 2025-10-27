@@ -32,9 +32,9 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       },
       onSuccess: (pageData) {
         emit(state.copyWith(status: ExerciseStatus.success, pageData: pageData));
-        QuestionEntity multipleChoice = pageData.items[1].questions[1];
-        emit(state.copyWith(currentQuestion: multipleChoice));
-        AppDI.injector.get<ChoiceCubit>().loadQuestionData(multipleChoice);
+        QuestionEntity dragAndDropLesson = pageData.items[1].questions[2];
+        emit(state.copyWith(currentQuestion: dragAndDropLesson));
+        AppDI.injector.get<DragAndDropCubit>().loadQuestion(dragAndDropLesson);
       },
     );
   }

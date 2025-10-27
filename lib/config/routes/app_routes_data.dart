@@ -239,6 +239,9 @@ class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
       BlocProvider.value(
         value: AppDI.injector.get<ChoiceCubit>(),
       ),
+      BlocProvider.value(
+        value: AppDI.injector.get<DragAndDropCubit>(),
+      ),
     ],
     child: const ExercisePage(),
   );

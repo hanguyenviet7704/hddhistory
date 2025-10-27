@@ -39,10 +39,17 @@ class ExerciseLayout extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            ExerciseHeader(type: type),
+            ExerciseProgressBar(),
             Expanded(
               child: SingleChildScrollView(
-                child: body,
+                child: Column(
+                  children: [
+                    12.verticalSpace,
+                    ExerciseBadge(type: type),
+                    ChatInformationWidget(),
+                    body,
+                  ],
+                ),
               ),
             ),
             if (bottom != null) bottom!,
