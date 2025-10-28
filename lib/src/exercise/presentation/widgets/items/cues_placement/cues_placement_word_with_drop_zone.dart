@@ -1,6 +1,7 @@
 part of '../../../../exercise.dart';
 
 /// A word with a drop zone after it for placing pause marks
+/// Follows exact Figma styling from example implementation
 class CuesPlacementWordWithDropZone extends StatelessWidget {
   final String word;
   final int wordIndex;
@@ -23,68 +24,74 @@ class CuesPlacementWordWithDropZone extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        // The word
-        AppText(
-          word,
-          style: AppStyle.text16.copyWith(
-            color: const Color(0xFF364152),
-            fontWeight: FontWeight.w500,
-            height: 1.5,
-          ),
-        ),
-        4.horizontalSpace,
-        // Drop zone after the word
-        if (!hasChecked || markState != null)
-          DragTarget<PauseMarkDragData>(
-            onAcceptWithDetails: (details) {
-              onAcceptMark(wordIndex, details.data);
-            },
-            builder: (context, candidateData, rejectedData) {
-              final bool isHovering = candidateData.isNotEmpty;
+    return DragTarget<PauseMarkDragData>(
+      onAcceptWithDetails: (details) {
+        onAcceptMark(wordIndex, details.data);
+      },
+      builder: (context, candidateData, rejectedData) {
+        final bool isHovering = candidateData.isNotEmpty;
 
-              // If there's already a mark here, show it
-              if (placedMark != null) {
-                return GestureDetector(
-                  onTap: hasChecked
-                      ? null
-                      : () {
-                          onRemoveMark(wordIndex);
-                        },
-                  child: CuesPlacementPauseMark(
-                    option: placedMark!,
-                    fromWordIndex: wordIndex,
-                    state: markState,
-                  ),
-                );
-              }
-
-              // Otherwise show an empty drop zone
-              return Container(
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Word card with hover styling
+            Container(
+              padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                border: Border.all(
+                  color: isHovering ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
+                  width: isHovering ? 3.w : 2.w,
+                ),
+                borderRadius: BorderRadius.circular(8.r),
+              ),
+              child: AppText(
+                word,
+                style: AppStyle.text14.copyWith(
+                  color: const Color(0xFF364152),
+                  height: 1.75,
+                ),
+              ),
+            ),
+            // Show either: placed mark, hover indicator, or nothing
+            if (placedMark != null) ...[
+              // Show placed mark
+              2.horizontalSpace,
+              GestureDetector(
+                onTap: hasChecked
+                    ? null
+                    : () {
+                        onRemoveMark(wordIndex);
+                      },
+                child: CuesPlacementPauseMark(
+                  option: placedMark!,
+                  fromWordIndex: wordIndex,
+                  state: markState,
+                ),
+              ),
+            ] else if (isHovering && !hasChecked) ...[
+              // Show hover indicator while dragging
+              Container(
                 width: 40.w,
-                height: 32.h,
+                height: 37.h,
+                margin: EdgeInsets.symmetric(horizontal: 4.w),
                 decoration: BoxDecoration(
-                  color: isHovering ? const Color(0xFFEFF0FE) : Colors.transparent,
+                  color: const Color(0xFF554FF0).op(0.1),
                   border: Border.all(
-                    color: isHovering ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
+                    color: const Color(0xFF554FF0),
                     width: 2.w,
                     style: BorderStyle.solid,
                   ),
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: isHovering
-                    ? Icon(
-                        Icons.add,
-                        size: 20.w,
-                        color: const Color(0xFF554FF0),
-                      )
-                    : null,
-              );
-            },
-          ),
-      ],
+                child: const Center(
+                  child: CuesPlacementPauseMarkIcon(filled: true),
+                ),
+              ),
+            ],
+          ],
+        );
+      },
     );
   }
 }

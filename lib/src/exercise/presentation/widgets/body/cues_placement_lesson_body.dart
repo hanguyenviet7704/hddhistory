@@ -45,10 +45,16 @@ class CuesPlacementLessonBody extends StatelessWidget {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: ResultBottomSheet(
+                  child: CuesPlacementResultBottomSheet(
                     type: type,
                     showExplanation: state.showExplanation,
                     explanationText: state.question.explanation,
+                    words: state.words,
+                    placedMarks: state.placedMarks,
+                    correctPositions: state.correctPositions,
+                    optionsById: {
+                      for (var option in state.question.options) option.id: option,
+                    },
                     onContinue: () {
                       modalContext.back();
                     },
@@ -102,13 +108,25 @@ class CuesPlacementLessonBody extends StatelessWidget {
                 ),
               ),
               12.verticalSpace,
-              // Words with drop zones
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
+              // Words with drop zones in styled container
+              Container(
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+                margin: EdgeInsets.symmetric(horizontal: 20.w),
+                alignment: Alignment.center,
+                decoration: ShapeDecoration(
+                  color: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    side: BorderSide(
+                      width: 2,
+                      strokeAlign: BorderSide.strokeAlignOutside,
+                      color: const Color(0xFFE3E8EF) /* Border-border-secondary */,
+                    ),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 child: Wrap(
-                  spacing: 4.w,
-                  runSpacing: 12.h,
-                  alignment: WrapAlignment.start,
+                  spacing: 2.w,
+                  runSpacing: 6.h,
                   children: List.generate(
                     words.length,
                     (index) {
@@ -119,7 +137,6 @@ class CuesPlacementLessonBody extends StatelessWidget {
                               orElse: () => const OptionEntity(),
                             )
                           : null;
-
                       return CuesPlacementWordWithDropZone(
                         word: words[index],
                         wordIndex: index,
@@ -130,15 +147,15 @@ class CuesPlacementLessonBody extends StatelessWidget {
                           if (data.fromWordIndex != null) {
                             // Moving from another position
                             context.read<CuesPlacementCubit>().movePauseMark(
-                                  data.fromWordIndex!,
-                                  wordIndex,
-                                );
+                              data.fromWordIndex!,
+                              wordIndex,
+                            );
                           } else {
                             // Placing from available pool
                             context.read<CuesPlacementCubit>().placePauseMark(
-                                  wordIndex,
-                                  data.optionId,
-                                );
+                              wordIndex,
+                              data.optionId,
+                            );
                           }
                         },
                         onRemoveMark: (wordIndex) {
@@ -164,6 +181,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
                   },
                 ),
               ),
+              20.verticalSpace,
             ],
           );
         },

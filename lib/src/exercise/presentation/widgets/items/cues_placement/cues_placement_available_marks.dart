@@ -1,6 +1,7 @@
 part of '../../../../exercise.dart';
 
 /// Pool of available pause marks that can be dragged
+/// Follows exact Figma styling from example implementation
 class CuesPlacementAvailableMarks extends StatelessWidget {
   final List<OptionEntity> availableOptions;
   final int totalCount;
@@ -18,8 +19,11 @@ class CuesPlacementAvailableMarks extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DragTarget<PauseMarkDragData>(
-      onAcceptWithDetails: (details) {
+      onWillAcceptWithDetails: (details) {
         // Only accept if the mark is being moved back from a placed position
+        return details.data.fromWordIndex != null;
+      },
+      onAcceptWithDetails: (details) {
         if (details.data.fromWordIndex != null) {
           onAcceptReturn(details.data);
         }
@@ -30,9 +34,9 @@ class CuesPlacementAvailableMarks extends StatelessWidget {
         return Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
-            color: isHovering ? const Color(0xFFEFF0FE) : const Color(0xFFF8F9FB),
+            color: isHovering ? const Color(0xFF554FF0).op(0.1) : const Color(0xFFF8F9FB),
             border: Border.all(
-              color: isHovering ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
+              color: const Color(0xFFE3E8EF),
               width: 2.w,
             ),
             borderRadius: BorderRadius.circular(12.r),
@@ -41,6 +45,7 @@ class CuesPlacementAvailableMarks extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
+              // Header with label and count badge
               Row(
                 children: [
                   AppText(
@@ -68,20 +73,25 @@ class CuesPlacementAvailableMarks extends StatelessWidget {
                 ],
               ),
               12.verticalSpace,
-              Wrap(
-                spacing: 8.w,
-                runSpacing: 8.h,
-                children: availableOptions.map((option) {
-                  return CuesPlacementPauseMark(
-                    option: option,
-                  );
-                }).toList(),
-              ),
+              // Available marks with exact spacing
+              if (availableOptions.isNotEmpty)
+                Wrap(
+                  spacing: 6.w,
+                  runSpacing: 6.h,
+                  alignment: WrapAlignment.center,
+
+                  children: availableOptions.map((option) {
+                    return CuesPlacementPauseMark(
+                      option: option,
+                      isAvailable: true,
+                    );
+                  }).toList(),
+                ),
               if (availableOptions.isEmpty)
                 AppText(
                   'All pause marks have been placed',
                   style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                    color: const Color(0xFF7F8EA4).op(0.6),
                   ),
                 ),
             ],

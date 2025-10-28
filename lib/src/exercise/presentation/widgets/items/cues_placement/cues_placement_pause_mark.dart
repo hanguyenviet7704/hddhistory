@@ -11,17 +11,19 @@ class PauseMarkDragData {
   });
 }
 
-/// Draggable pause mark widget
+/// Draggable pause mark widget with exact Figma styling
 class CuesPlacementPauseMark extends StatelessWidget {
   final OptionEntity option;
   final int? fromWordIndex; // null if from available pool
   final AnswerState? state;
+  final bool isAvailable; // true if from available pool, false if placed in grid
 
   const CuesPlacementPauseMark({
     super.key,
     required this.option,
     this.fromWordIndex,
     this.state,
+    this.isAvailable = false,
   });
 
   Color get backgroundColor {
@@ -44,26 +46,56 @@ class CuesPlacementPauseMark extends StatelessWidget {
     };
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final markWidget = Container(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+  /// Normal state widget
+  Widget get _normalWidget {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
       decoration: BoxDecoration(
         color: backgroundColor,
         border: Border.all(color: borderColor, width: 2.w),
         borderRadius: BorderRadius.circular(8.r),
       ),
-      child: AppText(
-        option.text,
-        style: AppStyle.text20.copyWith(
-          height: 1.0,
-        ),
-      ),
+      child: CuesPlacementPauseMarkIcon(filled: true),
     );
+  }
 
+  /// Widget when being dragged (shows faded/disabled state)
+  Widget get _draggingWidget {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: const Color(0xFFE3E8EF).withValues(alpha: 0.5),
+        border: Border.all(color: const Color(0xFFE3E8EF), width: 2.w),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: CuesPlacementPauseMarkIcon(filled: false),
+    );
+  }
+
+  /// Feedback widget while dragging (with shadow)
+  Widget get _feedbackWidget {
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.9),
+        border: Border.all(color: const Color(0xFF554FF0), width: 2.w),
+        borderRadius: BorderRadius.circular(8.r),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.2),
+            blurRadius: 8.sp,
+            offset: Offset(0, 2.h),
+          ),
+        ],
+      ),
+      child: CuesPlacementPauseMarkIcon(filled: true),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     // If already checked, don't make it draggable
     if (state != null && state != AnswerState.selected) {
-      return markWidget;
+      return _normalWidget;
     }
 
     return Draggable<PauseMarkDragData>(
@@ -73,16 +105,10 @@ class CuesPlacementPauseMark extends StatelessWidget {
       ),
       feedback: Material(
         color: Colors.transparent,
-        child: Opacity(
-          opacity: 0.7,
-          child: markWidget,
-        ),
+        child: _feedbackWidget,
       ),
-      childWhenDragging: Opacity(
-        opacity: 0.3,
-        child: markWidget,
-      ),
-      child: markWidget,
+      childWhenDragging: _draggingWidget,
+      child: _normalWidget,
     );
   }
 }
