@@ -31,25 +31,6 @@ class AnswerCardsArea extends StatelessWidget {
           decoration: BoxDecoration(
             color: isDraggingFromSlot ? const Color(0xFFE3E8EF).withValues(alpha: 0.1) : Colors.white,
             borderRadius: BorderRadius.circular(16.r),
-            // border: Border.all(
-            //   color: isDraggingFromSlot ? const Color(0xFF58CC02) : const Color(0xFFE3E8EF),
-            //   width: isDraggingFromSlot ? 3 : 2,
-            // ),
-            // boxShadow: isDraggingFromSlot
-            //     ? [
-            //         BoxShadow(
-            //           color: const Color(0xFF58CC02).withValues(alpha: 0.3),
-            //           blurRadius: 12,
-            //           offset: const Offset(0, 4),
-            //         ),
-            //       ]
-            //     : [
-            //         BoxShadow(
-            //           color: Colors.black.withValues(alpha: 0.05),
-            //           blurRadius: 4,
-            //           offset: const Offset(0, 2),
-            //         ),
-            //       ],
           ),
           child: Wrap(
             spacing: 12.w,

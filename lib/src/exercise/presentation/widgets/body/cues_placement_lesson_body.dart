@@ -171,9 +171,8 @@ class CuesPlacementLessonBody extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: CuesPlacementAvailableMarks(
+                  allOptions: currentQuestion.options,
                   availableOptions: state.availableOptions,
-                  totalCount: state.totalMarksCount,
-                  availableCount: state.availableMarksCount,
                   onAcceptReturn: (data) {
                     if (data.fromWordIndex != null) {
                       context.read<CuesPlacementCubit>().removePauseMark(data.fromWordIndex!);

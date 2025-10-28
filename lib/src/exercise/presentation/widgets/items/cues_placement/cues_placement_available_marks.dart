@@ -1,18 +1,16 @@
 part of '../../../../exercise.dart';
 
 /// Pool of available pause marks that can be dragged
-/// Follows exact Figma styling from example implementation
+/// Shows all marks with placeholders for placed marks (similar to drag-and-drop module)
 class CuesPlacementAvailableMarks extends StatelessWidget {
-  final List<OptionEntity> availableOptions;
-  final int totalCount;
-  final int availableCount;
+  final List<OptionEntity> allOptions; // All marks from the question
+  final List<OptionEntity> availableOptions; // Only unplaced marks
   final Function(PauseMarkDragData data) onAcceptReturn;
 
   const CuesPlacementAvailableMarks({
     super.key,
+    required this.allOptions,
     required this.availableOptions,
-    required this.totalCount,
-    required this.availableCount,
     required this.onAcceptReturn,
   });
 
@@ -29,75 +27,92 @@ class CuesPlacementAvailableMarks extends StatelessWidget {
         }
       },
       builder: (context, candidateData, rejectedData) {
-        final bool isHovering = candidateData.isNotEmpty && candidateData.first!.fromWordIndex != null;
+        final isDraggingFromSentence = candidateData.isNotEmpty;
 
-        return Container(
-          padding: EdgeInsets.all(16.w),
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
           decoration: BoxDecoration(
-            color: isHovering ? const Color(0xFF554FF0).op(0.1) : const Color(0xFFF8F9FB),
-            border: Border.all(
-              color: const Color(0xFFE3E8EF),
-              width: 2.w,
-            ),
+            color: isDraggingFromSentence ? const Color(0xFFE3E8EF).withValues(alpha: 0.1) : Colors.transparent,
             borderRadius: BorderRadius.circular(12.r),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              // Header with label and count badge
-              Row(
-                children: [
-                  AppText(
-                    'Available Pause Marks',
-                    style: AppStyle.text14.copyWith(
-                      color: const Color(0xFF7F8EA4),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  8.horizontalSpace,
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 2.h),
-                    decoration: BoxDecoration(
-                      color: availableCount > 0 ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
-                      borderRadius: BorderRadius.circular(12.r),
-                    ),
-                    child: AppText(
-                      '$availableCount/$totalCount',
-                      style: AppStyle.text12.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              12.verticalSpace,
-              // Available marks with exact spacing
-              if (availableOptions.isNotEmpty)
-                Wrap(
-                  spacing: 6.w,
-                  runSpacing: 6.h,
-                  alignment: WrapAlignment.center,
+          alignment: Alignment.center,
+          child: Wrap(
+            spacing: 6.w,
+            runSpacing: 6.h,
+            alignment: WrapAlignment.center,
+            children: allOptions.map((option) {
+              final isAvailable = availableOptions.any((availableOption) => availableOption.id == option.id);
 
-                  children: availableOptions.map((option) {
-                    return CuesPlacementPauseMark(
-                      option: option,
-                      isAvailable: true,
+              if (isAvailable) {
+                // Mark is available - show as draggable
+                return CuesPlacementPauseMark(
+                  option: option,
+                  isAvailable: true,
+                );
+              } else {
+                // Mark is placed in sentence - show as drop target placeholder
+                return DragTarget<PauseMarkDragData>(
+                  onWillAcceptWithDetails: (details) {
+                    final draggedOptionId = details.data.optionId;
+                    final fromWordIndex = details.data.fromWordIndex;
+                    // Accept if dragging from a placed position back to this placeholder
+                    return draggedOptionId == option.id && fromWordIndex != null;
+                  },
+                  onAcceptWithDetails: (details) {
+                    if (details.data.fromWordIndex != null) {
+                      onAcceptReturn(details.data);
+                    }
+                  },
+                  builder: (context, candidateData, rejectedData) {
+                    final isHovering = candidateData.isNotEmpty;
+
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(8.r),
+                        boxShadow: isHovering
+                            ? [
+                                BoxShadow(
+                                  color: const Color(0xFF58CC02).withValues(alpha: 0.3),
+                                  blurRadius: 8,
+                                  spreadRadius: 2,
+                                ),
+                              ]
+                            : null,
+                      ),
+                      child: _FadedPauseMarkPlaceholder(option: option),
                     );
-                  }).toList(),
-                ),
-              if (availableOptions.isEmpty)
-                AppText(
-                  'All pause marks have been placed',
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4).op(0.6),
-                  ),
-                ),
-            ],
+                  },
+                );
+              }
+            }).toList(),
           ),
         );
       },
+    );
+  }
+}
+
+/// Faded/grayed out placeholder for placed pause marks
+class _FadedPauseMarkPlaceholder extends StatelessWidget {
+  final OptionEntity option;
+
+  const _FadedPauseMarkPlaceholder({required this.option});
+
+  @override
+  Widget build(BuildContext context) {
+    return Opacity(
+      opacity: 0.3,
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
+        decoration: BoxDecoration(
+          color: const Color(0xFFE3E8EF).withValues(alpha: 0.5),
+          border: Border.all(color: const Color(0xFFE3E8EF), width: 2.w),
+          borderRadius: BorderRadius.circular(8.r),
+        ),
+        child: CuesPlacementPauseMarkIcon(filled: false),
+      ),
     );
   }
 }
