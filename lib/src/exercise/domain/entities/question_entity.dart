@@ -7,7 +7,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
     @Default('') String speechBubble,
-    @Default('') String tag,
+    @Default(TagEntity()) TagEntity tag,
     @Default([]) List<ContentDocumentEntity> document,
     @Default('') String explanation,
     @Default('') String targetArea,

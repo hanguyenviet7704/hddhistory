@@ -35,6 +35,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
         QuestionEntity dragAndDropLesson = pageData.items[1].questions[2];
         emit(state.copyWith(currentQuestion: dragAndDropLesson));
         AppDI.injector.get<DragAndDropCubit>().loadQuestion(dragAndDropLesson);
+        loadLearningItem('68f9e14727faeb3760987e14');
       },
     );
   }
@@ -48,7 +49,9 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ExerciseStatus.success, currentLearningItem: item));
-        
+        QuestionEntity arrangeTheSequense = item.questions[2];
+        emit(state.copyWith(currentQuestion: arrangeTheSequense));
+        AppDI.injector.get<DragAndDropCubit>().loadQuestion(arrangeTheSequense);
       },
     );
   }

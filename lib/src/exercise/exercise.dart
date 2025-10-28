@@ -75,6 +75,8 @@ part 'presentation/widgets/items/choice/custom_slider_thumb_shape.dart';
 part 'presentation/widgets/items/choice/mock_data.dart';
 part 'presentation/widgets/items/choice/multiple_choice_answer_card.dart';
 part 'presentation/widgets/items/choice/result_bottom_sheet.dart';
+part 'presentation/widgets/items/arrange_the_sequence/arrange_sequence_answer_card.dart';
+part 'presentation/widgets/items/arrange_the_sequence/arrange_sequence_result_bottom_sheet.dart';
 part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/exercise_badge.dart';
 part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
