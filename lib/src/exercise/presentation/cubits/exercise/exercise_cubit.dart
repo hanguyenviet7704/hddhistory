@@ -51,7 +51,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
         emit(state.copyWith(status: ExerciseStatus.success, currentLearningItem: item));
         QuestionEntity arrangeTheSequense = item.questions[2];
         emit(state.copyWith(currentQuestion: arrangeTheSequense));
-        AppDI.injector.get<DragAndDropCubit>().loadQuestion(arrangeTheSequense);
+        AppDI.injector.get<ArrangeTheSequenceCubit>().initializeQuestion(arrangeTheSequense);
       },
     );
   }

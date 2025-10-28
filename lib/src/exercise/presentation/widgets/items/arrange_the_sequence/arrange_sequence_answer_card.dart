@@ -15,7 +15,7 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: Container(
-        padding: EdgeInsets.all(12.w),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
         decoration: BoxDecoration(
           color: Colors.white,
           border: Border.all(
@@ -29,14 +29,15 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
           child: Row(
             children: [
               Icon(
-                Icons.menu,
-                color: const Color(0xFF7F8EA4),
+                Icons.menu_rounded,
+                color: const Color(0xFFCDD5DF),
                 size: 24.sp,
               ),
               8.horizontalSpace,
               Expanded(
                 child: AppText(
                   text,
+                  maxLines: 10,
                   style: AppStyle.text14.copyWith(
                     color: const Color(0xFF364152),
                     fontWeight: FontWeight.w400,

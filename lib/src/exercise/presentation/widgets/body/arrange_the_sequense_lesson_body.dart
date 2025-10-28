@@ -21,6 +21,14 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
         child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
           bloc: context.read<ArrangeTheSequenceCubit>(),
           builder: (context, state) {
+            // Get correct answer sequence by mapping answer IDs to options
+            final correctAnswers = state.question.answer.map((answer) {
+              return state.question.options.firstWhere(
+                (option) => option.id == answer.id,
+                orElse: () => const OptionEntity(),
+              );
+            }).toList();
+
             return Stack(
               children: [
                 // Animated backdrop overlay
@@ -49,6 +57,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                     type: type,
                     showExplanation: state.showExplanation,
                     explanationText: state.question.explanation,
+                    arrangedAnswers: correctAnswers,
                     onContinue: () {
                       modalContext.back();
                     },
@@ -94,18 +103,21 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 context.text.exerciseSequenceInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
-                style: AppStyle.text12.copyWith(
-                  color: const Color(0xFF7F8EA4),
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                ).copyWith(
-                  color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
-                ),
+                style: AppStyle.text12
+                    .copyWith(
+                      color: const Color(0xFF7F8EA4),
+                      fontWeight: FontWeight.w500,
+                      height: 1.5,
+                    )
+                    .copyWith(
+                      color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                    ),
               ),
               ReorderableListView.builder(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 buildDefaultDragHandles: false,
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 itemCount: state.currentItems.length,
                 proxyDecorator: (child, index, animation) {
                   return child;

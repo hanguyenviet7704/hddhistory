@@ -5,7 +5,8 @@ class ArrangeSequenceResultBottomSheet extends StatelessWidget {
   final VoidCallback onContinue;
   final VoidCallback? onExplain;
   final bool showExplanation;
-  final String? explanationText;
+  final String explanationText;
+  final List<OptionEntity> arrangedAnswers;
 
   const ArrangeSequenceResultBottomSheet({
     super.key,
@@ -13,7 +14,8 @@ class ArrangeSequenceResultBottomSheet extends StatelessWidget {
     required this.onContinue,
     this.onExplain,
     this.showExplanation = false,
-    this.explanationText,
+    this.explanationText = '',
+    required this.arrangedAnswers,
   });
 
   bool get isCorrect => type == ResultType.correct;
@@ -54,10 +56,12 @@ class ArrangeSequenceResultBottomSheet extends StatelessWidget {
                 ),
               );
             },
-            child: showExplanation && explanationText != null
+            child: showExplanation && explanationText.isNotEmpty
                 ? _ArrangeSequenceExplanationContent(
                     key: const ValueKey('explanation'),
-                    explanationText: explanationText!,
+                    isCorrect: isCorrect,
+                    arrangedAnswers: arrangedAnswers,
+                    explanationText: explanationText,
                   )
                 : const SizedBox.shrink(key: ValueKey('empty')),
           ),
@@ -104,7 +108,7 @@ class ArrangeSequenceResultBottomSheet extends StatelessWidget {
                                     ),
                               8.horizontalSpace,
                               AppText(
-                                showExplanation ? 'Close explain' : 'Explain',
+                                showExplanation ? context.text.exerciseCloseExplainButton : context.text.exerciseExplainButton,
                                 style: AppStyle.text14.copyWith(
                                   color: const Color(0xFF0D121C),
                                   fontWeight: FontWeight.w600,
@@ -150,9 +154,16 @@ class ArrangeSequenceResultBottomSheet extends StatelessWidget {
 }
 
 class _ArrangeSequenceExplanationContent extends StatelessWidget {
+  final bool isCorrect;
+  final List<OptionEntity> arrangedAnswers;
   final String explanationText;
 
-  const _ArrangeSequenceExplanationContent({super.key, required this.explanationText});
+  const _ArrangeSequenceExplanationContent({
+    super.key,
+    required this.isCorrect,
+    required this.arrangedAnswers,
+    required this.explanationText,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -166,20 +177,86 @@ class _ArrangeSequenceExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
+          // "Correct answer" or "Incorrect" label
           AppText(
-            context.text.exerciseExplanationTitle,
-            style: AppStyle.text20.copyWith(
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0D121C),
+            isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect,
+            style: AppStyle.textBold14.copyWith(
+              color: isCorrect ? const Color(0xFF3A9377) : const Color(0xFFE34646),
+              height: 1.75,
             ),
           ),
-          16.verticalSpace,
-          AppText(
-            explanationText,
-            maxLines: 100,
-            style: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
+          4.verticalSpace,
+          // Arranged answer cards
+          Column(
+            children: arrangedAnswers.asMap().entries.map((entry) {
+              final answer = entry.value;
+              return Padding(
+                padding: EdgeInsets.only(bottom: 8.h),
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    border: Border.all(
+                      color: const Color(0xFFE3E8EF),
+                      width: 2,
+                    ),
+                    borderRadius: BorderRadius.circular(12.r),
+                  ),
+                  child: AppText(
+                    answer.text,
+                    maxLines: 10,
+                    style: AppStyle.text14.copyWith(
+                      color: const Color(0xFF364152),
+                      height: 1.75,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+          // Explanation box
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(12.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFEFF8FF),
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Tag with icon
+                Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SvgPicture.asset(
+                      AppAsset.svg.app.icTennisRacket,
+                      width: 20.w,
+                      height: 20.w,
+                    ),
+                    6.horizontalSpace,
+                    AppText(
+                      context.text.exerciseExplanationTitle,
+                      style: AppStyle.textBold14.copyWith(
+                        color: const Color(0xFF175CD3),
+                        height: 1.75,
+                      ),
+                    ),
+                  ],
+                ),
+                8.verticalSpace,
+                // Explanation text
+                AppText(
+                  explanationText,
+                  maxLines: 100,
+                  style: AppStyle.text14.copyWith(
+                    color: const Color(0xFF364152),
+                    height: 1.5,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
