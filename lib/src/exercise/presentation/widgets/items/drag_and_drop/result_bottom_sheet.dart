@@ -26,7 +26,7 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
   Color get backgroundColor => isCorrect ? const Color(0xFFEAFFEF) : const Color(0xFFFDEAE7);
   Color get buttonColor => isCorrect ? const Color(0xFF41AE8C) : const Color(0xFFE34646);
   Color get iconColor => isCorrect ? const Color(0xFF41AE8C) : const Color(0xFFE34646);
-  String get title => isCorrect ? 'Correct answer!' : 'Incorrect';
+  String title(BuildContext context) => isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect;
   String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
 
   /// Build sentence with highlighted correct answers
@@ -87,15 +87,16 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
             switchInCurve: Curves.easeOutCubic,
             switchOutCurve: Curves.easeInCubic,
             transitionBuilder: (child, animation) {
-              final offsetAnimation = Tween<Offset>(
-                begin: const Offset(0.0, 0.3),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              );
+              final offsetAnimation =
+                  Tween<Offset>(
+                    begin: const Offset(0.0, 0.3),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeOutCubic,
+                    ),
+                  );
 
               return SlideTransition(
                 position: offsetAnimation,
@@ -131,7 +132,7 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
                           8.horizontalSpace,
                           Expanded(
                             child: AppText(
-                              title,
+                              title(context),
                               style: AppStyle.text16.copyWith(
                                 color: iconColor,
                                 fontWeight: FontWeight.w600,
@@ -157,7 +158,7 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
                                     ),
                               8.horizontalSpace,
                               AppText(
-                                showExplanation ? 'Close explain' : 'Explain',
+                                showExplanation ? context.text.exerciseCloseExplainButton : context.text.exerciseExplainButton,
                                 style: AppStyle.text14.copyWith(
                                   color: const Color(0xFF0D121C),
                                   fontWeight: FontWeight.w600,
@@ -228,9 +229,8 @@ class _DragAndDropExplanationContent extends StatelessWidget {
         children: [
           // "Correct answer" or "Incorrect" label
           AppText(
-            isCorrect ? 'Correct answer' : 'Incorrect',
-            style: AppStyle.text14.copyWith(
-              fontWeight: FontWeight.w600,
+            isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect,
+            style: AppStyle.textBold14.copyWith(
               color: isCorrect ? const Color(0xFF3A9377) : const Color(0xFFE34646),
               height: 1.75,
             ),
@@ -261,7 +261,7 @@ class _DragAndDropExplanationContent extends StatelessWidget {
             width: double.infinity,
             padding: EdgeInsets.all(12.w),
             decoration: BoxDecoration(
-              color: isCorrect ? const Color(0xFFEFF8FF) : const Color(0xFFFDEAE7),
+              color: const Color(0xFFEFF8FF),
               borderRadius: BorderRadius.circular(16.r),
             ),
             child: Column(
@@ -279,10 +279,9 @@ class _DragAndDropExplanationContent extends StatelessWidget {
                     ),
                     6.horizontalSpace,
                     AppText(
-                      'Explanation',
-                      style: AppStyle.text14.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: isCorrect ? const Color(0xFF175CD3) : const Color(0xFFE34646),
+                      context.text.exerciseExplanationTitle,
+                      style: AppStyle.textBold14.copyWith(
+                        color: const Color(0xFF175CD3),
                         height: 1.75,
                       ),
                     ),
