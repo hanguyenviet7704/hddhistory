@@ -161,7 +161,7 @@ class _CuesPlacementScreenState extends State<CuesPlacementScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     const SizedBox(height: 12),
-                    const PracticeTag(),
+                    // const PracticeTag(),
                     const SizedBox(height: 8),
                     const InstructionBubble(instruction: 'Read the paraphrase below and decide which words should be stressed.'),
                     const SizedBox(height: 12),
