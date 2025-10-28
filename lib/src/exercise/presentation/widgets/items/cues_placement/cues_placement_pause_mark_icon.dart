@@ -29,7 +29,7 @@ class CuesPlacementPauseMarkIcon extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3.r),
               ),
             ),
-            SizedBox(width: 4.w),
+            4.horizontalSpace,
             // Second bar
             Container(
               width: 2.w,

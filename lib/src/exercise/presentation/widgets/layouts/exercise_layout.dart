@@ -22,13 +22,11 @@ enum ExerciseLayoutType {
 }
 
 class ExerciseLayout extends StatelessWidget {
-  final ExerciseLayoutType type;
   final Widget body;
   final Widget? bottom;
 
   const ExerciseLayout({
     super.key,
-    this.type = ExerciseLayoutType.practice,
     required this.body,
     this.bottom,
   });
@@ -45,7 +43,7 @@ class ExerciseLayout extends StatelessWidget {
                 child: Column(
                   children: [
                     12.verticalSpace,
-                    ExerciseBadge(type: type),
+                    ExerciseBadge(),
                     ChatInformationWidget(),
                     body,
                   ],

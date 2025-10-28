@@ -10,7 +10,7 @@ class ExerciseHeader extends StatelessWidget {
       children: [
         ExerciseProgressBar(),
         12.verticalSpace,
-        ExerciseBadge(type: type),
+        ExerciseBadge(),
         ChatInformationWidget(),
       ],
     );
