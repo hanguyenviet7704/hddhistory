@@ -49,9 +49,9 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ExerciseStatus.success, currentLearningItem: item));
-        QuestionEntity markStressWord = item.questions[1];
-        emit(state.copyWith(currentQuestion: markStressWord));
-        AppDI.injector.get<MarkStressWordCubit>().initializeQuestion(markStressWord);
+        QuestionEntity cuesPlacement = item.questions.first;
+        emit(state.copyWith(currentQuestion: cuesPlacement));
+        AppDI.injector.get<CuesPlacementCubit>().initializeQuestion(cuesPlacement);
       },
     );
   }

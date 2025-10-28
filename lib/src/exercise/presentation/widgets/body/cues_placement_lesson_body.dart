@@ -1,203 +1,188 @@
 part of '../../../exercise.dart';
 
-class CuesPlacementLessonBody extends StatefulWidget {
-  final String sentence;
-  final List<String> words;
-  final int totalPauseMarks;
-  final Function(int placedMarks) onAnswerChecked;
+class CuesPlacementLessonBody extends StatelessWidget {
+  final Function(bool) onAnswerChecked;
 
   const CuesPlacementLessonBody({
     super.key,
-    required this.sentence,
-    required this.words,
-    required this.totalPauseMarks,
     required this.onAnswerChecked,
   });
 
-  @override
-  State<CuesPlacementLessonBody> createState() => _CuesPlacementLessonBodyState();
-}
-
-class _CuesPlacementLessonBodyState extends State<CuesPlacementLessonBody> {
-  late List<String> _baseWords;
-  List<dynamic> _wordsWithMarks = [];
-  late int _availableMarks;
-  late int _totalMarks;
-  int? _hoveringWordIndex;
-
-  @override
-  void initState() {
-    super.initState();
-    _baseWords = List.from(widget.words);
-    _wordsWithMarks = List.from(_baseWords);
-    _totalMarks = widget.totalPauseMarks;
-    _availableMarks = widget.totalPauseMarks;
-  }
-
-  void _addPauseMark(int afterIndex) {
-    if (_availableMarks <= 0) return;
-
-    setState(() {
-      int insertIndex = afterIndex + 1;
-      for (int i = 0; i < afterIndex; i++) {
-        if (_wordsWithMarks[i] is Map && _wordsWithMarks[i]['type'] == 'pause') {
-          insertIndex++;
-        }
-      }
-
-      if (insertIndex <= _wordsWithMarks.length) {
-        _wordsWithMarks.insert(insertIndex, {'type': 'pause', 'id': DateTime.now().millisecondsSinceEpoch});
-        _availableMarks--;
-      }
-    });
-  }
-
-  void _removePauseMark(int index) {
-    setState(() {
-      _wordsWithMarks.removeAt(index);
-      _availableMarks++;
-    });
-  }
-
-  void _handleWordAccept(int index, Map<String, dynamic> data) {
-    setState(() {
-      _hoveringWordIndex = null;
-    });
-
-    if (data['action'] == 'place_new') {
-      int baseWordIndex = 0;
-      for (int i = 0; i <= index; i++) {
-        if (_wordsWithMarks[i] is String) {
-          baseWordIndex++;
-        }
-      }
-      _addPauseMark(baseWordIndex - 1);
-    } else if (data['action'] == 'move_existing') {
-      int fromIndex = data['from_index'];
-      setState(() {
-        final pauseMark = _wordsWithMarks[fromIndex];
-        _wordsWithMarks.removeAt(fromIndex);
-
-        int targetIndex = index;
-        if (fromIndex < index) {
-          targetIndex--;
-        }
-
-        int insertIndex = targetIndex + 1;
-        if (insertIndex <= _wordsWithMarks.length) {
-          _wordsWithMarks.insert(insertIndex, pauseMark);
-        }
-      });
-    }
-  }
-
-  void _handleWordHoverChange(int index) {
-    if (_hoveringWordIndex != index) {
-      setState(() {
-        _hoveringWordIndex = index;
-      });
-    }
-  }
-
-  void _handleWordHoverExit() {
-    setState(() {
-      _hoveringWordIndex = null;
-    });
-  }
-
-  void _handlePauseMarkDragEnd() {
-    setState(() {
-      _hoveringWordIndex = null;
-    });
-  }
-
-  void _handleAvailableMarksAccept(Map<String, dynamic> data) {
-    setState(() {
-      _hoveringWordIndex = null;
-    });
-    if (data['action'] == 'move_existing') {
-      int fromIndex = data['from_index'];
-      _removePauseMark(fromIndex);
-    }
-  }
-
-  void _handleAvailableMarksHover() {
-    if (_hoveringWordIndex != null) {
-      setState(() {
-        _hoveringWordIndex = null;
-      });
-    }
-  }
-
-  void _showResultDialog() {
-    final placedMarks = _totalMarks - _availableMarks;
-    widget.onAnswerChecked(placedMarks);
-
-    showDialog(
+  void _showResultBottomSheet(BuildContext context, ResultType type) {
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Pause Marks Placed'),
-        content: Text('You placed $placedMarks pause marks'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      barrierColor: Colors.transparent,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
+      routeSettings: const RouteSettings(name: RouteNamed.exerciseResultPopup),
+      builder: (modalContext) => BlocProvider.value(
+        value: context.read<CuesPlacementCubit>(),
+        child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
+          bloc: context.read<CuesPlacementCubit>(),
+          builder: (context, state) {
+            return Stack(
+              children: [
+                // Animated backdrop overlay
+                AnimatedOpacity(
+                  duration: const Duration(milliseconds: 350),
+                  curve: Curves.easeInOut,
+                  opacity: state.showExplanation ? 1.0 : 0.0,
+                  child: IgnorePointer(
+                    ignoring: !state.showExplanation,
+                    child: GestureDetector(
+                      onTap: () => context.read<CuesPlacementCubit>().toggleExplanation(),
+                      child: Container(
+                        color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
+                        width: double.infinity,
+                        height: double.infinity,
+                      ),
+                    ),
+                  ),
+                ),
+                // Result bottom sheet
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  child: ResultBottomSheet(
+                    type: type,
+                    showExplanation: state.showExplanation,
+                    explanationText: state.question.explanation,
+                    onContinue: () {
+                      modalContext.back();
+                    },
+                    onExplain: () {
+                      context.read<CuesPlacementCubit>().toggleExplanation();
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          const SizedBox(height: 12),
-          const CuesPracticeTag(),
-          const SizedBox(height: 8),
-          const InstructionBubble(instruction: 'Read the paraphrase below and decide which words should be stressed.'),
-          const SizedBox(height: 12),
-          TextBubble(text: widget.sentence),
-          const SizedBox(height: 24),
-          Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: Text(
-              'Place the pause mark after the word',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w500,
-                color: const Color(0xFF7F8EA4).op(0.6),
-                height: 1.5,
+    return BlocListener<CuesPlacementCubit, CuesPlacementState>(
+      listenWhen: (previous, current) {
+        // Only trigger when hasChecked changes from false to true
+        return !previous.hasChecked && current.hasChecked;
+      },
+      listener: (context, state) {
+        onAnswerChecked(state.isCorrect);
+        _showResultBottomSheet(
+          context,
+          state.isCorrect ? ResultType.correct : ResultType.incorrect,
+        );
+      },
+      child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
+        builder: (context, state) {
+          final currentQuestion = state.question;
+          final words = state.words;
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
+                ChoiceDocumentWidget(documents: currentQuestion.document),
+                12.verticalSpace,
+              ],
+              AppText(
+                context.text.exerciseStressMarkInstruction,
+                margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+                maxLines: 10,
+                style: AppStyle.text12.copyWith(
+                  color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                  fontWeight: FontWeight.w500,
+                  height: 1.5,
+                ),
               ),
-            ),
-          ),
-          const SizedBox(height: 12),
-          WordGrid(
-            wordsWithMarks: _wordsWithMarks,
-            hoveringWordIndex: _hoveringWordIndex,
-            onWordAccept: _handleWordAccept,
-            onWordHoverChange: _handleWordHoverChange,
-            onWordHoverExit: _handleWordHoverExit,
-            onPauseMarkDragEnd: _handlePauseMarkDragEnd,
-          ),
-          const SizedBox(height: 20),
-          AvailablePauseMarks(
-            totalMarks: _totalMarks,
-            availableMarks: _availableMarks,
-            onAccept: _handleAvailableMarksAccept,
-            onHover: _handleAvailableMarksHover,
-            onDragEnd: _handlePauseMarkDragEnd,
-          ),
-          const SizedBox(height: 20),
-          CuesBottomButton(
-            text: 'Check',
-            onTap: _showResultDialog,
-          ),
-        ],
+              12.verticalSpace,
+              // Words with drop zones
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Wrap(
+                  spacing: 4.w,
+                  runSpacing: 12.h,
+                  alignment: WrapAlignment.start,
+                  children: List.generate(
+                    words.length,
+                    (index) {
+                      final placedMarkId = state.placedMarks[index];
+                      final placedMark = placedMarkId != null
+                          ? currentQuestion.options.firstWhere(
+                              (opt) => opt.id == placedMarkId,
+                              orElse: () => const OptionEntity(),
+                            )
+                          : null;
+
+                      return CuesPlacementWordWithDropZone(
+                        word: words[index],
+                        wordIndex: index,
+                        placedMark: placedMark,
+                        markState: state.getPauseMarkState(index),
+                        hasChecked: state.hasChecked,
+                        onAcceptMark: (wordIndex, data) {
+                          if (data.fromWordIndex != null) {
+                            // Moving from another position
+                            context.read<CuesPlacementCubit>().movePauseMark(
+                                  data.fromWordIndex!,
+                                  wordIndex,
+                                );
+                          } else {
+                            // Placing from available pool
+                            context.read<CuesPlacementCubit>().placePauseMark(
+                                  wordIndex,
+                                  data.optionId,
+                                );
+                          }
+                        },
+                        onRemoveMark: (wordIndex) {
+                          context.read<CuesPlacementCubit>().removePauseMark(wordIndex);
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ),
+              24.verticalSpace,
+              // Available pause marks pool
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: CuesPlacementAvailableMarks(
+                  availableOptions: state.availableOptions,
+                  totalCount: state.totalMarksCount,
+                  availableCount: state.availableMarksCount,
+                  onAcceptReturn: (data) {
+                    if (data.fromWordIndex != null) {
+                      context.read<CuesPlacementCubit>().removePauseMark(data.fromWordIndex!);
+                    }
+                  },
+                ),
+              ),
+            ],
+          );
+        },
       ),
+    );
+  }
+
+  /// Build the bottom button for cues placement questions
+  Widget buildBottomButton(BuildContext context) {
+    return BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
+      builder: (context, state) {
+        final canCheck = state.placedMarks.isNotEmpty && !state.hasChecked;
+
+        return ExerciseContinueButton(
+          onPressed: canCheck ? () => context.read<CuesPlacementCubit>().checkAnswer() : null,
+          text: 'Check',
+          isEnabled: canCheck,
+        );
+      },
     );
   }
 }
