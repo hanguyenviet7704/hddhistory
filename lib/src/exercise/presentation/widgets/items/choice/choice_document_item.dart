@@ -1,7 +1,7 @@
 part of '../../../../exercise.dart';
 
 class ChoiceDocumentItem extends StatelessWidget {
-  final ExerciseDocumentEntity document;
+  final ContentDocumentEntity document;
 
   const ChoiceDocumentItem({super.key, required this.document});
 
@@ -58,7 +58,7 @@ class ChoiceDocumentItem extends StatelessWidget {
               fit: BoxFit.cover,
             ),
           ],
-          if (document.type == ExerciseDocumentType.audio && data.url.isNotEmpty) ...[
+          if (document.type == ContentDocumentType.audio && data.url.isNotEmpty) ...[
             16.verticalSpace,
             AudioPlayerWidget(audioUrl: data.url),
           ],

@@ -8,7 +8,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default(0) int id,
     @Default('') String speechBubble,
     @Default('') String tag,
-    @Default([]) List<ExerciseDocumentEntity> document,
+    @Default([]) List<ContentDocumentEntity> document,
     @Default('') String explanation,
     @Default('') String targetArea,
     @Default([]) List<AnswerEntity> answer,

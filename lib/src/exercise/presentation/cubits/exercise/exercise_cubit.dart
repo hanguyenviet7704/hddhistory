@@ -2,12 +2,12 @@ part of '../../../exercise.dart';
 
 @lazySingleton
 class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<ExerciseState> {
-  final GetAllLearningItemsUseCase _getAllUseCase;
-  final GetLearningItemUseCase _getUseCase;
+  final GetAllLearningItemsUseCase _getAllLearningItemUseCase;
+  final GetLearningItemUseCase _getLearningItemUseCase;
 
   ExerciseCubit(
-    this._getAllUseCase,
-    this._getUseCase,
+    this._getAllLearningItemUseCase,
+    this._getLearningItemUseCase,
   ) : super(ExerciseState.initial());
 
   void loadAllLearningItems({
@@ -23,7 +23,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
 
     await runUseCasePageBreak<LearningItemEntity>(
-      usecase: () => _getAllUseCase(pageRequest),
+      usecase: () => _getAllLearningItemUseCase(pageRequest),
       currentPageData: state.pageData,
       isInit: isInit,
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
@@ -41,13 +41,14 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   void loadLearningItem(String id) async {
     await runUseCase<LearningItemEntity>(
-      usecase: () => _getUseCase(id),
+      usecase: () => _getLearningItemUseCase(id),
       buildLoadingState: () => state.copyWith(status: ExerciseStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ExerciseStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ExerciseStatus.success, currentLearningItem: item));
+        
       },
     );
   }

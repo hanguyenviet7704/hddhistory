@@ -1,7 +1,7 @@
 part of '../../../../exercise.dart';
 
 class ChoiceDocumentWidget extends StatelessWidget {
-  final List<ExerciseDocumentEntity> documents;
+  final List<ContentDocumentEntity> documents;
 
   const ChoiceDocumentWidget({super.key, required this.documents});
 

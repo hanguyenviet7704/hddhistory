@@ -8,7 +8,7 @@ abstract class QuestionModel with _$QuestionModel {
     @Default(0) int id,
     @Default('') String speechBubble,
     @Default('') String tag,
-    @Default([]) List<ExerciseDocumentModel> document,
+    @Default([]) List<ContentDocumentModel> document,
     @Default('') String explanation,
     @Default('') String targetArea,
     @Default([]) List<AnswerModel> answer,
