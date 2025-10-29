@@ -239,6 +239,7 @@ class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
       BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
       BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
     ],
     child: const ExercisePage(),
   );
