@@ -35,11 +35,18 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     if (_recorderController != null) return true;
 
     try {
-      // Request microphone permission
-      final permissionStatus = await Permission.microphone.request();
+      // First check the current permission status
+      var permissionStatus = await Permission.microphone.status;
 
       // Update state with current permission status
       emit(state.copyWith(microphonePermission: permissionStatus));
+
+      // If not granted, request permission
+      if (!permissionStatus.isGranted) {
+        permissionStatus = await Permission.microphone.request();
+        // Update state with new permission status after request
+        emit(state.copyWith(microphonePermission: permissionStatus));
+      }
 
       if (permissionStatus.isGranted) {
         // Permission granted - initialize recorder
@@ -51,7 +58,7 @@ class SpeakingCubit extends Cubit<SpeakingState> {
 
         return true;
       } else if (permissionStatus.isPermanentlyDenied) {
-        // Permission permanently denied
+        // Permission permanently denied - guide user to settings
         emit(state.copyWith(
           status: SpeakingStatus.failure,
           errorMessage: 'Microphone permission is permanently denied. Please enable it in app settings.',
@@ -71,8 +78,15 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           errorMessage: 'Microphone access is restricted on this device.',
         ));
         return false;
+      } else if (permissionStatus.isLimited) {
+        // Permission limited (iOS 14+ specific)
+        emit(state.copyWith(
+          status: SpeakingStatus.failure,
+          errorMessage: 'Microphone access is limited. Please grant full access in settings.',
+        ));
+        return false;
       } else {
-        // Other cases (limited, provisional, etc)
+        // Other cases (provisional, etc)
         emit(state.copyWith(
           status: SpeakingStatus.failure,
           errorMessage: 'Unable to access microphone. Please check your device settings.',
