@@ -10,12 +10,12 @@ class IdleRecordingMode extends StatelessWidget {
       children: [
         // Keyboard toggle button
         ModeToggleButton(
-          icon: Icons.keyboard,
+          svgIcon: AppAsset.svg.app.icKeyboard,
           backgroundColor: const Color(0xFFEEF2F6),
           iconColor: const Color(0xFF7F8EA4),
           onTap: () => context.read<SpeakingCubit>().toggleInputMode(),
         ),
-        SizedBox(width: 16.w),
+        16.horizontalSpace,
         // Tap to speak button
         const Expanded(
           child: TapToSpeakButton(),

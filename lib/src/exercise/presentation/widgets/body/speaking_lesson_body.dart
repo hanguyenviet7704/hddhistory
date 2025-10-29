@@ -68,29 +68,53 @@ class SpeakingLessonBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<ChoiceCubit, ChoiceState>(
+    return BlocListener<SpeakingCubit, SpeakingState>(
       listenWhen: (previous, current) {
-        // Only trigger when hasChecked changes from false to true
-        return !previous.hasChecked && current.hasChecked;
+        // Trigger when submission status changes
+        return previous.status != current.status;
       },
       listener: (context, state) {
-        onAnswerChecked(state.isCorrect);
-        _showResultBottomSheet(
-          context,
-          state.isCorrect ? ResultType.correct : ResultType.incorrect,
-        );
+        // Handle submission success
+        if (state.status == SpeakingStatus.success) {
+          // For speaking exercises, we don't check correct/incorrect immediately
+          // Just move to the next question after successful submission
+          onAnswerChecked(true);
+          AppDI.injector.get<ExerciseCubit>().nextQuestion();
+        }
+
+        // Handle submission failure
+        if (state.status == SpeakingStatus.failure && state.errorMessage != null) {
+          // Show error message using EasyLoading or SnackBar
+          EasyLoading.showError(state.errorMessage!);
+        }
       },
-      child: BlocBuilder<ChoiceCubit, ChoiceState>(
+      child: BlocBuilder<SpeakingCubit, SpeakingState>(
         builder: (context, state) {
           final currentQuestion = state.question;
 
           return Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Display question document (images, audio, text, etc.)
               if (currentQuestion.document.isNotEmpty) ...[
                 ChoiceDocumentWidget(documents: currentQuestion.document),
-                12.verticalSpace,
+                16.verticalSpace,
               ],
+
+              // Display instruction text
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: AppText(
+                  _getInstructionText(context, state.inputMode),
+                  maxLines: 10,
+                  style: AppStyle.text12.copyWith(
+                    color: const Color(0xFF7F8EA4),
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+              16.verticalSpace,
             ],
           );
         },
@@ -98,19 +122,17 @@ class SpeakingLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for single choice questions
+  /// Get instruction text based on input mode
+  String _getInstructionText(BuildContext context, SpeakingInputMode mode) {
+    if (mode == SpeakingInputMode.recording) {
+      return context.text.exerciseTapToSpeakButton;
+    } else {
+      return 'Type your answer in the text field below.'; // Can be replaced with localized text
+    }
+  }
+
+  /// Build the bottom button for speaking questions
   Widget buildBottomButton(BuildContext context) {
-    return BlocBuilder<ChoiceCubit, ChoiceState>(
-      builder: (context, state) {
-        // if (state.hasChecked) {
-        //   return const SizedBox.shrink();
-        // }
-
-        final canCheck = state.selectedAnswerIndex != -1;
-
-        return SpeakingBottomAction(
-        );
-      },
-    );
+    return const SpeakingBottomAction();
   }
 }

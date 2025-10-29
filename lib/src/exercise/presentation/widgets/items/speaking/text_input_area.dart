@@ -26,20 +26,8 @@ class _TextInputAreaState extends State<TextInputArea> {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<SpeakingCubit>().state;
-    final maxChars = state.question.maxCharacter;
-    final currentChars = state.characterCount;
-
-    // Update controller text if state changes
-    if (_controller.text != state.textInput) {
-      _controller.text = state.textInput;
-      _controller.selection = TextSelection.fromPosition(
-        TextPosition(offset: _controller.text.length),
-      );
-    }
-
     return Container(
-      constraints: BoxConstraints(minHeight: 80.h, maxHeight: 120.h),
+      constraints: BoxConstraints(minHeight: 80.h, maxHeight: 150.h),
       padding: EdgeInsets.only(
         left: 16.w,
         right: 12.w,
@@ -59,58 +47,67 @@ class _TextInputAreaState extends State<TextInputArea> {
         children: [
           // Text input field
           Flexible(
-            child: TextField(
+            child: TextFormField(
               controller: _controller,
               maxLines: null,
               style: AppStyle.text14.copyWith(
                 color: const Color(0xFF364152),
               ),
-              decoration: const InputDecoration(
+              maxLength: context.read<SpeakingCubit>().state.question.maxCharacter,
+              decoration: InputDecoration(
                 border: InputBorder.none,
                 hintText: 'Type your answer...',
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
+                counterText: '',
+                counter: null,
               ),
               onChanged: (text) {
                 context.read<SpeakingCubit>().updateTextInput(text);
               },
             ),
           ),
-          SizedBox(height: 8.h),
+          4.verticalSpace,
           // Bottom row: character counter + send button
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               // Character counter
-              Text(
-                '$currentChars/$maxChars chars',
-                style: AppStyle.text12.copyWith(
-                  color: const Color(0xFFAAB8CD),
-                ),
+              BlocBuilder<SpeakingCubit, SpeakingState>(
+                buildWhen: (previous, current) => previous.currentChars != current.currentChars || previous.maxChars != current.maxChars,
+                builder: (context, state) {
+                  return AppText(
+                    '${state.currentChars}/${state.maxChars} chars',
+                    style: AppStyle.text12.copyWith(
+                      color: const Color(0xFFAAB8CD),
+                    ),
+                  );
+                },
               ),
               // Send button
-              GestureDetector(
-                onTap: currentChars > 0
-                    ? () => context.read<SpeakingCubit>().submitAnswer()
-                    : null,
-                child: Container(
-                  width: 32.w,
-                  height: 32.w,
-                  decoration: BoxDecoration(
-                    color: currentChars > 0
-                        ? const Color(0xFF554FF0)
-                        : const Color(0xFF554FF0).withValues(alpha: 0.3),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Transform.rotate(
-                    angle: pi / 2,
-                    child: Icon(
-                      Icons.arrow_back,
-                      size: 16.w,
-                      color: Colors.white,
+              BlocSelector<SpeakingCubit, SpeakingState, int>(
+                selector: (state) => state.currentChars,
+                builder: (context, currentChars) {
+                  return GestureDetector(
+                    onTap: () {
+                      if (currentChars <= 0) return;
+                      context.read<SpeakingCubit>().submitAnswer();
+                    },
+                    child: Container(
+                      width: 32.w,
+                      height: 32.w,
+                      decoration: BoxDecoration(
+                        color: currentChars > 0 ? const Color(0xFF554FF0) : const Color(0xFF554FF0).withValues(alpha: 0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(
+                        Icons.arrow_upward_rounded,
+                        size: 16.w,
+                        color: Colors.white,
+                      ),
                     ),
-                  ),
-                ),
+                  );
+                },
               ),
             ],
           ),

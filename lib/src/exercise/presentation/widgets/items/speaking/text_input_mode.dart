@@ -1,6 +1,5 @@
 part of '../../../../exercise.dart';
 
-
 // Text Input Mode: Microphone button + Text input area
 class TextInputMode extends StatelessWidget {
   const TextInputMode({super.key});
@@ -12,13 +11,13 @@ class TextInputMode extends StatelessWidget {
       children: [
         // Microphone toggle button
         ModeToggleButton(
-          icon: Icons.mic,
+          svgIcon: AppAsset.svg.app.icMic,
           backgroundColor: const Color(0xFFEBEAFD),
           iconColor: const Color(0xFF554FF0),
-          size: 40.w,
+          iconSize: 18,
           onTap: () => context.read<SpeakingCubit>().toggleInputMode(),
         ),
-        SizedBox(width: 12.w),
+        12.horizontalSpace,
         // Text input area
         const Expanded(
           child: TextInputArea(),

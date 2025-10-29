@@ -5,14 +5,16 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
   ArrangeTheSequenceCubit() : super(ArrangeTheSequenceState.initial());
 
   /// Initialize the question and set up the items to be reordered
-  void initializeQuestion(QuestionEntity question) {
-    emit(state.copyWith(
-      question: question,
-      currentItems: List<OptionEntity>.from(question.options),
-      hasChecked: false,
-      isCorrect: false,
-      showExplanation: false,
-    ));
+  void loadQuestion(QuestionEntity question) {
+    emit(
+      state.copyWith(
+        question: question,
+        currentItems: List<OptionEntity>.from(question.options),
+        hasChecked: false,
+        isCorrect: false,
+        showExplanation: false,
+      ),
+    );
   }
 
   /// Handle reordering of items
@@ -39,10 +41,12 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     // Compare the two lists
     final isCorrect = _listsEqual(currentOrder, correctOrder);
 
-    emit(state.copyWith(
-      hasChecked: true,
-      isCorrect: isCorrect,
-    ));
+    emit(
+      state.copyWith(
+        hasChecked: true,
+        isCorrect: isCorrect,
+      ),
+    );
   }
 
   /// Toggle the explanation visibility

@@ -4,14 +4,16 @@ part of '../../../exercise.dart';
 class CuesPlacementCubit extends Cubit<CuesPlacementState> {
   CuesPlacementCubit() : super(CuesPlacementState.initial());
 
-  void initializeQuestion(QuestionEntity question) {
-    emit(state.copyWith(
-      question: question,
-      placedMarks: {},
-      hasChecked: false,
-      isCorrect: false,
-      showExplanation: false,
-    ));
+  void loadQuestion(QuestionEntity question) {
+    emit(
+      state.copyWith(
+        question: question,
+        placedMarks: {},
+        hasChecked: false,
+        isCorrect: false,
+        showExplanation: false,
+      ),
+    );
   }
 
   /// Place a pause mark after a word at the given index
@@ -59,13 +61,14 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     final correctPositions = state.correctPositions;
 
     // Check if placed positions exactly match correct positions
-    final isCorrect = placedPositions.length == correctPositions.length &&
-        placedPositions.every((pos) => correctPositions.contains(pos));
+    final isCorrect = placedPositions.length == correctPositions.length && placedPositions.every((pos) => correctPositions.contains(pos));
 
-    emit(state.copyWith(
-      hasChecked: true,
-      isCorrect: isCorrect,
-    ));
+    emit(
+      state.copyWith(
+        hasChecked: true,
+        isCorrect: isCorrect,
+      ),
+    );
   }
 
   void toggleExplanation() {

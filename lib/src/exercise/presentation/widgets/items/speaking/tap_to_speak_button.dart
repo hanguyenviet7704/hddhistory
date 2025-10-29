@@ -20,14 +20,13 @@ class TapToSpeakButton extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.mic,
-              size: 24.w,
-              color: const Color(0xFF554FF0),
+            SvgPicture.asset(
+              AppAsset.svg.app.icMic,
+              height: 18.w,
             ),
-            SizedBox(width: 10.w),
-            Text(
-              'Tap to speak',
+            10.horizontalSpace,
+            AppText(
+              context.text.exerciseTapToSpeakButton,
               style: AppStyle.textBold16.copyWith(
                 color: const Color(0xFF554FF0),
               ),

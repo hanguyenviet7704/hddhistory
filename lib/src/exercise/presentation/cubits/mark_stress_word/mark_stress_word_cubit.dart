@@ -4,14 +4,16 @@ part of '../../../exercise.dart';
 class MarkStressWordCubit extends Cubit<MarkStressWordState> {
   MarkStressWordCubit() : super(MarkStressWordState.initial());
 
-  void initializeQuestion(QuestionEntity question) {
-    emit(state.copyWith(
-      question: question,
-      selectedWordIndices: {},
-      hasChecked: false,
-      isCorrect: false,
-      showExplanation: false,
-    ));
+  void loadQuestion(QuestionEntity question) {
+    emit(
+      state.copyWith(
+        question: question,
+        selectedWordIndices: {},
+        hasChecked: false,
+        isCorrect: false,
+        showExplanation: false,
+      ),
+    );
   }
 
   /// Toggle word selection (add if not selected, remove if already selected)
@@ -36,13 +38,14 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     final correctIndices = state.correctWordIndices;
 
     // Check if selected indices exactly match correct indices
-    final isCorrect = state.selectedWordIndices.length == correctIndices.length &&
-        state.selectedWordIndices.every((index) => correctIndices.contains(index));
+    final isCorrect = state.selectedWordIndices.length == correctIndices.length && state.selectedWordIndices.every((index) => correctIndices.contains(index));
 
-    emit(state.copyWith(
-      hasChecked: true,
-      isCorrect: isCorrect,
-    ));
+    emit(
+      state.copyWith(
+        hasChecked: true,
+        isCorrect: isCorrect,
+      ),
+    );
   }
 
   void toggleExplanation() {
@@ -53,4 +56,3 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     emit(MarkStressWordState.initial());
   }
 }
-  

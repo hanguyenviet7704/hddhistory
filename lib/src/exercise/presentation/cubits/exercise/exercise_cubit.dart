@@ -87,19 +87,19 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
         AppDI.injector.get<ChoiceCubit>().loadQuestion(question);
         break;
       case QuestionTypeEnum.cuesPlacement:
-        AppDI.injector.get<CuesPlacementCubit>().initializeQuestion(question);
+        AppDI.injector.get<CuesPlacementCubit>().loadQuestion(question);
         break;
       case QuestionTypeEnum.dragAndDrop:
         AppDI.injector.get<DragAndDropCubit>().loadQuestion(question);
         break;
       case QuestionTypeEnum.arrangeTheSequence:
-        AppDI.injector.get<ArrangeTheSequenceCubit>().initializeQuestion(question);
+        AppDI.injector.get<ArrangeTheSequenceCubit>().loadQuestion(question);
         break;
       case QuestionTypeEnum.stressPlacement:
-        AppDI.injector.get<MarkStressWordCubit>().initializeQuestion(question);
+        AppDI.injector.get<MarkStressWordCubit>().loadQuestion(question);
         break;
       case QuestionTypeEnum.speaking:
-        AppDI.injector.get<ChoiceCubit>().loadQuestion(question);
+        AppDI.injector.get<SpeakingCubit>().loadQuestion(question);
         break;
     }
   }

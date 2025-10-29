@@ -26,3 +26,8 @@ sealed class SpeakingState with _$SpeakingState {
 
   factory SpeakingState.initial() => const SpeakingState();
 }
+
+extension SpeakingStateExtension on SpeakingState {
+  int get currentChars => textInput.length;
+  int get maxChars => question.maxCharacter;
+}

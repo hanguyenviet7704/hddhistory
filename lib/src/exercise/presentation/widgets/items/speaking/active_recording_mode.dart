@@ -10,13 +10,13 @@ class ActiveRecordingMode extends StatelessWidget {
       children: [
         // Cancel button
         ModeToggleButton(
-          icon: Icons.close,
+          svgIcon: AppAsset.svg.app.icClose,
           backgroundColor: const Color(0xFFEEF2F6),
           iconColor: const Color(0xFF7F8EA4),
-          size: 40.w,
+          iconSize: 18,
           onTap: () => context.read<SpeakingCubit>().cancelRecording(),
         ),
-        SizedBox(width: 16.w),
+        16.horizontalSpace,
         // Recording controls area
         const Expanded(
           child: RecordingControlsArea(),
