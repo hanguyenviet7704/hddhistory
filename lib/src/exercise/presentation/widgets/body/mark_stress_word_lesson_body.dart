@@ -54,6 +54,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
                     correctIndices: state.correctWordIndices,
                     onContinue: () {
                       modalContext.back();
+                      AppDI.injector.get<ExerciseCubit>().nextQuestion();
                     },
                     onExplain: () {
                       context.read<MarkStressWordCubit>().toggleExplanation();

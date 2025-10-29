@@ -50,6 +50,7 @@ class MultipleChoiceLessonBody extends StatelessWidget {
                     explanationText: state.question.explanation,
                     onContinue: () {
                       modalContext.back();
+                      AppDI.injector.get<ExerciseCubit>().nextQuestion();
                     },
                     onExplain: () {
                       context.read<ChoiceCubit>().toggleExplanation();

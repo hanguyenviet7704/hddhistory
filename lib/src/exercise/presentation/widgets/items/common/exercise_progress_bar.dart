@@ -12,7 +12,7 @@ class ExerciseProgressBar extends StatelessWidget {
       children: [
         10.horizontalSpace,
         InkWell(
-          onTap: () => context.read<DataCollectCubit>().goToPreviousStep(),
+          onTap: () => context.read<ExerciseCubit>().previousQuestion(),
           child: Icon(
             Icons.close_rounded,
             color: const Color(0xFF0D121C), // Brand/Brand/Primary/300
@@ -20,21 +20,26 @@ class ExerciseProgressBar extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: Container(
-            height: 40.h,
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: LinearPercentIndicator(
-              width: 1.sw - 100.w,
-              animation: true,
-              animationDuration: 500,
-              animateFromLastPercent: true,
-              lineHeight: 10.h,
-              percent: .2,
-              backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
-              progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
-              barRadius: Radius.circular(30.r),
-              padding: EdgeInsets.zero,
-            ),
+          child: BlocSelector<ExerciseCubit, ExerciseState, double>(
+            selector: (state) => state.progress,
+            builder: (context, progress) {
+              return Container(
+                height: 40.h,
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: LinearPercentIndicator(
+                  width: 1.sw - 100.w,
+                  animation: true,
+                  animationDuration: 500,
+                  animateFromLastPercent: true,
+                  lineHeight: 10.h,
+                  percent: progress,
+                  backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
+                  progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
+                  barRadius: Radius.circular(30.r),
+                  padding: EdgeInsets.zero,
+                ),
+              );
+            },
           ),
         ),
       ],

@@ -60,6 +60,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                     arrangedAnswers: correctAnswers,
                     onContinue: () {
                       modalContext.back();
+                      AppDI.injector.get<ExerciseCubit>().nextQuestion();
                     },
                     onExplain: () {
                       context.read<ArrangeTheSequenceCubit>().toggleExplanation();

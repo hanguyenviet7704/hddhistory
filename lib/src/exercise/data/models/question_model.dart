@@ -16,6 +16,8 @@ abstract class QuestionModel with _$QuestionModel {
     @Default([]) List<KeypointLevelType> level,
     @Default('') String record,
     @Default(0) int maxDuration,
+    @Default(0) int maxCharacter,
+    @DefaultInt() @Default(0) int mainQuestion,
   }) = _QuestionModel;
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) => _$QuestionModelFromJson(json);
@@ -67,6 +69,8 @@ extension QuestionModelExtension on QuestionModel {
     form: form,
     record: record,
     maxDuration: maxDuration,
+    maxCharacter: maxCharacter,
+    mainQuestion: mainQuestion,
   );
 
   QuestionTypeEnum get toQuestionTypeEnum {

@@ -16,6 +16,8 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default([]) List<KeypointLevelType> level,
     @Default('') String record,
     @Default(0) int maxDuration,
+    @Default(0) int maxCharacter,
+    @Default(0) int mainQuestion,
   }) = _QuestionEntity;
 
   factory QuestionEntity.fromJson(Map<String, dynamic> json) => _$QuestionEntityFromJson(json);

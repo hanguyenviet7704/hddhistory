@@ -6,18 +6,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   
   void reset() => emit(ChoiceState.initial());
 
-  void loadQuestionData(QuestionEntity question) => emit(state.copyWith(question: question));
-
-  void loadQuestion(ChoiceQuestion question) {
-    emit(
-      state.copyWith(
-        selectedAnswerIndex: -1,
-        selectedAnswersIndices: {},
-        hasChecked: false,
-        isCorrect: false,
-      ),
-    );
-  }
+  void loadQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
 
   void selectAnswer(int index) {
     if (state.hasChecked) return;

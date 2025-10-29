@@ -1,237 +1,327 @@
 # Cursor Commands for Meup Flutter Project
 
 ## Overview
-This directory contains Cursor AI commands specifically designed for the Meup Flutter project. These commands provide step-by-step guidance for common development tasks, following the project's Clean Architecture patterns and conventions.
+Optimized Cursor AI commands for autonomous task execution in the Meup Flutter project. These commands are designed for quick execution where you provide context files and the agent handles the rest.
 
-## Available Commands
+## Command Philosophy
 
-### 🚀 Getting Started
-- **[onboard-new-developer.md](./onboard-new-developer.md)** - Complete onboarding guide for new team members
-  - Project setup and dependencies
-  - Architecture overview
-  - Development workflow
-  - Verification checklist
+### Optimized for Agent Execution
+- **Ask upfront**: Agent asks all necessary questions first
+- **Execute autonomously**: Agent handles all implementation automatically
+- **Concise output**: Brief summary of what was done
+- **Review-ready**: User reviews results after completion
 
-### 🏗️ Development
-- **[setup-new-feature.md](./setup-new-feature.md)** - Create new features following Clean Architecture
-  - Feature planning and structure
-  - Domain, Data, and Presentation layer setup
-  - Code templates and patterns
-  - Testing setup
-
-- **[generate-code.md](./generate-code.md)** - Code generation for models, DI, routes, and localization
-  - Build runner commands
-  - Localization from Google Sheets
-  - Firebase configuration
-  - Troubleshooting generation issues
-
-### 🧪 Testing
-- **[run-tests.md](./run-tests.md)** - Comprehensive testing guide
-  - Unit tests, widget tests, integration tests
-  - Coverage reporting
-  - Testing patterns and utilities
-  - CI/CD integration
-
-### 🔨 Building
-- **[build-app.md](./build-app.md)** - Build apps for different platforms and flavors
-  - Android APK and App Bundle builds
-  - iOS and IPA builds  
-  - Code obfuscation and optimization
-  - Build troubleshooting
-
-### 🚀 Deployment
-- **[deploy-app.md](./deploy-app.md)** - Deploy to various distribution channels
-  - Firebase App Distribution
-  - Google Play Store
-  - Apple App Store
-  - CI/CD automation
-
-### 🐛 Debugging
-- **[debug-issues.md](./debug-issues.md)** - Troubleshoot common development issues
-  - Build failures
-  - Dependency injection problems
-  - Flutter/Dart issues
-  - Performance debugging
-
-## Quick Reference Commands
-
-### Project Setup
-```bash
-# Initial setup
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-./tools/macos/localization/generate_localization.sh
+### Usage Pattern
+```
+1. User calls command with context file(s)
+2. Agent asks clarifying questions
+3. Agent executes everything automatically
+4. Agent provides concise summary
+5. User reviews and approves
 ```
 
-### Development Workflow
-```bash
-# Code generation
-dart run build_runner watch --delete-conflicting-outputs
+## Core Commands
 
-# Run tests
-flutter test --coverage
+### 🏗️ Feature Development
 
-# Build for testing
-./tools/macos/build/build_apk.sh dev
+#### `/setup-new-feature`
+Create complete Clean Architecture feature (Domain + Data layers).
+
+**Provide:**
+- Ticket description OR API documentation OR similar feature reference
+
+**Agent will:**
+- Ask: feature name, data source type, state management needs
+- Create: Domain layer (entities, repositories, use cases)
+- Create: Data layer (models, repositories, data sources)
+- Create: Cubit (if requested)
+- Create: Test scaffolds
+- Run: Code generation and validation
+- Output: Summary of what was created
+
+**UI layer excluded** - Use `/update-new-ux-ui` for presentation layer
+
+---
+
+#### `/update-new-ux-ui`
+Implement UI from Figma designs.
+
+**Provide:**
+- Figma design URL (required)
+- Component/page name
+
+**Agent will:**
+- Ask: component type, feature name, state integration
+- Fetch: Figma design and extract tokens
+- Map: Design tokens to existing theme
+- Generate: Pages/widgets with responsive design
+- Add: Routes and localization (if needed)
+- Output: Summary with design tokens used
+
+---
+
+### 📋 Release Management
+
+#### `/new-pull-request-to-develop`
+Generate PR content from git changes.
+
+**Provide:**
+- Run from feature branch (current branch analyzed)
+
+**Agent will:**
+- Ask: target branch, include screenshots
+- Analyze: All commits and file changes
+- Categorize: Changes by layer and type
+- Detect: Breaking changes, new dependencies
+- Generate: Complete PR content with checklist
+- Save: `pr_content.md` for review
+- Output: PR summary and next steps
+
+---
+
+#### `/new-release`
+Create release branch, notes, and tags.
+
+**Provide:**
+- Run from develop branch (for new) or release branch (to update)
+
+**Agent will:**
+- Ask: Confirm version from pubspec.yaml
+- Create: Release branch (if needed)
+- Analyze: All changes since last release
+- Categorize: Features, improvements, fixes
+- Generate: Comprehensive release notes
+- Create: Git tag with detailed message
+- Save: `release_content.md` and push to remote
+- Output: Release summary and next steps
+
+---
+
+### 🔧 Maintenance Commands
+
+#### `/generate-code`
+Run all code generation tasks.
+- Build runner for models, DI, routes
+- Localization from Google Sheets
+- Firebase configuration
+
+#### `/debug-issues`
+Troubleshoot common development issues.
+- Build runner problems
+- Dependency injection errors
+- Platform-specific issues
+
+#### `/build-app`
+Build app for specific flavor and platform.
+- APK/AAB for Android
+- IPA for iOS
+- All flavors: dev, stg, prod
+
+#### `/run-tests`
+Execute test suite with coverage.
+- Unit tests
+- Widget tests
+- Integration tests
+
+#### `/deploy-app`
+Deploy to distribution channels.
+- Firebase App Distribution
+- Google Play Store
+- Apple App Store
+
+---
+
+## Less Frequently Used Commands
+
+### `/new-clean-architecture-flow`
+**Status:** Reference document
+Step-by-step guide for Clean Architecture implementation.
+
+### `/update-clean-architecture-flow`
+**Status:** Reference document
+Update existing Clean Architecture module when data model changes.
+
+### `/update-graph-schema`
+**Status:** Semi-automated
+Update GraphQL queries when schema changes.
+
+### `/onboard-new-developer`
+**Status:** Reference document
+Onboarding guide for new team members.
+
+---
+
+## Command Structure Reference
+
+### Optimized Command Format
+```markdown
+# Command Name
+
+## Usage
+What to provide to call this command
+
+## Agent Questions (Ask First)
+1-5 questions agent must ask upfront
+
+## Auto-Execute After Questions
+Step-by-step what agent does automatically
+
+## Output
+Concise summary format
 ```
 
-### Clean Project
-```bash
-# Full clean and setup
-flutter clean
-flutter pub get
-dart run build_runner build --delete-conflicting-outputs
-./tools/macos/localization/generate_localization.sh
+### Old Format (Being Phased Out)
+Long documentation-style commands with:
+- Extensive checklists
+- Manual step-by-step instructions
+- Troubleshooting sections
+- Reference materials
+
+**Note:** Old commands still work but will be migrated to new format over time.
+
+---
+
+## Quick Start Examples
+
+### Example 1: Create New Feature
+```
+User: "I need to implement user notifications feature. Here's the API doc: [paste]"
+
+Agent:
+- Feature name? → user_notifications
+- Data source? → REST API
+- State management? → Yes (BLoC)
+- Skip UI? → Yes
+
+[Agent creates everything automatically]
+
+Agent: "✅ Feature 'user_notifications' created
+- Domain: UserNotificationEntity, IUserNotificationRepository, 2 use cases
+- Data: UserNotificationModel, repository, API client
+- Cubit: UserNotificationsCubit with states
+- Tests: 6 test scaffolds
+- Build: ✅ Successful"
 ```
 
-## Project Architecture Quick Reference
+### Example 2: Implement UI from Figma
+```
+User: "Implement this Figma design: [URL]"
 
-### Dependency Injection
-```dart
-// Use AppDI.injector pattern
-final useCase = AppDI.injector.get<GetUserUseCase>();
+Agent:
+- Component type? → New page
+- Feature? → notifications
+- State integration? → Use existing NotificationsCubit
+- Special requirements? → Animations for list items
 
-// Register with @lazySingleton (default pattern)
-@lazySingleton
-class UserRepository { }
+[Agent implements everything]
+
+Agent: "✅ UI Implementation Complete: NotificationsPage
+- Created: notifications_page.dart, notifications_view.dart
+- Design tokens: 3 colors, 4 text styles, responsive
+- State: Connected to NotificationsCubit
+- Route: Added /notifications path"
 ```
 
-### State Management
-```dart
-// BLoC pattern with HydratedCubit
-@injectable
-class UserCubit extends HydratedCubit<UserState> {
-  UserCubit(this.useCase) : super(const UserState.initial());
-}
+### Example 3: Create Release
+```
+User: "Create new release"
+
+Agent:
+- Current: On develop ✓
+- Version: 1.0.25+26 from pubspec.yaml - Confirm? → Yes
+
+[Agent analyzes, categorizes, generates]
+
+Agent: "✅ Release v1.0.25 Created
+- 🎉 3 new features
+- 🔧 7 improvements
+- 🐛 2 bug fixes
+- Branch: release/1.0.25 pushed
+- Tag: v1.0.25 pushed
+- Files: release_content.md ready"
 ```
 
-### Error Handling
-```dart
-// Use Either pattern with AppException
-TaskEither<AppException, User> getUser(String id) async {
-  try {
-    final user = await apiClient.getUser(id);
-    return Right(user.toEntity());
-  } catch (e) {
-    return Left(AppException.fromException(e as Exception));
-  }
-}
-```
+---
 
-### Localization
-```dart
-// Use context.text extension
-Text(context.text.welcomeMessage)
+## Project Context
 
-// Generate from Google Sheets
-./tools/macos/localization/generate_localization.sh
-```
+### Architecture
+- **Clean Architecture**: Domain, Data, Presentation layers
+- **State Management**: BLoC/Cubit with HydratedBloc
+- **DI**: get_it with injectable, `@lazySingleton` pattern
+- **Navigation**: GoRouter with code generation
+- **Localization**: ARB files with Google Sheets sync
 
-## Flavor Management
+### Flavors
+- **dev**: Development with debug features
+- **stg**: Staging mirroring production
+- **prod**: Production for live deployment
 
-### Available Flavors
-- **dev**: Development environment
-- **stg**: Staging environment  
-- **prod**: Production environment
+### Key Files
+- `CLAUDE.md`: Project quick reference
+- `lib/src/domain/`: Business logic layer
+- `lib/src/data/`: Data layer with repos/models
+- `lib/src/presentation/`: UI layer with pages/cubits
+- `lib/config/`: App configuration (DI, routes, themes)
 
-### Usage
-```dart
-// Access current flavor
-String flavorName = F.name;
-Flavor? currentFlavor = F.appFlavor;
+---
 
-// Environment-specific logic
-String apiUrl = switch (F.appFlavor) {
-  Flavor.dev => 'https://dev.venusshop.top/api/v1',
-  Flavor.prod => 'https://venusshop.top/api/v1',
-  _ => 'https://venusshop.top/api/v1',
-};
-```
+## Command Maintenance
 
-## File Structure
-```
-lib/
-├── config/              # App configuration
-│   ├── di/             # Dependency injection
-│   ├── l10n/           # Localization
-│   ├── routes/         # Navigation
-│   ├── services/       # External services
-│   ├── share/          # Shared utilities
-│   └── themes/         # UI themes
-├── core/               # Core utilities
-│   ├── constants/      # App constants
-│   └── utils/          # Utility functions
-└── src/                # Main application code
-    ├── data/           # Data layer (repos, models, APIs)
-    ├── domain/         # Domain layer (entities, use cases)
-    └── presentation/   # UI layer (pages, widgets, BLoCs)
-```
+### How to Update Commands
+Commands evolve with project needs. To update:
 
-## Development Guidelines
+1. **Modify the .md file** in `.cursor/commands/`
+2. **Follow the optimized structure** (Usage → Questions → Auto-Execute → Output)
+3. **Test with actual use case**
+4. **Update this README** if adding/removing commands
 
-### Code Style
-- Follow Clean Architecture principles
-- Use `@lazySingleton` for dependency injection
-- Implement proper error handling with `AppException`
-- Write comprehensive tests
-- Use localization for all user-facing text
+### Command Versioning
+- **v1 (Old)**: Documentation-heavy, manual checklists
+- **v2 (Current)**: Agent-optimized, autonomous execution
+- **Migration**: Gradual update of high-use commands first
 
-### Git Workflow  
-- Feature branches: `feature/TICKET-ID/description`
-- Commit format: `type-TICKET-ID: description`
-- Follow GitFlow workflow
+### Feedback Loop
+If a command doesn't work well:
+1. Note what questions agent should have asked upfront
+2. Note what agent did that required manual intervention
+3. Update command to ask those questions first
+4. Update auto-execute section to handle that case
 
-### Testing Strategy
-- **Domain Layer**: 100% coverage (business logic)
-- **Data Layer**: 90%+ coverage (repositories)
-- **Presentation Layer**: 80%+ coverage (BLoCs, UI)
+---
+
+## Tips for Best Results
+
+### For Users
+- **Provide context files** when calling commands
+- **Answer agent questions** clearly upfront
+- **Let agent work autonomously** after questions
+- **Review results** when complete
+- **Provide feedback** for command improvements
+
+### For Agents
+- **Ask all questions upfront** - don't come back for more info
+- **Execute everything automatically** after questions answered
+- **Follow project patterns** from similar existing code
+- **Provide concise summaries** - user wants quick review
+- **Save detailed logs** to files for user reference
+
+---
 
 ## Getting Help
 
 ### Documentation
-- **Project Docs**: `docs/projects/` directory
-- **Cursor Rules**: `.cursor/rules/` directory
-- **Quick Reference**: `CLAUDE.md` file
+- **This README**: Command overview and usage
+- **CLAUDE.md**: Project-wide reference
+- **Individual commands**: Detailed execution steps
 
-### Resources
-- Team documentation and guidelines
-- Architecture decision records
-- API documentation
-- Design system guidelines
+### Support
+- Review existing similar features for patterns
+- Check git history for how things were done before
+- Use `/debug-issues` for common problems
 
-## Contributing to Commands
+---
 
-When adding new commands:
-1. Follow the existing markdown structure
-2. Include clear overview and steps
-3. Provide code examples
-4. Add troubleshooting section
-5. Update this README with new command
-
-## Command Template
-
-```markdown
-# Command Title
-
-## Overview
-Brief description of what this command helps with.
-
-## Steps
-1. **Step One**
-   - Detailed instructions
-   - Code examples
-   - Expected outcomes
-
-2. **Step Two**
-   - More instructions
-   - Commands to run
-   - Verification steps
-
-## Checklist
-- [ ] Requirement 1
-- [ ] Requirement 2
-- [ ] Verification step
-
-## Troubleshooting
-Common issues and solutions.
-```
+**Last Updated:** 2025-01-29
+**Optimized for:** Autonomous agent execution with minimal back-and-forth
+**Philosophy:** Ask upfront, execute autonomously, summarize concisely

@@ -8,11 +8,26 @@ abstract class ExerciseState with _$ExerciseState {
     @Default(ExerciseStatus.initial) ExerciseStatus status,
     @Default(BasePageBreak<LearningItemEntity>()) BasePageBreak<LearningItemEntity> pageData,
     @Default(LearningItemEntity()) LearningItemEntity currentLearningItem,
-    @Default(QuestionEntity()) QuestionEntity currentQuestion,
+    @Default(0) int currentQuestionIndex,
+    @Default(0) int currentSubQuestionIndex,
     String? errorMessage,
   }) = _ExerciseState;
 
   factory ExerciseState.initial() => ExerciseState();
 
   factory ExerciseState.fromJson(Map<String, dynamic> json) => _$ExerciseStateFromJson(json);
+}
+
+extension ExerciseStateExtension on ExerciseState {
+  QuestionEntity get currentQuestion {
+    return currentLearningItem.questions.elementAtOrDefault(currentQuestionIndex, defaultValue: QuestionEntity());
+  }
+  QuestionEntity get currentSubQuestion {
+    return currentLearningItem.subQuestions.elementAtOrDefault(currentSubQuestionIndex, defaultValue: QuestionEntity());
+  }
+  double get progress {
+    if (currentQuestionIndex == 0 || currentLearningItem.questions.isEmpty) return 0;
+    if (currentQuestionIndex == currentLearningItem.questions.length) return 1;
+    return (currentQuestionIndex + 1) / currentLearningItem.questions.length;
+  }
 }

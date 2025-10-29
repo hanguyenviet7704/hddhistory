@@ -10,6 +10,30 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     this._getLearningItemUseCase,
   ) : super(ExerciseState.initial());
 
+  void nextQuestion() {
+    if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) return;
+    emit(state.copyWith(currentQuestionIndex: state.currentQuestionIndex + 1));
+    setQuestionData(state.currentQuestion);
+  }
+
+  void previousQuestion() {
+    if (state.currentQuestionIndex <= 0) return;
+    emit(state.copyWith(currentQuestionIndex: state.currentQuestionIndex - 1));
+    setQuestionData(state.currentQuestion);
+  }
+
+  void nextSubQuestion() {
+    if (state.currentSubQuestionIndex >= state.currentLearningItem.subQuestions.length - 1) return;
+    emit(state.copyWith(currentSubQuestionIndex: state.currentSubQuestionIndex + 1));
+    setQuestionData(state.currentSubQuestion);
+  }
+
+  void previousSubQuestion() {
+    if (state.currentSubQuestionIndex <= 0) return;
+    emit(state.copyWith(currentSubQuestionIndex: state.currentSubQuestionIndex - 1));
+    setQuestionData(state.currentSubQuestion);
+  }
+
   void loadAllLearningItems({
     bool isInit = false,
   }) async {
@@ -33,7 +57,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       onSuccess: (pageData) {
         emit(state.copyWith(status: ExerciseStatus.success, pageData: pageData));
         QuestionEntity dragAndDropLesson = pageData.items[1].questions[2];
-        emit(state.copyWith(currentQuestion: dragAndDropLesson));
+        emit(state.copyWith(currentQuestionIndex: 2));
         AppDI.injector.get<DragAndDropCubit>().loadQuestion(dragAndDropLesson);
         loadLearningItem('68f9e14727faeb3760987e14');
       },
@@ -48,11 +72,35 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
         emit(state.copyWith(status: ExerciseStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: ExerciseStatus.success, currentLearningItem: item));
-        QuestionEntity cuesPlacement = item.questions.first;
-        emit(state.copyWith(currentQuestion: cuesPlacement));
-        AppDI.injector.get<CuesPlacementCubit>().initializeQuestion(cuesPlacement);
+        emit(state.copyWith(status: ExerciseStatus.success, currentLearningItem: item, currentQuestionIndex: 0));
+        setQuestionData(state.currentQuestion);
       },
     );
+  }
+
+  void setQuestionData(QuestionEntity question) {
+    switch (question.type) {
+      case QuestionTypeEnum.singleChoice:
+        AppDI.injector.get<ChoiceCubit>().loadQuestion(question);
+        break;
+      case QuestionTypeEnum.multipleChoice:
+        AppDI.injector.get<ChoiceCubit>().loadQuestion(question);
+        break;
+      case QuestionTypeEnum.cuesPlacement:
+        AppDI.injector.get<CuesPlacementCubit>().initializeQuestion(question);
+        break;
+      case QuestionTypeEnum.dragAndDrop:
+        AppDI.injector.get<DragAndDropCubit>().loadQuestion(question);
+        break;
+      case QuestionTypeEnum.arrangeTheSequence:
+        AppDI.injector.get<ArrangeTheSequenceCubit>().initializeQuestion(question);
+        break;
+      case QuestionTypeEnum.stressPlacement:
+        AppDI.injector.get<MarkStressWordCubit>().initializeQuestion(question);
+        break;
+      case QuestionTypeEnum.speaking:
+        AppDI.injector.get<ChoiceCubit>().loadQuestion(question);
+        break;
+    }
   }
 }

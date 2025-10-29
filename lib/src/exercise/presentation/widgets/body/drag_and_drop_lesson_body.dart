@@ -53,6 +53,7 @@ class DragAndDropLessonBody extends StatelessWidget {
                     correctAnswers: state.question.answer.map((a) => a.correctAnswer).toList(),
                     onContinue: () {
                       modalContext.back();
+                      AppDI.injector.get<ExerciseCubit>().nextQuestion();
                     },
                     onExplain: () {
                       context.read<DragAndDropCubit>().toggleExplanation();

@@ -57,6 +57,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
                     },
                     onContinue: () {
                       modalContext.back();
+                      AppDI.injector.get<ExerciseCubit>().nextQuestion();
                     },
                     onExplain: () {
                       context.read<CuesPlacementCubit>().toggleExplanation();
