@@ -35,29 +35,47 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     if (_recorderController != null) return true;
 
     try {
+      // Request microphone permission
       final permissionStatus = await Permission.microphone.request();
 
+      // Update state with current permission status
+      emit(state.copyWith(microphonePermission: permissionStatus));
+
       if (permissionStatus.isGranted) {
+        // Permission granted - initialize recorder
         _recorderController = RecorderController()
           ..androidEncoder = AndroidEncoder.aac
           ..androidOutputFormat = AndroidOutputFormat.mpeg4
           ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
           ..sampleRate = 44100;
 
-        emit(state.copyWith(permissionStatus: PermissionStatus.granted));
         return true;
       } else if (permissionStatus.isPermanentlyDenied) {
+        // Permission permanently denied
         emit(state.copyWith(
           status: SpeakingStatus.failure,
-          permissionStatus: PermissionStatus.permanentlyDenied,
           errorMessage: 'Microphone permission is permanently denied. Please enable it in app settings.',
         ));
         return false;
-      } else {
+      } else if (permissionStatus.isDenied) {
+        // Permission denied
         emit(state.copyWith(
           status: SpeakingStatus.failure,
-          permissionStatus: PermissionStatus.denied,
           errorMessage: 'Microphone permission is required to record audio.',
+        ));
+        return false;
+      } else if (permissionStatus.isRestricted) {
+        // Permission restricted (iOS specific)
+        emit(state.copyWith(
+          status: SpeakingStatus.failure,
+          errorMessage: 'Microphone access is restricted on this device.',
+        ));
+        return false;
+      } else {
+        // Other cases (limited, provisional, etc)
+        emit(state.copyWith(
+          status: SpeakingStatus.failure,
+          errorMessage: 'Unable to access microphone. Please check your device settings.',
         ));
         return false;
       }

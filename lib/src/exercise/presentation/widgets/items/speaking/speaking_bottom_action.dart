@@ -7,9 +7,12 @@ class SpeakingBottomAction extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SpeakingCubit, SpeakingState>(
       builder: (context, state) {
-        // Show error message if permission is denied
-        if (state.permissionStatus == PermissionStatus.denied ||
-            state.permissionStatus == PermissionStatus.permanentlyDenied) {
+        // Show error message if permission is denied or restricted
+        final permission = state.microphonePermission;
+        if (permission != null &&
+            (permission.isDenied ||
+             permission.isPermanentlyDenied ||
+             permission.isRestricted)) {
           return _buildErrorContainer(context, state);
         }
 
@@ -56,7 +59,7 @@ class SpeakingBottomAction extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
-          if (state.permissionStatus == PermissionStatus.permanentlyDenied) ...[
+          if (state.microphonePermission?.isPermanentlyDenied == true) ...[
             SizedBox(height: 12.h),
             GestureDetector(
               onTap: () => openAppSettings(),
