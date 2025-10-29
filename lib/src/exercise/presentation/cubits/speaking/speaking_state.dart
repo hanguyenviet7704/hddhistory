@@ -30,4 +30,8 @@ sealed class SpeakingState with _$SpeakingState {
 extension SpeakingStateExtension on SpeakingState {
   int get currentChars => textInput.length;
   int get maxChars => question.maxCharacter;
+  double get recordingProgress {
+    if (question.maxDuration <= 0) return 0;
+    return recordingDuration.inSeconds / question.maxDuration;
+  }
 }

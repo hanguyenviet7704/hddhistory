@@ -20,71 +20,97 @@ class RecordingControlsArea extends StatelessWidget {
       child: Row(
         children: [
           // Play/Pause button
+          // GestureDetector(
+          //   onTap: canSubmit ? () => context.read<SpeakingCubit>().playRecording() : null,
+          //   child: Container(
+          //     width: 32.w,
+          //     height: 32.w,
+          //     decoration: BoxDecoration(
+          //       color: canSubmit ? const Color(0xFF554FF0).withValues(alpha: 0.1) : Colors.transparent,
+          //       shape: BoxShape.circle,
+          //     ),
+          //     child: Icon(
+          //       state.isPlaying ? Icons.pause : Icons.play_arrow,
+          //       size: 20.w,
+          //       color: const Color(0xFF554FF0),
+          //     ),
+          //   ),
+          // ),
           GestureDetector(
-            onTap: canSubmit
-                ? () => context.read<SpeakingCubit>().playRecording()
-                : null,
-            child: Container(
-              width: 32.w,
-              height: 32.w,
-              decoration: BoxDecoration(
-                color: canSubmit
-                    ? const Color(0xFF554FF0).withValues(alpha: 0.1)
-                    : Colors.transparent,
-                shape: BoxShape.circle,
-              ),
-              child: Icon(
-                state.isPlaying ? Icons.pause : Icons.play_arrow,
-                size: 20.w,
-                color: const Color(0xFF554FF0),
-              ),
+            onTap: () {
+              if (!canSubmit) return;
+              if (state.isPlaying) {
+                context.read<SpeakingCubit>().pausePlayback();
+                return;
+              }
+              if (state.isPaused) {
+                context.read<SpeakingCubit>().playRecording();
+                return;
+              }
+              if (state.isPlaying) {
+                context.read<SpeakingCubit>().playRecording();
+              }
+            },
+            child: BlocBuilder<SpeakingCubit, SpeakingState>(
+              buildWhen: (previous, current) => previous.recordingProgress != current.recordingProgress || previous.isPlaying != current.isPlaying,
+              builder: (context, state) {
+                return CircularPercentIndicator(
+                  radius: 16.w,
+                  lineWidth: 6.w,
+                  animateFromLastPercent: true,
+                  percent: state.recordingProgress,
+                  progressColor: const Color(0xFF554FF0),
+                  backgroundColor: const Color(0x66554FF0),
+                  circularStrokeCap: CircularStrokeCap.round,
+                  center: Icon(
+                    state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    size: 20.w,
+                    color: const Color(0xFF554FF0),
+                  ),
+                );
+              },
             ),
           ),
-          SizedBox(width: 12.w),
+          12.horizontalSpace,
           // Timer
-          Text(
-            _formatDuration(state.recordingDuration),
-            style: AppStyle.text14.copyWith(
+          AppText(
+            state.recordingDuration.formatDuration,
+            style: AppStyle.textBold14.copyWith(
               color: const Color(0xFF554FF0).withValues(alpha: 0.4),
             ),
           ),
-          SizedBox(width: 12.w),
+          12.horizontalSpace,
           // Waveform
           Expanded(
             child: WaveformVisualizer(isRecording: state.isRecording),
           ),
-          SizedBox(width: 8.w),
+          8.horizontalSpace,
           // Send/Stop button
           GestureDetector(
             onTap: () {
-              if (state.isRecording) {
-                context.read<SpeakingCubit>().stopRecording();
-              } else if (canSubmit) {
-                context.read<SpeakingCubit>().submitAnswer();
-              }
+              // if (state.isRecording) {
+              //   context.read<SpeakingCubit>().stopRecording();
+              //   return;
+              // }
+
+              if (!canSubmit) return;
+              context.read<SpeakingCubit>().submitAnswer();
             },
             child: Container(
-              width: 40.w,
-              height: 40.w,
+              padding: EdgeInsets.all(8.w),
               decoration: const BoxDecoration(
                 color: Color(0xFF554FF0),
                 shape: BoxShape.circle,
               ),
-              child: Icon(
-                state.isRecording ? Icons.stop : Icons.send,
-                size: 20.w,
-                color: Colors.white,
+              child: SvgPicture.asset(
+                AppAsset.svg.app.icSend,
+                width: 24.w,
+                height: 24.w,
               ),
             ),
           ),
         ],
       ),
     );
-  }
-
-  String _formatDuration(Duration duration) {
-    final minutes = duration.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = duration.inSeconds.remainder(60).toString().padLeft(2, '0');
-    return '$minutes:$seconds';
   }
 }

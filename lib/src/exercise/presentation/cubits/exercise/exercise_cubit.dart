@@ -81,10 +81,14 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
   void setQuestionData(QuestionEntity question) {
     switch (question.type) {
       case QuestionTypeEnum.singleChoice:
-        AppDI.injector.get<ChoiceCubit>().loadQuestion(question);
+        AppDI.injector.get<ChoiceCubit>()
+          ..reset()
+          ..loadQuestion(question);
         break;
       case QuestionTypeEnum.multipleChoice:
-        AppDI.injector.get<ChoiceCubit>().loadQuestion(question);
+        AppDI.injector.get<ChoiceCubit>()
+          ..reset()
+          ..loadQuestion(question);
         break;
       case QuestionTypeEnum.cuesPlacement:
         AppDI.injector.get<CuesPlacementCubit>().loadQuestion(question);
