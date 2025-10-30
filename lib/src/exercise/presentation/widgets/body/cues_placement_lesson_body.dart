@@ -197,8 +197,9 @@ class CuesPlacementLessonBody extends StatelessWidget {
   /// Build the bottom button for cues placement questions
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
+      buildWhen: (previous, current) => previous.availableOptions != current.availableOptions,
       builder: (context, state) {
-        final canCheck = state.placedMarks.isNotEmpty && !state.hasChecked;
+        final canCheck = state.placedMarks.isNotEmpty && state.availableOptions.isEmpty && !state.hasChecked;
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<CuesPlacementCubit>().checkAnswer() : null,

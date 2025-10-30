@@ -31,73 +31,37 @@ class CuesPlacementResultBottomSheet extends StatelessWidget {
   String title(BuildContext context) => isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect;
   String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
 
-  /// Build sentence with pause marks showing correct/incorrect states
-  List<Widget> _buildSentenceWithMarks() {
-    final widgets = <Widget>[];
+  /// Build sentence with pause marks showing correct answer positions
+  List<InlineSpan> _buildSentenceWithMarks() {
+    final spans = <InlineSpan>[];
 
     for (int i = 0; i < words.length; i++) {
       final word = words[i];
-      final hasPlacedMark = placedMarks.containsKey(i);
       final shouldHaveMark = correctPositions.contains(i);
 
-      // Determine word color
-      Color wordColor;
-      FontWeight wordWeight;
-
-      if (hasPlacedMark && shouldHaveMark) {
-        // Correctly placed mark
-        wordColor = const Color(0xFF0D121C);
-        wordWeight = FontWeight.w400;
-      } else if (hasPlacedMark && !shouldHaveMark) {
-        // Incorrectly placed mark
-        wordColor = const Color(0xFFE34646);
-        wordWeight = FontWeight.w600;
-      } else if (!hasPlacedMark && shouldHaveMark) {
-        // Missed (should have mark but doesn't)
-        wordColor = const Color(0xFF41AE8C);
-        wordWeight = FontWeight.w600;
-      } else {
-        // No mark and shouldn't have one
-        wordColor = const Color(0xFF0D121C);
-        wordWeight = FontWeight.w400;
-      }
-
       // Add word
-      widgets.add(
-        AppText(
-          word,
-          style: AppStyle.text14.copyWith(
-            color: wordColor,
-            fontWeight: wordWeight,
-            height: 1.75,
+      spans.add(
+        TextSpan(
+          text: word,
+          style: TextStyle(
+            color: shouldHaveMark ? const Color(0xFF0D121C) : const Color(0xFF7F8EA4),
+            fontSize: 16.sp,
+            fontWeight: FontWeight.w600,
+            height: 1.5,
           ),
         ),
       );
 
-      // Add pause mark text if placed or should be shown
-      if (hasPlacedMark || shouldHaveMark) {
-        widgets.add(SizedBox(width: 2.w));
-
-        // Determine text color based on mark state
-        Color pauseTextColor;
-        if (hasPlacedMark && shouldHaveMark) {
-          // Correctly placed
-          pauseTextColor = const Color(0xFF41AE8C);
-        } else if (hasPlacedMark && !shouldHaveMark) {
-          // Incorrectly placed
-          pauseTextColor = const Color(0xFFE34646);
-        } else {
-          // Missed (should have mark but doesn't)
-          pauseTextColor = const Color(0xFF41AE8C);
-        }
-
-        widgets.add(
-          AppText(
-            '(pause)',
-            style: AppStyle.text14.copyWith(
-              color: pauseTextColor,
+      // Add pause mark if this position should have one
+      if (shouldHaveMark) {
+        spans.add(
+          TextSpan(
+            text: ' (pause)',
+            style: TextStyle(
+              color: const Color(0xFF0D121C),
+              fontSize: 16.sp,
               fontWeight: FontWeight.w600,
-              height: 1.75,
+              height: 1.5,
             ),
           ),
         );
@@ -105,11 +69,19 @@ class CuesPlacementResultBottomSheet extends StatelessWidget {
 
       // Add space between words (except after last word)
       if (i < words.length - 1) {
-        widgets.add(SizedBox(width: 6.w));
+        spans.add(
+          TextSpan(
+            text: ' ',
+            style: TextStyle(
+              fontSize: 16.sp,
+              height: 1.5,
+            ),
+          ),
+        );
       }
     }
 
-    return widgets;
+    return spans;
   }
 
   @override
@@ -147,7 +119,7 @@ class CuesPlacementResultBottomSheet extends StatelessWidget {
                 ? _CuesPlacementExplanationContent(
                     key: const ValueKey('explanation'),
                     isCorrect: isCorrect,
-                    sentenceWidgets: _buildSentenceWithMarks(),
+                    sentenceSpans: _buildSentenceWithMarks(),
                     explanationText: explanationText!,
                   )
                 : const SizedBox.shrink(key: ValueKey('empty')),
@@ -242,13 +214,13 @@ class CuesPlacementResultBottomSheet extends StatelessWidget {
 
 class _CuesPlacementExplanationContent extends StatelessWidget {
   final bool isCorrect;
-  final List<Widget> sentenceWidgets;
+  final List<InlineSpan> sentenceSpans;
   final String explanationText;
 
   const _CuesPlacementExplanationContent({
     super.key,
     required this.isCorrect,
-    required this.sentenceWidgets,
+    required this.sentenceSpans,
     required this.explanationText,
   });
 
@@ -264,21 +236,26 @@ class _CuesPlacementExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // "Correct answer" or "Incorrect" label
+          // "Correct answer" label
           AppText(
-            isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect,
+            context.text.exerciseFeedbackCorrectAnswer,
             style: AppStyle.textBold14.copyWith(
-              color: isCorrect ? const Color(0xFF3A9377) : const Color(0xFFE34646),
+              color: const Color(0xFF3A9377),
               height: 1.75,
             ),
           ),
           4.verticalSpace,
           // Sentence with pause marks
-          Wrap(
-            spacing: 0,
-            runSpacing: 6.h,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: sentenceWidgets,
+          RichText(
+            text: TextSpan(
+              children: sentenceSpans,
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 16.sp,
+                fontWeight: FontWeight.w600,
+                height: 1.5,
+              ),
+            ),
           ),
           16.verticalSpace,
           // Divider line
