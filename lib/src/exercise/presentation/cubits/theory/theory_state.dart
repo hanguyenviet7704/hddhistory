@@ -26,8 +26,8 @@ extension TheoryStateExtension on TheoryState {
   }
 
   double get progress {
-    if (currentDocumentIndex == 0 || currentLearningItem.documents.isEmpty) return 0;
-    if (currentDocumentIndex == currentLearningItem.documents.length) return 1;
-    return currentDocumentIndex / currentLearningItem.documents.length;
+    if (currentLearningItem.documents.isEmpty) return 0;
+    if (currentDocumentIndex >= currentLearningItem.documents.length) return 1;
+    return (currentDocumentIndex + 1) / currentLearningItem.documents.length;
   }
 }

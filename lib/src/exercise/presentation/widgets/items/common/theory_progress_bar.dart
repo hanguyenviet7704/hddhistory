@@ -12,7 +12,11 @@ class TheoryProgressBar extends StatelessWidget {
       children: [
         10.horizontalSpace,
         InkWell(
-          onTap: () => context.read<TheoryCubit>().previousDocument(),
+          onTap: () => ClosePopupLesson.show(
+            context,
+            onQuit: () => context.read<TheoryCubit>().previousDocument(),
+            onKeepLearning: () => context.read<TheoryCubit>().nextDocument(),
+          ),
           child: Icon(
             Icons.close_rounded,
             color: const Color(0xFF0D121C), // Brand/Brand/Primary/300

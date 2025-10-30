@@ -86,6 +86,7 @@ part 'presentation/widgets/items/choice/multiple_choice_answer_card.dart';
 part 'presentation/widgets/items/choice/result_bottom_sheet.dart';
 part 'presentation/widgets/items/common/audio_player_widget.dart';
 part 'presentation/widgets/items/common/bubble_border.dart';
+part 'presentation/widgets/items/common/close_popup_lesson.dart';
 part 'presentation/widgets/items/common/document_item.dart';
 part 'presentation/widgets/items/common/document_widget.dart';
 part 'presentation/widgets/items/common/exercise_badge.dart';

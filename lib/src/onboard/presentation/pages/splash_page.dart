@@ -93,7 +93,7 @@ class _SplashPageState extends State<SplashPage> {
         return;
       }
       AppDI.injector.get<ExerciseCubit>().loadLearningItem('68f9e14727faeb3760987e14');
-      AppDI.injector.get<TheoryCubit>().loadLearningItem('68f9ddc627faeb3760987d72');
+      AppDI.injector.get<TheoryCubit>().loadLearningItem('69033999052401f4133afc88');
       TheoryRoute().go(context);
     });
   }
