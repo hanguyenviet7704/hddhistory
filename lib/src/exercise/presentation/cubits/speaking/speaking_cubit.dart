@@ -12,6 +12,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
   // Expose recorder controller for waveform visualization
   RecorderController? get recorderController => _recorderController;
 
+  // Expose player controller for waveform visualization after recording stops
+  PlayerController? get playerController => _playerController;
+
   @override
   Future<void> close() {
     _recordingTimer?.cancel();
@@ -80,7 +83,8 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           ..androidEncoder = AndroidEncoder.aac
           ..androidOutputFormat = AndroidOutputFormat.mpeg4
           ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
-          ..sampleRate = 44100;
+          ..sampleRate = 44100
+          ..updateFrequency = const Duration(milliseconds: 100);
 
         return true;
       }
@@ -222,17 +226,41 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     if (_recorderController == null) return;
 
     try {
-      final path = await _recorderController!.stop();
+      // Just pause to preserve the waveform visualization
+      // The audio file path is already stored in _audioPath
+      _recorderController!.pause();
+
+      // Initialize player controller for playback
+      await _initializePlayerWithWaveform(_audioPath);
 
       emit(
         state.copyWith(
           recordingState: SpeakingRecordingState.stopped,
           isRecording: false,
-          audioFilePath: path ?? _audioPath,
+          audioFilePath: _audioPath,
         ),
       );
     } catch (e) {
       emit(state.copyWith(status: SpeakingStatus.failure));
+    }
+  }
+
+  // Initialize player controller with waveform extraction
+  Future<void> _initializePlayerWithWaveform(String audioPath) async {
+    try {
+      // Dispose existing player if any
+      _playerController?.dispose();
+
+      // Create new player controller and prepare with waveform extraction
+      _playerController = PlayerController();
+      await _playerController!.preparePlayer(
+        path: audioPath,
+        shouldExtractWaveform: true,
+      );
+    } catch (e) {
+      // If waveform extraction fails, just continue without it
+      // ignore: avoid_print
+      print('Failed to extract waveform: $e');
     }
   }
 

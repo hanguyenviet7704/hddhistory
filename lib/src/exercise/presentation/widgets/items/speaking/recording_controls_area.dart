@@ -7,8 +7,6 @@ class RecordingControlsArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  
-
     return Container(
       height: 54.h,
       padding: EdgeInsets.only(left: 12.w, right: 8.w),
@@ -21,7 +19,7 @@ class RecordingControlsArea extends StatelessWidget {
           GestureDetector(
             onTap: () {
               final state = context.read<SpeakingCubit>().state;
-            
+
               if (state.recordingState == SpeakingRecordingState.recording) {
                 context.read<SpeakingCubit>().pauseRecording();
                 return;
@@ -31,7 +29,6 @@ class RecordingControlsArea extends StatelessWidget {
                 context.read<SpeakingCubit>().resumeRecording();
                 return;
               }
-
             },
             child: BlocSelector<SpeakingCubit, SpeakingState, bool>(
               selector: (state) => state.recordingState == SpeakingRecordingState.recording,
@@ -54,16 +51,17 @@ class RecordingControlsArea extends StatelessWidget {
           ),
           12.horizontalSpace,
           // Timer
-          BlocSelector<SpeakingCubit, SpeakingState, Duration>(
-            selector: (state) => state.recordingDuration,
-            builder: (context, duration) {
+          StreamBuilder<Duration>(
+            stream: context.read<SpeakingCubit>().recorderController!.onCurrentDuration,
+            builder: (context, snapshot) {
+              final duration = snapshot.data ?? Duration.zero;
               return AppText(
                 duration.formatDuration,
                 style: AppStyle.textBold14.copyWith(
                   color: const Color(0xFF554FF0).withValues(alpha: 0.4),
                 ),
               );
-            },
+            }
           ),
           12.horizontalSpace,
           // Waveform
@@ -71,9 +69,9 @@ class RecordingControlsArea extends StatelessWidget {
             child: BlocBuilder<SpeakingCubit, SpeakingState>(
               builder: (context, state) {
                 final cubit = context.read<SpeakingCubit>();
-                if (cubit.recorderController == null) return const SizedBox.shrink();
                 return WaveformVisualizer(
-                  recorderController: cubit.recorderController!,
+                  recorderController: cubit.recorderController,
+                  recordingState: state.recordingState,
                 );
               },
             ),
