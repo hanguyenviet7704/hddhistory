@@ -7,8 +7,7 @@ class RecordingControlsArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final state = context.watch<SpeakingCubit>().state;
-    final canSubmit = state.audioFilePath != null;
+  
 
     return Container(
       height: 54.h,
@@ -38,33 +37,32 @@ class RecordingControlsArea extends StatelessWidget {
           // ),
           GestureDetector(
             onTap: () {
-              if (!canSubmit) return;
-              if (state.isPlaying) {
-                context.read<SpeakingCubit>().pausePlayback();
+              final state = context.read<SpeakingCubit>().state;
+            
+              if (state.recordingState == SpeakingRecordingState.recording) {
+                context.read<SpeakingCubit>().pauseRecording();
                 return;
               }
-              if (state.isPaused) {
-                context.read<SpeakingCubit>().playRecording();
+
+              if (state.recordingState == SpeakingRecordingState.paused) {
+                context.read<SpeakingCubit>().resumeRecording();
                 return;
               }
-              if (state.isPlaying) {
-                context.read<SpeakingCubit>().playRecording();
-              }
+
             },
-            child: BlocBuilder<SpeakingCubit, SpeakingState>(
-              buildWhen: (previous, current) => previous.recordingProgress != current.recordingProgress || previous.isPlaying != current.isPlaying,
-              builder: (context, state) {
-                return CircularPercentIndicator(
-                  radius: 16.w,
-                  lineWidth: 6.w,
-                  animateFromLastPercent: true,
-                  percent: state.recordingProgress,
-                  progressColor: const Color(0xFF554FF0),
-                  backgroundColor: const Color(0x66554FF0),
-                  circularStrokeCap: CircularStrokeCap.round,
-                  center: Icon(
-                    state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    size: 20.w,
+            child: BlocSelector<SpeakingCubit, SpeakingState, bool>(
+              selector: (state) => state.recordingState == SpeakingRecordingState.recording,
+              builder: (context, isRecording) {
+                return Container(
+                  width: 40.w,
+                  height: 40.w,
+                  padding: EdgeInsets.all(8.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFC7C5FA),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    isRecording ? Icons.pause_rounded : Icons.play_arrow_rounded,
                     color: const Color(0xFF554FF0),
                   ),
                 );
@@ -73,16 +71,26 @@ class RecordingControlsArea extends StatelessWidget {
           ),
           12.horizontalSpace,
           // Timer
-          AppText(
-            state.recordingDuration.formatDuration,
-            style: AppStyle.textBold14.copyWith(
-              color: const Color(0xFF554FF0).withValues(alpha: 0.4),
-            ),
+          BlocSelector<SpeakingCubit, SpeakingState, Duration>(
+            selector: (state) => state.recordingDuration,
+            builder: (context, duration) {
+              return AppText(
+                duration.formatDuration,
+                style: AppStyle.textBold14.copyWith(
+                  color: const Color(0xFF554FF0).withValues(alpha: 0.4),
+                ),
+              );
+            },
           ),
           12.horizontalSpace,
           // Waveform
           Expanded(
-            child: WaveformVisualizer(isRecording: state.isRecording),
+            child: BlocSelector<SpeakingCubit, SpeakingState, SpeakingRecordingState>(
+              selector: (state) => state.recordingState,
+              builder: (context, recordingState) {
+                return WaveformVisualizer(isRecording: recordingState == SpeakingRecordingState.recording);
+              },
+            ),
           ),
           8.horizontalSpace,
           // Send/Stop button
@@ -93,6 +101,8 @@ class RecordingControlsArea extends StatelessWidget {
               //   return;
               // }
 
+              final state = context.read<SpeakingCubit>().state;
+              final canSubmit = state.audioFilePath != null;
               if (!canSubmit) return;
               context.read<SpeakingCubit>().submitAnswer();
             },

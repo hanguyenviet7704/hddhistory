@@ -7,7 +7,7 @@ class SpeakingCubit extends Cubit<SpeakingState> {
   RecorderController? _recorderController;
   PlayerController? _playerController;
   Timer? _recordingTimer;
-  String? _audioPath;
+  String _audioPath = '';
 
   @override
   Future<void> close() {
@@ -15,6 +15,18 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     _recorderController?.dispose();
     _playerController?.dispose();
     return super.close();
+  }
+
+  // Reset to initial state
+  void reset() {
+    _recordingTimer?.cancel();
+    _recorderController?.dispose();
+    _playerController?.dispose();
+    _recorderController = null;
+    _playerController = null;
+    _audioPath = '';
+
+    emit(SpeakingState.initial());
   }
 
   void loadQuestion(QuestionEntity question) {
@@ -26,6 +38,19 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     final newMode = state.inputMode == SpeakingInputMode.recording ? SpeakingInputMode.text : SpeakingInputMode.recording;
 
     emit(state.copyWith(inputMode: newMode));
+  }
+
+  // Update text input
+  void updateTextInput(String text) {
+    final maxChars = state.question.maxCharacter;
+    final trimmedText = maxChars > 0 && text.length > maxChars ? text.substring(0, maxChars) : text;
+
+    emit(
+      state.copyWith(
+        textInput: trimmedText,
+        characterCount: trimmedText.length,
+      ),
+    );
   }
 
   // Initialize recording controller and request permissions
@@ -55,7 +80,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           ..sampleRate = 44100;
 
         return true;
-      } else if (permissionStatus.isPermanentlyDenied) {
+      }
+
+      if (permissionStatus.isPermanentlyDenied) {
         // Permission permanently denied - guide user to settings
         emit(
           state.copyWith(
@@ -64,7 +91,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           ),
         );
         return false;
-      } else if (permissionStatus.isDenied) {
+      }
+
+      if (permissionStatus.isDenied) {
         // Permission denied
         emit(
           state.copyWith(
@@ -73,7 +102,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           ),
         );
         return false;
-      } else if (permissionStatus.isRestricted) {
+      }
+
+      if (permissionStatus.isRestricted) {
         // Permission restricted (iOS specific)
         emit(
           state.copyWith(
@@ -82,7 +113,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           ),
         );
         return false;
-      } else if (permissionStatus.isLimited) {
+      }
+
+      if (permissionStatus.isLimited) {
         // Permission limited (iOS 14+ specific)
         emit(
           state.copyWith(
@@ -91,16 +124,15 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           ),
         );
         return false;
-      } else {
-        // Other cases (provisional, etc)
-        emit(
-          state.copyWith(
-            status: SpeakingStatus.failure,
-            errorMessage: 'Unable to access microphone. Please check your device settings.',
-          ),
-        );
-        return false;
       }
+      // Other cases (provisional, etc)
+      emit(
+        state.copyWith(
+          status: SpeakingStatus.failure,
+          errorMessage: 'Unable to access microphone. Please check your device settings.',
+        ),
+      );
+      return false;
     } catch (e) {
       emit(
         state.copyWith(
@@ -131,6 +163,7 @@ class SpeakingCubit extends Cubit<SpeakingState> {
           isRecording: true,
           recordingDuration: Duration.zero,
           errorMessage: null,
+          audioFilePath: _audioPath,
         ),
       );
 
@@ -152,6 +185,31 @@ class SpeakingCubit extends Cubit<SpeakingState> {
         ),
       );
     }
+  }
+
+  // Pause recording
+  Future<void> pauseRecording() async {
+    _recorderController?.pause();
+    _recordingTimer?.cancel();
+    emit(state.copyWith(recordingState: SpeakingRecordingState.paused));
+  }
+
+  // Resume recording
+  Future<void> resumeRecording() async {
+    _recorderController?.record();
+
+    // Continue timer from current duration
+    final pausedDuration = state.recordingDuration;
+    _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
+      final newDuration = pausedDuration + Duration(seconds: timer.tick);
+      emit(state.copyWith(recordingDuration: newDuration));
+
+      // Auto-stop if max duration reached
+      if (state.question.maxDuration > 0 && newDuration.inSeconds >= state.question.maxDuration) {
+        stopRecording();
+      }
+    });
+    emit(state.copyWith(recordingState: SpeakingRecordingState.recording));
   }
 
   // Stop recording
@@ -250,19 +308,6 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     }
   }
 
-  // Update text input
-  void updateTextInput(String text) {
-    final maxChars = state.question.maxCharacter;
-    final trimmedText = maxChars > 0 && text.length > maxChars ? text.substring(0, maxChars) : text;
-
-    emit(
-      state.copyWith(
-        textInput: trimmedText,
-        characterCount: trimmedText.length,
-      ),
-    );
-  }
-
   // Cancel recording and reset
   void cancelRecording() {
     _recordingTimer?.cancel();
@@ -297,17 +342,5 @@ class SpeakingCubit extends Cubit<SpeakingState> {
         emit(state.copyWith(status: SpeakingStatus.success));
       }
     }
-  }
-
-  // Reset to initial state
-  void reset() {
-    _recordingTimer?.cancel();
-    _recorderController?.dispose();
-    _playerController?.dispose();
-    _recorderController = null;
-    _playerController = null;
-    _audioPath = null;
-
-    emit(SpeakingState.initial());
   }
 }
