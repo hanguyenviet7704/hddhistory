@@ -17,9 +17,9 @@ class SpeakingLessonBody extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
       routeSettings: const RouteSettings(name: RouteNamed.exerciseResultPopup),
       builder: (modalContext) => BlocProvider.value(
-        value: context.read<ChoiceCubit>(),
-        child: BlocBuilder<ChoiceCubit, ChoiceState>(
-          bloc: context.read<ChoiceCubit>(),
+        value: context.read<SpeakingCubit>(),
+        child: BlocBuilder<SpeakingCubit, SpeakingState>(
+          bloc: context.read<SpeakingCubit>(),
           builder: (context, state) {
             return Stack(
               children: [
@@ -31,7 +31,7 @@ class SpeakingLessonBody extends StatelessWidget {
                   child: IgnorePointer(
                     ignoring: !state.showExplanation,
                     child: GestureDetector(
-                      onTap: () => context.read<ChoiceCubit>().toggleExplanation(),
+                      onTap: () => context.read<SpeakingCubit>().toggleExplanation(),
                       child: Container(
                         color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
                         width: double.infinity,
@@ -45,17 +45,27 @@ class SpeakingLessonBody extends StatelessWidget {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  child: ResultBottomSheet(
+                  child: SpeakingResultBottomSheet(
                     type: type,
                     showExplanation: state.showExplanation,
-                    explanationText: state.question.explanation,
+                    analysisText: state.question.explanation,
                     onContinue: () {
                       modalContext.back();
                       AppDI.injector.get<ExerciseCubit>().nextQuestion();
                     },
                     onExplain: () {
-                      context.read<ChoiceCubit>().toggleExplanation();
+                      context.read<SpeakingCubit>().toggleExplanation();
                     },
+                    // TODO: Replace with actual data from state/API
+                    audioFilePath: state.audioFilePath,
+                    goodPoints: const [
+                      'Paraphrasing means restating',
+                      'what the other person has said in your own words',
+                    ],
+                    improvementPoints: const [
+                      'Try to use more varied vocabulary',
+                      'Improve pronunciation clarity',
+                    ],
                   ),
                 ),
               ],
@@ -79,13 +89,15 @@ class SpeakingLessonBody extends StatelessWidget {
           // For speaking exercises, we don't check correct/incorrect immediately
           // Just move to the next question after successful submission
           onAnswerChecked(true);
-          AppDI.injector.get<ExerciseCubit>().nextQuestion();
+          _showResultBottomSheet(context, ResultType.correct);
+          // AppDI.injector.get<ExerciseCubit>().nextQuestion();
         }
 
         // Handle submission failure
         if (state.status == SpeakingStatus.failure && state.errorMessage != null) {
           // Show error message using EasyLoading or SnackBar
           EasyLoading.showError(state.errorMessage!);
+          _showResultBottomSheet(context, ResultType.incorrect);
         }
       },
       child: BlocBuilder<SpeakingCubit, SpeakingState>(

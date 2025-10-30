@@ -112,6 +112,7 @@ part 'presentation/widgets/items/speaking/idle_recording_mode.dart';
 part 'presentation/widgets/items/speaking/mode_toggle_button.dart';
 part 'presentation/widgets/items/speaking/recording_controls_area.dart';
 part 'presentation/widgets/items/speaking/speaking_bottom_action.dart';
+part 'presentation/widgets/items/speaking/speaking_result_bottom_sheet.dart';
 part 'presentation/widgets/items/speaking/tap_to_speak_button.dart';
 part 'presentation/widgets/items/speaking/text_input_area.dart';
 part 'presentation/widgets/items/speaking/text_input_mode.dart';

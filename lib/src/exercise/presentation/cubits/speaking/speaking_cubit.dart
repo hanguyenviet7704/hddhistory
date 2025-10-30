@@ -346,4 +346,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
       }
     }
   }
+
+  // Toggle explanation visibility
+  void toggleExplanation() {
+    emit(state.copyWith(showExplanation: !state.showExplanation));
+  }
 }

@@ -22,6 +22,7 @@ sealed class SpeakingState with _$SpeakingState {
     @Default(false) bool isRecording,
     @Default(false) bool isPlaying,
     @Default(false) bool isPaused,
+    @Default(false) bool showExplanation,
   }) = _SpeakingState;
 
   factory SpeakingState.initial() => const SpeakingState();
