@@ -9,6 +9,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
   Timer? _recordingTimer;
   String _audioPath = '';
 
+  // Expose recorder controller for waveform visualization
+  RecorderController? get recorderController => _recorderController;
+
   @override
   Future<void> close() {
     _recordingTimer?.cancel();

@@ -18,23 +18,6 @@ class RecordingControlsArea extends StatelessWidget {
       ),
       child: Row(
         children: [
-          // Play/Pause button
-          // GestureDetector(
-          //   onTap: canSubmit ? () => context.read<SpeakingCubit>().playRecording() : null,
-          //   child: Container(
-          //     width: 32.w,
-          //     height: 32.w,
-          //     decoration: BoxDecoration(
-          //       color: canSubmit ? const Color(0xFF554FF0).withValues(alpha: 0.1) : Colors.transparent,
-          //       shape: BoxShape.circle,
-          //     ),
-          //     child: Icon(
-          //       state.isPlaying ? Icons.pause : Icons.play_arrow,
-          //       size: 20.w,
-          //       color: const Color(0xFF554FF0),
-          //     ),
-          //   ),
-          // ),
           GestureDetector(
             onTap: () {
               final state = context.read<SpeakingCubit>().state;
@@ -85,10 +68,13 @@ class RecordingControlsArea extends StatelessWidget {
           12.horizontalSpace,
           // Waveform
           Expanded(
-            child: BlocSelector<SpeakingCubit, SpeakingState, SpeakingRecordingState>(
-              selector: (state) => state.recordingState,
-              builder: (context, recordingState) {
-                return WaveformVisualizer(isRecording: recordingState == SpeakingRecordingState.recording);
+            child: BlocBuilder<SpeakingCubit, SpeakingState>(
+              builder: (context, state) {
+                final cubit = context.read<SpeakingCubit>();
+                if (cubit.recorderController == null) return const SizedBox.shrink();
+                return WaveformVisualizer(
+                  recorderController: cubit.recorderController!,
+                );
               },
             ),
           ),
