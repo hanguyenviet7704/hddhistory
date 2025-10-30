@@ -51,24 +51,41 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
       }
 
       // Add placed word (if exists)
-      if (i < placedWords.length) {
-        final placedWord = placedWords[i];
-        final correctAnswer = i < correctAnswers.length ? correctAnswers[i] : null;
-        final isWordCorrect = placedWord != null && placedWord == correctAnswer;
+      //   if (i < placedWords.length) {
+      //     final placedWord = placedWords[i];
+      //     final correctAnswer = i < correctAnswers.length ? correctAnswers[i] : null;
+      //     final isWordCorrect = placedWord != null && placedWord == correctAnswer;
 
-        if (placedWord != null) {
-          spans.add(
-            TextSpan(
-              text: placedWord,
-              style: TextStyle(
-                color: isWordCorrect ? const Color(0xFF0D121C) : const Color(0xFF7F8EA4),
-                fontSize: 16.sp,
-                fontWeight: FontWeight.w600,
-                height: 1.5,
-              ),
+      //     if (placedWord != null) {
+      //       spans.add(
+      //         TextSpan(
+      //           text: placedWord,
+      //           style: TextStyle(
+      //             color: isWordCorrect ? const Color(0xFF0D121C) : const Color(0xFF7F8EA4),
+      //             fontSize: 16.sp,
+      //             fontWeight: FontWeight.w600,
+      //             height: 1.5,
+      //           ),
+      //         ),
+      //       );
+      //     }
+      //   }
+      // }
+
+      if (i < correctAnswers.length) {
+        final correctAnswer = correctAnswers[i];
+
+        spans.add(
+          TextSpan(
+            text: correctAnswer,
+            style: TextStyle(
+              color: const Color(0xFF0D121C),
+              fontSize: 16.sp,
+              fontWeight: FontWeight.w600,
+              height: 1.5,
             ),
-          );
-        }
+          ),
+        );
       }
     }
 
@@ -227,11 +244,10 @@ class _DragAndDropExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // "Correct answer" or "Incorrect" label
           AppText(
-            isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect,
+            context.text.exerciseFeedbackCorrectAnswer,
             style: AppStyle.textBold14.copyWith(
-              color: isCorrect ? const Color(0xFF3A9377) : const Color(0xFFE34646),
+              color: const Color(0xFF3A9377),
               height: 1.75,
             ),
           ),

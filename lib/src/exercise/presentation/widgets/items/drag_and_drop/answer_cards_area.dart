@@ -28,6 +28,7 @@ class AnswerCardsArea extends StatelessWidget {
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           padding: EdgeInsets.symmetric(horizontal: 20.w),
+          alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isDraggingFromSlot ? const Color(0xFFE3E8EF).withValues(alpha: 0.1) : Colors.white,
             borderRadius: BorderRadius.circular(16.r),
@@ -36,6 +37,8 @@ class AnswerCardsArea extends StatelessWidget {
             spacing: 12.w,
             runSpacing: 12.h,
             alignment: WrapAlignment.center,
+            // runAlignment: WrapAlignment.center,
+            // crossAxisAlignment: WrapCrossAlignment.center,
             children: allWords.map((word) {
               final isAvailable = availableWords.contains(word);
 
