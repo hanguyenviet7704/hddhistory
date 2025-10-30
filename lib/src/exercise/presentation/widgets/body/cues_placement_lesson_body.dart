@@ -14,6 +14,8 @@ class CuesPlacementLessonBody extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: Colors.transparent,
+      isDismissible: false,
+      enableDrag: false,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
       routeSettings: const RouteSettings(name: RouteNamed.exerciseResultPopup),
       builder: (modalContext) => BlocProvider.value(
@@ -21,50 +23,53 @@ class CuesPlacementLessonBody extends StatelessWidget {
         child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
           bloc: context.read<CuesPlacementCubit>(),
           builder: (context, state) {
-            return Stack(
-              children: [
-                // Animated backdrop overlay
-                AnimatedOpacity(
-                  duration: const Duration(milliseconds: 350),
-                  curve: Curves.easeInOut,
-                  opacity: state.showExplanation ? 1.0 : 0.0,
-                  child: IgnorePointer(
-                    ignoring: !state.showExplanation,
-                    child: GestureDetector(
-                      onTap: () => context.read<CuesPlacementCubit>().toggleExplanation(),
-                      child: Container(
-                        color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
-                        width: double.infinity,
-                        height: double.infinity,
+            return PopScope(
+              canPop: false,
+              child: Stack(
+                children: [
+                  // Animated backdrop overlay
+                  AnimatedOpacity(
+                    duration: const Duration(milliseconds: 350),
+                    curve: Curves.easeInOut,
+                    opacity: state.showExplanation ? 1.0 : 0.0,
+                    child: IgnorePointer(
+                      ignoring: !state.showExplanation,
+                      child: GestureDetector(
+                        onTap: () => context.read<CuesPlacementCubit>().toggleExplanation(),
+                        child: Container(
+                          color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
+                          width: double.infinity,
+                          height: double.infinity,
+                        ),
                       ),
                     ),
                   ),
-                ),
-                // Result bottom sheet
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: CuesPlacementResultBottomSheet(
-                    type: type,
-                    showExplanation: state.showExplanation,
-                    explanationText: state.question.explanation,
-                    words: state.words,
-                    placedMarks: state.placedMarks,
-                    correctPositions: state.correctPositions,
-                    optionsById: {
-                      for (var option in state.question.options) option.id: option,
-                    },
-                    onContinue: () {
-                      modalContext.back();
-                      AppDI.injector.get<ExerciseCubit>().nextQuestion();
-                    },
-                    onExplain: () {
-                      context.read<CuesPlacementCubit>().toggleExplanation();
-                    },
+                  // Result bottom sheet
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: CuesPlacementResultBottomSheet(
+                      type: type,
+                      showExplanation: state.showExplanation,
+                      explanationText: state.question.explanation,
+                      words: state.words,
+                      placedMarks: state.placedMarks,
+                      correctPositions: state.correctPositions,
+                      optionsById: {
+                        for (var option in state.question.options) option.id: option,
+                      },
+                      onContinue: () {
+                        modalContext.back();
+                        AppDI.injector.get<ExerciseCubit>().nextQuestion();
+                      },
+                      onExplain: () {
+                        context.read<CuesPlacementCubit>().toggleExplanation();
+                      },
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ),
@@ -95,7 +100,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
-                ChoiceDocumentWidget(documents: currentQuestion.document),
+                DocumentWidget(documents: currentQuestion.document),
                 12.verticalSpace,
               ],
               AppText(

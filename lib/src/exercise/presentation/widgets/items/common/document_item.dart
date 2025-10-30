@@ -1,13 +1,15 @@
 part of '../../../../exercise.dart';
 
-class ChoiceDocumentItem extends StatelessWidget {
+class DocumentItem extends StatelessWidget {
   final ContentDocumentEntity document;
 
-  const ChoiceDocumentItem({super.key, required this.document});
+  const DocumentItem({super.key, required this.document});
 
   @override
   Widget build(BuildContext context) {
     final data = document.data;
+
+    if (!document.dataAvailable) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
@@ -44,11 +46,13 @@ class ChoiceDocumentItem extends StatelessWidget {
               ),
             ),
           ],
-          16.verticalSpace,
-          _ChoiceDocumentTypeTag(
-            label: 'Client',
-            accentColor: const Color(0xFFEBEAFD),
-          ),
+          if (data.caption.isNotEmpty) ...[
+            16.verticalSpace,
+            _ChoiceDocumentTypeTag(
+              label: document.data.caption,
+              accentColor: const Color(0xFFEBEAFD),
+            ),
+          ],
           if (data.thumbnail.isNotEmpty) ...[
             16.verticalSpace,
             DCachedImage(

@@ -1,9 +1,9 @@
 part of '../../../../exercise.dart';
 
-class ChoiceDocumentWidget extends StatelessWidget {
+class DocumentWidget extends StatelessWidget {
   final List<ContentDocumentEntity> documents;
 
-  const ChoiceDocumentWidget({super.key, required this.documents});
+  const DocumentWidget({super.key, required this.documents});
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +18,7 @@ class ChoiceDocumentWidget extends StatelessWidget {
         spacing: 16.h,
         children: documents
             .map(
-              (document) => ChoiceDocumentItem(document: document),
+              (document) => DocumentItem(document: document),
             )
             .toList(),
       ),

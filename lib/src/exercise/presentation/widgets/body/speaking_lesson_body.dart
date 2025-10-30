@@ -109,7 +109,7 @@ class SpeakingLessonBody extends StatelessWidget {
             children: [
               // Display question document (images, audio, text, etc.)
               if (currentQuestion.document.isNotEmpty) ...[
-                ChoiceDocumentWidget(documents: currentQuestion.document),
+                DocumentWidget(documents: currentQuestion.document),
                 16.verticalSpace,
               ],
 

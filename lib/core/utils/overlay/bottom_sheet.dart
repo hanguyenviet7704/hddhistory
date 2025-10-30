@@ -20,7 +20,8 @@ void showDModalBottomSheet({
     builder: (context) => Padding(
       padding: MediaQuery.viewInsetsOf(context),
       child: SafeArea(
-        child: bodyWidget ??
+        child:
+            bodyWidget ??
             DraggableScrollableSheet(
               initialChildSize: initialChildSize,
               maxChildSize: maxChildSize,
