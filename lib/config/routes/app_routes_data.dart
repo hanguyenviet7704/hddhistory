@@ -244,3 +244,31 @@ class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
     child: const ExercisePage(),
   );
 }
+
+@TypedGoRoute<TheoryRoute>(path: RoutePath.theory, name: RouteNamed.theory)
+class TheoryRoute extends BaseTransitionRouteData with $TheoryRoute {
+  const TheoryRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<TheoryCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
+    ],
+    child: const TheoryPage(),
+  );
+}
+
+@TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete)
+class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {
+  const LessonCompleteRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const LessonCompletePage();
+}

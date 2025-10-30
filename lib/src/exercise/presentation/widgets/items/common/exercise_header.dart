@@ -1,8 +1,7 @@
 part of '../../../../exercise.dart';
 
 class ExerciseHeader extends StatelessWidget {
-  final ExerciseLayoutType type;
-  const ExerciseHeader({super.key, required this.type});
+  const ExerciseHeader({super.key});
 
   @override
   Widget build(BuildContext context) {

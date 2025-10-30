@@ -1,34 +1,14 @@
 part of '../../../exercise.dart';
 
-enum ExerciseLayoutType {
-  knowledge,
-  practice;
-
-  String get title {
-    switch (this) {
-      case ExerciseLayoutType.knowledge:
-        return 'Knowledge';
-      case ExerciseLayoutType.practice:
-        return 'Practice';
-    }
-  }
-
-  String get icon {
-    return switch (this) {
-      ExerciseLayoutType.knowledge => AppAsset.svg.app.icAim,
-      ExerciseLayoutType.practice => AppAsset.svg.app.icLayer,
-    };
-  }
-}
-
 class ExerciseLayout extends StatelessWidget {
   final Widget body;
   final Widget? bottom;
-
+  final LearningItemType type;
   const ExerciseLayout({
     super.key,
     required this.body,
     this.bottom,
+    this.type = LearningItemType.exercise,
   });
 
   @override
@@ -37,14 +17,16 @@ class ExerciseLayout extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            ExerciseProgressBar(),
+            if (type == LearningItemType.exercise) ExerciseProgressBar(),
+            if (type == LearningItemType.theory) TheoryProgressBar(),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
                     12.verticalSpace,
-                    ExerciseBadge(),
-                    ChatInformationWidget(),
+                    if (type == LearningItemType.exercise) ExerciseBadge(),
+                    if (type == LearningItemType.theory) TheoryBadge(),
+                    ChatInformationWidget(type: type),
                     body,
                   ],
                 ),
