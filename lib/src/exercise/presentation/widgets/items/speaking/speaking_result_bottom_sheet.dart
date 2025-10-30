@@ -213,7 +213,7 @@ class _SpeakingExplanationContent extends StatelessWidget {
           16.verticalSpace,
           // Audio player (if available)
           if (audioFilePath != null) ...[
-            _buildAudioPlayer(),
+            AudioPlayerWidget(audioUrl: audioFilePath),
             16.verticalSpace,
           ],
           // Good points section
