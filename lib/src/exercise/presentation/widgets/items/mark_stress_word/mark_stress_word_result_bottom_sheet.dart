@@ -29,44 +29,21 @@ class MarkStressWordResultBottomSheet extends StatelessWidget {
   String title(BuildContext context) => isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect;
   String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
 
-  /// Build sentence with highlighted stressed words
+  /// Build sentence with highlighted stressed words showing correct answers
   List<InlineSpan> _buildSentenceSpans() {
     final spans = <InlineSpan>[];
 
     for (int i = 0; i < words.length; i++) {
       final word = words[i];
-      final isSelected = selectedIndices.contains(i);
       final isCorrectWord = correctIndices.contains(i);
-
-      // Determine word color based on state
-      Color wordColor;
-      FontWeight wordWeight;
-
-      if (isSelected && isCorrectWord) {
-        // Correctly selected
-        wordColor = const Color(0xFF0D121C);
-        wordWeight = FontWeight.w600;
-      } else if (isSelected && !isCorrectWord) {
-        // Incorrectly selected (user marked stress but shouldn't)
-        wordColor = const Color(0xFFE34646);
-        wordWeight = FontWeight.w600;
-      } else if (!isSelected && isCorrectWord) {
-        // Missed (should be stressed but user didn't mark)
-        wordColor = const Color(0xFF41AE8C);
-        wordWeight = FontWeight.w600;
-      } else {
-        // Not selected and not correct
-        wordColor = const Color(0xFF7F8EA4);
-        wordWeight = FontWeight.w400;
-      }
 
       spans.add(
         TextSpan(
-          text: word,
+          text: isCorrectWord ? word.toUpperCase() : word,
           style: TextStyle(
-            color: wordColor,
+            color: isCorrectWord ? const Color(0xFF0D121C) : const Color(0xFF7F8EA4),
             fontSize: 16.sp,
-            fontWeight: wordWeight,
+            fontWeight: FontWeight.w600,
             height: 1.5,
           ),
         ),
@@ -240,11 +217,11 @@ class _MarkStressWordExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // "Correct answer" or "Incorrect" label
+          // "Correct answer" label
           AppText(
-            isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect,
+            context.text.exerciseFeedbackCorrectAnswer,
             style: AppStyle.textBold14.copyWith(
-              color: isCorrect ? const Color(0xFF3A9377) : const Color(0xFFE34646),
+              color: const Color(0xFF3A9377),
               height: 1.75,
             ),
           ),

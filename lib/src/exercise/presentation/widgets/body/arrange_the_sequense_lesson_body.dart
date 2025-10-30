@@ -124,13 +124,13 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 physics: const NeverScrollableScrollPhysics(),
                 buildDefaultDragHandles: false,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
-                itemCount: state.currentItems.length,
                 proxyDecorator: (child, index, animation) {
                   return child;
                 },
                 onReorder: (oldIndex, newIndex) {
                   context.read<ArrangeTheSequenceCubit>().reorderItems(oldIndex, newIndex);
                 },
+                itemCount: state.currentItems.length,
                 itemBuilder: (context, index) {
                   final item = state.currentItems[index];
                   return Padding(

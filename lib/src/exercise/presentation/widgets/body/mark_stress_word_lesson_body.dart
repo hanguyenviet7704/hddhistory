@@ -112,7 +112,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
               ),
               12.verticalSpace,
               Container(
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
                 margin: EdgeInsets.symmetric(horizontal: 20.w),
                 alignment: Alignment.center,
                 decoration: ShapeDecoration(
@@ -128,10 +128,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
                 ),
                 child: Wrap(
                   spacing: 2.w,
-                  runSpacing: 12.h,
-                  alignment: WrapAlignment.spaceAround,
-                  runAlignment: WrapAlignment.spaceBetween,
-                  crossAxisAlignment: WrapCrossAlignment.center,
+                  runSpacing: 6.h,
 
                   children: List.generate(
                     words.length,

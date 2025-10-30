@@ -17,7 +17,7 @@ class MarkStressWordCard extends StatelessWidget {
       AnswerState.selected => const Color(0xFFEFF0FE),
       AnswerState.correct => const Color(0xFFEAFFEF),
       AnswerState.incorrect => const Color(0xFFFDEAE7),
-      AnswerState.correctNotSelected => const Color(0xFFEAFFEF),
+      AnswerState.correctNotSelected => Colors.white,
       AnswerState.disabled => Colors.white,
       _ => Colors.white,
     };
@@ -28,7 +28,7 @@ class MarkStressWordCard extends StatelessWidget {
       AnswerState.selected => const Color(0xFF554FF0),
       AnswerState.correct => const Color(0xFF1DA75E),
       AnswerState.incorrect => const Color(0xFFE34646),
-      AnswerState.correctNotSelected => const Color(0xFF1DA75E),
+      AnswerState.correctNotSelected => const Color(0xFF364152),
       AnswerState.disabled => const Color(0xFFE3E8EF),
       _ => const Color(0xFFE3E8EF),
     };
@@ -56,6 +56,13 @@ class MarkStressWordCard extends StatelessWidget {
     };
   }
 
+  String get displayText {
+    return switch (state) {
+      AnswerState.correct || AnswerState.correctNotSelected || AnswerState.selected || AnswerState.incorrect => option.text.toUpperCase(),
+      _ => option.text,
+    };
+  }
+
   @override
   Widget build(BuildContext context) {
     return Opacity(
@@ -63,14 +70,14 @@ class MarkStressWordCard extends StatelessWidget {
       child: GestureDetector(
         onTap: state == AnswerState.disabled ? null : onTap,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 6.h),
+          padding: EdgeInsets.symmetric(horizontal: 4.w, vertical: 6.h),
           decoration: BoxDecoration(
             color: backgroundColor,
             border: Border.all(color: borderColor, width: 2.w),
-            borderRadius: BorderRadius.circular(12.r),
+            borderRadius: BorderRadius.circular(8.r),
           ),
           child: AppText(
-            option.text,
+            displayText,
             textAlign: TextAlign.center,
             style: AppStyle.text16.copyWith(
               color: const Color(0xFF364152),
