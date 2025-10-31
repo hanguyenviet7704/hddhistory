@@ -5,15 +5,6 @@ class ReviewTimePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ReviewTimeView();
-  }
-}
-
-class ReviewTimeView extends StatelessWidget {
-  const ReviewTimeView({super.key});
-
-  @override
-  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -61,18 +52,27 @@ class ReviewTimeView extends StatelessWidget {
             ),
 
             // Bottom CTA Button
-            Container(
-              padding: EdgeInsets.symmetric(
-                horizontal: 20.w,
-                vertical: 16.h,
-              ),
-              decoration: const BoxDecoration(
-                color: Colors.white,
-              ),
-              child: GestureDetector(
-                onTap: () {
-                  context.read<LessonCubit>().reviewDone();
-                },
+            GestureDetector(
+              onTap: () {
+                final lessonCubit = context.read<LessonCubit>();
+                lessonCubit.reviewDone();
+                
+                if (lessonCubit.state.subQuestions.isEmpty) {
+                  LessonCompleteRoute(
+                    type: 'lesson',
+                    keypointTitle: lessonCubit.state.currentLearningItem.title.en,
+                    progress: 1.0,
+                  ).go(context);
+                }
+              },
+              child: Container(
+                padding: EdgeInsets.symmetric(
+                  horizontal: 20.w,
+                  vertical: 16.h,
+                ),
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                ),
                 child: Container(
                   height: 54.h,
                   decoration: BoxDecoration(

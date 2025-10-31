@@ -17,7 +17,10 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   void setSubQuestions(List<QuestionEntity> subQuestions) {
     if (subQuestions.isEmpty) return;
-    emit(state.copyWith(subQuestions: subQuestions));
+    LearningItemEntity learningItemModel = state.currentLearningItem;
+    learningItemModel = learningItemModel.copyWith(subQuestions: subQuestions, type: LearningItemType.exercise);
+    AppDI.injector.get<LessonCubit>().setCurrentLearningItem(learningItemModel);
+    emit(state.copyWith(subQuestions: subQuestions, currentLearningItem: learningItemModel));
     setQuestionData(subQuestions.first);
   }
 

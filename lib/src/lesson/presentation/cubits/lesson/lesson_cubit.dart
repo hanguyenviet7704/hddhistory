@@ -41,11 +41,34 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void nextLearningItem() {
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
-      ReviewTimeRoute().go(AppConfig.instance.context!);
+      if (state.subQuestions.isNotEmpty) {
+        ReviewTimeRoute().go(AppConfig.instance.context!);
+        return;
+      }
+
+      LessonCompleteRoute(
+        type: 'lesson',
+        keypointTitle: state.currentLearningItem.title.en,
+        progress: 1.0,
+      ).go(AppConfig.instance.context!);
+      return;
+    }
+
+    final currentProgress = (state.currentLearningItemIndex + 1) / state.pageData.items.length;
+    LessonCompleteRoute(
+      type: 'keypoint',
+      keypointTitle: state.currentLearningItem.title.en,
+      progress: currentProgress,
+    ).go(AppConfig.instance.context!);
+  }
+
+  void continueToNextLearningItem() {
+    if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
       return;
     }
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
     loadLearningItem(state.currentLearningItem.id);
+    LessonRoute().go(AppConfig.instance.context!);
   }
 
   void previousLearningItem() {

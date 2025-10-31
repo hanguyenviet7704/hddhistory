@@ -255,16 +255,37 @@ class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const ReviewTimePage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<LessonCubit>(),
+    child: const ReviewTimePage(),
+  );
 }
 
 @TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete)
 class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {
-  const LessonCompleteRoute();
+  final String? type;
+  final String? keypointTitle;
+  final double? progress;
+
+  const LessonCompleteRoute({
+    this.type,
+    this.keypointTitle,
+    this.progress,
+  });
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const LessonCompletePage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    final lessonType = type == 'lesson' ? LessonCompleteType.lesson : LessonCompleteType.keypoint;
+    return BlocProvider.value(
+      value: AppDI.injector.get<LessonCubit>(),
+      child: LessonCompletePage(
+        type: lessonType,
+        keypointTitle: keypointTitle,
+        progress: progress,
+      ),
+    );
+  }
 }
