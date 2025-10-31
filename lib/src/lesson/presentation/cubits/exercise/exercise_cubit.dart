@@ -15,32 +15,11 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     setQuestionData(learningItem.questions.first);
   }
 
-  void setSubQuestions(List<QuestionEntity> subQuestions) {
-    if (subQuestions.isEmpty) return;
-    LearningItemEntity learningItemModel = state.currentLearningItem;
-    learningItemModel = learningItemModel.copyWith(subQuestions: subQuestions, type: LearningItemType.exercise);
-    AppDI.injector.get<LessonCubit>().setCurrentLearningItem(learningItemModel);
-    emit(state.copyWith(subQuestions: subQuestions, currentLearningItem: learningItemModel));
-    setQuestionData(subQuestions.first);
+  void setSubQuestions(LearningItemEntity learningItem) {
+    setCurrentLearningItem(learningItem);
   }
 
   void nextQuestion() {
-    if (state.subQuestions.isEmpty) {
-      nextMainQuestion();
-      return;
-    }
-    nextSubQuestion();
-  }
-
-  void previousQuestion() {
-    if (state.subQuestions.isEmpty) {
-      previousMainQuestion();
-      return;
-    }
-    previousSubQuestion();
-  }
-
-  void nextMainQuestion() {
     if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) {
       AppDI.injector.get<LessonCubit>().nextLearningItem();
       return;
@@ -49,28 +28,16 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     setQuestionData(state.currentQuestion);
   }
 
-  void previousMainQuestion() {
+  void previousQuestion() {
     if (state.currentQuestionIndex <= 0) return;
     emit(state.copyWith(currentQuestionIndex: state.currentQuestionIndex - 1));
     setQuestionData(state.currentQuestion);
   }
 
-  void nextSubQuestion() {
-    if (state.currentSubQuestionIndex >= state.subQuestions.length - 1) return;
-    emit(state.copyWith(currentSubQuestionIndex: state.currentSubQuestionIndex + 1));
-    setQuestionData(state.currentSubQuestion);
-  }
-
-  void previousSubQuestion() {
-    if (state.currentSubQuestionIndex <= 0) return;
-    emit(state.copyWith(currentSubQuestionIndex: state.currentSubQuestionIndex - 1));
-    setQuestionData(state.currentSubQuestion);
-  }
-
-  void addWrongSubQuestionToLessonCubit(QuestionEntity wrongQuestion) {
+  void addSubQuestionToLessonCubit(QuestionEntity wrongQuestion) {
     List<QuestionEntity> subQuestions = List<QuestionEntity>.from(state.currentLearningItem.subQuestions);
-    QuestionEntity? newQuestion = subQuestions.firstWhereOrDefault((value) => value.mainQuestion == wrongQuestion.id, defaultValue: QuestionEntity());
-    if (newQuestion == null) return;
+    QuestionEntity newQuestion = subQuestions.firstWhere((value) => value.mainQuestion == wrongQuestion.id, orElse: () => QuestionEntity());
+    if (newQuestion.id == 0) return;
 
     AppDI.injector.get<LessonCubit>().addSubQuestion(newQuestion);
   }

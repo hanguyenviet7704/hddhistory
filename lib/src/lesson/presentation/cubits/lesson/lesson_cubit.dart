@@ -32,11 +32,12 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   void addSubQuestion(QuestionEntity question) => emit(state.copyWith(subQuestions: [...state.subQuestions, question]));
 
   void reviewDone() {
-    AppDI.injector.get<ExerciseCubit>().setSubQuestions(state.subQuestions);
-    if (state.subQuestions.isNotEmpty) {
-      LessonRoute().go(AppConfig.instance.context!);
-      return;
-    }
+    if (state.subQuestions.isEmpty) return;
+    
+    LearningItemEntity learningItem = state.pageData.items.firstWhere((item) => item.type == LearningItemType.exercise, orElse: () => LearningItemEntity());
+    learningItem = learningItem.copyWith(questions: state.subQuestions, type: LearningItemType.exercise);
+    AppDI.injector.get<ExerciseCubit>().setSubQuestions(learningItem);
+    LessonRoute().go(AppConfig.instance.context!);
   }
 
   void nextLearningItem() {

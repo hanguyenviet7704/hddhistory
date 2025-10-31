@@ -8,8 +8,6 @@ abstract class ExerciseState with _$ExerciseState {
     @Default(ExerciseStatus.initial) ExerciseStatus status,
     @Default(LearningItemEntity()) LearningItemEntity currentLearningItem,
     @Default(0) int currentQuestionIndex,
-    @Default([]) List<QuestionEntity> subQuestions,
-    @Default(0) int currentSubQuestionIndex,
     String? errorMessage,
   }) = _ExerciseState;
 
@@ -22,9 +20,7 @@ extension ExerciseStateExtension on ExerciseState {
   QuestionEntity get currentQuestion {
     return currentLearningItem.questions.elementAtOrDefault(currentQuestionIndex, defaultValue: QuestionEntity());
   }
-  QuestionEntity get currentSubQuestion {
-    return subQuestions.elementAtOrDefault(currentSubQuestionIndex, defaultValue: QuestionEntity());
-  }
+
   double get progress {
     if (currentQuestionIndex == 0 || currentLearningItem.questions.isEmpty) return 0;
     if (currentQuestionIndex == currentLearningItem.questions.length) return 1;

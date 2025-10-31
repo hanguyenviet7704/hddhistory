@@ -149,7 +149,8 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
         16.verticalSpace,
 
         AppText(
-          context.text.lessonKeypointCompleteTitle,
+          // context.text.lessonKeypointCompleteTitle,
+          'Keypoint complete!',
           style: AppStyle.textBold24.copyWith(
             color: const Color(0xFF1A202C),
             height: 1.5,
@@ -227,7 +228,8 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
             24.verticalSpace,
 
             AppText(
-              context.text.lessonCompleteTitle,
+              // context.text.lessonCompleteTitle,
+              'Lesson complete!',
               style: AppStyle.textBold24.copyWith(
                 color: const Color(0xFF1A202C),
                 height: 1.5,
@@ -236,7 +238,8 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
             ),
             4.verticalSpace,
             AppText(
-              context.text.lessonCompleteSubtitle,
+              // context.text.lessonCompleteSubtitle,
+              'You’re one step closer to your goal',
               style: AppStyle.text14.copyWith(
                 color: const Color(0xFF7F8EA4),
                 height: 1.75,
@@ -285,7 +288,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
           ),
           child: Center(
             child: AppText(
-              widget.type == LessonCompleteType.keypoint ? context.text.exerciseSkipButton : context.text.lessonCompleteButton,
+              widget.type == LessonCompleteType.keypoint ? context.text.exerciseSkipButton : 'Complete',
               style: AppStyle.textBold16.copyWith(
                 color: Colors.white,
                 height: 1.5,
@@ -327,7 +330,7 @@ class ConfettiPainter extends CustomPainter {
       if (y < 0 || y > size.height) continue;
 
       final paint = Paint()
-        ..color = colors[i % colors.length].withOpacity(1.0 - progress * 0.5)
+        ..color = colors[i % colors.length].op(1.0 - progress * 0.5)
         ..style = PaintingStyle.fill;
 
       final double confettiSize = 4 + random.nextDouble() * 6;

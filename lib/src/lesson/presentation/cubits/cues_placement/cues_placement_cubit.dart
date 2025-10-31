@@ -71,7 +71,7 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     );
 
     if (!isCorrect) {
-      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestionToLessonCubit(state.question);
+      AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit(state.question);
     }
   }
 
