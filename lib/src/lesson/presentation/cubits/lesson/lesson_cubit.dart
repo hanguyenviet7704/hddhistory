@@ -25,8 +25,6 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           ..setCurrentLearningItem(state.currentLearningItem);
         break;
     }
-
-    LessonRoute().go(AppConfig.instance.context!);
   }
 
   void setCurrentLessonIndex(int index) => emit(state.copyWith(currentLessonIndex: index));

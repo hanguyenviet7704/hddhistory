@@ -93,6 +93,7 @@ class _SplashPageState extends State<SplashPage> {
         return;
       }
       AppDI.injector.get<LessonCubit>().loadAllLearningItems();
+      LessonRoute().go(context);
     });
   }
 

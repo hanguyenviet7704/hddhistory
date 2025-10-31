@@ -5,11 +5,26 @@ class LessonPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LessonCubit, LessonState>(
-      builder: (context, state) {
+    return BlocSelector<LessonCubit, LessonState, LearningItemType>(
+      selector: (state) => state.currentLearningItem.type,
+      builder: (context, learningType) {
+        if (learningType == LearningItemType.exercise) {
+          return BlocSelector<ExerciseCubit, ExerciseState, QuestionEntity>(
+            selector: (state) => state.currentQuestion,
+            builder: (context, question) {
+              final lessonBody = _buildExerciseLessonBody(question.type);
+              return LessonLayout(
+                body: lessonBody,
+                bottom: _buildBottomButton(context, lessonBody),
+              );
+            },
+          );
+        }
+
+        final lessonBody = TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
         return LessonLayout(
-          body: _buildLessonBody(context, state.currentLearningItem),
-          bottom: _buildBottomButton(context, _buildLessonBody(context, state.currentLearningItem)),
+          body: lessonBody,
+          bottom: _buildBottomButton(context, lessonBody),
         );
       },
     );
@@ -19,25 +34,16 @@ class LessonPage extends StatelessWidget {
     debugPrint('Answer is correct: $isCorrect');
   }
 
-  Widget _buildLessonBody(BuildContext context, LearningItemEntity learningItem) {
-    if (learningItem.type == LearningItemType.exercise) {
-      return BlocSelector<ExerciseCubit, ExerciseState, QuestionEntity>(
-        selector: (state) => state.currentQuestion,
-        builder: (context, question) {
-          return switch (question.type) {
-            QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-            QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-            QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: _handleAnswerChecked),
-            QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: _handleAnswerChecked),
-            QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: _handleAnswerChecked),
-            QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: _handleAnswerChecked),
-            QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: _handleAnswerChecked),
-          };
-        },
-      );
-    }
-
-    return TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
+  Widget _buildExerciseLessonBody(QuestionTypeEnum questionType) {
+    return switch (questionType) {
+      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: _handleAnswerChecked),
+    };
   }
 
   Widget _buildBottomButton(BuildContext context, Widget lessonBody) {
