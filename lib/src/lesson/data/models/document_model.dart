@@ -3,7 +3,7 @@ part of '../../lesson.dart';
 @freezed
 abstract class DocumentModel with _$DocumentModel {
   const factory DocumentModel({
-    @Default(0) int id,
+    @Default(0) @JsonKey(name: '_id') int id,
     @Default('') String speechBubble,
     @Default(TagModel()) TagModel tag,
     @Default([]) List<ContentDocumentModel> document,

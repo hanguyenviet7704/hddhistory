@@ -5,7 +5,7 @@ abstract class QuestionModel with _$QuestionModel {
   const factory QuestionModel({
     @Default(QuestionType.singleChoice) QuestionType type,
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
-    @Default(0) int id,
+    @Default(0) @JsonKey(name: '_id') int id,
     @Default('') String speechBubble,
     @Default(TagModel()) TagModel tag,
     @Default([]) List<ContentDocumentModel> document,

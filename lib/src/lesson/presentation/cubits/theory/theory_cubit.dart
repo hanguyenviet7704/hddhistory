@@ -33,7 +33,7 @@ class TheoryCubit extends Cubit<TheoryState> with CubitUseCaseHandlerMixin<Theor
 
   void nextDocument() {
     if (state.currentDocumentIndex >= state.currentLearningItem.documents.length - 1) {
-      ReviewTimeRoute().push(AppConfig.instance.context!);
+      AppDI.injector.get<LessonCubit>().nextLearningItem();
       return;
     }
     emit(state.copyWith(currentDocumentIndex: state.currentDocumentIndex + 1));

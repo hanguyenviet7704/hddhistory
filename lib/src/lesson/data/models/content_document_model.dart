@@ -3,7 +3,7 @@ part of '../../lesson.dart';
 @freezed
 abstract class ContentDocumentModel with _$ContentDocumentModel {
   const factory ContentDocumentModel({
-    @Default(0) int id,
+    @Default(0) @JsonKey(name: '_id') int id,
     @Default(ContentDocumentType.text) ContentDocumentType type,
     @Default(DocumentDataModel()) DocumentDataModel data,
   }) = _ContentDocumentModel;

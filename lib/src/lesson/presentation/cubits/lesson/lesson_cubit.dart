@@ -1,5 +1,6 @@
 part of '../../../lesson.dart';
 
+@lazySingleton
 class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<LessonState> {
   final GetAllLearningItemsUseCase _getAllLearningItemUseCase;
   final GetLearningItemUseCase _getLearningItemUseCase;
@@ -15,9 +16,11 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     switch (state.currentLearningItem.type) {
       case LearningItemType.theory:
         AppDI.injector.get<TheoryCubit>().setCurrentLearningItem(state.currentLearningItem);
+        TheoryRoute().go(AppConfig.instance.context!);
         break;
       case LearningItemType.exercise:
         AppDI.injector.get<ExerciseCubit>().setCurrentLearningItem(state.currentLearningItem);
+        ExerciseRoute().go(AppConfig.instance.context!);
         break;
     }
   }
@@ -28,7 +31,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     loadLearningItem(state.currentLearningItem.id);
   }
 
-  void previousLearningItem() { 
+  void previousLearningItem() {
     if (state.currentLearningItemIndex <= 0) return;
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex - 1));
     loadLearningItem(state.currentLearningItem.id);
@@ -55,8 +58,8 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         emit(state.copyWith(status: LessonStatus.failure, errorMessage: error));
       },
       onSuccess: (pageData) {
-        emit(state.copyWith(status: LessonStatus.success, pageData: pageData));
-        loadLearningItem('68f9e14727faeb3760987e14');
+        emit(state.copyWith(status: LessonStatus.success, pageData: pageData, currentLearningItemIndex: 0));
+        loadLearningItem(pageData.items.first.id);
       },
     );
   }

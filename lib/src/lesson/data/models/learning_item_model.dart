@@ -3,7 +3,7 @@ part of '../../lesson.dart';
 @freezed
 abstract class LearningItemModel with _$LearningItemModel {
   const factory LearningItemModel({
-    @Default('') String id,
+    @Default('') @JsonKey(name: '_id') String id,
     @Default(AppUser()) AppUser createdBy,
     @Default(AppUser()) AppUser updatedBy,
     @Default('') String keypointId,
