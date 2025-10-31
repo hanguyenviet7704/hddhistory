@@ -69,6 +69,7 @@ part 'presentation/cubits/theory/theory_state.dart';
 part 'presentation/pages/example/speaking_screen.dart';
 part 'presentation/pages/exercise_page.dart';
 part 'presentation/pages/lesson_complete_page.dart';
+part 'presentation/pages/review_time_page.dart';
 part 'presentation/pages/theory_page.dart';
 part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
 part 'presentation/widgets/body/cues_placement_lesson_body.dart';

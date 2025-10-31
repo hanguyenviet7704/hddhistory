@@ -262,6 +262,17 @@ class TheoryRoute extends BaseTransitionRouteData with $TheoryRoute {
   );
 }
 
+@TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime)
+class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {
+  const ReviewTimeRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const ReviewTimePage();
+}
+
 @TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete)
 class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {
   const LessonCompleteRoute();

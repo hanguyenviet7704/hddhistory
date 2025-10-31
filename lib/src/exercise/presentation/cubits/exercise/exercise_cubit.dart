@@ -11,7 +11,10 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
   ) : super(ExerciseState.initial());
 
   void nextQuestion() {
-    if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) return;
+    if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) {
+      ReviewTimeRoute().push(AppConfig.instance.context!);
+      return;
+    }
     emit(state.copyWith(currentQuestionIndex: state.currentQuestionIndex + 1));
     setQuestionData(state.currentQuestion);
   }

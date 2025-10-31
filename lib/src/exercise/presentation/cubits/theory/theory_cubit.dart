@@ -30,7 +30,10 @@ class TheoryCubit extends Cubit<TheoryState> with CubitUseCaseHandlerMixin<Theor
   }
 
   void nextDocument() {
-    if (state.currentDocumentIndex >= state.currentLearningItem.documents.length - 1) return;
+    if (state.currentDocumentIndex >= state.currentLearningItem.documents.length - 1) {
+      ReviewTimeRoute().push(AppConfig.instance.context!);
+      return;
+    }
     emit(state.copyWith(currentDocumentIndex: state.currentDocumentIndex + 1));
     setTheoryData(state.currentDocument);
   }
