@@ -59,6 +59,8 @@ part 'presentation/cubits/drag_and_drop/drag_and_drop_cubit.dart';
 part 'presentation/cubits/drag_and_drop/drag_and_drop_state.dart';
 part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
+part 'presentation/cubits/lesson/lesson_cubit.dart';
+part 'presentation/cubits/lesson/lesson_state.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_state.dart';
 part 'presentation/cubits/speaking/speaking_cubit.dart';

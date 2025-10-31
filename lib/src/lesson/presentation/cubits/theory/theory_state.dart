@@ -6,7 +6,6 @@ enum TheoryStatus { initial, loading, success, failure }
 abstract class TheoryState with _$TheoryState {
   const factory TheoryState({
     @Default(TheoryStatus.initial) TheoryStatus status,
-    @Default(BasePageBreak<LearningItemEntity>()) BasePageBreak<LearningItemEntity> pageData,
     @Default(LearningItemEntity()) LearningItemEntity currentLearningItem,
     @Default(0) int currentDocumentIndex,
     @Default(false) bool hasChecked,
