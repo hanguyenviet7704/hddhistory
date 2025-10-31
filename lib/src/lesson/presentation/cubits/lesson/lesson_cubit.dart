@@ -32,7 +32,10 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   }
 
   void nextLearningItem() {
-    if (state.currentLearningItemIndex >= state.pageData.items.length - 1) return;
+    if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
+      ReviewTimeRoute().go(AppConfig.instance.context!);
+      return;
+    }
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
     loadLearningItem(state.currentLearningItem.id);
   }
