@@ -49,6 +49,10 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
         isCorrect: isCorrect,
       ),
     );
+
+    if (!isCorrect) {
+      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestion(state.question);
+    }
   }
 
   /// Toggle the explanation visibility

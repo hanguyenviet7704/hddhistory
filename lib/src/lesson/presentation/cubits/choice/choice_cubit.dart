@@ -51,6 +51,10 @@ class ChoiceCubit extends Cubit<ChoiceState> {
         showExplanation: false,
       ),
     );
+
+    if (!isCorrect) {
+      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestion(state.question);
+    }
   }
 
   void toggleExplanation() {

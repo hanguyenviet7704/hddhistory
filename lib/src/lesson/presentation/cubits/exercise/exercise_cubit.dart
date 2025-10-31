@@ -31,7 +31,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
   }
 
   void nextSubQuestion() {
-    if (state.currentSubQuestionIndex >= state.currentLearningItem.subQuestions.length - 1) return;
+    if (state.currentSubQuestionIndex >= state.subQuestions.length - 1) return;
     emit(state.copyWith(currentSubQuestionIndex: state.currentSubQuestionIndex + 1));
     setQuestionData(state.currentSubQuestion);
   }
@@ -40,6 +40,14 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     if (state.currentSubQuestionIndex <= 0) return;
     emit(state.copyWith(currentSubQuestionIndex: state.currentSubQuestionIndex - 1));
     setQuestionData(state.currentSubQuestion);
+  }
+
+  void addWrongSubQuestion(QuestionEntity wrongQuestion) {
+    List<QuestionEntity> subQuestions = List<QuestionEntity>.from(state.currentLearningItem.subQuestions);
+    QuestionEntity? newQuestion = subQuestions.firstWhereOrDefault((value) => value.mainQuestion == wrongQuestion.id, defaultValue: QuestionEntity());
+    if (newQuestion == null) return;
+
+    AppDI.injector.get<LessonCubit>().addSubQuestion(newQuestion);
   }
 
   void loadLearningItem(String id) async {

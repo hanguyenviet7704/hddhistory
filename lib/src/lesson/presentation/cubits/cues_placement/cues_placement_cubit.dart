@@ -69,6 +69,10 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
         isCorrect: isCorrect,
       ),
     );
+
+    if (!isCorrect) {
+      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestion(state.question);
+    }
   }
 
   void toggleExplanation() {

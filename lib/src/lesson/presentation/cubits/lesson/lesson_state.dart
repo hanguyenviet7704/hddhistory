@@ -9,6 +9,8 @@ abstract class LessonState with _$LessonState {
     @Default(BasePageBreak<LearningItemEntity>()) BasePageBreak<LearningItemEntity> pageData,
     @Default(0) int currentLearningItemIndex,
     @Default(0) int currentLessonIndex,
+    @Default([]) List<QuestionEntity> subQuestions,
+    @Default(-1) int currentSubQuestionIndex,
     String? errorMessage,
   }) = _LessonState;
 
@@ -36,6 +38,10 @@ extension LessonStateExtension on LessonState {
       LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble,
       LearningItemType.exercise => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble,
     };
+  }
+
+  QuestionEntity get currentSubQuestion {
+    return subQuestions.elementAtOrDefault(currentSubQuestionIndex, defaultValue: QuestionEntity());
   }
 
   int get totalLessonInAllItems {

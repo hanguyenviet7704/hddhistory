@@ -32,6 +32,14 @@ class TheoryCubit extends Cubit<TheoryState> with CubitUseCaseHandlerMixin<Theor
     emit(state.copyWith(showExplanation: !state.showExplanation));
   }
 
+  void addSubQuestion(QuestionEntity wrongQuestion) {
+    List<QuestionEntity> subQuestions = List<QuestionEntity>.from(state.currentLearningItem.subQuestions);
+    QuestionEntity? newQuestion = subQuestions.firstWhereOrDefault((value) => value.mainQuestion == wrongQuestion.id, defaultValue: QuestionEntity());
+    if (newQuestion == null) return;
+
+    AppDI.injector.get<LessonCubit>().addSubQuestion(newQuestion);
+  }
+
   void nextDocument() {
     if (state.currentDocumentIndex >= state.currentLearningItem.documents.length - 1) {
       AppDI.injector.get<LessonCubit>().nextLearningItem();
@@ -60,7 +68,6 @@ class TheoryCubit extends Cubit<TheoryState> with CubitUseCaseHandlerMixin<Theor
       },
     );
   }
-
 
   void setTheoryData(DocumentEntity document) {
     AppDI.injector.get<LessonCubit>().setCurrentLessonIndex(state.currentDocumentIndex);

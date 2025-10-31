@@ -46,6 +46,10 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
         isCorrect: isCorrect,
       ),
     );
+
+    if (!isCorrect) {
+      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestion(state.question);
+    }
   }
 
   void toggleExplanation() {

@@ -87,6 +87,10 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
         isCorrect: allCorrect,
       ),
     );
+
+    if (!allCorrect) {
+      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestion(state.question);
+    }
   }
 
   /// Toggle explanation visibility
