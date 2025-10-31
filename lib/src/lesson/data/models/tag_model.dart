@@ -3,7 +3,7 @@ part of '../../lesson.dart';
 @freezed
 abstract class TagModel with _$TagModel {
   const factory TagModel({
-    @Default('') String id,
+    @Default('') @JsonKey(name: '_id') String id,
     @Default(AppUser()) AppUser createdBy,
     @Default(AppUser()) AppUser updatedBy,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,

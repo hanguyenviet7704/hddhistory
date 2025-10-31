@@ -223,9 +223,9 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   }
 }
 
-@TypedGoRoute<ExerciseRoute>(path: RoutePath.exercise, name: RouteNamed.exercise)
-class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
-  const ExerciseRoute();
+@TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson)
+class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
+  const LessonRoute();
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
@@ -235,6 +235,7 @@ class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
     providers: [
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<TheoryCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
       BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
@@ -242,25 +243,7 @@ class ExerciseRoute extends BaseTransitionRouteData with $ExerciseRoute {
       BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
       BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
     ],
-    child: const ExercisePage(),
-  );
-}
-
-@TypedGoRoute<TheoryRoute>(path: RoutePath.theory, name: RouteNamed.theory)
-class TheoryRoute extends BaseTransitionRouteData with $TheoryRoute {
-  const TheoryRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<TheoryCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
-    ],
-    child: const TheoryPage(),
+    child: const LessonPage(),
   );
 }
 

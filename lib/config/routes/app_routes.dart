@@ -37,8 +37,7 @@ mixin RoutePath {
   static const String premiumPaywall = '/premium-paywall';
 
   //* Exercise
-  static const String theory = '/theory';
-  static const String exercise = '/exercise';
+  static const String lesson = '/lesson';
   static const String reviewTime = '/review-time';
   static const String lessonComplete = '/lesson-complete';
   static const String exerciseResultPopup = '/exercise-result-popup';
@@ -81,8 +80,7 @@ mixin RouteNamed {
   static const String premiumPaywall = 'Premium Paywall';
 
   //* Exercise
-  static const String exercise = 'Exercise';
-  static const String theory = 'Theory';
+  static const String lesson = 'Lesson';
   static const String reviewTime = 'Review Time';
   static const String lessonComplete = 'Lesson Complete';
   static const String exerciseResultPopup = 'Exercise Result Popup';

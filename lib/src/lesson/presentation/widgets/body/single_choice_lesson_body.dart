@@ -137,7 +137,10 @@ class SingleChoiceLessonBody extends StatelessWidget {
         final canCheck = state.selectedAnswerIndex != -1;
 
         return ExerciseContinueButton(
-          onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
+          onPressed: () {
+            if (!canCheck) return;
+            context.read<ChoiceCubit>().checkAnswer();
+          },
           text: 'Check',
           isEnabled: canCheck,
         );

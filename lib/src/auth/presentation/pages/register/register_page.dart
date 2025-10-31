@@ -115,7 +115,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               // Navigate to home
                               // DNavigator.goNamed(RouteNamed.home);
                               AppDI.injector.get<ExerciseCubit>().loadLearningItem('68f9e14727faeb3760987e14');
-                              ExerciseRoute().go(context);
+                              LessonRoute().go(context);
                             },
                           ),
                         ],

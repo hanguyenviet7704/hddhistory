@@ -18,15 +18,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         AppDI.injector.get<TheoryCubit>()
           ..reset()
           ..setCurrentLearningItem(state.currentLearningItem);
-        TheoryRoute().go(AppConfig.instance.context!);
         break;
       case LearningItemType.exercise:
         AppDI.injector.get<ExerciseCubit>()
           ..reset()
           ..setCurrentLearningItem(state.currentLearningItem);
-        ExerciseRoute().go(AppConfig.instance.context!);
         break;
     }
+
+    LessonRoute().go(AppConfig.instance.context!);
   }
 
   void setCurrentLessonIndex(int index) => emit(state.copyWith(currentLessonIndex: index));
