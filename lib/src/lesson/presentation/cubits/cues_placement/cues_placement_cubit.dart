@@ -4,7 +4,7 @@ part of '../../../lesson.dart';
 class CuesPlacementCubit extends Cubit<CuesPlacementState> {
   CuesPlacementCubit() : super(CuesPlacementState.initial());
 
-  void loadQuestion(QuestionEntity question) {
+  void setQuestion(QuestionEntity question) {
     emit(
       state.copyWith(
         question: question,

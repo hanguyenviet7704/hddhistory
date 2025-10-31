@@ -8,8 +8,11 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     this._getLearningItemUseCase,
   ) : super(ExerciseState.initial());
 
+  void reset() => emit(ExerciseState.initial());
+
   void setCurrentLearningItem(LearningItemEntity learningItem) {
     emit(state.copyWith(currentLearningItem: learningItem));
+    setQuestionData(learningItem.questions.first);
   }
 
   void nextQuestion() {
@@ -58,27 +61,37 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       case QuestionTypeEnum.singleChoice:
         AppDI.injector.get<ChoiceCubit>()
           ..reset()
-          ..loadQuestion(question);
+          ..setQuestion(question);
         break;
       case QuestionTypeEnum.multipleChoice:
         AppDI.injector.get<ChoiceCubit>()
           ..reset()
-          ..loadQuestion(question);
+          ..setQuestion(question);
         break;
       case QuestionTypeEnum.cuesPlacement:
-        AppDI.injector.get<CuesPlacementCubit>().loadQuestion(question);
+        AppDI.injector.get<CuesPlacementCubit>()
+          ..reset()
+          ..setQuestion(question);
         break;
       case QuestionTypeEnum.dragAndDrop:
-        AppDI.injector.get<DragAndDropCubit>().loadQuestion(question);
+        AppDI.injector.get<DragAndDropCubit>()
+          ..reset()
+          ..setQuestion(question);
         break;
       case QuestionTypeEnum.arrangeTheSequence:
-        AppDI.injector.get<ArrangeTheSequenceCubit>().loadQuestion(question);
+        AppDI.injector.get<ArrangeTheSequenceCubit>()
+          ..reset()
+          ..setQuestion(question);
         break;
       case QuestionTypeEnum.stressPlacement:
-        AppDI.injector.get<MarkStressWordCubit>().loadQuestion(question);
+        AppDI.injector.get<MarkStressWordCubit>()
+          ..reset()
+          ..setQuestion(question);
         break;
       case QuestionTypeEnum.speaking:
-        AppDI.injector.get<SpeakingCubit>().loadQuestion(question);
+        AppDI.injector.get<SpeakingCubit>()
+          ..reset()
+          ..setQuestion(question);
         break;
     }
   }

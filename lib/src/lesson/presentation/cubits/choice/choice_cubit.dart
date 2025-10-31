@@ -3,10 +3,10 @@ part of '../../../lesson.dart';
 @lazySingleton
 class ChoiceCubit extends Cubit<ChoiceState> {
   ChoiceCubit() : super(ChoiceState.initial());
-  
+
   void reset() => emit(ChoiceState.initial());
 
-  void loadQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
+  void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
 
   void selectAnswer(int index) {
     if (state.hasChecked) return;

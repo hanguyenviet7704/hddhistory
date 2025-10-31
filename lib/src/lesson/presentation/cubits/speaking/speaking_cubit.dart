@@ -35,7 +35,7 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     emit(SpeakingState.initial());
   }
 
-  void loadQuestion(QuestionEntity question) {
+  void setQuestion(QuestionEntity question) {
     emit(state.copyWith(question: question));
   }
 

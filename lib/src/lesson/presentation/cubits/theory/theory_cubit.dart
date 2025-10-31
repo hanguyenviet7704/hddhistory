@@ -12,6 +12,7 @@ class TheoryCubit extends Cubit<TheoryState> with CubitUseCaseHandlerMixin<Theor
 
   void setCurrentLearningItem(LearningItemEntity learningItem) {
     emit(state.copyWith(currentLearningItem: learningItem));
+    setTheoryData(learningItem.documents.first);
   }
 
   void checkAnswer() {

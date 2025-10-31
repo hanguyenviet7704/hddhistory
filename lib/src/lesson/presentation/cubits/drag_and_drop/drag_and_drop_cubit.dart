@@ -5,18 +5,20 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
   DragAndDropCubit() : super(DragAndDropState.initial());
 
   /// Load question and initialize available words
-  void loadQuestion(QuestionEntity question) {
+  void setQuestion(QuestionEntity question) {
     // Extract available words from options
     final List<String> words = question.options.map((option) => option.text).toList();
 
-    emit(state.copyWith(
-      question: question,
-      availableWords: words,
-      placedWords: {},
-      hasChecked: false,
-      isCorrect: false,
-      showExplanation: false,
-    ));
+    emit(
+      state.copyWith(
+        question: question,
+        availableWords: words,
+        placedWords: {},
+        hasChecked: false,
+        isCorrect: false,
+        showExplanation: false,
+      ),
+    );
   }
 
   /// Place a word in a drop zone
@@ -35,10 +37,12 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     // Place the word in the target drop zone
     newPlacedWords[index] = word;
 
-    emit(state.copyWith(
-      placedWords: newPlacedWords,
-      availableWords: newAvailableWords,
-    ));
+    emit(
+      state.copyWith(
+        placedWords: newPlacedWords,
+        availableWords: newAvailableWords,
+      ),
+    );
   }
 
   /// Remove a word from drop zone back to available words
@@ -54,10 +58,12 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
       }
     }
 
-    emit(state.copyWith(
-      placedWords: newPlacedWords,
-      availableWords: newAvailableWords,
-    ));
+    emit(
+      state.copyWith(
+        placedWords: newPlacedWords,
+        availableWords: newAvailableWords,
+      ),
+    );
   }
 
   /// Check if the answer is correct
@@ -75,10 +81,12 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
       }
     }
 
-    emit(state.copyWith(
-      hasChecked: true,
-      isCorrect: allCorrect,
-    ));
+    emit(
+      state.copyWith(
+        hasChecked: true,
+        isCorrect: allCorrect,
+      ),
+    );
   }
 
   /// Toggle explanation visibility
@@ -88,6 +96,6 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
 
   /// Reset the question state (for retry)
   void reset() {
-    loadQuestion(state.question);
+    setQuestion(state.question);
   }
 }

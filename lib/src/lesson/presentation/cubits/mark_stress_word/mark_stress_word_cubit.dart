@@ -4,7 +4,7 @@ part of '../../../lesson.dart';
 class MarkStressWordCubit extends Cubit<MarkStressWordState> {
   MarkStressWordCubit() : super(MarkStressWordState.initial());
 
-  void loadQuestion(QuestionEntity question) {
+  void setQuestion(QuestionEntity question) {
     emit(
       state.copyWith(
         question: question,

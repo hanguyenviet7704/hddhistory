@@ -4,8 +4,10 @@ part of '../../../lesson.dart';
 class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
   ArrangeTheSequenceCubit() : super(ArrangeTheSequenceState.initial());
 
+  void reset() => emit(ArrangeTheSequenceState.initial());
+
   /// Initialize the question and set up the items to be reordered
-  void loadQuestion(QuestionEntity question) {
+  void setQuestion(QuestionEntity question) {
     emit(
       state.copyWith(
         question: question,

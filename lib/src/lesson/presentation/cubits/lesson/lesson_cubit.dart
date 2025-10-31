@@ -15,11 +15,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     switch (state.currentLearningItem.type) {
       case LearningItemType.theory:
-        AppDI.injector.get<TheoryCubit>().setCurrentLearningItem(state.currentLearningItem);
+        AppDI.injector.get<TheoryCubit>()
+          ..reset()
+          ..setCurrentLearningItem(state.currentLearningItem);
         TheoryRoute().go(AppConfig.instance.context!);
         break;
       case LearningItemType.exercise:
-        AppDI.injector.get<ExerciseCubit>().setCurrentLearningItem(state.currentLearningItem);
+        AppDI.injector.get<ExerciseCubit>()
+          ..reset()
+          ..setCurrentLearningItem(state.currentLearningItem);
         ExerciseRoute().go(AppConfig.instance.context!);
         break;
     }
@@ -72,7 +76,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         emit(state.copyWith(status: LessonStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: LessonStatus.success, currentLearningItemIndex: 0));
+        emit(state.copyWith(status: LessonStatus.success));
         setCurrentLearningItem();
       },
     );
