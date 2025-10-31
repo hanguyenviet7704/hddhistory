@@ -163,26 +163,28 @@ class SpeakingCubit extends Cubit<SpeakingState> {
 
       await _recorderController!.record(path: _audioPath);
 
+      final initialDuration = state.question.maxDuration > 0 ? Duration(seconds: state.question.maxDuration) : Duration.zero;
+
       emit(
         state.copyWith(
           status: SpeakingStatus.initial,
           recordingState: SpeakingRecordingState.recording,
           isRecording: true,
-          recordingDuration: Duration.zero,
+          recordingDuration: initialDuration,
           errorMessage: null,
           audioFilePath: _audioPath,
         ),
       );
 
-      // Start timer to track recording duration
       _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-        final newDuration = Duration(seconds: timer.tick);
-        emit(state.copyWith(recordingDuration: newDuration));
+        final newDuration = state.recordingDuration - const Duration(seconds: 1);
 
-        // Auto-stop if max duration reached
-        if (state.question.maxDuration > 0 && newDuration.inSeconds >= state.question.maxDuration) {
+        if (newDuration.inSeconds <= 0) {
           stopRecording();
+          return;
         }
+
+        emit(state.copyWith(recordingDuration: newDuration));
       });
     } catch (e) {
       emit(
@@ -205,16 +207,15 @@ class SpeakingCubit extends Cubit<SpeakingState> {
   Future<void> resumeRecording() async {
     _recorderController?.record();
 
-    // Continue timer from current duration
-    final pausedDuration = state.recordingDuration;
     _recordingTimer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      final newDuration = pausedDuration + Duration(seconds: timer.tick);
-      emit(state.copyWith(recordingDuration: newDuration));
+      final newDuration = state.recordingDuration - const Duration(seconds: 1);
 
-      // Auto-stop if max duration reached
-      if (state.question.maxDuration > 0 && newDuration.inSeconds >= state.question.maxDuration) {
+      if (newDuration.inSeconds <= 0) {
         stopRecording();
+        return;
       }
+
+      emit(state.copyWith(recordingDuration: newDuration));
     });
     emit(state.copyWith(recordingState: SpeakingRecordingState.recording));
   }

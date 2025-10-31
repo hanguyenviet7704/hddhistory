@@ -12,26 +12,16 @@ class TapToSpeakButton extends StatelessWidget {
         context.read<SpeakingCubit>().startRecording();
       },
       child: Container(
-        height: 54.h,
+        width: 80.w,
+        height: 80.w,
+        alignment: Alignment.center,
         decoration: BoxDecoration(
-          color: const Color(0xFFEBEAFD),
-          borderRadius: BorderRadius.circular(1000.r),
+          color: const Color(0xFF554FF0),
+          shape: BoxShape.circle,
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SvgPicture.asset(
-              AppAsset.svg.app.icMic,
-              height: 18.w,
-            ),
-            10.horizontalSpace,
-            AppText(
-              context.text.exerciseTapToSpeakButton,
-              style: AppStyle.textBold16.copyWith(
-                color: const Color(0xFF554FF0),
-              ),
-            ),
-          ],
+        child: SvgPicture.asset(
+          AppAsset.svg.app.icMic,
+          height: 28.w,
         ),
       ),
     );

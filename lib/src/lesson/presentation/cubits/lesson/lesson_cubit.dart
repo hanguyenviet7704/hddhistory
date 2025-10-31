@@ -10,24 +10,26 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._getLearningItemUseCase,
   ) : super(LessonState.initial());
 
-  void setCurrentLearningItem() {
-    if (state.currentLearningItem.id.isEmpty) return;
+  void setCurrentLearningItem(LearningItemEntity learningItem) {
+    if (learningItem.id.isEmpty) return;
 
-    switch (state.currentLearningItem.type) {
+    switch (learningItem.type) {
       case LearningItemType.theory:
         AppDI.injector.get<TheoryCubit>()
           ..reset()
-          ..setCurrentLearningItem(state.currentLearningItem);
+          ..setCurrentLearningItem(learningItem);
         break;
       case LearningItemType.exercise:
         AppDI.injector.get<ExerciseCubit>()
           ..reset()
-          ..setCurrentLearningItem(state.currentLearningItem);
+          ..setCurrentLearningItem(learningItem);
         break;
     }
   }
 
-  void setCurrentLessonIndex(int index) => emit(state.copyWith(currentLessonIndex: index));
+  void setCurrentLessonIndex(int index) {
+    emit(state.copyWith(currentLessonIndex: index));
+  }
 
   void nextLearningItem() {
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) return;
@@ -77,7 +79,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       },
       onSuccess: (item) {
         emit(state.copyWith(status: LessonStatus.success));
-        setCurrentLearningItem();
+        setCurrentLearningItem(item);
+        updatePageBreakItem(
+          currentPageData: state.pageData,
+          updatedItem: item,
+          getId: (item) => item.id,
+          onSuccess: (pageData) {
+            emit(state.copyWith(pageData: pageData));
+          },
+        );
       },
     );
   }

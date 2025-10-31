@@ -112,35 +112,11 @@ class SpeakingLessonBody extends StatelessWidget {
                 DocumentWidget(documents: currentQuestion.document),
                 16.verticalSpace,
               ],
-
-              // Display instruction text
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: AppText(
-                  _getInstructionText(context, state.inputMode),
-                  maxLines: 10,
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4),
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-              16.verticalSpace,
             ],
           );
         },
       ),
     );
-  }
-
-  /// Get instruction text based on input mode
-  String _getInstructionText(BuildContext context, SpeakingInputMode mode) {
-    if (mode == SpeakingInputMode.recording) {
-      return context.text.exerciseTapToSpeakButton;
-    } else {
-      return 'Type your answer in the text field below.'; // Can be replaced with localized text
-    }
   }
 
   /// Build the bottom button for speaking questions

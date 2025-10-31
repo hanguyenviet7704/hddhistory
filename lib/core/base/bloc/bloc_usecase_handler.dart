@@ -263,4 +263,43 @@ mixin BlocUseCaseHandlerMixin<Event, State> on BlocBase<State> {
       emit(setLoadingState(state, isLoading: false));
     }
   }
+
+  /// Update a single item in BasePageBreak list by ID
+  ///
+  /// Finds and replaces an item in the BasePageBreak items list with matching ID.
+  /// If no matching item found, returns the original BasePageBreak unchanged.
+  ///
+  /// Example:
+  /// ```dart
+  /// final updatedPageData = updatePageBreakItem(
+  ///   currentPageData: state.lessonsPageData,
+  ///   updatedItem: completedLesson,
+  ///   getId: (lesson) => lesson.id,
+  /// );
+  /// add(UpdateLessonsPageData(updatedPageData));
+  /// ```
+  ///
+  /// [currentPageData] - Current page data from state
+  /// [updatedItem] - New item to replace the old one
+  /// [getId] - Function to extract ID from item for comparison
+  void updatePageBreakItem<T, ID>({
+    required BasePageBreak<T> currentPageData,
+    required T updatedItem,
+    required ID Function(T item) getId,
+    required void Function(BasePageBreak<T> updatedPageData) onSuccess,
+  }) {
+    final updatedId = getId(updatedItem);
+    final updatedItems = currentPageData.items.map((item) {
+      return getId(item) == updatedId ? updatedItem : item;
+    }).toList();
+
+    onSuccess(
+      BasePageBreak<T>(
+        currentPage: currentPageData.currentPage,
+        totalPages: currentPageData.totalPages,
+        itemsPerPage: currentPageData.itemsPerPage,
+        items: updatedItems,
+      ),
+    );
+  }
 }
