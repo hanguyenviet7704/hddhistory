@@ -53,7 +53,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     );
 
     if (!isCorrect) {
-      AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit(state.question);
+      AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
   }
 
