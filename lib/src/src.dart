@@ -12,4 +12,4 @@ export 'auth/auth.dart';
 export 'data_collect/data_collect.dart';
 export 'onboard/onboard.dart';
 export 'profile/profile.dart';
-export 'exercise/exercise.dart';
+export 'lesson/lesson.dart';
