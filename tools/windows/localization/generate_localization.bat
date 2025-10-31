@@ -154,54 +154,20 @@ if "%SKIP_FLUTTER%"=="true" (
 ) else (
     call :log_step "Step 3: Running Flutter localization generation..."
 
-    REM Get Flutter command from configuration
+    REM Get Flutter command from configuration (auto-detection handled by common.bat)
     call :get_flutter_command FLUTTER_CMD
     call :log_info "Using Flutter command: %FLUTTER_CMD%"
 
-    REM Validate Flutter availability
-    where flutter >nul 2>&1
-    if %errorlevel% neq 0 (
-        call :log_warning "Flutter command not found in PATH"
-        if "%INTERACTIVE%"=="true" (
-            echo Please specify the path to Flutter manually:
-            echo 1^ Enter the full path to the flutter command
-            echo 2^ Type 'skip' to skip Flutter generation
-            echo 3^ Press Enter to try with 'flutter' anyway
-            set /p "FLUTTER_INPUT=> "
-
-            if "!FLUTTER_INPUT!"=="skip" (
-                call :log_warning "Skipping Flutter generation step..."
-                set "FLUTTER_CMD="
-            ) else if not "!FLUTTER_INPUT!"=="" (
-                where "!FLUTTER_INPUT!" >nul 2>&1
-                if !errorlevel! equ 0 (
-                    set "FLUTTER_CMD=!FLUTTER_INPUT!"
-                ) else (
-                    call :log_error "Specified path is not valid or not found"
-                    echo Skipping Flutter generation step...
-                    set "FLUTTER_CMD="
-                )
-            )
-        ) else (
-            call :log_warning "Non-interactive mode: skipping Flutter generation"
-            set "FLUTTER_CMD="
-        )
-    )
-
-    if not "%FLUTTER_CMD%"=="" (
-        call :log_step "Generating Flutter localization files with: %FLUTTER_CMD%"
-        %FLUTTER_CMD% gen-l10n
-        if %errorlevel% equ 0 (
-            call :log_success "Flutter localization files generated successfully"
-        ) else (
-            call :log_error "Flutter localization generation failed"
-            del /f "%PYTHON_CONFIG%" >nul 2>&1
-            call "%VENV_DIR%\Scripts\deactivate.bat"
-            exit /b 1
-        )
+    REM Run Flutter localization generation
+    call :log_step "Generating Flutter localization files..."
+    %FLUTTER_CMD% gen-l10n
+    if %errorlevel% equ 0 (
+        call :log_success "Flutter localization files generated successfully"
     ) else (
-        call :log_warning "Flutter localization files were not generated."
-        echo You will need to run 'flutter gen-l10n' manually to complete the process.
+        call :log_error "Flutter localization generation failed"
+        del /f "%PYTHON_CONFIG%" >nul 2>&1
+        call "%VENV_DIR%\Scripts\deactivate.bat"
+        exit /b 1
     )
 )
 

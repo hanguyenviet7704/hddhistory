@@ -18,6 +18,8 @@ readonly INFO_DIR="${PROJECT_ROOT}/.info"
 readonly INFO_APP_DIR="${INFO_DIR}/app"
 readonly INFO_DIST_DIR="${INFO_DIR}/distribution"
 readonly INFO_KEY_DIR="${INFO_DIR}/key"
+readonly INFO_CACHE_DIR="${INFO_DIR}/cache"
+readonly VERSION_MANAGER_CACHE="${INFO_CACHE_DIR}/version_manager.cache"
 
 # Configuration files (updated paths)
 readonly APP_CONFIG="${INFO_APP_DIR}/app.json"
@@ -217,14 +219,140 @@ get_firebase_app_id() {
     get_firebase_config ".apps.${platform}.${flavor}.appId"
 }
 
+# Cache management functions
+ensure_cache_dir() {
+    if [[ ! -d "$INFO_CACHE_DIR" ]]; then
+        mkdir -p "$INFO_CACHE_DIR" 2>/dev/null || true
+    fi
+}
+
+get_cached_version_manager() {
+    if [[ -f "$VERSION_MANAGER_CACHE" ]]; then
+        cat "$VERSION_MANAGER_CACHE" 2>/dev/null || echo ""
+    else
+        echo ""
+    fi
+}
+
+set_cached_version_manager() {
+    local version_manager="$1"
+    ensure_cache_dir
+    echo "$version_manager" > "$VERSION_MANAGER_CACHE" 2>/dev/null || true
+}
+
+clear_version_manager_cache() {
+    rm -f "$VERSION_MANAGER_CACHE" 2>/dev/null || true
+}
+
+# Check if version manager is installed
+is_version_manager_available() {
+    local vm="$1"
+    case "$vm" in
+        "puro"|"fvm")
+            command -v "$vm" >/dev/null 2>&1
+            ;;
+        "none")
+            return 0  # Always available
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
+
+# Detect version manager from configuration
+detect_version_manager() {
+    local use_cache="${1:-true}"
+
+    # Check cache if enabled
+    local cache_enabled=$(get_build_config '.flutter.versionManagerCache // true')
+    if [[ "$use_cache" == "true" && "$cache_enabled" != "false" ]]; then
+        local cached=$(get_cached_version_manager)
+        if [[ -n "$cached" ]] && is_version_manager_available "$cached"; then
+            echo "$cached"
+            return 0
+        fi
+    fi
+
+    # Get version manager configuration
+    local version_manager_config=$(get_build_config '.flutter.versionManager')
+
+    # Default to "none" if not configured
+    if [[ -z "$version_manager_config" || "$version_manager_config" == "null" ]]; then
+        set_cached_version_manager "none"
+        echo "none"
+        return 0
+    fi
+
+    # Check if it's an array or string
+    local config_type=$(echo "$version_manager_config" | jq -r 'type' 2>/dev/null)
+
+    if [[ "$config_type" == "array" ]]; then
+        # Auto-detect mode: check each in order
+        local managers=$(echo "$version_manager_config" | jq -r '.[]' 2>/dev/null)
+        while IFS= read -r vm; do
+            if is_version_manager_available "$vm"; then
+                set_cached_version_manager "$vm"
+                echo "$vm"
+                return 0
+            fi
+        done <<< "$managers"
+
+        # Nothing found, warn and use system flutter
+        log_warning "No version manager found from configuration, using system flutter"
+        set_cached_version_manager "none"
+        echo "none"
+        return 0
+    else
+        # Force mode: use specific version manager
+        local vm="$version_manager_config"
+        if is_version_manager_available "$vm"; then
+            set_cached_version_manager "$vm"
+            echo "$vm"
+            return 0
+        else
+            # Configured but not found, warn but still use it
+            log_warning "$vm configured but not found, falling back to system flutter"
+            set_cached_version_manager "none"
+            echo "none"
+            return 0
+        fi
+    fi
+}
+
 # Build configuration functions
 get_flutter_command() {
-    local use_fvm=$(get_build_config '.flutter.useFvm')
-    if [[ "$use_fvm" == "true" ]]; then
-        echo "fvm flutter"
-    else
-        echo "flutter"
-    fi
+    local use_cache="${SKIP_VERSION_MANAGER_CACHE:-true}"
+    local version_manager=$(detect_version_manager "$use_cache")
+
+    case "$version_manager" in
+        "puro")
+            echo "puro flutter"
+            ;;
+        "fvm")
+            echo "fvm flutter"
+            ;;
+        "none"|*)
+            echo "flutter"
+            ;;
+    esac
+}
+
+get_dart_command() {
+    local use_cache="${SKIP_VERSION_MANAGER_CACHE:-true}"
+    local version_manager=$(detect_version_manager "$use_cache")
+
+    case "$version_manager" in
+        "puro")
+            echo "puro dart"
+            ;;
+        "fvm")
+            echo "fvm dart"
+            ;;
+        "none"|*)
+            echo "dart"
+            ;;
+    esac
 }
 
 get_build_args() {

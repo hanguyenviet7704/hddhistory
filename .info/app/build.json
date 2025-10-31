@@ -1,6 +1,11 @@
 {
   "flutter": {
-    "useFvm": true,
+    "versionManager": [
+      "puro",
+      "fvm",
+      "none"
+    ],
+    "versionManagerCache": true,
     "buildArgs": {
       "android": {
         "apk": [

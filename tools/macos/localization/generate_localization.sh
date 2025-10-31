@@ -87,66 +87,19 @@ log_step "Step 3: Running Flutter localization generation..."
 # Restore original PATH to ensure system commands are available
 export PATH="$ORIGINAL_PATH"
 
-# Get Flutter command from configuration
+# Get Flutter command from configuration (auto-detection handled by common.sh)
 FLUTTER_CMD=$(get_flutter_command)
 log_info "Using Flutter command: $FLUTTER_CMD"
 
-# Validate Flutter availability
-if ! command -v $(echo $FLUTTER_CMD | cut -d' ' -f1) &> /dev/null; then
-    # Common Flutter installation locations as fallback
-    POSSIBLE_PATHS=(
-        "$HOME/flutter/bin/flutter"
-        "$HOME/development/flutter/bin/flutter"
-        "$HOME/.flutter/bin/flutter"
-        "$HOME/fvm/default/bin/flutter"  # FVM default
-    )
-
-    FLUTTER_FOUND=false
-    for path in "${POSSIBLE_PATHS[@]}"; do
-        if [ -x "$path" ]; then
-            FLUTTER_CMD="$path"
-            FLUTTER_FOUND=true
-            log_warning "Found Flutter at: $path"
-            break
-        fi
-    done
-    
-    if [ "$FLUTTER_FOUND" = false ]; then
-        log_warning "Flutter command not found in PATH"
-        echo "Please specify the path to Flutter manually:"
-        echo "1) Enter the full path to the flutter command"
-        echo "2) Type 'skip' to skip Flutter generation"
-        echo "3) Press Enter to try with 'flutter' anyway"
-        read -p "> " FLUTTER_INPUT
-
-        if [ "$FLUTTER_INPUT" = "skip" ]; then
-            log_warning "Skipping Flutter generation step..."
-            FLUTTER_CMD=""
-        elif [ -n "$FLUTTER_INPUT" ]; then
-            if [ -x "$FLUTTER_INPUT" ]; then
-                FLUTTER_CMD="$FLUTTER_INPUT"
-            else
-                log_error "Specified path is not executable"
-                echo "Skipping Flutter generation step..."
-                FLUTTER_CMD=""
-            fi
-        fi
-    fi
-fi
-
-if [ -n "$FLUTTER_CMD" ]; then
-    log_step "Generating Flutter localization files with: $FLUTTER_CMD"
-    $FLUTTER_CMD gen-l10n
-    if [ $? -eq 0 ]; then
-        log_success "Flutter localization files generated successfully"
-    else
-        log_error "Flutter localization generation failed"
-        deactivate
-        exit 1
-    fi
+# Run Flutter localization generation
+log_step "Generating Flutter localization files..."
+$FLUTTER_CMD gen-l10n
+if [ $? -eq 0 ]; then
+    log_success "Flutter localization files generated successfully"
 else
-    log_warning "Flutter localization files were not generated."
-    echo "You will need to run 'flutter gen-l10n' manually to complete the process."
+    log_error "Flutter localization generation failed"
+    deactivate
+    exit 1
 fi
 
 # Deactivate virtual environment

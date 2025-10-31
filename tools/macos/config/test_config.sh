@@ -171,12 +171,52 @@ else
     log_warning "Firebase CLI not found (optional) - install with: npm install -g firebase-tools"
 fi
 
-# Check FVM (optional)
+# Check version manager configuration
+VERSION_MANAGER_CONFIG=$(get_build_config '.flutter.versionManager')
+CONFIG_TYPE=$(echo "$VERSION_MANAGER_CONFIG" | jq -r 'type' 2>/dev/null)
+
+if [[ "$CONFIG_TYPE" == "array" ]]; then
+    log_info "Version manager mode: Auto-detect"
+    log_info "Priority order: $(echo "$VERSION_MANAGER_CONFIG" | jq -r 'join(", ")' 2>/dev/null)"
+elif [[ -n "$VERSION_MANAGER_CONFIG" && "$VERSION_MANAGER_CONFIG" != "null" ]]; then
+    log_info "Version manager mode: Force ($VERSION_MANAGER_CONFIG)"
+else
+    log_info "Version manager mode: Default (system Flutter)"
+fi
+
+# Test auto-detection
+DETECTED_VM=$(detect_version_manager false)
+log_success "Detected version manager: $DETECTED_VM"
+
+# Check cache configuration
+CACHE_ENABLED=$(get_build_config '.flutter.versionManagerCache // true')
+if [[ "$CACHE_ENABLED" != "false" ]]; then
+    log_success "Cache: Enabled"
+    CACHED_VM=$(get_cached_version_manager)
+    if [[ -n "$CACHED_VM" ]]; then
+        log_info "Cached version manager: $CACHED_VM"
+    else
+        log_info "Cache empty (will be populated on first use)"
+    fi
+else
+    log_info "Cache: Disabled"
+fi
+
+# Check what's actually installed
+echo
+log_step "Available version managers:"
+if command -v puro >/dev/null 2>&1; then
+    PURO_VERSION=$(puro --version 2>&1 | head -n 1)
+    log_success "Puro: $PURO_VERSION"
+else
+    log_info "Puro: Not installed"
+fi
+
 if command -v fvm >/dev/null 2>&1; then
     FVM_VERSION=$(fvm --version)
     log_success "FVM: $FVM_VERSION"
 else
-    log_info "FVM not found (optional)"
+    log_info "FVM: Not installed"
 fi
 
 # Final result
