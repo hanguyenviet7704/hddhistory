@@ -71,7 +71,7 @@ class ReviewTimeView extends StatelessWidget {
               ),
               child: GestureDetector(
                 onTap: () {
-                  // TODO: Navigate to review exercise
+                  context.read<LessonCubit>().reviewDone();
                 },
                 child: Container(
                   height: 54.h,

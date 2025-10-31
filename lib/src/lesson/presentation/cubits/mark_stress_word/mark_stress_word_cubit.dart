@@ -48,7 +48,7 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     );
 
     if (!isCorrect) {
-      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestion(state.question);
+      AppDI.injector.get<ExerciseCubit>().addWrongSubQuestionToLessonCubit(state.question);
     }
   }
 
