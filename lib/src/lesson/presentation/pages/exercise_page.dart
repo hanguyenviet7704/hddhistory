@@ -8,7 +8,7 @@ class ExercisePage extends StatelessWidget {
     final currentQuestion = context.select((ExerciseCubit cubit) => cubit.state.currentQuestion);
     final lessonBody = _buildLessonBody(currentQuestion);
 
-    return ExerciseLayout(
+    return LessonLayout(
       body: lessonBody,
       bottom: _buildBottomButton(context, lessonBody),
     );

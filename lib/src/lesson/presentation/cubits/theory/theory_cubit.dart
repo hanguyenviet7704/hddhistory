@@ -63,5 +63,6 @@ class TheoryCubit extends Cubit<TheoryState> with CubitUseCaseHandlerMixin<Theor
 
 
   void setTheoryData(DocumentEntity document) {
+    AppDI.injector.get<LessonCubit>().setCurrentLessonIndex(state.currentDocumentIndex);
   }
 }

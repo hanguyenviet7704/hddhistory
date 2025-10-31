@@ -1,8 +1,7 @@
 part of '../../../../lesson.dart';
 
 class ChatInformationWidget extends StatelessWidget {
-  final LearningItemType type;
-  const ChatInformationWidget({super.key, this.type = LearningItemType.exercise});
+  const ChatInformationWidget({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -23,20 +22,10 @@ class ChatInformationWidget extends StatelessWidget {
             ),
           ),
           8.horizontalSpace,
-          if (type == LearningItemType.exercise)
-            BlocSelector<ExerciseCubit, ExerciseState, String>(
-              selector: (state) => state.currentQuestion.speechBubble,
-              builder: (context, speechBubble) {
-                return ExerciseChatBubble(text: speechBubble, radius: 12, tailVerticalAlignment: 0.5);
-              },
-            ),
-          if (type == LearningItemType.theory)
-            BlocSelector<TheoryCubit, TheoryState, String>(
-              selector: (state) => state.currentDocument.speechBubble,
-              builder: (context, speechBubble) {
-                return ExerciseChatBubble(text: speechBubble, radius: 12, tailVerticalAlignment: 0.5);
-              },
-            ),
+          BlocSelector<LessonCubit, LessonState, String>(
+            selector: (state) => state.currentLessonSpeechBubble,
+            builder: (context, speechBubble) => ExerciseChatBubble(text: speechBubble, radius: 12, tailVerticalAlignment: 0.5),
+          ),
         ],
       ),
     );

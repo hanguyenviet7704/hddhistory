@@ -1,14 +1,12 @@
 part of '../../../lesson.dart';
 
-class ExerciseLayout extends StatelessWidget {
+class LessonLayout extends StatelessWidget {
   final Widget body;
   final Widget? bottom;
-  final LearningItemType type;
-  const ExerciseLayout({
+  const LessonLayout({
     super.key,
     required this.body,
     this.bottom,
-    this.type = LearningItemType.exercise,
   });
 
   @override
@@ -17,16 +15,22 @@ class ExerciseLayout extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            if (type == LearningItemType.exercise) ExerciseProgressBar(),
-            if (type == LearningItemType.theory) TheoryProgressBar(),
+            BlocSelector<LessonCubit, LessonState, LearningItemType>(
+              selector: (state) => state.currentLearningItem.type,
+              builder: (context, state) {
+                return switch (state) {
+                  LearningItemType.exercise => ExerciseProgressBar(),
+                  LearningItemType.theory => TheoryProgressBar(),
+                };
+              },
+            ),
             Expanded(
               child: SingleChildScrollView(
                 child: Column(
                   children: [
                     12.verticalSpace,
-                    if (type == LearningItemType.exercise) ExerciseBadge(),
-                    if (type == LearningItemType.theory) TheoryBadge(),
-                    ChatInformationWidget(type: type),
+                    LessonBadge(),
+                    ChatInformationWidget(),
                     body,
                   ],
                 ),

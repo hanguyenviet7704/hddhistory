@@ -29,6 +29,8 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     }
   }
 
+  void setCurrentLessonIndex(int index) => emit(state.copyWith(currentLessonIndex: index));
+
   void nextLearningItem() {
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) return;
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));

@@ -6,8 +6,7 @@ class TheoryPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theoryBody = TheoryLessonBody(onAnswerChecked: (isCorrect) {});
-    return ExerciseLayout(
-      type: LearningItemType.theory,
+    return LessonLayout(
       body: theoryBody,
       bottom: theoryBody.buildBottomButton(context),
     );

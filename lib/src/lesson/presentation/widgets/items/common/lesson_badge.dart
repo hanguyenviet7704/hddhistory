@@ -1,14 +1,14 @@
 part of '../../../../lesson.dart';
 
-class TheoryBadge extends StatelessWidget {
-  const TheoryBadge({super.key});
+class LessonBadge extends StatelessWidget {
+  const LessonBadge({super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: BlocSelector<TheoryCubit, TheoryState, TagEntity>(
-        selector: (state) => state.currentDocument.tag,
+      child: BlocSelector<LessonCubit, LessonState, TagEntity>(
+        selector: (state) => state.currentTag,
         builder: (context, tag) {
           return Row(
             spacing: 6.w,
