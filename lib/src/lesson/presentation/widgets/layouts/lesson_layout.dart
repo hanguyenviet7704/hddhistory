@@ -15,13 +15,10 @@ class LessonLayout extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            BlocSelector<LessonCubit, LessonState, LearningItemType>(
-              selector: (state) => state.currentLearningItem.type,
-              builder: (context, state) {
-                return switch (state) {
-                  LearningItemType.exercise => ExerciseProgressBar(),
-                  LearningItemType.theory => TheoryProgressBar(),
-                };
+            BlocSelector<LessonCubit, LessonState, double>(
+              selector: (state) => state.progress,
+              builder: (context, progress) {
+                return LessonProgressBar();
               },
             ),
             Expanded(

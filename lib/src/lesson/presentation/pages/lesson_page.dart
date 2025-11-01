@@ -8,23 +8,24 @@ class LessonPage extends StatelessWidget {
     return BlocSelector<LessonCubit, LessonState, LearningItemType>(
       selector: (state) => state.currentLearningItem.type,
       builder: (context, learningType) {
-        if (learningType == LearningItemType.exercise) {
-          return BlocSelector<ExerciseCubit, ExerciseState, QuestionEntity>(
-            selector: (state) => state.currentQuestion,
-            builder: (context, question) {
-              final lessonBody = _buildExerciseLessonBody(question.type);
-              return LessonLayout(
-                body: lessonBody,
-                bottom: _buildBottomButton(context, lessonBody),
-              );
-            },
-          );
-        }
+        Widget lessonBody = const SizedBox.shrink();
+        Widget bottomButton = const SizedBox.shrink();
 
-        final lessonBody = TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
+        switch (learningType) {
+          case LearningItemType.exercise:
+            final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
+            lessonBody = _buildExerciseLessonBody(question.type);
+            bottomButton = _buildBottomButton(context, lessonBody);
+            break;
+          case LearningItemType.theory:
+            lessonBody = TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
+            bottomButton = _buildBottomButton(context, lessonBody);
+            break;
+        }
+        
         return LessonLayout(
           body: lessonBody,
-          bottom: _buildBottomButton(context, lessonBody),
+          bottom: bottomButton,
         );
       },
     );

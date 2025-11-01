@@ -1,7 +1,7 @@
 part of '../../../../lesson.dart';
 
-class ExerciseProgressBar extends StatelessWidget {
-  const ExerciseProgressBar({
+class LessonProgressBar extends StatelessWidget {
+  const LessonProgressBar({
     super.key,
   });
 
@@ -12,7 +12,11 @@ class ExerciseProgressBar extends StatelessWidget {
       children: [
         10.horizontalSpace,
         InkWell(
-          onTap: () => context.read<ExerciseCubit>().previousQuestion(),
+          onTap: () => ClosePopupLesson.show(
+            context,
+            onQuit: () => context.read<TheoryCubit>().previousDocument(),
+            onKeepLearning: () => context.read<TheoryCubit>().nextDocument(),
+          ),
           child: Icon(
             Icons.close_rounded,
             color: const Color(0xFF0D121C), // Brand/Brand/Primary/300
@@ -20,7 +24,7 @@ class ExerciseProgressBar extends StatelessWidget {
           ),
         ),
         Expanded(
-          child: BlocSelector<ExerciseCubit, ExerciseState, double>(
+          child: BlocSelector<LessonCubit, LessonState, double>(
             selector: (state) => state.progress,
             builder: (context, progress) {
               return Container(

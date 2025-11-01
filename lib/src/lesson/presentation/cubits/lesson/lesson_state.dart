@@ -10,7 +10,6 @@ abstract class LessonState with _$LessonState {
     @Default(0) int currentLearningItemIndex,
     @Default(0) int currentLessonIndex,
     @Default([]) List<QuestionEntity> subQuestions,
-    @Default(-1) int currentSubQuestionIndex,
     String? errorMessage,
   }) = _LessonState;
 
@@ -45,10 +44,36 @@ extension LessonStateExtension on LessonState {
   }
 
   int get totalLessonInAllItems {
-    return pageData.items.fold(0, (sum, item) => sum + item.documents.length);
+    return pageData.items.fold(0, (sum, item) {
+      if (item.isPlayingSubQuestions) return sum;
+      switch (item.type) {
+        case LearningItemType.theory:
+          return sum + item.documents.length;
+        case LearningItemType.exercise:
+          return sum + item.questions.length;
+      }
+    });
+  }
+
+  int get _doneProgress {
+    return pageData.items.sublist(0, currentLearningItemIndex).fold(0, (sum, item) {
+      if (item.isPlayingSubQuestions) return sum;
+      switch (item.type) {
+        case LearningItemType.theory:
+          return sum + item.documents.length;
+        case LearningItemType.exercise:
+          return sum + item.questions.length;
+      }
+    });
   }
 
   double get progress {
-    return currentLessonIndex / totalLessonInAllItems;
+    if (totalLessonInAllItems == 0) return 0;
+    if (currentLearningItem.isPlayingSubQuestions) {
+      if (currentLearningItem.questions.isEmpty) return 0;
+      if (currentLessonIndex >= currentLearningItem.questions.length) return 1;
+      return (currentLessonIndex + 1) / currentLearningItem.questions.length;
+    }
+    return (_doneProgress + currentLessonIndex + 1) / totalLessonInAllItems;
   }
 }
