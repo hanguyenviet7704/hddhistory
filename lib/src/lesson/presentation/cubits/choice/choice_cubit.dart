@@ -37,7 +37,8 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       if (state.selectedAnswersIndices.isNotEmpty) {
         Set<int> correctIndexes = state.correctOptionsIndices;
         Set<int> selectedIndexes = state.selectedAnswersIndices;
-        isCorrect = correctIndexes == selectedIndexes;
+        // User is correct if they've selected all correct options
+        isCorrect = correctIndexes.every((index) => selectedIndexes.contains(index));
       }
     } else {
       // Check single choice answer

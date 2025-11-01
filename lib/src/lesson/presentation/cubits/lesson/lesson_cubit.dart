@@ -71,6 +71,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       questions: state.subQuestions,
       type: LearningItemType.exercise,
       subQuestions: [],
+      isPlayingSubQuestions: true,
     );
     AppDI.injector.get<ExerciseCubit>().setSubQuestions(learningItem);
     List<LearningItemEntity> items = List<LearningItemEntity>.from(state.pageData.items);

@@ -16,6 +16,7 @@ abstract class LearningItemEntity with _$LearningItemEntity {
     @Default([]) List<String> tag,
     @Default(0) int index,
     @Default(false) bool isSub,
+    @Default(false) bool isPlayingSubQuestions,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _LearningItemEntity;
