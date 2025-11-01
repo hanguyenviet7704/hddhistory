@@ -59,13 +59,13 @@ class ReviewTimePage extends StatelessWidget {
                 final lessonCubit = context.read<LessonCubit>();
                 lessonCubit.reviewDone();
                 
-                if (lessonCubit.state.subQuestions.isEmpty) {
-                  LessonCompleteRoute(
-                    type: 'lesson',
-                    keypointTitle: lessonCubit.state.currentLearningItem.title.en,
-                    progress: 1.0,
-                  ).go(context);
-                }
+                // if (lessonCubit.state.subQuestions.isEmpty) {
+                //   LessonCompleteRoute(
+                //     type: 'lesson',
+                //     keypointTitle: lessonCubit.state.currentLearningItem.title.en,
+                //     progress: 1.0,
+                //   ).go(context);
+                // }
               },
               child: Container(
                 padding: EdgeInsets.symmetric(

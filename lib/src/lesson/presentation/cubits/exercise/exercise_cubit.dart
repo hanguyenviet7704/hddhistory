@@ -37,9 +37,10 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   void addSubQuestionToLessonCubit() {
     List<QuestionEntity> subQuestions = List<QuestionEntity>.from(state.currentLearningItem.subQuestions);
+    if (subQuestions.isEmpty) return;
+
     QuestionEntity newQuestion = subQuestions.firstWhere((value) => value.mainQuestion == state.currentQuestion.id, orElse: () => QuestionEntity());
     if (newQuestion.id == 0) return;
-
     AppDI.injector.get<LessonCubit>().addSubQuestion(newQuestion);
   }
 

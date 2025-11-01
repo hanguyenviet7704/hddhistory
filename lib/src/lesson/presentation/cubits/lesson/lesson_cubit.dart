@@ -35,11 +35,21 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     if (state.subQuestions.isEmpty) return;
 
     LearningItemEntity learningItem = state.pageData.items.firstWhere((item) => item.type == LearningItemType.exercise, orElse: () => LearningItemEntity());
-    learningItem = learningItem.copyWith(questions: state.subQuestions, type: LearningItemType.exercise);
+    learningItem = learningItem.copyWith(
+      questions: state.subQuestions,
+      type: LearningItemType.exercise,
+      subQuestions: [],
+    );
     AppDI.injector.get<ExerciseCubit>().setSubQuestions(learningItem);
     List<LearningItemEntity> items = List<LearningItemEntity>.from(state.pageData.items);
     items.add(learningItem);
-    emit(state.copyWith(pageData: state.pageData.copyWith(items: items), currentLearningItemIndex: items.length - 1));
+    emit(
+      state.copyWith(
+        pageData: state.pageData.copyWith(items: items),
+        currentLearningItemIndex: items.length - 1,
+        subQuestions: [],
+      ),
+    );
     LessonRoute().go(AppConfig.instance.context!);
   }
 
@@ -58,12 +68,13 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       return;
     }
 
-    final currentProgress = (state.currentLearningItemIndex + 1) / state.pageData.items.length;
-    LessonCompleteRoute(
-      type: 'keypoint',
-      keypointTitle: state.currentLearningItem.title.en,
-      progress: currentProgress,
-    ).go(AppConfig.instance.context!);
+    // final currentProgress = (state.currentLearningItemIndex + 1) / state.pageData.items.length;
+    // LessonCompleteRoute(
+    //   type: 'keypoint',
+    //   keypointTitle: state.currentLearningItem.title.en,
+    //   progress: currentProgress,
+    // ).go(AppConfig.instance.context!);
+    continueToNextLearningItem();
   }
 
   void continueToNextLearningItem() {
@@ -72,7 +83,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     }
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
     loadLearningItem(state.currentLearningItem.id);
-    LessonRoute().go(AppConfig.instance.context!);
+    // LessonRoute().go(AppConfig.instance.context!);
   }
 
   void previousLearningItem() {
