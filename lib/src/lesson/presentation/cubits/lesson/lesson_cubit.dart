@@ -27,6 +27,38 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     }
   }
 
+  void nextLearningItem() {
+    if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
+      if (state.subQuestions.isNotEmpty) {
+        ReviewTimeRoute().go(AppConfig.instance.context!);
+        return;
+      }
+
+      LessonCompleteRoute(
+        type: 'lesson',
+        keypointTitle: state.currentLearningItem.title.en,
+        progress: 1.0,
+      ).go(AppConfig.instance.context!);
+      return;
+    }
+
+    // final currentProgress = (state.currentLearningItemIndex + 1) / state.pageData.items.length;
+    // LessonCompleteRoute(
+    //   type: 'keypoint',
+    //   keypointTitle: state.currentLearningItem.title.en,
+    //   progress: currentProgress,
+    // ).go(AppConfig.instance.context!);
+    emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
+    setCurrentLearningItem(state.currentLearningItem);
+    preloadNextLearningItem();
+  }
+
+  void previousLearningItem() {
+    if (state.currentLearningItemIndex <= 0) return;
+    emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex - 1));
+    setCurrentLearningItem(state.currentLearningItem);
+  }
+
   void setCurrentLessonIndex(int index) => emit(state.copyWith(currentLessonIndex: index));
 
   void addSubQuestion(QuestionEntity question) => emit(state.copyWith(subQuestions: [...state.subQuestions, question]));
@@ -53,45 +85,6 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     LessonRoute().go(AppConfig.instance.context!);
   }
 
-  void nextLearningItem() {
-    if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
-      if (state.subQuestions.isNotEmpty) {
-        ReviewTimeRoute().go(AppConfig.instance.context!);
-        return;
-      }
-
-      LessonCompleteRoute(
-        type: 'lesson',
-        keypointTitle: state.currentLearningItem.title.en,
-        progress: 1.0,
-      ).go(AppConfig.instance.context!);
-      return;
-    }
-
-    // final currentProgress = (state.currentLearningItemIndex + 1) / state.pageData.items.length;
-    // LessonCompleteRoute(
-    //   type: 'keypoint',
-    //   keypointTitle: state.currentLearningItem.title.en,
-    //   progress: currentProgress,
-    // ).go(AppConfig.instance.context!);
-    continueToNextLearningItem();
-  }
-
-  void continueToNextLearningItem() {
-    if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
-      return;
-    }
-    emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
-    loadLearningItem(state.currentLearningItem.id);
-    // LessonRoute().go(AppConfig.instance.context!);
-  }
-
-  void previousLearningItem() {
-    if (state.currentLearningItemIndex <= 0) return;
-    emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex - 1));
-    loadLearningItem(state.currentLearningItem.id);
-  }
-
   void loadAllLearningItems({
     bool isInit = false,
   }) async {
@@ -114,12 +107,21 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       },
       onSuccess: (pageData) {
         emit(state.copyWith(status: LessonStatus.success, pageData: pageData, currentLearningItemIndex: 0));
-        loadLearningItem(pageData.items.first.id);
+        loadLearningItem(
+          pageData.items.first.id,
+          onSuccess: (item) => setCurrentLearningItem(item),
+        );
+        preloadNextLearningItem();
       },
     );
   }
 
-  void loadLearningItem(String id) async {
+  void preloadNextLearningItem() {
+    if (state.pageData.items.length <= state.currentLearningItemIndex + 1) return;
+    loadLearningItem(state.pageData.items[state.currentLearningItemIndex + 1].id);
+  }
+
+  void loadLearningItem(String id, {void Function(LearningItemEntity)? onSuccess}) async {
     await runUseCase<LearningItemEntity>(
       usecase: () => _getLearningItemUseCase(id),
       buildLoadingState: () => state.copyWith(status: LessonStatus.loading),
@@ -128,7 +130,6 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       },
       onSuccess: (item) {
         emit(state.copyWith(status: LessonStatus.success));
-        setCurrentLearningItem(item);
         updatePageBreakItem(
           currentPageData: state.pageData,
           updatedItem: item,
@@ -137,6 +138,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
             emit(state.copyWith(pageData: pageData));
           },
         );
+        onSuccess?.call(item);
       },
     );
   }

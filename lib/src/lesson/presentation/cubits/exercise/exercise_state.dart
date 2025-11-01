@@ -22,8 +22,8 @@ extension ExerciseStateExtension on ExerciseState {
   }
 
   double get progress {
-    if (currentQuestionIndex == 0 || currentLearningItem.questions.isEmpty) return 0;
-    if (currentQuestionIndex == currentLearningItem.questions.length) return 1;
+    if (currentLearningItem.questions.isEmpty) return 0;
+    if (currentQuestionIndex >= currentLearningItem.questions.length) return 1;
     return (currentQuestionIndex + 1) / currentLearningItem.questions.length;
   }
 }

@@ -266,11 +266,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
   Widget _buildBottomButton() {
     return GestureDetector(
       onTap: () {
-        if (widget.type == LessonCompleteType.keypoint) {
-          context.read<LessonCubit>().continueToNextLearningItem();
-        } else {
-          context.pop();
-        }
+        context.back();
       },
       child: Container(
         padding: EdgeInsets.symmetric(
