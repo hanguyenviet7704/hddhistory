@@ -39,10 +39,6 @@ extension LessonStateExtension on LessonState {
     };
   }
 
-  QuestionEntity get currentSubQuestion {
-    return subQuestions.elementAtOrDefault(currentSubQuestionIndex, defaultValue: QuestionEntity());
-  }
-
   int get totalLessonInAllItems {
     return pageData.items.fold(0, (sum, item) {
       if (item.isPlayingSubQuestions) return sum;

@@ -95,8 +95,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     // Prevent loading if already on last page (unless it's init)
     if (!isInit && state.pageData.isLastPage) return;
 
-    PageBreakRequest pageRequest;
-    pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+    PageBreakRequest<LearningItemFilter> pageRequest;
+    pageRequest = isInit
+        ? const PageBreakRequest<LearningItemFilter>(filter: LearningItemFilter(
+          type: LearningItemFilterType.theory,
+        ))
+        : PageBreakRequest<LearningItemFilter>(
+            page: state.pageData.nextPage,
+            filter: LearningItemFilter(keypointId: state.currentTag.id, type: LearningItemFilterType.theory),
+          );
 
     await runUseCasePageBreak<LearningItemEntity>(
       usecase: () => _getAllLearningItemUseCase(pageRequest),
