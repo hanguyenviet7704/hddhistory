@@ -1,7 +1,11 @@
 part of '../base.dart';
 
-@Freezed(toJson: false, fromJson: false)
-abstract class PageBreakRequest<T> with _$PageBreakRequest<T> {
+abstract interface class JsonRequestConvertible {
+  Map<String, dynamic> toJson();
+}
+
+@Freezed(toJson: false, fromJson: false, genericArgumentFactories: true)
+abstract class PageBreakRequest<T extends JsonRequestConvertible> with _$PageBreakRequest<T> {
   const PageBreakRequest._();
 
   const factory PageBreakRequest({
@@ -11,7 +15,7 @@ abstract class PageBreakRequest<T> with _$PageBreakRequest<T> {
     @JsonKey(name: 'order') @Default(PageBreakOrder.asc) PageBreakOrder order,
     @JsonKey(name: 'search') String? search,
     T? filter,
-  }) = _PageBreakRequest;
+  }) = _PageBreakRequest<T>;
 
   static const _reservedKeys = {'page', 'take', 'orderBy', 'order', 'search'};
 
@@ -27,32 +31,24 @@ abstract class PageBreakRequest<T> with _$PageBreakRequest<T> {
       json['search'] = search;
     }
 
-    if (filter != null) return json;
-    
-    try {
-      final filterJson = (filter as dynamic).toJson() as Map<String, dynamic>;
+    if (filter == null) return json;
 
-      for (final entry in filterJson.entries) {
-        if (_reservedKeys.contains(entry.key)) {
-          throw ArgumentError(
-            'Filter field "${entry.key}" conflicts with PageBreakRequest reserved fields: $_reservedKeys',
-          );
-        }
-        if (entry.value != null) {
-          json[entry.key] = entry.value;
-        }
+    final filterJson = filter!.toJson();
+    for (final entry in filterJson.entries) {
+      if (_reservedKeys.contains(entry.key)) {
+        throw ArgumentError(
+          'Filter field "${entry.key}" conflicts with PageBreakRequest reserved fields: $_reservedKeys',
+        );
       }
-    } catch (e) {
-      if (e is ArgumentError) rethrow;
-      throw ArgumentError(
-        'Filter type ${filter.runtimeType} must have a toJson() method that returns Map<String, dynamic>',
-      );
+
+      if (entry.value == null) continue;
+      json[entry.key] = entry.value;
     }
 
     return json;
   }
 
-  factory PageBreakRequest.fromJsonWithFilter(
+  factory PageBreakRequest.fromJson(
     Map<String, dynamic> json,
     T? Function(Map<String, dynamic>)? filterFromJson,
   ) {
@@ -80,12 +76,4 @@ abstract class PageBreakRequest<T> with _$PageBreakRequest<T> {
       filter: filter,
     );
   }
-}
-
-enum PageBreakOrder {
-  asc('asc'),
-  desc('desc');
-
-  final String name;
-  const PageBreakOrder(this.name);
 }

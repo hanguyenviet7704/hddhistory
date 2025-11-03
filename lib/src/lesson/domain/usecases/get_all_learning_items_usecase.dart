@@ -2,10 +2,10 @@ part of '../../lesson.dart';
 
 // abstract class LearningItemFilter with _$LearningItemFilter implements JsonConvertible {
 @freezed
-abstract class LearningItemFilter with _$LearningItemFilter {
+abstract class LearningItemFilter with _$LearningItemFilter implements JsonRequestConvertible {
   const factory LearningItemFilter({
-    LearningItemFilterType? type,
-    String? keypointId,
+    @Default(null) LearningItemFilterType? type,
+    @Default(null) String? keypointId,
   }) = _LearningItemFilter;
 
   factory LearningItemFilter.fromJson(Map<String, dynamic> json) => _$LearningItemFilterFromJson(json);
@@ -14,19 +14,19 @@ abstract class LearningItemFilter with _$LearningItemFilter {
 enum LearningItemFilterType {
   theory('theory'),
   exercise('exercise');
-  
+
   const LearningItemFilterType(this.name);
   final String name;
 }
 
 @lazySingleton
-class GetAllLearningItemsUseCase implements UseCaseWithParams<PageBreakRequest<LearningItemFilter>, BasePageBreak<LearningItemEntity>> {
+class GetAllLearningItemsUseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<LearningItemEntity>> {
   final ILessonRepository _repository;
 
   GetAllLearningItemsUseCase(this._repository);
 
   @override
-  TaskEither<AppException, BasePageBreak<LearningItemEntity>> call(PageBreakRequest<LearningItemFilter> params) {
+  TaskEither<AppException, BasePageBreak<LearningItemEntity>> call(PageBreakRequest params) {
     return _repository.getAllLearningItems(params);
   }
 }
