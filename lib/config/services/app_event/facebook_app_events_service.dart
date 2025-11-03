@@ -4,7 +4,7 @@ part of '../services.dart';
 @LazySingleton(as: IAppEventService)
 class FacebookAppEventsService implements IAppEventService {
   final FacebookAppEvents _facebookAppEvents = FacebookAppEvents();
-  final DeviceInfoService _deviceInfoService;
+  final IDeviceInfoService _deviceInfoService;
 
   FacebookAppEventsService(this._deviceInfoService);
 
@@ -38,8 +38,8 @@ class FacebookAppEventsService implements IAppEventService {
         final isGranted = status == TrackingStatus.authorized;
 
         // Get iOS version for additional Facebook SDK configuration
-        final iosInfo = await _deviceInfoService.deviceInfoPlugin.iosInfo;
-        final version = double.tryParse(iosInfo.systemVersion.split('.').take(2).join('.')) ?? 0.0;
+        final iosInfo = await _deviceInfoService.deviceInfo;
+        final version = double.tryParse(iosInfo?.data['systemVersion']?.split('.').take(2).join('.') ?? '0.0') ?? 0.0;
 
         // For iOS < 17, we need to explicitly set the tracking status
         if (version < 17.0) {

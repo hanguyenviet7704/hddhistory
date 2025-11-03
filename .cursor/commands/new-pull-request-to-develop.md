@@ -1,82 +1,263 @@
-# New Pull Request to Develop - Agent Command
+# New Pull Request to Develop
 
-## Overview
-This command generates a comprehensive pull request content based on git diff between the current feature branch and develop branch, then updates the PR content file for easy copying.
+## Usage
+Run from your feature branch when ready to create PR
 
-## Usage Steps
+## Agent Questions (Ask First)
+1. **Target branch**: develop (default) | main | other
+2. **Include screenshots**: Yes | No (only if UI changes)
 
-### 1. Get Git Diff Statistics and Changes
+## Auto-Execute After Questions
+
+### 1. Get Git Information
 ```bash
-# Get change statistics
-git diff develop --stat
-
-# Get list of changed files
-git diff develop --name-only
-
-# Get commit history between develop and current branch
-git log develop..HEAD --oneline
-
-# Get current branch name
-git branch --show-current
+git branch --show-current              # Current branch name
+git diff [target]..HEAD --stat         # Change statistics
+git diff [target]..HEAD --name-only    # Changed files list
+git log [target]..HEAD --oneline       # Commit history
 ```
 
-### 2. Analyze Key Changes
-```bash
-# Look at specific important files to understand changes
-git diff develop [important-file-path] | head -30
+### 2. Extract Ticket ID
+**From branch name pattern:**
+- `feature/TICKET-123/description` → TICKET-123
+- `feature/TICKET-123-description` → TICKET-123
+- `feature/description` → Ask user for ticket ID
+
+### 3. Analyze Changes
+**Auto-categorize files:**
+- **Domain**: `lib/src/domain/**`
+- **Data**: `lib/src/data/**`
+- **Presentation**: `lib/src/presentation/**`
+- **Config**: `lib/config/**`
+- **Assets**: `assets/**`
+- **Tests**: `test/**`
+- **Build**: Build scripts, CI/CD files
+- **Docs**: Documentation files
+
+**Count changes:**
+- Files changed
+- Lines added/deleted
+- Net change
+
+### 4. Analyze Commits
+**Extract from commit messages:**
+- Feature additions (feat, feature commits)
+- Bug fixes (fix commits)
+- Refactoring (refactor commits)
+- Tests (test commits)
+- Documentation (docs commits)
+
+### 5. Generate PR Content
+
+**Title format:**
+```
+feature-TICKET-ID: [Brief description from commits]
 ```
 
-### 3. Generate PR Content Structure
+**Content structure:**
+```markdown
+## Summary
+[Auto-generated high-level overview based on commits and changes]
 
-#### Essential PR Content Elements:
-- **Title**: Use format `feature-TICKET-ID: Brief description`
-- **Summary**: High-level overview of changes
-- **Change Statistics**: File counts and line changes
-- **Key Changes**: Commit history and main enhancements
-- **File Categories**: Organized by type (source code, config, etc.)
-- **Testing Checklist**: Standard testing requirements
-- **Review Focus Areas**: What reviewers should pay attention to
-- **Related Information**: Ticket IDs, branch names, deployment notes
+## Ticket
+- Ticket ID: TICKET-XXX
+- Branch: feature/TICKET-XXX/description
 
-#### PR Title Format
-Extract ticket ID from branch name pattern:
-- `feature/TICKET-ID/TICKET-ID-description` → Use second TICKET-ID
-- `feature/TICKET-ID-description` → Use TICKET-ID
+## Changes Overview
 
-### 4. Update pr_content.md
-Replace content with generated PR description including:
-- Proper commit message format compliance
-- Categorized file changes
-- Clear enhancement descriptions
-- Testing and review guidelines
+### Statistics
+- **Files changed**: X
+- **Lines added**: +X
+- **Lines deleted**: -X
+- **Net change**: X lines
 
-### 5. Final Output
-The command produces:
-- Updated `pr_content.md` with complete PR description
-- Ready-to-copy content for GitLab/GitHub PR creation
-- Organized change summary for easy review
+### Commits
+[List of commits with messages]
 
-## Command Automation
-```bash
-# Complete workflow in one sequence:
-git diff develop --stat
-git diff develop --name-only  
-git log develop..HEAD --oneline
-git branch --show-current
-# Then update pr_content.md with generated content
+### Key Changes
+
+#### Domain Layer
+[List domain files changed with brief description]
+
+#### Data Layer
+[List data files changed with brief description]
+
+#### Presentation Layer
+[List presentation files changed with brief description]
+
+#### Configuration
+[List config changes]
+
+#### Tests
+[List test files added/updated]
+
+### Files Changed by Category
+
+<details>
+<summary>Domain (X files)</summary>
+
+- path/to/file1.dart
+- path/to/file2.dart
+</details>
+
+<details>
+<summary>Data (X files)</summary>
+
+- path/to/file1.dart
+- path/to/file2.dart
+</details>
+
+[... other categories ...]
+
+## Testing Checklist
+- [ ] Unit tests pass
+- [ ] Widget tests pass (if UI changes)
+- [ ] Manual testing completed
+- [ ] All flavors tested (dev, stg, prod)
+- [ ] No regression issues
+
+## Code Quality
+- [ ] `flutter analyze` passes
+- [ ] Code follows Clean Architecture
+- [ ] Proper error handling implemented
+- [ ] Localization keys added (if needed)
+- [ ] Code generation completed
+
+## Review Focus
+[Auto-generated based on change types]
+- Focus on [specific areas with most changes]
+- Verify [data flow/state management/UI implementation]
+- Check [error handling/edge cases]
+
+## Deployment Notes
+[Auto-generated if needed]
+- Requires code generation: [Yes/No]
+- New dependencies added: [List if any]
+- Breaking changes: [None/List if any]
+- Migration required: [No/Yes with details]
+
+## Screenshots
+[If UI changes and user selected Yes]
+[Placeholder for user to add screenshots]
+
+---
+Generated with Claude Code
 ```
 
-## Key Features
-- **Automatic branch/ticket detection**
-- **Change categorization** (source code, config, documentation)
-- **Commit message compliance checking**
-- **Standardized PR template format**
-- **File change analysis and organization**
+### 6. Save PR Content
+```bash
+# Save to pr_content.md for easy copying
+```
 
-## Notes for Future Agents
-- Always extract ticket ID from current branch name
-- Follow GitFlow commit message conventions: `type-TICKET-ID: description`
-- Categorize changes by file type and importance
-- Include proper testing and review checklists
-- Generate deployment notes when applicable
-- Maintain consistency with project PR standards
+### 7. Optional: Create PR Directly (if gh CLI available)
+```bash
+gh pr create --title "[title]" --body "[content]" --base [target]
+```
+
+## Output
+```
+✅ PR Content Generated
+
+Title:
+feature-TICKET-123: Implement user profile management
+
+Target Branch: develop
+Source Branch: feature/TICKET-123/user-profile
+
+Statistics:
+- 23 files changed
+- +847 additions
+- -123 deletions
+
+Changes:
+- 8 domain files (entities, use cases)
+- 7 data files (models, repositories)
+- 6 presentation files (cubits, widgets)
+- 2 test files
+
+PR content saved to: pr_content.md
+
+Next Steps:
+1. Review pr_content.md
+2. Add screenshots if needed
+3. Copy content to GitHub/GitLab PR
+   OR
+   Run: gh pr create (if gh CLI installed)
+```
+
+## PR Content Template (Auto-Applied)
+
+### For Feature Implementation
+```markdown
+## Summary
+Implemented [feature_name] feature with complete Clean Architecture layers including domain entities, data models, repository implementations, and state management.
+
+## Key Highlights
+- ✅ Domain layer with [X] entities and [X] use cases
+- ✅ Data layer with [API/GraphQL] integration
+- ✅ [BLoC/Cubit] state management
+- ✅ Error handling with AppException
+- ✅ Test coverage for critical paths
+```
+
+### For UI Update
+```markdown
+## Summary
+Updated UI for [feature/page] based on latest Figma designs, implementing responsive layouts and new design tokens.
+
+## Key Highlights
+- ✅ Implemented Figma design: [URL]
+- ✅ Responsive design with ScreenUtil
+- ✅ New design tokens added to theme
+- ✅ Maintains existing functionality
+```
+
+### For Bug Fix
+```markdown
+## Summary
+Fixed [issue_description] affecting [component/feature].
+
+## Key Highlights
+- 🐛 Fixed: [specific issue]
+- ✅ Root cause: [explanation]
+- ✅ Solution: [approach taken]
+- ✅ Added tests to prevent regression
+```
+
+### For Refactoring
+```markdown
+## Summary
+Refactored [component/layer] to improve [code quality/performance/maintainability].
+
+## Key Highlights
+- ♻️ Refactored: [what was changed]
+- ✅ Improved: [specific improvements]
+- ✅ No functional changes
+- ✅ All tests still passing
+```
+
+## Smart Detection Rules
+
+### Detect Breaking Changes
+**Auto-flag if:**
+- Public API method signatures changed
+- Model field removed/renamed
+- Repository interface changed
+- Navigation routes modified
+
+### Detect New Dependencies
+**Check:**
+- pubspec.yaml modifications
+- New imports from external packages
+
+### Detect Migration Needs
+**Flag if:**
+- Database schema changed
+- Local storage structure modified
+- API contract breaking changes
+
+### Suggest Review Focus
+**Based on change volume:**
+- High churn files (>100 lines changed)
+- New files requiring architecture review
+- Critical paths (auth, payment, data sync)

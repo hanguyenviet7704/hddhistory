@@ -1,4 +1,4 @@
-part of '../widgets.dart';
+part of '../../../auth.dart';
 
 class SubLayout extends StatelessWidget {
   final GlobalKey<ScaffoldState>? scaffoldKey;

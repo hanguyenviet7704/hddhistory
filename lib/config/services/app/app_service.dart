@@ -45,9 +45,7 @@ class AppService {
 
   ILocalStoreService get localStoreService => AppDI.injector.get<ILocalStoreService>();
 
-  SupabaseService get supabaseService => AppDI.injector.get<SupabaseService>();
-
-  DeviceInfoService get deviceInfoService => AppDI.injector.get<DeviceInfoService>();
+  IDeviceInfoService get deviceInfoService => AppDI.injector.get<IDeviceInfoService>();
 
   PackageInfoService get packageInfoService => AppDI.injector.get<PackageInfoService>();
 
@@ -86,7 +84,6 @@ class AppService {
 
   Future<void> _configService() async {
     // Initialize device info first for iOS version detection
-    await deviceInfoService.initialize();
 
     // Initialize Firebase first
     await HydrateBlocService.instance.initialize();
@@ -98,7 +95,6 @@ class AppService {
     // Initialize app event services early - they now handle tracking permission internally
     await appEventService.initialize();
 
-    supabaseService.initialize();
     await firebaseRemoteConfigService.initialize();
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();
@@ -117,7 +113,7 @@ class AppService {
   void _configUIResponsible() async {
     await ScreenUtil.ensureScreenSize();
 
-    SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+    SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);
     SystemChrome.setSystemUIOverlayStyle(
       SystemUiOverlayStyle(
         systemNavigationBarColor: Colors.transparent,
@@ -158,7 +154,7 @@ class AppService {
       ..radius = 12.0
       ..progressColor = Colors.blue
       ..backgroundColor = Colors.white
-      ..indicatorColor = AppCustomColor.ffEC5800
+      ..indicatorColor = Colors.blue
       ..textColor = Colors.white
       ..maskColor = Colors.black.op(0.2)
       ..userInteractions = false

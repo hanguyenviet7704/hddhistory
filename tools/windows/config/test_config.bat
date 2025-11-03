@@ -126,9 +126,66 @@ if "%DEBUG_PATH%" neq "" if "%DEBUG_PATH%" neq "null" (
     call :log_warning "Debug info path not configured"
 )
 
-REM Test 5: Flutter command
+REM Test 5: Version Manager Configuration
 echo.
-call :log_step "Test 5: Flutter Command"
+call :log_step "Test 5: Version Manager Configuration"
+
+call :get_build_config ".flutter.versionManager" VM_CONFIG
+
+REM Check if it's an array (contains [ character)
+echo %VM_CONFIG% | findstr /C:"[" >nul 2>&1
+if %errorlevel% equ 0 (
+    call :log_info "Version manager mode: Auto-detect"
+    call :log_info "Priority order: %VM_CONFIG%"
+) else if not "%VM_CONFIG%"=="" (
+    call :log_info "Version manager mode: Force (%VM_CONFIG%)"
+) else (
+    call :log_info "Version manager mode: Default (system Flutter)"
+)
+
+REM Test auto-detection
+call :detect_version_manager "false" DETECTED_VM
+call :log_success "Detected version manager: %DETECTED_VM%"
+
+REM Check cache configuration
+call :get_build_config ".flutter.versionManagerCache" CACHE_ENABLED
+if "%CACHE_ENABLED%"=="" set "CACHE_ENABLED=true"
+if not "%CACHE_ENABLED%"=="false" (
+    call :log_success "Cache: Enabled"
+    call :get_cached_version_manager CACHED_VM
+    if not "%CACHED_VM%"=="" (
+        call :log_info "Cached version manager: %CACHED_VM%"
+    ) else (
+        call :log_info "Cache empty (will be populated on first use)"
+    )
+) else (
+    call :log_info "Cache: Disabled"
+)
+
+REM Check what's actually installed
+echo.
+call :log_step "Available version managers:"
+where puro >nul 2>&1
+if %errorlevel% equ 0 (
+    for /f "delims=" %%i in ('puro --version 2^>nul') do (
+        call :log_success "Puro: %%i"
+    )
+) else (
+    call :log_info "Puro: Not installed"
+)
+
+where fvm >nul 2>&1
+if %errorlevel% equ 0 (
+    for /f "delims=" %%i in ('fvm --version 2^>nul') do (
+        call :log_success "FVM: %%i"
+    )
+) else (
+    call :log_info "FVM: Not installed"
+)
+
+REM Test 6: Flutter Command
+echo.
+call :log_step "Test 6: Flutter Command"
 call :get_flutter_command FLUTTER_CMD
 call :log_success "Flutter command: %FLUTTER_CMD%"
 
@@ -142,9 +199,9 @@ if %errorlevel% equ 0 (
     call :log_error "Flutter not found in PATH!"
 )
 
-REM Test 6: Platform validation
+REM Test 7: Platform validation
 echo.
-call :log_step "Test 6: Platform Validation"
+call :log_step "Test 7: Platform Validation"
 call :validate_platform "android"
 if %errorlevel% equ 0 (
     call :log_success "Android platform validation passed"

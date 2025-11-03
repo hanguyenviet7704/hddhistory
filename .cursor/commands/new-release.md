@@ -1,345 +1,334 @@
-# New Release Workflow Guide
+# New Release
 
-## Overview
-This guide provides step-by-step instructions for creating new releases in the Meup Flutter project using GitFlow workflow.
+## Usage
+Run from develop branch (for new release) or existing release branch (to update)
 
-## Prerequisites
-- Ensure you're on the correct branch (develop for new releases, or existing release branch)
-- Have the latest changes from remote repositories
-- Verify version numbers in pubspec.yaml
+## Agent Questions (Ask First)
+1. **Current status**: On develop (create new release) | On release branch (update existing)
+2. **Version confirmed**: [Auto-detect from pubspec.yaml, ask for confirmation]
 
-## Release Workflow
+## Auto-Execute After Questions
 
-### 1. Check Current Branch
+### 1. Verify Current State
 ```bash
-git branch --show-current
+git branch --show-current                    # Verify branch
+grep "version:" pubspec.yaml | head -1       # Get version
+git status                                   # Check clean state
 ```
 
-### 2. Branch Validation
-- **If on develop branch**: Create new release branch
-- **If on existing release branch**: Continue with release process
-- **If on other branches**: Stop and switch to develop first
-
-### 3. Create New Release Branch (if needed)
+### 2. Create Release Branch (if on develop)
 ```bash
-# Check current version in pubspec.yaml
-grep "version:" pubspec.yaml
+# Extract version from pubspec.yaml
+VERSION=$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
 
-# Create release branch with version from pubspec.yaml
-git checkout -b release/$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
+# Create and switch to release branch
+git checkout -b release/$VERSION
 ```
 
-### 4. Generate Release Notes
+### 3. Analyze Changes Since Last Release
 ```bash
-# Get changes from main branch
-git diff origin/main..HEAD --name-only
-
-# Get commit history
-git log origin/main..HEAD --oneline
-
-# Get detailed statistics
+# Get changes from main (last release)
 git diff origin/main..HEAD --stat
+git diff origin/main..HEAD --name-only
+git log origin/main..HEAD --oneline
+git log origin/main..HEAD --pretty=format:"%s"
 ```
 
-### 5. Create Release Content
-- Analyze the changes and categorize them into:
-  - 🎉 New Features
-  - 🔧 Improvements
-  - 🐛 Bug Fixes
-  - 📱 Platform Updates
-  - 🔄 Dependencies & Tools
-- Write comprehensive release notes in `release_content.md`
+### 4. Categorize Changes
+**Auto-categorize commits by type:**
+- 🎉 **New Features**: Commits with `feat`, `feature`, `add`
+- 🔧 **Improvements**: Commits with `improve`, `enhance`, `update`, `refactor`
+- 🐛 **Bug Fixes**: Commits with `fix`, `bug`, `hotfix`
+- 📱 **Platform Updates**: iOS/Android specific changes
+- 🔄 **Dependencies**: Changes to pubspec.yaml, packages
+- 🛠️ **Build/Tools**: Build scripts, CI/CD, tools updates
 
-### 6. Create Git Tag
+**Auto-categorize files:**
+- **Source Code**: lib/src/**
+- **Configuration**: lib/config/**, .env/**, flavorizr.yaml
+- **Assets**: assets/**
+- **Build Scripts**: tools/**, .github/**
+- **Tests**: test/**
+- **Documentation**: docs/**, *.md files
 
-#### Option A: Simple Tag (Quick)
-```bash
-# Create simple annotated tag
-git tag -a v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/') -m "Release v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/'): [Brief description]"
-```
-
-#### Option B: Detailed Tag (Recommended)
-```bash
-# Create detailed annotated tag with comprehensive information
-git tag -a v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/') -m "Release v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
-
-Version Information:
-- Android: v$(grep "version:" pubspec.yaml | grep android | sed 's/.*version: \([0-9.]*+[0-9]*\).*/\1/')
-- iOS: v$(grep "version:" pubspec.yaml | grep ios | sed 's/.*version: \([0-9.]*+[0-9]*\).*/\1/')
-
-Changes included:
-- [List major features and improvements]
-- [List bug fixes and technical enhancements]
-- [List UI/UX improvements]
-
-Build and deployment improvements:
-- [List build configuration changes]
-- [List dependency updates]
-- [List development tool improvements]
-
-Release Date: $(date +"%Y-%m-%d")"
-```
-
-#### Option C: Manual Detailed Tag (Most Control)
-```bash
-# Create tag with manual content (use this for complex releases)
-git tag -a v1.0.24 -m "Release v1.0.24
-
-Version Information:
-- Android: v1.0.24+25
-- iOS: v1.0.14+5
-
-Changes included:
-- Enhanced user authentication with biometric support
-- Improved offline mode functionality
-- New dark theme implementation
-- Performance optimizations for large datasets
-
-Build and deployment improvements:
-- Updated Firebase configuration for production
-- Enhanced build scripts with better error handling
-- Improved CI/CD pipeline with automated testing
-- Updated dependencies to latest stable versions
-
-Release Date: 2025-09-19"
-```
-
-### 7. Validate and Manage Tags
-```bash
-# Check if tag already exists
-git tag -l | grep v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
-
-# View tag content
-git show v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
-
-# Delete tag if needed (local only)
-git tag -d v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
-
-# Delete remote tag if needed
-git push origin --delete v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
-```
-
-### 8. Push Changes
-```bash
-# Push release branch
-git push origin release/$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
-
-# Push tags
-git push origin --tags
-
-# Verify remote tag
-git ls-remote --tags origin | grep v$(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/')
-```
-
-## Release Notes Template
-
-### Structure
+### 5. Generate Release Notes
 ```markdown
 # Release Notes - Meup v[VERSION]
 
 ## 🎉 New Features
-- [Feature 1]
-- [Feature 2]
+[Auto-list from commits and changed files]
+- Feature 1: [Description from commit]
+- Feature 2: [Description from commit]
 
 ## 🔧 Improvements
-- [Improvement 1]
-- [Improvement 2]
+[Auto-list improvements]
+- Improvement 1: [Description]
+- Improvement 2: [Description]
 
 ## 🐛 Bug Fixes
-- [Bug fix 1]
-- [Bug fix 2]
+[Auto-list bug fixes]
+- Fixed: [Issue description]
+- Fixed: [Issue description]
 
 ## 📱 Platform Updates
+
 ### iOS
-- [iOS specific changes]
+- Version: [from pubspec.yaml]
+- Changes: [iOS specific updates]
 
 ### Android
-- [Android specific changes]
+- Version: [from pubspec.yaml]
+- Changes: [Android specific updates]
 
 ## 🔄 Dependencies & Tools
-- [Dependency updates]
-- [Tool improvements]
+[Auto-detect from pubspec.yaml changes]
+- Updated: [package] to v[version]
+- Added: [new_package] v[version]
+- Build tools: [changes]
 
 ## 📊 Statistics
-- [X] files changed
-- [X] additions, [X] deletions
-- Net change: [X] lines
+- **Files changed**: X
+- **Lines added**: +X
+- **Lines deleted**: -X
+- **Net change**: X lines
+- **Commits**: X
 
 ## 🎯 Key Focus Areas
-1. [Focus area 1]
-2. [Focus area 2]
+[Auto-generate based on change volume]
+1. [Area with most changes]
+2. [Critical functionality updates]
+3. [New capabilities]
 
 ## 🚀 What's Next
-[Brief description of what this release enables]
+[Brief summary of what this release enables]
 
 ---
-**Release Date**: [DATE]
+**Release Date**: [Today's date]
 **Version**: [VERSION]
 **Branch**: release/[VERSION]
+**Platform Versions**:
+- Android: [version+build]
+- iOS: [version+build]
 ```
 
-## Common Categories
-
-### New Features
-- New functionality added to the app
-- New user-facing capabilities
-- New integrations or services
-
-### Improvements
-- Performance enhancements
-- Code refactoring
-- UI/UX improvements
-- Technical debt reduction
-
-### Bug Fixes
-- Resolved user-reported issues
-- Fixed crashes or errors
-- Corrected incorrect behavior
-
-### Platform Updates
-- iOS-specific changes
-- Android-specific changes
-- Platform compatibility improvements
-
-### Dependencies & Tools
-- Package updates
-- Build tool improvements
-- Development workflow enhancements
-
-## Version Management Best Practices
-
-### Version Numbering
-- **Android**: Use format `1.0.XX+YY` where XX is version and YY is build number
-- **iOS**: Use format `1.0.XX+YY` where XX is version and YY is build number
-- **Increment**: Always increment build number (+YY) for each release
-- **Version**: Increment version (1.0.XX) for significant changes
-
-### Version Extraction Commands
+### 6. Generate Git Tag Content
 ```bash
-# Get Android version
-grep "version:" pubspec.yaml | grep android | sed 's/.*version: \([0-9.]*+[0-9]*\).*/\1/'
-
-# Get iOS version  
-grep "version:" pubspec.yaml | grep ios | sed 's/.*version: \([0-9.]*+[0-9]*\).*/\1/'
-
-# Get main version (first uncommented)
-grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*\).*/\1/'
-```
-
-### Version Update Workflow
-```bash
-# 1. Update version in pubspec.yaml
-# 2. Commit version change
-git add pubspec.yaml
-git commit -m "chore: Update version to 1.0.24+25"
-
-# 3. Create release branch
-git checkout -b release/1.0.24
-
-# 4. Create tag with new version
-git tag -a v1.0.24 -m "Release v1.0.24: [Description]"
-```
-
-## Best Practices
-
-1. **Version Consistency**: Always use the version from pubspec.yaml
-2. **Comprehensive Notes**: Include all significant changes
-3. **User-Focused**: Write from user perspective when possible
-4. **Technical Details**: Include technical improvements for developers
-5. **Statistics**: Always include file change statistics
-6. **Clear Categories**: Use consistent emoji and category structure
-7. **Tag Management**: Always validate tags before pushing
-8. **Version Tracking**: Keep Android and iOS versions synchronized when possible
-
-## Troubleshooting
-
-### Common Issues
-- **Branch not found**: Ensure you're on the correct branch
-- **Version mismatch**: Check pubspec.yaml version
-- **No changes**: Verify you're comparing against the right base branch
-- **Tag conflicts**: Check if tag already exists
-
-### Validation Commands
-```bash
-# Check current branch
-git branch --show-current
-
-# Verify version
-grep "version:" pubspec.yaml
-
-# Check for existing tags
-git tag -l | grep v[VERSION]
-
-# Validate changes
-git diff origin/main..HEAD --name-only
-```
-
-## Example Workflow
-
-```bash
-# 1. Check current state
-git branch --show-current
-git status
-
-# 2. Check current version
-grep "version:" pubspec.yaml
-
-# 3. Create release branch (if needed)
-git checkout -b release/1.0.24
-
-# 4. Generate release notes
-git diff origin/main..HEAD --stat > changes.txt
-git log origin/main..HEAD --oneline > commits.txt
-
-# 5. Create release content
-# [Write release notes in release_content.md]
-
-# 6. Validate tag doesn't exist
-git tag -l | grep v1.0.24
-
-# 7. Create detailed tag
-git tag -a v1.0.24 -m "Release v1.0.24
+# Create comprehensive tag message
+TAG_MESSAGE="Release v$VERSION
 
 Version Information:
-- Android: v1.0.24+25
-- iOS: v1.0.14+5
+- Android: $(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*+[0-9]*\).*/\1/')
+- iOS: $(grep "version:" pubspec.yaml | head -1 | sed 's/.*version: \([0-9.]*+[0-9]*\).*/\1/')
 
 Changes included:
-- Enhanced user authentication with biometric support
-- Improved offline mode functionality
-- New dark theme implementation
-- Performance optimizations for large datasets
-
-Build and deployment improvements:
-- Updated Firebase configuration for production
-- Enhanced build scripts with better error handling
-- Improved CI/CD pipeline with automated testing
-- Updated dependencies to latest stable versions
+[Top 5-10 most important changes]
 
 Release Date: $(date +"%Y-%m-%d")"
-
-# 8. Validate tag content
-git show v1.0.24
-
-# 9. Push changes
-git push origin release/1.0.24
-git push origin --tags
-
-# 10. Verify remote tag
-git ls-remote --tags origin | grep v1.0.24
 ```
 
-## Next Steps After Release
+### 7. Validate Tag Doesn't Exist
+```bash
+# Check if tag already exists
+git tag -l | grep "v$VERSION"
 
-1. **Merge to Main**: Create pull request from release branch to main
-2. **Merge to Develop**: Merge release branch back to develop
-3. **Deploy**: Deploy the release to app stores
-4. **Documentation**: Update any relevant documentation
-5. **Cleanup**: Delete the release branch after successful merge
+# If exists, ask user:
+# - Delete and recreate
+# - Use different version
+# - Cancel
+```
 
----
+### 8. Create Release Assets
+**Save to files:**
+- `release_content.md` - Full release notes
+- `release_tag.txt` - Tag message content
 
-**Last Updated**: 2025-09-18  
-**Version**: 1.0.23  
-**Maintainer**: Development Team  
-**Based on**: Release v1.0.23 experience with detailed git tag creation
+### 9. Create Git Tag
+```bash
+# Create annotated tag with detailed message
+git tag -a "v$VERSION" -m "$TAG_MESSAGE"
+
+# Verify tag created
+git show "v$VERSION"
+```
+
+### 10. Push Release
+```bash
+# Push release branch
+git push origin release/$VERSION
+
+# Push tag
+git push origin v$VERSION
+
+# Verify remote tag
+git ls-remote --tags origin | grep "v$VERSION"
+```
+
+## Output
+```
+✅ Release v[VERSION] Created
+
+Branch: release/[VERSION]
+Tag: v[VERSION]
+
+Version Information:
+- Android: v[VERSION]+[BUILD]
+- iOS: v[VERSION]+[BUILD]
+
+Changes Summary:
+- 🎉 X new features
+- 🔧 X improvements
+- 🐛 X bug fixes
+- 📱 X platform updates
+- 🔄 X dependency updates
+
+Statistics:
+- X commits since last release
+- X files changed
+- +X/-X lines changed
+
+Files Created:
+- release_content.md (Full release notes)
+- release_tag.txt (Tag message)
+
+Remote Status:
+- ✅ Branch pushed to origin
+- ✅ Tag pushed to origin
+
+Next Steps:
+1. Review release_content.md
+2. Create PR from release/[VERSION] to main
+3. After merge, tag main with release tag
+4. Build and deploy to app stores
+5. Merge release/[VERSION] back to develop
+```
+
+## Release Notes Generation Rules
+
+### Feature Detection
+**Identify as feature if:**
+- Commit message starts with `feat:`, `feature:`, `add:`
+- New files in `lib/src/*/domain/` or `lib/src/*/presentation/pages/`
+- Significant new functionality
+
+### Improvement Detection
+**Identify as improvement if:**
+- Commit message starts with `improve:`, `enhance:`, `update:`, `refactor:`
+- Performance optimizations
+- Code quality improvements
+- UI/UX enhancements
+
+### Bug Fix Detection
+**Identify as bug fix if:**
+- Commit message starts with `fix:`, `bug:`, `hotfix:`
+- Fixes regressions or issues
+
+### Platform Update Detection
+**Identify as platform update if:**
+- Changes in `android/` or `ios/` directories
+- Platform-specific configurations
+- Native code modifications
+
+### Dependency Update Detection
+**Check:**
+- `pubspec.yaml` changes
+- Version bumps in dependencies
+- New dependencies added
+
+## Smart Change Descriptions
+
+### Auto-generate descriptions from:
+1. **Commit messages** - Use commit message as base
+2. **File changes** - Infer purpose from files modified
+3. **Code diffs** - Analyze key changes in code
+
+### Example transformations:
+```
+Commit: "feat-MEUP-123: Add user profile settings"
+Files: lib/src/profile/presentation/pages/settings/
+→ Release note: "Added user profile settings page with customization options"
+
+Commit: "fix-MEUP-456: Resolve crash on lesson completion"
+Files: lib/src/lesson/presentation/cubits/lesson_cubit.dart
+→ Release note: "Fixed crash occurring when completing lessons"
+
+Commit: "improve-MEUP-789: Optimize image loading performance"
+Files: lib/core/utils/image_cache.dart
+→ Release note: "Improved image loading performance with enhanced caching"
+```
+
+## Version Format Rules
+
+### Version in pubspec.yaml
+```yaml
+version: 1.0.24+25
+# 1.0.24 = version name (X.Y.Z)
+# 25 = build number
+```
+
+### Git Tag Format
+```
+v1.0.24
+```
+
+### Release Branch Format
+```
+release/1.0.24
+```
+
+## Validation Checks
+
+### Pre-Release Validation
+- [ ] Version in pubspec.yaml is valid
+- [ ] Build number is incremented
+- [ ] No uncommitted changes
+- [ ] All tests pass (optional, can run separately)
+- [ ] Code generation is up to date
+
+### Post-Release Validation
+- [ ] Tag created successfully
+- [ ] Branch pushed to remote
+- [ ] Tag pushed to remote
+- [ ] Release notes generated
+- [ ] No conflicts with existing tags
+
+## Edge Cases Handling
+
+### If Tag Already Exists
+**Options:**
+1. Delete local and remote tag, recreate
+2. Increment build number and use new version
+3. Cancel operation
+
+### If on Wrong Branch
+**Actions:**
+1. Detect current branch
+2. If not develop or release/*, warn user
+3. Ask to switch to correct branch
+
+### If Uncommitted Changes
+**Actions:**
+1. Show uncommitted changes
+2. Ask user to commit or stash
+3. Don't proceed until clean
+
+### If Version Not Incremented
+**Actions:**
+1. Detect last tag
+2. Compare with pubspec.yaml version
+3. Warn if version/build not incremented
+4. Suggest correct version
+
+## Release Checklist Integration
+
+### Before Creating Release
+- [ ] All PRs merged to develop
+- [ ] Tests passing
+- [ ] Code analysis clean
+- [ ] Documentation updated
+
+### After Creating Release
+- [ ] Create PR to main
+- [ ] Build app for all flavors
+- [ ] Test on devices
+- [ ] Prepare store listings
+- [ ] Create store release

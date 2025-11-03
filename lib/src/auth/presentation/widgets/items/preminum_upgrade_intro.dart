@@ -1,4 +1,4 @@
-part of '../widgets.dart';
+part of '../../../auth.dart';
 
 class PremiumUpgradeIntro extends StatelessWidget {
   const PremiumUpgradeIntro({super.key});
@@ -44,7 +44,7 @@ class PremiumUpgradeIntro extends StatelessWidget {
                       color: AppColorLight.surface,
                       borderRadius: BorderRadius.circular(8.r),
                     ),
-                    child: SvgPicture.asset(AppAsset.svg.app.icDiamond),
+                    // child: SvgPicture.asset(AppAsset.svg.app.icDiamond),
                   ),
                   12.horizontalSpace,
                   Flexible(
@@ -52,12 +52,12 @@ class PremiumUpgradeIntro extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppText(
-                          context.text.monetPremium,
+                          'context.text.monetPremium',
                           style: AppStyle.textBold18,
                         ),
                         4.verticalSpace,
                         AppText(
-                          context.text.monetPremiumPlanAppeal,
+                          'context.text.monetPremiumPlanAppeal',
                           style: AppStyle.text16,
                           maxLines: 5,
                         ),
@@ -79,7 +79,7 @@ class PremiumUpgradeIntro extends StatelessWidget {
                   color: AppColorLight.surface,
                 ),
                 padding: EdgeInsets.symmetric(vertical: 16.h),
-                child: AppText(context.text.monetUpgradeFromPrice(miniumValue: '\$4,99'), style: AppStyle.text18),
+                child: AppText('context.text.monetUpgradeFromPrice(miniumValue: \$4,99)', style: AppStyle.text18),
               ),
             ],
           ),

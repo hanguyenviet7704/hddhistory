@@ -21,6 +21,8 @@ set "INFO_DIR=%PROJECT_ROOT%\.info"
 set "INFO_APP_DIR=%INFO_DIR%\app"
 set "INFO_DIST_DIR=%INFO_DIR%\distribution"
 set "INFO_KEY_DIR=%INFO_DIR%\key"
+set "INFO_CACHE_DIR=%INFO_DIR%\cache"
+set "VERSION_MANAGER_CACHE=%INFO_CACHE_DIR%\version_manager.cache"
 
 REM Configuration files
 set "APP_CONFIG=%INFO_APP_DIR%\app.json"
@@ -279,16 +281,148 @@ set "%~3=%result%"
 goto :eof
 
 REM ============================================
+REM Cache Management Functions
+REM ============================================
+
+:ensure_cache_dir
+if not exist "%INFO_CACHE_DIR%" (
+    mkdir "%INFO_CACHE_DIR%" 2>nul
+)
+goto :eof
+
+:get_cached_version_manager
+setlocal
+set "cached="
+if exist "%VERSION_MANAGER_CACHE%" (
+    set /p cached=<"%VERSION_MANAGER_CACHE%"
+)
+endlocal & set "%~1=%cached%"
+goto :eof
+
+:set_cached_version_manager
+call :ensure_cache_dir
+echo %~1>"%VERSION_MANAGER_CACHE%"
+goto :eof
+
+:clear_version_manager_cache
+if exist "%VERSION_MANAGER_CACHE%" del "%VERSION_MANAGER_CACHE%" 2>nul
+goto :eof
+
+:is_version_manager_available
+setlocal
+set "vm=%~1"
+set "available=0"
+
+if "%vm%"=="puro" (
+    where puro >nul 2>&1
+    if !errorlevel!==0 set "available=1"
+) else if "%vm%"=="fvm" (
+    where fvm >nul 2>&1
+    if !errorlevel!==0 set "available=1"
+) else if "%vm%"=="none" (
+    set "available=1"
+)
+
+endlocal & exit /b %available%
+
+:detect_version_manager
+setlocal enabledelayedexpansion
+set "use_cache=%~1"
+if "%use_cache%"=="" set "use_cache=true"
+
+REM Check cache if enabled
+call :get_build_config ".flutter.versionManagerCache" cache_enabled
+if "%cache_enabled%"=="" set "cache_enabled=true"
+
+if "%use_cache%"=="true" if not "%cache_enabled%"=="false" (
+    call :get_cached_version_manager cached
+    if not "!cached!"=="" (
+        call :is_version_manager_available "!cached!"
+        if !errorlevel!==1 (
+            endlocal & set "%~2=!cached!" & goto :eof
+        )
+    )
+)
+
+REM Get version manager configuration (check if array or string)
+call :get_build_config ".flutter.versionManager" vm_config
+
+if "%vm_config%"=="" (
+    call :set_cached_version_manager "none"
+    endlocal & set "%~2=none" & goto :eof
+)
+
+REM Simple detection: try to parse as array using PowerShell
+powershell -Command "try { $cfg = '%vm_config%' | ConvertFrom-Json; if ($cfg -is [array]) { exit 0 } else { exit 1 } } catch { exit 1 }" >nul 2>&1
+if !errorlevel!==0 (
+    REM Array mode: auto-detect
+    for /f "delims=" %%v in ('powershell -Command "$cfg = '%vm_config%' | ConvertFrom-Json; $cfg -join '|'"') do (
+        for %%m in (%%v) do (
+            call :is_version_manager_available "%%m"
+            if !errorlevel!==1 (
+                call :set_cached_version_manager "%%m"
+                endlocal & set "%~2=%%m" & goto :eof
+            )
+        )
+    )
+
+    REM Nothing found
+    call :log_warning "No version manager found from configuration, using system flutter"
+    call :set_cached_version_manager "none"
+    endlocal & set "%~2=none" & goto :eof
+) else (
+    REM Force mode: use specific version manager
+    call :is_version_manager_available "%vm_config%"
+    if !errorlevel!==1 (
+        call :set_cached_version_manager "%vm_config%"
+        endlocal & set "%~2=%vm_config%" & goto :eof
+    ) else (
+        call :log_warning "%vm_config% configured but not found, falling back to system flutter"
+        call :set_cached_version_manager "none"
+        endlocal & set "%~2=none" & goto :eof
+    )
+)
+
+REM ============================================
 REM Build Configuration Functions
 REM ============================================
 
 :get_flutter_command
-call :get_build_config ".flutter.useFvm" use_fvm
-if "%use_fvm%"=="true" (
-    set "%~1=fvm flutter"
+setlocal
+if defined SKIP_VERSION_MANAGER_CACHE (
+    call :detect_version_manager "false" vm
 ) else (
-    set "%~1=flutter"
+    call :detect_version_manager "true" vm
 )
+
+if "%vm%"=="puro" (
+    set "cmd=puro flutter"
+) else if "%vm%"=="fvm" (
+    set "cmd=fvm flutter"
+) else (
+    set "cmd=flutter"
+)
+
+endlocal & set "%~1=%cmd%"
+goto :eof
+
+:get_dart_command
+setlocal
+if defined SKIP_VERSION_MANAGER_CACHE (
+    call :detect_version_manager "false" vm
+) else (
+    call :detect_version_manager "true" vm
+)
+
+if "%vm%"=="puro" (
+    set "cmd=puro dart"
+) else if "%vm%"=="fvm" (
+    set "cmd=fvm dart"
+) else (
+    set "cmd=dart"
+)
+
+endlocal & set "%~1=%cmd%"
 goto :eof
 
 :get_output_path

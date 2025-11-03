@@ -11,7 +11,15 @@ mixin RoutePath {
 
   //* Splash
   static const String splash = '/splash';
+  static const String chooseLanguage = '/choose-language';
   static const String intro = '/intro';
+  static const String noAuth = '/no-auth';
+
+  //* Onboard
+  static const String onboard = '/onboard';
+  static const String dataCollect = '/data-collect';
+  static const String dataCollectMotivationStep = '/data-collect-motivation-step';
+  static const String dataCollectSummary = '/data-collect-summary';
 
   //* Auth
   static const String login = '/login';
@@ -20,36 +28,19 @@ mixin RoutePath {
   static const String forgotPassword = 'forgot-password';
   static const String otp = 'otp';
   static const String setupPassword = 'setup-password';
-  static const String noAuth = '/no-auth';
   static const String changePassword = 'change-password';
 
   //* Home - Road Map
   static const String home = '/';
-  static const String choosePath = '/choose-path';
-
-  //* Picture Study
-  static const String pictureStudy = 'picture-study';
-  static const String galleryView = 'gallery-view';
-  static const String galleryPictureView = 'gallery-picture-view';
-  static const String colorPickerLesson = 'color-picker-lesson';
-  static const String colorPickerLessonResult = 'color-picker-lesson-result';
-  static const String pictureColorPicker = '/picture-color-picker';
-  static const String lessonCompleteResult = '/lesson-complete-result';
-  static const String miniQuizz = '/mini-quizz';
-
-  //* Draw
-  static const String draw = '/draw';
-  static const String previewLecture = '/preview-lecture';
-
-  //* Drawing Result
-  static const String drawingResult = '/drawing-result';
-
-  //* Lesson Story
-  static const String lessonStory = '/lesson-story';
-  static const String reward = '/reward';
 
   //* Monetization
   static const String premiumPaywall = '/premium-paywall';
+
+  //* Exercise
+  static const String lesson = '/lesson';
+  static const String reviewTime = '/review-time';
+  static const String lessonComplete = '/lesson-complete';
+  static const String exerciseResultPopup = '/exercise-result-popup';
 }
 
 mixin RouteNamed {
@@ -63,7 +54,15 @@ mixin RouteNamed {
 
   //* Splash Screen
   static const String splash = 'Splash Page';
+  static const String chooseLanguage = 'Choose Language Page';
   static const String intro = 'Intro Page';
+  static const String noAuth = 'No Auth Page';
+
+  //* Onboard
+  static const String onboard = 'Onboard Page';
+  static const String dataCollect = 'Data Collect Page';
+  static const String dataCollectMotivationStep = 'Data Collect Motivation Step Page';
+  static const String dataCollectSummary = 'Data Collect Summary Page';
 
   //* Auth
   static const String login = 'Login Page';
@@ -72,40 +71,17 @@ mixin RouteNamed {
   static const String forgotPassword = 'Forgot Password Page';
   static const String otp = 'OTP Page';
   static const String setupPassword = 'Setup Password Page';
-  static const String noAuth = 'No Auth Page';
   static const String changePassword = 'Change Password Page';
 
   //* Home - Road Map
   static const String home = 'Home';
-  static const String choosePath = 'Choose Path';
-
-  //* Picture Study
-  static const String pictureStudy = 'Picture Study';
-  static const String galleryView = 'Gallery View';
-  static const String galleryPictureView = 'Gallery Picture View';
-  static const String colorPickerLesson = 'Color Picker Lesson';
-  static const String colorPickerLessonResult = 'Color Picker Lesson Result';
-  static const String pictureColorPicker = 'Picture Color Picker';
-  static const String lessonCompleteResult = 'Lesson Complete Result';
-  static const String miniQuizz = 'Mini Quizz';
-
-  //* Canvas
-  static const String canvas = 'Canvas';
-
-  //* Draw
-  static const String draw = 'Draw Page';
-
-  //* Drawing Result
-  static const String drawingResult = 'Drawing Result';
-
-  //* Lesson Story
-  static const String lessonStory = 'Lesson Story';
-  static const String reward = 'Reward';
 
   //* Monetization
   static const String premiumPaywall = 'Premium Paywall';
 
-  static const String preivewLecture = 'Preview Lecture';
-
-
+  //* Exercise
+  static const String lesson = 'Lesson';
+  static const String reviewTime = 'Review Time';
+  static const String lessonComplete = 'Lesson Complete';
+  static const String exerciseResultPopup = 'Exercise Result Popup';
 }

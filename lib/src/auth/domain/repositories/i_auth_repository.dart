@@ -1,12 +1,14 @@
-part of 'repositories.dart';
+part of '../../auth.dart';
 
 abstract interface class IAuthRepository {
-  TaskEither<AppException, Auth> login(Map<String, dynamic> body);
-  TaskEither<AppException, Auth> loginSSOGoogle();
-  TaskEither<AppException, Auth> loginSSOApple();
-  TaskEither<AppException, Auth> register(Map<String, dynamic> body);
+  TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body);
+  TaskEither<AppException, AuthEntity> loginAnonymous(Map<String, dynamic> body);
+  TaskEither<AppException, AuthEntity> loginSSOGoogle();
+  TaskEither<AppException, AuthEntity> loginSSOApple();
+  TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body);
+  TaskEither<AppException, AuthEntity> refreshToken(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> logout();
-  TaskEither<AppException, BaseResponse<Auth>> forgotPassword(Map<String, dynamic> body);
+  // TaskEither<AppException, BaseResponse<AuthEntity>> forgotPassword(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> resetPassword(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> resendOTP(String phone);
   TaskEither<AppException, BaseResponse<AppUser>> verifyOTP(Map<String, dynamic> body);

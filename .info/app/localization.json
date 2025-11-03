@@ -1,11 +1,11 @@
 {
   "googleSheets": {
-    "sheetId": "1AvcLhnoNk1ARxk68a53tHOidPPq-sIBYk7ov_UcUeVs",
+    "sheetId": "1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs",
     "sheetGids": ["288536257"],
     "columns": {
       "screen": "Screen",
       "key": "Translation key",
-      "action": "Action",
+      "metadata": "Metadata",
       "en": "Lang: English",
       "vi": "Lang: Vietnam",
       "zh": "Lang: Chinese"

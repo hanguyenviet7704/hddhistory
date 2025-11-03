@@ -9,7 +9,7 @@
 # flutter_launcher_icons-prod.yaml
 
 flutter_launcher_icons:
-  image_path: "assets/images/main_icon.png"
+  image_path: "assets/images/common/main_icon.png"
 
   android: "ic_launcher"
   # image_path_android: "assets/icon/icon.png"
@@ -29,15 +29,15 @@ flutter_launcher_icons:
 
   web:
     generate: true
-    image_path: "assets/images/main_icon.png"
+    image_path: "assets/images/common/main_icon.png"
     background_color: "#68c9ea"
     theme_color: "#68c9ea"
 
   windows:
     generate: true
-    image_path: "assets/images/main_icon.png"
+    image_path: "assets/images/common/main_icon.png"
     icon_size: 48 # min:48, max:256, default: 48
 
   macos:
     generate: true
-    image_path: "assets/images/main_icon.png"
+    image_path: "assets/images/common/main_icon.png"

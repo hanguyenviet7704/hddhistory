@@ -53,7 +53,7 @@ Firebase project configuration:
 
 ### build.json
 Build-specific settings:
-- Flutter command preferences (fvm vs flutter)
+- Flutter version manager (puro, fvm, or none)
 - Build arguments and optimization settings
 - Output path configurations
 
@@ -217,8 +217,9 @@ flutter          # Flutter SDK
 jq              # JSON processor
 firebase        # Firebase CLI (for Firebase features)
 
-# Optional but recommended
-fvm             # Flutter Version Management
+# Optional: Choose ONE Flutter version manager
+puro            # Puro - Fast, multi-version Flutter manager (recommended)
+fvm             # Flutter Version Management (alternative)
 ```
 
 ### macOS Installation
@@ -229,8 +230,149 @@ brew install jq
 # Install Firebase CLI
 npm install -g firebase-tools
 
-# Install FVM (optional)
+# Install Puro (recommended)
+curl -fsSL https://puro.dev/install.sh | sh
+
+# OR Install FVM (alternative)
 dart pub global activate fvm
+```
+
+### Version Manager Configuration
+
+The tools support multiple Flutter version managers with **automatic detection**. Configure in `.info/app/build.json`:
+
+#### Auto-Detection Mode (Recommended)
+```json
+{
+  "flutter": {
+    "versionManager": ["puro", "fvm", "none"],
+    "versionManagerCache": true  // Optional, defaults to true
+  }
+}
+```
+
+The tools will check in array order and use the **first one found**:
+1. Check if `puro` is installed → use it
+2. If not, check if `fvm` is installed → use it
+3. If neither, use system `flutter`
+
+#### Force Mode
+```json
+{
+  "flutter": {
+    "versionManager": "puro"  // Force specific version manager
+  }
+}
+```
+
+Use a single string to force a specific version manager, even if others are installed.
+
+**Supported Version Managers:**
+- **`puro`**: Modern, fast Flutter version manager ([puro.dev](https://puro.dev))
+- **`fvm`**: Traditional Flutter Version Management ([fvm.app](https://fvm.app))
+- **`none`**: Use system Flutter directly
+
+**Caching:**
+- Detection results are cached for performance
+- Set `"versionManagerCache": false` to disable caching
+- Use `SKIP_VERSION_MANAGER_CACHE=false` environment variable to bypass cache
+
+**Smart Fallback:** If configured version manager is not installed, scripts automatically fall back to system Flutter with a warning.
+
+## 📖 Version Manager Guide
+
+### Why Use a Version Manager?
+
+Version managers allow you to:
+- Switch between multiple Flutter versions easily
+- Manage different Flutter versions per project
+- Keep your system clean with isolated installations
+
+**Supported Options:**
+- **Puro** - Modern, fast, efficient (recommended)
+- **FVM** - Traditional, widely used
+- **None** - Use system Flutter directly
+
+### Quick Setup Guide
+
+#### Option 1: Install Puro (Recommended)
+```bash
+# Install Puro
+curl -fsSL https://puro.dev/install.sh | sh
+
+# Install Flutter via Puro
+puro install 3.35.7
+puro use 3.35.7
+
+# Verify
+puro flutter --version
+```
+
+#### Option 2: Install FVM
+```bash
+# Install FVM
+dart pub global activate fvm
+
+# Install Flutter via FVM
+fvm install 3.35.7
+fvm use 3.35.7
+
+# Verify
+fvm flutter --version
+```
+
+#### Option 3: Use System Flutter
+```bash
+# Just use your existing Flutter installation
+flutter --version
+```
+
+### Migration Between Version Managers
+
+**From FVM to Puro:**
+1. Install Puro (see above)
+2. Configuration already supports auto-detection
+3. Tools will automatically use Puro once installed
+4. Optional: Remove FVM if no longer needed
+
+**From Puro to FVM:**
+1. Install FVM (see above)
+2. Edit `.info/app/build.json`: Change order to `["fvm", "puro", "none"]`
+3. Tools will prioritize FVM
+4. Optional: Remove Puro if no longer needed
+
+**Force Specific Version Manager:**
+```json
+{
+  "flutter": {
+    "versionManager": "puro"  // Only use puro
+  }
+}
+```
+
+### Troubleshooting
+
+**Issue: Wrong version manager detected**
+```bash
+# Clear cache
+rm .info/cache/version_manager.cache
+
+# Verify detection
+./tools/macos/config/test_config.sh
+```
+
+**Issue: Want to bypass cache temporarily**
+```bash
+SKIP_VERSION_MANAGER_CACHE=false ./tools/macos/build/build_apk.sh dev
+```
+
+**Issue: Disable caching permanently**
+```json
+{
+  "flutter": {
+    "versionManagerCache": false
+  }
+}
 ```
 
 ## 🧪 Testing Your Setup

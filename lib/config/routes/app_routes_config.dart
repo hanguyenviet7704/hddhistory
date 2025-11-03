@@ -12,6 +12,15 @@ enum RouteTransitionType {
   slide,
   scale,
   rotation,
+  fadeThrough,      // Material Design fade through
+  sharedAxisX,      // Material Design shared axis horizontal
+  sharedAxisY,      // Material Design shared axis vertical
+  sharedAxisZ,      // Material Design shared axis depth
+  zoom,             // Zoom in/out from center
+  slideScale,       // Combined slide and scale
+  fadeSlide,        // Combined fade and slide
+  flip,             // 3D flip animation
+  size,             // Size transition
   custom,
 }
 
@@ -24,6 +33,10 @@ class RouteTransitionConfig {
   final double? minScale;
   final Alignment? scaleAlignment;
   final double? rotationAngle;
+  final double? maxScale;
+  final Offset? slideOffset;
+  final Axis? flipAxis;
+  final double? perspectiveValue;
 
   const RouteTransitionConfig({
     this.type = RouteTransitionType.fade,
@@ -33,6 +46,10 @@ class RouteTransitionConfig {
     this.minScale = 0.85,
     this.scaleAlignment = Alignment.center,
     this.rotationAngle = 0.5,
+    this.maxScale = 1.1,
+    this.slideOffset,
+    this.flipAxis = Axis.horizontal,
+    this.perspectiveValue = 0.003,
   });
 
   /// Preset configurations for common transitions
@@ -43,9 +60,19 @@ class RouteTransitionConfig {
     slideEffect: SlideRouteEffect.rightToLeft,
   );
 
+  static const RouteTransitionConfig slideFromLeft = RouteTransitionConfig(
+    type: RouteTransitionType.slide,
+    slideEffect: SlideRouteEffect.leftToRight,
+  );
+
   static const RouteTransitionConfig slideFromBottom = RouteTransitionConfig(
     type: RouteTransitionType.slide,
     slideEffect: SlideRouteEffect.bottomToTop,
+  );
+
+  static const RouteTransitionConfig slideFromTop = RouteTransitionConfig(
+    type: RouteTransitionType.slide,
+    slideEffect: SlideRouteEffect.topToBottom,
   );
 
   static const RouteTransitionConfig scale = RouteTransitionConfig(
@@ -54,6 +81,68 @@ class RouteTransitionConfig {
 
   static const RouteTransitionConfig rotation = RouteTransitionConfig(
     type: RouteTransitionType.rotation,
+  );
+
+  // Material Design transitions
+  static const RouteTransitionConfig fadeThrough = RouteTransitionConfig(
+    type: RouteTransitionType.fadeThrough,
+    duration: Duration(milliseconds: 300),
+  );
+
+  static const RouteTransitionConfig sharedAxisX = RouteTransitionConfig(
+    type: RouteTransitionType.sharedAxisX,
+    duration: Duration(milliseconds: 300),
+  );
+
+  static const RouteTransitionConfig sharedAxisY = RouteTransitionConfig(
+    type: RouteTransitionType.sharedAxisY,
+    duration: Duration(milliseconds: 300),
+  );
+
+  static const RouteTransitionConfig sharedAxisZ = RouteTransitionConfig(
+    type: RouteTransitionType.sharedAxisZ,
+    duration: Duration(milliseconds: 300),
+  );
+
+  // Combined transitions
+  static const RouteTransitionConfig zoom = RouteTransitionConfig(
+    type: RouteTransitionType.zoom,
+    minScale: 0.8,
+    maxScale: 1.2,
+    curve: Curves.easeInOutCubic,
+  );
+
+  static const RouteTransitionConfig slideScale = RouteTransitionConfig(
+    type: RouteTransitionType.slideScale,
+    slideEffect: SlideRouteEffect.rightToLeft,
+    minScale: 0.9,
+  );
+
+  static const RouteTransitionConfig fadeSlide = RouteTransitionConfig(
+    type: RouteTransitionType.fadeSlide,
+    slideEffect: SlideRouteEffect.rightToLeft,
+    duration: Duration(milliseconds: 350),
+  );
+
+  // 3D transitions
+  static const RouteTransitionConfig flipHorizontal = RouteTransitionConfig(
+    type: RouteTransitionType.flip,
+    flipAxis: Axis.horizontal,
+    duration: Duration(milliseconds: 400),
+    curve: Curves.easeInOutBack,
+  );
+
+  static const RouteTransitionConfig flipVertical = RouteTransitionConfig(
+    type: RouteTransitionType.flip,
+    flipAxis: Axis.vertical,
+    duration: Duration(milliseconds: 400),
+    curve: Curves.easeInOutBack,
+  );
+
+  // Size transition
+  static const RouteTransitionConfig sizeTransition = RouteTransitionConfig(
+    type: RouteTransitionType.size,
+    scaleAlignment: Alignment.center,
   );
 }
 
@@ -122,6 +211,161 @@ abstract class BaseTransitionRouteData extends GoRouteData {
           child: FadeTransition(
             opacity: curvedAnimation,
             child: child,
+          ),
+        );
+
+      case RouteTransitionType.fadeThrough:
+        // Material Design fade through pattern
+        return FadeTransition(
+          opacity: Tween<double>(
+            begin: 0.0,
+            end: 1.0,
+          ).animate(
+            CurvedAnimation(
+              parent: animation,
+              curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
+            ),
+          ),
+          child: child,
+        );
+
+      case RouteTransitionType.sharedAxisX:
+        // Material Design shared axis horizontal
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.3, 0.0),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        );
+
+      case RouteTransitionType.sharedAxisY:
+        // Material Design shared axis vertical
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(0.0, 0.3),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        );
+
+      case RouteTransitionType.sharedAxisZ:
+        // Material Design shared axis depth (scale with fade)
+        return ScaleTransition(
+          scale: Tween<double>(
+            begin: 0.8,
+            end: 1.0,
+          ).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        );
+
+      case RouteTransitionType.zoom:
+        // Zoom in/out animation
+        final scale = TweenSequence<double>([
+          TweenSequenceItem(
+            tween: Tween<double>(
+              begin: config.minScale ?? 0.8,
+              end: config.maxScale ?? 1.1,
+            ).chain(CurveTween(curve: Curves.easeIn)),
+            weight: 50,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(
+              begin: config.maxScale ?? 1.1,
+              end: 1.0,
+            ).chain(CurveTween(curve: Curves.easeOut)),
+            weight: 50,
+          ),
+        ]);
+
+        return ScaleTransition(
+          scale: scale.animate(animation),
+          alignment: config.scaleAlignment ?? Alignment.center,
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        );
+
+      case RouteTransitionType.slideScale:
+        // Combined slide and scale effect
+        final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: slideEffect.startOffset,
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: ScaleTransition(
+            scale: Tween<double>(
+              begin: config.minScale ?? 0.9,
+              end: 1.0,
+            ).animate(curvedAnimation),
+            child: child,
+          ),
+        );
+
+      case RouteTransitionType.fadeSlide:
+        // Smooth fade with slight slide
+        final slideEffect = config.slideEffect ?? SlideRouteEffect.rightToLeft;
+        final offset = slideEffect.startOffset * 0.3; // Reduced slide distance
+
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: offset,
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: FadeTransition(
+            opacity: curvedAnimation,
+            child: child,
+          ),
+        );
+
+      case RouteTransitionType.flip:
+        // 3D flip animation
+        final axis = config.flipAxis ?? Axis.horizontal;
+        final isHorizontal = axis == Axis.horizontal;
+
+        return AnimatedBuilder(
+          animation: curvedAnimation,
+          builder: (context, child) {
+            final value = curvedAnimation.value;
+            final angle = (1 - value) * 3.14159; // PI radians
+
+            return Transform(
+              transform: Matrix4.identity()
+                ..setEntry(3, 2, config.perspectiveValue ?? 0.003)
+                ..rotateY(isHorizontal ? angle : 0)
+                ..rotateX(isHorizontal ? 0 : angle),
+              alignment: Alignment.center,
+              child: value < 0.5
+                  ? Opacity(opacity: 1 - (value * 2), child: child)
+                  : Opacity(opacity: (value - 0.5) * 2, child: child),
+            );
+          },
+          child: child,
+        );
+
+      case RouteTransitionType.size:
+        // Size transition (growing effect)
+        return Align(
+          alignment: config.scaleAlignment ?? Alignment.center,
+          child: SizeTransition(
+            sizeFactor: curvedAnimation,
+            axis: Axis.vertical,
+            axisAlignment: -1.0,
+            child: FadeTransition(
+              opacity: curvedAnimation,
+              child: child,
+            ),
           ),
         );
 

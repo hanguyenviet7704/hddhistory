@@ -13,7 +13,9 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:graphql_flutter/graphql_flutter.dart' show OperationException, QueryResult;
 
 //* Import all local files here
+import '../../config/di/di.dart';
 import '../../config/services/services.dart';
+import '../../src/common/presentation/blocs/blocs.dart';
 import '../helpers/helpers.dart';
 
 //* Import all base files here
@@ -26,6 +28,9 @@ part 'bloc/cubit_usecase_handler.dart';
 part 'error/app_exception.dart';
 part 'network/graphql_request.dart';
 part 'network/restful_request.dart';
+part 'request/page_break_request_v2.dart';
+part 'request/page_break_request.dart';
+part 'responses/base_multi_language.dart';
 part 'responses/base_page_break.dart';
 part 'responses/base_response.dart';
 part 'responses/base_socket_response.dart';

@@ -48,7 +48,7 @@ class AppButton extends StatelessWidget {
     decoration =
         decoration ??
         ShapeDecoration(
-          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(16.r)),
+          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(100.r)),
           color: _bgColorPrimary.op(disabled ? .2 : 1),
         );
     textStyle = AppStyle.textBold20.apply(color: _colorTextPrimary.op(disabled ? .5 : 1));
@@ -73,7 +73,7 @@ class AppButton extends StatelessWidget {
     decoration =
         decoration ??
         ShapeDecoration(
-          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(16.r)),
+          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(100.r)),
           color: _bgColorPrimary.op(disabled ? .2 : 1),
         );
     textStyle = AppStyle.textBold20.apply(color: _colorTextPrimary.op(disabled ? .5 : 1));
@@ -96,7 +96,7 @@ class AppButton extends StatelessWidget {
     decoration =
         decoration ??
         ShapeDecoration(
-          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(16.r)),
+          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(100.r)),
           color: _bgColorSecondary.op(disabled ? .2 : 1),
         );
     textStyle = AppStyle.textBold20.apply(color: _colorTextSecondary.op(disabled ? .5 : 1));
@@ -120,7 +120,7 @@ class AppButton extends StatelessWidget {
     decoration =
         decoration ??
         ShapeDecoration(
-          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(16.r)),
+          shape: RoundedRectangleBorder(borderRadius: borderRadius ?? BorderRadius.circular(100.r)),
           color: _bgColorSecondary.op(disabled ? .2 : 1),
         );
     textStyle = AppStyle.textBold20.apply(color: _colorTextSecondary.op(disabled ? .5 : 1));
@@ -129,11 +129,11 @@ class AppButton extends StatelessWidget {
 
   Color get _colorTextPrimary => Colors.white;
 
-  Color get _colorTextSecondary => AppCustomColor.neutral500;
+  Color get _colorTextSecondary => Color(0xFF7F8EA4);
 
-  Color get _bgColorPrimary => AppCustomColor.orange;
+  Color get _bgColorPrimary => Color(0xFF554FF0);
 
-  Color get _bgColorSecondary => AppCustomColor.neutral100;
+  Color get _bgColorSecondary => Color(0xFFE3E8EF);
 
   @override
   Widget build(BuildContext context) {
@@ -143,7 +143,7 @@ class AppButton extends StatelessWidget {
       height: height,
       constraints: BoxConstraints(minWidth: _minWidth ?? 0),
       child: ClipRRect(
-        borderRadius: borderRadius ?? BorderRadius.circular(16.r),
+        borderRadius: borderRadius ?? BorderRadius.circular(100.r),
         child: MaterialButton(
           elevation: 0,
           color: Colors.transparent,

@@ -1,4 +1,4 @@
-part of '../widgets.dart';
+part of '../../../auth.dart';
 
 class LanguageBtn extends StatelessWidget {
   final Widget child;
@@ -52,7 +52,7 @@ class LanguageItem extends StatelessWidget {
     return Container(
       padding: EdgeInsets.all(24.r),
       decoration: BoxDecoration(
-        color: isSelected ? AppCustomColor.neutral100 : Colors.transparent,
+        color: isSelected ? Colors.blue : Colors.transparent,
         borderRadius: BorderRadius.circular(16.r),
       ),
       child: Row(
@@ -71,7 +71,7 @@ class LanguageItem extends StatelessWidget {
               localeType.label,
               style: AppStyle.text20.copyWith(
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: AppCustomColor.secondary,
+                color: Colors.blue,
                 height: 1.4,
               ),
             ),
@@ -83,7 +83,7 @@ class LanguageItem extends StatelessWidget {
             Icon(
               Icons.check_rounded,
               size: 32.r,
-              color: AppCustomColor.orange,
+              color: Colors.blue,
             ),
           ],
         ],

@@ -97,7 +97,7 @@ def parse_csv_data(csv_texts):
             columns = CONFIG['columns']
             module = row.get(columns["screen"], "").strip()
             key = row.get(columns["key"], "").strip()
-            action = row.get(columns["action"], "").strip()
+            metadata = row.get(columns["metadata"], "").strip()
             
             if not module or not key:
                 continue
@@ -117,7 +117,7 @@ def parse_csv_data(csv_texts):
                             default_lang = CONFIG['languages']['default']
                             modules_data[module_name][lang_code][key] = {
                                 "value": value,
-                                "action": action if lang_code == default_lang else None
+                                "metadata": metadata if lang_code == default_lang else None
                             }
     
     return modules_data, languages
@@ -152,15 +152,15 @@ def generate_arb_content(locale, translations, is_default=False):
     for key in sorted_keys:
         trans_data = translations[key]
         value = trans_data["value"]
-        action = trans_data.get("action")
+        metadata = trans_data.get("metadata")
         
         # Add the translation
         arb_data[key] = value
         
         # Add metadata only for default language (English)
-        if is_default and action:
+        if is_default and metadata:
             arb_data[f"@{key}"] = {
-                "description": action
+                "description": metadata
             }
             
             # Check for placeholders in the value

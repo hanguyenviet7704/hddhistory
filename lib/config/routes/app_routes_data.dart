@@ -1,5 +1,25 @@
 part of 'routes.dart';
 
+//* General Route
+@TypedGoRoute<NoInternetConnectionRoute>(path: RoutePath.noInternetConnection, name: RouteNamed.noInternetConnection)
+class NoInternetConnectionRoute extends BaseTransitionRouteData with $NoInternetConnectionRoute {
+  const NoInternetConnectionRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const NoInternetConnectionPage();
+}
+
+@TypedGoRoute<CommingSoonRoute>(path: RoutePath.commingSoon, name: RouteNamed.commingSoon)
+class CommingSoonRoute extends GoRouteData with $CommingSoonRoute {
+  const CommingSoonRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const CommingSoonPage();
+}
+
 //* Splash Page
 @TypedGoRoute<SplashRoute>(path: RoutePath.splash, name: RouteNamed.splash)
 class SplashRoute extends GoRouteData with $SplashRoute {
@@ -9,22 +29,74 @@ class SplashRoute extends GoRouteData with $SplashRoute {
   Widget build(BuildContext context, GoRouterState state) => const SplashPage();
 }
 
+//* Choose Language Page
+@TypedGoRoute<ChooseLanguageRoute>(path: RoutePath.chooseLanguage, name: RouteNamed.chooseLanguage)
+class ChooseLanguageRoute extends GoRouteData with $ChooseLanguageRoute {
+  const ChooseLanguageRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => const ChooseLanguagePage();
+}
+
 //* Intro Page
 @TypedGoRoute<IntroRoute>(path: RoutePath.intro, name: RouteNamed.intro)
 class IntroRoute extends GoRouteData with $IntroRoute {
   const IntroRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const IntroPage();
+  Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<IntroCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
+    ],
+    child: const IntroPage(),
+  );
 }
 
-//* No Auth Page
-@TypedGoRoute<NoAuthRoute>(path: RoutePath.noAuth, name: RouteNamed.noAuth)
-class NoAuthRoute extends GoRouteData with $NoAuthRoute {
-  const NoAuthRoute();
+//* Onboard Page
+@TypedGoRoute<OnboardRoute>(path: RoutePath.onboard, name: RouteNamed.onboard)
+class OnboardRoute extends GoRouteData with $OnboardRoute {
+  const OnboardRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const NoAuthPage();
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<OnboardCubit>(),
+    child: const OnboardPage(),
+  );
+}
+
+//* Data Collect Page
+@TypedGoRoute<DataCollectRoute>(path: RoutePath.dataCollect, name: RouteNamed.dataCollect)
+class DataCollectRoute extends GoRouteData with $DataCollectRoute {
+  const DataCollectRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<DataCollectCubit>(),
+    child: const DataCollectPage(),
+  );
+}
+
+@TypedGoRoute<DataCollectMotivationStepRoute>(path: RoutePath.dataCollectMotivationStep, name: RouteNamed.dataCollectMotivationStep)
+class DataCollectMotivationStepRoute extends BaseTransitionRouteData with $DataCollectMotivationStepRoute {
+  const DataCollectMotivationStepRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const DataCollectMotivationStepPage();
+}
+
+@TypedGoRoute<DataCollectSummaryRoute>(path: RoutePath.dataCollectSummary, name: RouteNamed.dataCollectSummary)
+class DataCollectSummaryRoute extends GoRouteData with $DataCollectSummaryRoute {
+  const DataCollectSummaryRoute();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<DataCollectCubit>(),
+    child: const DataCollectSummaryPage(),
+  );
 }
 
 //* Auth Pages
@@ -151,23 +223,69 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   }
 }
 
-//* Draw Route with custom transition
-
-@TypedGoRoute<NoInternetConnectionRoute>(path: RoutePath.noInternetConnection, name: RouteNamed.noInternetConnection)
-class NoInternetConnectionRoute extends BaseTransitionRouteData with $NoInternetConnectionRoute {
-  const NoInternetConnectionRoute();
+@TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson)
+class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
+  const LessonRoute();
 
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const NoInternetConnectionPage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<TheoryCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
+    ],
+    child: const LessonPage(),
+  );
 }
 
-@TypedGoRoute<CommingSoonRoute>(path: RoutePath.commingSoon, name: RouteNamed.commingSoon)
-class CommingSoonRoute extends GoRouteData with $CommingSoonRoute {
-  const CommingSoonRoute();
+@TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime)
+class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {
+  const ReviewTimeRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const CommingSoonPage();
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<LessonCubit>(),
+    child: const ReviewTimePage(),
+  );
+}
+
+@TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete)
+class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {
+  final String? type;
+  final String? keypointTitle;
+  final double? progress;
+
+  const LessonCompleteRoute({
+    this.type,
+    this.keypointTitle,
+    this.progress,
+  });
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    final lessonType = type == 'lesson' ? LessonCompleteType.lesson : LessonCompleteType.keypoint;
+    return BlocProvider.value(
+      value: AppDI.injector.get<LessonCubit>(),
+      child: LessonCompletePage(
+        type: lessonType,
+        keypointTitle: keypointTitle,
+        progress: progress,
+      ),
+    );
+  }
 }

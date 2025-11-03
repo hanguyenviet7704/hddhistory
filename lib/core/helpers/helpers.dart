@@ -25,7 +25,7 @@ import '../../config/l10n/app_localizations.dart';
 import '../../config/services/services.dart';
 import '../../config/share/share.dart';
 import '../../config/themes/themes.dart';
-import '../../src/auth/presentation/blocs/blocs.dart';
+import '../../src/src.dart';
 
 //* Import all helper here
 part 'annotation/parser_anotation.dart';

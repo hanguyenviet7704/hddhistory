@@ -1,4 +1,4 @@
-part of '../widgets.dart';
+part of '../../../auth.dart';
 
 class MenuOption extends StatelessWidget {
   final String icon;
@@ -95,7 +95,7 @@ class AboutMenu extends StatelessWidget {
                 // ),
                 // 12.horizontalSpace,
                 AppText(
-                  context.text.roadmapAbout,
+                  'context.text.roadmapAbout',
                   style: AppStyle.textBold24.copyWith(color: AppCustomColor.black36),
                 ),
               ],
@@ -108,12 +108,12 @@ class AboutMenu extends StatelessWidget {
           Column(
             children: [
               AboutMenuOption(
-                title: context.text.roadmapPrivacy,
+                title: 'context.text.roadmapPrivacy',
                 onTap: () => _launchURL('https://meup.com/privacy.html', context),
               ),
               4.verticalSpace,
               AboutMenuOption(
-                title: context.text.roadmapTermsOfUse,
+                title: 'context.text.roadmapTermsOfUse',
                 onTap: () => _launchURL('https://meup.com/terms.html', context),
               ),
             ],

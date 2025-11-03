@@ -1,4 +1,4 @@
-part of '../widgets.dart';
+part of '../../../auth.dart';
 
 class NoData extends StatelessWidget {
   final String message;
@@ -14,7 +14,7 @@ class NoData extends StatelessWidget {
       children: [
         SizedBox(width: 1.sw),
         20.verticalSpace,
-        Image.asset(AppAsset.images.itemNotFound.path, width: 125.w),
+        Image.asset(AppAsset.images.common.itemNotFound.path, width: 125.w),
         AppText(
           displayMessage,
           style: AppStyle.textBold14,

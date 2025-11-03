@@ -5,16 +5,18 @@ mixin AppEndpoint {
   static const String graphql = '/graphql';
 
   //* Auth
-  static const String login = '/auth/v1/signup';
-  static const String register = '/auth/v1/signup';
-  static const String logout = '/logout';
-  static const String forgotPassword = '/forgot-password';
-  static const String resetPassword = '/reset-password';
+  static const String login = '/api/v1/users/login';
+  static const String loginAnonymous = '/api/v1/users/anonymous';
+  static const String loginProvider = '/api/v1/users/login/provider';
+  static const String register = '/api/v1/users/register';
+  static const String logout = '/api/v1/users/logout';
+  static const String forgotPassword = '/api/v1/users/forgot-password';
+  static const String resetPassword = '/api/v1/users/reset-password';
   static const String resendOTP = '/resend-otp';
-  static const String verifyOTP = '/verify-otp';
-  static const String updatePassword = '/user/update-password';
-  static const String deletePermanentUser = '/user/delete-permanently-user';
-  static const String deleteAccount = '/functions/v1/delete-my-account';
+  static const String verifyOTP = '/api/v1/users/verify-otp';
+  static const String updatePassword = '/api/v1/users/update-password';
+  static const String deletePermanentUser = '/api/v1/users/delete-permanently-user';
+  static const String deleteAccount = '/api/v1/users/delete-my-account';
   static const String changeProfileId = '/rest/v1/rpc/p_change_user_profile_id';
 
   //* Config
@@ -25,20 +27,16 @@ mixin AppEndpoint {
   static const String termsOfSalePolicy = '/config/terms-of-sale-policy';
   static const String privacyPolicy = '/config/privacy-policy';
 
-  //* Lesson
-  static const String startLesson = '/rest/v1/rpc/l_start_lesson';
-  static const String createArtWork = '/rest/v1/rpc/create_artwork_v1_0_1';
-  static const String presignedUpload = '/functions/v1/s3-put-object';
-
-  //* AI
-  static const String analyzeArtWork = '/analyze';
-  static const String evaluateDrawing = '/evaluate-drawing';
-  static const String evaluateDrawingLect2a = '/evaluate-drawing-lect2a';
-  static const String evaluateDrawingLect2b = '/evaluate-drawing-lect2b';
-
-  //* Feedback
-  static const String createFeedback = '/rest/v1/rpc/upsert_profile_feedback';
-  static const String createFeedbackPaywall = '/rest/v1/rpc/upsert_profile_feedback_v1_1_0';
+  //* Users API
+  static const String usersRegister = '/api/v1/users/register';
+  static const String usersAnonymous = '/api/v1/users/anonymous';
+  static const String usersLogin = '/api/v1/users/login';
+  static const String usersLogout = '/api/v1/users/logout';
+  static const String usersLoginProvider = '/api/v1/users/login/provider';
+  static const String usersRefreshToken = '/api/v1/users/{id}/refresh-token';
+  static const String usersMe = '/api/v1/users/me';
+  static const String users = '/api/v1/users';
+  static const String usersById = '/api/v1/users/{id}';
 
   //* IAP
   static const String packages = '/rest/v1/rpc/p_get_package';
@@ -48,6 +46,35 @@ mixin AppEndpoint {
   static const String verifyIosV111 = '/functions/v1/validate_ios_receipt_v1_1_1';
   static const String verifyAndroid = '/functions/v1/validate_android_receipt';
 
-  //* Picture study
-  static const String submitColorPickerResult = '/rest/v1/rpc/l_submit_color_picker_result';
+  //* Onboardings API
+  static const String onboardings = '/api/v1/onboardings';
+  static const String onboardingsById = '/api/v1/onboardings/{id}';
+
+  //* Chats API
+  static const String chatMessages = '/api/v1/chats/messages';
+
+  //* Courses API
+  static const String courses = '/api/v1/courses';
+  static const String coursesById = '/api/v1/courses/{id}';
+  static const String coursesRoadmap = '/api/v1/courses/{id}/roadmap';
+
+  //* Courses Lessons API
+  static const String coursesLessons = '/api/v1/courses-lessons';
+  static const String coursesLessonsById = '/api/v1/courses-lessons/{id}';
+  static const String coursesLessonsIndexes = '/api/v1/courses-lessons/indexs';
+
+  //* Courses Keypoints API
+  static const String coursesKeypoints = '/api/v1/courses-keypoints';
+  static const String coursesKeypointsById = '/api/v1/courses-keypoints/{id}';
+
+  //* Courses Learning Items API
+  static const String coursesLearningItems = '/api/v1/courses-learning-items';
+  static const String coursesLearningItemsById = '/api/v1/courses-learning-items/{id}';
+
+  //* Courses User Progress API
+  static const String coursesUserProgress = '/api/v1/courses-user-progress';
+  static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/:lessonId';
+  static const String coursesUserProgressKeypoint = '/api/v1/courses-user-progress/keypoint/:keypointId';
+  static const String coursesUserProgressExercise = '/api/v1/courses-user-progress/exercise/:exerciseId';
+  static const String coursesUserProgressKeypointsPassed = '/api/v1/courses-user-progress/keypoints-passed';
 }

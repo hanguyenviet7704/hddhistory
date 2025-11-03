@@ -12,5 +12,6 @@
     "placeholder_without_metadata",
     "missing_placeholder_with_metadata"
   ],
-  "dart.flutterSdkPath": ".fvm/versions/stable"
+    "dart.flutterSdkPath": "/opt/development_tools/puro/envs/stable/flutter",
+    "dart.sdkPath": "/opt/development_tools/puro/envs/stable/flutter/bin/cache/dart-sdk"
 }
