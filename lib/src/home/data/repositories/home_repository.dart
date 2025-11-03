@@ -87,8 +87,19 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
   Map<String, dynamic> _entityToJson(SkillsetEntity entity) {
     return {
       'id': entity.id,
-      'name': entity.name,
-      // TODO: Add more fields as needed
+      'title': entity.title.toJson(),
+      'description': entity.description.toJson(),
+      'image': entity.image,
+      'courses': entity.courses.map((e) => {
+        'title': e.title.toJson(),
+        'description': e.description.toJson(),
+        'image': e.image,
+        'skillsetId': e.skillsetId,
+        'level': e.level.name,
+        'status': e.status.name,
+      }).toList(),
+      'createdAt': entity.createdAt?.toIso8601String(),
+      'updatedAt': entity.updatedAt?.toIso8601String(),
     };
   }
 }

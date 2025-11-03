@@ -17,6 +17,12 @@ abstract class SkillsetModel with _$SkillsetModel {
 
 extension SkillsetModelExtension on SkillsetModel {
   SkillsetEntity toEntity() => SkillsetEntity(
-    
+    id: id,
+    title: title,
+    description: description,
+    image: image,
+    courses: courses.map((model) => model.toEntity()).toList(),
+    createdAt: createdAt,
+    updatedAt: updatedAt,
   );
 }

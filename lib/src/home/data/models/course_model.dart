@@ -32,3 +32,14 @@ enum CourseLevel {
   @JsonValue('level 2')
   level2,
 }
+
+extension CourseModelExtension on CourseModel {
+  CourseEntity toEntity() => CourseEntity(
+    title: title,
+    description: description,
+    image: image,
+    skillsetId: skillsetId,
+    level: level,
+    status: status,
+  );
+}

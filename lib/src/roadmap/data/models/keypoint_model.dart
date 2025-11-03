@@ -13,3 +13,14 @@ abstract class KeypointModel with _$KeypointModel {
 
   factory KeypointModel.fromJson(Map<String, dynamic> json) => _$KeypointModelFromJson(json);
 }
+
+extension KeypointModelExtension on KeypointModel {
+  KeypointEntity toEntity() => KeypointEntity(
+    id: id,
+    title: title,
+    description: description,
+    image: image,
+    index: index,
+    learningItems: learningItems.map((model) => model.toEntity()).toList(),
+  );
+}

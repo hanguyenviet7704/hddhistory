@@ -17,7 +17,9 @@ part 'data/models/roadmap_model.dart';
 part 'data/models/roadmap_node_model.dart';
 part 'data/repositories/roadmap_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
+part 'domain/entities/keypoint_entity.dart';
 part 'domain/entities/roadmap_entity.dart';
+part 'domain/entities/roadmap_node_entity.dart';
 part 'domain/repositories/i_roadmap_repository.dart';
 part 'domain/usecases/create_roadmap_usecase.dart';
 part 'domain/usecases/delete_roadmap_usecase.dart';

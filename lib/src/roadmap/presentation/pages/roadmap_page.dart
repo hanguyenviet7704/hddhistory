@@ -136,7 +136,7 @@ class _RoadmapPageState extends State<RoadmapPage> {
 
           final item = state.pageData.items[index];
           return ListTile(
-            title: Text(item.name),
+            title: Text('Roadmap ${item.courseId}'),
             subtitle: Text('Created: ${item.createdAt}'),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -173,7 +173,7 @@ class _RoadmapPageState extends State<RoadmapPage> {
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: const Text('Delete Item'),
-        content: Text('Are you sure you want to delete "${item.name}"?'),
+        content: Text('Are you sure you want to delete "Roadmap ${item.courseId}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),

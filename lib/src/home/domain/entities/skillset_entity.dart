@@ -4,7 +4,10 @@ part of '../../home.dart';
 abstract class SkillsetEntity with _$SkillsetEntity {
   const factory SkillsetEntity({
     @Default('') String id,
-    @Default('') String name,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    @Default('') String image,
+    @Default([]) List<CourseEntity> courses,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _SkillsetEntity;

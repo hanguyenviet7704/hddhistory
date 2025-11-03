@@ -4,7 +4,9 @@ part of '../../roadmap.dart';
 abstract class RoadmapEntity with _$RoadmapEntity {
   const factory RoadmapEntity({
     @Default('') String id,
-    @Default('') String name,
+    @Default('') String courseId,
+    @Default([]) List<RoadmapNodeEntity> node,
+    @Default([]) List<LessonEntity> lessonList,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _RoadmapEntity;

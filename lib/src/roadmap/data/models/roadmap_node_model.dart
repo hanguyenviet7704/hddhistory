@@ -15,3 +15,16 @@ abstract class RoadmapNodeModel with _$RoadmapNodeModel {
 
   factory RoadmapNodeModel.fromJson(Map<String, dynamic> json) => _$RoadmapNodeModelFromJson(json);
 }
+
+extension RoadmapNodeModelExtension on RoadmapNodeModel {
+  RoadmapNodeEntity toEntity() => RoadmapNodeEntity(
+    id: id,
+    title: title,
+    entranceId: entranceId,
+    lessonIds: lessonIds,
+    outputId: outputId,
+    entrance: entrance.toEntity(),
+    lessons: lessons.map((model) => model.toEntity()).toList(),
+    output: output.toEntity(),
+  );
+}
