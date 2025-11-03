@@ -6,8 +6,6 @@ abstract interface class JsonRequestConvertible {
 
 @Freezed(toJson: false, fromJson: false, genericArgumentFactories: true)
 abstract class PageBreakRequest<T extends JsonRequestConvertible> with _$PageBreakRequest<T> {
-  const PageBreakRequest._();
-
   const factory PageBreakRequest({
     @Default(1) int page,
     @JsonKey(name: 'take') @Default(10) int limit,
@@ -17,8 +15,39 @@ abstract class PageBreakRequest<T extends JsonRequestConvertible> with _$PageBre
     T? filter,
   }) = _PageBreakRequest<T>;
 
-  static const _reservedKeys = {'page', 'take', 'orderBy', 'order', 'search'};
+  static const reservedKeys = {'page', 'take', 'orderBy', 'order', 'search'};
 
+  factory PageBreakRequest.fromJson(
+    Map<String, dynamic> json,
+    T? Function(Map<String, dynamic>)? filterFromJson,
+  ) {
+    final page = json['page'] as int? ?? 1;
+    final limit = json['take'] as int? ?? 10;
+    final orderBy = json['orderBy'] as String? ?? 'createdAt';
+    final orderValue = json['order'] as String? ?? 'asc';
+    final order = orderValue == 'desc' ? PageBreakOrder.desc : PageBreakOrder.asc;
+    final search = json['search'] as String?;
+
+    T? filter;
+    if (filterFromJson != null) {
+      final filterJson = Map<String, dynamic>.from(json)..removeWhere((key, value) => reservedKeys.contains(key));
+      if (filterJson.isNotEmpty) {
+        filter = filterFromJson(filterJson);
+      }
+    }
+
+    return PageBreakRequest<T>(
+      page: page,
+      limit: limit,
+      orderBy: orderBy,
+      order: order,
+      search: search,
+      filter: filter,
+    );
+  }
+}
+
+extension PageBreakRequestExtension<T extends JsonRequestConvertible> on PageBreakRequest<T> {
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{
       'page': page,
@@ -35,9 +64,9 @@ abstract class PageBreakRequest<T extends JsonRequestConvertible> with _$PageBre
 
     final filterJson = filter!.toJson();
     for (final entry in filterJson.entries) {
-      if (_reservedKeys.contains(entry.key)) {
+      if (PageBreakRequest.reservedKeys.contains(entry.key)) {
         throw ArgumentError(
-          'Filter field "${entry.key}" conflicts with PageBreakRequest reserved fields: $_reservedKeys',
+          'Filter field "${entry.key}" conflicts with PageBreakRequest reserved fields: ${PageBreakRequest.reservedKeys}',
         );
       }
 
@@ -46,34 +75,5 @@ abstract class PageBreakRequest<T extends JsonRequestConvertible> with _$PageBre
     }
 
     return json;
-  }
-
-  factory PageBreakRequest.fromJson(
-    Map<String, dynamic> json,
-    T? Function(Map<String, dynamic>)? filterFromJson,
-  ) {
-    final page = json['page'] as int? ?? 1;
-    final limit = json['take'] as int? ?? 10;
-    final orderBy = json['orderBy'] as String? ?? 'createdAt';
-    final orderValue = json['order'] as String? ?? 'asc';
-    final order = orderValue == 'desc' ? PageBreakOrder.desc : PageBreakOrder.asc;
-    final search = json['search'] as String?;
-
-    T? filter;
-    if (filterFromJson != null) {
-      final filterJson = Map<String, dynamic>.from(json)..removeWhere((key, value) => _reservedKeys.contains(key));
-      if (filterJson.isNotEmpty) {
-        filter = filterFromJson(filterJson);
-      }
-    }
-
-    return PageBreakRequest<T>(
-      page: page,
-      limit: limit,
-      orderBy: orderBy,
-      order: order,
-      search: search,
-      filter: filter,
-    );
   }
 }

@@ -1,6 +1,5 @@
 part of '../../lesson.dart';
 
-// abstract class LearningItemFilter with _$LearningItemFilter implements JsonConvertible {
 @freezed
 abstract class LearningItemFilter with _$LearningItemFilter implements JsonRequestConvertible {
   const factory LearningItemFilter({
