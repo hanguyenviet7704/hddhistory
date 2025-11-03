@@ -9,9 +9,9 @@ import 'package:injectable/injectable.dart';
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
 
-part 'data/datasources/local/home_local_data_source.dart';
-part 'data/datasources/remote/home_api.dart';
 //* Data Layer - Models, Datasources, Repositories
+part 'data/datasources/local/home_local_data_source.dart';
+part 'data/datasources/remote/skillset_api.dart';
 part 'data/models/course_model.dart';
 part 'data/models/skillset_model.dart';
 part 'data/repositories/home_repository.dart';
@@ -19,11 +19,8 @@ part 'data/repositories/home_repository.dart';
 part 'domain/entities/course_entity.dart';
 part 'domain/entities/skillset_entity.dart';
 part 'domain/repositories/i_home_repository.dart';
-part 'domain/usecases/create_skillset_usecase.dart';
-part 'domain/usecases/delete_skillset_usecase.dart';
 part 'domain/usecases/get_all_skillsets_usecase.dart';
 part 'domain/usecases/get_skillset_usecase.dart';
-part 'domain/usecases/update_skillset_usecase.dart';
 //* Presentation Layer - Widgets
 
 //* Parts for generated files

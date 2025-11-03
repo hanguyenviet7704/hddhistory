@@ -71,10 +71,26 @@ mixin AppEndpoint {
   static const String coursesLearningItems = '/api/v1/courses-learning-items';
   static const String coursesLearningItemsById = '/api/v1/courses-learning-items/{id}';
 
+  //* Courses Tags API
+  static const String coursesTags = '/api/v1/courses-tags';
+  static const String coursesTagsById = '/api/v1/courses-tags/{id}';
+
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/:lessonId';
   static const String coursesUserProgressKeypoint = '/api/v1/courses-user-progress/keypoint/:keypointId';
   static const String coursesUserProgressExercise = '/api/v1/courses-user-progress/exercise/:exerciseId';
   static const String coursesUserProgressKeypointsPassed = '/api/v1/courses-user-progress/keypoints-passed';
+
+  //* Skillsets API
+  static const String skillsets = '/api/v1/skillsets';
+  static const String skillsetsById = '/api/v1/skillsets/{id}';
+
+  //* Cloudflare Files API
+  static const String cloudflareUpload = '/api/v1/cloudflares/upload';
+  static const String cloudflareUploadMultiple = '/api/v1/cloudflares/upload-multiple';
+  static const String cloudflareDownload = '/api/v1/cloudflares/download/{key}';
+  static const String cloudflareInfo = '/api/v1/cloudflares/info/{key}';
+  static const String cloudflareList = '/api/v1/cloudflares';
+  static const String cloudflareDelete = '/api/v1/cloudflares/{key}';
 }

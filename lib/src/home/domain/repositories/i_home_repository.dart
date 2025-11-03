@@ -5,7 +5,4 @@ abstract class IHomeRepository {
     PageBreakRequest request,
   );
   TaskEither<AppException, SkillsetEntity> getSkillset(String id);
-  TaskEither<AppException, SkillsetEntity> createSkillset(SkillsetEntity entity);
-  TaskEither<AppException, SkillsetEntity> updateSkillset(SkillsetEntity entity);
-  TaskEither<AppException, Unit> deleteSkillset(String id);
 }

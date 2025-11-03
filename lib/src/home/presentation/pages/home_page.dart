@@ -51,14 +51,6 @@ class _HomePageState extends State<HomePage> {
               title: const Text('Home'),
             ),
             body: _buildBody(context, state),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                // TODO: Navigate to create page or show create dialog
-                // Example:
-                // context.read<HomeCubit>().createSkillset(entity);
-              },
-              child: const Icon(Icons.add),
-            ),
           );
         },
       ),
@@ -138,56 +130,11 @@ class _HomePageState extends State<HomePage> {
           return ListTile(
             title: Text(item.title.text),
             subtitle: Text('Created: ${item.createdAt}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    // TODO: Navigate to edit page or show edit dialog
-                    // Example:
-                    // context.read<HomeCubit>().updateSkillset(updatedEntity);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    _showDeleteConfirmation(context, item);
-                  },
-                ),
-              ],
-            ),
             onTap: () {
-              // TODO: Navigate to detail page
-              // Example:
-              // context.read<HomeCubit>().loadSkillset(item.id);
+              context.read<HomeCubit>().loadSkillset(item.id);
             },
           );
         },
-      ),
-    );
-  }
-
-  void _showDeleteConfirmation(BuildContext context, SkillsetEntity item) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Item'),
-        content: Text('Are you sure you want to delete "${item.title.text}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<HomeCubit>().deleteSkillset(item.id);
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
       ),
     );
   }
