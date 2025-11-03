@@ -97,9 +97,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     PageBreakRequest<LearningItemFilter> pageRequest;
     pageRequest = isInit
-        ? const PageBreakRequest<LearningItemFilter>(filter: LearningItemFilter(
-          type: LearningItemFilterType.theory,
-        ))
+        ? const PageBreakRequest<LearningItemFilter>()
         : PageBreakRequest<LearningItemFilter>(
             page: state.pageData.nextPage,
             filter: LearningItemFilter(keypointId: state.currentTag.id, type: LearningItemFilterType.theory),
