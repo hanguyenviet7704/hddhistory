@@ -78,7 +78,11 @@ class HomePage extends StatelessWidget {
                         final skillset = state.pageData.items[index];
                         return SkillsetCardWidget(
                           skillset: skillset,
-                          onTap: () => CourseRoadmapRoute().go(context),
+                          onTap: () {
+                            CourseRoadmapRoute().go(context);
+                            context.read<HomeCubit>().selectSkillset(index);
+                            context.read<CourseCubit>().loadRoadmap(skillset.courses.first.id);
+                          },
                         );
                       },
                     ),

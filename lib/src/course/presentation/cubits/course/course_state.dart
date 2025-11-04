@@ -7,8 +7,8 @@ abstract class CourseState with _$CourseState {
   const factory CourseState({
     @Default(CourseStatus.initial) CourseStatus status,
     @Default(BasePageBreak<CourseEntity>()) BasePageBreak<CourseEntity> pageData,
+    @Default(RoadmapEntity()) RoadmapEntity roadmap,
     CourseEntity? selectedItem,
-    RoadmapEntity? roadmap,
     String? errorMessage,
   }) = _CourseState;
 

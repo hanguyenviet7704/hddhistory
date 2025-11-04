@@ -60,5 +60,6 @@ extension LessonModelExtension on LessonModel {
     estimateCompleTime: estimateCompleTime,
     icon: icon.toEntity(),
     index: index,
+    process: process,
   );
 }

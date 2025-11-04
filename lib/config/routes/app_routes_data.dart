@@ -218,8 +218,11 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           context.pop();
         }
       },
-      child: BlocProvider.value(
-        value: AppDI.injector.get<HomeCubit>()..initializeData(),
+      child: MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: AppDI.injector.get<HomeCubit>()..initializeData()),
+          BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
+        ],
         child: const HomePage(),
       ),
     );
@@ -246,7 +249,10 @@ class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRout
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const CourseRoadmapPage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<CourseCubit>(),
+    child: const CourseRoadmapPage(),
+  );
 }
 
 //* Lesson Route

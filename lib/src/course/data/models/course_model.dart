@@ -3,7 +3,7 @@ part of '../../course.dart';
 @freezed
 abstract class CourseModel with _$CourseModel {
   const factory CourseModel({
-    @Default('') String id,
+    @JsonKey(name: '_id') @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,

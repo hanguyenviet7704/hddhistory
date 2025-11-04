@@ -7,8 +7,8 @@ class GetRoadmapUseCase implements UseCaseWithParams<String, RoadmapEntity> {
   GetRoadmapUseCase(this._repository);
 
   @override
-  TaskEither<AppException, RoadmapEntity> call(String params) {
-    return _repository.getRoadmap(params);
+  TaskEither<AppException, RoadmapEntity> call(String courseId) {
+    return _repository.getRoadmap(courseId);
   }
 }
 

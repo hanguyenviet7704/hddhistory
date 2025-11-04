@@ -4,11 +4,11 @@ part of '../../lesson.dart';
 abstract class TagEntity with _$TagEntity {
   const factory TagEntity({
     @Default('') String id,
-    @Default(AppUser()) AppUser createdBy,
-    @Default(AppUser()) AppUser updatedBy,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default('') String color,
-    @Default('') String icon,
+    @Default('') String url,
+    @Default(AppUser()) AppUser createdBy,
+    @Default(AppUser()) AppUser updatedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _TagEntity;

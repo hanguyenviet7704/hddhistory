@@ -10,6 +10,13 @@ import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Presentation Layer - Widgets
+part 'presentation/widgets/course_header_card.dart';
+part 'presentation/widgets/in_progress_badge.dart';
+part 'presentation/widgets/lesson_card.dart';
+part 'presentation/widgets/lesson_metadata.dart';
+part 'presentation/widgets/roadmap_timeline_list.dart';
+part 'presentation/widgets/timeline_node_item.dart';
+part 'presentation/widgets/top_progress_bar.dart';
 
 //* Parts for generated files
 part 'course.freezed.dart';

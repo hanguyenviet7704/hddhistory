@@ -3,7 +3,7 @@ part of '../../home.dart';
 @freezed
 abstract class SkillsetModel with _$SkillsetModel {
   const factory SkillsetModel({
-    @Default('') String id,
+    @JsonKey(name: '_id') @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
