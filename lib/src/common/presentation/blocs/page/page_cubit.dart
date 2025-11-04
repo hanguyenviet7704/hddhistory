@@ -126,7 +126,5 @@ class PageCubit extends Cubit<PageState> {
 
   void _handleServiceRouteHomeTab() {
     if (_serviceRouteQuery['module'] == null) return;
-    final String module = _serviceRouteQuery['module']!;
-    AppConfig.instance.context!.read<HomeCubit>().setHomeIndex(HomeModule.fromString(module));
   }
 }

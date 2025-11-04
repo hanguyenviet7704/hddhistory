@@ -1,140 +1,111 @@
 part of '../../home.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_isBottom) {
-      _loadMore(context);
-    }
-  }
-
-  bool get _isBottom {
-    if (!_scrollController.hasClients) return false;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    return currentScroll >= (maxScroll * 0.9);
-  }
-
-  void _loadMore(BuildContext context) {
-    context.read<HomeCubit>().loadAllSkillsets();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppDI.injector.get<HomeCubit>()
-        ..loadAllSkillsets(isInit: true),
-      child: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Home'),
-            ),
-            body: _buildBody(context, state),
-          );
-        },
-      ),
-    );
-  }
-
-  Widget _buildBody(BuildContext context, HomeState state) {
-    // Show loading on initial load
-    if (state.status == HomeStatus.loading && state.pageData.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    // Show error if no items loaded yet
-    if (state.status == HomeStatus.failure && state.pageData.items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              state.errorMessage ?? 'An error occurred',
-              style: const TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                context.read<HomeCubit>().loadAllSkillsets(isInit: true);
+    return Scaffold(
+      backgroundColor: AppCustomColor.greyF5,
+      body: SafeArea(
+        child: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<HomeCubit>().initializeData();
               },
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
+              child: SingleChildScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header
+                    const HomeHeaderWidget(),
 
-    // Show empty state
-    if (state.pageData.items.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'No items found',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
+                    // Courses section
+                    if (state.coursesPageData.items.isNotEmpty) ...[
+                      4.verticalSpace,
+                      // Continue learning
+                      AppText(
+                        'Continue learning',
+                        style: AppStyle.textBold20.copyWith(
+                          color: AppCustomColor.black36,
+                        ),
+                      ),
+                      12.verticalSpace,
+                      // Course cards horizontal scroll
+                      SizedBox(
+                        height: 102.h,
+                        child: ListView.separated(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          itemCount: state.coursesPageData.items.length,
+                          separatorBuilder: (_, _) => 16.horizontalSpace,
+                          itemBuilder: (context, index) {
+                            final courseProgress = state.coursesPageData.items[index];
+                            return CourseCardWidget(
+                              courseProgress: courseProgress,
+                              onTap: () {
+                                // Navigate to course details
+                                // TODO: Implement navigation
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      20.verticalSpace,
+                    ],
 
-    // Show list with items
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<HomeCubit>().loadAllSkillsets(isInit: true);
-        // Wait for the request to complete
-        await Future.delayed(const Duration(milliseconds: 500));
-      },
-      child: ListView.builder(
-        controller: _scrollController,
-        itemCount: state.pageData.items.length + (state.pageData.isLastPage ? 0 : 1),
-        itemBuilder: (context, index) {
-          // Show loading indicator at bottom when loading more
-          if (index >= state.pageData.items.length) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircularProgressIndicator(),
+                    // Skillsets section
+                    const SectionHeaderWidget(
+                      title: 'Recommended for you',
+                      actionText: 'All courses',
+                    ),
+                    16.verticalSpace,
+
+                    // Skillsets grid
+                    GridView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12.w,
+                        mainAxisSpacing: 12.h,
+                        childAspectRatio: 161.w / 234.h,
+                      ),
+                      itemCount: state.pageData.items.length,
+                      itemBuilder: (context, index) {
+                        final skillset = state.pageData.items[index];
+                        return SkillsetCardWidget(
+                          skillset: skillset,
+                          onTap: () {
+                            // Navigate to skillset details
+                            // TODO: Implement navigation
+                          },
+                        );
+                      },
+                    ),
+
+                    // Loading indicator for skillsets
+                    if (state.isLoadingSkillsets)
+                      Padding(
+                        padding: EdgeInsets.all(20.w),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: AppCustomColor.blue2F,
+                          ),
+                        ),
+                      ),
+
+                    // Bottom padding
+                    20.verticalSpace,
+                  ],
+                ),
               ),
             );
-          }
-
-          final item = state.pageData.items[index];
-          return ListTile(
-            title: Text(item.title.text),
-            subtitle: Text('Created: ${item.createdAt}'),
-            onTap: () {
-              context.read<HomeCubit>().loadSkillset(item.id);
-            },
-          );
-        },
+          },
+        ),
       ),
     );
   }

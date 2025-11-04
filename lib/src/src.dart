@@ -14,3 +14,5 @@ export 'onboard/onboard.dart';
 export 'profile/profile.dart';
 export 'lesson/lesson.dart';
 export 'course/course.dart';
+export 'progress/progress.dart';
+export 'home/home.dart';

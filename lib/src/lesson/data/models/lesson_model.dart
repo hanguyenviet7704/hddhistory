@@ -23,10 +23,8 @@ abstract class LessonModel with _$LessonModel {
 enum LessonPublishStatus {
   @JsonValue('published')
   published,
-
   @JsonValue('draft')
   draft,
-
   @JsonValue('inactive')
   inactive,
 }
@@ -34,10 +32,8 @@ enum LessonPublishStatus {
 enum LessonType {
   @JsonValue('lesson')
   lesson,
-
   @JsonValue('entrance')
   entrance,
-
   @JsonValue('output')
   output,
 }

@@ -40,9 +40,6 @@ part 'blocs.g.dart';
 //? Connectivity Bloc
 part 'connectivity/connectivity_cubit.dart';
 part 'connectivity/connectivity_state.dart';
-//? Home Bloc
-part 'home/home/home_cubit.dart';
-part 'home/home/home_state.dart';
 //? Page Bloc
 part 'page/page_cubit.dart';
 part 'page/page_state.dart';

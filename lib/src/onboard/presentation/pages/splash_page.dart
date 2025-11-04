@@ -92,8 +92,9 @@ class _SplashPageState extends State<SplashPage> {
         ChooseLanguageRoute().go(context);
         return;
       }
-      AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
-      LessonRoute().go(context);
+      // AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
+      // LessonRoute().go(context);
+      HomeRoute().go(context);
     });
   }
 

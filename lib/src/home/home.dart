@@ -29,3 +29,8 @@ part 'presentation/cubits/home_cubit.dart';
 part 'presentation/cubits/home_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/home_page.dart';
+//* Presentation Layer - Custom Widgets
+part 'presentation/widgets/course_card.dart';
+part 'presentation/widgets/home_header.dart';
+part 'presentation/widgets/section_header.dart';
+part 'presentation/widgets/skillset_card.dart';

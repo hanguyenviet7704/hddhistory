@@ -71,6 +71,19 @@ mixin AppCustomColor {
   static const Color redEC = Color(0xFFEC2028);
   static const Color redA0 = Color(0xFFA01C21);
   static const Color red4D = Color(0xFF4D1C00);
+
+  // New colors from Figma design
+  static const Color neutral01 = Color(0xFF1A202C);
+  static const Color textPrimary = Color(0xFF0D121C);
+  static const Color textSecondary = Color(0xFF364152);
+  static const Color textTertiary = Color(0xFF7F8EA4);
+  static const Color textQuaternary = Color(0xFFAAB8CD);
+  static const Color textWhite = Color(0xFFFFFFFF);
+  static const Color backgroundWhite = Color(0xFFFFFFFF);
+  static const Color backgroundGray = Color(0xFFF5F7FB);
+  static const Color borderDefault = Color(0xFFEBF0F7);
+  static const Color borderSecondary = Color(0xFFE3E8EF);
+  static const Color brandPrimary = Color(0xFF554FF0);
 }
 
 mixin AppTheme {

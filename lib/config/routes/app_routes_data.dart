@@ -218,7 +218,10 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           context.pop();
         }
       },
-      child: Container(),
+      child: BlocProvider.value(
+        value: AppDI.injector.get<HomeCubit>()..initializeData(),
+        child: const HomePage(),
+      ),
     );
   }
 }
