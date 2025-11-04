@@ -23,15 +23,6 @@ enum GradeResultType {
   exercise,
 }
 
-enum ProcessEnum {
-  @JsonValue('done')
-  done,
-  @JsonValue('in_progress')
-  inProgress,
-  @JsonValue('not_started')
-  notStarted,
-}
-
 extension UserProgressModelExtension on UserProgressModel {
   UserProgressEntity toEntity() => UserProgressEntity(
     id: id,

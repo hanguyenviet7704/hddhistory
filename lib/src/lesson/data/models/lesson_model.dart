@@ -12,7 +12,8 @@ abstract class LessonModel with _$LessonModel {
     @Default(LessonPublishStatus.draft) LessonPublishStatus status,
     @Default([]) List<String> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
-    @Default('') String icon,
+    @Default(TagModel()) TagModel icon,
+    @Default(ProcessEnum.notStarted) ProcessEnum process,
     @Default(0) int index,
   }) = _LessonModel;
 
@@ -41,6 +42,15 @@ enum LessonType {
   output,
 }
 
+enum ProcessEnum {
+  @JsonValue('done')
+  done,
+  @JsonValue('in_progress')
+  inProgress,
+  @JsonValue('not_started')
+  notStarted,
+}
+
 extension LessonModelExtension on LessonModel {
   LessonEntity toEntity() => LessonEntity(
     id: id,
@@ -52,7 +62,7 @@ extension LessonModelExtension on LessonModel {
     status: status,
     keypoints: keypoints,
     estimateCompleTime: estimateCompleTime,
-    icon: icon,
+    icon: icon.toEntity(),
     index: index,
   );
 }

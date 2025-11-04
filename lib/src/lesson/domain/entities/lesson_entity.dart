@@ -12,7 +12,7 @@ abstract class LessonEntity with _$LessonEntity {
     @Default(LessonPublishStatus.draft) LessonPublishStatus status,
     @Default([]) List<String> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
-    @Default('') String icon,
+    @Default(TagEntity()) TagEntity icon,
     @Default(0) int index,
   }) = _LessonEntity;
 
