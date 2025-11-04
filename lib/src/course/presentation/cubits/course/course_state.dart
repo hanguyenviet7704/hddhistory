@@ -20,5 +20,9 @@ abstract class CourseState with _$CourseState {
 extension CourseStateExtension on CourseState {
   int get totalLessons => roadmap.lessonList.length;
   int get completedLessons => roadmap.lessonList.where((r) => r.process == ProcessEnum.done).length;
-  double get progress => completedLessons / totalLessons;
+  double get progress {
+    if (totalLessons == 0) return 0;
+    if (completedLessons >= totalLessons) return 1;
+    return completedLessons / totalLessons;
+  }
 }

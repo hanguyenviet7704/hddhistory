@@ -13,9 +13,7 @@ class CourseRoadmapPage extends StatelessWidget {
             // Top progress bar
             TopProgressBar(),
             // Main content
-            Expanded(
-              child: CourseRoadmapContent(),
-            ),
+            CourseRoadmapContent(),
           ],
         ),
       ),
