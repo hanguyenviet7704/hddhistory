@@ -20,6 +20,7 @@ abstract class HomeState with _$HomeState {
 
 extension HomeStateExtension on HomeState {
   SkillsetEntity get currentSkillset => pageData.items.elementAtOrDefault(selectedSkillsetIndex, defaultValue: SkillsetEntity());
-  UserProgressEntity get currentCourse => coursesPageData.items.elementAtOrDefault(selectedCourseIndex, defaultValue: UserProgressEntity());
-  
+  UserProgressEntity get currentUserProgress => coursesPageData.items.elementAtOrDefault(selectedCourseIndex, defaultValue: UserProgressEntity());
+  CourseEntity get currentCourse => currentSkillset.courses.elementAtOrDefault(selectedCourseIndex, defaultValue: CourseEntity());
+  String get courseName => currentCourse.title.text.isNotEmpty ? currentCourse.title.text : 'Course Roadmap';
 }

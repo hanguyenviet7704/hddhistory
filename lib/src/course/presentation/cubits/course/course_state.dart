@@ -16,3 +16,9 @@ abstract class CourseState with _$CourseState {
 
   factory CourseState.fromJson(Map<String, dynamic> json) => _$CourseStateFromJson(json);
 }
+
+extension CourseStateExtension on CourseState {
+  int get totalLessons => roadmap.lessonList.length;
+  int get completedLessons => roadmap.lessonList.where((r) => r.process == ProcessEnum.done).length;
+  double get progress => completedLessons / totalLessons;
+}

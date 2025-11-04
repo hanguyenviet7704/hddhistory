@@ -1,18 +1,18 @@
 part of '../../course.dart';
 
 class RoadmapTimelineList extends StatelessWidget {
-  final List<RoadmapNodeEntity> nodes;
+  final List<LessonEntity> lessons;
   final VoidCallback? onLessonTap;
 
   const RoadmapTimelineList({
     super.key,
-    required this.nodes,
+    required this.lessons,
     this.onLessonTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (nodes.isEmpty) {
+    if (lessons.isEmpty) {
       return Container(
         padding: EdgeInsets.all(32.w),
         decoration: BoxDecoration(
@@ -30,6 +30,9 @@ class RoadmapTimelineList extends StatelessWidget {
       );
     }
 
+    // Sort lessons by index to ensure correct order
+    final sortedLessons = [...lessons]..sort((a, b) => a.index.compareTo(b.index));
+
     return Container(
       padding: EdgeInsets.all(16.w),
       decoration: BoxDecoration(
@@ -45,22 +48,15 @@ class RoadmapTimelineList extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: nodes.asMap().entries.map((entry) {
+        children: sortedLessons.asMap().entries.map((entry) {
           final index = entry.key;
-          final node = entry.value;
-          final isFirst = index == 0;
-          final isLast = index == nodes.length - 1;
+          final lesson = entry.value;
+          final isLast = index == sortedLessons.length - 1;
 
-          return Padding(
-            padding: EdgeInsets.only(
-              bottom: isLast ? 0 : 20.h,
-            ),
-            child: TimelineNodeItem(
-              node: node,
-              isFirst: isFirst,
-              isLast: isLast,
-              onLessonTap: onLessonTap,
-            ),
+          return TimelineLessonItem(
+            lesson: lesson,
+            isLast: isLast,
+            onTap: onLessonTap,
           );
         }).toList(),
       ),

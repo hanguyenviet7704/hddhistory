@@ -1,29 +1,15 @@
 part of '../../course.dart';
 
 class CourseHeaderCard extends StatelessWidget {
-  final CourseEntity course;
-  final int completedLessons;
-  final int totalLessons;
+  const CourseHeaderCard({super.key});
 
-  const CourseHeaderCard({
-    super.key,
-    required this.course,
-    required this.completedLessons,
-    required this.totalLessons,
-  });
-
-  String _getLevelText() {
+  String _getLevelText(CourseEntity course) {
     switch (course.level) {
       case CourseLevel.level1:
         return 'Level 1';
       case CourseLevel.level2:
         return 'Level 2';
     }
-  }
-
-  double get _progressPercent {
-    if (totalLessons == 0) return 0;
-    return completedLessons / totalLessons;
   }
 
   @override
@@ -41,77 +27,97 @@ class CourseHeaderCard extends StatelessWidget {
           ),
         ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Course title
-          AppText(
-            course.title.text,
-            style: AppStyle.text24.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppCustomColor.textPrimary,
-            ),
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-          8.verticalSpace,
-          // Course description
-          if (course.description.en.isNotEmpty)
-            AppText(
-              course.description.text,
-              style: AppStyle.text14.copyWith(
-                color: AppCustomColor.textSecondary,
-              ),
-              maxLines: 3,
-              overflow: TextOverflow.ellipsis,
-            ),
-          if (course.description.en.isNotEmpty) 12.verticalSpace,
-          // Level indicator
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
-            decoration: BoxDecoration(
-              color: AppCustomColor.greyE3,
-              borderRadius: BorderRadius.circular(8.r),
-            ),
-            child: AppText(
-              _getLevelText(),
-              style: AppStyle.text12.copyWith(
-                fontWeight: FontWeight.w500,
-                color: AppCustomColor.textSecondary,
-              ),
-              maxLines: 1,
-            ),
-          ),
-          16.verticalSpace,
-          // Progress bar
-          Row(
+      child: BlocBuilder<HomeCubit, HomeState>(
+        builder: (context, homeState) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(4.r),
-                  child: LinearProgressIndicator(
-                    value: _progressPercent,
-                    backgroundColor: AppCustomColor.borderSecondary,
-                    valueColor: AlwaysStoppedAnimation<Color>(
-                      AppCustomColor.black0D,
-                    ),
-                    minHeight: 9.h,
-                  ),
-                ),
-              ),
-              12.horizontalSpace,
-              // Lesson count
+              // Course title
               AppText(
-                '$completedLessons/$totalLessons Lessons',
-                style: AppStyle.text14.copyWith(
-                  fontWeight: FontWeight.w500,
+                homeState.courseName,
+                style: AppStyle.text24.copyWith(
+                  fontWeight: FontWeight.w600,
                   color: AppCustomColor.textPrimary,
                 ),
-                maxLines: 1,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+              8.verticalSpace,
+              // Course description
+              if (homeState.currentCourse.description.text.isNotEmpty) ...[
+                AppText(
+                  margin: EdgeInsets.symmetric(horizontal: 16.w),
+                  homeState.currentCourse.description.text,
+                  style: AppStyle.text14.copyWith(
+                    color: AppCustomColor.textSecondary,
+                  ),
+                  maxLines: 3,
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.center,
+                ),
+                12.verticalSpace,
+              ],
+
+              // Progress bar
+              Padding(
+                padding: EdgeInsets.symmetric(horizontal: 14.w),
+                child: Row(
+                  children: [
+                    AppText(
+                      _getLevelText(homeState.currentCourse).toUpperCase(),
+                      style: AppStyle.textBold12.copyWith(color: AppCustomColor.textTertiary),
+                      maxLines: 1,
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 12.w),
+                      width: 4.w,
+                      height: 4.w,
+                      decoration: ShapeDecoration(
+                        color: const Color(0xFFAAB7CC) /* Text-Quaternary */,
+                        shape: OvalBorder(),
+                      ),
+                    ),
+                    BlocSelector<CourseCubit, CourseState, double>(
+                      selector: (state) => state.progress,
+                      builder: (context, progress) {
+                        return Expanded(
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(4.r),
+                            child: LinearPercentIndicator(
+                              animation: true,
+                              animationDuration: 500,
+                              animateFromLastPercent: true,
+                              lineHeight: 10.h,
+                              percent: progress,
+                              backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
+                              progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
+                              barRadius: Radius.circular(30.r),
+                              padding: EdgeInsets.zero,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    12.horizontalSpace,
+                    // Lesson count
+                    BlocBuilder<CourseCubit, CourseState>(
+                      buildWhen: (previous, current) => previous.completedLessons != current.completedLessons || previous.totalLessons != current.totalLessons,
+                      builder: (context, courseState) {
+                        return AppText(
+                          '${courseState.completedLessons}/${courseState.totalLessons} Lessons',
+                          style: AppStyle.text14.copyWith(
+                            color: AppCustomColor.textTertiary,
+                          ),
+                          maxLines: 1,
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ],
-          ),
-        ],
+          );
+        },
       ),
     );
   }

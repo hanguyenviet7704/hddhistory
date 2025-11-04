@@ -1,12 +1,10 @@
 part of '../../course.dart';
 
 class TopProgressBar extends StatelessWidget {
-  final String courseName;
   final VoidCallback? onTap;
 
   const TopProgressBar({
     super.key,
-    required this.courseName,
     this.onTap,
   });
 
@@ -27,13 +25,18 @@ class TopProgressBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              AppText(
-                courseName,
-                style: AppStyle.text14.copyWith(
-                  fontWeight: FontWeight.w500,
-                  color: AppCustomColor.textPrimary,
-                ),
-                maxLines: 1,
+              BlocSelector<HomeCubit, HomeState, String>(
+                selector: (state) => state.courseName,
+                builder: (context, courseName) {
+                  return AppText(
+                    courseName,
+                    style: AppStyle.text14.copyWith(
+                      fontWeight: FontWeight.w500,
+                      color: AppCustomColor.textPrimary,
+                    ),
+                    maxLines: 1,
+                  );
+                },
               ),
               8.horizontalSpace,
               Icon(
