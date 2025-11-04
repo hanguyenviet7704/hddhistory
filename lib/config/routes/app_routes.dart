@@ -15,6 +15,9 @@ mixin RoutePath {
   static const String intro = '/intro';
   static const String noAuth = '/no-auth';
 
+  //* Monetization
+  static const String premiumPaywall = '/premium-paywall';
+
   //* Onboard
   static const String onboard = '/onboard';
   static const String dataCollect = '/data-collect';
@@ -30,12 +33,13 @@ mixin RoutePath {
   static const String setupPassword = 'setup-password';
   static const String changePassword = 'change-password';
 
-  //* Home - Road Map
+  //* Home
   static const String home = '/';
 
-  //* Monetization
-  static const String premiumPaywall = '/premium-paywall';
-
+  //* Course
+  static const String course = '/course';
+  static const String courseRoadmap = '/course-roadmap';
+  
   //* Exercise
   static const String lesson = '/lesson';
   static const String reviewTime = '/review-time';
@@ -58,6 +62,9 @@ mixin RouteNamed {
   static const String intro = 'Intro Page';
   static const String noAuth = 'No Auth Page';
 
+  //* Monetization
+  static const String premiumPaywall = 'Premium Paywall';
+
   //* Onboard
   static const String onboard = 'Onboard Page';
   static const String dataCollect = 'Data Collect Page';
@@ -76,8 +83,9 @@ mixin RouteNamed {
   //* Home - Road Map
   static const String home = 'Home';
 
-  //* Monetization
-  static const String premiumPaywall = 'Premium Paywall';
+  //* Course
+  static const String course = 'Course';
+  static const String courseRoadmap = 'Course Roadmap';
 
   //* Exercise
   static const String lesson = 'Lesson';

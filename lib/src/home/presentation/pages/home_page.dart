@@ -78,16 +78,13 @@ class HomePage extends StatelessWidget {
                         final skillset = state.pageData.items[index];
                         return SkillsetCardWidget(
                           skillset: skillset,
-                          onTap: () {
-                            // Navigate to skillset details
-                            // TODO: Implement navigation
-                          },
+                          onTap: () => CourseRoadmapRoute().go(context),
                         );
                       },
                     ),
 
                     // Loading indicator for skillsets
-                    if (state.isLoadingSkillsets)
+                    if (state.status == HomeStatus.loading)
                       Padding(
                         padding: EdgeInsets.all(20.w),
                         child: Center(

@@ -189,7 +189,7 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
   Widget build(BuildContext context, GoRouterState state) => const RegisterPage();
 }
 
-// Example of a route with scale transition
+//* Home Route
 @TypedGoRoute<HomeRoute>(
   path: RoutePath.home,
   name: RouteNamed.home,
@@ -226,6 +226,30 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   }
 }
 
+//* Course Route
+@TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course)
+class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
+  const CourseRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const CoursePage();
+}
+
+@TypedGoRoute<CourseRoadmapRoute>(path: RoutePath.courseRoadmap, name: RouteNamed.courseRoadmap)
+class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
+  const CourseRoadmapRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const CourseRoadmapPage();
+}
+
+//* Lesson Route
 @TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson)
 class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
   const LessonRoute();

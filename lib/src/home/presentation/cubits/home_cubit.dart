@@ -20,16 +20,19 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     ]);
   }
 
+  void selectSkillset(int index) => emit(state.copyWith(selectedSkillsetIndex: index));
+  void selectCourse(int index) => emit(state.copyWith(selectedCourseIndex: index));
+
   Future<void> loadAllSkillsets({
     bool isInit = false,
   }) async {
     // Prevent multiple simultaneous loads
-    if (!isInit && state.isLoadingSkillsets) return;
+    if (!isInit && state.status == HomeStatus.loading) return;
 
     // Prevent loading if already on last page (unless it's init)
     if (!isInit && state.pageData.isLastPage) return;
 
-    emit(state.copyWith(isLoadingSkillsets: true));
+    emit(state.copyWith(status: HomeStatus.loading));
 
     PageBreakRequest pageRequest;
     pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
@@ -44,7 +47,6 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
           state.copyWith(
             status: HomeStatus.failure,
             errorMessage: error,
-            isLoadingSkillsets: false,
           ),
         );
       },
@@ -53,7 +55,6 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
           state.copyWith(
             status: HomeStatus.success,
             pageData: pageData,
-            isLoadingSkillsets: false,
           ),
         );
       },
@@ -73,11 +74,11 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
         );
       },
       onSuccess: (item) {
-        emit(
-          state.copyWith(
-            status: HomeStatus.success,
-            selectedItem: item,
-          ),
+        updatePageBreakItem(
+          currentPageData: state.pageData,
+          updatedItem: item,
+          getId: (item) => item.id,
+          onSuccess: (pageData) => emit(state.copyWith(status: HomeStatus.success, pageData: pageData)),
         );
       },
     );
@@ -87,12 +88,12 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     bool isInit = false,
   }) async {
     // Prevent multiple simultaneous loads
-    if (!isInit && state.isLoadingCourses) return;
+    if (!isInit && state.status == HomeStatus.loading) return;
 
     // Prevent loading if already on last page (unless it's init)
     if (!isInit && state.coursesPageData.isLastPage) return;
 
-    emit(state.copyWith(isLoadingCourses: true));
+    emit(state.copyWith(status: HomeStatus.loading));
 
     PageBreakRequest pageRequest;
     pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.coursesPageData.nextPage);
@@ -107,7 +108,6 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
           state.copyWith(
             status: HomeStatus.failure,
             errorMessage: error,
-            isLoadingCourses: false,
           ),
         );
       },
@@ -116,7 +116,6 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
           state.copyWith(
             status: HomeStatus.success,
             coursesPageData: pageData,
-            isLoadingCourses: false,
           ),
         );
       },

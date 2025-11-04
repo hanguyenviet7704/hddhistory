@@ -84,6 +84,7 @@ mixin AppCustomColor {
   static const Color borderDefault = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
   static const Color brandPrimary = Color(0xFF554FF0);
+  static const Color iconPrimary = Color(0xFF344054);
 }
 
 mixin AppTheme {

@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 enum CourseStatus { initial, loading, success, failure }
 

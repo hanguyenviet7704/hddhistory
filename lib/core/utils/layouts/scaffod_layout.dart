@@ -8,45 +8,37 @@ class ScaffoldLayout extends StatelessWidget {
   }) : super(key: key ?? const ValueKey<String>('LayoutScaffold'));
 
   final List<BottomNavigationBarItem> _items = [
-    // BottomNavigationBarItem(
-    //   icon: Image.asset(AppAsset.icons.home.path, width: 20.w, height: 20.w),
-    //   activeIcon: Image.asset(AppAsset.icons.homeActive.path, width: 20.w, height: 20.w),
-    //   label: AppConfig.instance.context!.text.home,
-    // ),
-    // BottomNavigationBarItem(
-    //   icon: Image.asset(AppAsset.icons.vnsShop.path, width: 20.w, height: 20.w),
-    //   activeIcon: Image.asset(AppAsset.icons.vnsShopActive.path, width: 20.w, height: 20.w),
-    //   label: AppConfig.instance.context!.text.vnsShop,
-    // ),
-    // BottomNavigationBarItem(
-    //   icon: Image.asset(AppAsset.icons.plus.path, width: 38.w, height: 38.w),
-    //   activeIcon: Image.asset(AppAsset.icons.plusActive.path, width: 38.w, height: 38.w),
-    //   label: '',
-    // ),
-    // BottomNavigationBarItem(
-    //   icon: Image.asset(AppAsset.icons.bell.path, width: 20.w, height: 20.w),
-    //   activeIcon: Image.asset(AppAsset.icons.bellActive.path, width: 20.w, height: 20.w),
-    //   label: AppConfig.instance.context!.text.notification,
-    // ),
-    // BottomNavigationBarItem(
-    //   icon: Image.asset(AppAsset.icons.user.path, width: 20.w, height: 20.w),
-    //   activeIcon: Image.asset(AppAsset.icons.userActive.path, width: 20.w, height: 20.w),
-    //   label: AppConfig.instance.context!.text.profile,
-    // ),
+    BottomNavigationBarItem(
+      icon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w),
+      activeIcon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      label: 'Home',
+    ),
+    BottomNavigationBarItem(
+      icon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w),
+      activeIcon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      label: 'Courses',
+    ),
+    BottomNavigationBarItem(
+      icon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w),
+      activeIcon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      label: 'Settings',
+    ),
   ];
 
   @override
   Widget build(BuildContext context) {
-    Widget bottomNavigationBar = BlocBuilder<PageCubit, PageState>(builder: (context, state) {
-      return BottomNavigationBar(
-        items: _items.map((e) => e).toList(),
-        currentIndex: state.currentIndex,
-        onTap: (index) => context.read<PageCubit>().handleNavigation(index, navigationShell),
-        type: BottomNavigationBarType.fixed,
-        selectedLabelStyle: AppStyle.textBold12,
-        unselectedLabelStyle: AppStyle.textBold10.copyWith(fontWeight: FontWeight.w600),
-      );
-    });
+    Widget bottomNavigationBar = BlocBuilder<PageCubit, PageState>(
+      builder: (context, state) {
+        return BottomNavigationBar(
+          items: _items.map((e) => e).toList(),
+          currentIndex: state.currentIndex,
+          onTap: (index) => context.read<PageCubit>().handleNavigation(index, navigationShell),
+          type: BottomNavigationBarType.fixed,
+          selectedLabelStyle: AppStyle.textBold12,
+          unselectedLabelStyle: AppStyle.textBold10.copyWith(fontWeight: FontWeight.w600),
+        );
+      },
+    );
 
     if (Platform.isIOS) {
       bottomNavigationBar = SizedBox(height: 76.h, child: bottomNavigationBar);
