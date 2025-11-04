@@ -20,6 +20,7 @@ part of 'di.dart';
     'lib/src/profile',
     'lib/src/lesson',
     'lib/src/roadmap',
+    'lib/src/course',
   ],
   initializerName: 'init',
   preferRelativeImports: true,

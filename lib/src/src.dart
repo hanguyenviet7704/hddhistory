@@ -13,3 +13,4 @@ export 'data_collect/data_collect.dart';
 export 'onboard/onboard.dart';
 export 'profile/profile.dart';
 export 'lesson/lesson.dart';
+export 'course/course.dart';
