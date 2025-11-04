@@ -63,9 +63,7 @@ class RoadmapTimelineList extends StatelessWidget {
               ),
               builder: TimelineTileBuilder(
                 itemCount: sortedLessons.length,
-                indicatorBuilder: (context, index) => TimelineIndicator(
-                  process: sortedLessons[index].process,
-                ),
+                indicatorBuilder: (context, index) => TimelineIndicator(process: sortedLessons[index].process),
                 startConnectorBuilder: (context, index) => index == 0
                     ? null
                     : SolidLineConnector(
