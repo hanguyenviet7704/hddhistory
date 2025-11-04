@@ -21,6 +21,7 @@ part of 'di.dart';
     'lib/src/lesson',
     'lib/src/roadmap',
     'lib/src/course',
+    'lib/src/progress',
   ],
   initializerName: 'init',
   preferRelativeImports: true,
