@@ -1,9 +1,8 @@
 part of '../../course.dart';
 
 abstract class ICourseLessonRepository {
-  TaskEither<AppException, BasePageBreak<LessonEntity>> getAllLessons(
+  TaskEither<AppException, BasePageBreak<LessonEntity>> getAllCourseLessons(
     PageBreakRequest request,
   );
-  TaskEither<AppException, LessonEntity> getLesson(String id);
+  TaskEither<AppException, LessonEntity> getCourseLesson(String id);
 }
-

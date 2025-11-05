@@ -8,13 +8,13 @@ class CourseLessonRepository with RestfulRequestHandlerMixin implements ICourseL
   CourseLessonRepository(this._api, this._localDataSource);
 
   @override
-  TaskEither<AppException, LessonEntity> getLesson(String id) {
+  TaskEither<AppException, LessonEntity> getCourseLesson(String id) {
     return callApiWithTransform<LessonModel, LessonEntity>(
-      apiCall: () => _api.getLesson(id),
+      apiCall: () => _api.getCourseLesson(id),
       transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheLesson(data ?? LessonModel()),
+      onSuccess: (data) async => await _localDataSource.cacheCourseLesson(data ?? LessonModel()),
       onError: () async {
-        final cachedModel = await _localDataSource.getCachedLesson(id);
+        final cachedModel = await _localDataSource.getCachedCourseLesson(id);
         return cachedModel?.toEntity();
       },
       defaultValue: LessonEntity(),
@@ -22,17 +22,17 @@ class CourseLessonRepository with RestfulRequestHandlerMixin implements ICourseL
   }
 
   @override
-  TaskEither<AppException, BasePageBreak<LessonEntity>> getAllLessons(
+  TaskEither<AppException, BasePageBreak<LessonEntity>> getAllCourseLessons(
     PageBreakRequest request,
   ) {
     return callApiPageBreak<LessonModel, LessonEntity>(
-      apiCall: () => _api.getAllLessons(request),
+      apiCall: () => _api.getAllCourseLessons(request),
       transform: (model) => model.toEntity(),
       onSuccess: (pageData) async {
         await _localDataSource.cacheLessons(pageData.items);
       },
       onError: () async {
-        final cachedModels = await _localDataSource.getCachedLessons();
+        final cachedModels = await _localDataSource.getCachedCourseLessons();
         if (cachedModels.isNotEmpty) {
           return BasePageBreak<LessonEntity>(
             currentPage: 1,
@@ -46,4 +46,3 @@ class CourseLessonRepository with RestfulRequestHandlerMixin implements ICourseL
     );
   }
 }
-

@@ -1,10 +1,10 @@
 part of '../../../course.dart';
 
 abstract class CourseLessonLocalDataSource {
-  Future<List<LessonModel>> getCachedLessons();
+  Future<List<LessonModel>> getCachedCourseLessons();
   Future<void> cacheLessons(List<LessonModel> models);
-  Future<LessonModel?> getCachedLesson(String id);
-  Future<void> cacheLesson(LessonModel model);
+  Future<LessonModel?> getCachedCourseLesson(String id);
+  Future<void> cacheCourseLesson(LessonModel model);
   Future<void> deleteCachedLesson(String id);
   Future<void> clearCache();
 }
@@ -19,7 +19,7 @@ class CourseLessonLocalDataSourceImpl implements CourseLessonLocalDataSource {
   CourseLessonLocalDataSourceImpl(this._localStoreService);
 
   @override
-  Future<List<LessonModel>> getCachedLessons() async {
+  Future<List<LessonModel>> getCachedCourseLessons() async {
     try {
       final data = await _localStoreService.getMap(key: _cacheListKey);
       if (data.isEmpty) return [];
@@ -43,7 +43,7 @@ class CourseLessonLocalDataSourceImpl implements CourseLessonLocalDataSource {
   }
 
   @override
-  Future<LessonModel?> getCachedLesson(String id) async {
+  Future<LessonModel?> getCachedCourseLesson(String id) async {
     try {
       final cacheKey = '${_cacheKey}_$id';
       final data = await _localStoreService.getMap(key: cacheKey);
@@ -56,7 +56,7 @@ class CourseLessonLocalDataSourceImpl implements CourseLessonLocalDataSource {
   }
 
   @override
-  Future<void> cacheLesson(LessonModel model) async {
+  Future<void> cacheCourseLesson(LessonModel model) async {
     try {
       final cacheKey = '${_cacheKey}_${model.id}';
       await _localStoreService.setMap(
@@ -72,7 +72,7 @@ class CourseLessonLocalDataSourceImpl implements CourseLessonLocalDataSource {
       final cacheKey = '${_cacheKey}_$id';
       await _localStoreService.remove(key: cacheKey);
 
-      final cachedList = await getCachedLessons();
+      final cachedList = await getCachedCourseLessons();
       final updatedList = cachedList.where((item) => item.id != id).toList();
       await cacheLessons(updatedList);
     } catch (e) {}

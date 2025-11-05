@@ -34,9 +34,9 @@ part 'domain/entities/roadmap_node_entity.dart';
 part 'domain/repositories/i_course_lesson_repository.dart';
 part 'domain/repositories/i_course_repository.dart';
 part 'domain/usecases/get_all_courses_usecase.dart';
-part 'domain/usecases/get_all_lessons_usecase.dart';
+part 'domain/usecases/get_all_course_lessons_usecase.dart';
 part 'domain/usecases/get_course_usecase.dart';
-part 'domain/usecases/get_lesson_usecase.dart';
+part 'domain/usecases/get_course_lesson_usecase.dart';
 part 'domain/usecases/get_roadmap_usecase.dart';
 part 'presentation/cubits/course/course_cubit.dart';
 part 'presentation/cubits/course/course_state.dart';
@@ -47,6 +47,7 @@ part 'presentation/cubits/course_roadmap/course_roadmap_cubit.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/course_page.dart';
+part 'presentation/pages/lesson_list_page.dart';
 part 'presentation/pages/course_roadmap_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course/course_card.dart';

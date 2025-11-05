@@ -7,10 +7,10 @@ abstract class CourseLessonApi {
   factory CourseLessonApi(@Named(DIKey.appDio) Dio dio) = _CourseLessonApi;
 
   @GET(AppEndpoint.coursesLessons)
-  Future<BaseResponse<BasePageBreak<LessonModel>>> getAllLessons(
+  Future<BaseResponse<BasePageBreak<LessonModel>>> getAllCourseLessons(
     @Queries() PageBreakRequest request,
   );
 
   @GET(AppEndpoint.coursesLessonsById)
-  Future<BaseResponse<LessonModel>> getLesson(@Path('id') String id);
+  Future<BaseResponse<LessonModel>> getCourseLesson(@Path('id') String id);
 }
