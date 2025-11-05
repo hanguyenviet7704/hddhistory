@@ -38,20 +38,25 @@ part 'domain/usecases/get_all_lessons_usecase.dart';
 part 'domain/usecases/get_course_usecase.dart';
 part 'domain/usecases/get_lesson_usecase.dart';
 part 'domain/usecases/get_roadmap_usecase.dart';
+part 'presentation/cubits/course/course_cubit.dart';
+part 'presentation/cubits/course/course_state.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/course_lesson/course_lesson_cubit.dart';
 part 'presentation/cubits/course_lesson/course_lesson_state.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_cubit.dart';
 part 'presentation/cubits/course_roadmap/course_roadmap_state.dart';
-part 'presentation/cubits/course/course_cubit.dart';
-part 'presentation/cubits/course/course_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/course_page.dart';
 part 'presentation/pages/course_roadmap_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course/course_card.dart';
+part 'presentation/widgets/course/course_empty_state.dart';
 part 'presentation/widgets/course/course_header.dart';
 part 'presentation/widgets/course/course_tab_chip.dart';
+part 'presentation/widgets/course/course_tabbar.dart';
+part 'presentation/widgets/course/course_tabbar_view.dart';
+part 'presentation/widgets/course/my_course_tab.dart';
+part 'presentation/widgets/course/skill_set_tab.dart';
 part 'presentation/widgets/course_roadmap/course_header_card.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';
 part 'presentation/widgets/course_roadmap/in_progress_badge.dart';
