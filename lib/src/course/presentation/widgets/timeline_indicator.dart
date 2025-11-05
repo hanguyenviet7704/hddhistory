@@ -10,8 +10,8 @@ class TimelineIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ContainerIndicator(
-      size: 24.0,
+    return Container(
+      // size: 24.0,
       child: Container(
         width: 24.w,
         height: 24.h,

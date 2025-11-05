@@ -3,13 +3,14 @@ library;
 //* Package imports
 //* Single project import
 import 'package:dio/dio.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:meup/meup.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:retrofit/retrofit.dart';
-import 'package:timelines_plus/timelines_plus.dart';
+import 'package:timeline_tile_plus/timeline_tile_plus.dart';
 
 //* Parts for generated files
 part 'course.freezed.dart';

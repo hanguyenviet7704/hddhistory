@@ -11,7 +11,8 @@ class RoadmapTimelineList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<CourseCubit, CourseState, List<LessonEntity>>(
-      selector: (state) => state.roadmap.lessonList,
+      // TODO: Revert this filter when we have all lesson types in the roadmap
+      selector: (state) => state.roadmap.lessonList.where((lesson) => lesson.type == LessonType.lesson).toList(),
       builder: (context, lessons) {
         if (lessons.isEmpty) {
           return Container(
@@ -31,9 +32,6 @@ class RoadmapTimelineList extends StatelessWidget {
           );
         }
 
-        // Sort lessons by index to ensure correct order
-        final sortedLessons = [...lessons]..sort((a, b) => a.index.compareTo(b.index));
-
         return Container(
           padding: EdgeInsets.all(16.w),
           decoration: BoxDecoration(
@@ -47,50 +45,47 @@ class RoadmapTimelineList extends StatelessWidget {
               ),
             ],
           ),
-          child: TimelineTheme(
-            data: TimelineThemeData(
-              nodePosition: 0,
-              indicatorPosition: 0,
-              connectorTheme: ConnectorThemeData(
-                thickness: 2.0,
-                color: AppCustomColor.borderSecondary,
-              ),
-            ),
-            child: FixedTimeline.tileBuilder(
-              theme: TimelineThemeData(
-                nodePosition: 0,
-                indicatorPosition: 0,
-              ),
-              builder: TimelineTileBuilder(
-                itemCount: sortedLessons.length,
-                indicatorBuilder: (context, index) => TimelineIndicator(process: sortedLessons[index].process),
-                startConnectorBuilder: (context, index) => index == 0
-                    ? null
-                    : SolidLineConnector(
-                        thickness: 2.0,
-                        color: AppCustomColor.borderSecondary,
-                      ),
-                endConnectorBuilder: (context, index) => index == sortedLessons.length - 1
-                    ? null
-                    : SolidLineConnector(
-                        thickness: 2.0,
-                        color: AppCustomColor.borderSecondary,
-                      ),
-                contentsBuilder: (context, index) {
-                  final isLast = index == sortedLessons.length - 1;
-                  return Padding(
-                    padding: EdgeInsets.only(
-                      left: 16.w,
-                      bottom: isLast ? 0 : 12.h,
-                    ),
-                    child: LessonCard(
-                      lesson: sortedLessons[index],
-                      onTap: onLessonTap,
-                    ),
-                  );
-                },
-              ),
-            ),
+
+          child: ListView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: lessons.length,
+            itemBuilder: (context, index) {
+              final lesson = lessons[index];
+              final isFirst = index == 0;
+              final isLast = index == lessons.length - 1;
+
+              return TimelineTile(
+                isFirst: isFirst,
+                isLast: isLast,
+                alignment: TimelineAlign.start,
+                indicatorStyle: IndicatorStyle(
+                  width: 32.w,
+                  height: 32.w,
+                  padding: EdgeInsets.zero,
+                  indicator: TimelineIndicator(process: lesson.process),
+                ),
+                beforeLineStyle: LineStyle(
+                  color: AppCustomColor.borderSecondary,
+                  thickness: 2.0,
+                ),
+                afterLineStyle: LineStyle(
+                  color: AppCustomColor.borderSecondary,
+                  thickness: 2.0,
+                ),
+                endChild: Padding(
+                  padding: EdgeInsets.only(
+                    left: 16.w,
+                    bottom: 8.h,
+                    top: 8.h,
+                  ),
+                  child: LessonCard(
+                    lesson: lesson,
+                    onTap: onLessonTap,
+                  ),
+                ),
+              );
+            },
           ),
         );
       },

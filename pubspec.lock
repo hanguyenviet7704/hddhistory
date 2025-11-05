@@ -2211,14 +2211,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.1.5"
-  timelines_plus:
+  timeline_tile_plus:
     dependency: "direct main"
     description:
-      name: timelines_plus
-      sha256: d621d8724bc8f64957127c1195436996548e166296682d081bedcdb0abe1b638
+      name: timeline_tile_plus
+      sha256: "6a4d2cc9d98c998cec2ea1e3478f7eac4ae044e790e91217799aeec7ec70aa9e"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.8"
+    version: "0.0.3"
   typed_data:
     dependency: transitive
     description:

@@ -56,9 +56,7 @@ class LessonCard extends StatelessWidget {
             decoration: BoxDecoration(
               color: _backgroundColor,
               borderRadius: BorderRadius.circular(12.r),
-              border: _borderColor != null
-                  ? Border.all(color: _borderColor!, width: 1)
-                  : null,
+              border: _borderColor != null ? Border.all(color: _borderColor!, width: 1) : null,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -83,13 +81,19 @@ class LessonCard extends StatelessWidget {
                       text: _getLessonTypeText(),
                       textColor: _textColor,
                     ),
-                    12.horizontalSpace,
+                    20.horizontalSpace,
                     // Duration
-                    if (lesson.estimateCompleTime.en.isNotEmpty)
+                    if (lesson.estimateCompleTime.en.isNotEmpty) ...[
+                      SvgPicture.asset(
+                        AppAsset.svg.app.icClock,
+                        width: 16.w,
+                      ),
+                      8.horizontalSpace,
                       LessonMetadata(
                         text: lesson.estimateCompleTime.text,
                         textColor: _textColor,
                       ),
+                    ],
                   ],
                 ),
               ],

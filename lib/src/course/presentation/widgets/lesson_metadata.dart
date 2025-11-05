@@ -22,9 +22,7 @@ class LessonMetadata extends StatelessWidget {
             icon!.url,
             width: 16.w,
             height: 16.h,
-            colorFilter: textColor != null
-                ? ColorFilter.mode(textColor!, BlendMode.srcIn)
-                : null,
+            colorFilter: textColor != null ? ColorFilter.mode(textColor!, BlendMode.srcIn) : null,
           ),
         if (icon != null && icon!.url.isNotEmpty) 4.horizontalSpace,
         AppText(
@@ -33,7 +31,6 @@ class LessonMetadata extends StatelessWidget {
             fontWeight: FontWeight.w500,
             color: textColor ?? AppCustomColor.textSecondary,
           ),
-          maxLines: 1,
         ),
       ],
     );

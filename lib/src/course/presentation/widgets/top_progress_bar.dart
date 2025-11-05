@@ -26,10 +26,10 @@ class TopProgressBar extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               BlocSelector<HomeCubit, HomeState, String>(
-                selector: (state) => state.courseName,
-                builder: (context, courseName) {
+                selector: (state) => state.currentSkillset.title.text,
+                builder: (context, currentSkillsetTitle) {
                   return AppText(
-                    courseName,
+                    currentSkillsetTitle,
                     style: AppStyle.text14.copyWith(
                       fontWeight: FontWeight.w500,
                       color: AppCustomColor.textPrimary,
