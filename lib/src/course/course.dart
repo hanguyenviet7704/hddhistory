@@ -2,6 +2,7 @@ library;
 
 //* Package imports
 //* Single project import
+import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -48,6 +49,9 @@ part 'presentation/cubits/course/course_state.dart';
 part 'presentation/pages/course_page.dart';
 part 'presentation/pages/course_roadmap_page.dart';
 //* Presentation Layer - Widgets
+part 'presentation/widgets/course/course_card.dart';
+part 'presentation/widgets/course/course_header.dart';
+part 'presentation/widgets/course/course_tab_chip.dart';
 part 'presentation/widgets/course_roadmap/course_header_card.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';
 part 'presentation/widgets/course_roadmap/in_progress_badge.dart';

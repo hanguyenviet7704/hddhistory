@@ -3,11 +3,11 @@ part of '../../../course.dart';
 enum CourseStatus { initial, loading, success, failure }
 
 @freezed
-class CourseState with _$CourseState {
+abstract class CourseState with _$CourseState {
   const factory CourseState({
     @Default(CourseStatus.initial) CourseStatus status,
-    @Default(BasePageBreak<CourseEntity>()) BasePageBreak<CourseEntity> pageData,
-    @Default(RoadmapEntity()) RoadmapEntity roadmap,
+    @Default([]) List<CourseEntity> courses,
+    @Default(0) int selectedTabIndex,
     CourseEntity? selectedItem,
     String? errorMessage,
   }) = _CourseState;

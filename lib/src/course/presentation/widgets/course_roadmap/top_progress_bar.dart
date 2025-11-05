@@ -1,11 +1,9 @@
 part of '../../../course.dart';
 
 class TopProgressBar extends StatelessWidget {
-  final VoidCallback? onTap;
 
   const TopProgressBar({
     super.key,
-    this.onTap,
   });
 
   @override
@@ -13,7 +11,9 @@ class TopProgressBar extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       child: GestureDetector(
-        onTap: onTap,
+        onTap: () {
+          CourseRoute().go(context);
+        },
         child: Container(
           height: 40.h,
           padding: EdgeInsets.symmetric(horizontal: 20.w),

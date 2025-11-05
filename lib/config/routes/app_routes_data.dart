@@ -223,6 +223,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           BlocProvider.value(value: AppDI.injector.get<HomeCubit>()..initializeData()),
           BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
           BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
         ],
         child: const HomePage(),
       ),
@@ -231,21 +232,13 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
 }
 
 //* Course Route
-@TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course)
-class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
-  const CourseRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<CourseRoadmapCubit>(),
-    child: const CoursePage(),
-  );
-}
-
-@TypedGoRoute<CourseRoadmapRoute>(path: RoutePath.courseRoadmap, name: RouteNamed.courseRoadmap)
+@TypedGoRoute<CourseRoadmapRoute>(
+  path: RoutePath.courseRoadmap,
+  name: RouteNamed.courseRoadmap,
+  routes: [
+    TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course),
+  ],
+)
 class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
   const CourseRoadmapRoute();
 
@@ -256,6 +249,23 @@ class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRout
   Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
     value: AppDI.injector.get<CourseRoadmapCubit>(),
     child: const CourseRoadmapPage(),
+  );
+}
+
+@TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course)
+class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
+  const CourseRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
+    ],
+    child: const CoursePage(),
   );
 }
 
