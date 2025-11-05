@@ -70,5 +70,6 @@ part 'presentation/widgets/lesson_list/completion_check_icon.dart';
 part 'presentation/widgets/lesson_list/keypoint_card.dart';
 part 'presentation/widgets/lesson_list/keypoints_section_header.dart';
 part 'presentation/widgets/lesson_list/lesson_description.dart';
+part 'presentation/widgets/lesson_list/lesson_explain_popup.dart';
 part 'presentation/widgets/lesson_list/lesson_list_header.dart';
 part 'presentation/widgets/lesson_list/strength_indicator_badge.dart';

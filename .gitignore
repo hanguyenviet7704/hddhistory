@@ -75,9 +75,9 @@ assets/arb/
 .venv_localization/
 
 # Git PR content
+task_ai/
 pr_content.md
 prompt_gen.md
 release_content.md
-task.md
 TEST.md
 example.json
