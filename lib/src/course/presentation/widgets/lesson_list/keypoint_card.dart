@@ -26,13 +26,10 @@ class KeypointCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Completion check icon
-          Padding(
-            padding: EdgeInsets.only(top: 16.h),
-            child: CompletionCheckIcon(isCompleted: keypoint.isCompleted),
-          ),
+          CompletionCheckIcon(isCompleted: keypoint.isCompleted),
           16.horizontalSpace,
 
           // Card content

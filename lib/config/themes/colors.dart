@@ -78,6 +78,7 @@ mixin AppCustomColor {
   static const Color textSecondary = Color(0xFF364152);
   static const Color textTertiary = Color(0xFF7F8EA4);
   static const Color textQuaternary = Color(0xFFAAB8CD);
+  static const Color textBrand = Color(0xFF110751);
   static const Color textWhite = Color(0xFFFFFFFF);
   static const Color backgroundWhite = Color(0xFFFFFFFF);
   static const Color backgroundGray = Color(0xFFF5F7FB);

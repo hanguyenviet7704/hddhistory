@@ -9,25 +9,23 @@ class StrengthIndicatorBadge extends StatelessWidget {
   });
 
   Color get _getBarColor {
-    switch (level) {
-      case StrengthLevel.weakPoint:
-        return AppCustomColor.errorRed;
-      case StrengthLevel.morePractice:
-        return AppCustomColor.brandPrimary;
-      case StrengthLevel.optionalPractice:
-        return AppCustomColor.successGreen;
-    }
+    return switch (level) {
+      StrengthLevel.weakPoint => AppCustomColor.errorRed,
+      StrengthLevel.morePractice => AppCustomColor.brandPrimary,
+      StrengthLevel.optionalPractice => AppCustomColor.successGreen
+    };
+  }
+
+  int get _getBarCount {
+    return switch (level) {
+      StrengthLevel.weakPoint => 3,
+      StrengthLevel.morePractice => 2,
+      StrengthLevel.optionalPractice => 1
+    };
   }
 
   @override
   Widget build(BuildContext context) {
-    final barColor = _getBarColor;
-    final int barCount = level == StrengthLevel.weakPoint
-        ? 1
-        : level == StrengthLevel.morePractice
-        ? 2
-        : 3;
-
     return SizedBox(
       width: 16.w,
       height: 16.h,
@@ -40,7 +38,7 @@ class StrengthIndicatorBadge extends StatelessWidget {
             width: 2.w,
             height: 4.h,
             decoration: BoxDecoration(
-              color: barCount >= 1 ? barColor : AppCustomColor.textQuaternary,
+              color: _getBarCount >= 1 ? _getBarColor : AppCustomColor.textBrand.op(0.16),
               borderRadius: BorderRadius.circular(1.r),
             ),
           ),
@@ -50,7 +48,7 @@ class StrengthIndicatorBadge extends StatelessWidget {
             width: 2.w,
             height: 7.h,
             decoration: BoxDecoration(
-              color: barCount >= 2 ? barColor : AppCustomColor.textQuaternary,
+              color: _getBarCount >= 2 ? _getBarColor : AppCustomColor.textBrand.op(0.16),
               borderRadius: BorderRadius.circular(1.r),
             ),
           ),
@@ -60,7 +58,7 @@ class StrengthIndicatorBadge extends StatelessWidget {
             width: 2.w,
             height: 10.h,
             decoration: BoxDecoration(
-              color: barCount >= 3 ? barColor : AppCustomColor.darkStroke,
+              color: _getBarCount >= 3 ? _getBarColor : AppCustomColor.textBrand.op(0.16),
               borderRadius: BorderRadius.circular(1.r),
             ),
           ),
