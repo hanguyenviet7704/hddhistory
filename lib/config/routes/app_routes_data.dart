@@ -236,13 +236,8 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   path: RoutePath.courseRoadmap,
   name: RouteNamed.courseRoadmap,
   routes: [
-    TypedGoRoute<CourseRoute>(
-      path: RoutePath.course,
-      name: RouteNamed.course,
-      routes: [
-        TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList),
-      ],
-    ),
+    TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course),
+    TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList),
   ],
 )
 class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
@@ -252,8 +247,11 @@ class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRout
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<CourseRoadmapCubit>(),
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+    ],
     child: const CourseRoadmapPage(),
   );
 }
@@ -276,7 +274,6 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
   );
 }
 
-@TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList)
 class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
   const LessonListRoute();
 

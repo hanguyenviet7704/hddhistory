@@ -6,8 +6,7 @@ enum CourseLessonStatus { initial, loading, success, failure }
 abstract class CourseLessonState with _$CourseLessonState {
   const factory CourseLessonState({
     @Default(CourseLessonStatus.initial) CourseLessonStatus status,
-    @Default(BasePageBreak<LessonEntity>()) BasePageBreak<LessonEntity> pageData,
-    LessonEntity? selectedLesson,
+    @Default(LessonEntity()) LessonEntity selectedLesson,
     String? errorMessage,
   }) = _CourseLessonState;
 
@@ -15,4 +14,3 @@ abstract class CourseLessonState with _$CourseLessonState {
 
   factory CourseLessonState.fromJson(Map<String, dynamic> json) => _$CourseLessonStateFromJson(json);
 }
-

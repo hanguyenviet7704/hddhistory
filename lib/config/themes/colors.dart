@@ -87,6 +87,12 @@ mixin AppCustomColor {
   static const Color brandPrimary300 = Color(0xFF917FF6);
   static const Color backgroundBrand = Color(0xFFEBEAFD);
   static const Color iconPrimary = Color(0xFF344054);
+
+  // Strength indicator colors
+  static const Color successGreen = Color(0xFF41AE8C);
+  static const Color errorRed = Color(0xFFE34646);
+  static const Color darkStroke = Color(0xFF110751);
+  static const Color buttonDisable = Color(0xFFE3E8EF);
 }
 
 mixin AppTheme {

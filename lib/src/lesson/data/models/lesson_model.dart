@@ -10,7 +10,7 @@ abstract class LessonModel with _$LessonModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default(LessonPublishStatus.draft) LessonPublishStatus status,
-    @Default([]) List<String> keypoints,
+    @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagModel()) TagModel icon,
     @Default(ProcessEnum.notStarted) ProcessEnum process,

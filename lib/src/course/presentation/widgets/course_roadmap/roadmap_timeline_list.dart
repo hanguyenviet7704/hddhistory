@@ -1,11 +1,9 @@
 part of '../../../course.dart';
 
 class RoadmapTimelineList extends StatelessWidget {
-  final VoidCallback? onLessonTap;
 
   const RoadmapTimelineList({
     super.key,
-    this.onLessonTap,
   });
 
   @override
@@ -82,7 +80,10 @@ class RoadmapTimelineList extends StatelessWidget {
                   ),
                   child: LessonCard(
                     lesson: lesson,
-                    onTap: onLessonTap,
+                    onTap: () {
+                      context.read<CourseLessonCubit>().loadLesson(lesson.id);
+                      LessonListRoute().go(context);
+                    },
                   ),
                 ),
               );

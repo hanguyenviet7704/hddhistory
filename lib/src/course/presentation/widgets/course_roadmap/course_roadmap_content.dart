@@ -22,12 +22,7 @@ class CourseRoadmapContent extends StatelessWidget {
             // Course header card
             CourseHeaderCard(),
             // Roadmap timeline list
-            RoadmapTimelineList(
-              onLessonTap: () {
-                // TODO: Navigate to lesson detail page
-                // This will be implemented when lesson detail page is ready
-              },
-            ),
+            RoadmapTimelineList(),
           ],
         ),
       ),

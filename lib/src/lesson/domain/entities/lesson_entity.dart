@@ -10,7 +10,7 @@ abstract class LessonEntity with _$LessonEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default(LessonPublishStatus.draft) LessonPublishStatus status,
-    @Default([]) List<String> keypoints,
+    @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagEntity()) TagEntity icon,
     @Default(ProcessEnum.notStarted) ProcessEnum process,

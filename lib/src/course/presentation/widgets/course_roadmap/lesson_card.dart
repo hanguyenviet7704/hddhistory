@@ -46,7 +46,8 @@ class LessonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: lesson.process != ProcessEnum.notStarted ? onTap : null,
+      // onTap: lesson.process != ProcessEnum.notStarted ? onTap : null,
+      onTap: onTap,
       child: Stack(
         clipBehavior: Clip.none,
         children: [
