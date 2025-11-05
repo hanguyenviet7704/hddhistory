@@ -8,6 +8,7 @@ abstract class CourseEntity with _$CourseEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default('') String skillsetId,
+    @Default(0) int numberOfLesson,
     @Default(CourseLevel.level1) CourseLevel level,
     @Default(CoursePublishStatus.published) CoursePublishStatus status,
   }) = _CourseEntity;

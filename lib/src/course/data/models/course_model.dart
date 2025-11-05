@@ -8,6 +8,7 @@ abstract class CourseModel with _$CourseModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default('') String skillsetId,
+    @Default(0) int numberOfLesson,
     @Default(CourseLevel.level1) CourseLevel level,
     @Default(CoursePublishStatus.published) CoursePublishStatus status,
   }) = _CourseModel;
@@ -18,10 +19,8 @@ abstract class CourseModel with _$CourseModel {
 enum CoursePublishStatus {
   @JsonValue('published')
   published,
-
   @JsonValue('draft')
   draft,
-
   @JsonValue('inactive')
   inactive,
 }
@@ -29,7 +28,6 @@ enum CoursePublishStatus {
 enum CourseLevel {
   @JsonValue('level 1')
   level1,
-
   @JsonValue('level 2')
   level2,
 }
@@ -41,6 +39,7 @@ extension CourseModelExtension on CourseModel {
     description: description,
     image: image,
     skillsetId: skillsetId,
+    numberOfLesson: numberOfLesson,
     level: level,
     status: status,
   );

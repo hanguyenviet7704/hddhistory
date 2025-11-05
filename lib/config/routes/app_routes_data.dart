@@ -222,6 +222,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
         providers: [
           BlocProvider.value(value: AppDI.injector.get<HomeCubit>()..initializeData()),
           BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
         ],
         child: const HomePage(),
       ),
@@ -238,7 +239,10 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const CoursePage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<CourseCubit>(),
+    child: const CoursePage(),
+  );
 }
 
 @TypedGoRoute<CourseRoadmapRoute>(path: RoutePath.courseRoadmap, name: RouteNamed.courseRoadmap)

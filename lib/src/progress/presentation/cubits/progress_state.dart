@@ -7,7 +7,7 @@ abstract class ProgressState with _$ProgressState {
   const factory ProgressState({
     @Default(ProgressStatus.initial) ProgressStatus status,
     @Default(BasePageBreak<UserProgressEntity>()) BasePageBreak<UserProgressEntity> pageData,
-    @Default(BasePageBreak<UserProgressEntity>()) BasePageBreak<UserProgressEntity> myCoursesPageData,
+    @Default(BasePageBreak<CourseEntity>()) BasePageBreak<CourseEntity> myCoursesPageData,
     UserProgressEntity? selectedLesson,
     UserProgressEntity? selectedKeypoint,
     UserProgressEntity? selectedExercise,
@@ -17,4 +17,9 @@ abstract class ProgressState with _$ProgressState {
   factory ProgressState.initial() => ProgressState();
 
   factory ProgressState.fromJson(Map<String, dynamic> json) => _$ProgressStateFromJson(json);
+}
+
+extension ProgressStateExtension on ProgressState {
+  List<UserProgressEntity> get userProgresses => pageData.items;
+  List<CourseEntity> get myCourses => myCoursesPageData.items;
 }

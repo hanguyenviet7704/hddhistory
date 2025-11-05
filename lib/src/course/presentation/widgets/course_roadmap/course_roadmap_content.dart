@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 class CourseRoadmapContent extends StatelessWidget {
   const CourseRoadmapContent({super.key});

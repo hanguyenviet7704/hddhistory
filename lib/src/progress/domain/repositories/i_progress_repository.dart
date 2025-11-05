@@ -7,7 +7,7 @@ abstract class IProgressRepository {
   TaskEither<AppException, UserProgressEntity> getUserProgressLesson(String lessonId);
   TaskEither<AppException, UserProgressEntity> getUserProgressKeypoint(String keypointId);
   TaskEither<AppException, UserProgressEntity> getUserProgressExercise(String exerciseId);
-  TaskEither<AppException, BasePageBreak<UserProgressEntity>> getUserProgressMyCourses(
+  TaskEither<AppException, BasePageBreak<CourseEntity>> getUserProgressMyCourses(
     PageBreakRequest request,
   );
 }

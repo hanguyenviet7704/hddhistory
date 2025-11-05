@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 class InProgressBadge extends StatelessWidget {
   const InProgressBadge({super.key});

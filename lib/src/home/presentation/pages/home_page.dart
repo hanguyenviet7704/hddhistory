@@ -7,63 +7,69 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: BlocBuilder<HomeCubit, HomeState>(
-          builder: (context, state) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<HomeCubit>().initializeData();
-              },
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header
-                    const HomeHeaderWidget(),
+        child: RefreshIndicator(
+          onRefresh: () async {
+            context.read<HomeCubit>().initializeData();
+          },
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                const HomeHeaderWidget(),
 
-                    // Courses section
-                    if (state.coursesPageData.items.isNotEmpty) ...[
-                      4.verticalSpace,
-                      // Continue learning
-                      AppText(
-                        'Continue learning',
-                        style: AppStyle.textBold20.copyWith(
-                          color: AppCustomColor.black36,
+                // Courses section
+                BlocBuilder<ProgressCubit, ProgressState>(
+                  builder: (context, state) {
+                    if (state.myCourses.isEmpty) return const SizedBox.shrink();
+                    return Column(
+                      children: [
+                        4.verticalSpace,
+                        // Continue learning
+                        AppText(
+                          'Continue learning',
+                          style: AppStyle.textBold20.copyWith(
+                            color: AppCustomColor.black36,
+                          ),
                         ),
-                      ),
-                      12.verticalSpace,
-                      // Course cards horizontal scroll
-                      SizedBox(
-                        height: 102.h,
-                        child: ListView.separated(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(horizontal: 20.w),
-                          itemCount: state.coursesPageData.items.length,
-                          separatorBuilder: (_, _) => 16.horizontalSpace,
-                          itemBuilder: (context, index) {
-                            final courseProgress = state.coursesPageData.items[index];
-                            return CourseCardWidget(
-                              courseProgress: courseProgress,
-                              onTap: () {
-                                // Navigate to course details
-                                // TODO: Implement navigation
-                              },
-                            );
-                          },
+                        12.verticalSpace,
+                        // Course cards horizontal scroll
+                        SizedBox(
+                          height: 102.h,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            padding: EdgeInsets.symmetric(horizontal: 20.w),
+                            itemCount: state.myCourses.length,
+                            separatorBuilder: (_, _) => 16.horizontalSpace,
+                            itemBuilder: (context, index) {
+                              return CourseCardWidget(
+                                course: state.myCourses[index],
+                                onTap: () {
+                                  CourseRoute().go(context);
+                                },
+                              );
+                            },
+                          ),
                         ),
-                      ),
-                      20.verticalSpace,
-                    ],
+                        20.verticalSpace,
+                      ],
+                    );
+                  },
+                ),
 
-                    // Skillsets section
-                    const SectionHeaderWidget(
-                      title: 'Recommended for you',
-                      actionText: 'All courses',
-                    ),
-                    16.verticalSpace,
+                // Skillsets section
+                const SectionHeaderWidget(
+                  title: 'Recommended for you',
+                  actionText: 'All courses',
+                ),
+                16.verticalSpace,
 
-                    // Skillsets grid
-                    GridView.builder(
+                // Skillsets grid
+                BlocSelector<HomeCubit, HomeState, List<SkillsetEntity>>(
+                  selector: (state) => state.skillsets,
+                  builder: (context, skillsets) {
+                    return GridView.builder(
                       padding: EdgeInsets.symmetric(horizontal: 20.w),
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
@@ -73,9 +79,9 @@ class HomePage extends StatelessWidget {
                         mainAxisSpacing: 12.h,
                         childAspectRatio: 161.w / 234.h,
                       ),
-                      itemCount: state.pageData.items.length,
+                      itemCount: skillsets.length,
                       itemBuilder: (context, index) {
-                        final skillset = state.pageData.items[index];
+                        final skillset = skillsets[index];
                         return SkillsetCardWidget(
                           skillset: skillset,
                           onTap: () {
@@ -85,26 +91,32 @@ class HomePage extends StatelessWidget {
                           },
                         );
                       },
-                    ),
+                    );
+                  },
+                ),
 
-                    // Loading indicator for skillsets
-                    if (state.status == HomeStatus.loading)
-                      Padding(
-                        padding: EdgeInsets.all(20.w),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: AppCustomColor.blue2F,
-                          ),
+                // Loading indicator for skillsets
+                BlocSelector<HomeCubit, HomeState, bool>(
+                  selector: (state) => state.status == HomeStatus.loading,
+                  builder: (context, isLoading) {
+                    if (!isLoading) return const SizedBox.shrink();
+
+                    return Padding(
+                      padding: EdgeInsets.all(20.w),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppCustomColor.blue2F,
                         ),
                       ),
-
-                    // Bottom padding
-                    20.verticalSpace,
-                  ],
+                    );
+                  },
                 ),
-              ),
-            );
-          },
+
+                // Bottom padding
+                20.verticalSpace,
+              ],
+            ),
+          ),
         ),
       ),
     );

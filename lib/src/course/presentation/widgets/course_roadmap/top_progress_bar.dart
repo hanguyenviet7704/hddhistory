@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 class TopProgressBar extends StatelessWidget {
   final VoidCallback? onTap;

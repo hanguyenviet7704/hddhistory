@@ -18,8 +18,8 @@ abstract class ProgressLocalDataSource {
   Future<UserProgressModel?> getCachedUserProgressExercise(String exerciseId);
   Future<void> cacheUserProgressExercise(String exerciseId, UserProgressModel model);
   
-  Future<List<UserProgressModel>> getCachedUserProgressMyCourses();
-  Future<void> cacheUserProgressMyCourses(List<UserProgressModel> models);
+  Future<List<CourseModel>> getCachedUserProgressMyCourses();
+  Future<void> cacheUserProgressMyCourses(List<CourseModel> models);
 
   Future<void> clearCache();
 }
@@ -117,19 +117,19 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   }
 
   @override
-  Future<List<UserProgressModel>> getCachedUserProgressMyCourses() async {
+  Future<List<CourseModel>> getCachedUserProgressMyCourses() async {
     try {
       final data = await _localStoreService.getMap(key: _cacheMyCoursesKey);
       if (data.isEmpty) return [];
       final List<dynamic> jsonList = data['items'] ?? [];
-      return jsonList.map((json) => UserProgressModel.fromJson(json as Map<String, dynamic>)).toList();
+      return jsonList.map((json) => CourseModel.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }
   }
 
   @override
-  Future<void> cacheUserProgressMyCourses(List<UserProgressModel> models) async {
+  Future<void> cacheUserProgressMyCourses(List<CourseModel> models) async {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
       await _localStoreService.setMap(key: _cacheMyCoursesKey, value: {'items': jsonList});

@@ -3,7 +3,6 @@ library;
 //* Package imports
 //* Single project import
 import 'package:dio/dio.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -47,11 +46,11 @@ part 'presentation/cubits/course_lesson/course_lesson_state.dart';
 part 'presentation/pages/course_page.dart';
 part 'presentation/pages/course_roadmap_page.dart';
 //* Presentation Layer - Widgets
-part 'presentation/widgets/course_header_card.dart';
-part 'presentation/widgets/course_roadmap_content.dart';
-part 'presentation/widgets/in_progress_badge.dart';
-part 'presentation/widgets/lesson_card.dart';
-part 'presentation/widgets/lesson_metadata.dart';
-part 'presentation/widgets/roadmap_timeline_list.dart';
-part 'presentation/widgets/timeline_indicator.dart';
-part 'presentation/widgets/top_progress_bar.dart';
+part 'presentation/widgets/course_roadmap/course_header_card.dart';
+part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';
+part 'presentation/widgets/course_roadmap/in_progress_badge.dart';
+part 'presentation/widgets/course_roadmap/lesson_card.dart';
+part 'presentation/widgets/course_roadmap/lesson_metadata.dart';
+part 'presentation/widgets/course_roadmap/roadmap_timeline_list.dart';
+part 'presentation/widgets/course_roadmap/timeline_indicator.dart';
+part 'presentation/widgets/course_roadmap/top_progress_bar.dart';

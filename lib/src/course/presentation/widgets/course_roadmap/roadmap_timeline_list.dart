@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 class RoadmapTimelineList extends StatelessWidget {
   final VoidCallback? onLessonTap;
@@ -64,6 +64,7 @@ class RoadmapTimelineList extends StatelessWidget {
                   height: 32.w,
                   padding: EdgeInsets.zero,
                   indicator: TimelineIndicator(process: lesson.process),
+                  // indicator: TimelineIndicator(process: ProcessEnum.done),
                 ),
                 beforeLineStyle: LineStyle(
                   color: AppCustomColor.borderSecondary,

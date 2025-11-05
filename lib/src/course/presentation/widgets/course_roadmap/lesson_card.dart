@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 class LessonCard extends StatelessWidget {
   final LessonEntity lesson;
@@ -86,6 +86,7 @@ class LessonCard extends StatelessWidget {
                     if (lesson.estimateCompleTime.en.isNotEmpty) ...[
                       SvgPicture.asset(
                         AppAsset.svg.app.icClock,
+                        colorFilter: ColorFilter.mode(_textColor, BlendMode.srcIn),
                         width: 16.w,
                       ),
                       8.horizontalSpace,

@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 class CourseHeaderCard extends StatelessWidget {
   const CourseHeaderCard({super.key});

@@ -1,14 +1,12 @@
 part of '../../home.dart';
 
 class CourseCardWidget extends StatelessWidget {
-  final UserProgressEntity courseProgress;
-  final CourseEntity? course;
+  final CourseEntity course;
   final VoidCallback? onTap;
 
   const CourseCardWidget({
     super.key,
-    required this.courseProgress,
-    this.course,
+    required this.course,
     this.onTap,
   });
 
@@ -43,11 +41,11 @@ class CourseCardWidget extends StatelessWidget {
                   color: AppCustomColor.greyF5,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: course?.image.isNotEmpty == true
+                child: course.image.isNotEmpty == true
                     ? ClipRRect(
                         borderRadius: BorderRadius.circular(12.r),
                         child: Image.network(
-                          course!.image,
+                          course.image,
                           fit: BoxFit.cover,
                           errorBuilder: (context, error, stackTrace) {
                             return Icon(
@@ -72,7 +70,7 @@ class CourseCardWidget extends StatelessWidget {
                   children: [
                     // Course title
                     AppText(
-                      course?.title.text ?? 'Course',
+                      course.title.text,
                       style: AppStyle.textBold14.copyWith(
                         color: AppCustomColor.black36,
                       ),
@@ -81,31 +79,31 @@ class CourseCardWidget extends StatelessWidget {
                     4.verticalSpace,
                     // Course description
                     AppText(
-                      course?.description.text ?? 'Course description',
+                      course.description.text,
                       style: AppStyle.text12.copyWith(
                         color: AppCustomColor.grey69,
                       ),
                       maxLines: 2,
                     ),
-                    const Spacer(),
-                    // Progress bar
-                    Container(
-                      height: 8.h,
-                      decoration: BoxDecoration(
-                        color: AppCustomColor.greyF5,
-                        borderRadius: BorderRadius.circular(4.r),
-                      ),
-                      child: FractionallySizedBox(
-                        alignment: Alignment.centerLeft,
-                        widthFactor: _calculateProgress(),
-                        child: Container(
-                          decoration: BoxDecoration(
-                            color: AppCustomColor.green61,
-                            borderRadius: BorderRadius.circular(4.r),
-                          ),
-                        ),
-                      ),
-                    ),
+                    // const Spacer(),
+                    // // Progress bar
+                    // Container(
+                    //   height: 8.h,
+                    //   decoration: BoxDecoration(
+                    //     color: AppCustomColor.greyF5,
+                    //     borderRadius: BorderRadius.circular(4.r),
+                    //   ),
+                    //   child: FractionallySizedBox(
+                    //     alignment: Alignment.centerLeft,
+                    //     widthFactor: course.progress,
+                    //     child: Container(
+                    //       decoration: BoxDecoration(
+                    //         color: AppCustomColor.green61,
+                    //         borderRadius: BorderRadius.circular(4.r),
+                    //       ),
+                    //     ),
+                    //   ),
+                    // ),
                   ],
                 ),
               ),
@@ -114,13 +112,5 @@ class CourseCardWidget extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  double _calculateProgress() {
-    if (courseProgress.lessonsResult.isEmpty) return 0.0;
-
-    final passedLessons = courseProgress.lessonsResult.where((lesson) => lesson.passed).length;
-
-    return passedLessons / courseProgress.lessonsResult.length;
   }
 }

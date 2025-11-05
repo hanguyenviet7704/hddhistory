@@ -75,10 +75,10 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, BasePageBreak<UserProgressEntity>> getUserProgressMyCourses(
+  TaskEither<AppException, BasePageBreak<CourseEntity>> getUserProgressMyCourses(
     PageBreakRequest request,
   ) {
-    return callApiPageBreak<UserProgressModel, UserProgressEntity>(
+    return callApiPageBreak<CourseModel, CourseEntity>(
       apiCall: () => _api.getUserProgressMyCourses(request),
       transform: (model) => model.toEntity(),
       onSuccess: (pageData) async {
@@ -87,7 +87,7 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
       onError: () async {
         final cachedModels = await _localDataSource.getCachedUserProgressMyCourses();
         if (cachedModels.isNotEmpty) {
-          return BasePageBreak<UserProgressEntity>(
+          return BasePageBreak<CourseEntity>(
             currentPage: 1,
             totalPages: 1,
             itemsPerPage: cachedModels.length,

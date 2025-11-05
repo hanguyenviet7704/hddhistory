@@ -21,7 +21,7 @@ abstract class UserProgressApi {
   Future<BaseResponse<UserProgressModel>> getUserProgressExercise(@Path('exerciseId') String exerciseId);
 
   @GET(AppEndpoint.coursesUserProgressMyCourses)
-  Future<BaseResponse<BasePageBreak<UserProgressModel>>> getUserProgressMyCourses(
+  Future<BaseResponse<BasePageBreak<CourseModel>>> getUserProgressMyCourses(
     @Queries() PageBreakRequest request,
   );
 }

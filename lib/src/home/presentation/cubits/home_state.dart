@@ -7,7 +7,6 @@ abstract class HomeState with _$HomeState {
   const factory HomeState({
     @Default(HomeStatus.initial) HomeStatus status,
     @Default(BasePageBreak<SkillsetEntity>()) BasePageBreak<SkillsetEntity> pageData,
-    @Default(BasePageBreak<UserProgressEntity>()) BasePageBreak<UserProgressEntity> coursesPageData,
     @Default(0) int selectedSkillsetIndex,
     @Default(0) int selectedCourseIndex,
     String? errorMessage,
@@ -19,8 +18,9 @@ abstract class HomeState with _$HomeState {
 }
 
 extension HomeStateExtension on HomeState {
-  SkillsetEntity get currentSkillset => pageData.items.elementAtOrDefault(selectedSkillsetIndex, defaultValue: SkillsetEntity());
-  UserProgressEntity get currentUserProgress => coursesPageData.items.elementAtOrDefault(selectedCourseIndex, defaultValue: UserProgressEntity());
+  List<SkillsetEntity> get skillsets => pageData.items;
+  SkillsetEntity get currentSkillset => skillsets.elementAtOrDefault(selectedSkillsetIndex, defaultValue: SkillsetEntity());
+  // UserProgressEntity get currentUserProgress => coursesPageData.items.elementAtOrDefault(selectedCourseIndex, defaultValue: UserProgressEntity());
   CourseEntity get currentCourse => currentSkillset.courses.elementAtOrDefault(selectedCourseIndex, defaultValue: CourseEntity());
   String get courseName => currentCourse.title.text.isNotEmpty ? currentCourse.title.text : 'Course Roadmap';
 }

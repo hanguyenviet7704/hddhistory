@@ -85,7 +85,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       ? const PageBreakRequest() 
       : PageBreakRequest(page: state.myCoursesPageData.nextPage);
 
-    await runUseCasePageBreak<UserProgressEntity>(
+    await runUseCasePageBreak<CourseEntity>(
       usecase: () => _getUserProgressMyCoursesUseCase(pageRequest),
       currentPageData: state.myCoursesPageData,
       isInit: isInit,

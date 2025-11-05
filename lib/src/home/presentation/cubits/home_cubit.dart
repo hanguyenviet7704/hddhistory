@@ -4,18 +4,15 @@ part of '../../home.dart';
 class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState> {
   final GetAllSkillsetsUseCase _getAllUseCase;
   final GetSkillsetUseCase _getUseCase;
-  final GetUserProgressMyCoursesUseCase _getUserProgressMyCoursesUseCase;
 
   HomeCubit(
     this._getAllUseCase,
     this._getUseCase,
-    this._getUserProgressMyCoursesUseCase,
   ) : super(HomeState.initial());
 
   void initializeData() async {
     // Load both courses and skillsets
     await Future.wait<void>([
-      loadUserProgressCourses(isInit: true),
       loadAllSkillsets(isInit: true),
     ]);
   }
@@ -84,41 +81,4 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     );
   }
 
-  Future<void> loadUserProgressCourses({
-    bool isInit = false,
-  }) async {
-    // Prevent multiple simultaneous loads
-    if (!isInit && state.status == HomeStatus.loading) return;
-
-    // Prevent loading if already on last page (unless it's init)
-    if (!isInit && state.coursesPageData.isLastPage) return;
-
-    emit(state.copyWith(status: HomeStatus.loading));
-
-    PageBreakRequest pageRequest;
-    pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.coursesPageData.nextPage);
-
-    await runUseCasePageBreak<UserProgressEntity>(
-      usecase: () => _getUserProgressMyCoursesUseCase(pageRequest),
-      currentPageData: state.coursesPageData,
-      isInit: isInit,
-      buildLoadingState: () => state.copyWith(status: HomeStatus.loading),
-      onFailure: (error) {
-        emit(
-          state.copyWith(
-            status: HomeStatus.failure,
-            errorMessage: error,
-          ),
-        );
-      },
-      onSuccess: (pageData) {
-        emit(
-          state.copyWith(
-            status: HomeStatus.success,
-            coursesPageData: pageData,
-          ),
-        );
-      },
-    );
-  }
 }
