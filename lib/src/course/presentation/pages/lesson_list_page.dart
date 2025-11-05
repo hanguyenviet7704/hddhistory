@@ -69,26 +69,24 @@ class LessonListPage extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        SizedBox(height: 48.h), // Space for close button
-
                         // Lesson header (title, type, duration)
                         LessonListHeader(lesson: lesson),
-                        SizedBox(height: 16.h),
-
+                        16.verticalSpace,
                         // Lesson description
-                        LessonDescription(
-                          description: lesson.description.text,
+                        AppText(
+                          lesson.description.text,
+                          style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
                         ),
-                        SizedBox(height: 12.h),
+                        12.verticalSpace,
 
                         // Key points section header
                         const KeypointsSectionHeader(),
-                        SizedBox(height: 16.h),
+                        16.verticalSpace,
 
                         // Key points list
                         if (lesson.keypoints.isEmpty)
                           Padding(
-                            padding: EdgeInsets.symmetric(vertical: 32.h),
+                            padding: EdgeInsets.symmetric(vertical: 32.w),
                             child: Center(
                               child: AppText(
                                 'No key points available',
@@ -103,23 +101,12 @@ class LessonListPage extends StatelessWidget {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: lesson.keypoints.length,
-                            separatorBuilder: (context, index) => SizedBox(height: 16.h),
+                            separatorBuilder: (context, index) => 16.verticalSpace,
                             itemBuilder: (context, index) {
                               final keypoint = lesson.keypoints[index];
 
-                              // TODO: Replace with actual data from API
-                              // For now, using index to demonstrate different states
-                              final strengthLevel = index == 0
-                                  ? StrengthLevel.weak
-                                  : index == 1
-                                      ? StrengthLevel.morePractice
-                                      : StrengthLevel.optional;
-                              final isCompleted = index == 0;
-
                               return KeypointCard(
                                 keypoint: keypoint,
-                                isCompleted: isCompleted,
-                                strengthLevel: strengthLevel,
                                 onTap: () {
                                   // TODO: Navigate to keypoint detail/learning page
                                   // For now, just log the tap
@@ -129,35 +116,12 @@ class LessonListPage extends StatelessWidget {
                             },
                           ),
 
-                        SizedBox(height: 32.h), // Bottom spacing
+                        32.verticalSpace,
                       ],
                     ),
                   ),
                 );
               },
-            ),
-
-            // Close button (top-right)
-            Positioned(
-              top: 8.h,
-              right: 12.w,
-              child: GestureDetector(
-                onTap: () => Navigator.of(context).pop(),
-                child: Container(
-                  width: 36.w,
-                  height: 36.h,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                  ),
-                  child: Center(
-                    child: Icon(
-                      Icons.close,
-                      size: 24.sp,
-                      color: AppCustomColor.textTertiary,
-                    ),
-                  ),
-                ),
-              ),
             ),
           ],
         ),

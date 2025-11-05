@@ -1,18 +1,25 @@
 part of '../../../course.dart';
 
 class KeypointCard extends StatelessWidget {
-  final KeypointModel keypoint;
-  final bool isCompleted;
-  final StrengthLevel strengthLevel;
+  final KeypointEntity keypoint;
   final VoidCallback? onTap;
 
   const KeypointCard({
     super.key,
     required this.keypoint,
-    this.isCompleted = false,
-    this.strengthLevel = StrengthLevel.optional,
     this.onTap,
   });
+
+  String get _getStrengthLabel {
+    switch (keypoint.strengthLevel) {
+      case StrengthLevel.weakPoint:
+        return 'Weak point';
+      case StrengthLevel.morePractice:
+        return 'More practice';
+      case StrengthLevel.optionalPractice:
+        return 'Optional Practice';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -24,9 +31,9 @@ class KeypointCard extends StatelessWidget {
           // Completion check icon
           Padding(
             padding: EdgeInsets.only(top: 16.h),
-            child: CompletionCheckIcon(isCompleted: isCompleted),
+            child: CompletionCheckIcon(isCompleted: keypoint.isCompleted),
           ),
-          SizedBox(width: 16.w),
+          16.horizontalSpace,
 
           // Card content
           Expanded(
@@ -35,9 +42,7 @@ class KeypointCard extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppCustomColor.backgroundWhite,
                 border: Border.all(
-                  color: isCompleted
-                      ? AppCustomColor.brandPrimary
-                      : AppCustomColor.borderDefault,
+                  color: keypoint.isCompleted ? AppCustomColor.brandPrimary : AppCustomColor.borderDefault,
                   width: 2,
                 ),
                 borderRadius: BorderRadius.circular(12.r),
@@ -46,8 +51,8 @@ class KeypointCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Strength indicator badge
-                  StrengthIndicatorBadge(level: strengthLevel),
-                  SizedBox(width: 8.w),
+                  StrengthIndicatorBadge(level: keypoint.strengthLevel),
+                  8.horizontalSpace,
 
                   // Text content
                   Expanded(
@@ -56,13 +61,13 @@ class KeypointCard extends StatelessWidget {
                       children: [
                         // Label based on strength level
                         AppText(
-                          _getStrengthLabel(),
+                          _getStrengthLabel,
                           style: AppStyle.text12.copyWith(
                             color: AppCustomColor.textTertiary,
                             fontWeight: FontWeight.w500,
                           ),
                         ),
-                        SizedBox(height: 4.h),
+                        4.verticalSpace,
 
                         // Keypoint title
                         AppText(
@@ -71,6 +76,7 @@ class KeypointCard extends StatelessWidget {
                             color: AppCustomColor.textSecondary,
                             height: 1.75,
                           ),
+                          maxLines: 10,
                         ),
                       ],
                     ),
@@ -82,16 +88,5 @@ class KeypointCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _getStrengthLabel() {
-    switch (strengthLevel) {
-      case StrengthLevel.weak:
-        return 'Weak point';
-      case StrengthLevel.morePractice:
-        return 'More practice';
-      case StrengthLevel.optional:
-        return 'Optional Practice';
-    }
   }
 }

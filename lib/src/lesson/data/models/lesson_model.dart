@@ -56,7 +56,7 @@ extension LessonModelExtension on LessonModel {
     description: description,
     image: image,
     status: status,
-    keypoints: keypoints,
+    keypoints: keypoints.map((model) => model.toEntity()).toList(),
     estimateCompleTime: estimateCompleTime,
     icon: icon.toEntity(),
     index: index,

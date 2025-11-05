@@ -28,10 +28,10 @@ class KeypointsSectionHeader extends StatelessWidget {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            SizedBox(width: 8.w),
+            8.horizontalSpace,
             Container(
               width: 20.w,
-              height: 20.h,
+              height: 20.w,
               decoration: BoxDecoration(
                 border: Border.all(
                   color: AppCustomColor.textQuaternary,

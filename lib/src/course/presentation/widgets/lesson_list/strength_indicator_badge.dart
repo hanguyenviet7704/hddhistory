@@ -1,11 +1,5 @@
 part of '../../../course.dart';
 
-enum StrengthLevel {
-  weak,
-  morePractice,
-  optional,
-}
-
 class StrengthIndicatorBadge extends StatelessWidget {
   final StrengthLevel level;
 
@@ -16,32 +10,23 @@ class StrengthIndicatorBadge extends StatelessWidget {
 
   Color get _getBarColor {
     switch (level) {
-      case StrengthLevel.weak:
+      case StrengthLevel.weakPoint:
         return AppCustomColor.errorRed;
       case StrengthLevel.morePractice:
         return AppCustomColor.brandPrimary;
-      case StrengthLevel.optional:
+      case StrengthLevel.optionalPractice:
         return AppCustomColor.successGreen;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 24.w,
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
-      ),
-      child: Center(
-        child: _buildStrengthIcon(),
-      ),
-    );
-  }
-
-  Widget _buildStrengthIcon() {
     final barColor = _getBarColor;
-    final int barCount = level == StrengthLevel.weak ? 1 : level == StrengthLevel.morePractice ? 2 : 3;
+    final int barCount = level == StrengthLevel.weakPoint
+        ? 1
+        : level == StrengthLevel.morePractice
+        ? 2
+        : 3;
 
     return SizedBox(
       width: 16.w,
@@ -59,7 +44,7 @@ class StrengthIndicatorBadge extends StatelessWidget {
               borderRadius: BorderRadius.circular(1.r),
             ),
           ),
-          SizedBox(width: 2.w),
+          2.horizontalSpace,
           // Bar 2 (medium)
           Container(
             width: 2.w,
@@ -69,7 +54,7 @@ class StrengthIndicatorBadge extends StatelessWidget {
               borderRadius: BorderRadius.circular(1.r),
             ),
           ),
-          SizedBox(width: 2.w),
+          2.horizontalSpace,
           // Bar 3 (tallest)
           Container(
             width: 2.w,
