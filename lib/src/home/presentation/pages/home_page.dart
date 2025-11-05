@@ -87,7 +87,7 @@ class HomePage extends StatelessWidget {
                           onTap: () {
                             CourseRoadmapRoute().go(context);
                             context.read<HomeCubit>().selectSkillset(index);
-                            context.read<CourseCubit>().loadRoadmap(skillset.courses.first.id);
+                            context.read<CourseRoadmapCubit>().loadRoadmap(skillset.courses.first.id);
                           },
                         );
                       },

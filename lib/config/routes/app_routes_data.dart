@@ -221,7 +221,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
       child: MultiBlocProvider(
         providers: [
           BlocProvider.value(value: AppDI.injector.get<HomeCubit>()..initializeData()),
-          BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
           BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
         ],
         child: const HomePage(),
@@ -240,7 +240,7 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<CourseCubit>(),
+    value: AppDI.injector.get<CourseRoadmapCubit>(),
     child: const CoursePage(),
   );
 }
@@ -254,7 +254,7 @@ class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRout
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<CourseCubit>(),
+    value: AppDI.injector.get<CourseRoadmapCubit>(),
     child: const CourseRoadmapPage(),
   );
 }

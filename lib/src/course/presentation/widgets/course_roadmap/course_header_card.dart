@@ -77,7 +77,7 @@ class CourseHeaderCard extends StatelessWidget {
                         shape: OvalBorder(),
                       ),
                     ),
-                    BlocSelector<CourseCubit, CourseState, double>(
+                    BlocSelector<CourseRoadmapCubit, CourseRoadmapState, double>(
                       selector: (state) => state.progress,
                       builder: (context, progress) {
                         return Expanded(
@@ -100,7 +100,7 @@ class CourseHeaderCard extends StatelessWidget {
                     ),
                     12.horizontalSpace,
                     // Lesson count
-                    BlocBuilder<CourseCubit, CourseState>(
+                    BlocBuilder<CourseRoadmapCubit, CourseRoadmapState>(
                       buildWhen: (previous, current) => previous.completedLessons != current.completedLessons || previous.totalLessons != current.totalLessons,
                       builder: (context, courseState) {
                         return AppText(

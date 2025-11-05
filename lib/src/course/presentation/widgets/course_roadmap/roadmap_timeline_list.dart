@@ -10,7 +10,7 @@ class RoadmapTimelineList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<CourseCubit, CourseState, List<LessonEntity>>(
+    return BlocSelector<CourseRoadmapCubit, CourseRoadmapState, List<LessonEntity>>(
       // TODO: Revert this filter when we have all lesson types in the roadmap
       selector: (state) => state.roadmap.lessonList.where((lesson) => lesson.type == LessonType.lesson).toList(),
       builder: (context, lessons) {
