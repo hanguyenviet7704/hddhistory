@@ -24,10 +24,12 @@ class SkillSetTab extends StatelessWidget {
             return CourseCard(
               course: course,
               showProgress: false,
-              isSelected: false,
+              isSelected: state.isSelectedCourse(course.id),
               onTap: () {
-                context.read<CourseRoadmapCubit>().loadRoadmap(course.id);
-                CourseRoadmapRoute().go(context);
+                context.read<HomeCubit>()
+                  ..selectSkillset(skillset)
+                  ..selectCourse(index);
+                context.back();
               },
             );
           },

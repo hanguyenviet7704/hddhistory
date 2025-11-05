@@ -111,7 +111,7 @@ class SpeakingResultBottomSheet extends StatelessWidget {
                                   ? Icon(Icons.close_rounded,
                                       color: const Color(0xFF0D121C), size: 20.w)
                                   : SvgPicture.asset(
-                                      AppAsset.svg.app.icBook,
+                                      AppAsset.svg.app.icBookOpen,
                                       width: 20.w,
                                       height: 20.w,
                                     ),

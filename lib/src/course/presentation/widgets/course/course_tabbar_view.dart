@@ -13,6 +13,7 @@ class CourseTabBarView extends StatelessWidget {
 
         return TabBarView(
           controller: tabController,
+          physics: const NeverScrollableScrollPhysics(),
           children: List.generate(tabCount, (index) {
             if (index == 0) return const MyCourseTab();
 

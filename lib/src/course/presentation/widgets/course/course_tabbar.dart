@@ -13,11 +13,11 @@ class CourseTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeCubit, HomeState>(
-      builder: (context, homeState) {
+    return BlocSelector<HomeCubit, HomeState, List<SkillsetEntity>>(
+      selector: (state) => state.skillsets,
+      builder: (context, skillsets) {
         return BlocBuilder<CourseCubit, CourseState>(
           builder: (context, courseState) {
-            final skillsets = homeState.skillsets;
             final selectedIndex = courseState.selectedTabIndex;
             final tabList = _buildTabList(skillsets);
 

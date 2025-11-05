@@ -109,11 +109,7 @@ class CourseCard extends StatelessWidget {
   Widget _buildLessonCountView() {
     return Row(
       children: [
-        Icon(
-          Icons.description_outlined,
-          size: 16.w,
-          color: AppCustomColor.textTertiary,
-        ),
+        SvgPicture.asset(AppAsset.svg.app.icBook, width: 16.w),
         8.horizontalSpace,
         AppText(
           '${course.numberOfLesson} lessons',

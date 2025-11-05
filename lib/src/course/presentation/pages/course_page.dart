@@ -13,9 +13,18 @@ class _CoursePageState extends State<CoursePage> with SingleTickerProviderStateM
   @override
   void initState() {
     super.initState();
-    int skillsetCount = context.read<HomeCubit>().state.skillsets.length;
+    _initializeTabController();
+  }
+
+  void _initializeTabController() {
+    HomeState homeState = context.read<HomeCubit>().state;
+    int skillsetCount = homeState.skillsets.length;
+    int selectedTabIndex = homeState.selectedSkillsetIndex;
     _tabController = TabController(length: skillsetCount + 1, vsync: this);
     _tabController.addListener(_onTabChanged);
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      _tabController.animateTo(selectedTabIndex + 1);
+    });
   }
 
   @override
@@ -27,7 +36,6 @@ class _CoursePageState extends State<CoursePage> with SingleTickerProviderStateM
 
   void _onTabChanged() {
     if (!_tabController.indexIsChanging) {
-      // Update CourseCubit when user swipes or taps tabs
       context.read<CourseCubit>().selectTab(_tabController.index);
     }
   }
