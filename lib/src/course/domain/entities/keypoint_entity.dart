@@ -3,7 +3,7 @@ part of '../../course.dart';
 @freezed
 abstract class KeypointEntity with _$KeypointEntity {
   const factory KeypointEntity({
-    @Default('') @JsonKey(name: '_id') String id,
+    @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,

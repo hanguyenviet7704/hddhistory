@@ -33,9 +33,9 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, UserProgressEntity> getUserProgressLesson(String lessonId) {
+  TaskEither<AppException, UserProgressEntity> updateUserProgressLesson(String lessonId) {
     return callApiWithTransform<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.getUserProgressLesson(lessonId),
+      apiCall: () => _api.updateUserProgressLesson(lessonId),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserProgressLesson(lessonId, data ?? UserProgressModel()),
       onError: () async {
@@ -47,9 +47,9 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, UserProgressEntity> getUserProgressKeypoint(String keypointId) {
+  TaskEither<AppException, UserProgressEntity> updateUserProgressKeypoint(String keypointId) {
     return callApiWithTransform<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.getUserProgressKeypoint(keypointId),
+      apiCall: () => _api.updateUserProgressKeypoint(keypointId),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserProgressKeypoint(keypointId, data ?? UserProgressModel()),
       onError: () async {
@@ -61,9 +61,9 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, UserProgressEntity> getUserProgressExercise(String exerciseId) {
+  TaskEither<AppException, UserProgressEntity> updateUserProgressExercise(String exerciseId) {
     return callApiWithTransform<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.getUserProgressExercise(exerciseId),
+      apiCall: () => _api.updateUserProgressExercise(exerciseId),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserProgressExercise(exerciseId, data ?? UserProgressModel()),
       onError: () async {

@@ -2,17 +2,17 @@ part of '../../progress.dart';
 
 @lazySingleton
 class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<ProgressState> {
+  final UpdateUserProgressLessonUseCase _updateUserProgressLessonUseCase;
+  final UpdateUserProgressKeypointUseCase _updateUserProgressKeypointUseCase;
+  final UpdateUserProgressExerciseUseCase _updateUserProgressExerciseUseCase;
   final GetAllUserProgresssUseCase _getAllUserProgresssUseCase;
-  final GetUserProgressLessonUseCase _getUserProgressLessonUseCase;
-  final GetUserProgressKeypointUseCase _getUserProgressKeypointUseCase;
-  final GetUserProgressExerciseUseCase _getUserProgressExerciseUseCase;
   final GetUserProgressMyCoursesUseCase _getUserProgressMyCoursesUseCase;
 
   ProgressCubit(
     this._getAllUserProgresssUseCase,
-    this._getUserProgressLessonUseCase,
-    this._getUserProgressKeypointUseCase,
-    this._getUserProgressExerciseUseCase,
+    this._updateUserProgressLessonUseCase,
+    this._updateUserProgressKeypointUseCase,
+    this._updateUserProgressExerciseUseCase,
     this._getUserProgressMyCoursesUseCase,
   ) : super(ProgressState.initial());
 
@@ -20,9 +20,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     if (!isInit && state.status == ProgressStatus.loading) return;
     if (!isInit && state.pageData.isLastPage) return;
 
-    PageBreakRequest pageRequest = isInit 
-      ? const PageBreakRequest() 
-      : PageBreakRequest(page: state.pageData.nextPage);
+    PageBreakRequest pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
 
     await runUseCasePageBreak<UserProgressEntity>(
       usecase: () => _getAllUserProgresssUseCase(pageRequest),
@@ -38,9 +36,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void loadUserProgressLesson(String lessonId) async {
+  void updateUserProgressLesson(String lessonId) async {
     await runUseCase<UserProgressEntity>(
-      usecase: () => _getUserProgressLessonUseCase(lessonId),
+      usecase: () => _updateUserProgressLessonUseCase(lessonId),
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
@@ -51,9 +49,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void loadUserProgressKeypoint(String keypointId) async {
+  void updateUserProgressKeypoint(String keypointId) async {
     await runUseCase<UserProgressEntity>(
-      usecase: () => _getUserProgressKeypointUseCase(keypointId),
+      usecase: () => _updateUserProgressKeypointUseCase(keypointId),
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
@@ -64,9 +62,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void loadUserProgressExercise(String exerciseId) async {
+  void updateUserProgressExercise(String exerciseId) async {
     await runUseCase<UserProgressEntity>(
-      usecase: () => _getUserProgressExerciseUseCase(exerciseId),
+      usecase: () => _updateUserProgressExerciseUseCase(exerciseId),
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
@@ -81,9 +79,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     if (!isInit && state.status == ProgressStatus.loading) return;
     if (!isInit && state.myCoursesPageData.isLastPage) return;
 
-    PageBreakRequest pageRequest = isInit 
-      ? const PageBreakRequest() 
-      : PageBreakRequest(page: state.myCoursesPageData.nextPage);
+    PageBreakRequest pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.myCoursesPageData.nextPage);
 
     await runUseCasePageBreak<CourseEntity>(
       usecase: () => _getUserProgressMyCoursesUseCase(pageRequest),
@@ -99,4 +95,3 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 }
-

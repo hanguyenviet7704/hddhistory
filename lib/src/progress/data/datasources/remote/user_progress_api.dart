@@ -11,14 +11,14 @@ abstract class UserProgressApi {
     @Queries() PageBreakRequest request,
   );
 
-  @GET(AppEndpoint.coursesUserProgressLesson)
-  Future<BaseResponse<UserProgressModel>> getUserProgressLesson(@Path('lessonId') String lessonId);
+  @PUT(AppEndpoint.coursesUserProgressLesson)
+  Future<BaseResponse<UserProgressModel>> updateUserProgressLesson(@Path('lessonId') String lessonId);
 
-  @GET(AppEndpoint.coursesUserProgressKeypoint)
-  Future<BaseResponse<UserProgressModel>> getUserProgressKeypoint(@Path('keypointId') String keypointId);
+  @PUT(AppEndpoint.coursesUserProgressKeypoint)
+  Future<BaseResponse<UserProgressModel>> updateUserProgressKeypoint(@Path('keypointId') String keypointId);
 
-  @GET(AppEndpoint.coursesUserProgressExercise)
-  Future<BaseResponse<UserProgressModel>> getUserProgressExercise(@Path('exerciseId') String exerciseId);
+  @PUT(AppEndpoint.coursesUserProgressExercise)
+  Future<BaseResponse<UserProgressModel>> updateUserProgressExercise(@Path('exerciseId') String exerciseId);
 
   @GET(AppEndpoint.coursesUserProgressMyCourses)
   Future<BaseResponse<BasePageBreak<CourseModel>>> getUserProgressMyCourses(

@@ -35,10 +35,11 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       }
 
       LessonCompleteRoute(
-        type: 'lesson',
+        type: 'keypoint',
         keypointTitle: state.currentLearningItem.title.en,
         progress: 1.0,
       ).go(AppConfig.instance.context!);
+      
       return;
     }
 
@@ -114,6 +115,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       },
       onSuccess: (pageData) {
         emit(state.copyWith(status: LessonStatus.success, pageData: pageData, currentLearningItemIndex: 0));
+        if (pageData.items.isEmpty) return;
         loadLearningItem(
           pageData.items.first.id,
           onSuccess: (item) => setCurrentLearningItem(item),
