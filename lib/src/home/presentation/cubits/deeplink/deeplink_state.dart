@@ -1,17 +1,17 @@
-part of '../blocs.dart';
+part of '../../../home.dart';
 
 @freezed
-abstract class PageState with _$PageState {
-  const factory PageState({
+abstract class DeeplinkState with _$DeeplinkState {
+  const factory DeeplinkState({
     @Default(0) int currentIndex,
     @Default('') String currentRouteName,
     @Default(false) bool isPassSplashScreen,
-  }) = _PageState;
+  }) = _DeeplinkState;
 
-  factory PageState.initial() => const PageState();
+  factory DeeplinkState.initial() => const DeeplinkState();
 }
 
-extension PageStateX on PageState {
+extension DeeplinkStateX on DeeplinkState {
   bool get isAuthenticated => AppGlobalValue.accessToken.isNotEmpty;
 
   bool get isPrimaryRoute => primaryRouteNames.contains(currentRouteName);

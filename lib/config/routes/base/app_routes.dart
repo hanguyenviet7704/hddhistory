@@ -1,4 +1,4 @@
-part of 'routes.dart';
+part of '../routes.dart';
 
 mixin RoutePath {
   //* General

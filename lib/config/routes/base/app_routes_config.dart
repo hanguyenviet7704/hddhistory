@@ -1,4 +1,4 @@
-part of 'routes.dart';
+part of '../routes.dart';
 
 @immutable
 abstract class BaseRouteData extends GoRouteData {

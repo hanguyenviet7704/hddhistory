@@ -1,4 +1,4 @@
-part of '../../home.dart';
+part of '../../../home.dart';
 
 @lazySingleton
 class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState> {

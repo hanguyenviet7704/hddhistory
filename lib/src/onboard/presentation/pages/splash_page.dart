@@ -33,7 +33,7 @@ class _SplashPageState extends State<SplashPage> {
     // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
 
     // context.read<IAPCubit>().loadIapProducts();
-    context.read<PageCubit>().setIsPassSplashScreen(true);
+    context.read<DeeplinkCubit>().setIsPassSplashScreen(true);
     // context.read<HandfeelingCubit>().getBrushes();
   }
 
@@ -80,7 +80,7 @@ class _SplashPageState extends State<SplashPage> {
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
     Future.delayed(const Duration(milliseconds: 3000), () async {
       if (!mounted) return;
-      bool isInitialLink = await context.read<PageCubit>().initialLink();
+      bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
       if (isInitialLink) return;
 
       if (!mounted) return;

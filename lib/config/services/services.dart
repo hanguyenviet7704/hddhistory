@@ -67,6 +67,7 @@ import '../../core/utils/utils.dart';
 import '../../src/auth/auth.dart';
 import '../../src/common/presentation/blocs/blocs.dart';
 import '../../src/common/presentation/widgets/widgets.dart';
+import '../../src/home/home.dart';
 import '../di/di.dart';
 import '../routes/routes.dart';
 import '../share/share.dart';

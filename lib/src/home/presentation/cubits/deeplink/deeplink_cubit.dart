@@ -1,9 +1,9 @@
-part of '../blocs.dart';
+part of '../../../home.dart';
 
 @lazySingleton
-class PageCubit extends Cubit<PageState> {
+class DeeplinkCubit extends Cubit<DeeplinkState> {
   final IDeepLinkService _deepLinkService;
-  PageCubit(this._deepLinkService) : super(PageState.initial()) {
+  DeeplinkCubit(this._deepLinkService) : super(DeeplinkState.initial()) {
     init();
   }
 

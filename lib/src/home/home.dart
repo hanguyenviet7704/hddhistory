@@ -26,9 +26,11 @@ part 'domain/usecases/get_skillset_usecase.dart';
 //* Parts for generated files
 part 'home.freezed.dart';
 part 'home.g.dart';
-part 'presentation/cubits/home_cubit.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/cubits/home_state.dart';
+part 'presentation/cubits/home/home_cubit.dart';
+part 'presentation/cubits/home/home_state.dart';
+part 'presentation/cubits/deeplink/deeplink_cubit.dart';
+part 'presentation/cubits/deeplink/deeplink_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/home_page.dart';
 //* Presentation Layer - Custom Widgets

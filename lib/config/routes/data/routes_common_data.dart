@@ -1,4 +1,4 @@
-part of 'routes.dart';
+part of '../routes.dart';
 
 //* General Route
 @TypedGoRoute<NoInternetConnectionRoute>(path: RoutePath.noInternetConnection, name: RouteNamed.noInternetConnection)
@@ -189,8 +189,74 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
   Widget build(BuildContext context, GoRouterState state) => const RegisterPage();
 }
 
-//* Home Route
-@TypedGoRoute<HomeRoute>(path: RoutePath.home, name: RouteNamed.home)
+@TypedStatefulShellRoute<MainShellRouteData>(
+  branches: <TypedStatefulShellBranch<StatefulShellBranchData>>[
+    TypedStatefulShellBranch<HomeShellBranchData>(
+      routes: [
+        TypedGoRoute<HomeRoute>(
+          path: RoutePath.home,
+          name: RouteNamed.home,
+        ),
+      ],
+    ),
+    TypedStatefulShellBranch<HomeShellBranchData>(
+      routes: [
+        TypedGoRoute<HomeRoute>(
+          path: RoutePath.home,
+          name: RouteNamed.home,
+        ),
+      ],
+    ),
+    TypedStatefulShellBranch<HomeShellBranchData>(
+      routes: [
+        TypedGoRoute<HomeRoute>(
+          path: RoutePath.home,
+          name: RouteNamed.home,
+        ),
+      ],
+    ),
+  ],
+)
+class MainShellRouteData extends StatefulShellRouteData {
+  const MainShellRouteData();
+
+  static final GlobalKey<NavigatorState> $parentNavigatorKey = AppConfig.instance.rootNaviKey;
+
+  @override
+  Page<void> pageBuilder(
+    BuildContext context,
+    GoRouterState state,
+    StatefulNavigationShell navigationShell,
+  ) {
+    final DeeplinkState pageState = context.watch<DeeplinkCubit>().state;
+    Widget child = navigationShell;
+
+    if (pageState.isPrimaryRoute) {
+      child = ScaffoldLayout(navigationShell: navigationShell);
+    }
+
+    return CustomTransitionPage(
+      name: RouteNamed.shellRoute,
+      key: state.pageKey,
+      child: child,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        return FadeTransition(
+          opacity: CurveTween(curve: Curves.easeInOutCirc).animate(animation),
+          child: child,
+        );
+      },
+    );
+  }
+}
+
+//* Shell routes - Home
+class HomeShellBranchData extends StatefulShellBranchData {
+  const HomeShellBranchData();
+  // static final GlobalKey<NavigatorState> $navigatorKey = AppConfig.rootNaviKey;
+  static final List<NavigatorObserver> $observers = [AppConfig.instance.homeRouterObserver];
+}
+
+//? Home Route
 class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   const HomeRoute();
 
@@ -201,7 +267,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   Widget buildPageWidget(BuildContext context, GoRouterState state) {
     return BlocListener<ConnectivityCubit, ConnectivityState>(
       listener: (context, state) {
-        String location = context.read<PageCubit>().state.currentRouteName;
+        String location = context.read<DeeplinkCubit>().state.currentRouteName;
 
         if (!state.isInternetConnected) {
           if (location != RouteNamed.noInternetConnection) {

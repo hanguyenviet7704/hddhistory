@@ -27,12 +27,12 @@ class ScaffoldLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget bottomNavigationBar = BlocBuilder<PageCubit, PageState>(
+    Widget bottomNavigationBar = BlocBuilder<DeeplinkCubit, DeeplinkState>(
       builder: (context, state) {
         return BottomNavigationBar(
           items: _items.map((e) => e).toList(),
           currentIndex: state.currentIndex,
-          onTap: (index) => context.read<PageCubit>().handleNavigation(index, navigationShell),
+          onTap: (index) => context.read<DeeplinkCubit>().handleNavigation(index, navigationShell),
           type: BottomNavigationBarType.fixed,
           selectedLabelStyle: AppStyle.textBold12,
           unselectedLabelStyle: AppStyle.textBold10.copyWith(fontWeight: FontWeight.w600),
