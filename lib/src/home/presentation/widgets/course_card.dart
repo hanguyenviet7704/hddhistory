@@ -2,18 +2,21 @@ part of '../../home.dart';
 
 class CourseCardWidget extends StatelessWidget {
   final CourseEntity course;
-  final VoidCallback? onTap;
 
   const CourseCardWidget({
     super.key,
     required this.course,
-    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        context.read<HomeCubit>()
+          ..selectSkillset(course.skillset)
+          ..selectCourse(course);
+        CourseRoadmapRoute().go(context);
+      },
       child: Container(
         width: 256.w,
         margin: EdgeInsets.only(right: 16.w),

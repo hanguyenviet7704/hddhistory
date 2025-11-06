@@ -18,7 +18,7 @@ class CourseHeader extends StatelessWidget {
             ),
           ),
           GestureDetector(
-            onTap: () => context.pop(),
+            onTap: () => context.back(),
             child: Icon(
               Icons.close,
               size: 24.w,

@@ -190,11 +190,7 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
 }
 
 //* Home Route
-@TypedGoRoute<HomeRoute>(
-  path: RoutePath.home,
-  name: RouteNamed.home,
-  routes: [],
-)
+@TypedGoRoute<HomeRoute>(path: RoutePath.home, name: RouteNamed.home)
 class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   const HomeRoute();
 
@@ -232,35 +228,19 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
 }
 
 //* Course Route
-@TypedGoRoute<CourseRoadmapRoute>(
-  path: RoutePath.courseRoadmap,
-  name: RouteNamed.courseRoadmap,
+@TypedGoRoute<CourseRoute>(
+  path: RoutePath.course,
+  name: RouteNamed.course,
   routes: [
-    TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course),
+    TypedGoRoute<CourseRoadmapRoute>(path: RoutePath.courseRoadmap, name: RouteNamed.courseRoadmap),
     TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList),
 
-    //? Lesson Route
+    //? Lesson Keypoint Route
     TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
     TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
     TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
   ],
 )
-class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
-  const CourseRoadmapRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
-    ],
-    child: const CourseRoadmapPage(),
-  );
-}
-
 class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
   const CourseRoute();
 
@@ -276,6 +256,22 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
     ],
     child: const CoursePage(),
+  );
+}
+
+class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
+  const CourseRoadmapRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+    ],
+    child: const CourseRoadmapPage(),
   );
 }
 

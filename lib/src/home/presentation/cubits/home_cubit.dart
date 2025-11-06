@@ -20,14 +20,19 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
 
   void selectSkillsetIndex(int index) => emit(state.copyWith(selectedSkillsetIndex: index));
   void selectSkillset(SkillsetEntity skillset) {
-    int skillSetIndex = state.skillsets.indexOf(skillset);
+    int skillSetIndex = state.skillsets.indexWhere((s) => s.id == skillset.id);
     if (skillSetIndex == -1) return;
     selectSkillsetIndex(skillSetIndex);
   }
 
-  void selectCourse(int index) {
+  void selectCourseIndex(int index) {
     emit(state.copyWith(selectedCourseIndex: index));
     AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(state.currentCourse.id);
+  }
+  void selectCourse(CourseEntity course) {
+    int courseIndex = state.currentSkillset.courses.indexWhere((c) => c.id == course.id);
+    if (courseIndex == -1) return;
+    selectCourseIndex(courseIndex);
   }
 
   Future<void> loadAllSkillsets({

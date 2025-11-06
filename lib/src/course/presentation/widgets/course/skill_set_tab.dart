@@ -28,7 +28,7 @@ class SkillSetTab extends StatelessWidget {
               onTap: () {
                 context.read<HomeCubit>()
                   ..selectSkillset(skillset)
-                  ..selectCourse(index);
+                  ..selectCourseIndex(index);
                 context.back();
               },
             );
