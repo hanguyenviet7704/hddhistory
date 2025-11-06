@@ -5,6 +5,7 @@ class PageCubit extends Cubit<PageState> {
   PageCubit() : super(PageState.initial());
   List<String> navigationHistory = [];
 
+  void setCurrentIndex(int index) => emit(state.copyWith(currentIndex: index));
   void addNavigationHistory(String routeName) => navigationHistory.add(routeName);
   void removeNavigationHistory(String routeName) => navigationHistory.remove(routeName);
   void clearNavigationHistory() => navigationHistory.clear();
@@ -30,6 +31,7 @@ class PageCubit extends Cubit<PageState> {
         break;
     }
 
+    setCurrentIndex(index);
     navigationShell.goBranch(index);
   }
 }

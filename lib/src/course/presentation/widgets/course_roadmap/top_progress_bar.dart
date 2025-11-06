@@ -11,9 +11,7 @@ class TopProgressBar extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       child: GestureDetector(
-        onTap: () {
-          CourseRoute().go(context);
-        },
+        onTap: () => CourseRoute().push(context),
         child: Container(
           height: 40.h,
           padding: EdgeInsets.symmetric(horizontal: 20.w),

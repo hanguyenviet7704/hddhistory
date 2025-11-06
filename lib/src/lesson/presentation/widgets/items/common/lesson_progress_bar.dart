@@ -14,8 +14,13 @@ class LessonProgressBar extends StatelessWidget {
         InkWell(
           onTap: () => ClosePopupLesson.show(
             context,
-            onQuit: () => context.read<TheoryCubit>().previousDocument(),
-            onKeepLearning: () => context.read<TheoryCubit>().nextDocument(),
+            onQuit: () {
+              context.back();
+              context.back();
+            },
+            onKeepLearning: () {
+              context.back();
+            },
           ),
           child: Icon(
             Icons.close_rounded,

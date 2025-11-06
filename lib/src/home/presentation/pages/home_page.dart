@@ -84,7 +84,7 @@ class HomePage extends StatelessWidget {
                           skillset: skillset,
                           onTap: () {
                             context.read<HomeCubit>().selectSkillsetIndex(index);
-                            CourseRoute().go(context);
+                            CourseRoute().push(context);
                           },
                         );
                       },

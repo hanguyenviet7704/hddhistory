@@ -9,18 +9,18 @@ class ScaffoldLayout extends StatelessWidget {
 
   final List<BottomNavigationBarItem> _items = [
     BottomNavigationBarItem(
-      icon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w),
-      activeIcon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      icon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      activeIcon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w),
       label: 'Home',
     ),
     BottomNavigationBarItem(
-      icon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w),
-      activeIcon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      icon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      activeIcon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w),
       label: 'Courses',
     ),
     BottomNavigationBarItem(
-      icon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w),
-      activeIcon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      icon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
+      activeIcon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w),
       label: 'Settings',
     ),
   ];
@@ -35,7 +35,8 @@ class ScaffoldLayout extends StatelessWidget {
           currentIndex: currentIndex,
           onTap: (index) => context.read<PageCubit>().handleNavigation(index, navigationShell),
           type: BottomNavigationBarType.fixed,
-          selectedLabelStyle: AppStyle.textBold12,
+          selectedLabelStyle: AppStyle.textBold12.copyWith(color: AppCustomColor.textPrimary),
+          selectedItemColor: AppCustomColor.textPrimary,
           unselectedLabelStyle: AppStyle.textBold10.copyWith(fontWeight: FontWeight.w600),
         );
       },
