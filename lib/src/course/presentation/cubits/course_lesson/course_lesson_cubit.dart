@@ -8,6 +8,8 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
     this._getCourseLessonUseCase,
   ) : super(CourseLessonState.initial());
 
+  void setCurrentKeypointId(String id) => emit(state.copyWith(currentKeypointId: id));
+
   void loadLesson(String id) async {
     String requestId = id;
     if (requestId.isEmpty) {

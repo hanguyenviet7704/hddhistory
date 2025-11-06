@@ -45,6 +45,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ProgressStatus.success, selectedLesson: item));
+        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(params.body["courseId"]);
       },
     );
   }
@@ -52,12 +53,12 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
   void updateUserProgressKeypoint(UpdateUserProgressKeypointParams params) async {
     final String userId = AppDI.injector.get<UserCubit>().state.user.id;
     final String courseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
-    final String lessonId = AppDI.injector.get<CourseLessonCubit>().state.selectedLesson.id;
+    final CourseLessonState lesson = AppDI.injector.get<CourseLessonCubit>().state;
 
     params.body.addAll({
       "userId": userId,
       "courseId": courseId,
-      "lessonId": lessonId,
+      "lessonId": lesson.selectedLesson.id,
     });
 
     await runUseCase<UserProgressEntity>(
@@ -67,7 +68,23 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
+        if (lesson.isAllOtherKeypointsCompleted) {
+          updateUserProgressLesson(
+            UpdateUserProgressLessonParams(
+              lessonId: lesson.selectedLesson.id,
+              body: {
+                "userId": userId,
+                "courseId": courseId,
+                "averageScore": params.body["averageScore"],
+                "passed": params.body["passed"],
+                "reviews": params.body["reviews"],
+              },
+            ),
+          );
+        }
         emit(state.copyWith(status: ProgressStatus.success, selectedKeypoint: item));
+        AppDI.injector.get<CourseLessonCubit>().loadLesson(lesson.selectedLesson.id);
+        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId);
       },
     );
   }
