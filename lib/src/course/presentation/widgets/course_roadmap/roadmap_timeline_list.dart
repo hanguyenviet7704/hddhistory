@@ -1,7 +1,6 @@
 part of '../../../course.dart';
 
 class RoadmapTimelineList extends StatelessWidget {
-
   const RoadmapTimelineList({
     super.key,
   });
@@ -61,7 +60,7 @@ class RoadmapTimelineList extends StatelessWidget {
                   width: 32.w,
                   height: 32.w,
                   padding: EdgeInsets.zero,
-                  indicator: TimelineIndicator(process: lesson.process),
+                  indicator: TimelineIndicator(progess: lesson.progess),
                   // indicator: TimelineIndicator(process: ProcessEnum.done),
                 ),
                 beforeLineStyle: LineStyle(

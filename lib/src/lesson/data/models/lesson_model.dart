@@ -13,7 +13,7 @@ abstract class LessonModel with _$LessonModel {
     @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagModel()) TagModel icon,
-    @Default(ProcessEnum.notStarted) ProcessEnum process,
+    @Default(ProcessEnum.notStarted) ProcessEnum progess,
     @Default(0) int index,
   }) = _LessonModel;
 
@@ -60,6 +60,6 @@ extension LessonModelExtension on LessonModel {
     estimateCompleTime: estimateCompleTime,
     icon: icon.toEntity(),
     index: index,
-    process: process,
+    progess: progess,
   );
 }

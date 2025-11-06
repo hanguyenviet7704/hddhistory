@@ -46,11 +46,13 @@ class ScaffoldLayout extends StatelessWidget {
       bottomNavigationBar = SizedBox(height: 76.h, child: bottomNavigationBar);
     }
 
-    return Column(
-      children: [
-        Expanded(child: navigationShell),
-        bottomNavigationBar,
-      ],
+    return SafeArea(
+      child: Column(
+        children: [
+          Expanded(child: navigationShell),
+          bottomNavigationBar,
+        ],
+      ),
     );
   }
 }

@@ -1,11 +1,11 @@
 part of '../../../course.dart';
 
 class TimelineIndicator extends StatelessWidget {
-  final ProcessEnum process;
+  final ProcessEnum progess;
 
   const TimelineIndicator({
     super.key,
-    required this.process,
+    required this.progess,
   });
 
   @override
@@ -20,7 +20,7 @@ class TimelineIndicator extends StatelessWidget {
   }
 
   BoxDecoration _getDecoration() {
-    return switch (process) {
+    return switch (progess) {
       ProcessEnum.done => BoxDecoration(
         color: AppCustomColor.brandPrimary,
         shape: BoxShape.circle,
@@ -41,16 +41,15 @@ class TimelineIndicator extends StatelessWidget {
   }
 
   Widget? _getIcon() {
-    return switch (process) {
+    return switch (progess) {
       ProcessEnum.done => Icon(
         Icons.check_rounded,
         size: 16.w,
         color: AppCustomColor.backgroundWhite,
       ),
-      ProcessEnum.notStarted => Icon(
-        Icons.lock_rounded,
-        size: 14.w,
-        color: AppCustomColor.textQuaternary,
+      ProcessEnum.notStarted => SvgPicture.asset(
+        AppAsset.svg.app.icLock,
+        width: 24.w,
       ),
       ProcessEnum.inProgress => Container(
         decoration: BoxDecoration(

@@ -11,6 +11,7 @@ class DCachedImage extends StatelessWidget {
   final bool enablePhotoView;
   final EdgeInsets margin;
   final EdgeInsets padding;
+  final Color? color;
   final void Function()? onTap;
   final void Function()? onDoubleTap;
 
@@ -26,6 +27,7 @@ class DCachedImage extends StatelessWidget {
     this.enablePhotoView = false,
     this.margin = EdgeInsets.zero,
     this.padding = EdgeInsets.zero,
+    this.color,
     this.onTap,
     this.onDoubleTap,
   });
@@ -86,8 +88,8 @@ class DCachedImage extends StatelessWidget {
         width: width,
         height: height,
         progressIndicatorBuilder: _buildProgressIndicator,
+        color: color,
         // placeholder: (context, url) => _buildPlaceHolder(context, url),
-        // color: color,
         // colorBlendMode: colorBlendMode,
         errorWidget: (_, _, _) => const Icon(FontAwesomeIcons.circleExclamation),
       );
@@ -99,6 +101,7 @@ class DCachedImage extends StatelessWidget {
         fit: fit,
         width: width,
         height: height,
+        color: color,
         errorBuilder: (_, _, _) => const Icon(FontAwesomeIcons.circleExclamation),
       );
     }
@@ -109,6 +112,7 @@ class DCachedImage extends StatelessWidget {
       width: width,
       height: height,
       alignment: Alignment.center,
+      color: color,
       errorBuilder: (_, _, _) => const Icon(FontAwesomeIcons.circleExclamation),
     );
   }

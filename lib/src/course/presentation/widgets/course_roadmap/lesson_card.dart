@@ -11,7 +11,7 @@ class LessonCard extends StatelessWidget {
   });
 
   Color get _backgroundColor {
-    switch (lesson.process) {
+    switch (lesson.progess) {
       case ProcessEnum.done:
         return AppCustomColor.backgroundWhite;
       case ProcessEnum.inProgress:
@@ -22,7 +22,7 @@ class LessonCard extends StatelessWidget {
   }
 
   Color get _textColor {
-    switch (lesson.process) {
+    switch (lesson.progess) {
       case ProcessEnum.done:
         return AppCustomColor.textPrimary;
       case ProcessEnum.inProgress:
@@ -33,20 +33,20 @@ class LessonCard extends StatelessWidget {
   }
 
   Color? get _borderColor {
-    if (lesson.process == ProcessEnum.done) {
+    if (lesson.progess == ProcessEnum.done) {
       return AppCustomColor.borderDefault;
     }
     return null;
   }
 
   bool get _showInProgressBadge {
-    return lesson.process == ProcessEnum.inProgress;
+    return lesson.progess == ProcessEnum.inProgress;
   }
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      // onTap: lesson.process != ProcessEnum.notStarted ? onTap : null,
+      // onTap: lesson.progess != ProcessEnum.notStarted ? onTap : null,
       onTap: onTap,
       child: Stack(
         clipBehavior: Clip.none,

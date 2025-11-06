@@ -14,3 +14,7 @@ abstract class CourseLessonState with _$CourseLessonState {
 
   factory CourseLessonState.fromJson(Map<String, dynamic> json) => _$CourseLessonStateFromJson(json);
 }
+
+extension CourseLessonStateExtension on CourseLessonState {
+  bool get isCompleted => selectedLesson.progess == ProcessEnum.done;
+}

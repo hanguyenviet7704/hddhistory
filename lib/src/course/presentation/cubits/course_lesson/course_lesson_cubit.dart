@@ -9,8 +9,14 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
   ) : super(CourseLessonState.initial());
 
   void loadLesson(String id) async {
+    String requestId = id;
+    if (requestId.isEmpty) {
+      requestId = state.selectedLesson.id;
+    }
+    if (requestId.isEmpty) return;
+
     await runUseCase<LessonEntity>(
-      usecase: () => _getCourseLessonUseCase(id),
+      usecase: () => _getCourseLessonUseCase(requestId),
       buildLoadingState: () => state.copyWith(status: CourseLessonStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: CourseLessonStatus.failure, errorMessage: error));

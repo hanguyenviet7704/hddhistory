@@ -13,7 +13,7 @@ abstract class LessonEntity with _$LessonEntity {
     @Default([]) List<KeypointEntity> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagEntity()) TagEntity icon,
-    @Default(ProcessEnum.notStarted) ProcessEnum process,
+    @Default(ProcessEnum.notStarted) ProcessEnum progess,
     @Default(0) int index,
   }) = _LessonEntity;
 

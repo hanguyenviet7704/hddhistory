@@ -16,12 +16,15 @@ part of '../routes.dart';
           path: RoutePath.courseRoadmap,
           name: RouteNamed.courseRoadmap,
           routes: [
-            TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList),
-
-            //? Lesson Keypoint Route
-            TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
-            TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
-            TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
+            TypedGoRoute<LessonListRoute>(
+              path: RoutePath.lessonList,
+              name: RouteNamed.lessonList,
+              routes: [
+                TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
+                TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
+                TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
+              ],
+            ),
           ],
         ),
       ],
@@ -62,4 +65,3 @@ class MainShellRouteData extends StatefulShellRouteData {
     );
   }
 }
-

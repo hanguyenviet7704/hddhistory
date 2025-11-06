@@ -18,11 +18,11 @@ class LessonMetadata extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (icon != null && icon!.url.isNotEmpty)
-          SvgPicture.network(
-            icon!.url,
+          DCachedImage(
+            url: icon!.url,
             width: 16.w,
             height: 16.h,
-            colorFilter: textColor != null ? ColorFilter.mode(textColor!, BlendMode.srcIn) : null,
+            color: textColor,
           ),
         if (icon != null && icon!.url.isNotEmpty) 4.horizontalSpace,
         AppText(
