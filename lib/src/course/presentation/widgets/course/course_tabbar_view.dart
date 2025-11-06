@@ -16,11 +16,11 @@ class CourseTabBarView extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           children: List.generate(tabCount, (index) {
             if (index == 0) return const MyCourseTab();
-
+            
             final skillsetIndex = index - 1;
-            if (skillsetIndex < skillsets.length) return SkillSetTab(skillset: skillsets[skillsetIndex]);
+            if (skillsetIndex >= skillsets.length || skillsetIndex < 0) return const CourseEmptyState();
 
-            return const CourseEmptyState();
+            return SkillSetTab(skillset: skillsets[skillsetIndex]);
           }),
         );
       },

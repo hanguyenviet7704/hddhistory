@@ -22,7 +22,7 @@ class CourseHeader extends StatelessWidget {
             builder: (context, isInitialized) {
               if (!isInitialized) return const SizedBox.shrink();
               return GestureDetector(
-                onTap: () => context.back(),
+                onTap: () => CourseRoadmapRoute().go(context),
                 child: Icon(
                   Icons.close,
                   size: 24.w,

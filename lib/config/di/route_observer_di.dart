@@ -19,9 +19,9 @@ abstract class RouteObserverModule {
 
   @Named(DIKey.courseRouterObserver)
   @lazySingleton
-  NavigatorObserver get shopRouterObserver => ShopRouterObserver();
+  NavigatorObserver get shopRouterObserver => CourseRouterObserver();
 
   @Named(DIKey.settingRouterObserver)
   @lazySingleton
-  NavigatorObserver get createPostRouterObserver => CreatePostRouterObserver();
+  NavigatorObserver get createPostRouterObserver => SettingRouterObserver();
 }

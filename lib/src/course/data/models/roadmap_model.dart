@@ -3,7 +3,7 @@ part of '../../course.dart';
 @freezed
 abstract class RoadmapModel with _$RoadmapModel {
   const factory RoadmapModel({
-    @Default('') String id,
+    @Default('') @JsonKey(name: '_id') String id,
     @Default('') String courseId,
     @Default([]) List<RoadmapNodeModel> node,
     @Default([]) List<LessonModel> lessonList,

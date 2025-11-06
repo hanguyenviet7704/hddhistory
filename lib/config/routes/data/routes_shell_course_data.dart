@@ -1,14 +1,6 @@
 part of '../routes.dart';
 
-
-//* Shell routes - Course
-class CourseShellBranchData extends StatefulShellBranchData {
-  const CourseShellBranchData();
-  // static final GlobalKey<NavigatorState> $navigatorKey = AppConfig.rootNaviKey;
-  static final List<NavigatorObserver> $observers = [AppConfig.instance.courseRouterObserver];
-}
-
-//? Course Route
+//* Course Route
 @TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course)
 class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
   const CourseRoute();
@@ -27,6 +19,14 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
     child: const CoursePage(),
   );
 }
+
+//* Shell routes - Course
+class CourseShellBranchData extends StatefulShellBranchData {
+  const CourseShellBranchData();
+  // static final GlobalKey<NavigatorState> $navigatorKey = AppConfig.rootNaviKey;
+  static final List<NavigatorObserver> $observers = [AppConfig.instance.courseRouterObserver];
+}
+
 
 class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
   const CourseRoadmapRoute();

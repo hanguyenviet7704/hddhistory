@@ -87,18 +87,10 @@ class HomeRouterObserver extends BaseRouterObserver {
   HomeRouterObserver() : super('HomeRouterObserver');
 }
 
-class ShopRouterObserver extends BaseRouterObserver {
-  ShopRouterObserver() : super('ShopRouterObserver');
+class CourseRouterObserver extends BaseRouterObserver {
+  CourseRouterObserver() : super('CourseRouterObserver');
 }
 
-class CreatePostRouterObserver extends BaseRouterObserver {
-  CreatePostRouterObserver() : super('CreatePostRouterObserver');
-}
-
-class NotificationRouterObserver extends BaseRouterObserver {
-  NotificationRouterObserver() : super('NotificationRouterObserver');
-}
-
-class ProfileRouterObserver extends BaseRouterObserver {
-  ProfileRouterObserver() : super('ProfileRouterObserver');
+class SettingRouterObserver extends BaseRouterObserver {
+  SettingRouterObserver() : super('SettingRouterObserver');
 }
