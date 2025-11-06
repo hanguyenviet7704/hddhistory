@@ -38,10 +38,8 @@ mixin DIKey {
   //* Route Observers
   static const String appRouterObserver = 'appRouterObserver';
   static const String homeRouterObserver = 'homeRouterObserver';
-  static const String shopRouterObserver = 'shopRouterObserver';
-  static const String createPostRouterObserver = 'createPostRouterObserver';
-  static const String notificationRouterObserver = 'notificationRouterObserver';
-  static const String profileRouterObserver = 'profileRouterObserver';
+  static const String courseRouterObserver = 'courseRouterObserver';
+  static const String settingRouterObserver = 'settingRouterObserver';
   static const String rootNavigatorKey = 'rootNavigatorKey';
   static const String shellNavigatorKey = 'shellNavigatorKey';
 

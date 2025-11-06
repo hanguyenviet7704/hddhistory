@@ -10,10 +10,8 @@ class AppConfig {
   late GlobalKey<NavigatorState> shellNaviKey;
   late NavigatorObserver appRouterObserver;
   late NavigatorObserver homeRouterObserver;
-  late NavigatorObserver shopRouterObserver;
-  late NavigatorObserver createPostRouterObserver;
-  late NavigatorObserver notificationRouterObserver;
-  late NavigatorObserver profileRouterObserver;
+  late NavigatorObserver courseRouterObserver;
+  late NavigatorObserver settingRouterObserver;
 
   BuildContext? get context => rootNaviKey.currentContext;
   BuildContext? get currentContext => rootNaviKey.currentState?.context;
@@ -26,10 +24,8 @@ class AppConfig {
     shellNaviKey = AppDI.injector.get<GlobalKey<NavigatorState>>(instanceName: DIKey.shellNavigatorKey);
     appRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.appRouterObserver);
     homeRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.homeRouterObserver);
-    shopRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.shopRouterObserver);
-    createPostRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.createPostRouterObserver);
-    notificationRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.notificationRouterObserver);
-    profileRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.profileRouterObserver);
+    courseRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.courseRouterObserver);
+    settingRouterObserver = AppDI.injector.get<NavigatorObserver>(instanceName: DIKey.settingRouterObserver);
   }
 }
 

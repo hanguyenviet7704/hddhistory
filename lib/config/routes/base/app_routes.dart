@@ -47,6 +47,9 @@ mixin RoutePath {
   static const String reviewTime = 'review-time';
   static const String lessonComplete = 'lesson-complete';
   static const String exerciseResultPopup = 'exercise-result-popup';
+
+  //* Setting
+  static const String setting = '/setting';
 }
 
 mixin RouteNamed {
@@ -96,4 +99,7 @@ mixin RouteNamed {
   static const String reviewTime = 'Review Time';
   static const String lessonComplete = 'Lesson Complete';
   static const String exerciseResultPopup = 'Exercise Result Popup';
+
+  //* Setting
+  static const String setting = 'Setting';
 }

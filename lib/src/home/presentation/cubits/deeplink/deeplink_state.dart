@@ -18,12 +18,10 @@ extension DeeplinkStateX on DeeplinkState {
 
   List<String> get primaryRouteNames {
     return [
-      // RouteNamed.createPost,
       RouteNamed.shellRoute,
       RouteNamed.home,
-      // RouteNamed.vnsShop,
-      // RouteNamed.notification,
-      // RouteNamed.profile,
+      RouteNamed.course,
+      RouteNamed.setting,
     ];
   }
 }
