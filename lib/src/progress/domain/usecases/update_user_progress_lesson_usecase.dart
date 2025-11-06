@@ -1,13 +1,20 @@
 part of '../../progress.dart';
 
+class UpdateUserProgressLessonParams {
+  final String lessonId;
+  final Map<String, dynamic> body;
+
+  UpdateUserProgressLessonParams({required this.lessonId, required this.body});
+}
+
 @lazySingleton
-class UpdateUserProgressLessonUseCase implements UseCaseWithParams<String, UserProgressEntity> {
+class UpdateUserProgressLessonUseCase implements UseCaseWithParams<UpdateUserProgressLessonParams, UserProgressEntity> {
   final IProgressRepository _repository;
 
   UpdateUserProgressLessonUseCase(this._repository);
 
   @override
-  TaskEither<AppException, UserProgressEntity> call(String params) {
-    return _repository.updateUserProgressLesson(params);
+  TaskEither<AppException, UserProgressEntity> call(UpdateUserProgressLessonParams params) {
+    return _repository.updateUserProgressLesson(params.lessonId, params.body);
   }
 }

@@ -36,9 +36,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void updateUserProgressLesson(String lessonId) async {
+  void updateUserProgressLesson(UpdateUserProgressLessonParams params) async {
     await runUseCase<UserProgressEntity>(
-      usecase: () => _updateUserProgressLessonUseCase(lessonId),
+      usecase: () => _updateUserProgressLessonUseCase(params),
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
@@ -49,9 +49,19 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void updateUserProgressKeypoint(String keypointId) async {
+  void updateUserProgressKeypoint(UpdateUserProgressKeypointParams params) async {
+    final String userId = AppDI.injector.get<UserCubit>().state.user.id;
+    final String courseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+    final String lessonId = AppDI.injector.get<CourseLessonCubit>().state.selectedLesson.id;
+
+    params.body.addAll({
+      "userId": userId,
+      "courseId": courseId,
+      "lessonId": lessonId,
+    });
+
     await runUseCase<UserProgressEntity>(
-      usecase: () => _updateUserProgressKeypointUseCase(keypointId),
+      usecase: () => _updateUserProgressKeypointUseCase(params),
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
@@ -62,9 +72,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void updateUserProgressExercise(String exerciseId) async {
+  void updateUserProgressExercise(UpdateUserProgressExerciseParams params) async {
     await runUseCase<UserProgressEntity>(
-      usecase: () => _updateUserProgressExerciseUseCase(exerciseId),
+      usecase: () => _updateUserProgressExerciseUseCase(params),
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
@@ -75,11 +85,16 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void loadUserProgressMyCourses({bool isInit = false}) async {
+  Future<void> loadUserProgressMyCourses({bool isInit = false, bool recent = false}) async {
     if (!isInit && state.status == ProgressStatus.loading) return;
     if (!isInit && state.myCoursesPageData.isLastPage) return;
-
-    PageBreakRequest pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.myCoursesPageData.nextPage);
+    UserProgressMyCoursesUseCaseFilter filter = UserProgressMyCoursesUseCaseFilter(recent: recent);
+    PageBreakRequest pageRequest = isInit
+        ? PageBreakRequest(filter: filter)
+        : PageBreakRequest(
+            page: state.myCoursesPageData.nextPage,
+            filter: filter,
+          );
 
     await runUseCasePageBreak<CourseEntity>(
       usecase: () => _getUserProgressMyCoursesUseCase(pageRequest),

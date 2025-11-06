@@ -40,6 +40,16 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         progress: 1.0,
       ).go(AppConfig.instance.context!);
       
+      AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(
+        UpdateUserProgressKeypointParams(
+          keypointId: state.currentLearningItem.keypointId,
+          body: {
+            "averageScore": 0,
+            "passed": true,
+            "reviews": "string",
+          },
+        ),
+      );
       return;
     }
 

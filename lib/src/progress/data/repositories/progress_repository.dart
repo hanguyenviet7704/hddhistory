@@ -33,9 +33,9 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, UserProgressEntity> updateUserProgressLesson(String lessonId) {
+  TaskEither<AppException, UserProgressEntity> updateUserProgressLesson(String lessonId, Map<String, dynamic> body) {
     return callApiWithTransform<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.updateUserProgressLesson(lessonId),
+      apiCall: () => _api.updateUserProgressLesson(lessonId, body),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserProgressLesson(lessonId, data ?? UserProgressModel()),
       onError: () async {
@@ -47,9 +47,9 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, UserProgressEntity> updateUserProgressKeypoint(String keypointId) {
+  TaskEither<AppException, UserProgressEntity> updateUserProgressKeypoint(String keypointId, Map<String, dynamic> body) {
     return callApiWithTransform<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.updateUserProgressKeypoint(keypointId),
+      apiCall: () => _api.updateUserProgressKeypoint(keypointId, body),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserProgressKeypoint(keypointId, data ?? UserProgressModel()),
       onError: () async {
@@ -61,9 +61,9 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, UserProgressEntity> updateUserProgressExercise(String exerciseId) {
+  TaskEither<AppException, UserProgressEntity> updateUserProgressExercise(String exerciseId, Map<String, dynamic> body) {
     return callApiWithTransform<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.updateUserProgressExercise(exerciseId),
+      apiCall: () => _api.updateUserProgressExercise(exerciseId, body),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserProgressExercise(exerciseId, data ?? UserProgressModel()),
       onError: () async {

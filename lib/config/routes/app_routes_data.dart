@@ -238,7 +238,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   routes: [
     TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course),
     TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList),
-    
+
     //? Lesson Route
     TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
     TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
@@ -348,8 +348,11 @@ class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRo
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) {
     final lessonType = type == 'lesson' ? LessonCompleteType.lesson : LessonCompleteType.keypoint;
-    return BlocProvider.value(
-      value: AppDI.injector.get<LessonCubit>(),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+      ],
       child: LessonCompletePage(
         type: lessonType,
         keypointTitle: keypointTitle,
