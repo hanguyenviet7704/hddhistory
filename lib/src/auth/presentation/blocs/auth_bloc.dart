@@ -53,7 +53,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         AppGlobalValue.accessToken = data.token.accessToken;
         AppGlobalValue.refreshToken = data.token.refreshToken;
         AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
-        LessonRoute().go(AppConfig.instance.context!);
+        CourseRoute().go(AppConfig.instance.context!);
       },
       onFailure: (error) {},
     );
@@ -67,7 +67,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         AppGlobalValue.accessToken = data.token.accessToken;
         AppGlobalValue.refreshToken = data.token.refreshToken;
         AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
-        LessonRoute().go(AppConfig.instance.context!);
+        CourseRoute().go(AppConfig.instance.context!);
       },
       onFailure: (error) {},
     );

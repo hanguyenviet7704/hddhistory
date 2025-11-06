@@ -9,6 +9,7 @@ class CourseShellBranchData extends StatefulShellBranchData {
 }
 
 //? Course Route
+@TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course)
 class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
   const CourseRoute();
 

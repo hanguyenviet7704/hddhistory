@@ -33,7 +33,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
       },
       child: MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: AppDI.injector.get<HomeCubit>()..initializeData()),
+          BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
           BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
           BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
           BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),

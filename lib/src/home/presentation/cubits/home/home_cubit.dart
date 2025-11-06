@@ -10,7 +10,11 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     this._getUseCase,
   ) : super(HomeState.initial());
 
+  bool _isInitialized = false;
+
   void initializeData() async {
+    if (_isInitialized) return;
+    _isInitialized = true;
     // Load both courses and skillsets]
     await Future.wait<void>([
       loadAllSkillsets(isInit: true),

@@ -12,11 +12,10 @@ part of '../routes.dart';
     ),
     TypedStatefulShellBranch<CourseShellBranchData>(
       routes: [
-        TypedGoRoute<CourseRoute>(
-          path: RoutePath.course,
-          name: RouteNamed.course,
+        TypedGoRoute<CourseRoadmapRoute>(
+          path: RoutePath.courseRoadmap,
+          name: RouteNamed.courseRoadmap,
           routes: [
-            TypedGoRoute<CourseRoadmapRoute>(path: RoutePath.courseRoadmap, name: RouteNamed.courseRoadmap),
             TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList),
 
             //? Lesson Keypoint Route
