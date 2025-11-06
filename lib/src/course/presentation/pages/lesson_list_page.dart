@@ -108,9 +108,8 @@ class LessonListPage extends StatelessWidget {
                               return KeypointCard(
                                 keypoint: keypoint,
                                 onTap: () {
-                                  // TODO: Navigate to keypoint detail/learning page
-                                  // For now, just log the tap
-                                  debugPrint('Tapped on keypoint: ${keypoint.title.text}');
+                                  AppDI.injector.get<LessonCubit>().loadAllLearningItems(keypointId: keypoint.id);
+                                  LessonRoute().go(context);
                                 },
                               );
                             },

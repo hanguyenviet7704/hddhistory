@@ -238,6 +238,11 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   routes: [
     TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course),
     TypedGoRoute<LessonListRoute>(path: RoutePath.lessonList, name: RouteNamed.lessonList),
+    
+    //? Lesson Route
+    TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
+    TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
+    TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
   ],
 )
 class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRoute {
@@ -284,13 +289,12 @@ class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
     ],
     child: const LessonListPage(),
   );
 }
 
-//* Lesson Route
-@TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson)
 class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
   const LessonRoute();
 
@@ -314,7 +318,6 @@ class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
   );
 }
 
-@TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime)
 class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {
   const ReviewTimeRoute();
 
@@ -328,7 +331,6 @@ class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {
   );
 }
 
-@TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete)
 class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {
   final String? type;
   final String? keypointTitle;

@@ -43,10 +43,10 @@ mixin RoutePath {
   static const String lessonExplainPopup = 'lesson-explain-popup';
 
   //* Exercise
-  static const String lesson = '/lesson';
-  static const String reviewTime = '/review-time';
-  static const String lessonComplete = '/lesson-complete';
-  static const String exerciseResultPopup = '/exercise-result-popup';
+  static const String lesson = 'lesson';
+  static const String reviewTime = 'review-time';
+  static const String lessonComplete = 'lesson-complete';
+  static const String exerciseResultPopup = 'exercise-result-popup';
 }
 
 mixin RouteNamed {

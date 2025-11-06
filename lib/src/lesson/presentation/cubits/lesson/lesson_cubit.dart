@@ -88,6 +88,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void loadAllLearningItems({
     bool isInit = false,
+    String? keypointId,
   }) async {
     // Prevent multiple simultaneous loads
     if (!isInit && state.status == LessonStatus.loading) return;
@@ -97,10 +98,10 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     PageBreakRequest<LearningItemFilter> pageRequest;
     pageRequest = isInit
-        ? const PageBreakRequest<LearningItemFilter>()
+        ? PageBreakRequest<LearningItemFilter>(filter: LearningItemFilter(keypointId: keypointId))
         : PageBreakRequest<LearningItemFilter>(
             page: state.pageData.nextPage,
-            filter: LearningItemFilter(keypointId: state.currentTag.id, type: LearningItemFilterType.theory),
+            filter: LearningItemFilter(keypointId: keypointId),
           );
 
     await runUseCasePageBreak<LearningItemEntity>(
