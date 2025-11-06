@@ -29,7 +29,7 @@ class SkillSetTab extends StatelessWidget {
                 context.read<HomeCubit>()
                   ..selectSkillset(skillset)
                   ..selectCourseIndex(index);
-                context.back();
+                HomeRoute().go(context);
               },
             );
           },

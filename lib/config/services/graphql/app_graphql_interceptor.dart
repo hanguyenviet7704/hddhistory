@@ -147,7 +147,7 @@ class AppGraphQLInterceptor extends IGraphQLInterceptor {
   }
 
   bool _isOnLoginPage() {
-    final currentRouteName = AppConfig.instance.context!.read<DeeplinkCubit>().state.currentRouteName;
+    final currentRouteName = AppConfig.instance.context!.read<PageCubit>().state.currentRouteName;
     return currentRouteName == RoutePath.login;
   }
 

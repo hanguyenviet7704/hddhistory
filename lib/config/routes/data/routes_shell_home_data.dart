@@ -18,7 +18,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
   Widget buildPageWidget(BuildContext context, GoRouterState state) {
     return BlocListener<ConnectivityCubit, ConnectivityState>(
       listener: (context, state) {
-        String location = context.read<DeeplinkCubit>().state.currentRouteName;
+        String location = context.read<PageCubit>().state.currentRouteName;
 
         if (!state.isInternetConnected) {
           if (location != RouteNamed.noInternetConnection) {

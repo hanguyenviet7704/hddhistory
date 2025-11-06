@@ -192,7 +192,7 @@ class AppInterceptors extends BaseInterceptor {
       return;
     }
 
-    final currentRouteName = context.read<DeeplinkCubit>().state.currentRouteName;
+    final currentRouteName = context.read<PageCubit>().state.currentRouteName;
     if (currentRouteName == RoutePath.login) {
       return;
     }

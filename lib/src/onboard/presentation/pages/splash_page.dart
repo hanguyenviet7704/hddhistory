@@ -33,7 +33,7 @@ class _SplashPageState extends State<SplashPage> {
     // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
 
     // context.read<IAPCubit>().loadIapProducts();
-    context.read<DeeplinkCubit>().setIsPassSplashScreen(true);
+    context.read<PageCubit>().setIsPassSplashScreen(true);
     // context.read<HandfeelingCubit>().getBrushes();
   }
 
@@ -75,26 +75,33 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 
-  void _initScreen(_) {
+  void _initScreen(_) async {
     context.read<UserCubit>().setIsFirstTimeUserAccessPictureStudy(true);
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
+
+    if (!mounted) return;
+    bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
+    if (isInitialLink) return;
+
+    if (!mounted) return;
+    bool isFirstTime = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
+    if (isFirstTime) {
+      _trackingDrawWelcomeScrView('first_time');
+    }
+    if (AppGlobalValue.accessToken.isEmpty) {
+      ChooseLanguageRoute().go(context);
+      return;
+    }
+
+    AppDI.injector.get<HomeCubit>().initializeData();
+    String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
     Future.delayed(const Duration(milliseconds: 3000), () async {
       if (!mounted) return;
-      bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
-      if (isInitialLink) return;
 
-      if (!mounted) return;
-      bool isFirstTime = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
-      if (isFirstTime) {
-        _trackingDrawWelcomeScrView('first_time');
-      }
-      if (AppGlobalValue.accessToken.isEmpty) {
-        ChooseLanguageRoute().go(context);
+      if (roadmapId.isEmpty) {
+        CourseRoute().go(context);
         return;
       }
-      // AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
-      // LessonRoute().go(context);
-      AppDI.injector.get<HomeCubit>().initializeData();
       HomeRoute().go(context);
     });
   }

@@ -53,29 +53,29 @@ abstract class BaseRouterObserver extends NavigatorObserver {
 
   // Override this to handle route changes
   void onRouteChanged(Route<dynamic>? route) {
-    AppConfig.instance.context?.read<DeeplinkCubit>().setCurrentRouteName(route?.settings.name ?? '');
+    AppConfig.instance.context?.read<PageCubit>().setCurrentRouteName(route?.settings.name ?? '');
   }
 
   void onPopRoute(Route<dynamic>? route) {
-    AppConfig.instance.context?.read<DeeplinkCubit>().removeNavigationHistory(route?.settings.name ?? '');
+    AppConfig.instance.context?.read<PageCubit>().removeNavigationHistory(route?.settings.name ?? '');
   }
 
   void onClearRoute() {
-    AppConfig.instance.context?.read<DeeplinkCubit>().clearNavigationHistory();
+    AppConfig.instance.context?.read<PageCubit>().clearNavigationHistory();
   }
 
   void onPushRoute(Route<dynamic> route) {
-    AppConfig.instance.context?.read<DeeplinkCubit>().addNavigationHistory(route.settings.name ?? '');
+    AppConfig.instance.context?.read<PageCubit>().addNavigationHistory(route.settings.name ?? '');
     AppService.instance.appTrackingService.trackScreenView(route.settings.name ?? '');
   }
 
   void onReplaceRoute(Route<dynamic>? newRoute, Route<dynamic>? oldRoute) {
-    AppConfig.instance.context?.read<DeeplinkCubit>().replaceNavigationHistory(newRoute?.settings.name ?? '', oldRoute?.settings.name ?? '');
+    AppConfig.instance.context?.read<PageCubit>().replaceNavigationHistory(newRoute?.settings.name ?? '', oldRoute?.settings.name ?? '');
     AppService.instance.appTrackingService.trackScreenView(newRoute?.settings.name ?? '');
   }
 
   void onRemoveRoute(Route<dynamic>? route) {
-    AppConfig.instance.context?.read<DeeplinkCubit>().removeNavigationHistory(route?.settings.name ?? '');
+    AppConfig.instance.context?.read<PageCubit>().removeNavigationHistory(route?.settings.name ?? '');
   }
 }
 

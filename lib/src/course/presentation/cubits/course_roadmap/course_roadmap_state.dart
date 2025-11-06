@@ -6,9 +6,7 @@ enum CourseRoadmapStatus { initial, loading, success, failure }
 abstract class CourseRoadmapState with _$CourseRoadmapState {
   const factory CourseRoadmapState({
     @Default(CourseRoadmapStatus.initial) CourseRoadmapStatus status,
-    @Default(BasePageBreak<CourseEntity>()) BasePageBreak<CourseEntity> pageData,
     @Default(RoadmapEntity()) RoadmapEntity roadmap,
-    CourseEntity? selectedItem,
     String? errorMessage,
   }) = _CourseRoadmapState;
 

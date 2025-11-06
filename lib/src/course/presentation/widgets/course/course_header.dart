@@ -17,13 +17,19 @@ class CourseHeader extends StatelessWidget {
               fontWeight: FontWeight.w600,
             ),
           ),
-          GestureDetector(
-            onTap: () => context.back(),
-            child: Icon(
-              Icons.close,
-              size: 24.w,
-              color: AppCustomColor.textTertiary,
-            ),
+          BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
+            selector: (state) => state.roadmap.id.isNotEmpty,
+            builder: (context, isInitialized) {
+              if (!isInitialized) return const SizedBox.shrink();
+              return GestureDetector(
+                onTap: () => context.back(),
+                child: Icon(
+                  Icons.close,
+                  size: 24.w,
+                  color: AppCustomColor.textTertiary,
+                ),
+              );
+            },
           ),
         ],
       ),

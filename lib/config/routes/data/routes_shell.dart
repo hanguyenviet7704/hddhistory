@@ -42,7 +42,7 @@ class MainShellRouteData extends StatefulShellRouteData {
     GoRouterState state,
     StatefulNavigationShell navigationShell,
   ) {
-    final DeeplinkState pageState = context.watch<DeeplinkCubit>().state;
+    final PageState pageState = context.watch<PageCubit>().state;
     Widget child = navigationShell;
 
     if (pageState.isPrimaryRoute) {
