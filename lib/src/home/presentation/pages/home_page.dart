@@ -24,32 +24,30 @@ class HomePage extends StatelessWidget {
                   builder: (context, state) {
                     if (state.myCourses.isEmpty) return const SizedBox.shrink();
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         4.verticalSpace,
                         // Continue learning
                         AppText(
                           'Continue learning',
+                          margin: EdgeInsets.symmetric(horizontal: 20.w),
                           style: AppStyle.textBold20.copyWith(
                             color: AppCustomColor.black36,
                           ),
                         ),
                         12.verticalSpace,
                         // Course cards horizontal scroll
-                        SizedBox(
-                          height: 102.h,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            padding: EdgeInsets.symmetric(horizontal: 20.w),
-                            itemCount: state.myCourses.length,
-                            separatorBuilder: (_, _) => 16.horizontalSpace,
-                            itemBuilder: (context, index) {
-                              return CourseCardWidget(
-                                course: state.myCourses[index],
-                                onTap: () {
-                                  CourseRoute().go(context);
-                                },
-                              );
-                            },
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Row(
+                            children: state.myCourses
+                                .map(
+                                  (course) => CourseCardWidget(
+                                    course: course.withSkillset,
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ),
                         20.verticalSpace,

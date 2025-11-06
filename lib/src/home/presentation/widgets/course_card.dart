@@ -16,99 +16,66 @@ class CourseCardWidget extends StatelessWidget {
       onTap: onTap,
       child: Container(
         width: 256.w,
-        height: 102.h,
         margin: EdgeInsets.only(right: 16.w),
+        padding: EdgeInsets.all(16.w),
         decoration: BoxDecoration(
-          color: AppCustomColor.white,
+          color: AppCustomColor.backgroundWhite,
           borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 10.r,
-              offset: Offset(0, 4.h),
-            ),
-          ],
+          border: Border.all(
+            color: AppCustomColor.borderSecondary,
+            width: 2.w,
+          ),
         ),
-        child: Padding(
-          padding: EdgeInsets.all(16.w),
-          child: Row(
-            children: [
-              // Course image
-              Container(
-                width: 50.w,
-                height: 50.w,
-                decoration: BoxDecoration(
-                  color: AppCustomColor.greyF5,
+        child: Column(
+          children: [
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Course image
+                DCachedImage(
+                  url: course.image,
+                  width: 50.w,
+                  height: 50.w,
                   borderRadius: BorderRadius.circular(12.r),
                 ),
-                child: course.image.isNotEmpty == true
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12.r),
-                        child: Image.network(
-                          course.image,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Icon(
-                              Icons.image_not_supported,
-                              color: AppCustomColor.grey9A,
-                              size: 24.w,
-                            );
-                          },
-                        ),
-                      )
-                    : Icon(
-                        Icons.book,
-                        color: AppCustomColor.grey9A,
-                        size: 24.w,
+                12.horizontalSpace,
+                // Course info
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      AppText(
+                        course.skillset.title.text,
+                        style: AppStyle.textBold12.copyWith(color: AppCustomColor.brandPrimary),
+                        maxLines: 1,
                       ),
-              ),
-              12.horizontalSpace,
-              // Course info
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Course title
-                    AppText(
-                      course.title.text,
-                      style: AppStyle.textBold14.copyWith(
-                        color: AppCustomColor.black36,
+                      // Course description
+                      AppText(
+                        course.title.text,
+                        style: AppStyle.textBold14.copyWith(color: AppCustomColor.textSecondary),
+                        maxLines: 2,
                       ),
-                      maxLines: 1,
-                    ),
-                    4.verticalSpace,
-                    // Course description
-                    AppText(
-                      course.description.text,
-                      style: AppStyle.text12.copyWith(
-                        color: AppCustomColor.grey69,
-                      ),
-                      maxLines: 2,
-                    ),
-                    // const Spacer(),
-                    // // Progress bar
-                    // Container(
-                    //   height: 8.h,
-                    //   decoration: BoxDecoration(
-                    //     color: AppCustomColor.greyF5,
-                    //     borderRadius: BorderRadius.circular(4.r),
-                    //   ),
-                    //   child: FractionallySizedBox(
-                    //     alignment: Alignment.centerLeft,
-                    //     widthFactor: course.progress,
-                    //     child: Container(
-                    //       decoration: BoxDecoration(
-                    //         color: AppCustomColor.green61,
-                    //         borderRadius: BorderRadius.circular(4.r),
-                    //       ),
-                    //     ),
-                    //   ),
-                    // ),
-                  ],
+                    ],
+                  ),
                 ),
+              ],
+            ),
+            if (kDebugMode) ...[
+              12.verticalSpace,
+              LinearPercentIndicator(
+                animation: true,
+                animationDuration: 500,
+                animateFromLastPercent: true,
+                lineHeight: 10.h,
+                percent: 0.5,
+                backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
+                progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
+                barRadius: Radius.circular(30.r),
+                padding: EdgeInsets.zero,
               ),
             ],
-          ),
+          ],
         ),
       ),
     );

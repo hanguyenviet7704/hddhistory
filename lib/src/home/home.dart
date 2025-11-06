@@ -8,6 +8,7 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 //* Single project import
 import 'package:meup/meup.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Data Layer - Models, Datasources, Repositories
