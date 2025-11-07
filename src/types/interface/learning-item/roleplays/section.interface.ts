@@ -9,17 +9,20 @@ export interface IConversation {
   avartar: string;
   position: SectionConversationPosition;
   bubbleColor: string;
+  textColor: string;
   content: string;
   audio: string;
 }
 
 export interface ILeadingText {
   frameColor: string;
+  textColor: string;
   content: string;
 }
 
 export interface IHint {
   icon: string;
+  textColor: string;
   content: string;
 }
 
@@ -37,5 +40,6 @@ export interface ISection {
   title: string;
   transition: string;
   transitionColor: string;
+  image: string;
   contents: ISectionContent[];
 }

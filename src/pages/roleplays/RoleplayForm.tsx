@@ -719,6 +719,7 @@ export default function RoleplayForm({
             avartar: "",
             position: SectionConversationPosition.LEFT,
             bubbleColor: "#FFFFFF",
+            textColor: "#000000", // Added textColor
             content: "",
             audio: "",
           } as IConversation,
@@ -729,6 +730,7 @@ export default function RoleplayForm({
           type,
           leadingText: {
             frameColor: "#000000",
+            textColor: "#000000", // Added textColor
             content: "",
           } as ILeadingText,
         } as ISectionContent;
@@ -738,6 +740,7 @@ export default function RoleplayForm({
           type,
           hint: {
             icon: "",
+            textColor: "#000000", // Added textColor
             content: "",
           } as IHint,
         } as ISectionContent;
@@ -1020,6 +1023,7 @@ export default function RoleplayForm({
       title: `Section ${nextSectionId}`,
       transition: "",
       transitionColor: "#000000",
+      image: "", // Added image field
       contents: [],
     };
 
@@ -1082,6 +1086,24 @@ export default function RoleplayForm({
       updatedSections[sectionIndex] = {
         ...updatedSections[sectionIndex],
         transitionColor,
+      };
+
+      return { ...prev, sections: updatedSections };
+    });
+  };
+
+  // Update section image
+  const updateSectionImage = (sectionId: number, image: string) => {
+    setCurrentRoleplay((prev) => {
+      const sections = prev.sections || [];
+      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+
+      if (sectionIndex === -1) return prev;
+
+      const updatedSections = [...sections];
+      updatedSections[sectionIndex] = {
+        ...updatedSections[sectionIndex],
+        image,
       };
 
       return { ...prev, sections: updatedSections };
@@ -1163,7 +1185,7 @@ export default function RoleplayForm({
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-1">
                             Section Title
@@ -1202,6 +1224,22 @@ export default function RoleplayForm({
                               updateSectionTransitionColor(section.id, value)
                             }
                             label="Transition Color"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Section Image
+                          </label>
+                          <CloudflareFileUpload
+                            initialUrl={section.image || ""}
+                            onUrlChange={(url) =>
+                              updateSectionImage(section.id, url)
+                            }
+                            label=""
+                            uploadPayload={{
+                              prefix: "",
+                              folder: "roleplay",
+                            }}
                           />
                         </div>
                       </div>
@@ -1288,6 +1326,14 @@ export default function RoleplayForm({
                                                       .bubbleColor,
                                                 }}
                                               ></div>
+                                              <div
+                                                className="w-3 h-3 rounded-full border border-gray-300"
+                                                style={{
+                                                  backgroundColor:
+                                                    content.conversation
+                                                      .textColor,
+                                                }}
+                                              ></div>
                                               <span className="text-xs text-gray-500">
                                                 {content.conversation.position}
                                               </span>
@@ -1326,6 +1372,14 @@ export default function RoleplayForm({
                                                       .frameColor,
                                                 }}
                                               ></div>
+                                              <div
+                                                className="w-3 h-3 rounded-full border border-gray-300"
+                                                style={{
+                                                  backgroundColor:
+                                                    content.leadingText
+                                                      .textColor,
+                                                }}
+                                              ></div>
                                               <TextWithTooltip
                                                 text={
                                                   content.leadingText.content
@@ -1344,6 +1398,13 @@ export default function RoleplayForm({
                                                   className="w-4 h-4 object-contain"
                                                 />
                                               )}
+                                              <div
+                                                className="w-3 h-3 rounded-full border border-gray-300"
+                                                style={{
+                                                  backgroundColor:
+                                                    content.hint.textColor,
+                                                }}
+                                              ></div>
                                               <TextWithTooltip
                                                 text={content.hint.content}
                                                 maxLength={100}
@@ -2101,6 +2162,12 @@ export default function RoleplayForm({
               label="Bubble Color"
             />
 
+            <ColorPicker
+              value={localFormData.conversation.textColor || "#000000"}
+              onChange={(value) => handleConversationChange("textColor", value)}
+              label="Text Color"
+            />
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Content
@@ -2143,6 +2210,12 @@ export default function RoleplayForm({
               label="Frame Color"
             />
 
+            <ColorPicker
+              value={localFormData.leadingText.textColor || "#000000"}
+              onChange={(value) => handleLeadingTextChange("textColor", value)}
+              label="Text Color"
+            />
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Content
@@ -2166,6 +2239,12 @@ export default function RoleplayForm({
               value={localFormData.hint.icon || ""}
               onChange={(value) => handleHintChange("icon", value)}
               label="Icon"
+            />
+
+            <ColorPicker
+              value={localFormData.hint.textColor || "#000000"}
+              onChange={(value) => handleHintChange("textColor", value)}
+              label="Text Color"
             />
 
             <div>
