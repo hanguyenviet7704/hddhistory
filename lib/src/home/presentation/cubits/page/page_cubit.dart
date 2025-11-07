@@ -10,11 +10,10 @@ class PageCubit extends Cubit<PageState> {
   void removeNavigationHistory(String routeName) => navigationHistory.remove(routeName);
   void clearNavigationHistory() => navigationHistory.clear();
   void replaceNavigationHistory(String newRouteName, String oldRouteName) => navigationHistory.replaceAt(newRouteName, at: navigationHistory.indexOf(oldRouteName));
-  void setCurrentRouteName(String routeName) => emit(state.copyWith(currentRouteName: routeName));
   void setIsPassSplashScreen(bool isPassSplashScreen) => emit(state.copyWith(isPassSplashScreen: isPassSplashScreen));
+  void setCurrentRouteName(String routeName) => emit(state.copyWith(currentRouteName: routeName));
 
-  void handleNavigation(int index, StatefulNavigationShell navigationShell) {
-
+  void handleShellRouteNavigation(int index, StatefulNavigationShell navigationShell) {
     if (index == 0 && state.currentRouteName == RouteNamed.home) return;
     if (index == 1 && state.currentRouteName == RouteNamed.courseRoadmap) return;
     if (index == 2 && state.currentRouteName == RouteNamed.setting) return;
@@ -31,6 +30,10 @@ class PageCubit extends Cubit<PageState> {
         break;
     }
 
+    _routeNavigationShell(index, navigationShell);
+  }
+
+  void _routeNavigationShell(int index, StatefulNavigationShell navigationShell) {
     setCurrentIndex(index);
     navigationShell.goBranch(index);
   }

@@ -16,6 +16,7 @@ class CourseCardWidget extends StatelessWidget {
           ..selectSkillset(course.skillset)
           ..selectCourse(course);
         CourseRoadmapRoute().go(context);
+        context.read<PageCubit>().setCurrentIndex(1);
       },
       child: Container(
         width: 256.w,

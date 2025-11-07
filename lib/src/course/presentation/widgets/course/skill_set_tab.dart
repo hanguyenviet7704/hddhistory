@@ -30,6 +30,7 @@ class SkillSetTab extends StatelessWidget {
                   ..selectSkillset(skillset)
                   ..selectCourseIndex(index);
                 CourseRoadmapRoute().go(context);
+                context.read<PageCubit>().setCurrentIndex(1);
               },
             );
           },

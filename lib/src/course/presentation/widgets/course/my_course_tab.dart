@@ -48,6 +48,7 @@ class MyCourseTab extends StatelessWidget {
                 onTap: () {
                   context.read<CourseRoadmapCubit>().loadRoadmap(course.id);
                   CourseRoadmapRoute().go(context);
+                  context.read<PageCubit>().setCurrentIndex(1);
                 },
               );
             },

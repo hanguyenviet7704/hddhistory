@@ -33,7 +33,7 @@ class ScaffoldLayout extends StatelessWidget {
         return BottomNavigationBar(
           items: _items.map((e) => e).toList(),
           currentIndex: currentIndex,
-          onTap: (index) => context.read<PageCubit>().handleNavigation(index, navigationShell),
+          onTap: (index) => context.read<PageCubit>().handleShellRouteNavigation(index, navigationShell),
           type: BottomNavigationBarType.fixed,
           selectedLabelStyle: AppStyle.textBold12.copyWith(color: AppCustomColor.textPrimary),
           selectedItemColor: AppCustomColor.textPrimary,
