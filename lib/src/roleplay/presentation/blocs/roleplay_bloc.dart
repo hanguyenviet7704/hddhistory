@@ -140,7 +140,7 @@ class RoleplayBloc extends Bloc<RoleplayEvent, RoleplayState> with BlocUseCaseHa
         ));
       },
       onSuccess: (_) {
-        final updatedItems = state.pageData.items.where((item) => item.id != event.id).toList();
+        final updatedItems = state.pageData.items.where((item) => item.id.toString() != event.id).toList();
         final updatedPageData = state.pageData.copyWith(items: updatedItems);
         emit(state.copyWith(
           status: RoleplayStatus.success,

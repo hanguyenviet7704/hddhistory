@@ -64,7 +64,7 @@ class RoleplayRepository with RestfulRequestHandlerMixin implements IRoleplayRep
     SectionEntity entity,
   ) {
     return callApiWithTransform<SectionModel, SectionEntity>(
-      apiCall: () => _api.updateSection(entity.id, _entityToJson(entity)),
+      apiCall: () => _api.updateSection(entity.id.toString(), _entityToJson(entity)),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheSection(data ?? SectionModel()),
       defaultValue: SectionEntity(),
@@ -91,30 +91,34 @@ class RoleplayRepository with RestfulRequestHandlerMixin implements IRoleplayRep
       'transition': entity.transition,
       'transitionColor': entity.transitionColor,
       'image': entity.image,
-      'contents': entity.contents.map((content) => {
-        'id': content.id,
-        'type': content.type.name,
-        'conversation': {
-          'name': content.conversation.name,
-          'avartar': content.conversation.avartar,
-          'position': content.conversation.position.name,
-          'bubbleColor': content.conversation.bubbleColor,
-          'textColor': content.conversation.textColor,
-          'content': content.conversation.content,
-          'audio': content.conversation.audio,
-        },
-        'leadingText': {
-          'frameColor': content.leadingText.frameColor,
-          'textColor': content.leadingText.textColor,
-          'content': content.leadingText.content,
-        },
-        'hint': {
-          'icon': content.hint.icon,
-          'textColor': content.hint.textColor,
-          'content': content.hint.content,
-        },
-        'exercise': content.exercise.toJson(),
-      }).toList(),
+      'contents': entity.contents
+          .map(
+            (content) => {
+              'id': content.id,
+              'type': content.type.name,
+              'conversation': {
+                'name': content.conversation.name,
+                'avartar': content.conversation.avartar,
+                'position': content.conversation.position.name,
+                'bubbleColor': content.conversation.bubbleColor,
+                'textColor': content.conversation.textColor,
+                'content': content.conversation.content,
+                'audio': content.conversation.audio,
+              },
+              'leadingText': {
+                'frameColor': content.leadingText.frameColor,
+                'textColor': content.leadingText.textColor,
+                'content': content.leadingText.content,
+              },
+              'hint': {
+                'icon': content.hint.icon,
+                'textColor': content.hint.textColor,
+                'content': content.hint.content,
+              },
+              'exercise': content.exercise.toJson(),
+            },
+          )
+          .toList(),
     };
   }
 }

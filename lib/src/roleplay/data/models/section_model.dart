@@ -3,7 +3,7 @@ part of '../../roleplay.dart';
 @freezed
 abstract class SectionModel with _$SectionModel {
   const factory SectionModel({
-    @Default('') String id,
+    @Default(0) int id,
     @Default('') String title,
     @Default('') String transition,
     @Default('') String transitionColor,

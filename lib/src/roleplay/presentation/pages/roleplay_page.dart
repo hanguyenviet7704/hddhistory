@@ -194,7 +194,7 @@ class _RoleplayPageState extends State<RoleplayPage> {
             onPressed: () {
               Navigator.of(dialogContext).pop();
               context.read<RoleplayBloc>().add(
-                RoleplayEvent.deleteSection(item.id),
+                RoleplayEvent.deleteSection(item.id.toString()),
               );
             },
             style: TextButton.styleFrom(foregroundColor: Colors.red),

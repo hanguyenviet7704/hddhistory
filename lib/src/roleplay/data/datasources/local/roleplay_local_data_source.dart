@@ -104,7 +104,7 @@ class RoleplayLocalDataSourceImpl implements RoleplayLocalDataSource {
 
       // Also remove from cached list if exists
       final cachedList = await getCachedSections();
-      final updatedList = cachedList.where((item) => item.id != id).toList();
+      final updatedList = cachedList.where((item) => item.id.toString() != id).toList();
       await cacheSections(updatedList);
     } catch (e) {
       // Handle error silently or log
