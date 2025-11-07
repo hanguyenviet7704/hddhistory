@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 @lazySingleton
 class GetAllCourseLessonsUseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<LessonEntity>> {

@@ -1,4 +1,4 @@
-part of '../../course.dart';
+part of '../../../course.dart';
 
 @lazySingleton
 class GetRoadmapUseCase implements UseCaseWithParams<String, RoadmapEntity> {

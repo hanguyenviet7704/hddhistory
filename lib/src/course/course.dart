@@ -35,11 +35,11 @@ part 'domain/entities/roadmap_entity.dart';
 part 'domain/entities/roadmap_node_entity.dart';
 part 'domain/repositories/i_course_lesson_repository.dart';
 part 'domain/repositories/i_course_repository.dart';
-part 'domain/usecases/get_all_course_lessons_usecase.dart';
-part 'domain/usecases/get_all_courses_usecase.dart';
-part 'domain/usecases/get_course_lesson_usecase.dart';
-part 'domain/usecases/get_course_usecase.dart';
-part 'domain/usecases/get_roadmap_usecase.dart';
+part 'domain/usecases/course_lesson/get_all_course_lessons_usecase.dart';
+part 'domain/usecases/course/get_all_courses_usecase.dart';
+part 'domain/usecases/course_lesson/get_course_lesson_usecase.dart';
+part 'domain/usecases/course/get_course_usecase.dart';
+part 'domain/usecases/course/get_roadmap_usecase.dart';
 part 'presentation/cubits/course/course_cubit.dart';
 part 'presentation/cubits/course/course_state.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs

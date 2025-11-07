@@ -36,32 +36,20 @@ class _RoleplayPageState extends State<RoleplayPage> {
   }
 
   void _loadMore(BuildContext context) {
-    context.read<RoleplayBloc>().add(
-      const RoleplayEvent.loadAllSections(),
-    );
+    context.read<RoleplayCubit>().loadAllLearningItems();
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => AppDI.injector.get<RoleplayBloc>()..add(const RoleplayEvent.loadAllSections(isInit: true)),
-      child: BlocBuilder<RoleplayBloc, RoleplayState>(
+      create: (context) => AppDI.injector.get<RoleplayCubit>()..loadAllLearningItems(isInit: true),
+      child: BlocBuilder<RoleplayCubit, RoleplayState>(
         builder: (context, state) {
           return Scaffold(
             appBar: AppBar(
-              title: const Text('Roleplay'),
+              title: const Text('Roleplay Learning Items'),
             ),
             body: _buildBody(context, state),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                // TODO: Navigate to create page or show create dialog
-                // Example:
-                // context.read<RoleplayBloc>().add(
-                //   RoleplayEvent.createSection(entity),
-                // );
-              },
-              child: const Icon(Icons.add),
-            ),
           );
         },
       ),
@@ -90,9 +78,7 @@ class _RoleplayPageState extends State<RoleplayPage> {
             const SizedBox(height: 16),
             ElevatedButton(
               onPressed: () {
-                context.read<RoleplayBloc>().add(
-                  const RoleplayEvent.loadAllSections(isInit: true),
-                );
+                context.read<RoleplayCubit>().loadAllLearningItems(isInit: true);
               },
               child: const Text('Retry'),
             ),
@@ -110,7 +96,7 @@ class _RoleplayPageState extends State<RoleplayPage> {
             Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              'No items found',
+              'No learning items found',
               style: TextStyle(fontSize: 18, color: Colors.grey),
             ),
           ],
@@ -121,9 +107,7 @@ class _RoleplayPageState extends State<RoleplayPage> {
     // Show list with items
     return RefreshIndicator(
       onRefresh: () async {
-        context.read<RoleplayBloc>().add(
-          const RoleplayEvent.loadAllSections(isInit: true),
-        );
+        context.read<RoleplayCubit>().loadAllLearningItems(isInit: true);
         // Wait for the request to complete
         await Future.delayed(const Duration(milliseconds: 500));
       },
@@ -142,66 +126,57 @@ class _RoleplayPageState extends State<RoleplayPage> {
           }
 
           final item = state.pageData.items[index];
-          return ListTile(
-            title: Text(item.title),
-            subtitle: Text('ID: ${item.id}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    // TODO: Navigate to edit page or show edit dialog
-                    // Example:
-                    // context.read<RoleplayBloc>().add(
-                    //   RoleplayEvent.updateSection(updatedEntity),
-                    // );
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    _showDeleteConfirmation(context, item);
-                  },
-                ),
-              ],
-            ),
-            onTap: () {
-              // TODO: Navigate to detail page
-              // Example:
-              // context.read<RoleplayBloc>().add(
-              //   RoleplayEvent.loadSection(item.id),
-              // );
-            },
-          );
+          return _buildLearningItemTile(context, item);
         },
       ),
     );
   }
 
-  void _showDeleteConfirmation(BuildContext context, SectionEntity item) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Item'),
-        content: Text('Are you sure you want to delete "${item.title}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<RoleplayBloc>().add(
-                RoleplayEvent.deleteSection(item.id.toString()),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
+  Widget _buildLearningItemTile(BuildContext context, LearningItemEntity item) {
+    return ExpansionTile(
+      title: Text(item.title.text.isNotEmpty ? item.title.text : 'Untitled'),
+      subtitle: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Type: ${item.type.name}'),
+          Text('ID: ${item.id}'),
+          if (item.sections.isNotEmpty) 
+            Text('Sections: ${item.sections.length}'),
         ],
       ),
+      children: [
+        if (item.sections.isNotEmpty)
+          ...item.sections.map((section) => _buildSectionTile(section)),
+        if (item.questions.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('Questions: ${item.questions.length}'),
+          ),
+        if (item.documents.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Text('Documents: ${item.documents.length}'),
+          ),
+      ],
+      onExpansionChanged: (expanded) {
+        if (expanded) {
+          // Load detailed item data if needed
+          context.read<RoleplayCubit>().loadLearningItem(item.id);
+        }
+      },
+    );
+  }
+
+  Widget _buildSectionTile(SectionEntity section) {
+    return ListTile(
+      leading: const Icon(Icons.play_circle_outline),
+      title: Text(section.title),
+      subtitle: Text('Contents: ${section.contents.length}'),
+      contentPadding: const EdgeInsets.only(left: 32.0, right: 16.0),
+      onTap: () {
+        // TODO: Navigate to section detail or play section
+        // This could open a roleplay dialog/page for this specific section
+      },
     );
   }
 }

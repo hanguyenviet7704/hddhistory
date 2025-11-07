@@ -13,6 +13,7 @@ abstract class LearningItemEntity with _$LearningItemEntity {
     @Default([]) List<QuestionEntity> questions,
     @Default([]) List<QuestionEntity> subQuestions,
     @Default([]) List<DocumentEntity> documents,
+    @Default([]) List<SectionEntity> sections,
     @Default([]) List<String> tag,
     @Default(0) int index,
     @Default(false) bool isSub,

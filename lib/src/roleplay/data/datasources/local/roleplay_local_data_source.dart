@@ -2,32 +2,29 @@ part of '../../../roleplay.dart';
 
 /// Local data source for Roleplay
 ///
-/// Handles caching of Section data for offline support.
+/// Handles caching of Learning Item data for offline support.
 /// Note: For paginated APIs, only the items are cached, not pagination metadata.
 /// Pagination info (currentPage, totalPages, etc.) should always come fresh from the API.
 abstract class RoleplayLocalDataSource {
-  /// Get all cached sections
+  /// Get all cached learning_items
   ///
   /// Used as fallback when API fails. The repository will construct
   /// a BasePageBreak with these items for offline support.
-  Future<List<SectionModel>> getCachedSections();
+  Future<List<LearningItemModel>> getCachedLearningItems();
 
-  /// Cache multiple sections
+  /// Cache multiple learning_items
   ///
   /// For paginated APIs, the repository passes `pageData.items` (not the entire BasePageBreak).
   /// This keeps the cache simple and avoids stale pagination metadata.
-  Future<void> cacheSections(List<SectionModel> models);
+  Future<void> cacheLearningItems(List<LearningItemModel> models);
 
-  /// Get cached section by id
-  Future<SectionModel?> getCachedSection(String id);
+  /// Get cached learning_item by id
+  Future<LearningItemModel?> getCachedLearningItem(String id);
 
-  /// Cache single section
+  /// Cache single learning_item
   ///
   /// Used for caching individual items from GET, POST, PUT responses.
-  Future<void> cacheSection(SectionModel model);
-
-  /// Delete cached section
-  Future<void> deleteCachedSection(String id);
+  Future<void> cacheLearningItem(LearningItemModel model);
 
   /// Clear all cached data
   Future<void> clearCache();
@@ -35,30 +32,28 @@ abstract class RoleplayLocalDataSource {
 
 @LazySingleton(as: RoleplayLocalDataSource)
 class RoleplayLocalDataSourceImpl implements RoleplayLocalDataSource {
-  static const String _cacheKey = 'roleplay_cache';
-  static const String _cacheListKey = 'roleplay_list_cache';
+  static const String _cacheKey = 'roleplay_learning_item_cache';
+  static const String _cacheListKey = 'roleplay_learning_item_list_cache';
 
   final ILocalStoreService _localStoreService;
 
   RoleplayLocalDataSourceImpl(this._localStoreService);
 
   @override
-  Future<List<SectionModel>> getCachedSections() async {
+  Future<List<LearningItemModel>> getCachedLearningItems() async {
     try {
       final data = await _localStoreService.getMap(key: _cacheListKey);
       if (data.isEmpty) return [];
 
       final List<dynamic> jsonList = data['items'] ?? [];
-      return jsonList
-          .map((json) => SectionModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return jsonList.map((json) => LearningItemModel.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }
   }
 
   @override
-  Future<void> cacheSections(List<SectionModel> models) async {
+  Future<void> cacheLearningItems(List<LearningItemModel> models) async {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
       await _localStoreService.setMap(
@@ -71,41 +66,26 @@ class RoleplayLocalDataSourceImpl implements RoleplayLocalDataSource {
   }
 
   @override
-  Future<SectionModel?> getCachedSection(String id) async {
+  Future<LearningItemModel?> getCachedLearningItem(String id) async {
     try {
       final cacheKey = '${_cacheKey}_$id';
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
 
-      return SectionModel.fromJson(data);
+      return LearningItemModel.fromJson(data);
     } catch (e) {
       return null;
     }
   }
 
   @override
-  Future<void> cacheSection(SectionModel model) async {
+  Future<void> cacheLearningItem(LearningItemModel model) async {
     try {
       final cacheKey = '${_cacheKey}_${model.id}';
       await _localStoreService.setMap(
         key: cacheKey,
         value: model.toJson(),
       );
-    } catch (e) {
-      // Handle error silently or log
-    }
-  }
-
-  @override
-  Future<void> deleteCachedSection(String id) async {
-    try {
-      final cacheKey = '${_cacheKey}_$id';
-      await _localStoreService.remove(key: cacheKey);
-
-      // Also remove from cached list if exists
-      final cachedList = await getCachedSections();
-      final updatedList = cachedList.where((item) => item.id.toString() != id).toList();
-      await cacheSections(updatedList);
     } catch (e) {
       // Handle error silently or log
     }
