@@ -25,7 +25,6 @@ part 'domain/entities/leading_text_entity.dart';
 part 'domain/entities/section_content_entity.dart';
 part 'domain/entities/section_entity.dart';
 part 'domain/repositories/i_roleplay_repository.dart';
-part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
 //* Presentation Layer - Cubits
 part 'presentation/cubits/roleplay_cubit.dart';

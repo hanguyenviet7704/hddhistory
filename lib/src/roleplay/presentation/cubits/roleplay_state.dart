@@ -6,8 +6,7 @@ enum RoleplayStatus { initial, loading, success, failure }
 abstract class RoleplayState with _$RoleplayState {
   const factory RoleplayState({
     @Default(RoleplayStatus.initial) RoleplayStatus status,
-    @Default(BasePageBreak<LearningItemEntity>()) BasePageBreak<LearningItemEntity> pageData,
-    LearningItemEntity? selectedItem,
+    @Default(LearningItemEntity()) LearningItemEntity selectedItem,
     String? errorMessage,
   }) = _RoleplayState;
 
