@@ -1,4 +1,4 @@
-part of '../../lesson.dart';
+part of '../../../course/course.dart';
 
 @freezed
 abstract class LearningItemEntity with _$LearningItemEntity {

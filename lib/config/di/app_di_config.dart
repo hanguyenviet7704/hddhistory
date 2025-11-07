@@ -22,6 +22,7 @@ part of 'di.dart';
     'lib/src/roadmap',
     'lib/src/course',
     'lib/src/progress',
+    'lib/src/roleplay',
   ],
   initializerName: 'init',
   preferRelativeImports: true,
