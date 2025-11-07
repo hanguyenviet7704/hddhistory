@@ -117,7 +117,7 @@ class LessonCard extends StatelessWidget {
     switch (lesson.type) {
       case LessonType.lesson:
         return 'Lesson';
-      case LessonType.entrance:
+      case LessonType.roleplay:
         return 'Entrance';
       case LessonType.output:
         return 'Output test';

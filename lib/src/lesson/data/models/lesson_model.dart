@@ -33,7 +33,7 @@ enum LessonType {
   @JsonValue('lesson')
   lesson,
   @JsonValue('entrance')
-  entrance,
+  roleplay,
   @JsonValue('output')
   output,
 }
