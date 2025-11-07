@@ -78,10 +78,6 @@ class RoadmapTimelineList extends StatelessWidget {
                   ),
                   child: LessonCard(
                     lesson: lesson,
-                    onTap: () {
-                      context.read<CourseLessonCubit>().loadLesson(lesson.id);
-                      LessonListRoute().go(context);
-                    },
                   ),
                 ),
               );

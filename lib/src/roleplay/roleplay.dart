@@ -1,5 +1,7 @@
 library;
 
+import 'dart:ui' as ui;
+
 //* Package imports
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
@@ -35,6 +37,10 @@ part 'presentation/pages/roleplay_feedback_page.dart';
 part 'presentation/pages/roleplay_intro_page.dart';
 part 'presentation/pages/roleplay_page.dart';
 //* Presentation Layer - Widgets
+part 'presentation/widgets/roleplay/roleplay_intro_action_button.dart';
+part 'presentation/widgets/roleplay/roleplay_intro_background.dart';
+part 'presentation/widgets/roleplay/roleplay_intro_details.dart';
+part 'presentation/widgets/roleplay/roleplay_intro_hero_card.dart';
 
 //* Parts for generated files
 part 'roleplay.freezed.dart';

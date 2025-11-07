@@ -24,6 +24,11 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           ..reset()
           ..setCurrentLearningItem(learningItem);
         break;
+      case LearningItemType.roleplay:
+        // AppDI.injector.get<RoleplayCubit>()
+        //   ..reset()
+        //   ..setCurrentLearningItem(learningItem);
+        break;
     }
   }
 

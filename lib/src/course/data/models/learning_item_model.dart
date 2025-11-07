@@ -29,6 +29,8 @@ enum LearningItemType {
   theory,
   @JsonValue('exercise')
   exercise,
+  @JsonValue('roleplay')
+  roleplay,
 }
 
 extension LearningItemModelExtension on LearningItemModel {

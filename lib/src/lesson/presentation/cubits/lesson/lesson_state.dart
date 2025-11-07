@@ -29,6 +29,8 @@ extension LessonStateExtension on LessonState {
         return currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).tag;
       case LearningItemType.exercise:
         return currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).tag;
+      case LearningItemType.roleplay:
+        return TagEntity();
     }
   }
 
@@ -36,6 +38,7 @@ extension LessonStateExtension on LessonState {
     return switch (currentLearningItem.type) {
       LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble,
       LearningItemType.exercise => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble,
+      LearningItemType.roleplay => '',
     };
   }
 
@@ -47,6 +50,8 @@ extension LessonStateExtension on LessonState {
           return sum + item.documents.length;
         case LearningItemType.exercise:
           return sum + item.questions.length;
+        case LearningItemType.roleplay:
+          return sum + item.documents.length; 
       }
     });
   }
@@ -59,6 +64,8 @@ extension LessonStateExtension on LessonState {
           return sum + item.documents.length;
         case LearningItemType.exercise:
           return sum + item.questions.length;
+        case LearningItemType.roleplay:
+          return sum + item.documents.length;
       }
     });
   }

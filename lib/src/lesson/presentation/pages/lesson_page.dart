@@ -21,6 +21,10 @@ class LessonPage extends StatelessWidget {
             lessonBody = TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
             bottomButton = _buildBottomButton(context, lessonBody);
             break;
+          case LearningItemType.roleplay:
+            // lessonBody = RoleplayLessonBody();
+            bottomButton = _buildBottomButton(context, lessonBody);
+            break;
         }
         
         return LessonLayout(

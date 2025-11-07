@@ -2,12 +2,10 @@ part of '../../../course.dart';
 
 class LessonCard extends StatelessWidget {
   final LessonEntity lesson;
-  final VoidCallback? onTap;
 
   const LessonCard({
     super.key,
     required this.lesson,
-    this.onTap,
   });
 
   Color get _backgroundColor {
@@ -43,11 +41,25 @@ class LessonCard extends StatelessWidget {
     return lesson.progess == ProcessEnum.inProgress;
   }
 
+  void _onTap(BuildContext context) {
+    switch (lesson.type) {
+      case LessonType.lesson:
+        context.read<CourseLessonCubit>().loadLesson(lesson.id);
+        LessonListRoute().go(context);
+        break;
+      case LessonType.roleplay:
+        AppDI.injector.get<RoleplayCubit>().loadLearningItem(lesson.id);
+        RoleplayIntroRoute().go(context);
+        break;
+      case LessonType.output:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      // onTap: lesson.progess != ProcessEnum.notStarted ? onTap : null,
-      onTap: onTap,
+      onTap: () => _onTap(context),
       child: Stack(
         clipBehavior: Clip.none,
         children: [

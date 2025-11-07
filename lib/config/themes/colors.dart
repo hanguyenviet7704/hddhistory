@@ -94,6 +94,7 @@ mixin AppCustomColor {
   static const Color errorRed = Color(0xFFE34646);
   static const Color darkStroke = Color(0xFF110751);
   static const Color buttonDisable = Color(0xFFE3E8EF);
+  static const Color roleplayIntroBackground = Color(0xFF2C404A);
 }
 
 mixin AppTheme {
