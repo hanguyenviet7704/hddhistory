@@ -36,17 +36,24 @@ mixin RoutePath {
   //* Home
   static const String home = '/';
 
+
   //* Course
   static const String course = '/course';
   static const String courseRoadmap = '/course-roadmap';
   static const String lessonList = 'lesson-list';
   static const String lessonExplainPopup = 'lesson-explain-popup';
 
-  //* Exercise
+  //? Course - Lesson
   static const String lesson = 'lesson';
   static const String reviewTime = 'review-time';
   static const String lessonComplete = 'lesson-complete';
   static const String exerciseResultPopup = 'exercise-result-popup';
+
+  //? Course - Roleplay
+  static const String roleplay = '/roleplay';
+  static const String roleplayIntro = 'roleplay-intro';
+  static const String roleplayFeedback = 'roleplay-feedback';
+  static const String roleplayComplete = 'roleplay-complete';
 
   //* Setting
   static const String setting = '/setting';
@@ -94,11 +101,17 @@ mixin RouteNamed {
   static const String lessonList = 'Lesson List';
   static const String lessonExplainPopup = 'Lesson Explain Popup';
 
-  //* Exercise
+  //? Course - Lesson
   static const String lesson = 'Lesson';
   static const String reviewTime = 'Review Time';
   static const String lessonComplete = 'Lesson Complete';
   static const String exerciseResultPopup = 'Exercise Result Popup';
+
+  //? Course - Roleplay
+  static const String roleplay = 'Roleplay';
+  static const String roleplayIntro = 'Roleplay Intro';
+  static const String roleplayFeedback = 'Roleplay Feedback';
+  static const String roleplayComplete = 'Roleplay Complete';
 
   //* Setting
   static const String setting = 'Setting';

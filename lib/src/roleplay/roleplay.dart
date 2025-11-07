@@ -31,6 +31,9 @@ part 'domain/usecases/get_learning_item_usecase.dart';
 part 'presentation/cubits/roleplay_cubit.dart';
 part 'presentation/cubits/roleplay_state.dart';
 //* Presentation Layer - Pages
+part 'presentation/pages/roleplay_complete_page.dart';
+part 'presentation/pages/roleplay_feedback_page.dart';
+part 'presentation/pages/roleplay_intro_page.dart';
 part 'presentation/pages/roleplay_page.dart';
 //* Presentation Layer - Widgets
 

@@ -25,6 +25,15 @@ part of '../routes.dart';
                 TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
               ],
             ),
+            TypedGoRoute<RoleplayIntroRoute>(
+              path: RoutePath.roleplayIntro,
+              name: RouteNamed.roleplayIntro,
+              routes: [
+                TypedGoRoute<RoleplayRoute>(path: RoutePath.roleplay, name: RouteNamed.roleplay),
+                TypedGoRoute<RoleplayCompleteRoute>(path: RoutePath.roleplayComplete, name: RouteNamed.roleplayComplete),
+                TypedGoRoute<RoleplayFeedbackRoute>(path: RoutePath.roleplayFeedback, name: RouteNamed.roleplayFeedback),
+              ],
+            ),
           ],
         ),
       ],
