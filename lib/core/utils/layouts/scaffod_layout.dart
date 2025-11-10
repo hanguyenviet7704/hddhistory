@@ -2,26 +2,26 @@ part of '../utils.dart';
 
 class ScaffoldLayout extends StatelessWidget {
   final StatefulNavigationShell navigationShell;
-  ScaffoldLayout({
+  const ScaffoldLayout({
     required this.navigationShell,
     Key? key,
   }) : super(key: key ?? const ValueKey<String>('LayoutScaffold'));
 
-  final List<BottomNavigationBarItem> _items = [
+  List<BottomNavigationBarItem> _items(BuildContext context) => [
     BottomNavigationBarItem(
       icon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
       activeIcon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w),
-      label: 'Home',
+      label: context.text.homeHomeButton,
     ),
     BottomNavigationBarItem(
       icon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
       activeIcon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w),
-      label: 'Courses',
+      label: context.text.homeCourseButton,
     ),
     BottomNavigationBarItem(
       icon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
       activeIcon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w),
-      label: 'Settings',
+      label: context.text.homeSettingButton,
     ),
   ];
 
@@ -31,7 +31,7 @@ class ScaffoldLayout extends StatelessWidget {
       selector: (state) => state.currentIndex,
       builder: (context, currentIndex) {
         return BottomNavigationBar(
-          items: _items.map((e) => e).toList(),
+          items: _items(context).map((e) => e).toList(),
           currentIndex: currentIndex,
           onTap: (index) => context.read<PageCubit>().handleShellRouteNavigation(index, navigationShell),
           type: BottomNavigationBarType.fixed,

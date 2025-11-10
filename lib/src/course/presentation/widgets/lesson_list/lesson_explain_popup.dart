@@ -1,7 +1,7 @@
 part of '../../../course.dart';
 
 class LessonExplainPopup {
-  static Future<void> show(BuildContext context, {String? explain}) {
+  static Future<void> show(BuildContext context) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -49,13 +49,13 @@ class _LessonExplainBottomSheet extends StatelessWidget {
               children: [
                 // Title
                 AppText(
-                  'How Your Practice Works',
+                  context.text.keypointTitle,
                   style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
                 ),
 
                 // Subtitle
                 AppText(
-                  'Based on your Roleplay, MeUp rated your skills in <strong>three levels</strong>',
+                  context.text.keypointMessage,
                   style: AppStyle.text14.copyWith(
                     color: AppCustomColor.textSecondary,
                     height: 1.75,
@@ -68,19 +68,19 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 _PracticeSectionCard(
                   badge: _ExplainBadge(
                     iconPath: AppAsset.svg.app.icCheckVerify,
-                    text: 'Required to complete',
+                    text: context.text.keypointRequireToComplete,
                     backgroundColor: AppCustomColor.successGreen,
                   ),
-                  items: const [
+                  items: [
                     _PracticeLevelItem(
                       level: StrengthLevel.weakPoint,
-                      title: 'Weakpoint',
-                      description: 'Needs major improvement',
+                      title: context.text.keypointWeakpointTitle,
+                      description: context.text.keypointWeakpointMessage,
                     ),
                     _PracticeLevelItem(
                       level: StrengthLevel.morePractice,
-                      title: 'More Practice',
-                      description: 'Needs more training',
+                      title: context.text.keypointImprovementTitle,
+                      description: context.text.keypointImprovementMessage,
                     ),
                   ],
                 ),
@@ -90,14 +90,14 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 _PracticeSectionCard(
                   badge: _ExplainBadge(
                     iconPath: AppAsset.svg.app.icChevronRightDouble,
-                    text: 'May skip to save time',
+                    text: context.text.keypointSkipOption,
                     backgroundColor: AppCustomColor.textQuaternary,
                   ),
-                  items: const [
+                  items: [
                     _PracticeLevelItem(
                       level: StrengthLevel.optionalPractice,
-                      title: 'Optional Practice',
-                      description: 'Already strong',
+                      title: context.text.keypointSkipOptionPracticeType,
+                      description: context.text.keypointSkipOptionPracticeTypeStatus,
                     ),
                   ],
                 ),
@@ -106,7 +106,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 // Footer text
                 Center(
                   child: AppText(
-                    'Keep going to build your all-round skills!',
+                    context.text.keypointFooterText,
                     style: AppStyle.text12.copyWith(
                       color: AppCustomColor.textQuaternary,
                       height: 1.75,
@@ -127,7 +127,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                     ),
                     child: Center(
                       child: AppText(
-                        'Done',
+                        context.text.keypointFinishButton,
                         style: AppStyle.text16.copyWith(
                           color: AppCustomColor.textWhite,
                           fontWeight: FontWeight.w600,

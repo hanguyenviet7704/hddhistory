@@ -10,7 +10,7 @@ class KeypointsSectionHeader extends StatelessWidget {
       children: [
         // "Key points" title
         AppText(
-          'Key points',
+          context.text.lessonLessonKeypointTitle,
           style: AppStyle.text16.copyWith(
             color: AppCustomColor.textPrimary,
             fontWeight: FontWeight.w600,
@@ -19,12 +19,12 @@ class KeypointsSectionHeader extends StatelessWidget {
 
         // "How it works" button (UI only, action to be added later)
         GestureDetector(
-          onTap: () => LessonExplainPopup.show(context, explain: 'How it works'),
+          onTap: () => LessonExplainPopup.show(context),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                'How it works',
+                context.text.lessonLessonKeypointInstruction,
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textQuaternary,
                   fontWeight: FontWeight.w600,

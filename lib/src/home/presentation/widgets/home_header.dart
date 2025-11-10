@@ -13,13 +13,17 @@ class HomeHeaderWidget extends StatelessWidget {
         children: [
           20.verticalSpace,
           // Greeting
-          AppText(
-            'Good morning,',
-            style: AppStyle.text12.copyWith(
-              color: AppCustomColor.grey69,
-            ),
+          BlocSelector<UserCubit, UserState, String>(
+            selector: (state) => state.user.name,
+            builder: (context, username) {
+              return AppText(
+                context.text.homeGreetingTitle(username: username),
+                style: AppStyle.text12.copyWith(
+                  color: AppCustomColor.grey69,
+                ),
+              );
+            },
           ),
-          
         ],
       ),
     );

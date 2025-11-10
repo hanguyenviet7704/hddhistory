@@ -42,11 +42,8 @@ class RoadmapTimelineList extends StatelessWidget {
             ],
           ),
 
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: lessons.length,
-            itemBuilder: (context, index) {
+          child: Column(
+            children: List.generate(lessons.length, (index) {
               final lesson = lessons[index];
               final isFirst = index == 0;
               final isLast = index == lessons.length - 1;
@@ -76,12 +73,10 @@ class RoadmapTimelineList extends StatelessWidget {
                     bottom: 8.h,
                     top: 8.h,
                   ),
-                  child: LessonCard(
-                    lesson: lesson,
-                  ),
+                  child: LessonCard(lesson: lesson),
                 ),
               );
-            },
+            }),
           ),
         );
       },
