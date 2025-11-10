@@ -8,6 +8,8 @@ class RoleplayPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
       body: BlocBuilder<RoleplayCubit, RoleplayState>(
+        buildWhen: (previous, current) =>
+            previous.status != current.status || previous.currentLearningItem != current.currentLearningItem || previous.errorMessage != current.errorMessage,
         builder: (context, state) {
           switch (state.status) {
             case RoleplayStatus.initial:
@@ -60,14 +62,12 @@ class _RoleplayPageView extends StatelessWidget {
                     section: section,
                     useLightContent: hasHeroImage,
                   ),
-                  24.verticalSpace,
                   Expanded(
                     child: RoleplayContentList(
                       key: ValueKey(section.id),
                       section: section,
                     ),
                   ),
-                  20.verticalSpace,
                   RoleplayBottomAction(
                     currentSection: section,
                     nextSection: nextSection,

@@ -12,16 +12,18 @@ class RoleplayContentList extends StatefulWidget {
 class _RoleplayContentListState extends State<RoleplayContentList> {
   static const Duration _defaultDelay = Duration(seconds: 2);
 
+  late GlobalKey<AnimatedListState> _listKey;
   final ScrollController _scrollController = ScrollController();
   final Map<int, RoleplayAudioController> _audioControllers = {};
+  final List<int> _visibleIndexes = [];
 
   late List<SectionContentEntity> _displayableContents;
-  int _visibleCount = 0;
   bool _isSequencing = false;
 
   @override
   void initState() {
     super.initState();
+    _listKey = GlobalKey<AnimatedListState>();
     _configureContents();
     WidgetsBinding.instance.addPostFrameCallback((_) => _startSequence());
   }
@@ -37,15 +39,17 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   void _configureContents() {
     _displayableContents = widget.section.contents.where((c) => c.type != RoleplaySectionType.exercise).toList();
     _prepareAudioControllers();
+    _visibleIndexes.clear();
   }
 
   Future<void> _resetForNewSection() async {
     await _disposeControllers();
     if (!mounted) return;
     setState(() {
-      _visibleCount = 0;
+      _listKey = GlobalKey<AnimatedListState>();
       _displayableContents = widget.section.contents.where((c) => c.type != RoleplaySectionType.exercise).toList();
       _prepareAudioControllers();
+      _visibleIndexes.clear();
     });
     WidgetsBinding.instance.addPostFrameCallback((_) => _startSequence());
   }
@@ -71,10 +75,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     _isSequencing = true;
 
     try {
-      while (mounted && _visibleCount < _displayableContents.length) {
-        setState(() {
-          _visibleCount++;
-        });
+      while (mounted && _visibleIndexes.length < _displayableContents.length) {
+        _appendNextIndex();
         WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
         await _waitBeforeNext();
       }
@@ -84,7 +86,9 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   }
 
   Future<void> _waitBeforeNext() async {
-    final int currentIndex = _visibleCount - 1;
+    if (_visibleIndexes.isEmpty) return;
+
+    final int currentIndex = _visibleIndexes.last;
     if (currentIndex < 0 || currentIndex >= _displayableContents.length) return;
 
     final content = _displayableContents[currentIndex];
@@ -114,6 +118,15 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     );
   }
 
+  void _appendNextIndex() {
+    final newIndex = _visibleIndexes.length;
+    if (newIndex >= _displayableContents.length) return;
+    _visibleIndexes.add(newIndex);
+    if (_listKey.currentState != null) {
+      _listKey.currentState!.insertItem(newIndex, duration: const Duration(milliseconds: 250));
+    }
+  }
+
   @override
   void dispose() {
     unawaited(_disposeControllers());
@@ -128,24 +141,27 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
 
   @override
   Widget build(BuildContext context) {
-    if (_displayableContents.isEmpty || _visibleCount == 0) {
+    if (_displayableContents.isEmpty) {
       return ListView(
         controller: _scrollController,
         physics: const BouncingScrollPhysics(),
       );
     }
 
-    return ListView.separated(
+    return AnimatedList(
+      key: _listKey,
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.only(bottom: 16.h),
-      itemCount: _visibleCount,
-      itemBuilder: (context, index) {
-        if (index >= _displayableContents.length) return const SizedBox.shrink();
-        final content = _displayableContents[index];
-        final audioController = _audioControllers[index];
+      padding: EdgeInsets.only(bottom: 16.h, top: 24.h),
+      initialItemCount: _visibleIndexes.length,
+      itemBuilder: (context, index, animation) {
+        if (index >= _visibleIndexes.length) return const SizedBox.shrink();
+        final contentIndex = _visibleIndexes[index];
+        if (contentIndex >= _displayableContents.length) return const SizedBox.shrink();
+        final content = _displayableContents[contentIndex];
+        final audioController = _audioControllers[contentIndex];
 
-        return switch (content.type) {
+        final Widget child = switch (content.type) {
           RoleplaySectionType.conversation => RoleplayConversationBubble(
             conversation: content.conversation,
             audioController: audioController,
@@ -157,8 +173,15 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
           RoleplaySectionType.hint => RoleplayHintCard(hint: content.hint),
           RoleplaySectionType.exercise => const SizedBox.shrink(),
         };
+
+        return SizeTransition(
+          sizeFactor: animation,
+          child: Padding(
+            padding: EdgeInsets.only(bottom: index == _visibleIndexes.length - 1 ? 0 : 16.h),
+            child: child,
+          ),
+        );
       },
-      separatorBuilder: (context, index) => 16.verticalSpace,
     );
   }
 }

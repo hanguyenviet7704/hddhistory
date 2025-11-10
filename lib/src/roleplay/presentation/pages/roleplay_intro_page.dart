@@ -11,6 +11,8 @@ class RoleplayIntroPage extends StatelessWidget {
         backgroundColor: Colors.transparent,
         extendBodyBehindAppBar: true,
         body: BlocBuilder<RoleplayCubit, RoleplayState>(
+          buildWhen: (previous, current) =>
+              previous.status != current.status || previous.currentLearningItem != current.currentLearningItem || previous.errorMessage != current.errorMessage,
           builder: (context, state) {
             switch (state.status) {
               case RoleplayStatus.initial:
@@ -61,7 +63,7 @@ class _RoleplayIntroView extends StatelessWidget {
                 ),
               ),
               RoleplayIntroActionButton(
-                label: 'Start conversation',
+                label: context.text.rolePlayIntroStartButton,
                 onPressed: () => RoleplayRoute().go(context),
               ),
               SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom),
