@@ -50,8 +50,8 @@ mixin RoutePath {
   static const String exerciseResultPopup = 'exercise-result-popup';
 
   //? Course - Roleplay
-  static const String roleplay = '/roleplay';
   static const String roleplayIntro = 'roleplay-intro';
+  static const String roleplay = 'roleplay';
   static const String roleplayFeedback = 'roleplay-feedback';
   static const String roleplayComplete = 'roleplay-complete';
 

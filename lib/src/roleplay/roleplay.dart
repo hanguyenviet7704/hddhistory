@@ -4,10 +4,12 @@ import 'dart:ui' as ui;
 
 //* Package imports
 import 'package:darq/darq.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:just_audio/just_audio.dart' as just_audio;
 //* Single project import
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
@@ -38,6 +40,12 @@ part 'presentation/pages/roleplay_feedback_page.dart';
 part 'presentation/pages/roleplay_intro_page.dart';
 part 'presentation/pages/roleplay_page.dart';
 //* Presentation Layer - Widgets
+part 'presentation/widgets/roleplay/roleplay_audio_controller.dart';
+part 'presentation/widgets/roleplay/roleplay_background.dart';
+part 'presentation/widgets/roleplay/roleplay_bottom_action.dart';
+part 'presentation/widgets/roleplay/roleplay_content_list.dart';
+part 'presentation/widgets/roleplay/roleplay_content_widgets.dart';
+part 'presentation/widgets/roleplay/roleplay_page_header.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_action_button.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_background.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_details.dart';

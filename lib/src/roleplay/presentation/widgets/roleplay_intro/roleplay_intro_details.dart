@@ -15,7 +15,7 @@ class RoleplayIntroDetails extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AppText(
-          learningItem.title.en,
+          learningItem.title.text,
           maxLines: 2,
           style: AppStyle.text32.copyWith(
             fontWeight: FontWeight.w700,
@@ -26,7 +26,7 @@ class RoleplayIntroDetails extends StatelessWidget {
         12.verticalSpace,
         if (learningItem.estimateCompleTime.text.isNotEmpty)
           AppText(
-            learningItem.estimateCompleTime.en,
+            learningItem.estimateCompleTime.text,
             style: TextStyle(
               fontSize: 10.sp,
               fontWeight: FontWeight.w600,
@@ -36,7 +36,7 @@ class RoleplayIntroDetails extends StatelessWidget {
           ),
         12.verticalSpace,
         AppText(
-          learningItem.description.en,
+          learningItem.description.text,
           maxLines: 6,
           style: AppStyle.text16.copyWith(
             color: Colors.white.withValues(alpha: 0.7),

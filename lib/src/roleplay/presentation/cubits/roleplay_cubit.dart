@@ -20,4 +20,10 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
       },
     );
   }
+
+  void goToNextSection() {
+    final nextIndex = state.currentSectionIndex + 1;
+    if (nextIndex >= state.currentLearningItem.sections.length) return;
+    emit(state.copyWith(currentSectionIndex: nextIndex));
+  }
 }
