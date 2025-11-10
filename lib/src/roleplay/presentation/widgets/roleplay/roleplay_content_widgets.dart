@@ -2,50 +2,34 @@ part of '../../../roleplay.dart';
 
 class RoleplayConversationBubble extends StatelessWidget {
   final ConversationEntity conversation;
+  final ConversationEntity? previousConversation;
   final RoleplayAudioController? audioController;
 
   const RoleplayConversationBubble({
     super.key,
     required this.conversation,
+    this.previousConversation,
     required this.audioController,
   });
 
   bool get _isRight => conversation.position == SectionConversationPosition.right;
+  bool get _isSamePerson {
+    if (previousConversation == null) return false;
+    return previousConversation!.name == conversation.name;
+  }
 
   @override
   Widget build(BuildContext context) {
-    final avatar = _RoleplayParticipantAvatar(conversation: conversation);
-    final bubble = _RoleplayBubbleContent(
-      isRight: _isRight,
-      conversation: conversation,
-      audioController: audioController,
-    );
-
     return Column(
       crossAxisAlignment: !_isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisAlignment: !_isRight ? MainAxisAlignment.start : MainAxisAlignment.end,
-          children: [
-            if (!_isRight) ...[
-              avatar,
-              12.horizontalSpace,
-            ],
-            AppText(
-              conversation.name,
-              style: AppStyle.text14.copyWith(
-                fontWeight: FontWeight.w600,
-                color: conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor,
-              ),
-            ),
-            if (_isRight) ...[
-              12.horizontalSpace,
-              avatar,
-            ],
-          ],
-        ),
+        _RoleplayParticipantAvatar(conversation: conversation, isRight: _isRight, isSamePerson: _isSamePerson),
         8.verticalSpace,
-        bubble,
+        _RoleplayBubbleContent(
+          isRight: _isRight,
+          conversation: conversation,
+          audioController: audioController,
+        ),
       ],
     );
   }
@@ -131,43 +115,46 @@ class _RoleplayBubbleContent extends StatelessWidget {
 
 class _RoleplayParticipantAvatar extends StatelessWidget {
   final ConversationEntity conversation;
+  final bool isRight;
+  final bool isSamePerson;
 
-  const _RoleplayParticipantAvatar({required this.conversation});
+  const _RoleplayParticipantAvatar({
+    required this.conversation,
+    required this.isRight,
+    required this.isSamePerson,
+  });
 
   @override
   Widget build(BuildContext context) {
-    final double size = 44.w;
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: Colors.white, width: 2),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
-          ),
+    Widget avatar = DCachedImage(
+      url: conversation.avartar,
+      fit: BoxFit.cover,
+      borderRadius: BorderRadius.circular(50.r),
+      width: 44.w,
+      height: 44.w,
+    );
+
+    if (isSamePerson) return SizedBox.shrink();
+
+    return Row(
+      mainAxisAlignment: !isRight ? MainAxisAlignment.start : MainAxisAlignment.end,
+      children: [
+        if (!isRight) ...[
+          avatar,
+          12.horizontalSpace,
         ],
-      ),
-      child: ClipOval(
-        child: conversation.avartar.isEmpty
-            ? Container(
-                color: AppCustomColor.roleplayLeftBubble,
-                child: Icon(
-                  Icons.person,
-                  color: AppCustomColor.textPrimary,
-                  size: 22.w,
-                ),
-              )
-            : DCachedImage(
-                url: conversation.avartar,
-                fit: BoxFit.cover,
-                width: size,
-                height: size,
-              ),
-      ),
+        AppText(
+          conversation.name,
+          style: AppStyle.text14.copyWith(
+            fontWeight: FontWeight.w600,
+            color: conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor,
+          ),
+        ),
+        if (isRight) ...[
+          12.horizontalSpace,
+          avatar,
+        ],
+      ],
     );
   }
 }

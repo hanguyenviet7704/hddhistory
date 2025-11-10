@@ -159,11 +159,13 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         final contentIndex = _visibleIndexes[index];
         if (contentIndex >= _displayableContents.length) return const SizedBox.shrink();
         final content = _displayableContents[contentIndex];
+        final previousConversation = contentIndex > 0 ? _displayableContents[contentIndex - 1].conversation : null;
         final audioController = _audioControllers[contentIndex];
 
         final Widget child = switch (content.type) {
           RoleplaySectionType.conversation => RoleplayConversationBubble(
             conversation: content.conversation,
+            previousConversation: previousConversation,
             audioController: audioController,
           ),
           RoleplaySectionType.leadingText => RoleplayLeadingTextCard(
