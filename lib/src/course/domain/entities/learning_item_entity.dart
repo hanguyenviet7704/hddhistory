@@ -8,6 +8,8 @@ abstract class LearningItemEntity with _$LearningItemEntity {
     @Default(AppUser()) AppUser updatedBy,
     @Default('') String keypointId,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
+    @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage description,
+    @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
     @Default(LearningItemType.theory) LearningItemType type,
     @Default([]) List<QuestionEntity> questions,

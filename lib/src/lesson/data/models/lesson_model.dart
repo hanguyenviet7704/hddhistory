@@ -5,6 +5,7 @@ abstract class LessonModel with _$LessonModel {
   const factory LessonModel({
     @Default('') @JsonKey(name: '_id') String id,
     @Default('') String courseId,
+    @Default('') String learningItemId,
     @Default(LessonType.lesson) LessonType type,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
@@ -51,6 +52,7 @@ extension LessonModelExtension on LessonModel {
   LessonEntity toEntity() => LessonEntity(
     id: id,
     courseId: courseId,
+    learningItemId: learningItemId,
     type: type,
     title: title,
     description: description,

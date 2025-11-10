@@ -5,6 +5,7 @@ abstract class LessonEntity with _$LessonEntity {
   const factory LessonEntity({
     @Default('') String id,
     @Default('') String courseId,
+    @Default('') String learningItemId,
     @Default(LessonType.lesson) LessonType type,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,

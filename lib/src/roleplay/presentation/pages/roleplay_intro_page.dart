@@ -55,11 +55,7 @@ class _RoleplayIntroView extends StatelessWidget {
                         child: RoleplayIntroHeroCard(imageUrl: learningItem.image),
                       ),
                       32.verticalSpace,
-                      RoleplayIntroDetails(
-                        title: learningItem.title.text,
-                        duration: _resolveDuration(),
-                        description: _resolveDescription(),
-                      ),
+                      RoleplayIntroDetails(learningItem: learningItem),
                     ],
                   ),
                 ),
@@ -74,33 +70,6 @@ class _RoleplayIntroView extends StatelessWidget {
         ),
       ],
     );
-  }
-
-  String _resolveDuration() {
-    if (learningItem.sections.isEmpty) return '';
-    return learningItem.sections.first.transition;
-  }
-
-  String _resolveDescription() {
-    for (final section in learningItem.sections) {
-      for (final content in section.contents) {
-        if (content.type == RoleplaySectionType.leadingText && content.leadingText.content.isNotEmpty) {
-          return content.leadingText.content;
-        }
-      }
-      if (section.transition.isNotEmpty) {
-        return section.transition;
-      }
-    }
-
-    if (learningItem.documents.isNotEmpty) {
-      final document = learningItem.documents.first;
-      if (document.speechBubble.isNotEmpty) {
-        return document.speechBubble;
-      }
-    }
-
-    return learningItem.title.text;
   }
 }
 
