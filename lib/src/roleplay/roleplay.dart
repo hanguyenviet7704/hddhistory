@@ -3,6 +3,7 @@ library;
 import 'dart:ui' as ui;
 
 //* Package imports
+import 'package:darq/darq.dart';
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';

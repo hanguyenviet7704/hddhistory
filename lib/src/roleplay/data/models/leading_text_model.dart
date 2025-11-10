@@ -6,6 +6,7 @@ abstract class LeadingTextModel with _$LeadingTextModel {
     @Default('') String frameColor,
     @Default('') String textColor,
     @Default('') String content,
+    @Default('') String audio,
   }) = _LeadingTextModel;
 
   factory LeadingTextModel.fromJson(Map<String, dynamic> json) => _$LeadingTextModelFromJson(json);
@@ -16,5 +17,6 @@ extension LeadingTextModelExtension on LeadingTextModel {
     frameColor: frameColor,
     textColor: textColor,
     content: content,
+    audio: audio,
   );
 }
