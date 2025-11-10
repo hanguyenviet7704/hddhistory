@@ -12,59 +12,40 @@ class RoleplayConversationBubble extends StatelessWidget {
 
   bool get _isRight => conversation.position == SectionConversationPosition.right;
 
-  Color get _bubbleColor {
-    if (conversation.bubbleColor.isNotEmpty) {
-      final color = conversation.bubbleColor.toHexColor;
-      if (color != Colors.transparent) return color;
-    }
-    return _isRight ? AppCustomColor.roleplayRightBubble : AppCustomColor.roleplayLeftBubble;
-  }
-
-  Color get _textColor {
-    if (conversation.textColor.isNotEmpty) {
-      final color = conversation.textColor.toHexColor;
-      if (color != Colors.transparent) return color;
-    }
-    return AppCustomColor.textPrimary;
-  }
-
   @override
   Widget build(BuildContext context) {
     final avatar = _RoleplayParticipantAvatar(conversation: conversation);
     final bubble = _RoleplayBubbleContent(
       isRight: _isRight,
       conversation: conversation,
-      textColor: _textColor,
-      bubbleColor: _bubbleColor,
       audioController: audioController,
     );
 
     return Column(
-      crossAxisAlignment: _isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+      crossAxisAlignment: !_isRight ? CrossAxisAlignment.end : CrossAxisAlignment.start,
       children: [
-        AppText(
-          conversation.name,
-          style: AppStyle.text12.copyWith(
-            fontWeight: FontWeight.w600,
-            color: AppCustomColor.grey69,
-          ),
+        Row(
+          mainAxisAlignment: !_isRight ? MainAxisAlignment.start : MainAxisAlignment.end,
+          children: [
+            if (!_isRight) ...[
+              avatar,
+              12.horizontalSpace,
+            ],
+            AppText(
+              conversation.name,
+              style: AppStyle.text14.copyWith(
+                fontWeight: FontWeight.w600,
+                color: conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor,
+              ),
+            ),
+            if (_isRight) ...[
+              12.horizontalSpace,
+              avatar,
+            ],
+          ],
         ),
         8.verticalSpace,
-        Row(
-          mainAxisAlignment: _isRight ? MainAxisAlignment.end : MainAxisAlignment.start,
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: _isRight
-              ? [
-                  Expanded(child: bubble),
-                  12.horizontalSpace,
-                  avatar,
-                ]
-              : [
-                  avatar,
-                  12.horizontalSpace,
-                  Expanded(child: bubble),
-                ],
-        ),
+        bubble,
       ],
     );
   }
@@ -73,15 +54,11 @@ class RoleplayConversationBubble extends StatelessWidget {
 class _RoleplayBubbleContent extends StatelessWidget {
   final bool isRight;
   final ConversationEntity conversation;
-  final Color textColor;
-  final Color bubbleColor;
   final RoleplayAudioController? audioController;
 
   const _RoleplayBubbleContent({
     required this.isRight,
     required this.conversation,
-    required this.textColor,
-    required this.bubbleColor,
     required this.audioController,
   });
 
@@ -108,6 +85,11 @@ class _RoleplayBubbleContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final Color bubbleColor = conversation.bubbleColor.toHexColor == Colors.transparent
+        ? (isRight ? AppCustomColor.roleplayRightBubble : AppCustomColor.roleplayLeftBubble)
+        : conversation.bubbleColor.toHexColor;
+    final Color textColor = conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor;
+
     return Align(
       alignment: isRight ? Alignment.centerRight : Alignment.centerLeft,
       child: ConstrainedBox(
@@ -129,7 +111,7 @@ class _RoleplayBubbleContent extends StatelessWidget {
                   color: textColor,
                   height: 1.5,
                 ),
-                maxLines: 6,
+                maxLines: 20,
               ),
               if (audioController?.hasAudio ?? false) ...[
                 12.verticalSpace,
