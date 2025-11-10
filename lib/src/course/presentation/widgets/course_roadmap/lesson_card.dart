@@ -48,7 +48,7 @@ class LessonCard extends StatelessWidget {
         LessonListRoute().go(context);
         break;
       case LessonType.roleplay:
-        AppDI.injector.get<RoleplayCubit>().loadLearningItem(lesson.learningItemId);
+        AppDI.injector.get<RoleplayCubit>().loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
         RoleplayIntroRoute().go(context);
         break;
       case LessonType.output:

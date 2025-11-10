@@ -128,7 +128,6 @@ class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRo
 }
 
 //? Course - Roleplay
-
 class RoleplayIntroRoute extends BaseTransitionRouteData with $RoleplayIntroRoute {
   const RoleplayIntroRoute();
 

@@ -27,12 +27,7 @@ class RoleplayIntroDetails extends StatelessWidget {
         if (learningItem.estimateCompleTime.text.isNotEmpty)
           AppText(
             learningItem.estimateCompleTime.text,
-            style: TextStyle(
-              fontSize: 10.sp,
-              fontWeight: FontWeight.w600,
-              color: AppCustomColor.textWhite,
-              letterSpacing: 0.2,
-            ),
+            style: AppStyle.text12.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textWhite),
           ),
         12.verticalSpace,
         AppText(
