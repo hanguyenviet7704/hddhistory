@@ -57,9 +57,17 @@ class _RoleplayPageView extends StatelessWidget {
                         selector: (state) => state.isCurrentSectionRevealed,
                         builder: (context, isSectionReady) {
                           final bottomSpacing = SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom);
-                          if (!isSectionReady) {
-                            return bottomSpacing;
+                          if (kDebugMode) {
+                            return Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                RoleplayBottomAction(currentSection: currentSection),
+                                bottomSpacing,
+                              ],
+                            );
                           }
+                          if (!isSectionReady) return bottomSpacing;
+
                           return Column(
                             mainAxisSize: MainAxisSize.min,
                             children: [

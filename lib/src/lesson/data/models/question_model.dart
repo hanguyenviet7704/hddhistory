@@ -17,6 +17,8 @@ abstract class QuestionModel with _$QuestionModel {
     @Default('') String record,
     @Default(0) int maxDuration,
     @Default(0) int maxCharacter,
+    @Default(0) int maxScore,
+    @Default(0) int completionTime,
     @DefaultInt() @Default(0) int mainQuestion,
   }) = _QuestionModel;
 
@@ -70,6 +72,8 @@ extension QuestionModelExtension on QuestionModel {
     record: record,
     maxDuration: maxDuration,
     maxCharacter: maxCharacter,
+    maxScore: maxScore,
+    completionTime: completionTime,
     mainQuestion: mainQuestion,
   );
 

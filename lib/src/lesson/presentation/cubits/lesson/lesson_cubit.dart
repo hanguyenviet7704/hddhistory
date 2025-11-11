@@ -10,6 +10,18 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._getLearningItemUseCase,
   ) : super(LessonState.initial());
 
+  //* Roleplay Page Flow
+  void setLearningItemFromRoleplay(LearningItemEntity learningItem) {
+    emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem]), currentLearningItemIndex: 0));
+    setCurrentLearningItem(learningItem);
+  }
+
+  void setRoleplayDataToExerciseCubit(LearningItemEntity learningItem) {
+    emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem])));
+    AppDI.injector.get<ExerciseCubit>().setRoleplayQuestions(learningItem);
+  }
+
+  //* Lesson Page Flow
   void setCurrentLearningItem(LearningItemEntity learningItem) {
     if (learningItem.id.isEmpty) return;
 
@@ -19,15 +31,10 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           ..reset()
           ..setCurrentLearningItem(learningItem);
         break;
-      case LearningItemType.exercise:
+      case LearningItemType.exercise || LearningItemType.roleplay:
         AppDI.injector.get<ExerciseCubit>()
           ..reset()
           ..setCurrentLearningItem(learningItem);
-        break;
-      case LearningItemType.roleplay:
-        // AppDI.injector.get<RoleplayCubit>()
-        //   ..reset()
-        //   ..setCurrentLearningItem(learningItem);
         break;
     }
   }
@@ -44,7 +51,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         keypointTitle: state.currentLearningItem.title.en,
         progress: 1.0,
       ).go(AppConfig.instance.context!);
-      
+
       AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(
         UpdateUserProgressKeypointParams(
           keypointId: state.currentLearningItem.keypointId,
@@ -84,7 +91,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     LearningItemEntity learningItem = state.pageData.items.firstWhere((item) => item.type == LearningItemType.exercise, orElse: () => LearningItemEntity());
     learningItem = learningItem.copyWith(
-      questions: state.subQuestions,
+      mainQuestions: state.subQuestions,
       type: LearningItemType.exercise,
       subQuestions: [],
       isPlayingSubQuestions: true,

@@ -14,3 +14,16 @@ abstract class SectionEntity with _$SectionEntity {
 
   factory SectionEntity.fromJson(Map<String, dynamic> json) => _$SectionEntityFromJson(json);
 }
+
+extension SectionEntityExtension on SectionEntity {
+  List<QuestionEntity> get questions {
+    if (contents.isEmpty) return [];
+    List<QuestionEntity> questions = [];
+    for (var content in contents) {
+      if (content.type == RoleplaySectionType.exercise) {
+        questions.add(content.exercise);
+      }
+    }
+    return questions;
+  }
+}

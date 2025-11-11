@@ -20,6 +20,11 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     setCurrentLearningItem(learningItem);
   }
 
+  void setRoleplayQuestions(LearningItemEntity learningItem) {
+    reset();
+    setCurrentLearningItem(learningItem);
+  }
+
   void nextQuestion() {
     if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) {
       AppDI.injector.get<LessonCubit>().nextLearningItem();

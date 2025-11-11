@@ -17,6 +17,8 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default('') String record,
     @Default(0) int maxDuration,
     @Default(0) int maxCharacter,
+    @Default(0) int maxScore,
+    @Default(0) int completionTime,
     @Default(0) int mainQuestion,
   }) = _QuestionEntity;
 

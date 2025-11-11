@@ -46,7 +46,7 @@ extension LearningItemModelExtension on LearningItemModel {
     estimateCompleTime: estimateCompleTime,
     image: image,
     type: type,
-    questions: questions.map((model) => model.toEntity()).toList(),
+    mainQuestions: questions.map((model) => model.toEntity()).toList(),
     subQuestions: subQuestions.map((model) => model.toEntity()).toList(),
     documents: documents.map((model) => model.toEntity()).toList(),
     sections: sections.map((model) => model.toEntity()).toList(),
