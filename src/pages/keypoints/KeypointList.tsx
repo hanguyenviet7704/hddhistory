@@ -23,6 +23,7 @@ const KeypointList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
 
   // Bộ lọc
@@ -38,25 +39,31 @@ const KeypointList: React.FC = () => {
     setKeypoints([]);
     setPage(1);
     setHasMore(true);
-    fetchKeypoints();
+    fetchKeypoints(1, false);
   }, [search]);
 
   // Fetch dữ liệu
-  const fetchKeypoints = async (isLoadMore = false) => {
-    if (loading) return;
+  const fetchKeypoints = async (pageNum = 1, isLoadMore = false) => {
+    if (loading || loadingMore) return;
 
-    setLoading(true);
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       // Sử dụng KeypointListQuery để build params
       const query = new KeypointListQuery({
         search,
-        page: isLoadMore ? page : 1,
+        page: pageNum,
         take: 10,
       });
 
       const res = await keypointService.getList(query);
-
       const newKeypoints = res.data.items || [];
+      const totalPages =
+        res.data.totalPages || Math.ceil(res.data.total / res.data.limit);
 
       if (isLoadMore) {
         setKeypoints((prev) => [...prev, ...newKeypoints]);
@@ -64,32 +71,33 @@ const KeypointList: React.FC = () => {
         setKeypoints(newKeypoints);
       }
 
-      // Kiểm tra còn dữ liệu không
-      setHasMore(newKeypoints.length === 10);
-      setPage((prev) => prev + 1);
+      // Cập nhật trang và kiểm tra còn dữ liệu không
+      setPage(pageNum);
+      setHasMore(pageNum < totalPages);
     } catch (err) {
       console.error("Fetch failed", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   // Load more khi scroll
   const lastKeypointRef = useCallback(
     (node: HTMLDivElement) => {
-      if (loading) return;
+      if (loading || loadingMore || !hasMore) return;
 
       if (observer.current) observer.current.disconnect();
 
       observer.current = new IntersectionObserver((entries) => {
         if (entries[0].isIntersecting && hasMore) {
-          fetchKeypoints(true);
+          fetchKeypoints(page + 1, true);
         }
       });
 
       if (node) observer.current.observe(node);
     },
-    [loading, hasMore]
+    [loading, loadingMore, hasMore, page]
   );
 
   // Xóa keypoint
@@ -168,13 +176,6 @@ const KeypointList: React.FC = () => {
               <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-md">
                 <PuzzlePieceIcon className="h-7 w-7 text-white" />
               </div>
-              {/* <div className="relative">
-                <img
-                  src={kp.image}
-                  alt={kp.title[lang] || "Keypoint image"}
-                  className="w-32 h-20 object-cover rounded-lg"
-                />
-              </div> */}
               <div className="flex-1">
                 <h2
                   className="text-xl font-semibold text-gray-800 cursor-pointer"
@@ -222,10 +223,17 @@ const KeypointList: React.FC = () => {
           </div>
         ))}
 
-        {/* Loading indicator */}
-        {loading && (
+        {/* Loading indicator for initial load */}
+        {loading && keypoints.length === 0 && (
           <div className="flex justify-center py-8">
             <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600"></div>
+          </div>
+        )}
+
+        {/* Loading more indicator */}
+        {loadingMore && (
+          <div className="flex justify-center py-4">
+            <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600"></div>
           </div>
         )}
 
@@ -257,7 +265,7 @@ const KeypointList: React.FC = () => {
         )}
 
         {/* Không còn dữ liệu để load thêm */}
-        {hasMore === false && keypoints.length > 0 && (
+        {!hasMore && keypoints.length > 0 && (
           <div className="text-center py-4 px-4 bg-gray-50 rounded-lg border border-gray-100">
             <p className="text-sm text-gray-600">No more content to load</p>
           </div>

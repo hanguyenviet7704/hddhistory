@@ -8,7 +8,7 @@ import { LearningItemType } from "../../types/enum/learningItem.enum";
 import { PlusIcon } from "lucide-react";
 import { Combobox } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
 
 const RoleplayList: React.FC = () => {
@@ -16,11 +16,15 @@ const RoleplayList: React.FC = () => {
   const [roleplays, setRoleplays] = useState<ILearningItem[]>([]);
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedKeypoint, setSelectedKeypoint] = useState<any>(null);
   const [keypointQuery, setKeypointQuery] = useState("");
 
   const debounceRef = useRef<number | undefined>(undefined);
+  const observer = useRef<IntersectionObserver | null>(null);
   const lang = useSelector((state: RootState) => state.lang.code);
 
   // fetch keypoints (with search)
@@ -34,38 +38,63 @@ const RoleplayList: React.FC = () => {
     }
   };
 
-  // fetch roleplays
-  const fetchRoleplays = async (search = "", keypointId?: string) => {
-    setLoading(true);
+  // fetch roleplays with pagination
+  const fetchRoleplays = async (
+    search = "",
+    keypointId?: string,
+    pageNum = 1,
+    isLoadMore = false
+  ) => {
+    if (!hasMore && pageNum > 1) return;
+
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const res = await learningItemService.getList({
         type: LearningItemType.ROLEPLAY,
         keypointId,
         search,
+        page: pageNum,
+        take: 12,
       });
       const list: ILearningItem[] = res.data.items;
-      setRoleplays(list);
+      const totalPages =
+        res.data.totalPages || Math.ceil(res.data.total / res.data.limit);
+
+      if (pageNum === 1) {
+        setRoleplays(list);
+      } else {
+        setRoleplays((prev) => [...prev, ...list]);
+      }
+
+      setHasMore(pageNum < totalPages);
+      setPage(pageNum);
     } catch (err) {
       console.error("Failed to fetch roleplays:", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
     fetchKeypoints();
-    fetchRoleplays("", selectedKeypoint?._id);
+    fetchRoleplays("", selectedKeypoint?._id, 1, false);
   }, []);
 
   useEffect(() => {
-    fetchRoleplays(searchTerm.trim(), selectedKeypoint?._id);
+    fetchRoleplays(searchTerm.trim(), selectedKeypoint?._id, 1, false);
   }, [selectedKeypoint]);
 
   // debounce search roleplays
   useEffect(() => {
     window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      fetchRoleplays(searchTerm.trim(), selectedKeypoint?._id);
+      fetchRoleplays(searchTerm.trim(), selectedKeypoint?._id, 1, false);
     }, 500);
     return () => window.clearTimeout(debounceRef.current);
   }, [searchTerm]);
@@ -78,6 +107,26 @@ const RoleplayList: React.FC = () => {
     }, 400);
     return () => window.clearTimeout(debounceRef.current);
   }, [keypointQuery]);
+
+  // Using IntersectionObserver for infinite scroll
+  const lastRoleplayRef = useCallback(
+    (node: any) => {
+      if (loading || loadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchRoleplays(
+            searchTerm.trim(),
+            selectedKeypoint?._id,
+            page + 1,
+            true
+          );
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, loadingMore, hasMore, page, searchTerm, selectedKeypoint]
+  );
 
   return (
     <div className="roleplay-list">
@@ -190,84 +239,105 @@ const RoleplayList: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence>
-                {roleplays.map((roleplay) => (
-                  <motion.div
-                    key={roleplay._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full cursor-pointer"
-                    onClick={() =>
-                      (window.location.href = `/roleplay/${roleplay._id}`)
-                    }
-                  >
-                    {/* Image */}
-                    <div className="relative h-48 overflow-hidden flex-shrink-0">
-                      <img
-                        src={
-                          roleplay.image ||
-                          "https://placehold.co/600x400/?text=Roleplay+Image&font=roboto"
-                        }
-                        alt={roleplay.title[lang] || roleplay.title.en}
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
-
-                    {/* Content */}
-                    <div className="relative p-5 flex flex-col flex-grow">
-                      <div className="flex items-center mb-4">
-                        <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
-                          <svg
-                            className="h-6 w-6 text-indigo-600"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M7 8h10M7 12h6m5 8l-4-4H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v11z"
-                            />
-                          </svg>
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence>
+                  {roleplays.map((roleplay, index) => {
+                    // Add ref to the last element
+                    const isLast = index === roleplays.length - 1;
+                    return (
+                      <motion.div
+                        key={roleplay._id}
+                        ref={isLast ? lastRoleplayRef : null}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full cursor-pointer"
+                        onClick={() => navigate(`/roleplay/${roleplay._id}`)}
+                      >
+                        {/* Image */}
+                        <div className="relative h-48 overflow-hidden flex-shrink-0">
+                          <img
+                            src={
+                              roleplay.image ||
+                              "https://placehold.co/600x400/?text=Roleplay+Image&font=roboto"
+                            }
+                            alt={roleplay.title[lang] || ""}
+                            className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                          />
                         </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-medium text-gray-900">
-                            {roleplay.title[lang] || roleplay.title.en}
-                          </h3>
-                          <p className="text-sm text-purple-600">Roleplay</p>
-                        </div>
-                      </div>
 
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {roleplay.tag.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                        {/* Content */}
+                        <div className="relative p-5 flex flex-col flex-grow">
+                          <div className="flex items-center mb-4">
+                            <div className="flex-shrink-0 bg-indigo-100 rounded-md p-3">
+                              <svg
+                                className="h-6 w-6 text-indigo-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M7 8h10M7 12h6m5 8l-4-4H7a2 2 0 01-2-2V7a2 2 0 012-2h10a2 2 0 012 2v11z"
+                                />
+                              </svg>
+                            </div>
+                            <div className="ml-4">
+                              <h3 className="text-lg font-medium text-gray-900">
+                                {roleplay.title[lang] || ""}
+                              </h3>
+                              <p className="text-sm text-purple-600">
+                                Roleplay
+                              </p>
+                            </div>
+                          </div>
 
-                      {/* Additional info */}
-                      <div className="grid grid-cols-2 gap-4 text-sm mt-auto">
-                        <div>
-                          <span className="text-gray-500">Section:</span>
-                          <span className="ml-2 font-medium">
-                            {roleplay.sections?.length}
-                          </span>
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {roleplay.tag.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Additional info */}
+                          <div className="grid grid-cols-2 gap-4 text-sm mt-auto">
+                            <div>
+                              <span className="text-gray-500">Section:</span>
+                              <span className="ml-2 font-medium">
+                                {roleplay.sections?.length}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+
+              {/* Loading more indicator */}
+              {loadingMore && (
+                <div className="flex justify-center mt-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+
+              {/* No more roleplays message */}
+              {!hasMore && roleplays.length > 0 && (
+                <div className="text-center mt-6 text-gray-500">
+                  No more roleplays to load
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

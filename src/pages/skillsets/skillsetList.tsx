@@ -402,7 +402,7 @@ const SkillsetList: React.FC = () => {
                                       {course.description?.[lang] ||
                                         "No description"}
                                     </Typography>
-                                    <div className="flex justify-start gap-2 mb-3">
+                                    <div className="flex justify-start gap-4 mb-3">
                                       <span
                                         className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
                                           statusColors[course.status]
@@ -411,14 +411,8 @@ const SkillsetList: React.FC = () => {
                                         {course.status}
                                       </span>
 
-                                      <span
-                                        className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                                          levelColors[
-                                            course.level || CourseLevel.LEVEL1
-                                          ]
-                                        }`}
-                                      >
-                                        {course.level || CourseLevel.LEVEL1}
+                                      <span className="text-sm font-medium text-blue-500">
+                                        {course.numberOfLesson || 0} lessons
                                       </span>
                                     </div>
                                   </Box>

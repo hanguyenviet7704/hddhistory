@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useNavigate } from "react-router-dom";
@@ -16,6 +16,7 @@ export default function LessonList() {
   const [entrances, setEntrances] = useState<ILesson[]>([]);
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [page, setPage] = useState(1);
 
@@ -26,12 +27,6 @@ export default function LessonList() {
   const debounceRef = useRef<number | undefined>(undefined);
   const lang = useSelector((state: RootState) => state.lang.code);
   const navigate = useNavigate();
-
-  // Ref for infinite scroll
-  const { ref, inView } = useInView({
-    threshold: 0,
-    triggerOnce: false,
-  });
 
   // fetch courses (with search)
   const fetchCourses = async (query = "") => {
@@ -50,15 +45,21 @@ export default function LessonList() {
   const fetchEntrances = async (
     search = "",
     courseId?: string,
-    pageNum = 1
+    pageNum = 1,
+    isLoadMore = false
   ) => {
     if (!hasMore && pageNum > 1) return;
 
-    setLoading(pageNum === 1);
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const res = await lessonService.getList({
         page: pageNum,
-        take: 12, // Number of items per page
+        take: 12,
         courseId,
         search,
         type: LessonType.ENTRANCE,
@@ -77,30 +78,24 @@ export default function LessonList() {
       console.error("Failed to fetch entrances:", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
     fetchCourses();
-    fetchEntrances("", selectedCourse?._id);
+    fetchEntrances("", selectedCourse?._id, 1, false);
   }, []);
 
   useEffect(() => {
-    fetchEntrances(searchTerm.trim(), selectedCourse?._id);
+    fetchEntrances(searchTerm.trim(), selectedCourse?._id, 1, false);
   }, [selectedCourse]);
-
-  // Infinite scroll trigger
-  useEffect(() => {
-    if (inView && hasMore && !loading) {
-      fetchEntrances(searchTerm.trim(), selectedCourse?._id, page + 1);
-    }
-  }, [inView, hasMore, loading, page, searchTerm, selectedCourse]);
 
   // debounce search entrances
   useEffect(() => {
     window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      fetchEntrances(searchTerm.trim(), selectedCourse?._id);
+      fetchEntrances(searchTerm.trim(), selectedCourse?._id, 1, false);
     }, 500);
     return () => window.clearTimeout(debounceRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -120,6 +115,27 @@ export default function LessonList() {
     [LessonStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
     [LessonStatus.INACTIVE]: "bg-gray-200 text-gray-600",
   };
+
+  // Using IntersectionObserver for infinite scroll
+  const observer = useRef<IntersectionObserver | null>(null);
+  const lastEntranceRef = useCallback(
+    (node: any) => {
+      if (loading || loadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchEntrances(
+            searchTerm.trim(),
+            selectedCourse?._id,
+            page + 1,
+            true
+          );
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, loadingMore, hasMore, page, searchTerm, selectedCourse]
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
@@ -233,94 +249,100 @@ export default function LessonList() {
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
               <AnimatePresence>
-                {entrances.map((entrance) => (
-                  <motion.div
-                    key={entrance._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full cursor-pointer"
-                    onClick={() => navigate(`/entrance/${entrance._id}`)}
-                  >
-                    {/* Image */}
-                    <div className="relative h-48 overflow-hidden flex-shrink-0">
-                      <img
-                        src={
-                          entrance.image ||
-                          "https://placehold.co/600x400?text=Entrance+Test&font=roboto"
-                        }
-                        alt={entrance.title[lang]}
-                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                      />
-                    </div>
+                {entrances.map((entrance, index) => {
+                  // Add ref to the last element
+                  const isLast = index === entrances.length - 1;
+                  return (
+                    <motion.div
+                      key={entrance._id}
+                      ref={isLast ? lastEntranceRef : null}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full cursor-pointer"
+                      onClick={() => navigate(`/entrance/${entrance._id}`)}
+                    >
+                      {/* Image */}
+                      <div className="relative h-48 overflow-hidden flex-shrink-0">
+                        <img
+                          src={
+                            entrance.image ||
+                            "https://placehold.co/600x400?text=Entrance+Test&font=roboto"
+                          }
+                          alt={entrance.title[lang]}
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                        />
+                      </div>
 
-                    {/* Content */}
-                    <div className="p-5 flex flex-col flex-grow">
-                      <h2 className="font-semibold text-lg mb-2 truncate text-gray-900">
-                        {entrance.title[lang]}
-                      </h2>
+                      {/* Content */}
+                      <div className="p-5 flex flex-col flex-grow">
+                        <h2 className="font-semibold text-lg mb-2 truncate text-gray-900">
+                          {entrance.title[lang]}
+                        </h2>
 
-                      <p
-                        className="text-sm text-gray-600 mb-4 flex-grow"
-                        style={{
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          overflow: "hidden",
-                        }}
-                        title={entrance.description?.[lang]}
-                      >
-                        {entrance.description?.[lang]}
-                      </p>
+                        <p
+                          className="text-sm text-gray-600 mb-4 flex-grow"
+                          style={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                          title={entrance.description?.[lang]}
+                        >
+                          {entrance.description?.[lang]}
+                        </p>
 
-                      <div className="flex items-center justify-start mt-auto gap-8">
-                        <div className="rounded flex items-start justify-center">
-                          <img
-                            src={entrance.icon?.url}
-                            alt={entrance.icon?.title?.[lang] || ""}
-                            className="w-5 h-5 object-cover rounded"
-                          />
-                          <span
-                            style={{
-                              color: entrance.icon?.color || "#f3f4f6",
-                              fontSize: 14,
-                              marginLeft: 6,
-                            }}
-                          >
-                            {entrance.icon?.title?.[lang] || ""}
-                          </span>
-                        </div>
+                        <div className="flex items-center justify-start mt-auto gap-8">
+                          <div className="rounded flex items-start justify-center">
+                            <img
+                              src={entrance.icon?.url}
+                              alt={entrance.icon?.title?.[lang] || ""}
+                              className="w-5 h-5 object-cover rounded"
+                            />
+                            <span
+                              style={{
+                                color: entrance.icon?.color || "#f3f4f6",
+                                fontSize: 14,
+                                marginLeft: 6,
+                              }}
+                            >
+                              {entrance.icon?.title?.[lang] || ""}
+                            </span>
+                          </div>
 
-                        <div className="flex items-center">
-                          <img
-                            src="https://z-cdn-media.chatglm.cn/files/622fee3c-3db8-4cfc-9572-36660e61711c_Screenshot%202025-10-24%20at%2017.06.11.png?auth_key=1792836409-e64e6ea69b684b4cb655a845bc553eff-0-1a2c8c30def151790672477fcca1f5ac"
-                            alt="Clock icon"
-                            className="w-5 h-5 mr-2"
-                          />
-                          <span className="text-sm text-gray-500">
-                            {entrance.estimateCompleTime?.[lang] || ""}
-                          </span>
+                          <div className="flex items-center">
+                            <img
+                              src="https://z-cdn-media.chatglm.cn/files/622fee3c-3db8-4cfc-9572-36660e61711c_Screenshot%202025-10-24%20at%2017.06.11.png?auth_key=1792836409-e64e6ea69b684b4cb655a845bc553eff-0-1a2c8c30def151790672477fcca1f5ac"
+                              alt="Clock icon"
+                              className="w-5 h-5 mr-2"
+                            />
+                            <span className="text-sm text-gray-500">
+                              {entrance.estimateCompleTime?.[lang] || ""}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </motion.div>
-                ))}
+                    </motion.div>
+                  );
+                })}
               </AnimatePresence>
             </div>
 
-            {/* Infinite scroll trigger */}
-            <div
-              ref={ref}
-              className="h-10 flex items-center justify-center my-8"
-            >
-              {loading && (
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <div className="flex justify-center mt-6">
                 <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
-              )}
-              {!hasMore && entrances.length > 0 && (
-                <p className="text-gray-500">No more entrances to load</p>
-              )}
-            </div>
+              </div>
+            )}
+
+            {/* No more entrances message */}
+            {!hasMore && entrances.length > 0 && (
+              <div className="text-center mt-6 text-gray-500">
+                No more entrances to load
+              </div>
+            )}
           </>
         )}
       </div>

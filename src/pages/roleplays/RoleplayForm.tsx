@@ -87,7 +87,7 @@ const TagDisplay = ({
       {tag.url && (
         <img
           src={tag.url}
-          alt={tag.title?.[lang] || "Tag url"}
+          alt={tag.title?.[lang] || ""}
           className="w-5 h-5 object-contain flex-shrink-0"
         />
       )}
@@ -1504,10 +1504,12 @@ export default function RoleplayForm({
                                                   />
                                                 )}
                                                 {content.exercise.tag && (
-                                                  <TagDisplay
-                                                    tag={content.exercise.tag}
-                                                    lang={lang}
-                                                  />
+                                                  <div className="ml-7">
+                                                    <TagDisplay
+                                                      tag={content.exercise.tag}
+                                                      lang={lang}
+                                                    />
+                                                  </div>
                                                 )}
                                               </div>
                                               {content.exercise.maxScore && (
@@ -1527,32 +1529,17 @@ export default function RoleplayForm({
                                                 </span>
                                               )}
                                               {content.exercise.keypointId && (
-                                                <div className="flex items-center gap-1">
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-3 w-3 text-gray-500"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      strokeWidth={2}
-                                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
-                                                    />
-                                                  </svg>
-                                                  <span className="text-xs text-gray-500">
-                                                    {
-                                                      keypoints.find(
-                                                        (k) =>
-                                                          k._id ===
-                                                          content.exercise
-                                                            .keypointId
-                                                      )?.title?.[lang]
-                                                    }
-                                                  </span>
-                                                </div>
+                                                <span className="text-xs font-medium text-gray-600">
+                                                  Keypoint:{" "}
+                                                  {
+                                                    keypoints.find(
+                                                      (k) =>
+                                                        k._id ===
+                                                        content.exercise
+                                                          .keypointId
+                                                    )?.title?.[lang]
+                                                  }
+                                                </span>
                                               )}
                                               {content.exercise.document &&
                                                 content.exercise.document
