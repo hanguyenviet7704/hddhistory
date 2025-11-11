@@ -25,3 +25,4 @@ abstract class RoleplayPointState with _$RoleplayPointState {
 }
 
 
+

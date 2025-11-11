@@ -9,13 +9,17 @@ mixin AppCustomColor {
 
   static const List<Color> gradientAvatarBorder = [Color(0xFFD02027), Color(0xFFF58822), Color(0xFFF95C70), Color(0xFFFF15F0)];
 
-  static const List<Color> gradientContainer = [Color(0xFFEF4A25), Color(0xFFF95C70), Color(0xFFF58921), Color(0xFFFF15F0)];
-
-  static const List<Color> gradientTitle = [Color(0xFFE86423), Color(0xFFF38421), Color(0xFFF86959), Color(0xFFFA4A92)];
-
-  static const List<Color> background2Color = [Color(0xFF000000), Color(0xFFFFFFFF)];
-
-  static List<Color> gradientPinProduct = [Color(0xFF000000).withValues(alpha: 0.8), Color(0xFFFFFFFF).withValues(alpha: 0.8)];
+  static const List<Color> gradientRoleplay = [
+    Color(0xFFE3E7EF),
+    Color(0xFFFFA9A8),
+    Color(0xFFF8A1DC),
+    Color(0xFFE6A5F2),
+    Color(0xFFBEB8FA),
+    Color(0xFF93CEF8),
+    Color(0xFF79E2D7),
+    Color(0xFF98DC98),
+    Color(0xFFECB984),
+  ];
 
   static const Color white = Color(0xFFCCF1EE);
   static const Color orangeF4 = Color(0xFFF48321);
