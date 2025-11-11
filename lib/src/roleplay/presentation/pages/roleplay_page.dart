@@ -53,10 +53,22 @@ class _RoleplayPageView extends StatelessWidget {
                           section: currentSection,
                         ),
                       ),
-                      RoleplayBottomAction(
-                        currentSection: currentSection,
+                      BlocSelector<RoleplayCubit, RoleplayState, bool>(
+                        selector: (state) => state.isCurrentSectionRevealed,
+                        builder: (context, isSectionReady) {
+                          final bottomSpacing = SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom);
+                          if (!isSectionReady) {
+                            return bottomSpacing;
+                          }
+                          return Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              RoleplayBottomAction(currentSection: currentSection),
+                              bottomSpacing,
+                            ],
+                          );
+                        },
                       ),
-                      SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom),
                     ],
                   ),
                 ),

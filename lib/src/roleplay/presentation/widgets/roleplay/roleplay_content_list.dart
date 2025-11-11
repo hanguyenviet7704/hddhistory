@@ -25,6 +25,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     super.initState();
     _listKey = GlobalKey<AnimatedListState>();
     _configureContents();
+    _updateSectionCompletion(_displayableContents.isEmpty);
     WidgetsBinding.instance.addPostFrameCallback((_) => _startSequence());
   }
 
@@ -47,10 +48,9 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     if (!mounted) return;
     setState(() {
       _listKey = GlobalKey<AnimatedListState>();
-      _displayableContents = widget.section.contents.where((c) => c.type != RoleplaySectionType.exercise).toList();
-      _prepareAudioControllers();
-      _visibleIndexes.clear();
+      _configureContents();
     });
+    _updateSectionCompletion(_displayableContents.isEmpty);
     WidgetsBinding.instance.addPostFrameCallback((_) => _startSequence());
   }
 
@@ -77,7 +77,6 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     try {
       while (mounted && _visibleIndexes.length < _displayableContents.length) {
         _appendNextIndex();
-        WidgetsBinding.instance.addPostFrameCallback((_) => _scrollToBottom());
         await _waitBeforeNext();
       }
     } finally {
@@ -109,13 +108,34 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     await Future.delayed(_defaultDelay);
   }
 
-  void _scrollToBottom() {
+  void _scrollToBottom({bool animated = true}) {
     if (!_scrollController.hasClients) return;
-    _scrollController.animateTo(
-      _scrollController.position.maxScrollExtent,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOut,
-    );
+    final double target = _scrollController.position.maxScrollExtent;
+    if (animated) {
+      _scrollController.animateTo(
+        target,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } else {
+      _scrollController.jumpTo(target);
+    }
+  }
+
+  void _scheduleScrollToBottom() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _scrollToBottom();
+      Future<void>.delayed(const Duration(milliseconds: 250), () {
+        if (!mounted) return;
+        _scrollToBottom(animated: false);
+      });
+    });
+  }
+
+  void _updateSectionCompletion(bool isCompleted) {
+    if (!mounted) return;
+    context.read<RoleplayCubit>().setCurrentSectionRevealed(isCompleted);
   }
 
   void _appendNextIndex() {
@@ -124,6 +144,10 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     _visibleIndexes.add(newIndex);
     if (_listKey.currentState != null) {
       _listKey.currentState!.insertItem(newIndex, duration: const Duration(milliseconds: 250));
+    }
+    _scheduleScrollToBottom();
+    if (_visibleIndexes.length == _displayableContents.length) {
+      _updateSectionCompletion(true);
     }
   }
 
