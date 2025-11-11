@@ -76,8 +76,12 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
 
     try {
       while (mounted && _visibleIndexes.length < _displayableContents.length) {
-        _appendNextIndex();
+        final bool shouldWaitForLastAudio = _appendNextIndex();
         await _waitBeforeNext();
+        if (!mounted) return;
+        if (shouldWaitForLastAudio) {
+          _updateSectionCompletion(true);
+        }
       }
     } finally {
       _isSequencing = false;
@@ -138,17 +142,24 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     context.read<RoleplayCubit>().setCurrentSectionRevealed(isCompleted);
   }
 
-  void _appendNextIndex() {
+  bool _appendNextIndex() {
     final newIndex = _visibleIndexes.length;
-    if (newIndex >= _displayableContents.length) return;
+    if (newIndex >= _displayableContents.length) return false;
     _visibleIndexes.add(newIndex);
     if (_listKey.currentState != null) {
       _listKey.currentState!.insertItem(newIndex, duration: const Duration(milliseconds: 250));
     }
     _scheduleScrollToBottom();
-    if (_visibleIndexes.length == _displayableContents.length) {
-      _updateSectionCompletion(true);
+    if (_visibleIndexes.length != _displayableContents.length) {
+      return false;
     }
+
+    final RoleplayAudioController? lastController = _audioControllers[newIndex];
+    if (lastController != null && lastController.hasAudio) {
+      return true;
+    }
+    _updateSectionCompletion(true);
+    return false;
   }
 
   @override
