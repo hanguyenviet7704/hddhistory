@@ -38,6 +38,28 @@ class RoleplayAudioController {
     await _player!.play();
   }
 
+  Future<void> togglePlayPause() async {
+    if (!await _ensureReady() || _player == null) return;
+
+    final player = _player!;
+    if (player.playing) {
+      await player.pause();
+      return;
+    }
+
+    if (player.processingState == just_audio.ProcessingState.completed) {
+      await player.seek(Duration.zero);
+    } else {
+      final Duration? duration = player.duration;
+      final Duration position = player.position;
+      if (duration != null && position >= duration) {
+        await player.seek(Duration.zero);
+      }
+    }
+
+    await player.play();
+  }
+
   Future<void> playAutoAndWait() async {
     if (!hasAudio) {
       await Future.delayed(_fallbackDelay);
@@ -92,7 +114,9 @@ class RoleplayAudioButton extends StatelessWidget {
     final double iconSize = dense ? 16.w : 20.w;
 
     return InkWell(
-      onTap: () => controller?.replay(),
+      onTap: () {
+        controller?.togglePlayPause();
+      },
       borderRadius: BorderRadius.circular(24.r),
       child: Container(
         padding: EdgeInsets.all(padding),
@@ -105,7 +129,7 @@ class RoleplayAudioButton extends StatelessWidget {
           builder: (context, snapshot) {
             final isPlaying = snapshot.data?.playing ?? false;
             return Icon(
-              isPlaying ? Icons.graphic_eq : Icons.volume_up_rounded,
+              isPlaying ? Icons.pause_rounded : Icons.volume_up_rounded,
               color: iconColor,
               size: iconSize,
             );
