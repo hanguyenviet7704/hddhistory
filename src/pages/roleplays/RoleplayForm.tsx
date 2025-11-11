@@ -716,7 +716,7 @@ export default function RoleplayForm({
             name: "",
             avartar: "",
             position: SectionConversationPosition.LEFT,
-            bubbleColor: "#FFFFFF",
+            backgroundColor: "#FFFFFF",
             textColor: "#000000", // Added textColor
             content: "",
             audio: "",
@@ -727,7 +727,7 @@ export default function RoleplayForm({
           id,
           type,
           leadingText: {
-            frameColor: "#000000",
+            backgroundColor: "#000000",
             textColor: "#000000", // Added textColor
             content: "",
             audio: "",
@@ -1058,7 +1058,8 @@ export default function RoleplayForm({
       id: nextSectionId,
       title: `Section ${nextSectionId}`,
       transition: "",
-      transitionColor: "#000000",
+      textColor: "#000000",
+      backgroundColor: "#ffffff",
       image: "", // Added image field
       contents: [],
     };
@@ -1107,10 +1108,10 @@ export default function RoleplayForm({
     });
   };
 
-  // Update section transition color
-  const updateSectionTransitionColor = (
+  // Update section transition text color
+  const updateSectionTransitionTextColor = (
     sectionId: number,
-    transitionColor: string
+    textColor: string
   ) => {
     setCurrentRoleplay((prev) => {
       const sections = prev.sections || [];
@@ -1121,7 +1122,28 @@ export default function RoleplayForm({
       const updatedSections = [...sections];
       updatedSections[sectionIndex] = {
         ...updatedSections[sectionIndex],
-        transitionColor,
+        textColor,
+      };
+
+      return { ...prev, sections: updatedSections };
+    });
+  };
+
+  // Update section transition backgound color
+  const updateSectionTransitionBackgoundColor = (
+    sectionId: number,
+    backgroundColor: string
+  ) => {
+    setCurrentRoleplay((prev) => {
+      const sections = prev.sections || [];
+      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+
+      if (sectionIndex === -1) return prev;
+
+      const updatedSections = [...sections];
+      updatedSections[sectionIndex] = {
+        ...updatedSections[sectionIndex],
+        backgroundColor,
       };
 
       return { ...prev, sections: updatedSections };
@@ -1249,11 +1271,26 @@ export default function RoleplayForm({
                         </div>
                         <div>
                           <ColorPicker
-                            value={section.transitionColor || "#000000"}
+                            value={section.backgroundColor || "#000000"}
                             onChange={(value) =>
-                              updateSectionTransitionColor(section.id, value)
+                              updateSectionTransitionBackgoundColor(
+                                section.id,
+                                value
+                              )
                             }
-                            label="Transition Color"
+                            label="Backgound Color"
+                          />
+                        </div>
+                        <div>
+                          <ColorPicker
+                            value={section.textColor || "#ffffff"}
+                            onChange={(value) =>
+                              updateSectionTransitionTextColor(
+                                section.id,
+                                value
+                              )
+                            }
+                            label="Text Color"
                           />
                         </div>
                         <div>
@@ -1345,7 +1382,7 @@ export default function RoleplayForm({
                                                 style={{
                                                   backgroundColor:
                                                     content.conversation
-                                                      .bubbleColor,
+                                                      .backgroundColor,
                                                 }}
                                               ></div>
                                               <div
@@ -1391,7 +1428,7 @@ export default function RoleplayForm({
                                                 style={{
                                                   backgroundColor:
                                                     content.leadingText
-                                                      .frameColor,
+                                                      .backgroundColor,
                                                 }}
                                               ></div>
                                               <div
@@ -2254,11 +2291,11 @@ export default function RoleplayForm({
             </div>
 
             <ColorPicker
-              value={localFormData.conversation.bubbleColor || "#FFFFFF"}
+              value={localFormData.conversation.backgroundColor || "#FFFFFF"}
               onChange={(value) =>
-                handleConversationChange("bubbleColor", value)
+                handleConversationChange("backgroundColor", value)
               }
-              label="Bubble Color"
+              label="Backgound Color"
             />
 
             <ColorPicker
@@ -2304,9 +2341,11 @@ export default function RoleplayForm({
         {contentType === RoleplaySectionType.LEADING_TEXT && (
           <>
             <ColorPicker
-              value={localFormData.leadingText.frameColor || "#000000"}
-              onChange={(value) => handleLeadingTextChange("frameColor", value)}
-              label="Frame Color"
+              value={localFormData.leadingText.backgroundColor || "#000000"}
+              onChange={(value) =>
+                handleLeadingTextChange("backgroundColor", value)
+              }
+              label="Backgound Color"
             />
 
             <ColorPicker

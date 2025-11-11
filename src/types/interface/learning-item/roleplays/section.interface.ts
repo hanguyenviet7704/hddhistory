@@ -8,14 +8,14 @@ export interface IConversation {
   name: string;
   avartar: string;
   position: SectionConversationPosition;
-  bubbleColor: string;
+  backgroundColor: string;
   textColor: string;
   content: string;
   audio: string;
 }
 
 export interface ILeadingText {
-  frameColor: string;
+  backgroundColor: string;
   textColor: string;
   content: string;
   audio: string;
@@ -40,7 +40,8 @@ export interface ISection {
   id: number;
   title: string;
   transition: string;
-  transitionColor: string;
+  textColor: string;
+  backgroundColor: string;
   image: string;
   contents: ISectionContent[];
 }
