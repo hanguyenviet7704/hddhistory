@@ -56,6 +56,28 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+
+    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    if (learningItem.type == LearningItemType.roleplay) {
+      RoleplayPointEntity point = RoleplayPointEntity(keypoint: state.question.keypoint, point: pointCalculation());
+      AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
+    }
+  }
+
+  int pointCalculation() {
+    if (state.question.type == QuestionTypeEnum.multipleChoice) {
+      final correctIndexes = state.correctOptionsIndices;
+      final selectedIndexes = state.selectedAnswersIndices;
+      final correctCount = correctIndexes.length;
+      final selectedCount = selectedIndexes.length;
+      final score = (selectedCount / correctCount) * 100;
+      return score.toInt();
+    }
+
+    final correctIndex = state.correctOptionsIndices.first;
+    final selectedIndex = state.selectedAnswerIndex;
+    final score = (selectedIndex == correctIndex ? 100 : 0);
+    return score;
   }
 
   void toggleExplanation() {

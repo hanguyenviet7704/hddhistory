@@ -32,8 +32,10 @@ part 'domain/entities/section_entity.dart';
 part 'domain/repositories/i_roleplay_repository.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
 //* Presentation Layer - Cubits
-part 'presentation/cubits/roleplay_cubit.dart';
-part 'presentation/cubits/roleplay_state.dart';
+part 'presentation/cubits/roleplay/roleplay_cubit.dart';
+part 'presentation/cubits/roleplay/roleplay_state.dart';
+part 'presentation/cubits/roleplay_point/roleplay_point_cubit.dart';
+part 'presentation/cubits/roleplay_point/roleplay_point_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/roleplay_complete_page.dart';
 part 'presentation/pages/roleplay_feedback_page.dart';
@@ -52,7 +54,6 @@ part 'presentation/widgets/roleplay_intro/roleplay_intro_action_button.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_background.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_details.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_hero_card.dart';
-
 //* Parts for generated files
 part 'roleplay.freezed.dart';
 part 'roleplay.g.dart';

@@ -32,6 +32,13 @@ extension LessonStateExtension on LessonState {
     }
   }
 
+  QuestionEntity get currentLessonQuestion {
+    return switch (currentLearningItem.type) {
+      LearningItemType.theory => QuestionEntity(),
+      LearningItemType.exercise || LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()),
+    };
+  }
+
   String get currentLessonSpeechBubble {
     return switch (currentLearningItem.type) {
       LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble,

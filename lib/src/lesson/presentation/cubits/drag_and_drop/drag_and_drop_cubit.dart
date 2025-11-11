@@ -91,6 +91,26 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     if (!allCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+
+    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    if (learningItem.type == LearningItemType.roleplay) {
+      RoleplayPointEntity point = RoleplayPointEntity(keypoint: state.question.keypoint, point: pointCalculation());
+      AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
+    }
+  }
+
+  int pointCalculation() {
+    final placedWords = state.placedWords.values.toList();
+    final correctWords = state.question.answer.map((answer) => answer.correctAnswer).toList();
+    int correctCount = 0;
+    int currentCount = 0;
+    for (int i = 0; i < placedWords.length; i++) {
+      if (placedWords[i] == correctWords[i]) {
+        correctCount++;
+      }
+      currentCount++;
+    }
+    return correctCount == currentCount ? 100 : 0;
   }
 
   /// Toggle explanation visibility

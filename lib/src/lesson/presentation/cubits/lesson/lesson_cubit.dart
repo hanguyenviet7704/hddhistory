@@ -41,6 +41,12 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void nextLearningItem() {
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
+      if (state.currentLearningItem.type == LearningItemType.roleplay) {
+        AppConfig.instance.context!.back();
+        AppDI.injector.get<RoleplayCubit>().goToNextSection();
+        return;
+      }
+
       if (state.subQuestions.isNotEmpty) {
         ReviewTimeRoute().go(AppConfig.instance.context!);
         return;

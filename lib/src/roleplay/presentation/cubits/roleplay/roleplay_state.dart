@@ -1,4 +1,4 @@
-part of '../../roleplay.dart';
+part of '../../../roleplay.dart';
 
 enum RoleplayStatus { initial, loading, success, failure }
 

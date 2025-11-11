@@ -73,6 +73,19 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+
+    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    if (learningItem.type == LearningItemType.roleplay) {
+      RoleplayPointEntity point = RoleplayPointEntity(keypoint: state.question.keypoint, point: pointCalculation());
+      AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
+    }
+  }
+
+  int pointCalculation() {
+    final placedPositions = state.placedMarks.keys.toSet();
+    final correctPositions = state.correctPositions;
+    final isCorrect = placedPositions.length == correctPositions.length && placedPositions.every((pos) => correctPositions.contains(pos));
+    return isCorrect ? 100 : 0;
   }
 
   void toggleExplanation() {

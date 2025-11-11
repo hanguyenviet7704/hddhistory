@@ -50,6 +50,19 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+
+    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    if (learningItem.type == LearningItemType.roleplay) {
+      RoleplayPointEntity point = RoleplayPointEntity(keypoint: state.question.keypoint, point: pointCalculation());
+      AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
+    }
+  }
+
+  int pointCalculation() {
+    final correctIndices = state.correctWordIndices;
+    final selectedIndices = state.selectedWordIndices;
+    final isCorrect = selectedIndices.length == correctIndices.length && selectedIndices.every((index) => correctIndices.contains(index));
+    return isCorrect ? 100 : 0;
   }
 
   void toggleExplanation() {

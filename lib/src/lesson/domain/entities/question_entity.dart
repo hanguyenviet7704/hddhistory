@@ -20,6 +20,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default(0) int maxScore,
     @Default(0) int completionTime,
     @Default(0) int mainQuestion,
+    @Default(KeypointEntity()) KeypointEntity keypoint,
   }) = _QuestionEntity;
 
   factory QuestionEntity.fromJson(Map<String, dynamic> json) => _$QuestionEntityFromJson(json);

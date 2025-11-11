@@ -53,6 +53,24 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+    
+    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    if (learningItem.type == LearningItemType.roleplay) {
+      RoleplayPointEntity point = RoleplayPointEntity(keypoint: state.question.keypoint, point: pointCalculation());
+      AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
+    }
+  }
+
+  void setPoint() {
+    RoleplayPointEntity point = RoleplayPointEntity(keypoint: state.question.keypoint, point: pointCalculation());
+    AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
+  }
+
+  int pointCalculation() {
+    final currentOrder = state.currentItems.map((item) => item.id).toList();
+    final correctOrder = state.question.answer.map((answer) => answer.id).toList();
+    final isCorrect = _listsEqual(currentOrder, correctOrder);
+    return isCorrect ? 100 : 0;
   }
 
   /// Toggle the explanation visibility

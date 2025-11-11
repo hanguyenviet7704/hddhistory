@@ -47,6 +47,8 @@ class LessonProgressBar extends StatelessWidget {
           ),
         ),
         20.horizontalSpace,
+        LessonTimeBanner(onDone: () => context.read<ExerciseCubit>().nextQuestion()),
+        20.horizontalSpace,
       ],
     );
   }

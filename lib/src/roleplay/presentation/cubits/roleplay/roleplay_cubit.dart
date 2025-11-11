@@ -1,4 +1,4 @@
-part of '../../roleplay.dart';
+part of '../../../roleplay.dart';
 
 @lazySingleton
 class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<RoleplayState> {
@@ -38,8 +38,10 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     final nextIndex = state.currentSectionIndex + 1;
     if (nextIndex >= state.currentLearningItem.sections.length) return;
     emit(state.copyWith(currentSectionIndex: nextIndex, isCurrentSectionRevealed: false));
-    setLearningItemToLessonCubit();
-    LessonRoute().push(AppConfig.instance.context!);
+    if (state.currentSection.contents.last.type == RoleplaySectionType.exercise) {
+      setLearningItemToLessonCubit();
+      LessonRoute().push(AppConfig.instance.context!);
+    }
   }
 
   void setCurrentSectionRevealed(bool isRevealed) {

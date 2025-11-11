@@ -95,6 +95,7 @@ part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
 part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/lesson_badge.dart';
 part 'presentation/widgets/items/common/lesson_progress_bar.dart';
+part 'presentation/widgets/items/common/lesson_time_controller.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_available_marks.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_pause_mark.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_pause_mark_icon.dart';

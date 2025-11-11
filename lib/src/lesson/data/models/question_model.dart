@@ -20,6 +20,7 @@ abstract class QuestionModel with _$QuestionModel {
     @Default(0) int maxScore,
     @Default(0) int completionTime,
     @DefaultInt() @Default(0) int mainQuestion,
+    @Default(KeypointModel()) KeypointModel keypoint,
   }) = _QuestionModel;
 
   factory QuestionModel.fromJson(Map<String, dynamic> json) => _$QuestionModelFromJson(json);
@@ -75,6 +76,7 @@ extension QuestionModelExtension on QuestionModel {
     maxScore: maxScore,
     completionTime: completionTime,
     mainQuestion: mainQuestion,
+    keypoint: keypoint.toEntity(),
   );
 
   QuestionTypeEnum get toQuestionTypeEnum {
