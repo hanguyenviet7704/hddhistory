@@ -1,11 +1,13 @@
 library;
 
+import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 //* Package imports
 import 'package:darq/darq.dart';
 import 'package:dio/dio.dart';
 import 'package:dotted_border/dotted_border.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -54,6 +56,11 @@ part 'presentation/widgets/roleplay_intro/roleplay_intro_action_button.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_background.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_details.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_hero_card.dart';
+part 'presentation/widgets/roleplay_feedback/roleplay_feedback_chart.dart';
+part 'presentation/widgets/roleplay_feedback/roleplay_feedback_breakdown.dart';
+part 'presentation/widgets/roleplay_feedback/roleplay_feedback_indicator.dart';
+part 'presentation/widgets/roleplay_feedback/roleplay_feedback_summary.dart';
+part 'presentation/widgets/roleplay_feedback/roleplay_feedback_cta.dart';
 //* Parts for generated files
 part 'roleplay.freezed.dart';
 part 'roleplay.g.dart';

@@ -104,6 +104,7 @@ mixin AppCustomColor {
   static const Color roleplayRightBubble = Color(0xFFF1EDE5);
   static const Color roleplayHintBorder = Color(0xFFE3E8EF);
   static const Color roleplayLeadingSurface = Color(0x99123F54);
+  static const Color roleplayFeedbackRadarGrid = Color(0xFFE1E6F5);
 }
 
 mixin AppTheme {
