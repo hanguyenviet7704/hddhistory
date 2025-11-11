@@ -3,7 +3,7 @@ part of '../../roleplay.dart';
 @freezed
 abstract class LeadingTextModel with _$LeadingTextModel {
   const factory LeadingTextModel({
-    @Default('') String frameColor,
+    @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default('') String content,
     @Default('') String audio,
@@ -14,7 +14,7 @@ abstract class LeadingTextModel with _$LeadingTextModel {
 
 extension LeadingTextModelExtension on LeadingTextModel {
   LeadingTextEntity toEntity() => LeadingTextEntity(
-    frameColor: frameColor,
+    backgroundColor: backgroundColor,
     textColor: textColor,
     content: content,
     audio: audio,

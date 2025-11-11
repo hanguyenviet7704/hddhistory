@@ -7,23 +7,15 @@ class RoleplayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
-      body: BlocBuilder<RoleplayCubit, RoleplayState>(
-        buildWhen: (previous, current) =>
-            previous.status != current.status || previous.currentLearningItem != current.currentLearningItem || previous.errorMessage != current.errorMessage,
-        builder: (context, state) {
-          switch (state.status) {
-            case RoleplayStatus.initial:
-            case RoleplayStatus.loading:
-              return const _RoleplayPageLoading();
-            case RoleplayStatus.failure:
-              return _RoleplayPageError(message: state.errorMessage);
-            case RoleplayStatus.success:
-              return _RoleplayPageView(
-                learningItem: state.currentLearningItem,
-                section: state.currentSection,
-                sectionIndex: state.currentSectionIndex,
-              );
-          }
+      body: BlocSelector<RoleplayCubit, RoleplayState, RoleplayStatus>(
+        selector: (state) => state.status,
+        builder: (context, status) {
+          return switch (status) {
+            RoleplayStatus.initial => const _RoleplayPageLoading(),
+            RoleplayStatus.loading => const _RoleplayPageLoading(),
+            RoleplayStatus.failure => const _RoleplayPageError(),
+            RoleplayStatus.success => _RoleplayPageView(),
+          };
         },
       ),
     );
@@ -31,74 +23,49 @@ class RoleplayPage extends StatelessWidget {
 }
 
 class _RoleplayPageView extends StatelessWidget {
-  final LearningItemEntity learningItem;
-  final SectionEntity section;
-  final int sectionIndex;
-
-  const _RoleplayPageView({
-    required this.learningItem,
-    required this.section,
-    required this.sectionIndex,
-  });
+  const _RoleplayPageView();
 
   @override
   Widget build(BuildContext context) {
-    final bool hasHeroImage = section.image.isNotEmpty;
-    final SectionEntity? nextSection = sectionIndex + 1 < learningItem.sections.length ? learningItem.sections[sectionIndex + 1] : null;
-
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: hasHeroImage ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          RoleplayHeroBackground(imageUrl: section.image),
-          SafeArea(
-            child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  RoleplayPageHeader(
-                    section: section,
-                    useLightContent: hasHeroImage,
+    return BlocSelector<RoleplayCubit, RoleplayState, SectionEntity>(
+      selector: (state) => state.currentSection,
+      builder: (context, currentSection) {
+        final bool hasHeroImage = currentSection.image.isNotEmpty;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: hasHeroImage ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              RoleplayHeroBackground(),
+              SafeArea(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      RoleplayPageHeader(
+                        section: currentSection,
+                        useLightContent: hasHeroImage,
+                      ),
+                      Expanded(
+                        child: RoleplayContentList(
+                          key: ValueKey(currentSection.id),
+                          section: currentSection,
+                        ),
+                      ),
+                      RoleplayBottomAction(
+                        currentSection: currentSection,
+                      ),
+                      SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom),
+                    ],
                   ),
-                  Expanded(
-                    child: RoleplayContentList(
-                      key: ValueKey(section.id),
-                      section: section,
-                    ),
-                  ),
-                  RoleplayBottomAction(
-                    currentSection: section,
-                    nextSection: nextSection,
-                    onPressed: _buildCtaHandler(context, section, nextSection),
-                  ),
-                  SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom),
-                ],
+                ),
               ),
-            ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
-  }
-
-  VoidCallback? _buildCtaHandler(
-    BuildContext context,
-    SectionEntity section,
-    SectionEntity? nextSection,
-  ) {
-    final bool isExerciseSection = section.contents.isNotEmpty && section.contents.last.type == RoleplaySectionType.exercise;
-
-    if (isExerciseSection) {
-      return () {};
-    }
-
-    if (nextSection == null) {
-      return null;
-    }
-
-    return () => context.read<RoleplayCubit>().goToNextSection();
   }
 }
 
@@ -112,9 +79,7 @@ class _RoleplayPageLoading extends StatelessWidget {
 }
 
 class _RoleplayPageError extends StatelessWidget {
-  final String? message;
-
-  const _RoleplayPageError({this.message});
+  const _RoleplayPageError();
 
   @override
   Widget build(BuildContext context) {
@@ -124,10 +89,15 @@ class _RoleplayPageError extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppText(
-              message ?? 'Something went wrong',
-              textAlign: TextAlign.center,
-              style: AppStyle.text18.copyWith(color: AppCustomColor.textPrimary),
+            BlocSelector<RoleplayCubit, RoleplayState, String>(
+              selector: (state) => state.errorMessage ?? 'Something went wrong',
+              builder: (context, errorMessage) {
+                return AppText(
+                  errorMessage,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text18.copyWith(color: AppCustomColor.textPrimary),
+                );
+              },
             ),
             16.verticalSpace,
             DButton(

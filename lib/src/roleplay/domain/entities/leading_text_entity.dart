@@ -3,7 +3,7 @@ part of '../../roleplay.dart';
 @freezed
 abstract class LeadingTextEntity with _$LeadingTextEntity {
   const factory LeadingTextEntity({
-    @Default('') String frameColor,
+    @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default('') String content,
     @Default('') String audio,

@@ -69,9 +69,9 @@ class _RoleplayBubbleContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bubbleColor = conversation.bubbleColor.toHexColor == Colors.transparent
+    final Color bubbleColor = conversation.backgroundColor.toHexColor == Colors.transparent
         ? (isRight ? AppCustomColor.roleplayRightBubble : AppCustomColor.roleplayLeftBubble)
-        : conversation.bubbleColor.toHexColor;
+        : conversation.backgroundColor.toHexColor;
     final Color textColor = conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor;
 
     return Align(

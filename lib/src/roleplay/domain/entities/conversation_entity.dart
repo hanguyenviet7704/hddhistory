@@ -6,7 +6,7 @@ abstract class ConversationEntity with _$ConversationEntity {
     @Default('') String name,
     @Default('') String avartar,
     @Default(SectionConversationPosition.left) SectionConversationPosition position,
-    @Default('') String bubbleColor,
+    @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default('') String content,
     @Default('') String audio,

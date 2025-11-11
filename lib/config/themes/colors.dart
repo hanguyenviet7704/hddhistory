@@ -88,6 +88,7 @@ mixin AppCustomColor {
   static const Color brandPrimary300 = Color(0xFF917FF6);
   static const Color backgroundBrand = Color(0xFFEBEAFD);
   static const Color iconPrimary = Color(0xFF344054);
+  static const Color contentTertiary = Color(0xFFF1EDE5);
 
   // Strength indicator colors
   static const Color successGreen = Color(0xFF41AE8C);
@@ -97,7 +98,7 @@ mixin AppCustomColor {
   static const Color roleplayIntroBackground = Color(0xFF2C404A);
   static const Color roleplayLeftBubble = Color(0xFFABD3F3);
   static const Color roleplayRightBubble = Color(0xFFF1EDE5);
-  static const Color roleplayHintBorder = Color(0xFFF1EDE5);
+  static const Color roleplayHintBorder = Color(0xFFE3E8EF);
   static const Color roleplayLeadingSurface = Color(0x99123F54);
 }
 

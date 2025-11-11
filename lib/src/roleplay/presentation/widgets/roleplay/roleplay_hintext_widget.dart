@@ -21,17 +21,25 @@ class RoleplayHintCard extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          // color: Colors.white,
           borderRadius: BorderRadius.circular(20.r),
         ),
-        child: AppText(
-          hint.content,
+        child: RichText(
           textAlign: TextAlign.center,
-          style: AppStyle.text14.copyWith(
-            color: textColor,
-            height: 1.5,
+          text: TextSpan(
+            children: [
+              if (hint.icon.isNotEmpty) ...[
+                WidgetSpan(
+                  child: DCachedImage(url: hint.icon, height: 16.h),
+                ),
+                WidgetSpan(child: 6.horizontalSpace),
+              ],
+              TextSpan(
+                text: hint.content,
+                style: AppStyle.text14.copyWith(color: textColor, height: 1.5),
+              ),
+            ],
           ),
-          maxLines: 4,
         ),
       ),
     );

@@ -6,7 +6,8 @@ abstract class SectionModel with _$SectionModel {
     @Default(0) int id,
     @Default('') String title,
     @Default('') String transition,
-    @Default('') String transitionColor,
+    @Default('') String backgroundColor,
+    @Default('') String textColor,
     @Default('') String image,
     @Default([]) List<SectionContentModel> contents,
   }) = _SectionModel;
@@ -19,7 +20,8 @@ extension SectionModelExtension on SectionModel {
     id: id,
     title: title,
     transition: transition,
-    transitionColor: transitionColor,
+    backgroundColor: backgroundColor,
+    textColor: textColor,
     image: image,
     contents: contents.map((model) => model.toEntity()).toList(),
   );

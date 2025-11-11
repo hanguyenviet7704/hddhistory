@@ -6,7 +6,8 @@ abstract class SectionEntity with _$SectionEntity {
     @Default(0) int id,
     @Default('') String title,
     @Default('') String transition,
-    @Default('') String transitionColor,
+    @Default('') String textColor,
+    @Default('') String backgroundColor,
     @Default('') String image,
     @Default([]) List<SectionContentEntity> contents,
   }) = _SectionEntity;

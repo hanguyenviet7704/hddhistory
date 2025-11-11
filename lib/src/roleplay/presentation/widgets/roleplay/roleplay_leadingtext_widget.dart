@@ -12,20 +12,19 @@ class RoleplayLeadingTextCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color textColor = leadingText.textColor.toHexColor == Colors.transparent ? AppCustomColor.textWhite : leadingText.textColor.toHexColor;
-    final Color frameColor = leadingText.frameColor.toHexColor == Colors.transparent ? Colors.white.withValues(alpha: 0.4) : leadingText.frameColor.toHexColor;
+    final Color textColor = leadingText.textColor.toHexColor;
+    final Color backgroundColor = leadingText.backgroundColor.toHexColor;
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(20.r),
       child: BackdropFilter(
         filter: ui.ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
-          width: double.infinity,
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+          margin: EdgeInsets.symmetric(horizontal: 20.w),
           decoration: BoxDecoration(
-            color: AppCustomColor.roleplayLeadingSurface,
+            color: backgroundColor.op(0.4),
             borderRadius: BorderRadius.circular(20.r),
-            border: Border.all(color: frameColor),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

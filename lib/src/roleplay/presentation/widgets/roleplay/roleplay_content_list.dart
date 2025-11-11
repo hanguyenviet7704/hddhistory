@@ -139,17 +139,17 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     _audioControllers.clear();
   }
 
-  bool _isSamePerson(ConversationEntity conversation, ConversationEntity? previousConversation) {
-    if (previousConversation == null) return false;
-    return previousConversation.name == conversation.name;
+  bool _isSamePerson(ConversationEntity conversation, ConversationEntity? nextConversation) {
+    if (nextConversation == null) return false;
+    return nextConversation.name == conversation.name;
   }
 
   double _getBottomPadding(int index, int contentIndex) {
     if (index == _visibleIndexes.length - 1) return 0;
     final content = _displayableContents[index];
     if (content.type != RoleplaySectionType.conversation) return 16.h;
-    final previousConversation = contentIndex > 0 ? _displayableContents[contentIndex - 1].conversation : null;
-    if (!_isSamePerson(content.conversation, previousConversation)) return 0;
+    final nextConversation = contentIndex < _displayableContents.length - 1 ? _displayableContents[contentIndex + 1].conversation : null;
+    if (_isSamePerson(content.conversation, nextConversation)) return 0;
     return 16.h;
   }
 
