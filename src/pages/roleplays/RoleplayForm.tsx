@@ -14,7 +14,7 @@ import {
   SectionConversationPosition,
 } from "../../types/enum/learningItem.enum";
 import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
@@ -28,17 +28,12 @@ import { Combobox } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import LearningItemConfirm from "../../components/learning-item/LearningItemConfirm";
 import { keypointService } from "../../services/keypointService";
-import { DocumentType, KeypointLevel } from "../../utils/enum/course.enum";
+import { DocumentType } from "../../utils/enum/course.enum";
 import {
   IExerciseChoiceOption,
   IExerciseSingleChoice,
 } from "../../types/interface/learning-item/excercises/single-choice.interface";
-import { IExerciseMultipleChoice } from "../../types/interface/learning-item/excercises/multiple-choice.interface";
-import {
-  IAnswer,
-  IExerciseDragDrop,
-  IOptions,
-} from "../../types/interface/learning-item/excercises/drag-drop.interface";
+import { IExerciseDragDrop } from "../../types/interface/learning-item/excercises/drag-drop.interface";
 import { IExerciseRecord } from "../../types/interface/learning-item/excercises/record.interface";
 import {
   IDocument,
@@ -501,6 +496,9 @@ export default function RoleplayForm({
   const [currentSectionForPopup, setCurrentSectionForPopup] = useState<
     number | null
   >(null);
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: string;
+  }>({});
 
   // Fetch keypoint based on query
   useEffect(() => {
@@ -732,6 +730,7 @@ export default function RoleplayForm({
             frameColor: "#000000",
             textColor: "#000000", // Added textColor
             content: "",
+            audio: "",
           } as ILeadingText,
         } as ISectionContent;
       case RoleplaySectionType.HINT:
@@ -773,7 +772,6 @@ export default function RoleplayForm({
               { value: "", isCorrect: false },
               { value: "", isCorrect: false },
             ] as IExerciseChoiceOption[],
-            level: [KeypointLevel.WEAK_POINT],
             mainQuestion: 0,
           } as IExerciseSingleChoice,
         } as ISectionContent;
@@ -820,6 +818,44 @@ export default function RoleplayForm({
   // Handle saving content and roleplay together
   const handleSaveContentAndRoleplay = async (contentData: any) => {
     try {
+      // Xóa lỗi cũ
+      setValidationErrors({});
+
+      // Thực hiện xác thực dựa trên loại nội dung
+      let hasError = false;
+      const errors: { [key: string]: string } = {};
+
+      if (contentData.type === RoleplaySectionType.CONVERSATION) {
+        if (!contentData.conversation.name) {
+          errors.name = "Name is required for conversation content";
+          hasError = true;
+        }
+        if (!contentData.conversation.avartar) {
+          errors.avatar = "Avatar is required for conversation content";
+          hasError = true;
+        }
+      } else if (contentData.type === RoleplaySectionType.LEADING_TEXT) {
+        if (!contentData.leadingText.content) {
+          errors.content = "Content is required for leading text";
+          hasError = true;
+        }
+      } else if (contentData.type === RoleplaySectionType.HINT) {
+        if (!contentData.hint.icon) {
+          errors.icon = "Icon is required for hint content";
+          hasError = true;
+        }
+        if (!contentData.hint.content) {
+          errors.hintContent = "Content is required for hint content";
+          hasError = true;
+        }
+      }
+
+      // Nếu có lỗi, cập nhật state và dừng việc lưu
+      if (hasError) {
+        setValidationErrors(errors);
+        return;
+      }
+
       setSaving(true);
 
       let updatedRoleplay;
@@ -1120,12 +1156,6 @@ export default function RoleplayForm({
           <h2 className="text-xl font-semibold text-gray-800">
             Roleplay Sections
           </h2>
-          <button
-            className="text-blue-500 hover:text-blue-700 transition-colors"
-            onClick={addNewSection}
-          >
-            <PlusCircleIcon className="h-6 w-6" />
-          </button>
         </div>
 
         <p className="text-sm text-gray-500 mb-4">
@@ -1249,14 +1279,6 @@ export default function RoleplayForm({
                           <h4 className="text-sm font-medium text-gray-700">
                             Content
                           </h4>
-                          <button
-                            className="text-blue-500 hover:text-blue-700 transition-colors"
-                            onClick={() =>
-                              handleOpenContentTypePopup(section.id)
-                            }
-                          >
-                            <PlusIcon className="h-5 w-5" />
-                          </button>
                         </div>
 
                         {section.contents && section.contents.length > 0 ? (
@@ -1380,6 +1402,22 @@ export default function RoleplayForm({
                                                       .textColor,
                                                 }}
                                               ></div>
+                                              {content.leadingText.audio && (
+                                                <svg
+                                                  xmlns="http://www.w3.org/2000/svg"
+                                                  className="h-3 w-3 text-gray-500"
+                                                  fill="none"
+                                                  viewBox="0 0 24 24"
+                                                  stroke="currentColor"
+                                                >
+                                                  <path
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    strokeWidth={2}
+                                                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                                  />
+                                                </svg>
+                                              )}
                                               <TextWithTooltip
                                                 text={
                                                   content.leadingText.content
@@ -1757,25 +1795,6 @@ export default function RoleplayForm({
                                                   )}
                                                 </div>
                                               )}
-                                              {"level" in content.exercise &&
-                                                (content.exercise.level
-                                                  ?.length ?? 0) > 0 && (
-                                                  <div className="flex flex-wrap gap-1 mt-1">
-                                                    {content.exercise.level?.map(
-                                                      (
-                                                        level: KeypointLevel,
-                                                        idx: number
-                                                      ) => (
-                                                        <span
-                                                          key={idx}
-                                                          className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800"
-                                                        >
-                                                          {level}
-                                                        </span>
-                                                      )
-                                                    )}
-                                                  </div>
-                                                )}
                                             </div>
                                           )}
                                         </div>
@@ -1821,21 +1840,32 @@ export default function RoleplayForm({
                               </div>
                             </SortableContext>
                           </DndContext>
-                        ) : (
-                          <div className="text-center py-4 text-gray-500 bg-white rounded border border-dashed border-gray-300">
-                            No content added yet
-                          </div>
-                        )}
+                        ) : null}
+                        <div className="text-center pt-5">
+                          <button
+                            className="text-blue-500 hover:text-blue-700 transition-colors"
+                            onClick={() =>
+                              handleOpenContentTypePopup(section.id)
+                            }
+                          >
+                            <PlusIcon className="h-5 w-5" />
+                          </button>
+                        </div>
                       </div>
                     </motion.div>
                   </SortableItem>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                No sections added yet
-              </div>
-            )}
+            ) : null}
+
+            <div className="text-center pt-5">
+              <button
+                className="text-blue-500 hover:text-blue-700 transition-colors"
+                onClick={addNewSection}
+              >
+                <PlusCircleIcon className="h-8 w-8" />
+              </button>
+            </div>
           </SortableContext>
         </DndContext>
       </div>
@@ -1843,6 +1873,7 @@ export default function RoleplayForm({
   };
 
   // Content form component with dynamic fields
+  // Content form component with dynamic fields and validation
   const ContentForm = ({
     content,
     onSave,
@@ -1860,6 +1891,9 @@ export default function RoleplayForm({
   }) => {
     const [localFormData, setLocalFormData] = useState<any>(formData);
     const [tagQuery, setTagQuery] = useState("");
+    const [validationErrors, setValidationErrors] = useState<{
+      [key: string]: string;
+    }>({});
 
     const [localNextOptionId, setLocalNextOptionId] = useState(nextOptionId);
     const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
@@ -1867,7 +1901,37 @@ export default function RoleplayForm({
     // Update local form data when formData prop changes
     useEffect(() => {
       setLocalFormData(formData);
+      // Clear errors when form data is reset (e.g., when opening a new content form)
+      setValidationErrors({});
     }, [formData]);
+
+    // --- Validation Function ---
+    const validateForm = () => {
+      const errors: { [key: string]: string } = {};
+
+      if (contentType === RoleplaySectionType.CONVERSATION) {
+        if (!localFormData.conversation?.name?.trim()) {
+          errors.name = "Name is required.";
+        }
+        if (!localFormData.conversation?.avartar?.trim()) {
+          errors.avatar = "Avatar is required.";
+        }
+      } else if (contentType === RoleplaySectionType.LEADING_TEXT) {
+        if (!localFormData.leadingText?.content?.trim()) {
+          errors.content = "Content is required.";
+        }
+      } else if (contentType === RoleplaySectionType.HINT) {
+        if (!localFormData.hint?.icon?.trim()) {
+          errors.icon = "Icon is required.";
+        }
+        if (!localFormData.hint?.content?.trim()) {
+          errors.hintContent = "Content is required.";
+        }
+      }
+
+      setValidationErrors(errors);
+      return Object.keys(errors).length === 0;
+    };
 
     const handleChange = (field: string, value: any) => {
       setLocalFormData((prev: any) => ({ ...prev, [field]: value }));
@@ -1881,6 +1945,13 @@ export default function RoleplayForm({
           [field]: value,
         },
       }));
+      // Clear error on change
+      if (field === "name" && validationErrors.name) {
+        setValidationErrors((prev) => ({ ...prev, name: "" }));
+      }
+      if (field === "avartar" && validationErrors.avatar) {
+        setValidationErrors((prev) => ({ ...prev, avatar: "" }));
+      }
     };
 
     const handleLeadingTextChange = (field: string, value: any) => {
@@ -1891,6 +1962,10 @@ export default function RoleplayForm({
           [field]: value,
         },
       }));
+      // Clear error on change
+      if (field === "content" && validationErrors.content) {
+        setValidationErrors((prev) => ({ ...prev, content: "" }));
+      }
     };
 
     const handleHintChange = (field: string, value: any) => {
@@ -1901,6 +1976,13 @@ export default function RoleplayForm({
           [field]: value,
         },
       }));
+      // Clear error on change
+      if (field === "icon" && validationErrors.icon) {
+        setValidationErrors((prev) => ({ ...prev, icon: "" }));
+      }
+      if (field === "content" && validationErrors.hintContent) {
+        setValidationErrors((prev) => ({ ...prev, hintContent: "" }));
+      }
     };
 
     const handleExerciseChange = (field: string, value: any) => {
@@ -1959,7 +2041,6 @@ export default function RoleplayForm({
     };
 
     const addNewDocument = () => {
-      // Find max ID currently in the exercise documents
       const currentMaxId = localFormData.exercise.document.reduce(
         (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
         0
@@ -2001,6 +2082,10 @@ export default function RoleplayForm({
     };
 
     const handleSave = () => {
+      if (!validateForm()) {
+        return; // Stop if validation fails
+      }
+
       // Update global counters for options and answers
       setNextOptionId(localNextOptionId);
       setNextAnswerId(localNextAnswerId);
@@ -2124,16 +2209,30 @@ export default function RoleplayForm({
                 onChange={(e) =>
                   handleConversationChange("name", e.target.value)
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  validationErrors.name ? "border-red-500" : ""
+                }`}
                 placeholder="Enter name"
               />
+              {validationErrors.name && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.name}
+                </p>
+              )}
             </div>
 
-            <AvatarSelector
-              value={localFormData.conversation.avartar || ""}
-              onChange={(value) => handleConversationChange("avartar", value)}
-              label="Avatar"
-            />
+            <div>
+              <AvatarSelector
+                value={localFormData.conversation.avartar || ""}
+                onChange={(value) => handleConversationChange("avartar", value)}
+                label="Avatar"
+              />
+              {validationErrors.avatar && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.avatar}
+                </p>
+              )}
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2226,8 +2325,32 @@ export default function RoleplayForm({
                   handleLeadingTextChange("content", e.target.value)
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  validationErrors.content ? "border-red-500" : ""
+                }`}
                 placeholder="Enter content"
+              />
+              {validationErrors.content && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.content}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Audio
+              </label>
+              <CloudflareFileUpload
+                initialUrl={localFormData.leadingText.audio || ""}
+                onUrlChange={(newUrl) =>
+                  handleLeadingTextChange("audio", newUrl)
+                }
+                label=""
+                uploadPayload={{
+                  prefix: "",
+                  folder: "roleplay",
+                }}
               />
             </div>
           </>
@@ -2235,11 +2358,18 @@ export default function RoleplayForm({
 
         {contentType === RoleplaySectionType.HINT && (
           <>
-            <IconSelector
-              value={localFormData.hint.icon || ""}
-              onChange={(value) => handleHintChange("icon", value)}
-              label="Icon"
-            />
+            <div>
+              <IconSelector
+                value={localFormData.hint.icon || ""}
+                onChange={(value) => handleHintChange("icon", value)}
+                label="Icon"
+              />
+              {validationErrors.icon && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.icon}
+                </p>
+              )}
+            </div>
 
             <ColorPicker
               value={localFormData.hint.textColor || "#000000"}
@@ -2255,9 +2385,16 @@ export default function RoleplayForm({
                 value={localFormData.hint.content || ""}
                 onChange={(e) => handleHintChange("content", e.target.value)}
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  validationErrors.hintContent ? "border-red-500" : ""
+                }`}
                 placeholder="Enter content"
               />
+              {validationErrors.hintContent && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.hintContent}
+                </p>
+              )}
             </div>
           </>
         )}
@@ -2307,7 +2444,6 @@ export default function RoleplayForm({
               label="Keypoint"
             />
 
-            {/* Tag selection using Combobox */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
                 Tag
@@ -2358,7 +2494,6 @@ export default function RoleplayForm({
               </Combobox>
             </div>
 
-            {/* Documents Section */}
             <div className="border rounded-lg p-4 bg-gray-50">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-medium text-gray-800">Content Documents</h3>
@@ -2548,7 +2683,6 @@ export default function RoleplayForm({
               />
             </div>
 
-            {/* Type-specific fields */}
             {(localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
               localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE) && (
               <div>
@@ -2773,35 +2907,6 @@ export default function RoleplayForm({
                 />
               </div>
             )}
-
-            {/* Level field for all exercise types */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Level
-              </label>
-              <div className="space-y-2">
-                {Object.values(KeypointLevel).map((level) => (
-                  <label key={level} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={
-                        localFormData.exercise.level?.includes(level) || false
-                      }
-                      onChange={(e) => {
-                        const newLevel = e.target.checked
-                          ? [...(localFormData.exercise.level || []), level]
-                          : (localFormData.exercise.level || []).filter(
-                              (l: KeypointLevel) => l !== level
-                            );
-                        handleExerciseChange("level", newLevel);
-                      }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm">{level}</span>
-                  </label>
-                ))}
-              </div>
-            </div>
           </>
         )}
 
@@ -3257,10 +3362,22 @@ export default function RoleplayForm({
                 className="bg-white w-[600px] rounded-xl shadow-xl flex flex-col"
                 style={{ maxHeight: "90vh" }}
               >
-                <div className="p-6 pt-6 border-b border-gray-200">
+                <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold">
                     {modalOpen.content ? "Edit Content" : "New Content"}
                   </h2>
+
+                  <button
+                    onClick={() =>
+                      setModalOpen({
+                        sectionId: null,
+                        contentType: RoleplaySectionType.CONVERSATION,
+                      })
+                    }
+                    className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
                 </div>
 
                 <div className="flex-grow overflow-y-auto p-6">

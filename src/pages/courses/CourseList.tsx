@@ -118,17 +118,6 @@ export default function CourseList() {
     [CourseStatus.INACTIVE]: "Inactive",
   };
 
-  // Add level colors and labels
-  const levelColors: Record<CourseLevel, string> = {
-    [CourseLevel.LEVEL1]: "bg-blue-100 text-blue-700",
-    [CourseLevel.LEVEL2]: "bg-purple-100 text-purple-700",
-  };
-
-  const levelLabels: Record<CourseLevel, string> = {
-    [CourseLevel.LEVEL1]: "Level 1",
-    [CourseLevel.LEVEL2]: "Level 2",
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       {/* Header */}
@@ -309,7 +298,7 @@ export default function CourseList() {
                     )}
 
                     {/* Status and Level in the same row */}
-                    <div className="flex justify-between gap-2 mb-3">
+                    <div className="flex justify-between items-center  gap-2 mb-3">
                       <span
                         className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
                           statusColors[course.status]
@@ -318,12 +307,8 @@ export default function CourseList() {
                         {statusLabels[course.status]}
                       </span>
 
-                      <span
-                        className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                          levelColors[course.level || CourseLevel.LEVEL1]
-                        }`}
-                      >
-                        {levelLabels[course.level || CourseLevel.LEVEL1]}
+                      <span className="text-sm font-medium text-gray-500">
+                        {course.numberOfLesson || 0} lessons
                       </span>
                     </div>
                   </div>

@@ -18,6 +18,7 @@ export interface ILeadingText {
   frameColor: string;
   textColor: string;
   content: string;
+  audio: string;
 }
 
 export interface IHint {

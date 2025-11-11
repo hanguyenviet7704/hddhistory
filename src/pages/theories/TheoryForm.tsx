@@ -7,7 +7,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { learningItemService } from "../../services/learningItemService";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
-import { TrashIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import {
+  TrashIcon,
+  PlusCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -377,14 +381,6 @@ export default function TheoryForm({
       <div className="mb-6 bg-gray-50 rounded-xl p-6 shadow-sm">
         <div className="flex justify-start gap-3 mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Documents</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              className="text-blue-500 hover:text-blue-700 transition-colors"
-              onClick={() => handleOpenModal("documents")}
-            >
-              <PlusCircleIcon className="h-6 w-6" />
-            </button>
-          </div>
         </div>
         <p className="text-sm text-gray-500 mb-4">
           👉 Drag to reorder. Click on item to edit.
@@ -532,11 +528,15 @@ export default function TheoryForm({
                   </SortableItem>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                No documents added yet
-              </div>
-            )}
+            ) : null}
+            <div className="text-center pt-5">
+              <button
+                className="text-blue-500 hover:text-blue-700 transition-colors"
+                onClick={() => handleOpenModal("documents")}
+              >
+                <PlusCircleIcon className="h-8 w-8" />
+              </button>
+            </div>
           </SortableContext>
         </DndContext>
       </div>
@@ -1124,12 +1124,18 @@ export default function TheoryForm({
                 className="bg-white w-[600px] rounded-xl shadow-xl flex flex-col"
                 style={{ maxHeight: "90vh" }}
               >
-                <div className="p-6 pt-6 border-b border-gray-200">
+                <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold">
                     {modalOpen.theoryDocument
                       ? "Edit Document"
                       : "New Document"}
                   </h2>
+                  <button
+                    onClick={() => setModalOpen({ section: null })}
+                    className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
                 </div>
                 <div className="flex-grow overflow-y-auto p-6">
                   <DocumentForm

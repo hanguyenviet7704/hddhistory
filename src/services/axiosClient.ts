@@ -20,8 +20,6 @@ const axiosClient = axios.create({
   },
 });
 
-console.log(111, API_URL);
-
 // Request Interceptor
 axiosClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {

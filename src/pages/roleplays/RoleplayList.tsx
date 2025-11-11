@@ -205,15 +205,16 @@ const RoleplayList: React.FC = () => {
                     }
                   >
                     {/* Image */}
-                    {roleplay.image && (
-                      <div className="relative h-48 overflow-hidden flex-shrink-0">
-                        <img
-                          src={roleplay.image}
-                          alt={roleplay.title[lang] || roleplay.title.en}
-                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    )}
+                    <div className="relative h-48 overflow-hidden flex-shrink-0">
+                      <img
+                        src={
+                          roleplay.image ||
+                          "https://placehold.co/600x400/?text=Roleplay+Image&font=roboto"
+                        }
+                        alt={roleplay.title[lang] || roleplay.title.en}
+                        className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                      />
+                    </div>
 
                     {/* Content */}
                     <div className="relative p-5 flex flex-col flex-grow">

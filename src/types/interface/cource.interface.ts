@@ -19,6 +19,7 @@ export interface ICourse {
   status: CourseStatus;
   level: CourseLevel;
   prices?: IPrice[];
+  numberOfLesson?: number;
 }
 
 export interface CoursePayload {
@@ -29,6 +30,7 @@ export interface CoursePayload {
   status: CourseStatus;
   level: CourseLevel;
   prices?: IPrice[];
+  numberOfLesson?: number;
 }
 
 export class CourseListQuery extends BaseQuery {

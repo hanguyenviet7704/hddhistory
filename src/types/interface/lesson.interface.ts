@@ -7,6 +7,7 @@ import { ITag } from "./tag.interface";
 export interface ILesson {
   _id: string;
   courseId: string;
+  learningItemId?: string;
   type: LessonType;
   title: ITranslation;
   description: ITranslation;
@@ -35,6 +36,7 @@ export interface LessonPayload {
   icon: string;
   index: number;
   courseId: string;
+  learningItemId?: string;
 }
 
 interface LessonIndex {
