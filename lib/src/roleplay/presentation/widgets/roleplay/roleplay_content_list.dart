@@ -139,6 +139,20 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     _audioControllers.clear();
   }
 
+  bool _isSamePerson(ConversationEntity conversation, ConversationEntity? previousConversation) {
+    if (previousConversation == null) return false;
+    return previousConversation.name == conversation.name;
+  }
+
+  double _getBottomPadding(int index, int contentIndex) {
+    if (index == _visibleIndexes.length - 1) return 0;
+    final content = _displayableContents[index];
+    if (content.type != RoleplaySectionType.conversation) return 16.h;
+    final previousConversation = contentIndex > 0 ? _displayableContents[contentIndex - 1].conversation : null;
+    if (!_isSamePerson(content.conversation, previousConversation)) return 0;
+    return 16.h;
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_displayableContents.isEmpty) {
@@ -179,7 +193,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         return SizeTransition(
           sizeFactor: animation,
           child: Padding(
-            padding: EdgeInsets.only(bottom: index == _visibleIndexes.length - 1 ? 0 : 16.h),
+            padding: EdgeInsets.only(bottom: _getBottomPadding(index, contentIndex)),
             child: child,
           ),
         );

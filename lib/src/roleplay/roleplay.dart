@@ -4,8 +4,8 @@ import 'dart:ui' as ui;
 
 //* Package imports
 import 'package:darq/darq.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:dio/dio.dart';
+import 'package:dotted_border/dotted_border.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
@@ -43,8 +43,10 @@ part 'presentation/pages/roleplay_page.dart';
 part 'presentation/widgets/roleplay/roleplay_audio_controller.dart';
 part 'presentation/widgets/roleplay/roleplay_background.dart';
 part 'presentation/widgets/roleplay/roleplay_bottom_action.dart';
+part 'presentation/widgets/roleplay/roleplay_bubble_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_content_list.dart';
-part 'presentation/widgets/roleplay/roleplay_content_widgets.dart';
+part 'presentation/widgets/roleplay/roleplay_hintext_widget.dart';
+part 'presentation/widgets/roleplay/roleplay_leadingtext_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_page_header.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_action_button.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_background.dart';
