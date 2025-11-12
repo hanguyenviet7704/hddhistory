@@ -1,7 +1,7 @@
 part of '../../../course.dart';
 
-class CourseHeaderCard extends StatelessWidget {
-  const CourseHeaderCard({super.key});
+class CourseRoadmapHeaderCard extends StatelessWidget {
+  const CourseRoadmapHeaderCard({super.key});
 
   String _getLevelText(CourseEntity course) {
     return 'Course';

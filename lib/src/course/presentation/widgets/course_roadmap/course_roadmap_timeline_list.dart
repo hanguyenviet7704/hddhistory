@@ -1,7 +1,7 @@
 part of '../../../course.dart';
 
-class RoadmapTimelineList extends StatelessWidget {
-  const RoadmapTimelineList({
+class CourseRoadmapTimeline extends StatelessWidget {
+  const CourseRoadmapTimeline({
     super.key,
   });
 

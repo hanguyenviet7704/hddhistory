@@ -20,9 +20,9 @@ class CourseRoadmapContent extends StatelessWidget {
             spacing: 20.h,
             children: [
               // Course header card
-              CourseHeaderCard(),
+              CourseRoadmapHeaderCard(),
               // Roadmap timeline list
-              RoadmapTimelineList(),
+              CourseRoadmapTimeline(),
             ],
           ),
         ),

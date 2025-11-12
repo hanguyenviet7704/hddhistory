@@ -12,3 +12,12 @@ abstract class RoadmapLevelEntity with _$RoadmapLevelEntity {
   factory RoadmapLevelEntity.fromJson(Map<String, dynamic> json) => _$RoadmapLevelEntityFromJson(json);
 }
 
+extension RoadmapLevelEntityExtension on RoadmapLevelEntity {
+  int get totalLessons => lessonList.length;
+  int get completedLessons => lessonList.where((r) => r.progess == ProcessEnum.done).length;
+  double get progress {
+    if (totalLessons == 0) return 0;
+    if (completedLessons >= totalLessons) return 1;
+    return completedLessons / totalLessons;
+  }
+}
