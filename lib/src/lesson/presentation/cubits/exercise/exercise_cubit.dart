@@ -27,11 +27,12 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
   }
 
   void nextQuestion() {
+    setQuestionPoint(state.currentQuestion);
+    
     if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) {
       AppDI.injector.get<LessonCubit>().nextLearningItem();
       return;
     }
-    setQuestionPoint(state.currentQuestion);
     emit(state.copyWith(currentQuestionIndex: state.currentQuestionIndex + 1));
     setQuestionData(state.currentQuestion);
   }

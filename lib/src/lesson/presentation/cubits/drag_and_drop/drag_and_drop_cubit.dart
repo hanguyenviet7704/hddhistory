@@ -94,17 +94,30 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
   }
 
   int pointCalculation() {
-    final placedWords = state.placedWords.values.toList();
-    final correctWords = state.question.answer.map((answer) => answer.correctAnswer).toList();
+    /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
+    /// Sai ko bị trừ điểm
+    final placedWords = state.placedWords;
+    final correctAnswers = state.question.answer;
+
+    if (placedWords.isEmpty) return 0;
+
+    final totalPositions = correctAnswers.length;
+    if (totalPositions == 0) return 0;
+
+    final pointPerPosition = 100.0 / totalPositions;
     int correctCount = 0;
-    int currentCount = 0;
-    for (int i = 0; i < placedWords.length; i++) {
-      if (placedWords[i] == correctWords[i]) {
+
+    for (int i = 0; i < totalPositions; i++) {
+      final placedWord = placedWords[i];
+      final correctWord = correctAnswers[i].correctAnswer;
+      if (placedWord == correctWord) {
         correctCount++;
       }
-      currentCount++;
     }
-    return correctCount == currentCount ? 100 : 0;
+
+    final score = correctCount * pointPerPosition;
+
+    return score.clamp(0, 100).toInt();
   }
 
   /// Toggle explanation visibility

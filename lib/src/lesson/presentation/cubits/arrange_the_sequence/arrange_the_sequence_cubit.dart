@@ -67,10 +67,28 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
   }
 
   int pointCalculation() {
+    /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
+    /// Sai ko bị trừ điểm
     final currentOrder = state.currentItems.map((item) => item.id).toList();
     final correctOrder = state.question.answer.map((answer) => answer.id).toList();
-    final isCorrect = _listsEqual(currentOrder, correctOrder);
-    return isCorrect ? 100 : 0;
+
+    if (currentOrder.isEmpty) return 0;
+
+    final totalPositions = correctOrder.length;
+    if (totalPositions == 0) return 0;
+
+    final pointPerPosition = 100.0 / totalPositions;
+    int correctCount = 0;
+
+    for (int i = 0; i < totalPositions; i++) {
+      if (i < currentOrder.length && currentOrder[i] == correctOrder[i]) {
+        correctCount++;
+      }
+    }
+
+    final score = correctCount * pointPerPosition;
+
+    return score.clamp(0, 100).toInt();
   }
 
   /// Toggle the explanation visibility

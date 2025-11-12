@@ -59,10 +59,22 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
   }
 
   int pointCalculation() {
+    /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
+    /// Sai ko bị trừ điểm
     final correctIndices = state.correctWordIndices;
     final selectedIndices = state.selectedWordIndices;
-    final isCorrect = selectedIndices.length == correctIndices.length && selectedIndices.every((index) => correctIndices.contains(index));
-    return isCorrect ? 100 : 0;
+
+    if (selectedIndices.isEmpty) return 0;
+
+    final totalCorrectWords = correctIndices.length;
+    if (totalCorrectWords == 0) return 0;
+
+    final pointPerWord = 100.0 / totalCorrectWords;
+    final correctSelections = selectedIndices.where((index) => correctIndices.contains(index)).length;
+
+    final score = correctSelections * pointPerWord;
+
+    return score.clamp(0, 100).toInt();
   }
 
   void toggleExplanation() {

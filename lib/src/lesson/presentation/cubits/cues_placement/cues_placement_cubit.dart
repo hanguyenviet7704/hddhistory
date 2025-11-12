@@ -76,10 +76,22 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
   }
 
   int pointCalculation() {
+    /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
+    /// Sai ko bị trừ điểm
     final placedPositions = state.placedMarks.keys.toSet();
     final correctPositions = state.correctPositions;
-    final isCorrect = placedPositions.length == correctPositions.length && placedPositions.every((pos) => correctPositions.contains(pos));
-    return isCorrect ? 100 : 0;
+
+    if (placedPositions.isEmpty) return 0;
+
+    final totalCorrectPositions = correctPositions.length;
+    if (totalCorrectPositions == 0) return 0;
+
+    final pointPerPosition = 100.0 / totalCorrectPositions;
+    final correctPlacements = placedPositions.where((pos) => correctPositions.contains(pos)).length;
+
+    final score = correctPlacements * pointPerPosition;
+
+    return score.clamp(0, 100).toInt();
   }
 
   void toggleExplanation() {
