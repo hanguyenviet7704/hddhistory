@@ -4,12 +4,7 @@ class CourseHeaderCard extends StatelessWidget {
   const CourseHeaderCard({super.key});
 
   String _getLevelText(CourseEntity course) {
-    switch (course.level) {
-      case CourseLevel.level1:
-        return 'Level 1';
-      case CourseLevel.level2:
-        return 'Level 2';
-    }
+    return 'Course';
   }
 
   @override

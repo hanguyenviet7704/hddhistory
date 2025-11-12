@@ -16,8 +16,9 @@ abstract class CourseRoadmapState with _$CourseRoadmapState {
 }
 
 extension CourseStateExtension on CourseRoadmapState {
-  int get totalLessons => roadmap.lessonList.length;
-  int get completedLessons => roadmap.lessonList.where((r) => r.progess == ProcessEnum.done).length;
+  List<LessonEntity> get allLessons => roadmap.levels.expand((level) => level.lessonList).toList();
+  int get totalLessons => allLessons.length;
+  int get completedLessons => allLessons.where((r) => r.progess == ProcessEnum.done).length;
   double get progress {
     if (totalLessons == 0) return 0;
     if (completedLessons >= totalLessons) return 1;

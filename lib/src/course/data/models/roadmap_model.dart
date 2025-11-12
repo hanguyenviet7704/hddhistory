@@ -5,8 +5,7 @@ abstract class RoadmapModel with _$RoadmapModel {
   const factory RoadmapModel({
     @Default('') @JsonKey(name: '_id') String id,
     @Default('') String courseId,
-    @Default([]) List<RoadmapNodeModel> node,
-    @Default([]) List<LessonModel> lessonList,
+    @Default([]) List<RoadmapLevelModel> levels,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _RoadmapModel;
@@ -18,8 +17,7 @@ extension RoadmapModelExtension on RoadmapModel {
   RoadmapEntity toEntity() => RoadmapEntity(
     id: id,
     courseId: courseId,
-    node: node.map((model) => model.toEntity()).toList(),
-    lessonList: lessonList.map((model) => model.toEntity()).toList(),
+    levels: levels.map((model) => model.toEntity()).toList(),
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

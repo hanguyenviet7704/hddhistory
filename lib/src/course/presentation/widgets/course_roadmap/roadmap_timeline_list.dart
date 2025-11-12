@@ -8,7 +8,7 @@ class RoadmapTimelineList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<CourseRoadmapCubit, CourseRoadmapState, List<LessonEntity>>(
-      selector: (state) => state.roadmap.lessonList,
+      selector: (state) => state.allLessons,
       builder: (context, lessons) {
         if (lessons.isEmpty) {
           return Container(

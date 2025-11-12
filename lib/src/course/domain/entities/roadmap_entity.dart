@@ -5,8 +5,7 @@ abstract class RoadmapEntity with _$RoadmapEntity {
   const factory RoadmapEntity({
     @Default('') String id,
     @Default('') String courseId,
-    @Default([]) List<RoadmapNodeEntity> node,
-    @Default([]) List<LessonEntity> lessonList,
+    @Default([]) List<RoadmapLevelEntity> levels,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _RoadmapEntity;

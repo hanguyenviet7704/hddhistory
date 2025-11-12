@@ -9,7 +9,6 @@ abstract class CourseModel with _$CourseModel {
     @Default('') String image,
     @Default('') String skillsetId,
     @Default(0) int numberOfLesson,
-    @Default(CourseLevel.level1) CourseLevel level,
     @Default(CoursePublishStatus.published) CoursePublishStatus status,
   }) = _CourseModel;
 
@@ -25,13 +24,6 @@ enum CoursePublishStatus {
   inactive,
 }
 
-enum CourseLevel {
-  @JsonValue('level 1')
-  level1,
-  @JsonValue('level 2')
-  level2,
-}
-
 extension CourseModelExtension on CourseModel {
   CourseEntity toEntity() => CourseEntity(
     id: id,
@@ -40,7 +32,6 @@ extension CourseModelExtension on CourseModel {
     image: image,
     skillsetId: skillsetId,
     numberOfLesson: numberOfLesson,
-    level: level,
     status: status,
   );
 }
