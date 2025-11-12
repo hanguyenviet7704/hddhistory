@@ -22,8 +22,10 @@ class RoleplayFeedbackPage extends StatelessWidget {
                       RoleplayFeedbackChart(),
                       RoleplayFeedbackBreakdownSection(),
                       24.verticalSpace,
-                      RoleplayFeedbackSummarySection(),
-                      32.verticalSpace,
+                      if (kDebugMode) ...[
+                        RoleplayFeedbackSummarySection(),
+                        32.verticalSpace,
+                      ],
                     ],
                   ),
                 ),

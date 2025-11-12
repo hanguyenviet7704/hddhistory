@@ -38,33 +38,36 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
         GestureDetector(
-          onTap: onTapExplain,
-          behavior: HitTestBehavior.opaque,
+          onTap: () => LessonExplainPopup.show(context),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.rolePlayResultBreakdownInstruction,
-                style: AppStyle.text14.copyWith(
-                  color: AppCustomColor.textSecondary,
+                context.text.lessonLessonKeypointInstruction,
+                style: AppStyle.text12.copyWith(
+                  color: AppCustomColor.textQuaternary,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              6.horizontalSpace,
+              8.horizontalSpace,
               Container(
                 width: 20.w,
                 height: 20.w,
                 decoration: BoxDecoration(
-                  color: AppCustomColor.backgroundWhite,
-                  border: Border.all(color: AppCustomColor.borderDefault),
+                  border: Border.all(
+                    color: AppCustomColor.textQuaternary,
+                    width: 2,
+                  ),
                   shape: BoxShape.circle,
                 ),
-                alignment: Alignment.center,
-                child: SvgPicture.asset(
-                  AppAsset.svg.common.info,
-                  width: 12.w,
-                  height: 12.w,
-                  colorFilter: ColorFilter.mode(AppCustomColor.textSecondary, BlendMode.srcIn),
+                child: Center(
+                  child: AppText(
+                    'i',
+                    style: AppStyle.text12.copyWith(
+                      color: AppCustomColor.textQuaternary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ),
             ],

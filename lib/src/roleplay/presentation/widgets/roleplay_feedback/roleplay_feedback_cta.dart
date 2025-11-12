@@ -23,13 +23,6 @@ class RoleplayFeedbackBottomCTA extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppCustomColor.brandPrimary,
                 borderRadius: BorderRadius.circular(1000.r),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppCustomColor.brandPrimary.op(0.45),
-                    blurRadius: 18,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
               ),
               alignment: Alignment.center,
               child: AppText(
