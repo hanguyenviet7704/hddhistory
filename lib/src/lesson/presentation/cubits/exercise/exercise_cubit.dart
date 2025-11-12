@@ -111,7 +111,8 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
   void setQuestionPoint(QuestionEntity question) {
     LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
     if (learningItem.type != LearningItemType.roleplay) return;
-    KeypointEntity point = question.keypoint.copyWith(point: 0);
+    KeypointEntity point = question.keypoint.copyWith(isUseRoleplayModule: true);
+
     switch (question.type) {
       case QuestionTypeEnum.multipleChoice || QuestionTypeEnum.singleChoice:
         int score = AppDI.injector.get<ChoiceCubit>().pointCalculation();
@@ -138,6 +139,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
         point = point.copyWith(point: score);
         break;
     }
+    
     AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
   }
 }

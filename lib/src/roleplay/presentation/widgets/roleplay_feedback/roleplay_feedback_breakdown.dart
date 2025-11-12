@@ -166,14 +166,40 @@ class RoleplayFeedbackPointTile extends StatelessWidget {
           ),
           12.horizontalSpace,
           Expanded(
-            child: AppText(
-              title,
-              style: AppStyle.text14.copyWith(
-                color: AppCustomColor.textSecondary,
-                fontWeight: FontWeight.w600,
-                height: 1.4,
-              ),
-              maxLines: 2,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                AppText(
+                  title,
+                  style: AppStyle.text14.copyWith(
+                    color: AppCustomColor.textSecondary,
+                    fontWeight: FontWeight.w600,
+                    height: 1.4,
+                  ),
+                  maxLines: 2,
+                ),
+                2.verticalSpace,
+                RichText(
+                  text: TextSpan(
+                    children: [
+                      TextSpan(
+                        text: '${point.point}',
+                        style: AppStyle.text12.copyWith(
+                          color: AppCustomColor.textTertiary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      TextSpan(
+                        text: ' / 100',
+                        style: AppStyle.text12.copyWith(
+                          color: AppCustomColor.textQuaternary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
           12.horizontalSpace,

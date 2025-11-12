@@ -1,37 +1,40 @@
 part of '../../../roleplay.dart';
 
 class RoleplayFeedbackSummarySection extends StatelessWidget {
-  final List<KeypointEntity> points;
-
-  const RoleplayFeedbackSummarySection({super.key, required this.points});
+  const RoleplayFeedbackSummarySection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (points.isEmpty) return const SizedBox.shrink();
+    return BlocSelector<RoleplayPointCubit, RoleplayPointState, List<KeypointEntity>>(
+      selector: (state) => state.points,
+      builder: (context, points) {
+        if (points.isEmpty) return const SizedBox.shrink();
 
-    final List<KeypointEntity> sorted = List<KeypointEntity>.from(points)..sort((a, b) => b.point.compareTo(a.point));
-    final strengths = sorted.take(3).toList();
-    final usedIds = strengths.map((point) => point.id).toSet();
-    final weaknesses = sorted.reversed.where((point) => !usedIds.contains(point.id)).take(3).toList();
+        final List<KeypointEntity> sorted = List<KeypointEntity>.from(points)..sort((a, b) => b.point.compareTo(a.point));
+        final strengths = sorted.take(3).toList();
+        final usedIds = strengths.map((point) => point.id).toSet();
+        final weaknesses = sorted.reversed.where((point) => !usedIds.contains(point.id)).take(3).toList();
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        AppText(
-          context.text.rolePlayResultFeedback,
-          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
-        ),
-        12.verticalSpace,
-        _RoleplayFeedbackSummaryCard(
-          title: context.text.rolePlayResultFeedbackStrength,
-          items: strengths,
-        ),
-        12.verticalSpace,
-        _RoleplayFeedbackSummaryCard(
-          title: context.text.rolePlayResultFeedbackWeakness,
-          items: weaknesses,
-        ),
-      ],
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AppText(
+              context.text.rolePlayResultFeedback,
+              style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
+            ),
+            12.verticalSpace,
+            _RoleplayFeedbackSummaryCard(
+              title: context.text.rolePlayResultFeedbackStrength,
+              items: strengths,
+            ),
+            12.verticalSpace,
+            _RoleplayFeedbackSummaryCard(
+              title: context.text.rolePlayResultFeedbackWeakness,
+              items: weaknesses,
+            ),
+          ],
+        );
+      },
     );
   }
 }

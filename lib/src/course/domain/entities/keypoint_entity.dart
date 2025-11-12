@@ -14,6 +14,7 @@ abstract class KeypointEntity with _$KeypointEntity {
 
     //* Custom Fields
     @Default(0) int point,
+    @Default(false) bool isUseRoleplayModule,
   }) = _KeypointEntity;
 
   factory KeypointEntity.fromJson(Map<String, dynamic> json) => _$KeypointEntityFromJson(json);
@@ -23,7 +24,7 @@ extension KeypointEntityExtension on KeypointEntity {
   bool get isCompleted => progess == ProcessEnum.done;
 
   StrengthLevel get strengthLevel {
-    if (point == 0) return strengthLevelData;
+    if (!isUseRoleplayModule) return strengthLevelData;
     if (point >= 0 && point <= 40) return StrengthLevel.weakPoint;
     if (point > 40 && point <= 75) return StrengthLevel.morePractice;
     if (point > 75 && point <= 100) return StrengthLevel.optionalPractice;

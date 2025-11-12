@@ -53,17 +53,6 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
-
-    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
-    if (learningItem.type == LearningItemType.roleplay) {
-      KeypointEntity point = state.question.keypoint.copyWith(point: pointCalculation());
-      AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
-    }
-  }
-
-  void setPoint() {
-    KeypointEntity point = state.question.keypoint.copyWith(point: pointCalculation());
-    AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
   }
 
   int pointCalculation() {
