@@ -2189,8 +2189,12 @@ export default function RoleplayForm({
       const newId = localNextAnswerId;
       setLocalNextAnswerId(newId + 1);
 
+      const existingAnswers = Array.isArray(localFormData.exercise.answer)
+        ? localFormData.exercise.answer
+        : [];
+
       const newAnswer = [
-        ...localFormData.exercise.answer,
+        ...existingAnswers,
         { correctAnswer: "", id: newId },
       ];
       handleExerciseChange("answer", newAnswer);
@@ -2198,15 +2202,21 @@ export default function RoleplayForm({
 
     // Remove answer
     const removeAnswer = (index: number) => {
-      const newAnswer = localFormData.exercise.answer.filter(
-        (_: any, i: number) => i !== index
-      );
+      const existingAnswers = Array.isArray(localFormData.exercise.answer)
+        ? localFormData.exercise.answer
+        : [];
+
+      const newAnswer = existingAnswers.filter((_: any, i: number) => i !== index);
       handleExerciseChange("answer", newAnswer);
     };
 
     // Update answer value
     const updateAnswerValue = (index: number, value: string) => {
-      const newAnswer = [...localFormData.exercise.answer];
+      const existingAnswers = Array.isArray(localFormData.exercise.answer)
+        ? localFormData.exercise.answer
+        : [];
+
+      const newAnswer = [...existingAnswers];
       newAnswer[index] = { ...newAnswer[index], correctAnswer: value };
       handleExerciseChange("answer", newAnswer);
     };
