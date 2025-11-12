@@ -13,18 +13,31 @@ class CourseRoadmapContent extends StatelessWidget {
           //   context.read<CourseCubit>().loadRoadmap(courseId);
           // }
         },
-        child: SingleChildScrollView(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            spacing: 20.h,
-            children: [
-              // Course header card
-              CourseRoadmapHeaderCard(),
-              // Roadmap timeline list
-              CourseRoadmapTimeline(),
-            ],
-          ),
+        // child: SingleChildScrollView(
+        //   padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+        //   child: Column(
+        //     crossAxisAlignment: CrossAxisAlignment.start,
+        //     spacing: 20.h,
+        //     children: [
+        //       // Course header card
+        //       CourseRoadmapHeaderCard(),
+        //       // Roadmap timeline list
+        //       CourseRoadmapTimeline(),
+        //     ],
+        //   ),
+        // ),
+        child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, RoadmapEntity>(
+          selector: (state) => state.roadmap,
+          builder: (context, roadmap) {
+            return ListView.separated(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              separatorBuilder: (context, index) => 20.verticalSpace,
+              itemCount: roadmap.levels.length,
+              itemBuilder: (context, index) {
+                return CourseLevelContent(level: roadmap.levels[index]);
+              },
+            );
+          },
         ),
       ),
     );

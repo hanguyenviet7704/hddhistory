@@ -1,12 +1,12 @@
 part of '../../../course.dart';
 
 class CourseRoadmapHeaderCard extends StatelessWidget {
-  const CourseRoadmapHeaderCard({super.key});
-
-  String _getLevelText(CourseEntity course) {
-    return 'Course';
-  }
-
+  final RoadmapLevelEntity level;
+  const CourseRoadmapHeaderCard({
+    super.key,
+    required this.level,
+  });
+  
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -22,97 +22,91 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
           ),
         ],
       ),
-      child: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, homeState) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              // Course title
-              AppText(
-                homeState.courseName,
-                style: AppStyle.text24.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: AppCustomColor.textPrimary,
-                ),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              8.verticalSpace,
-              // Course description
-              if (homeState.currentCourse.description.text.isNotEmpty) ...[
-                AppText(
-                  margin: EdgeInsets.symmetric(horizontal: 16.w),
-                  homeState.currentCourse.description.text,
-                  style: AppStyle.text14.copyWith(
-                    color: AppCustomColor.textSecondary,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          // Course title
+          BlocBuilder<HomeCubit, HomeState>(
+            builder: (context, homeState) {
+              return Column(
+                children: [
+                  AppText(
+                    homeState.courseName,
+                    style: AppStyle.text24.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: AppCustomColor.textPrimary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.center,
-                ),
-                12.verticalSpace,
-              ],
-
-              // Progress bar
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 14.w),
-                child: Row(
-                  children: [
+                  8.verticalSpace,
+                  // Course description
+                  if (homeState.currentCourse.description.text.isNotEmpty) ...[
                     AppText(
-                      _getLevelText(homeState.currentCourse).toUpperCase(),
-                      style: AppStyle.textBold12.copyWith(color: AppCustomColor.textTertiary),
-                      maxLines: 1,
-                    ),
-                    Container(
-                      margin: EdgeInsets.symmetric(horizontal: 12.w),
-                      width: 4.w,
-                      height: 4.w,
-                      decoration: ShapeDecoration(
-                        color: const Color(0xFFAAB7CC) /* Text-Quaternary */,
-                        shape: OvalBorder(),
+                      margin: EdgeInsets.symmetric(horizontal: 16.w),
+                      homeState.currentCourse.description.text,
+                      style: AppStyle.text14.copyWith(
+                        color: AppCustomColor.textSecondary,
                       ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
                     ),
-                    BlocSelector<CourseRoadmapCubit, CourseRoadmapState, double>(
-                      selector: (state) => state.progress,
-                      builder: (context, progress) {
-                        return Expanded(
-                          child: ClipRRect(
-                            borderRadius: BorderRadius.circular(4.r),
-                            child: LinearPercentIndicator(
-                              animation: true,
-                              animationDuration: 500,
-                              animateFromLastPercent: true,
-                              lineHeight: 10.h,
-                              percent: progress,
-                              backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
-                              progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
-                              barRadius: Radius.circular(30.r),
-                              padding: EdgeInsets.zero,
-                            ),
-                          ),
-                        );
-                      },
-                    ),
-                    12.horizontalSpace,
-                    // Lesson count
-                    BlocBuilder<CourseRoadmapCubit, CourseRoadmapState>(
-                      buildWhen: (previous, current) => previous.completedLessons != current.completedLessons || previous.totalLessons != current.totalLessons,
-                      builder: (context, courseState) {
-                        return AppText(
-                          '${courseState.completedLessons}/${courseState.totalLessons} Lessons',
-                          style: AppStyle.text14.copyWith(
-                            color: AppCustomColor.textTertiary,
-                          ),
-                          maxLines: 1,
-                        );
-                      },
-                    ),
+                    12.verticalSpace,
                   ],
+                ],
+              );
+            },
+          ),
+
+          // Progress bar
+          Padding(
+            padding: EdgeInsets.symmetric(horizontal: 14.w),
+            child: Row(
+              children: [
+                AppText(
+                  level.level.name.toUpperCase(),
+                  style: AppStyle.textBold12.copyWith(color: AppCustomColor.textTertiary),
+                  maxLines: 1,
                 ),
-              ),
-            ],
-          );
-        },
+                Container(
+                  margin: EdgeInsets.symmetric(horizontal: 12.w),
+                  width: 4.w,
+                  height: 4.w,
+                  decoration: ShapeDecoration(
+                    color: const Color(0xFFAAB7CC) /* Text-Quaternary */,
+                    shape: OvalBorder(),
+                  ),
+                ),
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(4.r),
+                    child: LinearPercentIndicator(
+                      animation: true,
+                      animationDuration: 500,
+                      animateFromLastPercent: true,
+                      lineHeight: 10.h,
+                      percent: level.progress,
+                      backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
+                      progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
+                      barRadius: Radius.circular(30.r),
+                      padding: EdgeInsets.zero,
+                    ),
+                  ),
+                ),
+                12.horizontalSpace,
+                // Lesson count
+                AppText(
+                  '${level.completedLessons}/${level.totalLessons} Lessons',
+                  style: AppStyle.text14.copyWith(
+                    color: AppCustomColor.textTertiary,
+                  ),
+                  maxLines: 1,
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
