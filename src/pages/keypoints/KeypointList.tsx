@@ -186,7 +186,7 @@ const KeypointList: React.FC = () => {
                   {kp.title[lang]}
                 </h2>
                 <p className="text-gray-600 mt-1.5 leading-relaxed">
-                  {kp.description[lang]}
+                  {kp.description?.[lang]}
                 </p>
                 {/* Hiển thị tag nếu có */}
                 {kp.tag && kp.tag.length > 0 && (
