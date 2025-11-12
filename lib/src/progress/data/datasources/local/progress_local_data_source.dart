@@ -53,7 +53,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
       await _localStoreService.setMap(key: _cacheListKey, value: {'items': jsonList});
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
@@ -73,7 +75,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
     try {
       final cacheKey = '${_cacheLessonKey}_$lessonId';
       await _localStoreService.setMap(key: cacheKey, value: model.toJson());
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
@@ -93,7 +97,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
     try {
       final cacheKey = '${_cacheKeypointKey}_$keypointId';
       await _localStoreService.setMap(key: cacheKey, value: model.toJson());
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
@@ -113,7 +119,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
     try {
       final cacheKey = '${_cacheExerciseKey}_$exerciseId';
       await _localStoreService.setMap(key: cacheKey, value: model.toJson());
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
@@ -133,7 +141,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
       await _localStoreService.setMap(key: _cacheMyCoursesKey, value: {'items': jsonList});
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
@@ -141,6 +151,8 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
     try {
       await _localStoreService.remove(key: _cacheListKey);
       await _localStoreService.remove(key: _cacheMyCoursesKey);
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 }

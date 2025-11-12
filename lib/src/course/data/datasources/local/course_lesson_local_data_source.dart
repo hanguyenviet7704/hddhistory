@@ -39,7 +39,9 @@ class CourseLessonLocalDataSourceImpl implements CourseLessonLocalDataSource {
         key: _cacheListKey,
         value: {'items': jsonList},
       );
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
@@ -63,7 +65,9 @@ class CourseLessonLocalDataSourceImpl implements CourseLessonLocalDataSource {
         key: cacheKey,
         value: model.toJson(),
       );
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
@@ -75,13 +79,17 @@ class CourseLessonLocalDataSourceImpl implements CourseLessonLocalDataSource {
       final cachedList = await getCachedCourseLessons();
       final updatedList = cachedList.where((item) => item.id != id).toList();
       await cacheLessons(updatedList);
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 
   @override
   Future<void> clearCache() async {
     try {
       await _localStoreService.remove(key: _cacheListKey);
-    } catch (e) {}
+    } catch (e) {
+      //
+    }
   }
 }

@@ -1,9 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayFeedbackBreakdownSection extends StatelessWidget {
-  final List<RoleplayPointEntity> points;
-
-  const RoleplayFeedbackBreakdownSection({super.key, required this.points});
+  const RoleplayFeedbackBreakdownSection({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +10,13 @@ class RoleplayFeedbackBreakdownSection extends StatelessWidget {
       children: [
         _RoleplayFeedbackBreakdownHeader(onTapExplain: () => LessonExplainPopup.show(context)),
         12.verticalSpace,
-        if (points.isEmpty) _RoleplayFeedbackBreakdownEmpty() else _RoleplayFeedbackBreakdownList(points: points),
+        BlocSelector<RoleplayPointCubit, RoleplayPointState, List<KeypointEntity>>(
+          selector: (state) => state.points,
+          builder: (context, points) {
+            if (points.isEmpty) return _RoleplayFeedbackBreakdownEmpty();
+            return _RoleplayFeedbackBreakdownList(points: points);
+          },
+        ),
       ],
     );
   }
@@ -71,8 +75,29 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
   }
 }
 
+class _RoleplayFeedbackBreakdownEmpty extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.circular(20.r),
+        border: Border.all(color: AppCustomColor.borderDefault),
+      ),
+      alignment: Alignment.center,
+      child: AppText(
+        context.text.emptyList,
+        textAlign: TextAlign.center,
+        style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
+      ),
+    );
+  }
+}
+
 class _RoleplayFeedbackBreakdownList extends StatelessWidget {
-  final List<RoleplayPointEntity> points;
+  final List<KeypointEntity> points;
 
   const _RoleplayFeedbackBreakdownList({required this.points});
 
@@ -86,7 +111,7 @@ class _RoleplayFeedbackBreakdownList extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: AppCustomColor.borderDefault.withOpacity(0.5),
+            color: AppCustomColor.borderDefault.op(0.5),
             blurRadius: 24,
             offset: const Offset(0, 12),
           ),
@@ -118,36 +143,15 @@ class _RoleplayFeedbackBreakdownList extends StatelessWidget {
   }
 }
 
-class _RoleplayFeedbackBreakdownEmpty extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 32.h),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppCustomColor.borderDefault),
-      ),
-      alignment: Alignment.center,
-      child: AppText(
-        context.text.emptyList,
-        textAlign: TextAlign.center,
-        style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-      ),
-    );
-  }
-}
-
 class RoleplayFeedbackPointTile extends StatelessWidget {
-  final RoleplayPointEntity point;
+  final KeypointEntity point;
   final Color accentColor;
 
   const RoleplayFeedbackPointTile({super.key, required this.point, required this.accentColor});
 
   @override
   Widget build(BuildContext context) {
-    final String title = point.keypoint.title.text.isNotEmpty ? point.keypoint.title.text : context.text.rolePlayResultSkillset;
+    final String title = point.title.text.isNotEmpty ? point.title.text : context.text.rolePlayResultSkillset;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Row(
@@ -173,7 +177,7 @@ class RoleplayFeedbackPointTile extends StatelessWidget {
             ),
           ),
           12.horizontalSpace,
-          RoleplayFeedbackStrengthIndicator(level: point.keypoint.strengthLevel),
+          RoleplayFeedbackStrengthIndicator(level: point.strengthLevel),
         ],
       ),
     );

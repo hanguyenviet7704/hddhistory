@@ -5,7 +5,7 @@ class RoleplayFeedbackChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoleplayPointCubit, RoleplayPointState, List<RoleplayPointEntity>>(
+    return BlocSelector<RoleplayPointCubit, RoleplayPointState, List<KeypointEntity>>(
       selector: (state) => state.points,
       builder: (context, points) {
         final bool canRenderChart = points.length >= 3;
@@ -25,8 +25,8 @@ class RoleplayFeedbackChart extends StatelessWidget {
 class _RoleplayRadarChart extends StatelessWidget {
   const _RoleplayRadarChart({required this.points});
 
-  final List<RoleplayPointEntity> points;
-  static const int _tickCount = 4;
+  final List<KeypointEntity> points;
+  static const int _tickCount = 5;
 
   @override
   Widget build(BuildContext context) {
@@ -53,11 +53,11 @@ class _RoleplayRadarChart extends StatelessWidget {
       tickBorderData: BorderSide(color: AppCustomColor.roleplayFeedbackRadarGrid.op(0.4), width: 1),
       radarBackgroundColor: Colors.white.op(0.4),
       tickCount: _tickCount,
-      // titleTextStyle: const TextStyle(color: Colors.transparent),
-      // ticksTextStyle: const TextStyle(color: Colors.transparent),
-      getTitle: (index, angle) => const RadarChartTitle(text: ''),
-      radarTouchData: RadarTouchData(enabled: false),
-      titlePositionPercentageOffset: 1,
+      titleTextStyle: const TextStyle(color: Colors.transparent),
+      ticksTextStyle: const TextStyle(color: Colors.transparent),
+      getTitle: (index, angle) => const RadarChartTitle(text: 'zz'),
+      radarTouchData: RadarTouchData(enabled: true),
+      titlePositionPercentageOffset: 0.2,
       borderData: FlBorderData(show: false),
     );
 

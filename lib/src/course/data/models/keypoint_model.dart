@@ -32,7 +32,7 @@ extension KeypointModelExtension on KeypointModel {
     description: description,
     image: image,
     index: index,
-    strengthLevel: strengthLevel,
+    strengthLevelData: strengthLevel,
     progess: progess,
     learningItems: learningItems.map((model) => model.toEntity()).toList(),
   );

@@ -1,7 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayFeedbackSummarySection extends StatelessWidget {
-  final List<RoleplayPointEntity> points;
+  final List<KeypointEntity> points;
 
   const RoleplayFeedbackSummarySection({super.key, required this.points});
 
@@ -9,10 +9,10 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     if (points.isEmpty) return const SizedBox.shrink();
 
-    final List<RoleplayPointEntity> sorted = List<RoleplayPointEntity>.from(points)..sort((a, b) => b.point.compareTo(a.point));
+    final List<KeypointEntity> sorted = List<KeypointEntity>.from(points)..sort((a, b) => b.point.compareTo(a.point));
     final strengths = sorted.take(3).toList();
-    final usedIds = strengths.map((point) => point.keypoint.id).toSet();
-    final weaknesses = sorted.reversed.where((point) => !usedIds.contains(point.keypoint.id)).take(3).toList();
+    final usedIds = strengths.map((point) => point.id).toSet();
+    final weaknesses = sorted.reversed.where((point) => !usedIds.contains(point.id)).take(3).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -38,7 +38,7 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
 
 class _RoleplayFeedbackSummaryCard extends StatelessWidget {
   final String title;
-  final List<RoleplayPointEntity> items;
+  final List<KeypointEntity> items;
 
   const _RoleplayFeedbackSummaryCard({required this.title, required this.items});
 
@@ -52,7 +52,7 @@ class _RoleplayFeedbackSummaryCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(12.r),
         boxShadow: [
           BoxShadow(
-            color: AppCustomColor.borderDefault.withOpacity(0.7),
+            color: AppCustomColor.borderDefault.op(0.7),
             blurRadius: 18,
             offset: const Offset(0, 10),
           ),
@@ -79,7 +79,7 @@ class _RoleplayFeedbackSummaryCard extends StatelessWidget {
             for (final item in items)
               Padding(
                 padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8.h),
-                child: _RoleplayFeedbackSummaryRow(label: item.keypoint.title.text),
+                child: _RoleplayFeedbackSummaryRow(label: item.title.text),
               ),
           ],
         ],
@@ -101,7 +101,7 @@ class _RoleplayFeedbackSummaryRow extends StatelessWidget {
           width: 6.w,
           height: 6.w,
           decoration: BoxDecoration(
-            color: AppCustomColor.textBrand.withOpacity(0.16),
+            color: AppCustomColor.textBrand.op(0.16),
             borderRadius: BorderRadius.circular(30.r),
           ),
         ),
