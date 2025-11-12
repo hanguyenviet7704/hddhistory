@@ -61,7 +61,6 @@ export default function CourseModal({
         setDescription(initial.description?.[lang] ?? "");
         setImage(initial.image ?? "");
         setStatus(initial.status);
-        setLevel(initial.level);
         setPrices(initial.prices ?? []);
         setSkillsetId(initial.skillsetId ?? "");
         // Tìm và hiển thị tên skillset đã chọn
@@ -127,7 +126,6 @@ export default function CourseModal({
       description: typeof description === "string" ? description : "",
       image,
       status,
-      level: level,
       prices: prices,
       skillsetId, // Thêm skillsetId vào payload
     };
@@ -341,42 +339,6 @@ export default function CourseModal({
                     <option value={CourseStatus.PUBLISHED}>Published</option>
                     <option value={CourseStatus.DRAFT}>Draft</option>
                     <option value={CourseStatus.INACTIVE}>Inactive</option>
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
-                  </div>
-                </div>
-              </div>
-
-              {/* Level */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Level (Optional)
-                </label>
-                <div className="relative">
-                  <select
-                    value={level}
-                    onChange={(e) =>
-                      setLevel(
-                        (e.target.value as CourseLevel) || CourseLevel.LEVEL1
-                      )
-                    }
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
-                  >
-                    <option value={CourseLevel.LEVEL1}>Level 1</option>
-                    <option value={CourseLevel.LEVEL2}>Level 2</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                     <svg

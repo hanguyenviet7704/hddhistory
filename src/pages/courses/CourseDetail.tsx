@@ -1,272 +1,363 @@
-import React, { useState, useEffect } from "react";
-import {
-  IRoadmap,
-  IRoadmapNode,
-  RoadmapPayload,
-} from "../../types/interface/cource.interface";
-import { ILessonBrief } from "../../types/interface/lesson.interface";
-import { LessonType } from "../../types/enum/lesson.enum";
-import { courseService } from "../../services/courseService";
-import { lessonService } from "../../services/lessonService";
+import React, { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useNotification } from "../../utils/hooks/useNotification";
 
-interface RoadmapPageProps {}
+// Types
+import {
+  IRoadmap,
+  IRoadmapLevel,
+  IRoadmapNode,
+  RoadmapPayload,
+  RoadmapLevelPayload,
+} from "../../types/interface/cource.interface";
+import { ILessonBrief } from "../../types/interface/lesson.interface";
+import { LessonType } from "../../types/enum/lesson.enum";
+import { CourseLevel } from "../../types/enum/course.enum";
 
-const RoadmapPage: React.FC<RoadmapPageProps> = () => {
+// Services
+import { courseService } from "../../services/courseService";
+import { lessonService } from "../../services/lessonService";
+
+// ---------- Helpers ----------
+const levelBadgeClass = (level: CourseLevel) => {
+  switch (level) {
+    case CourseLevel.LEVEL1:
+      return "bg-blue-100 text-blue-800";
+    case CourseLevel.LEVEL2:
+      return "bg-purple-100 text-purple-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+};
+
+type FieldKey = "entrance" | "lessons" | "output";
+
+// Reusable icon-only button
+const IconButton: React.FC<
+  React.ButtonHTMLAttributes<HTMLButtonElement> & { sr?: string }
+> = ({ className = "", sr, children, ...props }) => (
+  <button
+    {...props}
+    className={
+      "inline-flex items-center justify-center rounded-full p-2 transition-colors " +
+      "bg-gray-100 hover:bg-gray-200 text-gray-700 shadow " +
+      className
+    }
+  >
+    {children}
+    {sr ? <span className="sr-only">{sr}</span> : null}
+  </button>
+);
+
+// ---------- Component ----------
+const RoadmapPage: React.FC = () => {
   const lang = useSelector((state: RootState) => state.lang.code);
   const { showSuccess, showError } = useNotification();
-
   const { courseId } = useParams<{ courseId: string }>();
+
   const [roadmap, setRoadmap] = useState<IRoadmap | null>(null);
   const [loading, setLoading] = useState(true);
-  const [editingNode, setEditingNode] = useState<{
-    nodeIndex: number;
-    field: "entrance" | "lessons" | "output";
-    currentValues: string | string[];
-    lessonList: ILessonBrief[];
-  } | null>(null);
-  const [isCreatingNode, setIsCreatingNode] = useState(false);
+
+  // Level create/edit
+  const [isCreatingLevel, setIsCreatingLevel] = useState(false);
+  const [newLevel, setNewLevel] = useState<CourseLevel>(CourseLevel.LEVEL1);
+
+  // Node create/edit
+  const [isCreatingNode, setIsCreatingNode] = useState<{
+    on: boolean;
+    levelIndex: number;
+  }>({ on: false, levelIndex: -1 });
   const [newNodeTitle, setNewNodeTitle] = useState("");
+  const [titleError, setTitleError] = useState("");
+
+  // Modal edit for picking lessons
+  const [editingNode, setEditingNode] = useState<{
+    levelIndex: number;
+    nodeIndex: number;
+    field: FieldKey;
+    lessonList: ILessonBrief[];
+    currentValues: string | string[];
+  } | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedLessons, setSelectedLessons] = useState<string[]>([]);
+  const [loadingLessons, setLoadingLessons] = useState(false);
+
+  // Cached lesson lists by type
   const [entranceLessons, setEntranceLessons] = useState<ILessonBrief[]>([]);
   const [outputLessons, setOutputLessons] = useState<ILessonBrief[]>([]);
   const [lessonLessons, setLessonLessons] = useState<ILessonBrief[]>([]);
-  const [loadingLessons, setLoadingLessons] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedLessons, setSelectedLessons] = useState<string[]>([]);
 
-  // Lấy dữ liệu roadmap
+  // Delete confirms
+  const [deleteLevel, setDeleteLevel] = useState<{
+    show: boolean;
+    levelIndex: number;
+  }>({ show: false, levelIndex: -1 });
+  const [deleteNode, setDeleteNode] = useState<{
+    show: boolean;
+    levelIndex: number;
+    nodeIndex: number;
+  }>({
+    show: false,
+    levelIndex: -1,
+    nodeIndex: -1,
+  });
+
+  // ---------- Data fetching ----------
   useEffect(() => {
     const fetchRoadmap = async () => {
       try {
-        const roadmapRes = await courseService.getRoadmap(courseId!);
-        const roadmapData = (await roadmapRes.data?.data) || roadmapRes.data;
-        setRoadmap(roadmapData);
-      } catch (error) {
-        console.error("Error fetching roadmap:", error);
+        const res = await courseService.getRoadmap(courseId!);
+        const data: IRoadmap = res.data?.data || res.data;
+        if (!data?.levels) data.levels = [];
+        setRoadmap(data);
+      } catch (e) {
+        console.error(e);
+        showError("Không thể tải roadmap");
       } finally {
         setLoading(false);
       }
     };
-
     fetchRoadmap();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  // Lấy danh sách bài học theo loại khi cần
   const fetchLessonsByType = async (type: LessonType, search = "") => {
     try {
       setLoadingLessons(true);
       const res = await lessonService.getList({ courseId, type, search });
-      const data = res.data.items || [];
-
+      const items: ILessonBrief[] = res.data?.items || [];
       switch (type) {
         case LessonType.ENTRANCE:
-          setEntranceLessons(data);
+          setEntranceLessons(items);
           break;
         case LessonType.OUTPUT:
-          setOutputLessons(data);
+          setOutputLessons(items);
           break;
         case LessonType.LESSON:
-          setLessonLessons(data);
+          setLessonLessons(items);
           break;
       }
-
-      return data;
-    } catch (error) {
-      console.error(`Error fetching ${type} lessons:`, error);
+      return items;
+    } catch (e) {
+      console.error(e);
       return [];
     } finally {
       setLoadingLessons(false);
     }
   };
 
-  // Tạo node mới
-  const handleCreateNode = async () => {
+  // ---------- Level actions ----------
+  const nextLevelId = useMemo(() => {
+    if (!roadmap?.levels?.length) return 1;
+    return Math.max(...roadmap.levels.map((l) => l.id)) + 1;
+  }, [roadmap]);
+
+  const handleCreateLevel = () => {
+    if (!roadmap) return;
+    const newLevelObj: IRoadmapLevel = {
+      id: nextLevelId,
+      level: newLevel,
+      nodes: [],
+    };
+    setRoadmap({ ...roadmap, levels: [...roadmap.levels, newLevelObj] });
+    setIsCreatingLevel(false);
+    setNewLevel(CourseLevel.LEVEL1);
+  };
+
+  const handleDeleteLevel = () => {
+    if (!roadmap || deleteLevel.levelIndex < 0) return;
+    const newLevels = roadmap.levels.filter(
+      (_, idx) => idx !== deleteLevel.levelIndex
+    );
+    setRoadmap({ ...roadmap, levels: newLevels });
+    setDeleteLevel({ show: false, levelIndex: -1 });
+  };
+
+  // ---------- Node actions ----------
+  const openCreateNode = async (levelIndex: number) => {
+    setTitleError("");
+    if (!entranceLessons.length) await fetchLessonsByType(LessonType.ENTRANCE);
+    if (!outputLessons.length) await fetchLessonsByType(LessonType.OUTPUT);
+    setIsCreatingNode({ on: true, levelIndex });
+  };
+
+  const handleCreateNode = () => {
+    setTitleError("");
+    if (!roadmap) return;
     if (!newNodeTitle.trim()) {
-      alert("Vui lòng nhập tiêu đề node");
+      setTitleError("Vui lòng nhập tiêu đề node");
       return;
     }
 
-    // Lấy danh sách lesson nếu chưa có
-    if (entranceLessons.length === 0) {
-      await fetchLessonsByType(LessonType.ENTRANCE);
-    }
-    if (outputLessons.length === 0) {
-      await fetchLessonsByType(LessonType.OUTPUT);
-    }
+    const levelIndex = isCreatingNode.levelIndex;
+    if (levelIndex < 0) return;
+
+    const entrance = entranceLessons[0] || null;
+    const output = outputLessons[0] || null;
 
     const newNode: IRoadmapNode = {
       title: { vi: newNodeTitle, en: newNodeTitle },
-      entrance: entranceLessons[0] || null,
+      entranceId: entrance?._id || "",
+      lessonIds: [],
+      outputId: output?._id || "",
+      entrance,
       lessons: [],
-      output: outputLessons[0] || null,
+      output,
     };
 
-    const updatedRoadmap = roadmap
-      ? {
-          ...roadmap,
-          node: [...roadmap.node, newNode],
-        }
-      : {
-          courseId: courseId!,
-          node: [newNode],
-        };
+    const newLevels = [...roadmap.levels];
+    newLevels[levelIndex] = {
+      ...newLevels[levelIndex],
+      nodes: [...newLevels[levelIndex].nodes, newNode],
+    };
 
-    setRoadmap(updatedRoadmap);
-    setIsCreatingNode(false);
+    setRoadmap({ ...roadmap, levels: newLevels });
+    setIsCreatingNode({ on: false, levelIndex: -1 });
     setNewNodeTitle("");
   };
 
-  // Xóa node
-  const handleDeleteNode = (nodeIndex: number) => {
-    if (!roadmap) return;
-
-    if (window.confirm("Bạn có chắc muốn xóa node này?")) {
-      const updatedRoadmap = {
-        ...roadmap,
-        node: roadmap.node.filter((_, index) => index !== nodeIndex),
-      };
-      setRoadmap(updatedRoadmap);
-    }
+  const confirmDeleteNode = () => {
+    if (!roadmap || deleteNode.levelIndex < 0 || deleteNode.nodeIndex < 0)
+      return;
+    const newLevels = [...roadmap.levels];
+    const level = newLevels[deleteNode.levelIndex];
+    level.nodes = level.nodes.filter((_, idx) => idx !== deleteNode.nodeIndex);
+    newLevels[deleteNode.levelIndex] = { ...level };
+    setRoadmap({ ...roadmap, levels: newLevels });
+    setDeleteNode({ show: false, levelIndex: -1, nodeIndex: -1 });
   };
 
-  // Xử lý khi nhấn nút chỉnh sửa
+  // ---------- Edit modal ----------
   const handleEditClick = async (
+    levelIndex: number,
     nodeIndex: number,
-    field: "entrance" | "lessons" | "output"
+    field: FieldKey
   ) => {
-    // Lấy danh sách lesson nếu chưa có
     let lessonList: ILessonBrief[] = [];
-
     if (field === "entrance") {
-      if (entranceLessons.length === 0) {
-        lessonList = await fetchLessonsByType(LessonType.ENTRANCE);
-      } else {
-        lessonList = entranceLessons;
-      }
+      lessonList = entranceLessons.length
+        ? entranceLessons
+        : await fetchLessonsByType(LessonType.ENTRANCE);
     } else if (field === "output") {
-      if (outputLessons.length === 0) {
-        lessonList = await fetchLessonsByType(LessonType.OUTPUT);
-      } else {
-        lessonList = outputLessons;
-      }
+      lessonList = outputLessons.length
+        ? outputLessons
+        : await fetchLessonsByType(LessonType.OUTPUT);
     } else {
-      if (lessonLessons.length === 0) {
-        lessonList = await fetchLessonsByType(LessonType.LESSON);
-      } else {
-        lessonList = lessonLessons;
-      }
+      lessonList = lessonLessons.length
+        ? lessonLessons
+        : await fetchLessonsByType(LessonType.LESSON);
     }
 
-    const node = roadmap?.node[nodeIndex];
+    const node = roadmap?.levels[levelIndex]?.nodes[nodeIndex];
     if (!node) return;
 
-    // Reset selectedLessons khi mở modal
-    setSelectedLessons(
-      field === "lessons" ? node.lessons.map((l) => l._id) : []
-    );
-
+    setSelectedLessons(field === "lessons" ? [...(node.lessonIds || [])] : []);
     setEditingNode({
+      levelIndex,
       nodeIndex,
       field,
+      lessonList,
       currentValues:
         field === "lessons"
-          ? node.lessons.map((l) => l._id)
-          : node[field]?._id || "",
-      lessonList,
+          ? [...(node.lessonIds || [])]
+          : field === "entrance"
+          ? node.entranceId
+          : node.outputId,
     });
   };
 
-  // Xử lý khi chọn bài học
+  const applyNodeUpdate = (
+    levelIndex: number,
+    nodeIndex: number,
+    updater: (node: IRoadmapNode) => IRoadmapNode
+  ) => {
+    if (!roadmap) return;
+    const newLevels = [...roadmap.levels];
+    const level = { ...newLevels[levelIndex] };
+    const nodes = [...level.nodes];
+    const updated = updater({ ...nodes[nodeIndex] });
+    nodes[nodeIndex] = updated;
+    level.nodes = nodes;
+    newLevels[levelIndex] = level;
+    setRoadmap({ ...roadmap, levels: newLevels });
+  };
+
   const handleLessonSelect = (lessonId: string) => {
-    if (!editingNode || !roadmap) return;
+    if (!editingNode) return;
+    const { field, levelIndex, nodeIndex, lessonList } = editingNode;
 
-    const updatedRoadmap = { ...roadmap };
-    const node = { ...updatedRoadmap.node[editingNode.nodeIndex] };
+    if (field === "lessons") {
+      const currentSelected = new Set(selectedLessons);
+      if (currentSelected.has(lessonId)) currentSelected.delete(lessonId);
+      else currentSelected.add(lessonId);
+      const newSelected = Array.from(currentSelected);
+      setSelectedLessons(newSelected);
 
-    if (editingNode.field === "lessons") {
-      // Xử lý chọn nhiều bài học
-      const currentSelected = [...selectedLessons];
-      const isSelected = currentSelected.includes(lessonId);
-
-      if (isSelected) {
-        // Bỏ chọn
-        const newSelected = currentSelected.filter((id) => id !== lessonId);
-        setSelectedLessons(newSelected);
-
-        // Cập nhật node
-        node.lessons = editingNode.lessonList.filter((lesson) =>
-          newSelected.includes(lesson._id)
-        );
-      } else {
-        // Chọn thêm
-        const newSelected = [...currentSelected, lessonId];
-        setSelectedLessons(newSelected);
-
-        // Cập nhật node
-        node.lessons = editingNode.lessonList.filter((lesson) =>
-          newSelected.includes(lesson._id)
-        );
-      }
-
-      // Cập nhật state roadmap
-      updatedRoadmap.node[editingNode.nodeIndex] = node;
-      setRoadmap(updatedRoadmap);
+      applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
+        ...node,
+        lessonIds: newSelected,
+        lessons: lessonList.filter((l) => newSelected.includes(l._id)),
+      }));
     } else {
-      // Với entrance và output, chọn một bài học và đóng modal ngay
-      const selectedLesson = editingNode.lessonList.find(
-        (lesson) => lesson._id === lessonId
-      );
-      if (selectedLesson) {
-        node[editingNode.field] = selectedLesson;
-        updatedRoadmap.node[editingNode.nodeIndex] = node;
-        setRoadmap(updatedRoadmap);
-        setEditingNode(null);
-        setSearchTerm("");
+      const selected = lessonList.find((l) => l._id === lessonId) || null;
+      if (field === "entrance") {
+        applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
+          ...node,
+          entranceId: selected?._id || "",
+          entrance: selected,
+        }));
+      } else if (field === "output") {
+        applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
+          ...node,
+          outputId: selected?._id || "",
+          output: selected,
+        }));
       }
+      setEditingNode(null);
+      setSearchTerm("");
     }
   };
 
-  // Hoàn thành chọn nhiều bài học
   const handleCompleteLessonSelection = () => {
     setEditingNode(null);
     setSearchTerm("");
     setSelectedLessons([]);
   };
 
-  // Lưu roadmap
+  // ---------- Save ----------
   const handleSaveRoadmap = async () => {
     if (!roadmap) return;
 
     const payload: RoadmapPayload = {
-      node: roadmap.node.map((node) => ({
-        title: node.title[lang] ?? "",
-        entranceId: node.entrance?._id || "",
-        lessonIds: node.lessons.map((lesson) => lesson._id),
-        outputId: node.output?._id || "",
+      levels: roadmap.levels.map<RoadmapLevelPayload>((level) => ({
+        id: level.id,
+        level: level.level,
+        nodes: level.nodes.map((n) => ({
+          title: n.title?.[lang] ?? "",
+          entranceId: n.entranceId || "",
+          lessonIds: n.lessonIds || [],
+          outputId: n.outputId || "",
+        })),
       })),
     };
 
     try {
-      const response = await courseService.updateRoadmap(courseId!, payload);
-      showSuccess("Saved roadmap successfully");
-    } catch (error) {
-      console.error("Error updating roadmap:", error);
-      showError("Failed to save roadmap");
+      await courseService.updateRoadmap(courseId!, payload);
+      showSuccess("Lưu roadmap thành công");
+    } catch (e) {
+      console.error(e);
+      showError("Lưu roadmap thất bại");
     }
   };
 
-  // Render bài học với icon phù hợp
-  const renderLesson = (lesson: ILessonBrief | null) => {
-    if (!lesson) {
+  // ---------- Render helpers ----------
+  const renderLessonBadge = (lesson: ILessonBrief | null | undefined) => {
+    if (!lesson)
       return <div className="text-gray-500 italic">Chưa chọn bài học</div>;
-    }
-
     let icon = "";
     let color = "";
-
     switch (lesson.type) {
       case LessonType.ENTRANCE:
         icon = "🧭";
@@ -280,9 +371,7 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
         icon = "📖";
         color = "bg-purple-100 text-purple-800";
     }
-
-    const title = lesson.title[lang];
-
+    const title = lesson.title?.[lang] ?? "(Không có tiêu đề)";
     return (
       <div className={`flex items-center px-3 py-2 rounded-lg ${color} mb-2`}>
         <span className="mr-2">{icon}</span>
@@ -291,17 +380,14 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
     );
   };
 
-  // Render modal chọn bài học
   const renderLessonSelector = () => {
     if (!editingNode) return null;
-
     const { field, lessonList } = editingNode;
     const isMultiple = field === "lessons";
 
-    // Lọc bài học theo từ khóa tìm kiếm
-    const filteredLessons = searchTerm
-      ? lessonList.filter((lesson) =>
-          lesson.title[lang]?.toLowerCase().includes(searchTerm.toLowerCase())
+    const filtered = searchTerm
+      ? lessonList.filter((l) =>
+          l.title?.[lang]?.toLowerCase().includes(searchTerm.toLowerCase())
         )
       : lessonList;
 
@@ -315,8 +401,6 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
               ? "Chọn Bài Kết Thúc"
               : "Chọn Bài Học"}
           </h3>
-
-          {/* Ô tìm kiếm */}
           <div className="mb-4">
             <input
               type="text"
@@ -326,21 +410,17 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-
           {loadingLessons ? (
             <div className="text-center py-8">
-              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto" />
               <p className="mt-4 text-gray-600">Đang tải bài học...</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-96 overflow-y-auto">
-              {filteredLessons.map((lesson) => {
-                if (!lesson) return null;
-
+              {filtered.map((lesson) => {
                 const isSelected = isMultiple
                   ? selectedLessons.includes(lesson._id)
                   : (editingNode.currentValues as string) === lesson._id;
-
                 return (
                   <div
                     key={lesson._id}
@@ -351,7 +431,7 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
                     }`}
                     onClick={() => handleLessonSelect(lesson._id)}
                   >
-                    {renderLesson(lesson)}
+                    {renderLessonBadge(lesson)}
                     {isMultiple && (
                       <div className="mt-2 text-sm text-gray-600">
                         {isSelected ? "✓ Đã chọn" : "Chọn bài học"}
@@ -364,7 +444,6 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
           )}
 
           <div className="mt-6 flex justify-end">
-            {/* Hiển thị nút Hoàn thành khi chọn nhiều lessons */}
             {isMultiple && (
               <button
                 className="px-4 py-2 bg-blue-600 text-white rounded-lg mr-2"
@@ -373,7 +452,6 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
                 Hoàn thành
               </button>
             )}
-
             <button
               className="px-4 py-2 bg-gray-200 rounded-lg"
               onClick={() => {
@@ -390,153 +468,7 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
     );
   };
 
-  // Render form tạo node mới
-  const renderCreateNodeForm = () => {
-    if (!isCreatingNode) return null;
-
-    return (
-      <div className="bg-white rounded-xl shadow-md p-6 mb-6">
-        <h3 className="text-xl font-bold mb-4">Tạo Node Mới</h3>
-
-        <div className="mb-4">
-          <label className="block text-gray-700 mb-2">Tiêu đề Node</label>
-          <input
-            type="text"
-            className="w-full px-3 py-2 border rounded-lg"
-            value={newNodeTitle}
-            onChange={(e) => setNewNodeTitle(e.target.value)}
-            placeholder="Nhập tiêu đề node"
-          />
-        </div>
-
-        <div className="flex justify-end">
-          <button
-            className="px-4 py-2 bg-gray-200 rounded-lg mr-2"
-            onClick={() => setIsCreatingNode(false)}
-          >
-            Hủy
-          </button>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg"
-            onClick={handleCreateNode}
-          >
-            Tạo Node
-          </button>
-        </div>
-      </div>
-    );
-  };
-
-  // Render mỗi node trong roadmap với UI mới
-  const renderNode = (
-    node: IRoadmapNode,
-    nodeIndex: number,
-    totalNodes: number
-  ) => {
-    const isLeft = nodeIndex % 2 === 0;
-
-    return (
-      <div key={nodeIndex} className="relative">
-        {/* Connection line to next node - only if not the last node */}
-        {nodeIndex < totalNodes - 1 && (
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 w-1 h-12 bg-blue-500"></div>
-        )}
-
-        {/* Node container */}
-        <div className={`relative ${isLeft ? "pr-8" : "pl-8"} mb-16`}>
-          {/* Vertical line (only for the main vertical line) */}
-          <div className="absolute top-0 bottom-0 left-1/2 transform -translate-x-1/2 w-1 bg-blue-300"></div>
-
-          {/* Horizontal connection line from center to node */}
-          <div
-            className={`absolute top-1/2 left-1/2 transform -translate-y-1/2 h-1 bg-blue-300 ${
-              isLeft ? "w-16 -translate-x-full" : "w-16 translate-x-0"
-            }`}
-          ></div>
-
-          {/* Node content */}
-          <div
-            className={`bg-white rounded-xl shadow-lg p-6 w-full max-w-md ${
-              isLeft ? "mr-auto" : "ml-auto"
-            }`}
-          >
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold text-gray-800">
-                {node.title[lang]}
-              </h2>
-              <button
-                className="px-3 py-1 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                onClick={() => handleDeleteNode(nodeIndex)}
-              >
-                Xóa
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              {/* Entrance */}
-              <div className="border-l-4 border-blue-500 pl-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium text-gray-700">Bài Đầu Vào</h3>
-                  <button
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                    onClick={() => handleEditClick(nodeIndex, "entrance")}
-                  >
-                    Chỉnh sửa
-                  </button>
-                </div>
-                {renderLesson(node.entrance)}
-              </div>
-
-              {/* Lessons */}
-              <div className="border-l-4 border-purple-500 pl-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium text-gray-700">Các Bài Học</h3>
-                  <button
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                    onClick={() => handleEditClick(nodeIndex, "lessons")}
-                  >
-                    Chỉnh sửa
-                  </button>
-                </div>
-                <div className="space-y-2">
-                  {node.lessons.length > 0 ? (
-                    node.lessons.map((lesson) => (
-                      <div key={lesson._id} className="flex items-center">
-                        <span className="mr-2">📖</span>
-                        <span className="text-sm">{lesson.title[lang]}</span>
-                      </div>
-                    ))
-                  ) : (
-                    <p className="text-gray-500 italic text-sm">
-                      Chưa có bài học nào
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Output */}
-              <div className="border-l-4 border-green-500 pl-4">
-                <div className="flex justify-between items-center mb-2">
-                  <h3 className="font-medium text-gray-700">Bài Kết Thúc</h3>
-                  <button
-                    className="text-blue-600 hover:text-blue-800 text-sm"
-                    onClick={() => handleEditClick(nodeIndex, "output")}
-                  >
-                    Chỉnh sửa
-                  </button>
-                </div>
-                {renderLesson(node.output)}
-              </div>
-            </div>
-          </div>
-
-          {/* Node position indicator (circle at the center) */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full border-4 border-white shadow-lg z-10"></div>
-        </div>
-      </div>
-    );
-  };
-
+  // ---------- UI blocks ----------
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -559,67 +491,375 @@ const RoadmapPage: React.FC<RoadmapPageProps> = () => {
         {/* Header */}
         <div className="flex justify-between items-center mb-12">
           <h1 className="text-3xl font-bold text-gray-800">Roadmap Khóa Học</h1>
-          <div className="flex space-x-3">
-            <button
-              className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
-              onClick={() => setIsCreatingNode(true)}
-            >
-              <span className="flex items-center">
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                Thêm Node
-              </span>
-            </button>
-            <button
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-              onClick={handleSaveRoadmap}
-            >
-              <span className="flex items-center">
-                <svg
-                  className="w-5 h-5 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"
-                  />
-                </svg>
-                Lưu Roadmap
-              </span>
-            </button>
-          </div>
         </div>
 
-        {renderCreateNodeForm()}
+        {/* Levels, each with its own axis only when nodes exist */}
+        <div className="space-y-20">
+          {roadmap.levels.map((level, levelIndex) => (
+            <div key={`lvl-${level.id}`} className="relative">
+              {/* Level header with delete icon */}
+              <div className="relative my-8">
+                <div
+                  onClick={() => setDeleteLevel({ show: true, levelIndex })}
+                  className="bg-slate-100 shadow-lg rounded-full px-5 py-2 border inline-flex items-center space-x-3 cursor-pointer"
+                >
+                  <span
+                    className={`px-3 py-1 text-lg font-semibold text-blue-600`}
+                  >
+                    {level.level}
+                  </span>
+                </div>
+              </div>
 
-        {/* Roadmap container */}
-        <div className="relative">
-          {/* Main vertical line */}
-          <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full"></div>
-          {/* Nodes */}
-          <div className="space-y-20">
-            {roadmap.node.map((node, index) =>
-              renderNode(node, index, roadmap.node.length)
-            )}
-          </div>
+              {/* Nodes section with its own central axis (only if nodes exist) */}
+              <div className="relative">
+                {level.nodes.length > 0 && (
+                  <div className="absolute left-1/2 transform -translate-x-1/2 top-0 bottom-0 w-2 bg-gradient-to-b from-blue-400 to-blue-600 rounded-full" />
+                )}
+
+                <div className="space-y-16">
+                  {level.nodes.length === 0 ? (
+                    <div className="text-center text-gray-500 italic">
+                      Chưa có node nào trong level này
+                    </div>
+                  ) : (
+                    level.nodes.map((node, nodeIndex) => {
+                      const isLeft = nodeIndex % 2 === 0;
+                      return (
+                        <div
+                          key={`node-${levelIndex}-${nodeIndex}`}
+                          className="relative"
+                        >
+                          {/* connection line from axis to card */}
+                          <div
+                            className={`absolute top-1/2 left-1/2 h-1 bg-blue-300 ${
+                              isLeft
+                                ? "-translate-y-1/2 -translate-x-full w-16"
+                                : "-translate-y-1/2 w-16"
+                            }`}
+                          />
+                          {/* center dot */}
+                          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 bg-blue-500 rounded-full border-4 border-white shadow-lg z-10" />
+                          {/* card */}
+                          <div
+                            className={`relative ${isLeft ? "pr-8" : "pl-8"}`}
+                          >
+                            <div
+                              className={`bg-white rounded-xl shadow-lg p-6 w-full max-w-md ${
+                                isLeft ? "mr-auto" : "ml-auto"
+                              }`}
+                            >
+                              <div className="flex justify-between items-start mb-4">
+                                <h3 className="text-lg font-semibold">
+                                  {node.title?.[lang]}
+                                </h3>
+                                {/* Delete node - icon only */}
+                                <IconButton
+                                  onClick={() =>
+                                    setDeleteNode({
+                                      show: true,
+                                      levelIndex,
+                                      nodeIndex,
+                                    })
+                                  }
+                                  title="Xóa node"
+                                  aria-label="Xóa node"
+                                  className="bg-red-100 hover:bg-red-200 text-red-600"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="w-5 h-5"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth={2}
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                    <path d="M10 11v6M14 11v6" />
+                                    <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                  </svg>
+                                </IconButton>
+                              </div>
+
+                              <div className="space-y-4">
+                                <div className="border-l-4 border-blue-500 pl-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <h4 className="font-medium text-gray-700">
+                                      Bài Đầu Vào
+                                    </h4>
+                                    <button
+                                      className="text-blue-600 text-sm"
+                                      onClick={() =>
+                                        handleEditClick(
+                                          levelIndex,
+                                          nodeIndex,
+                                          "entrance"
+                                        )
+                                      }
+                                    >
+                                      Chỉnh sửa
+                                    </button>
+                                  </div>
+                                  {renderLessonBadge(node.entrance)}
+                                </div>
+
+                                <div className="border-l-4 border-purple-500 pl-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <h4 className="font-medium text-gray-700">
+                                      Các Bài Học
+                                    </h4>
+                                    <button
+                                      className="text-blue-600 text-sm"
+                                      onClick={() =>
+                                        handleEditClick(
+                                          levelIndex,
+                                          nodeIndex,
+                                          "lessons"
+                                        )
+                                      }
+                                    >
+                                      Chỉnh sửa
+                                    </button>
+                                  </div>
+                                  {node.lessons && node.lessons.length > 0 ? (
+                                    <ul className="space-y-2">
+                                      {node.lessons.map((l) => (
+                                        <li
+                                          key={l._id}
+                                          className="flex items-center"
+                                        >
+                                          <span className="mr-2">📖</span>
+                                          <span className="text-sm">
+                                            {l.title?.[lang]}
+                                          </span>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  ) : (
+                                    <p className="text-gray-500 italic text-sm">
+                                      Chưa có bài học nào
+                                    </p>
+                                  )}
+                                </div>
+
+                                <div className="border-l-4 border-green-500 pl-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <h4 className="font-medium text-gray-700">
+                                      Bài Kết Thúc
+                                    </h4>
+                                    <button
+                                      className="text-blue-600 text-sm"
+                                      onClick={() =>
+                                        handleEditClick(
+                                          levelIndex,
+                                          nodeIndex,
+                                          "output"
+                                        )
+                                      }
+                                    >
+                                      Chỉnh sửa
+                                    </button>
+                                  </div>
+                                  {renderLessonBadge(node.output)}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+
+              {/* Level footer actions (below nodes) */}
+              <div className="mt-8 flex justify-center">
+                <div className="inline-flex gap-3">
+                  {/* Add node - icon only */}
+                  <IconButton
+                    onClick={() => openCreateNode(levelIndex)}
+                    title="Thêm node"
+                    aria-label="Thêm node"
+                    className="bg-green-100 hover:bg-green-200 text-green-600"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="w-5 h-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <line x1="12" y1="5" x2="12" y2="19" />
+                      <line x1="5" y1="12" x2="19" y2="12" />
+                    </svg>
+                  </IconButton>
+                </div>
+              </div>
+
+              {/* Create Node form below nodes */}
+              {isCreatingNode.on &&
+                isCreatingNode.levelIndex === levelIndex && (
+                  <div className="mt-6 flex justify-center">
+                    <div className="bg-white rounded-xl shadow p-5 w-full max-w-2xl">
+                      <h4 className="font-semibold mb-3">Tạo Node Mới</h4>
+                      <div className="mb-3">
+                        <label className="block text-gray-700 mb-2">
+                          Tiêu đề Node
+                        </label>
+                        <input
+                          type="text"
+                          className={`w-full px-3 py-2 border rounded-lg ${
+                            titleError ? "border-red-500" : ""
+                          }`}
+                          value={newNodeTitle}
+                          onChange={(e) => setNewNodeTitle(e.target.value)}
+                          placeholder="Nhập tiêu đề node"
+                        />
+                        {titleError && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {titleError}
+                          </p>
+                        )}
+                      </div>
+                      <div className="flex justify-end">
+                        <button
+                          className="px-4 py-2 bg-gray-200 rounded-lg mr-2"
+                          onClick={() => {
+                            setIsCreatingNode({ on: false, levelIndex: -1 });
+                            setTitleError("");
+                          }}
+                        >
+                          Hủy
+                        </button>
+                        <button
+                          className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                          onClick={handleCreateNode}
+                        >
+                          Tạo Node
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+            </div>
+          ))}
         </div>
 
-        {editingNode && renderLessonSelector()}
+        <div className="flex space-x-3 justify-end mt-6">
+          <button
+            className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
+            onClick={() => setIsCreatingLevel(true)}
+          >
+            Thêm Level
+          </button>
+          <button
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+            onClick={handleSaveRoadmap}
+          >
+            Lưu Roadmap
+          </button>
+        </div>
+
+        {/* Create Level */}
+        {isCreatingLevel && (
+          <div className="bg-white rounded-xl shadow-md p-6 mb-10">
+            <h3 className="text-xl font-bold mb-4">Tạo Level Mới</h3>
+            <div className="mb-4">
+              <label className="block text-gray-700 mb-2">Cấp độ</label>
+              <select
+                className="w-full px-3 py-2 border rounded-lg"
+                value={newLevel}
+                onChange={(e) => setNewLevel(e.target.value as CourseLevel)}
+              >
+                <option value={CourseLevel.LEVEL1}>Level 1</option>
+                <option value={CourseLevel.LEVEL2}>Level 2</option>
+              </select>
+            </div>
+            <div className="flex justify-end">
+              <button
+                className="px-4 py-2 bg-gray-200 rounded-lg mr-2"
+                onClick={() => setIsCreatingLevel(false)}
+              >
+                Hủy
+              </button>
+              <button
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg"
+                onClick={handleCreateLevel}
+              >
+                Tạo Level
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modals */}
+        {renderLessonSelector()}
+
+        {/* Delete Level Confirm */}
+        {deleteLevel.show && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-medium mb-2">Xóa Level</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Bạn có chắc muốn xóa level này?
+              </p>
+              <div className="flex justify-end">
+                <button
+                  className="px-4 py-2 bg-gray-200 rounded-lg mr-2"
+                  onClick={() =>
+                    setDeleteLevel({ show: false, levelIndex: -1 })
+                  }
+                >
+                  Hủy
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg"
+                  onClick={handleDeleteLevel}
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Delete Node Confirm */}
+        {deleteNode.show && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 w-full max-w-md">
+              <h3 className="text-lg font-medium mb-2">Xóa Node</h3>
+              <p className="text-sm text-gray-500 mb-4">
+                Bạn có chắc muốn xóa node này?
+              </p>
+              <div className="flex justify-end">
+                <button
+                  className="px-4 py-2 bg-gray-200 rounded-lg mr-2"
+                  onClick={() =>
+                    setDeleteNode({
+                      show: false,
+                      levelIndex: -1,
+                      nodeIndex: -1,
+                    })
+                  }
+                >
+                  Hủy
+                </button>
+                <button
+                  className="px-4 py-2 bg-red-600 text-white rounded-lg"
+                  onClick={confirmDeleteNode}
+                >
+                  Xóa
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
