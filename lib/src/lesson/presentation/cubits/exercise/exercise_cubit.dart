@@ -15,6 +15,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
     setQuestionData(learningItem.questions.first);
   }
 
+  //* Exercise Page Flow
   void setSubQuestions(LearningItemEntity learningItem) {
     reset();
     setCurrentLearningItem(learningItem);
@@ -30,6 +31,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
       AppDI.injector.get<LessonCubit>().nextLearningItem();
       return;
     }
+    setQuestionPoint(state.currentQuestion);
     emit(state.copyWith(currentQuestionIndex: state.currentQuestionIndex + 1));
     setQuestionData(state.currentQuestion);
   }
@@ -102,5 +104,39 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
           ..setQuestion(question);
         break;
     }
+  }
+
+  //* Roleplay Page Flow
+  void setQuestionPoint(QuestionEntity question) {
+    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    if (learningItem.type != LearningItemType.roleplay) return;
+    RoleplayPointEntity point = RoleplayPointEntity(keypoint: question.keypoint, point: 0);
+    switch (question.type) {
+      case QuestionTypeEnum.multipleChoice || QuestionTypeEnum.singleChoice:
+        int score = AppDI.injector.get<ChoiceCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.cuesPlacement:
+        int score = AppDI.injector.get<CuesPlacementCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.dragAndDrop:
+        int score = AppDI.injector.get<DragAndDropCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.arrangeTheSequence:
+        int score = AppDI.injector.get<ArrangeTheSequenceCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.stressPlacement:
+        int score = AppDI.injector.get<MarkStressWordCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.speaking:
+        int score = AppDI.injector.get<SpeakingCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+    }
+    AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
   }
 }

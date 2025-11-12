@@ -56,22 +56,27 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
-
-    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
-    if (learningItem.type == LearningItemType.roleplay) {
-      RoleplayPointEntity point = RoleplayPointEntity(keypoint: state.question.keypoint, point: pointCalculation());
-      AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
-    }
   }
 
   int pointCalculation() {
     if (state.question.type == QuestionTypeEnum.multipleChoice) {
+      /// Mỗi câu chọn đúng = Max điểm / tổng số câu đúng
+      /// Mỗi câu chọn sai → sẽ bị trừ 50% số điểm của 1 câu đúng. Trừ đến khi về 0 thì thôi
+      /// Không chọn→  0 điểm
       final correctIndexes = state.correctOptionsIndices;
       final selectedIndexes = state.selectedAnswersIndices;
+
+      if (selectedIndexes.isEmpty) return 0;
+      
       final correctCount = correctIndexes.length;
-      final selectedCount = selectedIndexes.length;
-      final score = (selectedCount / correctCount) * 100;
-      return score.toInt();
+      final pointPerCorrect = 100.0 / correctCount;
+
+      final correctSelections = selectedIndexes.where((index) => correctIndexes.contains(index)).length;
+      final wrongSelections = selectedIndexes.where((index) => !correctIndexes.contains(index)).length;
+
+      final score = (correctSelections * pointPerCorrect) - (wrongSelections * pointPerCorrect * 0.5);
+
+      return score.clamp(0, 100).toInt();
     }
 
     final correctIndex = state.correctOptionsIndices.first;

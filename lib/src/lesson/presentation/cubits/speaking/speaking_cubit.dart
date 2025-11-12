@@ -380,4 +380,8 @@ class SpeakingCubit extends Cubit<SpeakingState> {
   void toggleExplanation() {
     emit(state.copyWith(showExplanation: !state.showExplanation));
   }
+
+  int pointCalculation() {
+    return 100;
+  }
 }

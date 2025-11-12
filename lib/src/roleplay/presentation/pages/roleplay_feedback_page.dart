@@ -5,18 +5,6 @@ class RoleplayFeedbackPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: AppDI.injector.get<RoleplayPointCubit>(),
-      child: const _RoleplayFeedbackView(),
-    );
-  }
-}
-
-class _RoleplayFeedbackView extends StatelessWidget {
-  const _RoleplayFeedbackView();
-
-  @override
-  Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.dark,
       child: Scaffold(
