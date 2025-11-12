@@ -22,7 +22,7 @@ class RoleplayFeedbackPage extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          RoleplayFeedbackChart(points: points),
+                          RoleplayFeedbackChart(),
                           RoleplayFeedbackBreakdownSection(points: points),
                           24.verticalSpace,
                           RoleplayFeedbackSummarySection(points: points),

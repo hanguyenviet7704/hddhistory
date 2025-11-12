@@ -1,24 +1,23 @@
 part of '../../../roleplay.dart';
 
 class RoleplayFeedbackChart extends StatelessWidget {
-  final List<RoleplayPointEntity> points;
-
-  const RoleplayFeedbackChart({super.key, required this.points});
+  const RoleplayFeedbackChart({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final bool canRenderChart = points.length >= 3;
-    return Padding(
-      padding: EdgeInsets.only(top: 24.h, bottom: 8.h),
-      child: SizedBox(
-        width: double.infinity,
-        child: Center(
+    return BlocSelector<RoleplayPointCubit, RoleplayPointState, List<RoleplayPointEntity>>(
+      selector: (state) => state.points,
+      builder: (context, points) {
+        final bool canRenderChart = points.length >= 3;
+        return Container(
+          padding: EdgeInsets.only(top: 20.h, bottom: 8.h),
+          alignment: Alignment.center,
           child: SizedBox.square(
-            dimension: 255.w,
+            dimension: 255.h,
             child: canRenderChart ? _RoleplayRadarChart(points: points) : _RoleplayChartPlaceholder(),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
@@ -37,8 +36,8 @@ class _RoleplayRadarChart extends StatelessWidget {
           dataEntries: points.map((point) => RadarEntry(value: point.point.toDouble())).toList(),
           fillGradient: LinearGradient(
             colors: [
-              AppCustomColor.brandPrimary.withOpacity(0.18),
-              AppCustomColor.brandPrimary.withOpacity(0.05),
+              AppCustomColor.brandPrimary.op(0.18),
+              AppCustomColor.brandPrimary.op(0.05),
             ],
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
@@ -50,15 +49,15 @@ class _RoleplayRadarChart extends StatelessWidget {
       ],
       radarShape: RadarShape.polygon,
       radarBorderData: BorderSide(color: AppCustomColor.roleplayFeedbackRadarGrid, width: 1.5),
-      gridBorderData: BorderSide(color: AppCustomColor.roleplayFeedbackRadarGrid.withOpacity(0.6), width: 1),
-      tickBorderData: BorderSide(color: AppCustomColor.roleplayFeedbackRadarGrid.withOpacity(0.4), width: 1),
-      radarBackgroundColor: Colors.transparent,
+      gridBorderData: BorderSide(color: AppCustomColor.roleplayFeedbackRadarGrid, width: 1),
+      tickBorderData: BorderSide(color: AppCustomColor.roleplayFeedbackRadarGrid.op(0.4), width: 1),
+      radarBackgroundColor: Colors.white.op(0.4),
       tickCount: _tickCount,
-      titleTextStyle: const TextStyle(color: Colors.transparent),
-      ticksTextStyle: const TextStyle(color: Colors.transparent),
+      // titleTextStyle: const TextStyle(color: Colors.transparent),
+      // ticksTextStyle: const TextStyle(color: Colors.transparent),
       getTitle: (index, angle) => const RadarChartTitle(text: ''),
       radarTouchData: RadarTouchData(enabled: false),
-      titlePositionPercentageOffset: 0.2,
+      titlePositionPercentageOffset: 1,
       borderData: FlBorderData(show: false),
     );
 
@@ -69,10 +68,7 @@ class _RoleplayRadarChart extends StatelessWidget {
         return Stack(
           fit: StackFit.expand,
           children: [
-            RadarChart(
-              chartData,
-              swapAnimationDuration: Duration.zero,
-            ),
+            RadarChart(chartData, duration: Duration.zero),
             ...dots,
           ],
         );
@@ -110,7 +106,7 @@ class _RoleplayRadarChart extends StatelessWidget {
             border: Border.all(color: Colors.white, width: 2.w),
             boxShadow: [
               BoxShadow(
-                color: color.withOpacity(0.35),
+                color: color.op(0.35),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
