@@ -27,6 +27,7 @@ class DocumentWidget extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        spacing: 12.h,
         children: documents.map((document) => DocumentItem(document: document)).toList(),
       ),
     );

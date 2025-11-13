@@ -8,23 +8,13 @@ class DocumentMediaWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (type) {
-      ContentDocumentType.image => Column(
-        children: [
-          16.verticalSpace,
-          DCachedImage(
-            url: url,
-            width: double.infinity,
-            borderRadius: BorderRadius.circular(16.r),
-            fit: BoxFit.cover,
-          ),
-        ],
+      ContentDocumentType.image => DCachedImage(
+        url: url,
+        width: double.infinity,
+        borderRadius: BorderRadius.circular(16.r),
+        fit: BoxFit.cover,
       ),
-      ContentDocumentType.audio => Column(
-        children: [
-          16.verticalSpace,
-          AudioPlayerWidget(audioUrl: url),
-        ],
-      ),
+      ContentDocumentType.audio => AudioPlayerWidget(audioUrl: url),
       _ => const SizedBox.shrink(),
     };
   }
