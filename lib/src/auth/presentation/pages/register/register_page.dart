@@ -90,13 +90,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       Column(
                         children: [
                           // Apple button
-                          AppleLoginButton(
-                            onPressed: () {
-                              context.read<AuthBloc>().add(const AuthEvent.loginSSOApple());
-                            },
-                          ),
-
-                          16.verticalSpace,
+                          if (Platform.isIOS) ...[
+                            AppleLoginButton(
+                              onPressed: () {
+                                context.read<AuthBloc>().add(const AuthEvent.loginSSOApple());
+                              },
+                            ),
+                            16.verticalSpace,
+                          ],
 
                           // Google button
                           GoogleLoginButton(
