@@ -27,25 +27,36 @@ extension LessonStateExtension on LessonState {
     switch (currentLearningItem.type) {
       case LearningItemType.theory:
         return currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).tag;
-      case LearningItemType.exercise:
+      case LearningItemType.exercise || LearningItemType.roleplay:
         return currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).tag;
     }
+  }
+
+  QuestionEntity get currentLessonQuestion {
+    return switch (currentLearningItem.type) {
+      LearningItemType.theory => QuestionEntity(),
+      LearningItemType.exercise || LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()),
+    };
   }
 
   String get currentLessonSpeechBubble {
     return switch (currentLearningItem.type) {
       LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble,
-      LearningItemType.exercise => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble,
+      LearningItemType.exercise || LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble,
     };
   }
 
   int get totalLessonInAllItems {
     return pageData.items.fold(0, (sum, item) {
-      if (item.isPlayingSubQuestions) return sum;
+      if (!item.isPlayingMainQuestions) {
+        if(sum == 0) return item.questions.length;
+        return sum;
+      }
+
       switch (item.type) {
         case LearningItemType.theory:
           return sum + item.documents.length;
-        case LearningItemType.exercise:
+        case LearningItemType.exercise || LearningItemType.roleplay:
           return sum + item.questions.length;
       }
     });
@@ -53,11 +64,11 @@ extension LessonStateExtension on LessonState {
 
   int get _doneProgress {
     return pageData.items.sublist(0, currentLearningItemIndex).fold(0, (sum, item) {
-      if (item.isPlayingSubQuestions) return sum;
+      if (!item.isPlayingMainQuestions) return sum;
       switch (item.type) {
         case LearningItemType.theory:
           return sum + item.documents.length;
-        case LearningItemType.exercise:
+        case LearningItemType.exercise || LearningItemType.roleplay:
           return sum + item.questions.length;
       }
     });
@@ -65,7 +76,7 @@ extension LessonStateExtension on LessonState {
 
   double get progress {
     if (totalLessonInAllItems == 0) return 0;
-    if (currentLearningItem.isPlayingSubQuestions) {
+    if (!currentLearningItem.isPlayingMainQuestions) {
       if (currentLearningItem.questions.isEmpty) return 0;
       if (currentLessonIndex >= currentLearningItem.questions.length) return 1;
       return (currentLessonIndex + 1) / currentLearningItem.questions.length;

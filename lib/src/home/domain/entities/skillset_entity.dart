@@ -14,3 +14,7 @@ abstract class SkillsetEntity with _$SkillsetEntity {
 
   factory SkillsetEntity.fromJson(Map<String, dynamic> json) => _$SkillsetEntityFromJson(json);
 }
+
+extension SkillsetEntityExtension on SkillsetEntity {
+  List<CourseEntity> get coursesWithSkillset => courses.map((course) => course.copyWith(skillset: copyWith(courses: []))).toList();
+}

@@ -28,19 +28,19 @@ mixin AwesomeNotificationService {
           onlyAlertOnce: true,
           playSound: true,
           criticalAlerts: true,
-        )
+        ),
       ],
       channelGroups: [
         NotificationChannelGroup(
           channelGroupKey: 'high_importance_channel_group',
           channelGroupName: 'Group 1',
-        )
+        ),
       ],
       debug: true,
     );
 
     final isAllowed = await AwesomeNotifications().isNotificationAllowed();
-    
+
     if (!isAllowed) {
       await AwesomeNotifications().requestPermissionToSendNotifications();
     }
@@ -85,7 +85,7 @@ mixin AwesomeNotificationService {
     }
 
     if (payload['navigate'] != null) {
-      AppConfig.instance.context?.read<PageCubit>().navigationFromService(Uri.parse(payload['navigate'] ?? ''));
+      AppConfig.instance.context?.read<DeeplinkCubit>().navigationFromService(Uri.parse(payload['navigate'] ?? ''));
     }
   }
 

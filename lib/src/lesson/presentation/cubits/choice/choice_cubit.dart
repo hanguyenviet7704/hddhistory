@@ -58,6 +58,33 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     }
   }
 
+  int pointCalculation() {
+    if (state.question.type == QuestionTypeEnum.multipleChoice) {
+      /// Mỗi câu chọn đúng = Max điểm / tổng số câu đúng
+      /// Mỗi câu chọn sai → sẽ bị trừ 50% số điểm của 1 câu đúng. Trừ đến khi về 0 thì thôi
+      /// Không chọn→  0 điểm
+      final correctIndexes = state.correctOptionsIndices;
+      final selectedIndexes = state.selectedAnswersIndices;
+
+      if (selectedIndexes.isEmpty) return 0;
+      
+      final correctCount = correctIndexes.length;
+      final pointPerCorrect = 100.0 / correctCount;
+
+      final correctSelections = selectedIndexes.where((index) => correctIndexes.contains(index)).length;
+      final wrongSelections = selectedIndexes.where((index) => !correctIndexes.contains(index)).length;
+
+      final score = (correctSelections * pointPerCorrect) - (wrongSelections * pointPerCorrect * 0.5);
+
+      return score.clamp(0, 100).toInt();
+    }
+
+    final correctIndex = state.correctOptionsIndices.first;
+    final selectedIndex = state.selectedAnswerIndex;
+    final score = (selectedIndex == correctIndex ? 100 : 0);
+    return score;
+  }
+
   void toggleExplanation() {
     emit(state.copyWith(showExplanation: !state.showExplanation));
   }

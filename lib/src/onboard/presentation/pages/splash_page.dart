@@ -75,25 +75,34 @@ class _SplashPageState extends State<SplashPage> {
     );
   }
 
-  void _initScreen(_) {
+  void _initScreen(_) async {
     context.read<UserCubit>().setIsFirstTimeUserAccessPictureStudy(true);
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
+
+    if (!mounted) return;
+    bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
+    if (isInitialLink) return;
+
+    if (!mounted) return;
+    bool isFirstTime = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
+    if (isFirstTime) {
+      _trackingDrawWelcomeScrView('first_time');
+    }
+    if (AppGlobalValue.accessToken.isEmpty) {
+      ChooseLanguageRoute().go(context);
+      return;
+    }
+
+    AppDI.injector.get<HomeCubit>().initializeData();
+    String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
     Future.delayed(const Duration(milliseconds: 3000), () async {
       if (!mounted) return;
-      bool isInitialLink = await context.read<PageCubit>().initialLink();
-      if (isInitialLink) return;
 
-      if (!mounted) return;
-      bool isFirstTime = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
-      if (isFirstTime) {
-        _trackingDrawWelcomeScrView('first_time');
-      }
-      if (AppGlobalValue.accessToken.isEmpty) {
-        ChooseLanguageRoute().go(context);
+      if (roadmapId.isEmpty) {
+        CourseRoute().go(context);
         return;
       }
-      AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
-      LessonRoute().go(context);
+      HomeRoute().go(context);
     });
   }
 
@@ -130,21 +139,13 @@ class _SplashPageState extends State<SplashPage> {
       backgroundColor: Colors.transparent,
       body: SafeArea(
         top: false,
-        child: Stack(
-          children: [
-            // Image.asset(
-            //   AppAsset.images.common.splashBg.path,
-            //   width: 1.sw,
-            //   height: 1.sh,
-            //   fit: BoxFit.cover,
-            // ),
-            Image.asset(AppAsset.images.common.mainIcon.path),
-            // Align(
-            //   alignment: Alignment.bottomCenter,
-            //   child: const SplashContentCard(),
-            // ),
-          ],
-        ).animate().fadeIn(duration: 0.8.seconds),
+        child: Center(
+          child: Image.asset(
+            AppAsset.images.common.mainIcon.path,
+            width: 100.w,
+            height: 100.w,
+          ).animate().fadeIn(duration: 0.8.seconds),
+        ),
       ),
     );
   }

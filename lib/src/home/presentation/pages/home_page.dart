@@ -1,193 +1,119 @@
 part of '../../home.dart';
 
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
-}
-
-class _HomePageState extends State<HomePage> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_onScroll);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _onScroll() {
-    if (_isBottom) {
-      _loadMore(context);
-    }
-  }
-
-  bool get _isBottom {
-    if (!_scrollController.hasClients) return false;
-    final maxScroll = _scrollController.position.maxScrollExtent;
-    final currentScroll = _scrollController.offset;
-    return currentScroll >= (maxScroll * 0.9);
-  }
-
-  void _loadMore(BuildContext context) {
-    context.read<HomeCubit>().loadAllSkillsets();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppDI.injector.get<HomeCubit>()
-        ..loadAllSkillsets(isInit: true),
-      child: BlocBuilder<HomeCubit, HomeState>(
-        builder: (context, state) {
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Home'),
-            ),
-            body: _buildBody(context, state),
-            floatingActionButton: FloatingActionButton(
-              onPressed: () {
-                // TODO: Navigate to create page or show create dialog
-                // Example:
-                // context.read<HomeCubit>().createSkillset(entity);
-              },
-              child: const Icon(Icons.add),
-            ),
-          );
+    return Scaffold(
+      body: RefreshIndicator(
+        onRefresh: () async {
+          context.read<HomeCubit>().initializeData();
         },
-      ),
-    );
-  }
+        child: SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              const HomeHeaderWidget(),
 
-  Widget _buildBody(BuildContext context, HomeState state) {
-    // Show loading on initial load
-    if (state.status == HomeStatus.loading && state.pageData.items.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
-    }
-
-    // Show error if no items loaded yet
-    if (state.status == HomeStatus.failure && state.pageData.items.isEmpty) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline, size: 48, color: Colors.red),
-            const SizedBox(height: 16),
-            Text(
-              state.errorMessage ?? 'An error occurred',
-              style: const TextStyle(fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              onPressed: () {
-                context.read<HomeCubit>().loadAllSkillsets(isInit: true);
-              },
-              child: const Text('Retry'),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Show empty state
-    if (state.pageData.items.isEmpty) {
-      return const Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.inbox_outlined, size: 64, color: Colors.grey),
-            SizedBox(height: 16),
-            Text(
-              'No items found',
-              style: TextStyle(fontSize: 18, color: Colors.grey),
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Show list with items
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<HomeCubit>().loadAllSkillsets(isInit: true);
-        // Wait for the request to complete
-        await Future.delayed(const Duration(milliseconds: 500));
-      },
-      child: ListView.builder(
-        controller: _scrollController,
-        itemCount: state.pageData.items.length + (state.pageData.isLastPage ? 0 : 1),
-        itemBuilder: (context, index) {
-          // Show loading indicator at bottom when loading more
-          if (index >= state.pageData.items.length) {
-            return const Center(
-              child: Padding(
-                padding: EdgeInsets.all(16.0),
-                child: CircularProgressIndicator(),
+              // Courses section
+              BlocBuilder<ProgressCubit, ProgressState>(
+                builder: (context, state) {
+                  if (state.myCourses.isEmpty) return const SizedBox.shrink();
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      4.verticalSpace,
+                      // Continue learning
+                      AppText(
+                        'Continue learning',
+                        margin: EdgeInsets.symmetric(horizontal: 20.w),
+                        style: AppStyle.textBold20.copyWith(
+                          color: AppCustomColor.black36,
+                        ),
+                      ),
+                      12.verticalSpace,
+                      // Course cards horizontal scroll
+                      SingleChildScrollView(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(horizontal: 20.w),
+                        child: Row(
+                          children: state.myCourses
+                              .map(
+                                (course) => CourseCardWidget(
+                                  course: course.withSkillset,
+                                ),
+                              )
+                              .toList(),
+                        ),
+                      ),
+                      20.verticalSpace,
+                    ],
+                  );
+                },
               ),
-            );
-          }
 
-          final item = state.pageData.items[index];
-          return ListTile(
-            title: Text(item.title.text),
-            subtitle: Text('Created: ${item.createdAt}'),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.edit),
-                  onPressed: () {
-                    // TODO: Navigate to edit page or show edit dialog
-                    // Example:
-                    // context.read<HomeCubit>().updateSkillset(updatedEntity);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete),
-                  onPressed: () {
-                    _showDeleteConfirmation(context, item);
-                  },
-                ),
-              ],
-            ),
-            onTap: () {
-              // TODO: Navigate to detail page
-              // Example:
-              // context.read<HomeCubit>().loadSkillset(item.id);
-            },
-          );
-        },
-      ),
-    );
-  }
+              // Skillsets section
+              SectionHeaderWidget(
+                title: context.text.homeAllCourseButton,
+                actionText: context.text.homeCourseButton,
+                onActionTap: () => CourseRoute().push(context),
+              ),
+              16.verticalSpace,
 
-  void _showDeleteConfirmation(BuildContext context, SkillsetEntity item) {
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete Item'),
-        content: Text('Are you sure you want to delete "${item.title.text}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('Cancel'),
+              // Skillsets grid
+              BlocSelector<HomeCubit, HomeState, List<SkillsetEntity>>(
+                selector: (state) => state.skillsets,
+                builder: (context, skillsets) {
+                  return GridView.builder(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12.w,
+                      mainAxisSpacing: 12.h,
+                      childAspectRatio: 161.w / 234.h,
+                    ),
+                    itemCount: skillsets.length,
+                    itemBuilder: (context, index) {
+                      final skillset = skillsets[index];
+                      return SkillsetCardWidget(
+                        skillset: skillset,
+                        onTap: () {
+                          context.read<HomeCubit>().selectSkillsetIndex(index);
+                          CourseRoute().push(context);
+                        },
+                      );
+                    },
+                  );
+                },
+              ),
+
+              // Loading indicator for skillsets
+              BlocSelector<HomeCubit, HomeState, bool>(
+                selector: (state) => state.status == HomeStatus.loading,
+                builder: (context, isLoading) {
+                  if (!isLoading) return const SizedBox.shrink();
+
+                  return Padding(
+                    padding: EdgeInsets.all(20.w),
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        color: AppCustomColor.blue2F,
+                      ),
+                    ),
+                  );
+                },
+              ),
+
+              // Bottom padding
+              20.verticalSpace,
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(dialogContext).pop();
-              context.read<HomeCubit>().deleteSkillset(item.id);
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Delete'),
-          ),
-        ],
+        ),
       ),
     );
   }

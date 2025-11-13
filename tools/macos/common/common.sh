@@ -76,6 +76,47 @@ validate_platform() {
     return 0
 }
 
+# Get domain/BASE_URL from .env file for a given flavor
+get_domain_from_env() {
+    local flavor="$1"
+    local env_file="${PROJECT_ROOT}/.env/.env.${flavor}"
+
+    if [[ -f "$env_file" ]]; then
+        local domain=$(grep "^BASE_URL=" "$env_file" | cut -d'=' -f2)
+        echo "$domain"
+    else
+        echo "N/A"
+    fi
+}
+
+# Generate release notes with domain replacement and platform information
+# Parameters:
+#   $1 - flavor (dev|stg|prod)
+#   $2 - version
+#   $3 - build_type (e.g., APK, IPA, App Bundle)
+#   $4 - platform (e.g., "Android", "iOS", "Android (Linux)")
+generate_release_notes() {
+    local flavor="$1"
+    local version="$2"
+    local build_type="$3"
+    local platform="$4"
+
+    # Get domain from .env file
+    local domain=$(get_domain_from_env "$flavor")
+
+    # Use centralized function - checks text file first, then JSON template
+    RELEASE_NOTES=$(get_all_release_notes "$flavor" "$version")
+
+    # Replace {{domain}} variable in release notes
+    RELEASE_NOTES="${RELEASE_NOTES//\{\{domain\}\}/$domain}"
+
+    # Add build type and platform specific information
+    RELEASE_NOTES="$RELEASE_NOTES\n\nBuild Type: $build_type\nPlatform: $platform"
+
+    log_info "Generated release notes:"
+    printf "${CYAN}%b${NC}\n" "$RELEASE_NOTES"
+}
+
 check_required_files() {
     local missing_files=()
     

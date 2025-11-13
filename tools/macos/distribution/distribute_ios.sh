@@ -96,22 +96,6 @@ load_firebase_config() {
     echo "  ${CYAN}Groups:${NC} ${FIREBASE_GROUPS:-'(none)'}"
 }
 
-# Function to generate release notes
-generate_release_notes() {
-    local flavor="$1"
-    local version="$2"
-    local build_type="$3"
-    
-    # Use centralized function - checks text file first, then JSON template
-    RELEASE_NOTES=$(get_all_release_notes "$flavor" "$version")
-    
-    # Add build type and platform specific information
-    RELEASE_NOTES="$RELEASE_NOTES\n\nBuild Type: $build_type\nPlatform: iOS"
-    
-    log_info "Generated release notes:"
-    echo -e "${CYAN}$RELEASE_NOTES${NC}"
-}
-
 # Function to get app version (using centralized function)
 get_app_version() {
     get_pubspec_version
@@ -137,11 +121,11 @@ distribute_to_firebase() {
     local version=$(get_app_version)
     
     # Generate release notes
-    generate_release_notes "$flavor" "$version" "$build_type"
+    generate_release_notes "$flavor" "$version" "$build_type" "iOS"
     
     # Create a temporary file for release notes
     local release_notes_file=$(mktemp)
-    echo -e "$RELEASE_NOTES" > "$release_notes_file"
+    printf "%b\n" "$RELEASE_NOTES" > "$release_notes_file"
     
     # Build Firebase distribution command
     local firebase_cmd="firebase appdistribution:distribute \"$file_path\" --project \"$PROJECT_ID\" --app \"$APP_ID\" --release-notes-file \"$release_notes_file\""

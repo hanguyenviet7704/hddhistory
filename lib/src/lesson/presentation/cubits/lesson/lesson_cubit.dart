@@ -10,6 +10,18 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._getLearningItemUseCase,
   ) : super(LessonState.initial());
 
+  //* Roleplay Page Flow
+  void setLearningItemFromRoleplay(LearningItemEntity learningItem) {
+    emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem]), currentLearningItemIndex: 0));
+    setCurrentLearningItem(learningItem);
+  }
+
+  void setRoleplayDataToExerciseCubit(LearningItemEntity learningItem) {
+    emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem])));
+    AppDI.injector.get<ExerciseCubit>().setRoleplayQuestions(learningItem);
+  }
+
+  //* Lesson Page Flow
   void setCurrentLearningItem(LearningItemEntity learningItem) {
     if (learningItem.id.isEmpty) return;
 
@@ -19,7 +31,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           ..reset()
           ..setCurrentLearningItem(learningItem);
         break;
-      case LearningItemType.exercise:
+      case LearningItemType.exercise || LearningItemType.roleplay:
         AppDI.injector.get<ExerciseCubit>()
           ..reset()
           ..setCurrentLearningItem(learningItem);
@@ -29,16 +41,33 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void nextLearningItem() {
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
+      if (state.currentLearningItem.type == LearningItemType.roleplay) {
+        AppConfig.instance.context!.back();
+        AppDI.injector.get<RoleplayCubit>().goToNextSection();
+        return;
+      }
+
       if (state.subQuestions.isNotEmpty) {
         ReviewTimeRoute().go(AppConfig.instance.context!);
         return;
       }
 
       LessonCompleteRoute(
-        type: 'lesson',
+        type: 'keypoint',
         keypointTitle: state.currentLearningItem.title.en,
         progress: 1.0,
       ).go(AppConfig.instance.context!);
+
+      AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(
+        UpdateUserProgressKeypointParams(
+          keypointId: state.currentLearningItem.keypointId,
+          body: {
+            "averageScore": 0,
+            "passed": true,
+            "reviews": "string",
+          },
+        ),
+      );
       return;
     }
 
@@ -68,7 +97,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     LearningItemEntity learningItem = state.pageData.items.firstWhere((item) => item.type == LearningItemType.exercise, orElse: () => LearningItemEntity());
     learningItem = learningItem.copyWith(
-      questions: state.subQuestions,
+      mainQuestions: state.subQuestions,
       type: LearningItemType.exercise,
       subQuestions: [],
       isPlayingSubQuestions: true,
@@ -88,6 +117,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void loadAllLearningItems({
     bool isInit = false,
+    String? keypointId,
   }) async {
     // Prevent multiple simultaneous loads
     if (!isInit && state.status == LessonStatus.loading) return;
@@ -97,10 +127,10 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     PageBreakRequest<LearningItemFilter> pageRequest;
     pageRequest = isInit
-        ? const PageBreakRequest<LearningItemFilter>()
+        ? PageBreakRequest<LearningItemFilter>(filter: LearningItemFilter(keypointId: keypointId))
         : PageBreakRequest<LearningItemFilter>(
             page: state.pageData.nextPage,
-            filter: LearningItemFilter(keypointId: state.currentTag.id, type: LearningItemFilterType.theory),
+            filter: LearningItemFilter(keypointId: keypointId),
           );
 
     await runUseCasePageBreak<LearningItemEntity>(
@@ -113,6 +143,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       },
       onSuccess: (pageData) {
         emit(state.copyWith(status: LessonStatus.success, pageData: pageData, currentLearningItemIndex: 0));
+        if (pageData.items.isEmpty) return;
         loadLearningItem(
           pageData.items.first.id,
           onSuccess: (item) => setCurrentLearningItem(item),

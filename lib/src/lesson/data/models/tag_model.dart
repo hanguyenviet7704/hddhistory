@@ -4,11 +4,11 @@ part of '../../lesson.dart';
 abstract class TagModel with _$TagModel {
   const factory TagModel({
     @Default('') @JsonKey(name: '_id') String id,
-    @Default(AppUser()) AppUser createdBy,
-    @Default(AppUser()) AppUser updatedBy,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default('') String color,
-    @Default('') String icon,
+    @Default('') String url,
+    @Default(AppUser()) AppUser createdBy,
+    @Default(AppUser()) AppUser updatedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _TagModel;
@@ -23,7 +23,7 @@ extension TagModelExtension on TagModel {
     updatedBy: updatedBy,
     title: title,
     color: color,
-    icon: icon,
+    url: url,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

@@ -1,6 +1,6 @@
 import 'dart:ui' as ui;
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 
 /// A utility class for parsing SVG content and extracting elements with transforms
 class SVGParser {
@@ -76,12 +76,12 @@ class SVGParser {
   /// Download and parse SVG from URL
   static Future<Map<String, dynamic>> downloadAndParseSVG(String svgUrl) async {
     try {
-      final response = await http.get(Uri.parse(svgUrl));
+      final response = await Dio().get(svgUrl);
       if (response.statusCode != 200) {
         throw Exception('Failed to load SVG: ${response.statusCode}');
       }
 
-      final svgContent = response.body;
+      final svgContent = response.data;
       final elements = await extractSVGElements(svgContent);
       final dimensions = extractSVGDimensions(svgContent);
 

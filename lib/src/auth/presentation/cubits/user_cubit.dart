@@ -69,45 +69,6 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     onDone?.call();
   }
 
-  // ignore: unused_element
-  Future<void> _onAutoSignUpGuest() async {
-    if (!state.isGuest || state.accessToken.isNotEmpty) return;
-    // final uuid = Uuid().v4();
-    // await executeCustomUseCase(
-    //   usecase: () => _registerUsecase({
-    //     'email': 'guest_$uuid@meup.com',
-    //     'password': '123456',
-    //     'password_confirmation': '123456',
-    //     'data': {},
-    //     'gotrue_meta_security': {},
-    //     'code_challenge': null,
-    //     'code_challenge_method': null,
-    //   }),
-    //   onSuccess: (response) async {
-    //     // AppGlobalValue.accessToken = response.accessToken;
-    //     // AppGlobalValue.refreshToken = response.refreshToken;
-    //     // setAuth(response);
-    //     _onGetMyProfiles();
-    //   },
-    //   onFailure: (failure) {
-    //     DMessage.showMessage(message: AppConfig.instance.context!.text.authRegistrationFailedPleaseTryAgain, type: MessageType.error);
-    //   },
-    // );
-  }
-
-  // ignore: unused_element
-  Future<void> _onGetMyProfiles() async {
-    // await executeCustomUseCase(
-    //   usecase: () => _getMyProfilesUsecase(),
-    //   onSuccess: (response) {
-    //     if (response.data.isEmpty) return;
-    //     emit(state.copyWith(guestProfileId: response.data.first.id));
-    //   },
-    //   onFailure: (p0) {
-    //     debugPrint('onGetMyProfiles error: $p0');
-    //   },
-    // );
-  }
 
   void getMyProfiles() async {
     // await executeListUseCase(

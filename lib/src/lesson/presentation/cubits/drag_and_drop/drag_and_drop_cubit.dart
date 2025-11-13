@@ -93,6 +93,33 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     }
   }
 
+  int pointCalculation() {
+    /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
+    /// Sai ko bị trừ điểm
+    final placedWords = state.placedWords;
+    final correctAnswers = state.question.answer;
+
+    if (placedWords.isEmpty) return 0;
+
+    final totalPositions = correctAnswers.length;
+    if (totalPositions == 0) return 0;
+
+    final pointPerPosition = 100.0 / totalPositions;
+    int correctCount = 0;
+
+    for (int i = 0; i < totalPositions; i++) {
+      final placedWord = placedWords[i];
+      final correctWord = correctAnswers[i].correctAnswer;
+      if (placedWord == correctWord) {
+        correctCount++;
+      }
+    }
+
+    final score = correctCount * pointPerPosition;
+
+    return score.clamp(0, 100).toInt();
+  }
+
   /// Toggle explanation visibility
   void toggleExplanation() {
     emit(state.copyWith(showExplanation: !state.showExplanation));

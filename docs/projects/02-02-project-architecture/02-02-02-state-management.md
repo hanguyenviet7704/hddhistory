@@ -470,7 +470,7 @@ class AppProviders extends StatelessWidget {
         // App Navigation and Connectivity
         BlocProvider<HomeCubit>(create: (_) => AppDI.injector.get<HomeCubit>()),
         BlocProvider<ConnectivityCubit>(create: (_) => AppDI.injector.get<ConnectivityCubit>()),
-        BlocProvider<PageCubit>(create: (_) => AppDI.injector.get<PageCubit>()),
+        BlocProvider<DeeplinkCubit>(create: (_) => AppDI.injector.get<DeeplinkCubit>()),
         
         // User Management (Only BLoC used for Auth)
         BlocProvider<UserCubit>(create: (_) => AppDI.injector.get<UserCubit>()),
@@ -543,7 +543,7 @@ The global state management follows this pattern:
 ### State Categories
 
 - **UI State**: `ThemeCubit`, `LocaleCubit`, `ThemeModeCubit` for appearance and localization
-- **App State**: `HomeCubit`, `PageCubit`, `ConnectivityCubit` for navigation and system state
+- **App State**: `HomeCubit`, `DeeplinkCubit`, `ConnectivityCubit` for navigation and system state
 - **User State**: `UserCubit`, `AuthBloc` for user management and authentication
 - **Feature State**: Feature-specific Cubits for different app functionalities
 

@@ -14,7 +14,7 @@ class LessonBadge extends StatelessWidget {
             spacing: 6.w,
             children: [
               DCachedImage(
-                url: tag.icon,
+                url: tag.url,
                 width: 20.w,
                 height: 20.w,
               ),

@@ -1,0 +1,129 @@
+part of '../../progress.dart';
+
+@lazySingleton
+class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<ProgressState> {
+  final UpdateUserProgressLessonUseCase _updateUserProgressLessonUseCase;
+  final UpdateUserProgressKeypointUseCase _updateUserProgressKeypointUseCase;
+  final UpdateUserProgressExerciseUseCase _updateUserProgressExerciseUseCase;
+  final GetAllUserProgresssUseCase _getAllUserProgresssUseCase;
+  final GetUserProgressMyCoursesUseCase _getUserProgressMyCoursesUseCase;
+
+  ProgressCubit(
+    this._getAllUserProgresssUseCase,
+    this._updateUserProgressLessonUseCase,
+    this._updateUserProgressKeypointUseCase,
+    this._updateUserProgressExerciseUseCase,
+    this._getUserProgressMyCoursesUseCase,
+  ) : super(ProgressState.initial());
+
+  void loadAllUserProgresss({bool isInit = false}) async {
+    if (!isInit && state.status == ProgressStatus.loading) return;
+    if (!isInit && state.pageData.isLastPage) return;
+
+    PageBreakRequest pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+
+    await runUseCasePageBreak<UserProgressEntity>(
+      usecase: () => _getAllUserProgresssUseCase(pageRequest),
+      currentPageData: state.pageData,
+      isInit: isInit,
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (pageData) {
+        emit(state.copyWith(status: ProgressStatus.success, pageData: pageData));
+      },
+    );
+  }
+
+  void updateUserProgressLesson(UpdateUserProgressLessonParams params) async {
+    await runUseCase<UserProgressEntity>(
+      usecase: () => _updateUserProgressLessonUseCase(params),
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (item) {
+        emit(state.copyWith(status: ProgressStatus.success, selectedLesson: item));
+        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(params.body["courseId"]);
+      },
+    );
+  }
+
+  void updateUserProgressKeypoint(UpdateUserProgressKeypointParams params) async {
+    final String userId = AppDI.injector.get<UserCubit>().state.user.id;
+    final String courseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+    final CourseLessonState lesson = AppDI.injector.get<CourseLessonCubit>().state;
+
+    params.body.addAll({
+      "userId": userId,
+      "courseId": courseId,
+      "lessonId": lesson.selectedLesson.id,
+    });
+
+    await runUseCase<UserProgressEntity>(
+      usecase: () => _updateUserProgressKeypointUseCase(params),
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (item) {
+        if (lesson.isAllOtherKeypointsCompleted) {
+          updateUserProgressLesson(
+            UpdateUserProgressLessonParams(
+              lessonId: lesson.selectedLesson.id,
+              body: {
+                "userId": userId,
+                "courseId": courseId,
+                "averageScore": params.body["averageScore"],
+                "passed": params.body["passed"],
+                "reviews": params.body["reviews"],
+              },
+            ),
+          );
+        }
+        emit(state.copyWith(status: ProgressStatus.success, selectedKeypoint: item));
+        AppDI.injector.get<CourseLessonCubit>().loadLesson(lesson.selectedLesson.id);
+        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId);
+      },
+    );
+  }
+
+  void updateUserProgressExercise(UpdateUserProgressExerciseParams params) async {
+    await runUseCase<UserProgressEntity>(
+      usecase: () => _updateUserProgressExerciseUseCase(params),
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (item) {
+        emit(state.copyWith(status: ProgressStatus.success, selectedExercise: item));
+      },
+    );
+  }
+
+  Future<void> loadUserProgressMyCourses({bool isInit = false, bool recent = false}) async {
+    if (!isInit && state.status == ProgressStatus.loading) return;
+    if (!isInit && state.myCoursesPageData.isLastPage) return;
+    UserProgressMyCoursesUseCaseFilter filter = UserProgressMyCoursesUseCaseFilter(recent: recent);
+    PageBreakRequest pageRequest = isInit
+        ? PageBreakRequest(filter: filter)
+        : PageBreakRequest(
+            page: state.myCoursesPageData.nextPage,
+            filter: filter,
+          );
+
+    await runUseCasePageBreak<CourseEntity>(
+      usecase: () => _getUserProgressMyCoursesUseCase(pageRequest),
+      currentPageData: state.myCoursesPageData,
+      isInit: isInit,
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (pageData) {
+        emit(state.copyWith(status: ProgressStatus.success, myCoursesPageData: pageData));
+      },
+    );
+  }
+}

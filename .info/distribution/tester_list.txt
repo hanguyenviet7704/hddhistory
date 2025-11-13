@@ -7,3 +7,4 @@
 # tester2@example.com
 # qa-team@example.com
 
+artlexis_test@eupgroup.net

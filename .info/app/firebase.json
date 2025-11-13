@@ -38,22 +38,18 @@
   "distribution": {
     "testers": {
       "dev": [
-        "dev-team@yourcompany.com",
-        "qa-team@yourcompany.com"
+        "artlexis_test@eupgroup.net"
       ],
       "stg": [
-        "staging-testers@yourcompany.com",
-        "stakeholders@yourcompany.com"
+        "artlexis_test@eupgroup.net"
       ],
       "prod": [
-        "beta-testers@yourcompany.com"
+        "artlexis_test@eupgroup.net"
       ]
     },
     "groups": {
       "dev": [
-        "meup-testers",
-        "dev-team",
-        "qa-team"
+        "meup-testers"
       ],
       "stg": [
         "meup-testers"

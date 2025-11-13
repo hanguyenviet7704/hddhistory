@@ -90,13 +90,14 @@ class _RegisterPageState extends State<RegisterPage> {
                       Column(
                         children: [
                           // Apple button
-                          AppleLoginButton(
-                            onPressed: () {
-                              context.read<AuthBloc>().add(const AuthEvent.loginSSOApple());
-                            },
-                          ),
-
-                          16.verticalSpace,
+                          if (Platform.isIOS) ...[
+                            AppleLoginButton(
+                              onPressed: () {
+                                context.read<AuthBloc>().add(const AuthEvent.loginSSOApple());
+                              },
+                            ),
+                            16.verticalSpace,
+                          ],
 
                           // Google button
                           GoogleLoginButton(
@@ -115,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
                               // Navigate to home
                               // DNavigator.goNamed(RouteNamed.home);
                               AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
-                              LessonRoute().go(context);
+                              CourseRoute().go(context);
                             },
                           ),
                         ],

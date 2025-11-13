@@ -12,7 +12,7 @@ class LessonPage extends StatelessWidget {
         Widget bottomButton = const SizedBox.shrink();
 
         switch (learningType) {
-          case LearningItemType.exercise:
+          case LearningItemType.exercise || LearningItemType.roleplay:
             final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
             lessonBody = _buildExerciseLessonBody(question.type);
             bottomButton = _buildBottomButton(context, lessonBody);
@@ -22,7 +22,7 @@ class LessonPage extends StatelessWidget {
             bottomButton = _buildBottomButton(context, lessonBody);
             break;
         }
-        
+
         return LessonLayout(
           body: lessonBody,
           bottom: bottomButton,
