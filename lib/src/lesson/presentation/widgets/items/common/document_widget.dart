@@ -11,16 +11,23 @@ class DocumentWidget extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(16.w),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      decoration: ShapeDecoration(
+        color: AppColorLight.surface,
+        shape: RoundedRectangleBorder(
+          side: BorderSide(
+            width: 2.w,
+            color: const Color(0xFFE3E8EF),
+          ),
+          borderRadius: BorderRadius.circular(16.r),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        spacing: 16.h,
-        children: documents
-            .map(
-              (document) => DocumentItem(document: document),
-            )
-            .toList(),
+        children: documents.map((document) => DocumentItem(document: document)).toList(),
       ),
     );
   }

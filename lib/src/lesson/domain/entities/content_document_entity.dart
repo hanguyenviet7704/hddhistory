@@ -12,5 +12,5 @@ abstract class ContentDocumentEntity with _$ContentDocumentEntity {
 }
 
 extension ContentDocumentEntityExtension on ContentDocumentEntity {
-  bool get dataAvailable => data.title.isNotEmpty || data.content.isNotEmpty || data.caption.isNotEmpty || data.url.isNotEmpty || data.thumbnail.isNotEmpty;
+  bool get dataAvailable => data.content.isNotEmpty || data.url.isNotEmpty || data.thumbnail.isNotEmpty;
 }

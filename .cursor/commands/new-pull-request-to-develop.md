@@ -140,8 +140,7 @@ feature-TICKET-ID: [Brief description from commits]
 [If UI changes and user selected Yes]
 [Placeholder for user to add screenshots]
 
----
-Generated with Claude Code
+
 ```
 
 ### 6. Save PR Content

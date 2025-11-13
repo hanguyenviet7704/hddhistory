@@ -240,8 +240,6 @@ set "RELEASE_NOTES=Release for %flavor% environment - Version %version%
 Built on: %date% %time%
 Platform: Android (Windows build)
 
-🚀 Generated with Claude Code"
-
 call :log_success "Release notes generated"
 exit /b 0
 
