@@ -2,7 +2,10 @@ import {
   RoleplaySectionType,
   SectionConversationPosition,
 } from "../../../enum/learningItem.enum";
-import { ExerciseInput } from "../learning-item.interface";
+import {
+  ExerciseInput,
+  ExerciseInputPayload,
+} from "../learning-item.interface";
 
 export interface IConversation {
   name: string;
@@ -45,3 +48,11 @@ export interface ISection {
   image: string;
   contents: ISectionContent[];
 }
+
+export type ISectionContentPayload = Omit<ISectionContent, "exercise"> & {
+  exercise?: ExerciseInputPayload;
+};
+
+export type ISectionPayload = Omit<ISection, "contents"> & {
+  contents: ISectionContentPayload[];
+};

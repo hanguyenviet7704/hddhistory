@@ -1,4 +1,6 @@
 export enum DocumentType {
+  TITLE = "title",
+  CAPTION = "caption",
   TEXT = "text",
   VIDEO = "video",
   IMAGE = "image",

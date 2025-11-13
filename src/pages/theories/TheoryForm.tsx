@@ -41,6 +41,32 @@ import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 
+const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
+  DocumentType.TITLE,
+  DocumentType.CAPTION,
+  DocumentType.TEXT,
+];
+
+const isTextualDocumentType = (type: DocumentType) =>
+  TEXTUAL_DOCUMENT_TYPES.includes(type);
+
+const getDocumentContentLabel = (type: DocumentType) => {
+  switch (type) {
+    case DocumentType.TITLE:
+      return "Title";
+    case DocumentType.CAPTION:
+      return "Caption";
+    default:
+      return "Content";
+  }
+};
+
+const createEmptyMediaDocument = (): IMediaDocument => ({
+  content: "",
+  url: "",
+  thumbnail: "",
+});
+
 // Helper component để hiển thị văn bản với cắt bớt và tooltip
 const TextWithTooltip = ({ text = "", maxLength = 100 }) => {
   if (!text) return null;
@@ -496,26 +522,52 @@ export default function TheoryForm({
                                       <span className="font-semibold text-green-600">
                                         {doc.type.toUpperCase()}:
                                       </span>
-                                      {doc.data.title && (
-                                        <span className="ml-1">
-                                          Title: {doc.data.title}
-                                        </span>
-                                      )}
-                                      {doc.data.content && (
-                                        <div className="ml-1">
-                                          <TextWithTooltip
-                                            text={doc.data.content}
-                                            maxLength={50}
-                                          />
-                                        </div>
-                                      )}
-                                      {doc.data.url && (
-                                        <div className="ml-1">
-                                          <TextWithTooltip
-                                            text={doc.data.url}
-                                            maxLength={50}
-                                          />
-                                        </div>
+                                      {isTextualDocumentType(doc.type) &&
+                                        doc.data.content && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.content}
+                                              maxLength={50}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.IMAGE &&
+                                        doc.data.url && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.url}
+                                              maxLength={50}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.AUDIO &&
+                                        doc.data.url && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.url}
+                                              maxLength={50}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.VIDEO && (
+                                        <>
+                                          {doc.data.url && (
+                                            <div className="ml-1">
+                                              <TextWithTooltip
+                                                text={doc.data.url}
+                                                maxLength={50}
+                                              />
+                                            </div>
+                                          )}
+                                          {doc.data.thumbnail && (
+                                            <div className="ml-1">
+                                              <TextWithTooltip
+                                                text={doc.data.thumbnail}
+                                                maxLength={50}
+                                              />
+                                            </div>
+                                          )}
+                                        </>
                                       )}
                                     </div>
                                   ))}
@@ -583,13 +635,7 @@ export default function TheoryForm({
           {
             id: 1,
             type: DocumentType.TEXT,
-            data: {
-              title: "",
-              content: "",
-              caption: "",
-              url: "",
-              thumbnail: "",
-            },
+            data: createEmptyMediaDocument(),
           },
         ],
       };
@@ -597,6 +643,111 @@ export default function TheoryForm({
 
     const [tagQuery, setTagQuery] = useState("");
     const selectedTag = formData.tag;
+
+    const renderDocumentFields = (doc: IDocument, index: number) => {
+      if (isTextualDocumentType(doc.type)) {
+        const label = getDocumentContentLabel(doc.type);
+        const isLongForm = doc.type === DocumentType.TEXT;
+        const placeholder =
+          doc.type === DocumentType.TEXT
+            ? "Enter content"
+            : `Enter ${label.toLowerCase()}`;
+
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {label}
+            </label>
+            {isLongForm ? (
+              <textarea
+                value={doc.data.content}
+                onChange={(e) =>
+                  handleDataChange(index, "content", e.target.value)
+                }
+                rows={3}
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            ) : (
+              <input
+                type="text"
+                value={doc.data.content}
+                onChange={(e) =>
+                  handleDataChange(index, "content", e.target.value)
+                }
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            )}
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.IMAGE) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={doc.data.url || ""}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Image URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "theories",
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.AUDIO) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={doc.data.url || ""}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Audio URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "theories",
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.VIDEO) {
+        return (
+          <div className="flex flex-col gap-3">
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={doc.data.url || ""}
+                onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+                label="Video URL"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "theories",
+                }}
+              />
+            </div>
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={doc.data.thumbnail || ""}
+                onUrlChange={(newUrl) =>
+                  handleDataChange(index, "thumbnail", newUrl)
+                }
+                label="Video Thumbnail"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "theories",
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
+
+      return null;
+    };
 
     const handleChange = (field: keyof DocumentFormState, value: any) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
@@ -608,7 +759,11 @@ export default function TheoryForm({
     ) => {
       setFormData((prev) => {
         const newDocuments = [...prev.document];
-        newDocuments[index] = { ...newDocuments[index], [field]: value };
+        const updatedDoc = { ...newDocuments[index], [field]: value };
+        if (field === "type") {
+          updatedDoc.data = createEmptyMediaDocument();
+        }
+        newDocuments[index] = updatedDoc;
         return { ...prev, document: newDocuments };
       });
     };
@@ -639,18 +794,13 @@ export default function TheoryForm({
           {
             id: newId,
             type: DocumentType.TEXT,
-            data: {
-              title: "",
-              content: "",
-              caption: "",
-              url: "",
-              thumbnail: "",
-            },
+            data: createEmptyMediaDocument(),
           },
         ],
       }));
     };
     const removeInnerDocument = (index: number) => {
+      if (formData.document.length === 1) return;
       setFormData((prev) => ({
         ...prev,
         document: prev.document.filter((_, i) => i !== index),
@@ -735,13 +885,6 @@ export default function TheoryForm({
         <div className="border-t pt-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-medium text-gray-800">Content Documents</h3>
-            <button
-              type="button"
-              onClick={addNewInnerDocument}
-              className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-            >
-              Add Content
-            </button>
           </div>
           {formData.document.map((doc, index) => (
             <div key={doc.id} className="border rounded-lg p-4 bg-gray-50 mb-3">
@@ -767,97 +910,36 @@ export default function TheoryForm({
                   <select
                     value={doc.type}
                     onChange={(e) =>
-                      handleDocumentChange(index, "type", e.target.value)
+                      handleDocumentChange(
+                        index,
+                        "type",
+                        e.target.value as DocumentType
+                      )
                     }
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
+                    <option value={DocumentType.TITLE}>Title</option>
+                    <option value={DocumentType.CAPTION}>Caption</option>
                     <option value={DocumentType.TEXT}>Text</option>
                     <option value={DocumentType.IMAGE}>Image</option>
                     <option value={DocumentType.VIDEO}>Video</option>
                     <option value={DocumentType.AUDIO}>Audio</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={doc.data.title}
-                    onChange={(e) =>
-                      handleDataChange(index, "title", e.target.value)
-                    }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Content
-                  </label>
-                  <textarea
-                    value={doc.data.content}
-                    onChange={(e) =>
-                      handleDataChange(index, "content", e.target.value)
-                    }
-                    rows={3}
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter content"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Caption
-                  </label>
-                  <input
-                    type="text"
-                    value={doc.data.caption}
-                    onChange={(e) =>
-                      handleDataChange(index, "caption", e.target.value)
-                    }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter caption"
-                  />
-                </div>
-                {(doc.type === DocumentType.IMAGE ||
-                  doc.type === DocumentType.VIDEO ||
-                  doc.type === DocumentType.AUDIO) && (
-                  <div className="w-52">
-                    <CloudflareFileUpload
-                      initialUrl={doc.data.url || ""}
-                      onUrlChange={(newUrl) =>
-                        handleDataChange(index, "url", newUrl)
-                      }
-                      label={`${
-                        doc.type.charAt(0).toUpperCase() + doc.type.slice(1)
-                      } Url`}
-                      uploadPayload={{
-                        prefix: "",
-                        folder: "theories",
-                      }}
-                    />
-                  </div>
-                )}
-                {doc.type === DocumentType.VIDEO && (
-                  <div className="w-52">
-                    <CloudflareFileUpload
-                      initialUrl={doc.data.thumbnail || ""}
-                      onUrlChange={(newUrl) =>
-                        handleDataChange(index, "thumbnail", newUrl)
-                      }
-                      label={`${
-                        doc.type.charAt(0).toUpperCase() + doc.type.slice(1)
-                      } Thumbnail`}
-                      uploadPayload={{
-                        prefix: "",
-                        folder: "theories",
-                      }}
-                    />
-                  </div>
-                )}
+                {renderDocumentFields(doc, index)}
               </div>
             </div>
           ))}
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={addNewInnerDocument}
+              className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+            >
+              Add Content
+            </button>
+          </div>
         </div>
         <div className="flex justify-end gap-2 mt-6">
           <button
