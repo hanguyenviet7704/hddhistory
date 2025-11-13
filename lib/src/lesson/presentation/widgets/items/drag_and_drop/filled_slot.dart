@@ -23,7 +23,7 @@ class FilledSlot extends StatelessWidget {
         padding: EdgeInsets.zero,
       ),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: _getBackgroundColor(),
           borderRadius: BorderRadius.circular(8.r),

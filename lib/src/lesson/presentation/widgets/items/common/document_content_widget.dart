@@ -12,8 +12,8 @@ class DocumentContentWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (type) {
-      ContentDocumentType.title => AppText(content, maxLines: 5, style: AppStyle.textBold14.copyWith(color: const Color(0xFF0D121C), height: 1.3.h)),
-      ContentDocumentType.text => AppText(content, maxLines: 50, style: AppStyle.text14.copyWith(color: const Color(0xFF364152), height: 1.3.h)),
+      ContentDocumentType.title => AppText(content, maxLines: 5, style: AppStyle.textBold14.copyWith(color: const Color(0xFF0D121C))),
+      ContentDocumentType.text => AppText(content, maxLines: 50, style: AppStyle.text14.copyWith(color: const Color(0xFF364152))),
       ContentDocumentType.caption => _ChoiceDocumentTypeTag(label: content, accentColor: const Color(0xFFEBEAFD)),
       _ => const SizedBox.shrink(),
     };
