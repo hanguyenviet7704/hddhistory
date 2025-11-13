@@ -7,15 +7,13 @@ class CourseRoadmapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Top progress bar
-            TopProgressBar(),
-            // Main content
-            CourseRoadmapContent(),
-          ],
-        ),
+      body: Column(
+        children: [
+          // Top progress bar
+          TopProgressBar(),
+          // Main content
+          CourseRoadmapContent(),
+        ],
       ),
     );
   }

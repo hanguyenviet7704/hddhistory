@@ -43,14 +43,19 @@ class ScaffoldLayout extends StatelessWidget {
     );
 
     if (Platform.isIOS) {
-      bottomNavigationBar = SizedBox(height: 76.h, child: bottomNavigationBar);
+      bottomNavigationBar = SizedBox(height: 72.h, child: bottomNavigationBar);
     }
 
     return SafeArea(
+      bottom: !Platform.isIOS,
       child: Column(
         children: [
           Expanded(child: navigationShell),
-          bottomNavigationBar,
+          MediaQuery.removePadding(
+            context: context,
+            removeBottom: true,
+            child: bottomNavigationBar,
+          ),
         ],
       ),
     );
