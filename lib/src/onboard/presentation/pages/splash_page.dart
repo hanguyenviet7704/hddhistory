@@ -139,21 +139,13 @@ class _SplashPageState extends State<SplashPage> {
       backgroundColor: Colors.transparent,
       body: SafeArea(
         top: false,
-        child: Stack(
-          children: [
-            // Image.asset(
-            //   AppAsset.images.common.splashBg.path,
-            //   width: 1.sw,
-            //   height: 1.sh,
-            //   fit: BoxFit.cover,
-            // ),
-            Image.asset(AppAsset.images.common.mainIcon.path),
-            // Align(
-            //   alignment: Alignment.bottomCenter,
-            //   child: const SplashContentCard(),
-            // ),
-          ],
-        ).animate().fadeIn(duration: 0.8.seconds),
+        child: Center(
+          child: Image.asset(
+            AppAsset.images.common.mainIcon.path,
+            width: 100.w,
+            height: 100.w,
+          ).animate().fadeIn(duration: 0.8.seconds),
+        ),
       ),
     );
   }
