@@ -46,7 +46,6 @@ import {
 } from "../../types/interface/learning-item/document.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
-import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { avatarService } from "../../services/avatarService";
@@ -86,10 +85,6 @@ const createEmptyMediaDocument = (): IMediaDocument => ({
   url: "",
   thumbnail: "",
 });
-
-interface RebalanceOptions {
-  lockedIndices?: number[];
-}
 
 const distributeEvenlyIntegers = (slots: number, total: number) => {
   if (slots <= 0) return [];
@@ -140,26 +135,20 @@ const scaleValuesToTotal = (values: number[], target: number) => {
 
 const rebalanceRecordScoringCriteria = (
   criteriaInput?: Partial<IScoringCriteria>[],
-  exerciseMaxScore?: number,
-  options?: RebalanceOptions
+  exerciseMaxScore?: number
 ): IScoringCriteria[] => {
   const isValidNumber = (value: unknown): value is number =>
     typeof value === "number" && !Number.isNaN(value);
 
   const sanitized =
     criteriaInput?.map((item) => ({
-      criteria: (item.criteria || "").trim(),
+      criteria: item.criteria ?? "",
       maxScore: isValidNumber(item.maxScore)
         ? Math.max(0, Math.round(item.maxScore))
         : undefined,
     })) || [];
 
   if (!sanitized.length) return [];
-
-  const lockedSet = new Set(options?.lockedIndices ?? []);
-  const lockedIndices = sanitized
-    .map((_, idx) => idx)
-    .filter((idx) => lockedSet.has(idx));
 
   if (!isValidNumber(exerciseMaxScore)) {
     return sanitized.map((item) => ({
@@ -168,99 +157,36 @@ const rebalanceRecordScoringCriteria = (
     }));
   }
 
+  const lastIndex = sanitized.length - 1;
+  if (lastIndex < 0) return [];
+
   const result = sanitized.map((item) => ({ ...item }));
 
-  const lockedSum = lockedIndices.reduce((sum, idx) => {
-    const value = isValidNumber(result[idx].maxScore)
-      ? result[idx].maxScore || 0
-      : 0;
-    result[idx].maxScore = value;
-    return sum + value;
-  }, 0);
-
-  if (lockedIndices.length && lockedSum >= exerciseMaxScore) {
-    const scaled = scaleValuesToTotal(
-      lockedIndices.map((idx) => result[idx].maxScore || 0),
-      exerciseMaxScore
-    );
-    lockedIndices.forEach((idx, order) => {
-      result[idx].maxScore = scaled[order] || 0;
-    });
-    result.forEach((item, idx) => {
-      if (!lockedSet.has(idx)) {
-        item.maxScore = 0;
-      }
-    });
-    return result.map((item) => ({
-      ...item,
-      maxScore: item.maxScore || 0,
-    }));
-  }
-
-  const availableBudget = Math.max(0, exerciseMaxScore - lockedSum);
-
-  const unlockedIndices = result
+  const manualIndices = result
     .map((_, idx) => idx)
-    .filter((idx) => !lockedSet.has(idx));
+    .filter((idx) => idx !== lastIndex);
 
-  if (!unlockedIndices.length) {
-    const scaled = scaleValuesToTotal(
-      lockedIndices.map((idx) => result[idx].maxScore || 0),
-      exerciseMaxScore
+  let manualSum = 0;
+  manualIndices.forEach((idx) => {
+    const val = result[idx].maxScore;
+    const normalized = isValidNumber(val) ? Math.max(0, Math.round(val)) : 0;
+    result[idx].maxScore = normalized;
+    manualSum += normalized;
+  });
+
+  if (manualSum > exerciseMaxScore) {
+    const manualValues = manualIndices.map(
+      (idx) => result[idx].maxScore || 0
     );
-    lockedIndices.forEach((idx, order) => {
+    const scaled = scaleValuesToTotal(manualValues, exerciseMaxScore);
+    manualIndices.forEach((idx, order) => {
       result[idx].maxScore = scaled[order] || 0;
     });
-    return result.map((item) => ({
-      ...item,
-      maxScore: item.maxScore || 0,
-    }));
+    manualSum = exerciseMaxScore;
   }
 
-  const unlockedDefined = unlockedIndices.filter((idx) =>
-    isValidNumber(result[idx].maxScore)
-  );
-  const unlockedUndefined = unlockedIndices.filter(
-    (idx) => !isValidNumber(result[idx].maxScore)
-  );
-
-  const unlockedDefinedSum = unlockedDefined.reduce(
-    (sum, idx) => sum + (result[idx].maxScore || 0),
-    0
-  );
-
-  if (!unlockedUndefined.length) {
-    const target = availableBudget;
-    const scaled = scaleValuesToTotal(
-      unlockedDefined.map((idx) => result[idx].maxScore || 0),
-      target
-    );
-    unlockedDefined.forEach((idx, order) => {
-      result[idx].maxScore = scaled[order] || 0;
-    });
-  } else {
-    if (unlockedDefinedSum > availableBudget) {
-      const scaled = scaleValuesToTotal(
-        unlockedDefined.map((idx) => result[idx].maxScore || 0),
-        availableBudget
-      );
-      unlockedDefined.forEach((idx, order) => {
-        result[idx].maxScore = scaled[order] || 0;
-      });
-      unlockedUndefined.forEach((idx) => {
-        result[idx].maxScore = 0;
-      });
-    } else {
-      const remaining = Math.max(0, availableBudget - unlockedDefinedSum);
-      const distribution = distributeEvenlyIntegers(
-        unlockedUndefined.length,
-        remaining
-      );
-      unlockedUndefined.forEach((idx, order) => {
-        result[idx].maxScore = distribution[order] || 0;
-      });
-    }
-  }
+  const remaining = Math.max(0, exerciseMaxScore - manualSum);
+  result[lastIndex].maxScore = remaining;
 
   return result.map((item) => ({
     ...item,
@@ -600,9 +526,6 @@ export default function RoleplayForm({
     null
   );
 
-  // State for all tags
-  const [allTags, setAllTags] = useState<ITag[]>([]);
-
   // State for section ID counter
   const [nextSectionId, setNextSectionId] = useState(1);
 
@@ -788,24 +711,6 @@ export default function RoleplayForm({
       active = false;
     };
   }, [keypointQuery]);
-
-  // Fetch all tags
-  useEffect(() => {
-    let active = true;
-    const fetchAllTags = async () => {
-      try {
-        const res = await tagService.getList({ page: 1, take: 1000 });
-        const list: ITag[] = res.data.items || [];
-        if (active) setAllTags(list);
-      } catch (err) {
-        console.error("fetchAllTags", err);
-      }
-    };
-    fetchAllTags();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Fetch selected keypoint details when keypointId changes
   useEffect(() => {
@@ -2185,7 +2090,6 @@ export default function RoleplayForm({
     formData: any;
   }) => {
     const [localFormData, setLocalFormData] = useState<any>(formData);
-    const [tagQuery, setTagQuery] = useState("");
     const [validationErrors, setValidationErrors] = useState<{
       [key: string]: string;
     }>({});
@@ -2300,7 +2204,7 @@ export default function RoleplayForm({
     const handleExerciseChange = (
       field: string,
       value: any,
-      options?: { skipRebalance?: boolean; lockedCriteriaIndices?: number[] }
+      options?: { skipRebalance?: boolean }
     ) => {
       setLocalFormData((prev: any) => {
         const nextExercise = {
@@ -2316,8 +2220,7 @@ export default function RoleplayForm({
             nextExercise.scoringCriteria,
             typeof nextExercise.maxScore === "number"
               ? nextExercise.maxScore
-              : undefined,
-            { lockedIndices: options?.lockedCriteriaIndices }
+              : undefined
           );
           nextExercise.scoringCriteria = normalized;
         }
@@ -2697,21 +2600,38 @@ export default function RoleplayForm({
         field === "maxScore" &&
         typeof parsedValue === "number" &&
         !Number.isNaN(parsedValue);
+      if (isNumeric) {
+        const totalValue =
+          typeof localFormData.exercise.maxScore === "number" &&
+          !Number.isNaN(localFormData.exercise.maxScore)
+            ? localFormData.exercise.maxScore
+            : undefined;
+        if (typeof totalValue === "number") {
+          const lastIndex = next.length - 1;
+          const otherManualSum = next.reduce((sum, item, idx) => {
+            if (idx === index || idx === lastIndex) return sum;
+            const val =
+              typeof item.maxScore === "number" && !Number.isNaN(item.maxScore)
+                ? Math.max(0, Math.round(item.maxScore))
+                : 0;
+            return sum + val;
+          }, 0);
+          const maxAllowed = Math.max(0, totalValue - otherManualSum);
+          const adjusted =
+            typeof parsedValue === "number"
+              ? Math.min(Math.max(0, Math.round(parsedValue)), maxAllowed)
+              : parsedValue;
+          next[index] = { ...next[index], maxScore: adjusted };
+        } else if (typeof parsedValue === "number") {
+          const adjusted = Math.max(0, Math.round(parsedValue));
+          next[index] = { ...next[index], maxScore: adjusted };
+        }
+      }
 
       handleExerciseChange("scoringCriteria", next, {
         skipRebalance: field === "maxScore" && !isNumeric,
-        lockedCriteriaIndices:
-          field === "maxScore" && isNumeric ? [index] : undefined,
       });
     };
-
-    // Filter tags based on query
-    const filteredTags =
-      tagQuery === ""
-        ? allTags
-        : allTags.filter((tag) =>
-            tag.title?.[lang]?.toLowerCase().includes(tagQuery.toLowerCase())
-          );
 
     const scoringCriteria = getScoringCriteria();
     const scoringCriteriaTotal = scoringCriteria.reduce((sum, item) => {
@@ -2973,56 +2893,6 @@ export default function RoleplayForm({
               label="Keypoint"
             />
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tag
-              </label>
-              <Combobox<ITag | null>
-                value={localFormData.exercise.tag}
-                onChange={(val: ITag | null) => {
-                  handleExerciseChange("tag", val);
-                  setTagQuery("");
-                }}
-              >
-                <div className="relative">
-                  <Combobox.Input
-                    displayValue={(tag: ITag | null) =>
-                      tag?.title?.[lang] || ""
-                    }
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setTagQuery(e.target.value)
-                    }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Search tag..."
-                  />
-                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                    {filteredTags.length > 0 ? (
-                      filteredTags.map((tag) => (
-                        <Combobox.Option
-                          key={tag._id}
-                          value={tag}
-                          className="cursor-pointer px-3 py-3 hover:bg-blue-50 flex items-center gap-2"
-                        >
-                          {tag.url && (
-                            <img
-                              src={tag.url}
-                              alt={tag.title?.[lang] || "Tag url"}
-                              className="w-6 h-6 object-contain flex-shrink-0"
-                            />
-                          )}
-                          <span>{tag.title?.[lang]}</span>
-                        </Combobox.Option>
-                      ))
-                    ) : (
-                      <div className="px-3 py-3 text-gray-500">
-                        No tags found.
-                      </div>
-                    )}
-                  </Combobox.Options>
-                </div>
-              </Combobox>
-            </div>
-
             <div className="border rounded-lg p-4 bg-gray-50">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-medium text-gray-800">Content Documents</h3>
@@ -3089,21 +2959,6 @@ export default function RoleplayForm({
                   Add Content
                 </button>
               </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Explanation
-              </label>
-              <textarea
-                value={localFormData.exercise.explanation || ""}
-                onChange={(e) =>
-                  handleExerciseChange("explanation", e.target.value)
-                }
-                rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter explanation"
-              />
             </div>
 
               <div>
