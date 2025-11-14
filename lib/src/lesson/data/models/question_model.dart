@@ -19,7 +19,8 @@ abstract class QuestionModel with _$QuestionModel {
     @Default(0) int maxCharacter,
     @Default(0) int maxScore,
     @Default(0) int completionTime,
-    @DefaultInt() @Default(0) int mainQuestion,
+    @Default([]) List<ScoringCriteriaModel> scoringCriteria,
+    @Default(0) int mainQuestion,
     @Default(KeypointModel()) KeypointModel keypoint,
   }) = _QuestionModel;
 
@@ -75,6 +76,7 @@ extension QuestionModelExtension on QuestionModel {
     maxCharacter: maxCharacter,
     maxScore: maxScore,
     completionTime: completionTime,
+    scoringCriteria: scoringCriteria.map((model) => model.toEntity()).toList(),
     mainQuestion: mainQuestion,
     keypoint: keypoint.toEntity(),
   );

@@ -28,6 +28,7 @@ part 'data/models/document_model.dart';
 part 'data/models/lesson_model.dart';
 part 'data/models/option_model.dart';
 part 'data/models/question_model.dart';
+part 'data/models/scoring_criteria_model.dart';
 part 'data/models/tag_model.dart';
 part 'data/repositories/lesson_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
@@ -39,6 +40,7 @@ part 'domain/entities/exercise_entity.dart';
 part 'domain/entities/lesson_entity.dart';
 part 'domain/entities/option_entity.dart';
 part 'domain/entities/question_entity.dart';
+part 'domain/entities/scoring_criteria_entity.dart';
 part 'domain/entities/tag_entity.dart';
 part 'domain/repositories/i_lesson_repository.dart';
 part 'domain/usecases/get_all_learning_items_usecase.dart';

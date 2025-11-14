@@ -85,6 +85,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.success, selectedKeypoint: item));
         AppDI.injector.get<CourseLessonCubit>().loadLesson(lesson.selectedLesson.id);
         AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId);
+        loadUserProgressMyCourses(isInit: true, recent: true);
       },
     );
   }

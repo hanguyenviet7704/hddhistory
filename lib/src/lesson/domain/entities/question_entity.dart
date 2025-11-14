@@ -19,6 +19,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default(0) int maxCharacter,
     @Default(0) int maxScore,
     @Default(0) int completionTime,
+    @Default([]) List<ScoringCriteriaEntity> scoringCriteria,
     @Default(0) int mainQuestion,
     @Default(KeypointEntity()) KeypointEntity keypoint,
   }) = _QuestionEntity;
