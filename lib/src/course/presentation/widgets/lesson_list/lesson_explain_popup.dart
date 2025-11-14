@@ -1,20 +1,21 @@
 part of '../../../course.dart';
 
 class LessonExplainPopup {
-  static Future<void> show(BuildContext context) {
+  static Future<void> show(BuildContext context, {bool showPoint = false}) {
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
       routeSettings: const RouteSettings(name: RouteNamed.lessonExplainPopup),
-      builder: (context) => const _LessonExplainBottomSheet(),
+      builder: (context) => _LessonExplainBottomSheet(showPoint: showPoint),
     );
   }
 }
 
 class _LessonExplainBottomSheet extends StatelessWidget {
-  const _LessonExplainBottomSheet();
+  final bool showPoint;
+  const _LessonExplainBottomSheet({this.showPoint = false});
 
   @override
   Widget build(BuildContext context) {
@@ -76,11 +77,13 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                       level: StrengthLevel.weakPoint,
                       title: context.text.keypointWeakpointTitle,
                       description: context.text.keypointWeakpointMessage,
+                      showPoint: showPoint,
                     ),
                     _PracticeLevelItem(
                       level: StrengthLevel.morePractice,
                       title: context.text.keypointImprovementTitle,
                       description: context.text.keypointImprovementMessage,
+                      showPoint: showPoint,
                     ),
                   ],
                 ),
@@ -98,6 +101,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                       level: StrengthLevel.optionalPractice,
                       title: context.text.keypointSkipOptionPracticeType,
                       description: context.text.keypointSkipOptionPracticeTypeStatus,
+                      showPoint: showPoint,
                     ),
                   ],
                 ),
@@ -187,11 +191,13 @@ class _PracticeLevelItem extends StatelessWidget {
   final StrengthLevel level;
   final String title;
   final String description;
+  final bool showPoint;
 
   const _PracticeLevelItem({
     required this.level,
     required this.title,
     required this.description,
+    this.showPoint = false,
   });
 
   @override
@@ -225,6 +231,16 @@ class _PracticeLevelItem extends StatelessWidget {
             ],
           ),
         ),
+        if (showPoint) ...[
+          12.horizontalSpace,
+          AppText(
+            level.point,
+            style: AppStyle.text14.copyWith(
+              color: AppCustomColor.textTertiary,
+              height: 1.75,
+            ),
+          ),
+        ],
       ],
     );
   }

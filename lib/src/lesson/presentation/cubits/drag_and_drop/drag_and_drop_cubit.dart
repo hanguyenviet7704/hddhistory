@@ -104,7 +104,7 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     final totalPositions = correctAnswers.length;
     if (totalPositions == 0) return 0;
 
-    final pointPerPosition = 100.0 / totalPositions;
+    final pointPerPosition = state.question.maxScore / totalPositions;
     int correctCount = 0;
 
     for (int i = 0; i < totalPositions; i++) {
@@ -117,7 +117,7 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
 
     final score = correctCount * pointPerPosition;
 
-    return score.clamp(0, 100).toInt();
+    return score.clamp(0, state.question.maxScore).toInt();
   }
 
   /// Toggle explanation visibility

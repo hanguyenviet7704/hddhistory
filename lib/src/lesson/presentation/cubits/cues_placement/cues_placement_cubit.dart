@@ -86,12 +86,12 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     final totalCorrectPositions = correctPositions.length;
     if (totalCorrectPositions == 0) return 0;
 
-    final pointPerPosition = 100.0 / totalCorrectPositions;
+    final pointPerPosition = state.question.maxScore / totalCorrectPositions;
     final correctPlacements = placedPositions.where((pos) => correctPositions.contains(pos)).length;
 
     final score = correctPlacements * pointPerPosition;
 
-    return score.clamp(0, 100).toInt();
+    return score.clamp(0, state.question.maxScore).toInt();
   }
 
   void toggleExplanation() {

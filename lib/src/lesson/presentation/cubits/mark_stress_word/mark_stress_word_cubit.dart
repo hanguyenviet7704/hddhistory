@@ -63,12 +63,12 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     final totalCorrectWords = correctIndices.length;
     if (totalCorrectWords == 0) return 0;
 
-    final pointPerWord = 100.0 / totalCorrectWords;
+    final pointPerWord = state.question.maxScore / totalCorrectWords;
     final correctSelections = selectedIndices.where((index) => correctIndices.contains(index)).length;
 
     final score = correctSelections * pointPerWord;
 
-    return score.clamp(0, 100).toInt();
+    return score.clamp(0, state.question.maxScore).toInt();
   }
 
   void toggleExplanation() {

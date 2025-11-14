@@ -8,7 +8,7 @@ class RoleplayFeedbackBreakdownSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _RoleplayFeedbackBreakdownHeader(onTapExplain: () => LessonExplainPopup.show(context)),
+        _RoleplayFeedbackBreakdownHeader(),
         12.verticalSpace,
         BlocSelector<RoleplayPointCubit, RoleplayPointState, List<KeypointEntity>>(
           selector: (state) => state.points,
@@ -23,9 +23,7 @@ class RoleplayFeedbackBreakdownSection extends StatelessWidget {
 }
 
 class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
-  final VoidCallback onTapExplain;
-
-  const _RoleplayFeedbackBreakdownHeader({required this.onTapExplain});
+  const _RoleplayFeedbackBreakdownHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -38,7 +36,7 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
         GestureDetector(
-          onTap: () => LessonExplainPopup.show(context),
+          onTap: () => LessonExplainPopup.show(context, showPoint: true),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
