@@ -136,7 +136,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
   }
 
   void _onPurchaseSuccess() {
-    AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
+    // AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
     AppConfig.instance.context?.read<PaywallCubit>().fakeInfiniteEnergy();
     emit(state.copyWith(isLoading: false));
     AppConfig.instance.context?.backUntil(RoutePath.home);

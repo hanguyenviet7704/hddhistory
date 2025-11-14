@@ -65,18 +65,5 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     HomeRoute().go(AppConfig.instance.context!);
     onDone?.call();
   }
-
-
-  void getMyProfiles() async {
-    // await executeListUseCase(
-    //   usecase: _getMyProfilesUsecase.call,
-    //   onSuccess: (response) {
-    //     if (response.data.isEmpty) return;
-    //     LogDev.info('getMyProfiles: ${response.data.first}');
-    //     _appTrackingService.setUserId(response.data.first.userId);
-    //     emit(state.copyWith(profile: response.data.first));
-    //   },
-    // );
-  }
 }
 

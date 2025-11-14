@@ -27,13 +27,15 @@ class FirebaseAnalyticsService extends BaseTrackingService {
     PackageInfo packageInfo = AppDI.injector.get<PackageInfoService>().packageInfo;
     IDeviceInfoService deviceInfo = AppDI.injector.get<IDeviceInfoService>();
     final userState = AppConfig.instance.context?.read<UserCubit>().state ?? UserState.initial();
-    (String userId, String paymentStatus, int numberLessonCompleted, String country, DateTime? lastLessonCompletedAt) userInfo = (
-      userState.user.id,
-      userState.paymentStatus,
-      userState.profile.numberLessonCompleted,
-      userState.profile.geolocation.currentCity,
-      userState.profile.timestamps.lastLessonCompletedAt
-    );
+    // (String userId, String paymentStatus, int numberLessonCompleted, String country, DateTime? lastLessonCompletedAt) userInfo = (
+    //   userState.user.id,
+    //   userState.paymentStatus,
+    //   userState.profile.numberLessonCompleted,
+    //   userState.profile.geolocation.currentCity,
+    //   userState.profile.timestamps.lastLessonCompletedAt
+    // );
+
+    String userId = userState.user.id;
 
     String deviceId = await deviceInfo.deviceToken;
     String timestamp = DateTime.now().millisecondsSinceEpoch.toString();
@@ -42,11 +44,12 @@ class FirebaseAnalyticsService extends BaseTrackingService {
       'timestamp': timestamp,
       'app_version': packageInfo.version,
       'app_env': EnvConstant.appEnv,
-      if (userInfo.$1.isNotEmpty) 'user_id_param': userInfo.$1,
-      if (userInfo.$2.isNotEmpty) 'payment_status': userInfo.$2,
-      if (userInfo.$3 > -1) 'number_lesson_completed': userInfo.$3,
-      if (userInfo.$4.isNotEmpty) 'city': userInfo.$4,
-      if (userInfo.$5 != null) 'last_lesson_completed_at': userInfo.$5?.toUTCDateTimeString,
+      if (userId.isNotEmpty) 'user_id_param': userId,
+      // if (userInfo.$1.isNotEmpty) 'user_id_param': userInfo.$1,
+      // if (userInfo.$2.isNotEmpty) 'payment_status': userInfo.$2,
+      // if (userInfo.$3 > -1) 'number_lesson_completed': userInfo.$3,
+      // if (userInfo.$4.isNotEmpty) 'city': userInfo.$4,
+      // if (userInfo.$5 != null) 'last_lesson_completed_at': userInfo.$5?.toUTCDateTimeString,
     });
   }
 
