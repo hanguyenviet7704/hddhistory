@@ -3,17 +3,29 @@ part of '../../course.dart';
 class LessonListPage extends StatelessWidget {
   const LessonListPage({super.key});
 
+  void _showTutorial(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (!context.mounted) return;
+        bool isFirstTimeUserAccessLessonList = context.read<UserCubit>().state.isFirstTimeUserAccessLessonList;
+        if (!isFirstTimeUserAccessLessonList) return;
+
+        context.read<UserCubit>().setIsFirstTimeUserAccessLessonList(false);
+        LessonExplainPopup.show(context);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    _showTutorial(context);
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
         child: BlocBuilder<CourseLessonCubit, CourseLessonState>(
           builder: (context, state) {
             if (state.status == CourseLessonStatus.loading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
 
             if (state.status == CourseLessonStatus.failure) {

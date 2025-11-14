@@ -9,6 +9,7 @@ abstract class UserState with _$UserState {
     @Default(AuthEntity()) AuthEntity auth,
     @Default(true) bool isFirstTimeUserRunApp,
     @Default(true) bool isFirstTimeUserAccessApp,
+    @Default(true) bool isFirstTimeUserAccessLessonList,
   }) = _UserState;
 
   factory UserState.initial() => UserState();
