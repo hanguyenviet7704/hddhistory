@@ -1060,11 +1060,36 @@ export default function ExerciseForm({
 
     // Update local form data when formData prop changes
     useEffect(() => {
-      setLocalFormData(formData);
+      if (
+        formData &&
+        typeof formData.mainQuestion === "string" &&
+        formData.mainQuestion !== ""
+      ) {
+        const parsed = parseInt(formData.mainQuestion, 10);
+        setLocalFormData({
+          ...formData,
+          mainQuestion: Number.isNaN(parsed) ? undefined : parsed,
+        });
+      } else {
+        setLocalFormData(formData);
+      }
     }, [formData]);
 
     const handleChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({ ...prev, [field]: value }));
+      setLocalFormData((prev: any) => {
+        if (field === "mainQuestion") {
+          if (value === "" || value === null || value === undefined) {
+            return { ...prev, [field]: undefined };
+          }
+          const parsed = parseInt(value, 10);
+          return {
+            ...prev,
+            [field]: Number.isNaN(parsed) ? prev[field] : parsed,
+          };
+        }
+
+        return { ...prev, [field]: value };
+      });
     };
 
     const handleDocumentChange = (
@@ -1415,11 +1440,20 @@ export default function ExerciseForm({
               Main question
             </label>
             <input
-              type="text"
-              value={localFormData.mainQuestion}
-              onChange={(e) => handleChange("mainQuestion", e.target.value)}
+              type="number"
+              value={
+                typeof localFormData.mainQuestion === "number"
+                  ? localFormData.mainQuestion
+                  : ""
+              }
+              onChange={(e) =>
+                handleChange(
+                  "mainQuestion",
+                  e.target.value === "" ? "" : Number(e.target.value)
+                )
+              }
               className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="Enter main question"
+              placeholder="Enter main question ID"
             />
           </div>
         )}
