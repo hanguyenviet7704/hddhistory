@@ -10,11 +10,7 @@ class LessonResultOverlayManager {
     required LessonResultOverlayBuilder builder,
   }) {
     hide();
-    final overlay = OverlayEntry(
-      builder: (overlayContext) {
-        return builder(overlayContext);
-      },
-    );
+    final overlay = OverlayEntry(builder: builder);
     Overlay.of(context, rootOverlay: true).insert(overlay);
     _currentEntry = overlay;
   }
@@ -46,36 +42,101 @@ class LessonResultOverlay extends StatefulWidget {
 }
 
 class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTickerProviderStateMixin {
-  static const _overlayAnimationDuration = Duration(milliseconds: 350);
+  static final Duration _panelAnimationDuration = 450.ms;
+  static final Duration _scrimAnimationDuration = 320.ms;
 
-  late final AnimationController _controller = AnimationController(
-    duration: _overlayAnimationDuration,
-    vsync: this,
-  )..forward();
+  late final AnimationController _panelController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+  late final Animation<double> _scaleAnimation;
 
-  late final Animation<double> _fadeAnimation = CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic);
-  late final Animation<Offset> _slideAnimation =
-      Tween<Offset>(
-        begin: const Offset(0.0, 0.15),
-        end: Offset.zero,
-      ).animate(
-        CurvedAnimation(
-          parent: _controller,
-          curve: Curves.easeOutCubic,
-        ),
-      );
+  @override
+  void initState() {
+    super.initState();
+    _panelController = AnimationController(vsync: this, duration: _panelAnimationDuration)..forward();
+    _fadeAnimation = CurvedAnimation(
+      parent: _panelController,
+      curve: const Interval(0, 0.7, curve: Curves.easeOutCubic),
+    );
+    _slideAnimation =
+        Tween<Offset>(
+          begin: const Offset(0, 0.4),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(parent: _panelController, curve: Curves.easeOutBack),
+        );
+    _scaleAnimation = Tween<double>(begin: 0.94, end: 1).animate(
+      CurvedAnimation(parent: _panelController, curve: Curves.easeOutBack),
+    );
+  }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _panelController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final explanationVisible = widget.showExplanation && widget.explanation != null;
-    // final viewInsets = MediaQuery.of(context).viewInsets;
-    // final bottomPadding = math.max(16.h, viewInsets.bottom);
+
+    final panelContent = AnimatedSize(
+      duration: _panelAnimationDuration,
+      curve: Curves.easeInOutCubic,
+      alignment: Alignment.bottomCenter,
+      child: ClipRRect(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AnimatedSwitcher(
+              duration: _panelAnimationDuration,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                final slideAnimation =
+                    Tween<Offset>(
+                      begin: const Offset(0, 0.08),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeOutCubic,
+                      ),
+                    );
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: slideAnimation,
+                    child: child,
+                  ),
+                );
+              },
+              child: explanationVisible
+                  ? KeyedSubtree(
+                      key: const ValueKey('lesson-result-overlay-explanation'),
+                      child: widget.explanation!,
+                    )
+                  : const SizedBox.shrink(
+                      key: ValueKey('lesson-result-overlay-empty'),
+                    ),
+            ),
+            widget.summary,
+          ],
+        ),
+      ),
+    );
+
+    final animatedPanel = FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: ScaleTransition(
+          scale: _scaleAnimation,
+          child: panelContent,
+        ),
+      ),
+    );
 
     return Stack(
       children: [
@@ -84,15 +145,13 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
             child: IgnorePointer(
               ignoring: !explanationVisible,
               child: AnimatedOpacity(
-                duration: _overlayAnimationDuration,
+                duration: _scrimAnimationDuration,
                 curve: Curves.easeInOut,
                 opacity: explanationVisible ? 1 : 0,
                 child: GestureDetector(
                   onTap: widget.onBackdropTap,
                   behavior: HitTestBehavior.opaque,
-                  child: Container(
-                    color: AppCustomColor.scrimOverlay,
-                  ),
+                  child: Container(color: AppCustomColor.scrimOverlay),
                 ),
               ),
             ),
@@ -105,58 +164,7 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
             top: false,
             left: false,
             right: false,
-            child: FadeTransition(
-              opacity: _fadeAnimation,
-              child: SlideTransition(
-                position: _slideAnimation,
-                child: AnimatedSize(
-                  duration: _overlayAnimationDuration,
-                  curve: Curves.easeInOutCubic,
-                  alignment: Alignment.bottomCenter,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AnimatedSwitcher(
-                          duration: _overlayAnimationDuration,
-                          switchInCurve: Curves.easeOutCubic,
-                          switchOutCurve: Curves.easeInCubic,
-                          transitionBuilder: (child, animation) {
-                            final slideAnimation =
-                                Tween<Offset>(
-                                  begin: const Offset(0, 0.05),
-                                  end: Offset.zero,
-                                ).animate(
-                                  CurvedAnimation(
-                                    parent: animation,
-                                    curve: Curves.easeOutCubic,
-                                  ),
-                                );
-                            return FadeTransition(
-                              opacity: animation,
-                              child: SlideTransition(
-                                position: slideAnimation,
-                                child: child,
-                              ),
-                            );
-                          },
-                          child: explanationVisible
-                              ? KeyedSubtree(
-                                  key: const ValueKey('lesson-result-overlay-explanation'),
-                                  child: widget.explanation!,
-                                )
-                              : const SizedBox.shrink(
-                                  key: ValueKey('lesson-result-overlay-empty'),
-                                ),
-                        ),
-                        widget.summary,
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            child: animatedPanel,
           ),
         ),
       ],
