@@ -67,7 +67,7 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
 
     return LessonResultOverlay(
       showExplanation: explanationVisible,
-      onBackdropTap: explanationVisible ? onExplain : null,
+      // onBackdropTap: explanationVisible ? onExplain : null,
       explanation: hasExplanation
           ? DragAndDropExplanationContent(
               isCorrect: type == ResultType.correct,

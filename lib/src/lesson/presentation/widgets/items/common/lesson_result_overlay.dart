@@ -74,8 +74,8 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
   @override
   Widget build(BuildContext context) {
     final explanationVisible = widget.showExplanation && widget.explanation != null;
-    final viewInsets = MediaQuery.of(context).viewInsets;
-    final bottomPadding = math.max(16.h, viewInsets.bottom);
+    // final viewInsets = MediaQuery.of(context).viewInsets;
+    // final bottomPadding = math.max(16.h, viewInsets.bottom);
 
     return Stack(
       children: [
@@ -98,21 +98,23 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
             ),
           ),
         Positioned(
-          left: 16.w,
-          right: 16.w,
+          left: 0,
+          right: 0,
           bottom: 0,
           child: SafeArea(
             top: false,
             left: false,
             right: false,
-            child: Padding(
-              padding: EdgeInsets.only(bottom: bottomPadding),
-              child: FadeTransition(
-                opacity: _fadeAnimation,
-                child: SlideTransition(
-                  position: _slideAnimation,
+            child: FadeTransition(
+              opacity: _fadeAnimation,
+              child: SlideTransition(
+                position: _slideAnimation,
+                child: AnimatedSize(
+                  duration: _overlayAnimationDuration,
+                  curve: Curves.easeInOutCubic,
+                  alignment: Alignment.bottomCenter,
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(20.r),
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -120,6 +122,25 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
                           duration: _overlayAnimationDuration,
                           switchInCurve: Curves.easeOutCubic,
                           switchOutCurve: Curves.easeInCubic,
+                          transitionBuilder: (child, animation) {
+                            final slideAnimation =
+                                Tween<Offset>(
+                                  begin: const Offset(0, 0.05),
+                                  end: Offset.zero,
+                                ).animate(
+                                  CurvedAnimation(
+                                    parent: animation,
+                                    curve: Curves.easeOutCubic,
+                                  ),
+                                );
+                            return FadeTransition(
+                              opacity: animation,
+                              child: SlideTransition(
+                                position: slideAnimation,
+                                child: child,
+                              ),
+                            );
+                          },
                           child: explanationVisible
                               ? KeyedSubtree(
                                   key: const ValueKey('lesson-result-overlay-explanation'),

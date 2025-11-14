@@ -82,7 +82,7 @@ class CuesPlacementResultBottomSheet extends StatelessWidget {
 
     return LessonResultOverlay(
       showExplanation: explanationVisible,
-      onBackdropTap: explanationVisible ? onExplain : null,
+      // onBackdropTap: explanationVisible ? onExplain : null,
       explanation: hasExplanation
           ? CuesPlacementExplanationContent(
               isCorrect: isCorrect,

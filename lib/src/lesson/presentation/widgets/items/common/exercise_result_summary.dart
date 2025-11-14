@@ -105,7 +105,7 @@ class ExerciseResultSummary extends StatelessWidget {
                 ),
             ],
           ),
-          16.verticalSpace,
+          24.verticalSpace,
           SizedBox(
             width: double.infinity,
             height: 54.h,
@@ -128,7 +128,6 @@ class ExerciseResultSummary extends StatelessWidget {
               ),
             ),
           ),
-          16.verticalSpace,
         ],
       ),
     );

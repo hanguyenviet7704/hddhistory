@@ -63,7 +63,7 @@ class MarkStressWordResultBottomSheet extends StatelessWidget {
 
     return LessonResultOverlay(
       showExplanation: explanationVisible,
-      onBackdropTap: explanationVisible ? onExplain : null,
+      // onBackdropTap: explanationVisible ? onExplain : null,
       explanation: hasExplanation
           ? MarkStressWordExplanationContent(
               isCorrect: type == ResultType.correct,
