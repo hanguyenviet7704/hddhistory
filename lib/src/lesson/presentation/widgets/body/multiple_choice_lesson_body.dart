@@ -8,61 +8,24 @@ class MultipleChoiceLessonBody extends StatelessWidget {
     required this.onAnswerChecked,
   });
 
-  void _showResultBottomSheet(BuildContext context, ResultType type) {
-    showModalBottomSheet(
+  void _showResultOverlay(BuildContext context, ResultType type) {
+    LessonResultOverlayManager.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.transparent,
-      isDismissible: false,
-      enableDrag: false,
-      routeSettings: const RouteSettings(name: RouteNamed.exerciseResultPopup),
-      builder: (modalContext) => BlocProvider.value(
+      builder: (_) => BlocProvider.value(
         value: context.read<ChoiceCubit>(),
         child: BlocBuilder<ChoiceCubit, ChoiceState>(
-          bloc: context.read<ChoiceCubit>(),
           builder: (context, state) {
-            return PopScope(
-              canPop: false,
-              child: Stack(
-                children: [
-                  // Animated backdrop overlay
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeInOut,
-                    opacity: state.showExplanation ? 1.0 : 0.0,
-                    child: IgnorePointer(
-                      ignoring: !state.showExplanation,
-                      child: GestureDetector(
-                        onTap: () => context.read<ChoiceCubit>().toggleExplanation(),
-                        child: Container(
-                          color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Result bottom sheet
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: ResultBottomSheet(
-                      type: type,
-                      showExplanation: state.showExplanation,
-                      explanationText: state.question.explanation,
-                      onContinue: () {
-                        modalContext.back();
-                        AppDI.injector.get<ExerciseCubit>().nextQuestion();
-                      },
-                      onExplain: () {
-                        context.read<ChoiceCubit>().toggleExplanation();
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            final hasExplanation = state.question.explanation.isNotEmpty;
+
+            return ResultBottomSheet(
+              type: type,
+              showExplanation: state.showExplanation,
+              explanationText: state.question.explanation,
+              onContinue: () {
+                LessonResultOverlayManager.hide();
+                AppDI.injector.get<ExerciseCubit>().nextQuestion();
+              },
+              onExplain: hasExplanation ? () => context.read<ChoiceCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -79,7 +42,7 @@ class MultipleChoiceLessonBody extends StatelessWidget {
       },
       listener: (context, state) {
         onAnswerChecked(state.isCorrect);
-        _showResultBottomSheet(
+        _showResultOverlay(
           context,
           state.isCorrect ? ResultType.correct : ResultType.incorrect,
         );

@@ -75,6 +75,7 @@ mixin AppCustomColor {
   static const Color redEC = Color(0xFFEC2028);
   static const Color redA0 = Color(0xFFA01C21);
   static const Color red4D = Color(0xFF4D1C00);
+  static const Color scrimOverlay = Color(0x99364152);
 
   // New colors from Figma design
   static const Color neutral01 = Color(0xFF1A202C);

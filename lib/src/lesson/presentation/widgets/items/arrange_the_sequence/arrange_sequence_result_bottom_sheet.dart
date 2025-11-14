@@ -18,147 +18,40 @@ class ArrangeSequenceResultBottomSheet extends StatelessWidget {
     required this.arrangedAnswers,
   });
 
-  bool get isCorrect => type == ResultType.correct;
-  Color get backgroundColor => isCorrect ? const Color(0xFFEAFFEF) : const Color(0xFFFDEAE7);
-  Color get buttonColor => isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
-  Color get iconColor => isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
-  String get title => isCorrect ? 'Correct answer!' : 'Incorrect';
-  String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
-
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: (child, animation) {
-              // Slide up from bottom with fade
-              final offsetAnimation = Tween<Offset>(
-                begin: const Offset(0.0, 0.3), // Start from below
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              );
+    final hasExplanation = explanationText.isNotEmpty;
+    final explanationVisible = hasExplanation && showExplanation;
 
-              return SlideTransition(
-                position: offsetAnimation,
-                child: FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-              );
-            },
-            child: showExplanation && explanationText.isNotEmpty
-                ? _ArrangeSequenceExplanationContent(
-                    key: const ValueKey('explanation'),
-                    isCorrect: isCorrect,
-                    arrangedAnswers: arrangedAnswers,
-                    explanationText: explanationText,
-                  )
-                : const SizedBox.shrink(key: ValueKey('empty')),
-          ),
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Image.asset(iconAsset, width: 24.w, height: 24.w),
-                          8.horizontalSpace,
-                          Expanded(
-                            child: AppText(
-                              title,
-                              style: AppStyle.text16.copyWith(
-                                color: iconColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (onExplain != null)
-                      Opacity(
-                        opacity: 0.5,
-                        child: GestureDetector(
-                          onTap: onExplain,
-                          child: Row(
-                            children: [
-                              (showExplanation)
-                                  ? Icon(Icons.close_rounded, color: const Color(0xFF0D121C), size: 20.w)
-                                  : SvgPicture.asset(
-                                      AppAsset.svg.app.icBookOpen,
-                                      width: 20.w,
-                                      height: 20.w,
-                                    ),
-                              8.horizontalSpace,
-                              AppText(
-                                showExplanation ? context.text.exerciseCloseExplainButton : context.text.exerciseExplainButton,
-                                style: AppStyle.text14.copyWith(
-                                  color: const Color(0xFF0D121C),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                16.verticalSpace,
-                SizedBox(
-                  width: double.infinity,
-                  height: 54.h,
-                  child: ElevatedButton(
-                    onPressed: onContinue,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonColor,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(1000.r),
-                      ),
-                    ),
-                    child: AppText(
-                      context.text.onboardingSkipGreetingButton,
-                      style: AppStyle.text16.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColorLight.surface,
-                      ),
-                    ),
-                  ),
-                ),
-                16.verticalSpace,
-              ],
-            ),
-          ),
-        ],
+    return LessonResultOverlay(
+      showExplanation: explanationVisible,
+      onBackdropTap: explanationVisible ? onExplain : null,
+      explanation: hasExplanation
+          ? ArrangeSequenceExplanationContent(
+              isCorrect: type == ResultType.correct,
+              arrangedAnswers: arrangedAnswers,
+              explanationText: explanationText,
+            )
+          : null,
+      summary: ExerciseResultSummary(
+        type: type,
+        onContinue: onContinue,
+        onExplain: hasExplanation ? onExplain : null,
+        showExplanation: explanationVisible,
+        continueLabel: context.text.onboardingSkipGreetingButton,
+        explainLabel: context.text.exerciseExplainButton,
+        closeExplainLabel: context.text.exerciseCloseExplainButton,
       ),
     );
   }
 }
 
-class _ArrangeSequenceExplanationContent extends StatelessWidget {
+class ArrangeSequenceExplanationContent extends StatelessWidget {
   final bool isCorrect;
   final List<OptionEntity> arrangedAnswers;
   final String explanationText;
 
-  const _ArrangeSequenceExplanationContent({
+  const ArrangeSequenceExplanationContent({
     super.key,
     required this.isCorrect,
     required this.arrangedAnswers,
@@ -177,7 +70,6 @@ class _ArrangeSequenceExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // "Correct answer" or "Incorrect" label
           AppText(
             isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect,
             style: AppStyle.textBold14.copyWith(
@@ -186,7 +78,6 @@ class _ArrangeSequenceExplanationContent extends StatelessWidget {
             ),
           ),
           4.verticalSpace,
-          // Arranged answer cards
           Column(
             children: arrangedAnswers.asMap().entries.map((entry) {
               final answer = entry.value;
@@ -215,7 +106,6 @@ class _ArrangeSequenceExplanationContent extends StatelessWidget {
               );
             }).toList(),
           ),
-          // Explanation box
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(12.w),
@@ -227,7 +117,6 @@ class _ArrangeSequenceExplanationContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Tag with icon
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -247,7 +136,6 @@ class _ArrangeSequenceExplanationContent extends StatelessWidget {
                   ],
                 ),
                 8.verticalSpace,
-                // Explanation text
                 AppText(
                   explanationText,
                   maxLines: 100,
