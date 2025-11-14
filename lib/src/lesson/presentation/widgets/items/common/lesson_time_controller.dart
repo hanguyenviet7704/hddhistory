@@ -245,7 +245,6 @@ class LessonTimeWidget extends StatelessWidget {
         final TextStyle effectiveStyle =
             (textStyle ??
                     TextStyle(
-                      fontFamily: 'Poppins',
                       fontSize: 14.sp,
                       fontWeight: FontWeight.w600,
                       height: 1.75,

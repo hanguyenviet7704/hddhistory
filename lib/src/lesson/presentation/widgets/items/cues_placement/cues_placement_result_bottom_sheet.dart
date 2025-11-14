@@ -250,7 +250,6 @@ class _CuesPlacementExplanationContent extends StatelessWidget {
             text: TextSpan(
               children: sentenceSpans,
               style: TextStyle(
-                fontFamily: 'Poppins',
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
                 height: 1.5,

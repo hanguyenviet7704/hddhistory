@@ -61,7 +61,7 @@ class RecordingControl extends StatelessWidget {
               SizedBox(width: 10),
               Text(
                 'Tap to speak',
-                style: TextStyle(fontFamily: 'Poppins', fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF554FF0)),
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Color(0xFF554FF0)),
               ),
             ],
           ),
@@ -102,7 +102,7 @@ class RecordingControl extends StatelessWidget {
                     final seconds = (duration.inSeconds % 60).toString().padLeft(2, '0');
                     return Text(
                       '$minutes:$seconds',
-                      style: const TextStyle(fontFamily: 'Poppins', fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF554FF0)),
+                      style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF554FF0)),
                     );
                   },
                 ),
