@@ -10,7 +10,8 @@ class CourseShellBranchData extends StatefulShellBranchData {
 //* Course Route
 @TypedGoRoute<CourseRoute>(path: RoutePath.course, name: RouteNamed.course)
 class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
-  const CourseRoute();
+  final int? selectedTabIndex;
+  const CourseRoute({this.selectedTabIndex});
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
@@ -23,7 +24,7 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
     ],
-    child: const CoursePage(),
+    child: CoursePage(selectedTabIndex: selectedTabIndex),
   );
 }
 

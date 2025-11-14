@@ -33,6 +33,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     emit(state.copyWith(selectedCourseIndex: index));
     AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(state.currentCourse.id);
   }
+  
   void selectCourse(CourseEntity course) {
     int courseIndex = state.currentSkillset.courses.indexWhere((c) => c.id == course.id);
     if (courseIndex == -1) return;

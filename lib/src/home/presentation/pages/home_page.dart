@@ -30,9 +30,7 @@ class HomePage extends StatelessWidget {
                       AppText(
                         'Continue learning',
                         margin: EdgeInsets.symmetric(horizontal: 20.w),
-                        style: AppStyle.textBold20.copyWith(
-                          color: AppCustomColor.black36,
-                        ),
+                        style: AppStyle.textBold20.copyWith(color: AppCustomColor.black36),
                       ),
                       12.verticalSpace,
                       // Course cards horizontal scroll
@@ -82,10 +80,7 @@ class HomePage extends StatelessWidget {
                       final skillset = skillsets[index];
                       return SkillsetCardWidget(
                         skillset: skillset,
-                        onTap: () {
-                          context.read<HomeCubit>().selectSkillsetIndex(index);
-                          CourseRoute().push(context);
-                        },
+                        onTap: () => CourseRoute(selectedTabIndex: index).push(context),
                       );
                     },
                   );
