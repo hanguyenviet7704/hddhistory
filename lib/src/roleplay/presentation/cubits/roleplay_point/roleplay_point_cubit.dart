@@ -7,27 +7,29 @@ class RoleplayPointCubit extends Cubit<RoleplayPointState> {
   void reset() => emit(RoleplayPointState.initial());
 
   void setPoint(KeypointEntity point) {
-    LogDev.info('RoleplayPointCubit: before setPoint: ${point.id} - ${point.point}');
     List<KeypointEntity> points = List<KeypointEntity>.from(state.points);
     if (points.isEmpty) {
+      LogDev.one('RoleplayPointCubit: before empty setPoint: ${point.title}: ${0}');
       points.add(point);
       emit(state.copyWith(points: points));
-      LogDev.info('RoleplayPointCubit: after setPoint: ${point.id} - ${point.point}');
+      LogDev.one('RoleplayPointCubit: after empty setPoint: ${point.title}: ${point.point}');
       return;
     }
 
     // Check if the point already exists
     int index = points.indexWhere((p) => p.id == point.id);
     if (index == -1) {
+      LogDev.one('RoleplayPointCubit: before new setPoint: ${point.title}: ${0}');
       points.add(point);
       emit(state.copyWith(points: points));
-      LogDev.info('RoleplayPointCubit: after setPoint: ${point.id} - ${point.point}');
+      LogDev.one('RoleplayPointCubit: after new setPoint: ${point.title}: ${point.point}');
       return;
     }
     KeypointEntity existingPoint = points[index];
+    LogDev.one('RoleplayPointCubit: before existing setPoint: ${point.title}: ${existingPoint.point}');
     existingPoint = existingPoint.copyWith(point: existingPoint.point + point.point);
     points[index] = existingPoint;
     emit(state.copyWith(points: points));
-    LogDev.info('RoleplayPointCubit: after setPoint: ${point.id} - ${point.point}');
+    LogDev.one('RoleplayPointCubit: after existing setPoint: ${point.title}: ${existingPoint.point}');
   }
 }
