@@ -3,6 +3,11 @@ import { ExerciseType } from "../../../enum/learningItem.enum";
 import { ITag } from "../../tag.interface";
 import { IDocument } from "../document.interface";
 
+export interface IScoringCriteria {
+  maxScore: number;
+  criteria: string;
+}
+
 export interface IExerciseRecord {
   id: number;
   type: ExerciseType;
@@ -13,6 +18,7 @@ export interface IExerciseRecord {
   record: string;
   maxDuration?: number;
   maxCharacter?: number;
+  scoringCriteria: IScoringCriteria[];
   level: KeypointLevel[];
   maxScore: number;
   completionTime: number;
@@ -30,6 +36,7 @@ export interface ExerciseRecordPayload {
   record: string;
   maxDuration?: number;
   maxCharacter?: number;
+  scoringCriteria: IScoringCriteria[];
   level: KeypointLevel[];
   maxScore: number;
   completionTime: number;

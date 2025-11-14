@@ -17,3 +17,8 @@ export interface RefreshTokenPayload {
   refreshToken: string;
   device: DevicePayload;
 }
+
+export interface TopinPayload {
+  token: string;
+  topic: string;
+}

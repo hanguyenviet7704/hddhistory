@@ -36,7 +36,10 @@ import {
   IExerciseSingleChoice,
 } from "../../types/interface/learning-item/excercises/single-choice.interface";
 import { IExerciseDragDrop } from "../../types/interface/learning-item/excercises/drag-drop.interface";
-import { IExerciseRecord } from "../../types/interface/learning-item/excercises/record.interface";
+import {
+  IExerciseRecord,
+  IScoringCriteria,
+} from "../../types/interface/learning-item/excercises/record.interface";
 import {
   IDocument,
   IMediaDocument,
@@ -83,6 +86,187 @@ const createEmptyMediaDocument = (): IMediaDocument => ({
   url: "",
   thumbnail: "",
 });
+
+interface RebalanceOptions {
+  lockedIndices?: number[];
+}
+
+const distributeEvenlyIntegers = (slots: number, total: number) => {
+  if (slots <= 0) return [];
+  const base = Math.floor(total / slots);
+  let remainder = total - base * slots;
+  return Array.from({ length: slots }, () => {
+    if (remainder > 0) {
+      remainder -= 1;
+      return base + 1;
+    }
+    return base;
+  });
+};
+
+const scaleValuesToTotal = (values: number[], target: number) => {
+  if (!values.length) return [];
+  const normalized = values.map((val) => Math.max(0, Math.round(val)));
+  const total = normalized.reduce((sum, val) => sum + val, 0);
+
+  if (total === 0) {
+    return distributeEvenlyIntegers(values.length, target);
+  }
+
+  const raw = normalized.map((val) => (val / total) * target);
+  const floored = raw.map((val) => Math.floor(val));
+  let remainder = target - floored.reduce((sum, val) => sum + val, 0);
+
+  const fractionalOrder = raw
+    .map((val, idx) => ({ idx, frac: val - floored[idx] }))
+    .sort((a, b) => b.frac - a.frac);
+
+  fractionalOrder.forEach(({ idx }) => {
+    if (remainder > 0) {
+      floored[idx] += 1;
+      remainder -= 1;
+    }
+  });
+
+  let cursor = 0;
+  while (remainder > 0 && floored.length > 0) {
+    floored[cursor % floored.length] += 1;
+    remainder -= 1;
+    cursor += 1;
+  }
+
+  return floored;
+};
+
+const rebalanceRecordScoringCriteria = (
+  criteriaInput?: Partial<IScoringCriteria>[],
+  exerciseMaxScore?: number,
+  options?: RebalanceOptions
+): IScoringCriteria[] => {
+  const isValidNumber = (value: unknown): value is number =>
+    typeof value === "number" && !Number.isNaN(value);
+
+  const sanitized =
+    criteriaInput?.map((item) => ({
+      criteria: (item.criteria || "").trim(),
+      maxScore: isValidNumber(item.maxScore)
+        ? Math.max(0, Math.round(item.maxScore))
+        : undefined,
+    })) || [];
+
+  if (!sanitized.length) return [];
+
+  const lockedSet = new Set(options?.lockedIndices ?? []);
+  const lockedIndices = sanitized
+    .map((_, idx) => idx)
+    .filter((idx) => lockedSet.has(idx));
+
+  if (!isValidNumber(exerciseMaxScore)) {
+    return sanitized.map((item) => ({
+      ...item,
+      maxScore: isValidNumber(item.maxScore) ? item.maxScore : 0,
+    }));
+  }
+
+  const result = sanitized.map((item) => ({ ...item }));
+
+  const lockedSum = lockedIndices.reduce((sum, idx) => {
+    const value = isValidNumber(result[idx].maxScore)
+      ? result[idx].maxScore || 0
+      : 0;
+    result[idx].maxScore = value;
+    return sum + value;
+  }, 0);
+
+  if (lockedIndices.length && lockedSum >= exerciseMaxScore) {
+    const scaled = scaleValuesToTotal(
+      lockedIndices.map((idx) => result[idx].maxScore || 0),
+      exerciseMaxScore
+    );
+    lockedIndices.forEach((idx, order) => {
+      result[idx].maxScore = scaled[order] || 0;
+    });
+    result.forEach((item, idx) => {
+      if (!lockedSet.has(idx)) {
+        item.maxScore = 0;
+      }
+    });
+    return result.map((item) => ({
+      ...item,
+      maxScore: item.maxScore || 0,
+    }));
+  }
+
+  const availableBudget = Math.max(0, exerciseMaxScore - lockedSum);
+
+  const unlockedIndices = result
+    .map((_, idx) => idx)
+    .filter((idx) => !lockedSet.has(idx));
+
+  if (!unlockedIndices.length) {
+    const scaled = scaleValuesToTotal(
+      lockedIndices.map((idx) => result[idx].maxScore || 0),
+      exerciseMaxScore
+    );
+    lockedIndices.forEach((idx, order) => {
+      result[idx].maxScore = scaled[order] || 0;
+    });
+    return result.map((item) => ({
+      ...item,
+      maxScore: item.maxScore || 0,
+    }));
+  }
+
+  const unlockedDefined = unlockedIndices.filter((idx) =>
+    isValidNumber(result[idx].maxScore)
+  );
+  const unlockedUndefined = unlockedIndices.filter(
+    (idx) => !isValidNumber(result[idx].maxScore)
+  );
+
+  const unlockedDefinedSum = unlockedDefined.reduce(
+    (sum, idx) => sum + (result[idx].maxScore || 0),
+    0
+  );
+
+  if (!unlockedUndefined.length) {
+    const target = availableBudget;
+    const scaled = scaleValuesToTotal(
+      unlockedDefined.map((idx) => result[idx].maxScore || 0),
+      target
+    );
+    unlockedDefined.forEach((idx, order) => {
+      result[idx].maxScore = scaled[order] || 0;
+    });
+  } else {
+    if (unlockedDefinedSum > availableBudget) {
+      const scaled = scaleValuesToTotal(
+        unlockedDefined.map((idx) => result[idx].maxScore || 0),
+        availableBudget
+      );
+      unlockedDefined.forEach((idx, order) => {
+        result[idx].maxScore = scaled[order] || 0;
+      });
+      unlockedUndefined.forEach((idx) => {
+        result[idx].maxScore = 0;
+      });
+    } else {
+      const remaining = Math.max(0, availableBudget - unlockedDefinedSum);
+      const distribution = distributeEvenlyIntegers(
+        unlockedUndefined.length,
+        remaining
+      );
+      unlockedUndefined.forEach((idx, order) => {
+        result[idx].maxScore = distribution[order] || 0;
+      });
+    }
+  }
+
+  return result.map((item) => ({
+    ...item,
+    maxScore: item.maxScore || 0,
+  }));
+};
 
 // Helper component to display text with truncation and tooltip
 const TextWithTooltip = ({ text = "", maxLength = 150 }) => {
@@ -2011,7 +2195,24 @@ export default function RoleplayForm({
 
     // Update local form data when formData prop changes
     useEffect(() => {
-      setLocalFormData(formData);
+      if (formData?.exercise?.type === ExerciseType.RECORD) {
+        const normalizedCriteria = rebalanceRecordScoringCriteria(
+          formData.exercise.scoringCriteria,
+          typeof formData.exercise.maxScore === "number"
+            ? formData.exercise.maxScore
+            : undefined
+        );
+
+        setLocalFormData({
+          ...formData,
+          exercise: {
+            ...formData.exercise,
+            scoringCriteria: normalizedCriteria,
+          },
+        });
+      } else {
+        setLocalFormData(formData);
+      }
       // Clear errors when form data is reset (e.g., when opening a new content form)
       setValidationErrors({});
     }, [formData]);
@@ -2096,14 +2297,36 @@ export default function RoleplayForm({
       }
     };
 
-    const handleExerciseChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        exercise: {
+    const handleExerciseChange = (
+      field: string,
+      value: any,
+      options?: { skipRebalance?: boolean; lockedCriteriaIndices?: number[] }
+    ) => {
+      setLocalFormData((prev: any) => {
+        const nextExercise = {
           ...prev.exercise,
           [field]: value,
-        },
-      }));
+        };
+
+        if (
+          nextExercise.type === ExerciseType.RECORD &&
+          !options?.skipRebalance
+        ) {
+          const normalized = rebalanceRecordScoringCriteria(
+            nextExercise.scoringCriteria,
+            typeof nextExercise.maxScore === "number"
+              ? nextExercise.maxScore
+              : undefined,
+            { lockedIndices: options?.lockedCriteriaIndices }
+          );
+          nextExercise.scoringCriteria = normalized;
+        }
+
+        return {
+          ...prev,
+          exercise: nextExercise,
+        };
+      });
     };
 
     const handleDocumentChange = (
@@ -2305,7 +2528,28 @@ export default function RoleplayForm({
       setNextOptionId(localNextOptionId);
       setNextAnswerId(localNextAnswerId);
 
-      onSave(localFormData);
+      let dataToSave = localFormData;
+
+      if (localFormData.exercise.type === ExerciseType.RECORD) {
+        const normalizedCriteria = rebalanceRecordScoringCriteria(
+          localFormData.exercise.scoringCriteria,
+          typeof localFormData.exercise.maxScore === "number"
+            ? localFormData.exercise.maxScore
+            : undefined
+        );
+
+        dataToSave = {
+          ...localFormData,
+          exercise: {
+            ...localFormData.exercise,
+            scoringCriteria: normalizedCriteria,
+          },
+        };
+
+        setLocalFormData(dataToSave);
+      }
+
+      onSave(dataToSave);
     };
 
     // Add new option
@@ -2411,6 +2655,56 @@ export default function RoleplayForm({
       handleExerciseChange("answer", newAnswer);
     };
 
+    const getScoringCriteria = () =>
+      Array.isArray(localFormData.exercise?.scoringCriteria)
+        ? (localFormData.exercise.scoringCriteria as Partial<IScoringCriteria>[])
+        : [];
+
+    const addScoringCriteria = () => {
+      const current = getScoringCriteria();
+      handleExerciseChange("scoringCriteria", [
+        ...current,
+        { criteria: "", maxScore: undefined },
+      ]);
+    };
+
+    const removeScoringCriteria = (index: number) => {
+      const current = getScoringCriteria();
+      const next = current.filter((_, idx) => idx !== index);
+      handleExerciseChange("scoringCriteria", next);
+    };
+
+    const updateScoringCriteria = (
+      index: number,
+      field: keyof IScoringCriteria,
+      value: string
+    ) => {
+      const current = getScoringCriteria();
+      if (!current[index]) return;
+
+      const parsedValue =
+        field === "maxScore"
+          ? value === ""
+            ? undefined
+            : Number(value)
+          : value;
+
+      const next = current.map((item, idx) =>
+        idx === index ? { ...item, [field]: parsedValue } : item
+      );
+
+      const isNumeric =
+        field === "maxScore" &&
+        typeof parsedValue === "number" &&
+        !Number.isNaN(parsedValue);
+
+      handleExerciseChange("scoringCriteria", next, {
+        skipRebalance: field === "maxScore" && !isNumeric,
+        lockedCriteriaIndices:
+          field === "maxScore" && isNumeric ? [index] : undefined,
+      });
+    };
+
     // Filter tags based on query
     const filteredTags =
       tagQuery === ""
@@ -2418,6 +2712,15 @@ export default function RoleplayForm({
         : allTags.filter((tag) =>
             tag.title?.[lang]?.toLowerCase().includes(tagQuery.toLowerCase())
           );
+
+    const scoringCriteria = getScoringCriteria();
+    const scoringCriteriaTotal = scoringCriteria.reduce((sum, item) => {
+      const value =
+        typeof item.maxScore === "number" && !Number.isNaN(item.maxScore)
+          ? item.maxScore
+          : 0;
+      return sum + value;
+    }, 0);
 
     return (
       <div className="space-y-4">
@@ -2803,24 +3106,28 @@ export default function RoleplayForm({
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Max Score
-              </label>
-              <input
-                type="number"
-                value={localFormData.exercise.maxScore ?? ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  handleExerciseChange(
-                    "maxScore",
-                    val === "" ? "" : Number(val)
-                  );
-                }}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter max score"
-              />
-            </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Max Score
+                </label>
+                <input
+                  type="number"
+                  value={localFormData.exercise.maxScore ?? ""}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    const isEmpty = val === "";
+                    handleExerciseChange(
+                      "maxScore",
+                      isEmpty ? "" : Number(val),
+                      {
+                        skipRebalance: isEmpty,
+                      }
+                    );
+                  }}
+                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  placeholder="Enter max score"
+                />
+              </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -3063,6 +3370,105 @@ export default function RoleplayForm({
                   className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   placeholder="Enter max character"
                 />
+              </div>
+            )}
+
+            {localFormData.exercise.type === ExerciseType.RECORD && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Scoring Criteria
+                  </label>
+                  <button
+                    type="button"
+                    onClick={addScoringCriteria}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Add Criteria
+                  </button>
+                </div>
+                {scoringCriteria.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    Add at least one criterion to describe how this record is
+                    scored.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {scoringCriteria.map((criteriaItem, index) => (
+                      <div
+                        key={`scoring-${index}`}
+                        className="border rounded-lg p-3 space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-700">
+                            Criterion {index + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeScoringCriteria(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="md:col-span-2">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Description
+                            </label>
+                            <input
+                              type="text"
+                              value={criteriaItem.criteria || ""}
+                              onChange={(e) =>
+                                updateScoringCriteria(
+                                  index,
+                                  "criteria",
+                                  e.target.value
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              placeholder="e.g., Pronunciation clarity"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Max Score
+                            </label>
+                            <input
+                              type="number"
+                              value={
+                                typeof criteriaItem.maxScore === "number"
+                                  ? criteriaItem.maxScore
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                updateScoringCriteria(
+                                  index,
+                                  "maxScore",
+                                  e.target.value
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              placeholder="Auto"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {scoringCriteria.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-500">
+                    Total criteria score: {scoringCriteriaTotal}
+                    {localFormData.exercise.maxScore
+                      ? ` / ${localFormData.exercise.maxScore}`
+                      : ""}
+                    {localFormData.exercise.maxScore &&
+                      scoringCriteriaTotal !== localFormData.exercise.maxScore &&
+                      " • Missing values are auto-filled on save to match the exercise max score."}
+                  </p>
+                )}
               </div>
             )}
           </>
