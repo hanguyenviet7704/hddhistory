@@ -8,9 +8,6 @@ abstract class UserState with _$UserState {
     @Default(Profile()) Profile profile,
     @Default(true) bool isFirstTimeUserRunApp,
     @Default(true) bool isFirstTimeUserAccessApp,
-    @Default(true) bool isFirstTimeUserAccessPictureStudy,
-    @Default(false) bool isAppShowRegisterRecommend,
-    @Default(true) bool isGuest,
     @Default('') String guestProfileId,
   }) = _UserState;
 
@@ -23,7 +20,6 @@ extension UserStateExtension on UserState {
   String get accessToken => auth.token.accessToken;
   String get refreshToken => auth.token.refreshToken;
 
-  bool get isGuestOrNotLogin => isGuest || auth.user.id.isEmpty;
   String get paymentStatus {
     if (profile.activeSubscriptions.isEmpty) return 'free';
     return switch (profile.activeSubscriptions.last.subscriptionPlan.externalPlanId) {

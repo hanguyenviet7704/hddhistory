@@ -17,9 +17,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   bool fakeUserFullRoadmap() => kDebugMode && state.user.email == "truongdev109@gmail.com";
 
   void setIsFirstTime(bool isFirstTime) => emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
-  void setIsFirstTimeUserAccessPictureStudy(bool isFirstTimeUserAccessPictureStudy) => emit(state.copyWith(isFirstTimeUserAccessPictureStudy: isFirstTimeUserAccessPictureStudy));
   void setIsFirstTimeUserRunApp(bool isFirstTimeUserRunApp) => emit(state.copyWith(isFirstTimeUserRunApp: isFirstTimeUserRunApp));
-  void setIsAppShowRegisterRecommend(bool isAppShowRegisterRecommend) => emit(state.copyWith(isAppShowRegisterRecommend: isAppShowRegisterRecommend));
 
   void setAccessToken(String accessToken) {
     AppGlobalValue.accessToken = accessToken;
@@ -51,9 +49,8 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
 
   Future<void> clearData() async {
     bool isFirstTime = state.isFirstTimeUserAccessApp;
-    bool isGuest = state.isGuest;
     emit(UserState.initial());
-    emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime, isGuest: isGuest));
+    emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
     _appTrackingService.setUserId(null);
     _appTrackingService.setUserProperties({});
   }
@@ -80,11 +77,6 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     //     emit(state.copyWith(profile: response.data.first));
     //   },
     // );
-  }
-
-  void setIsGuest(bool isGuest) {
-    AppGlobalValue.isGuest = isGuest;
-    emit(state.copyWith(isGuest: isGuest));
   }
 }
 

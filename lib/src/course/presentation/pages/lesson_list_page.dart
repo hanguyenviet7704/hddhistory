@@ -15,7 +15,7 @@ class LessonListPage extends StatelessWidget {
                 child: CircularProgressIndicator(),
               );
             }
-        
+
             if (state.status == CourseLessonStatus.failure) {
               return Center(
                 child: Padding(
@@ -41,9 +41,9 @@ class LessonListPage extends StatelessWidget {
                 ),
               );
             }
-        
+
             final lesson = state.selectedLesson;
-        
+
             // Check if lesson data is empty (id is empty means no data loaded)
             if (lesson.id.isEmpty) {
               return Center(
@@ -58,7 +58,7 @@ class LessonListPage extends StatelessWidget {
                 ),
               );
             }
-        
+
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Padding(
@@ -72,14 +72,16 @@ class LessonListPage extends StatelessWidget {
                     // Lesson description
                     AppText(
                       lesson.description.text,
+                      maxLines: 20,
+                      textAlign: TextAlign.justify,
                       style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
                     ),
                     12.verticalSpace,
-        
+
                     // Key points section header
                     const KeypointsSectionHeader(),
                     16.verticalSpace,
-        
+
                     // Key points list
                     if (lesson.keypoints.isEmpty)
                       Padding(
@@ -101,7 +103,7 @@ class LessonListPage extends StatelessWidget {
                         separatorBuilder: (context, index) => 16.verticalSpace,
                         itemBuilder: (context, index) {
                           final keypoint = lesson.keypoints[index];
-        
+
                           return KeypointCard(
                             keypoint: keypoint,
                             onTap: () {
@@ -111,7 +113,7 @@ class LessonListPage extends StatelessWidget {
                           );
                         },
                       ),
-        
+
                     32.verticalSpace,
                   ],
                 ),

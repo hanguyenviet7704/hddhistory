@@ -27,7 +27,6 @@ class _SplashPageState extends State<SplashPage> {
     UserState userState = context.read<UserCubit>().state;
     AppGlobalValue.accessToken = userState.accessToken;
     AppGlobalValue.refreshToken = userState.refreshToken;
-    AppGlobalValue.isGuest = userState.isGuest;
 
     if (!mounted) return;
     // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
@@ -76,7 +75,6 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _initScreen(_) async {
-    context.read<UserCubit>().setIsFirstTimeUserAccessPictureStudy(true);
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
 
     if (!mounted) return;

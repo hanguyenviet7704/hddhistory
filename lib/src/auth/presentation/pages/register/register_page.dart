@@ -112,7 +112,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           GuestLoginButton(
                             onPressed: () {
                               // Continue as guest
-                              context.read<UserCubit>().setIsGuest(true);
                               // Navigate to home
                               // DNavigator.goNamed(RouteNamed.home);
                               AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);

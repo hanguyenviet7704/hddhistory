@@ -140,20 +140,9 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
     AppConfig.instance.context?.read<PaywallCubit>().fakeInfiniteEnergy();
     emit(state.copyWith(isLoading: false));
     AppConfig.instance.context?.backUntil(RoutePath.home);
-    bool isGuest = AppConfig.instance.context?.read<UserCubit>().state.isGuest ?? true;
-  
+      
     _trackingService.trackSubscriptionCompleted(state.selectedProductId);
-    if (!isGuest) {
-      Future.delayed(const Duration(seconds: 1), () {
-        String userId = AppConfig.instance.context?.read<UserCubit>().state.user.id ?? '';
-        AppConfig.instance.context?.read<PaywallCubit>().addUserPremiumId(userId);
-        DMessage.showMessage(
-          message: 'AppConfig.instance.context?.text.monetPaymentSuccessToast',
-          type: MessageType.success,
-        );
-      });
-      return;
-    }
+
 
     Future.delayed(const Duration(seconds: 1), () async {
       final PaywallCubit paywallCubit = AppConfig.instance.context!.read<PaywallCubit>();
