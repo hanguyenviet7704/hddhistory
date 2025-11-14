@@ -77,70 +77,68 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
     final viewInsets = MediaQuery.of(context).viewInsets;
     final bottomPadding = math.max(16.h, viewInsets.bottom);
 
-    return Material(
-      color: Colors.transparent,
-      child: Stack(
-        children: [
-          IgnorePointer(
-            ignoring: !explanationVisible,
-            child: AnimatedOpacity(
-              duration: _overlayAnimationDuration,
-              curve: Curves.easeInOut,
-              opacity: explanationVisible ? 1 : 0,
-              child: GestureDetector(
-                onTap: widget.onBackdropTap,
-                behavior: HitTestBehavior.opaque,
-                child: Container(
-                  color: AppCustomColor.scrimOverlay,
+    return Stack(
+      children: [
+        if (explanationVisible)
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: !explanationVisible,
+              child: AnimatedOpacity(
+                duration: _overlayAnimationDuration,
+                curve: Curves.easeInOut,
+                opacity: explanationVisible ? 1 : 0,
+                child: GestureDetector(
+                  onTap: widget.onBackdropTap,
+                  behavior: HitTestBehavior.opaque,
+                  child: Container(
+                    color: AppCustomColor.scrimOverlay,
+                  ),
                 ),
               ),
             ),
           ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: SafeArea(
-              top: false,
-              left: false,
-              right: false,
-              child: Padding(
-                padding: EdgeInsets.only(
-                  left: 16.w,
-                  right: 16.w,
-                  bottom: bottomPadding,
-                ),
-                child: FadeTransition(
-                  opacity: _fadeAnimation,
-                  child: SlideTransition(
-                    position: _slideAnimation,
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20.r),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          AnimatedSwitcher(
-                            duration: _overlayAnimationDuration,
-                            switchInCurve: Curves.easeOutCubic,
-                            switchOutCurve: Curves.easeInCubic,
-                            child: explanationVisible
-                                ? KeyedSubtree(
-                                    key: const ValueKey('lesson-result-overlay-explanation'),
-                                    child: widget.explanation!,
-                                  )
-                                : const SizedBox.shrink(
-                                    key: ValueKey('lesson-result-overlay-empty'),
-                                  ),
-                          ),
-                          widget.summary,
-                        ],
-                      ),
+        Positioned(
+          left: 16.w,
+          right: 16.w,
+          bottom: 0,
+          child: SafeArea(
+            top: false,
+            left: false,
+            right: false,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: bottomPadding),
+              child: FadeTransition(
+                opacity: _fadeAnimation,
+                child: SlideTransition(
+                  position: _slideAnimation,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(20.r),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AnimatedSwitcher(
+                          duration: _overlayAnimationDuration,
+                          switchInCurve: Curves.easeOutCubic,
+                          switchOutCurve: Curves.easeInCubic,
+                          child: explanationVisible
+                              ? KeyedSubtree(
+                                  key: const ValueKey('lesson-result-overlay-explanation'),
+                                  child: widget.explanation!,
+                                )
+                              : const SizedBox.shrink(
+                                  key: ValueKey('lesson-result-overlay-empty'),
+                                ),
+                        ),
+                        widget.summary,
+                      ],
                     ),
                   ),
                 ),
               ),
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
