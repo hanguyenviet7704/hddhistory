@@ -21,7 +21,10 @@ class CourseRoadmapContent extends StatelessWidget {
               separatorBuilder: (context, index) => 20.verticalSpace,
               itemCount: roadmap.levels.length,
               itemBuilder: (context, index) {
-                return CourseLevelContent(level: roadmap.levels[index]);
+                return CourseLevelContent(
+                  level: roadmap.levels[index],
+                  usingAppProgressLessons: roadmap.usingAppProgressLessons(index),
+                );
               },
             );
           },
