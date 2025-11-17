@@ -79,6 +79,7 @@ class RestfulService implements IRestfulService {
   Dio createAIDio() {
     final dio = Dio(
       BaseOptions(
+        responseType: ResponseType.stream,
         baseUrl: aiServiceBaseUrl,
         headers: aiHeaders,
         connectTimeout: Duration(milliseconds: connectTimeout),

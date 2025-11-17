@@ -5,4 +5,6 @@ abstract class ILessonRepository {
     PageBreakRequest request,
   );
   TaskEither<AppException, LearningItemEntity> getLearningItem(String id);
+  TaskEither<AppException, VoiceFeedbackEntity> sendVoiceFeedback(VoiceFeedbackRequest request);
+  TaskEither<AppException, ResponseBody> sendVoiceFeedbackStream(VoiceFeedbackRequest request);
 }

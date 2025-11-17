@@ -7,7 +7,7 @@ import 'dart:ui' as ui;
 //* Single project import
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:darq/darq.dart';
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' hide Headers;
 import 'package:dotted_border/dotted_border.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -21,6 +21,7 @@ import 'package:retrofit/retrofit.dart';
 //* Data Layer - Models, Datasources, Repositories
 part 'data/datasources/local/lesson_local_data_source.dart';
 part 'data/datasources/remote/lesson_api.dart';
+part 'data/datasources/remote/lesson_voice_api.dart';
 part 'data/models/answer_model.dart';
 part 'data/models/content_document_model.dart';
 part 'data/models/document_data_model.dart';
@@ -30,6 +31,7 @@ part 'data/models/option_model.dart';
 part 'data/models/question_model.dart';
 part 'data/models/scoring_criteria_model.dart';
 part 'data/models/tag_model.dart';
+part 'data/models/voice_feedback_model.dart';
 part 'data/repositories/lesson_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/answer_entity.dart';
@@ -42,14 +44,18 @@ part 'domain/entities/option_entity.dart';
 part 'domain/entities/question_entity.dart';
 part 'domain/entities/scoring_criteria_entity.dart';
 part 'domain/entities/tag_entity.dart';
+part 'domain/entities/voice_feedback_entity.dart';
 part 'domain/repositories/i_lesson_repository.dart';
 part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
+part 'domain/usecases/send_voice_feedback_stream_usecase.dart';
+part 'domain/usecases/send_voice_feedback_usecase.dart';
 //* Presentation Layer - Widgets
 
 //* Parts for generated files
 part 'lesson.freezed.dart';
 part 'lesson.g.dart';
+part 'presentation/blocs/lesson_voice_state.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/arrange_the_sequence/arrange_the_sequence_cubit.dart';
 part 'presentation/cubits/arrange_the_sequence/arrange_the_sequence_state.dart';
@@ -63,6 +69,7 @@ part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
 part 'presentation/cubits/lesson/lesson_cubit.dart';
 part 'presentation/cubits/lesson/lesson_state.dart';
+part 'presentation/cubits/lesson_voice_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_state.dart';
 part 'presentation/cubits/speaking/speaking_cubit.dart';
@@ -100,8 +107,8 @@ part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
 part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/exercise_result_summary.dart';
 part 'presentation/widgets/items/common/lesson_badge.dart';
-part 'presentation/widgets/items/common/lesson_result_overlay.dart';
 part 'presentation/widgets/items/common/lesson_progress_bar.dart';
+part 'presentation/widgets/items/common/lesson_result_overlay.dart';
 part 'presentation/widgets/items/common/lesson_time_controller.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_available_marks.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_pause_mark.dart';

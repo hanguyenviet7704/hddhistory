@@ -93,4 +93,8 @@ mixin AppEndpoint {
   static const String cloudflareInfo = '/api/v1/cloudflares/info/{key}';
   static const String cloudflareList = '/api/v1/cloudflares';
   static const String cloudflareDelete = '/api/v1/cloudflares/{key}';
+
+  //* AI Services API
+  static const String voiceFeedback = '/api/v1/feedback';
+  static const String voiceFeedbackStream = '/api/v1/feedback-stream';
 }
