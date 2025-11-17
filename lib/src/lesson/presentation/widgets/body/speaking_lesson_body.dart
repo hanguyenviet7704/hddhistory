@@ -13,29 +13,11 @@ class SpeakingLessonBody extends StatelessWidget {
       context: context,
       builder: (_) => BlocProvider.value(
         value: context.read<SpeakingCubit>(),
-        child: BlocBuilder<SpeakingCubit, SpeakingState>(
-          builder: (context, state) {
-            final hasExplanation = state.question.explanation.isNotEmpty;
-
-            return SpeakingResultBottomSheet(
-              type: type,
-              showExplanation: state.showExplanation,
-              analysisText: state.question.explanation,
-              onContinue: () {
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
-              onExplain: hasExplanation ? () => context.read<SpeakingCubit>().toggleExplanation() : null,
-              audioFilePath: state.audioFilePath,
-              goodPoints: const [
-                'Paraphrasing means restating',
-                'what the other person has said in your own words',
-              ],
-              improvementPoints: const [
-                'Try to use more varied vocabulary',
-                'Improve pronunciation clarity',
-              ],
-            );
+        child: SpeakingResultBottomSheet(
+          type: type,
+          onContinue: () {
+            LessonResultOverlayManager.hide();
+            AppDI.injector.get<ExerciseCubit>().nextQuestion();
           },
         ),
       ),
