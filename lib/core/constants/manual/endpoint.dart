@@ -63,7 +63,7 @@ mixin AppEndpoint {
   static const String coursesLessonsById = '/api/v1/courses-lessons/{id}';
   static const String coursesLessonsIndexes = '/api/v1/courses-lessons/indexs';
 
-  //* Courses Keypoints API
+  //* Courses ss API
   static const String coursesKeypoints = '/api/v1/courses-keypoints';
   static const String coursesKeypointsById = '/api/v1/courses-keypoints/{id}';
 
@@ -78,8 +78,8 @@ mixin AppEndpoint {
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/{lessonId}';
-  static const String coursesUserProgressKeypoint = '/api/v1/courses-user-progress/keypoint/{keypointId}';
-  static const String coursesUserProgressExercise = '/api/v1/courses-user-progress/exercise/{exerciseId}';
+  static const String coursesUserProgressKeypoint = '/api/v1/courses-user-progress/keypoints';
+  static const String coursesUserProgressExercise = '/api/v1/courses-user-progress/exercises';
   static const String coursesUserProgressMyCourses = '/api/v1/courses-user-progress/my-course';
 
   //* Skillsets API

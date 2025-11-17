@@ -15,8 +15,8 @@ abstract class ProgressLocalDataSource {
   Future<UserProgressModel?> getCachedUserProgressKeypoint();
   Future<void> cacheUserProgressKeypoint(UserProgressModel model);
 
-  Future<UserProgressModel?> getCachedUserProgressExercise(String exerciseId);
-  Future<void> cacheUserProgressExercise(String exerciseId, UserProgressModel model);
+  Future<UserProgressModel?> getCachedUserProgressExercise();
+  Future<void> cacheUserProgressExercise(UserProgressModel model);
 
   Future<List<CourseModel>> getCachedUserProgressMyCourses();
   Future<void> cacheUserProgressMyCourses(List<CourseModel> models);
@@ -103,9 +103,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   }
 
   @override
-  Future<UserProgressModel?> getCachedUserProgressExercise(String exerciseId) async {
+  Future<UserProgressModel?> getCachedUserProgressExercise() async {
     try {
-      final cacheKey = '${_cacheExerciseKey}_$exerciseId';
+      final cacheKey = _cacheExerciseKey;
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
       return UserProgressModel.fromJson(data);
@@ -115,9 +115,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   }
 
   @override
-  Future<void> cacheUserProgressExercise(String exerciseId, UserProgressModel model) async {
+  Future<void> cacheUserProgressExercise(UserProgressModel model) async {
     try {
-      final cacheKey = '${_cacheExerciseKey}_$exerciseId';
+      final cacheKey = _cacheExerciseKey;
       await _localStoreService.setMap(key: cacheKey, value: model.toJson());
     } catch (e) {
       //

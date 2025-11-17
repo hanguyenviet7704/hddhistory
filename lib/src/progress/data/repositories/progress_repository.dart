@@ -61,13 +61,13 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   }
 
   @override
-  TaskEither<AppException, UserProgressEntity> updateUserProgressExercise(String exerciseId, Map<String, dynamic> body) {
+  TaskEither<AppException, UserProgressEntity> updateUserProgressExercise(Map<String, dynamic> body) {
     return callApiWithTransform<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.updateUserProgressExercise(exerciseId, body),
+      apiCall: () => _api.updateUserProgressExercise(body),
       transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheUserProgressExercise(exerciseId, data ?? UserProgressModel()),
+      onSuccess: (data) async => await _localDataSource.cacheUserProgressExercise(data ?? UserProgressModel()),
       onError: () async {
-        final cachedModel = await _localDataSource.getCachedUserProgressExercise(exerciseId);
+        final cachedModel = await _localDataSource.getCachedUserProgressExercise();
         return cachedModel?.toEntity();
       },
       defaultValue: UserProgressEntity(),
