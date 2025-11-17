@@ -1,10 +1,12 @@
 part of '../services.dart';
 
-class CustomInterceptors extends BaseInterceptor {
+@LazySingleton(as: Interceptor)
+@Named(DIKey.thirdPartyInterceptor)
+class ThirdPartyInterceptor extends BaseInterceptor {
   final bool enableLog;
-  CustomInterceptors({this.enableLog = false})
+  ThirdPartyInterceptor({this.enableLog = false})
     : super(
-        prefix: '[Custom]',
+        prefix: '[ThirdParty]',
         error: enableLog,
         responseBody: enableLog,
         responseHeader: enableLog,

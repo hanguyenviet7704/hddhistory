@@ -1,5 +1,6 @@
 part of '../services.dart';
 
+
 abstract class BaseInterceptor extends Interceptor {
   final String prefix;
   final bool request;

@@ -1,7 +1,9 @@
 part of '../services.dart';
 
-class AppInterceptors extends BaseInterceptor {
-  AppInterceptors() : super(prefix: '[App]');
+@LazySingleton(as: Interceptor)
+@Named(DIKey.appInterceptor)
+class AppInterceptor extends BaseInterceptor {
+  AppInterceptor() : super(prefix: '[App]');
 
   static const String _retryCountKey = 'retry_count';
   static const int _maxRetryAttempts = 1;
