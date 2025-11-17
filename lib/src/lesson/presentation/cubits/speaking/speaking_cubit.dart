@@ -7,13 +7,9 @@ class SpeakingCubit extends Cubit<SpeakingState> {
   SpeakingCubit(this._sendVoiceFeedbackStreamUseCase) : super(SpeakingState.initial());
 
   // Reset to initial state
-  void reset() {
-    emit(SpeakingState.initial());
-  }
+  void reset() => emit(SpeakingState.initial());
 
-  void setQuestion(QuestionEntity question) {
-    emit(state.copyWith(question: question));
-  }
+  void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
 
   // Toggle between recording and text input modes
   void toggleInputMode() {
@@ -30,7 +26,6 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     emit(
       state.copyWith(
         textInput: trimmedText,
-        characterCount: trimmedText.length,
       ),
     );
   }
@@ -44,8 +39,6 @@ class SpeakingCubit extends Cubit<SpeakingState> {
       state.copyWith(
         status: SpeakingStatus.initial,
         recordingState: SpeakingRecordingState.recording,
-        isRecording: true,
-        isPaused: false,
         recordingDuration: initialDuration,
         errorMessage: null,
         audioFilePath: null,
@@ -53,60 +46,24 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     );
   }
 
-  void updateRecordingDuration(Duration duration) {
-    emit(state.copyWith(recordingDuration: duration));
-  }
-
-  void pauseRecordingSession() {
-    emit(
-      state.copyWith(
-        recordingState: SpeakingRecordingState.paused,
-        isRecording: false,
-        isPaused: true,
-      ),
-    );
-  }
-
-  void resumeRecordingSession() {
-    emit(
-      state.copyWith(
-        recordingState: SpeakingRecordingState.recording,
-        isRecording: true,
-        isPaused: false,
-      ),
-    );
-  }
-
-  void finishRecordingSession(String path) {
-    emit(
-      state.copyWith(
-        recordingState: SpeakingRecordingState.stopped,
-        isRecording: false,
-        isPaused: false,
-        audioFilePath: path,
-      ),
-    );
-  }
+  void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
+  void updateRecordingDuration(Duration duration) => emit(state.copyWith(recordingDuration: duration));
+  void pauseRecordingSession() => emit(state.copyWith(recordingState: SpeakingRecordingState.paused));
+  void resumeRecordingSession() => emit(state.copyWith(recordingState: SpeakingRecordingState.recording));
+  void finishRecordingSession(String path) => emit(state.copyWith(recordingState: SpeakingRecordingState.stopped, audioFilePath: path));
 
   void cancelRecordingSession() {
     emit(
       state.copyWith(
         recordingState: SpeakingRecordingState.idle,
-        isRecording: false,
-        isPaused: false,
         audioFilePath: null,
         recordingDuration: Duration.zero,
       ),
     );
   }
 
-  void updateMicrophonePermission(PermissionStatus status) {
-    emit(state.copyWith(microphonePermission: status));
-  }
+  void updateMicrophonePermission(PermissionStatus status) => emit(state.copyWith(microphonePermission: status));
 
-  void setErrorMessage(String? message) {
-    emit(state.copyWith(errorMessage: message));
-  }
 
   // Submit answer (recording or text)
   Future<void> submitAnswer() async {
@@ -128,9 +85,7 @@ class SpeakingCubit extends Cubit<SpeakingState> {
   }
 
   // Toggle explanation visibility
-  void toggleExplanation() {
-    emit(state.copyWith(showExplanation: !state.showExplanation));
-  }
+  void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
 
   int pointCalculation() {
     return 100;

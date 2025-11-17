@@ -15,13 +15,9 @@ sealed class SpeakingState with _$SpeakingState {
     @Default(SpeakingRecordingState.idle) SpeakingRecordingState recordingState,
     PermissionStatus? microphonePermission,
     @Default('') String textInput,
-    @Default(0) int characterCount,
     String? audioFilePath,
     String? errorMessage,
     @Default(Duration.zero) Duration recordingDuration,
-    @Default(false) bool isRecording,
-    @Default(false) bool isPlaying,
-    @Default(false) bool isPaused,
     @Default(false) bool showExplanation,
   }) = _SpeakingState;
 
