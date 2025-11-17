@@ -55,11 +55,11 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     final String courseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
     final CourseLessonState lesson = AppDI.injector.get<CourseLessonCubit>().state;
 
-    params.body.addAll({
-      "userId": userId,
-      "courseId": courseId,
-      "lessonId": lesson.selectedLesson.id,
-    });
+    params = params.copyWith(
+      userId: userId,
+      courseId: courseId,
+      lessonId: lesson.selectedLesson.id,
+    );
 
     await runUseCase<UserProgressEntity>(
       usecase: () => _updateUserProgressKeypointUseCase(params),
@@ -75,9 +75,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
               body: {
                 "userId": userId,
                 "courseId": courseId,
-                "averageScore": params.body["averageScore"],
-                "passed": params.body["passed"],
-                "reviews": params.body["reviews"],
+                "averageScore": params.keypoints.first.averageScore,
+                "passed": params.keypoints.first.passed,
+                "reviews": params.keypoints.first.reviews,
               },
             ),
           );

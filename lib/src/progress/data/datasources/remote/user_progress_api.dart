@@ -15,7 +15,7 @@ abstract class UserProgressApi {
   Future<BaseResponse<UserProgressModel>> updateUserProgressLesson(@Path('lessonId') String lessonId, @Body() Map<String, dynamic> body);
 
   @PUT(AppEndpoint.coursesUserProgressKeypoint)
-  Future<BaseResponse<UserProgressModel>> updateUserProgressKeypoint(@Path('keypointId') String keypointId, @Body() Map<String, dynamic> body);
+  Future<BaseResponse<UserProgressModel>> updateUserProgressKeypoint(@Body() Map<String, dynamic> body);
 
   @PUT(AppEndpoint.coursesUserProgressExercise)
   Future<BaseResponse<UserProgressModel>> updateUserProgressExercise(@Path('exerciseId') String exerciseId, @Body() Map<String, dynamic> body);
