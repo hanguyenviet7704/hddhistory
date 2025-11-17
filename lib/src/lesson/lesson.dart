@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 
 //* Package imports
 //* Single project import
-import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:darq/darq.dart';
 import 'package:dio/dio.dart' hide Headers;
 import 'package:dotted_border/dotted_border.dart';
@@ -16,6 +15,7 @@ import 'package:just_audio/just_audio.dart' as just_audio;
 import 'package:meup/meup.dart';
 import 'package:percent_indicator/percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Data Layer - Models, Datasources, Repositories
@@ -77,7 +77,6 @@ part 'presentation/cubits/speaking/speaking_state.dart';
 part 'presentation/cubits/theory/theory_cubit.dart';
 part 'presentation/cubits/theory/theory_state.dart';
 //* Presentation Layer - Pages
-part 'presentation/pages/example/speaking_screen.dart';
 part 'presentation/pages/lesson_complete_page.dart';
 part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/review_time_page.dart';
@@ -122,9 +121,6 @@ part 'presentation/widgets/items/drag_and_drop/empty_slot.dart';
 part 'presentation/widgets/items/drag_and_drop/filled_slot.dart';
 part 'presentation/widgets/items/drag_and_drop/result_bottom_sheet.dart';
 part 'presentation/widgets/items/drag_and_drop/sentence_builder.dart';
-part 'presentation/widgets/items/example/speaking/header.dart';
-part 'presentation/widgets/items/example/speaking/instruction_card.dart';
-part 'presentation/widgets/items/example/speaking/recording_control.dart';
 part 'presentation/widgets/items/mark_stress_word/mark_stress_word_card.dart';
 part 'presentation/widgets/items/mark_stress_word/mark_stress_word_result_bottom_sheet.dart';
 part 'presentation/widgets/items/speaking/active_recording_mode.dart';
