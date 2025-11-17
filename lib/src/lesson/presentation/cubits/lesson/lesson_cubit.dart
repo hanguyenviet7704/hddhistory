@@ -66,7 +66,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       );
       
       UpdateUserProgressKeypointParams keypointParams = UpdateUserProgressKeypointParams(keypoints: [keypointData]);
-      AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(keypointParams);
+      AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(LessonType.lesson, keypointParams);
       return;
     }
 

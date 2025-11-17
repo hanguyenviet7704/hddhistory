@@ -50,6 +50,6 @@ class RoleplayPointCubit extends Cubit<RoleplayPointState> {
       keypoints: keypoints,
     );
 
-    AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(keypointParams);
+    AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(LessonType.roleplay, keypointParams);
   }
 }

@@ -44,11 +44,16 @@ class LessonCard extends StatelessWidget {
   void _onTap(BuildContext context) {
     switch (lesson.type) {
       case LessonType.lesson:
-        context.read<CourseLessonCubit>().loadLesson(lesson.id);
+        context.read<CourseLessonCubit>()
+          ..reset()
+          ..loadLesson(lesson.id);
         LessonListRoute().go(context);
         break;
       case LessonType.roleplay:
-        AppDI.injector.get<RoleplayCubit>().loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
+        AppDI.injector.get<RoleplayCubit>()
+          ..reset()
+          ..setLessonId(lesson)
+          ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
         RoleplayIntroRoute().go(context);
         break;
       case LessonType.output:

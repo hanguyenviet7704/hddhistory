@@ -8,8 +8,11 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     this._getLearningItemUseCase,
   ) : super(RoleplayState.initial());
 
+  LessonEntity lesson = LessonEntity();
+
   void reset() => emit(RoleplayState.initial());
   void resetIndex() => emit(state.copyWith(currentSectionIndex: 0));
+  void setLessonId(LessonEntity lesson) => this.lesson = lesson;
 
   void setLearningItemToLessonCubit() {
     LearningItemEntity learningItem = state.currentLearningItem;

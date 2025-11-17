@@ -50,15 +50,29 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void updateUserProgressKeypoint(UpdateUserProgressKeypointParams params) async {
+  void updateUserProgressKeypoint(LessonType lessonType, UpdateUserProgressKeypointParams params) async {
     final String userId = AppDI.injector.get<UserCubit>().state.user.id;
     final String courseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
-    final CourseLessonState lesson = AppDI.injector.get<CourseLessonCubit>().state;
+    final CourseLessonState courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
+    final LessonEntity lessonEntity = AppDI.injector.get<RoleplayCubit>().lesson;
+    String lessonId = '';
+
+    switch (lessonType) {
+      case LessonType.lesson:
+        lessonId = courseLessonState.selectedLesson.id;
+        break;
+      case LessonType.roleplay:
+        lessonId = lessonEntity.id;
+        break;
+      case LessonType.output:
+        lessonId = '';
+        break;
+    }
 
     params = params.copyWith(
       userId: userId,
       courseId: courseId,
-      lessonId: lesson.selectedLesson.id,
+      lessonId: lessonId,
     );
 
     await runUseCase<UserProgressEntity>(
@@ -68,26 +82,28 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        if (lesson.isAllOtherKeypointsCompleted) {
-          updateUserProgressLesson(
-            UpdateUserProgressLessonParams(
-              lessonId: lesson.selectedLesson.id,
-              body: {
-                "userId": userId,
-                "courseId": courseId,
-                "averageScore": params.keypoints.first.averageScore,
-                "passed": params.keypoints.first.passed,
-                "reviews": params.keypoints.first.reviews,
-              },
-            ),
+        if ((lessonType == LessonType.lesson && courseLessonState.isAllOtherKeypointsCompleted) || (lessonType == LessonType.roleplay)) {
+          _updateUserProgressLesson(
+            lessonId,
+            {
+              "userId": userId,
+              "courseId": courseId,
+              "averageScore": params.keypoints.first.averageScore,
+              "passed": params.keypoints.first.passed,
+              "reviews": params.keypoints.first.reviews,
+            },
           );
         }
         emit(state.copyWith(status: ProgressStatus.success, selectedKeypoint: item));
-        AppDI.injector.get<CourseLessonCubit>().loadLesson(lesson.selectedLesson.id);
+        AppDI.injector.get<CourseLessonCubit>().loadLesson(courseLessonState.selectedLesson.id);
         AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId);
         loadUserProgressMyCourses(isInit: true, recent: true);
       },
     );
+  }
+
+  void _updateUserProgressLesson(String lessonId, Map<String, dynamic> body) async {
+    updateUserProgressLesson(UpdateUserProgressLessonParams(lessonId: lessonId, body: body));
   }
 
   void updateUserProgressExercise(UpdateUserProgressExerciseParams params) async {
