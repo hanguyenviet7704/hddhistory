@@ -53,47 +53,53 @@ class SpeakingExplanationContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppText(
-            context.text.exerciseVoiceAnalysisTitle,
-            style: AppStyle.text20.copyWith(
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0D121C),
-            ),
+    final maxHeight = MediaQuery.of(context).size.height * 0.75;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: SingleChildScrollView(
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+          decoration: const BoxDecoration(
+            color: Colors.white,
           ),
-          if (textInput.isNotEmpty)
-            AppText(
-              textInput,
-              maxLines: 100,
-              margin: EdgeInsets.only(top: 16.h),
-              style: AppStyle.text14.copyWith(
-                color: const Color(0xFF364152),
-                height: 1.5,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppText(
+                context.text.exerciseVoiceAnalysisTitle,
+                style: AppStyle.text20.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0D121C),
+                ),
               ),
-            ),
-          if (audioFilePath.isNotEmpty)
-            Container(
-              margin: EdgeInsets.only(top: 16.h),
-              width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-              decoration: BoxDecoration(
-                border: Border.all(color: AppCustomColor.borderDefault, width: 2.w),
-                borderRadius: BorderRadius.circular(16.r),
-              ),
-              child: AudioPlayerWidget(filePath: audioFilePath),
-            ),
-          SpeakingGoodPointsSection(points: goodPoints),
-          SpeakingImprovementSection(points: improvementPoints),
-        ],
+              if (textInput.isNotEmpty)
+                AppText(
+                  textInput,
+                  maxLines: 100,
+                  margin: EdgeInsets.only(top: 16.h),
+                  style: AppStyle.text14.copyWith(
+                    color: const Color(0xFF364152),
+                    height: 1.5,
+                  ),
+                ),
+              if (audioFilePath.isNotEmpty)
+                Container(
+                  margin: EdgeInsets.only(top: 16.h),
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppCustomColor.borderDefault, width: 2.w),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: AudioPlayerWidget(filePath: audioFilePath),
+                ),
+              SpeakingGoodPointsSection(points: goodPoints),
+              SpeakingImprovementSection(points: improvementPoints),
+            ],
+          ),
+        ),
       ),
     );
   }
