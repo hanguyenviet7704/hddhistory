@@ -20,8 +20,8 @@ class SpeakingResultBottomSheet extends StatelessWidget {
         explanation: SpeakingExplanationContent(
           textInput: state.textInput,
           audioFilePath: state.audioFilePath ?? '',
-          goodPoints: ['Paraphrasing means restating', 'what the other person has said in your own words'],
-          improvementPoints: ['Try to use more varied vocabulary', 'Improve pronunciation clarity'],
+          goodPoints: state.goodPoints,
+          improvementPoints: state.improvementPoints,
         ),
         summary: ExerciseResultSummary(
           type: type,
@@ -41,14 +41,14 @@ class SpeakingResultBottomSheet extends StatelessWidget {
 class SpeakingExplanationContent extends StatelessWidget {
   final String textInput;
   final String audioFilePath;
-  final List<String> goodPoints;
-  final List<String> improvementPoints;
+  final String goodPoints;
+  final String improvementPoints;
   const SpeakingExplanationContent({
     super.key,
     this.textInput = '',
     this.audioFilePath = '',
-    this.goodPoints = const [],
-    this.improvementPoints = const [],
+    this.goodPoints = '',
+    this.improvementPoints = '',
   });
 
   @override
@@ -100,11 +100,11 @@ class SpeakingExplanationContent extends StatelessWidget {
 }
 
 class SpeakingGoodPointsSection extends StatelessWidget {
-  final List<String> points;
+  final String points;
 
   const SpeakingGoodPointsSection({
     super.key,
-    required this.points,
+    this.points = '',
   });
 
   @override
@@ -140,33 +140,14 @@ class SpeakingGoodPointsSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          ...points.asMap().entries.map((entry) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: entry.key < points.length - 1 ? 4.h : 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    '${entry.key + 1}. ',
-                    style: AppStyle.text14.copyWith(
-                      color: const Color(0xFF364152),
-                      height: 1.5,
-                    ),
-                  ),
-                  Expanded(
-                    child: AppText(
-                      entry.value,
-                      maxLines: 100,
-                      style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF364152),
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+          AppText(
+            points,
+            maxLines: 100,
+            style: AppStyle.text14.copyWith(
+              color: const Color(0xFF364152),
+              height: 1.5,
+            ),
+          ),
         ],
       ),
     );
@@ -174,7 +155,7 @@ class SpeakingGoodPointsSection extends StatelessWidget {
 }
 
 class SpeakingImprovementSection extends StatelessWidget {
-  final List<String> points;
+  final String points;
 
   const SpeakingImprovementSection({
     super.key,
@@ -214,33 +195,14 @@ class SpeakingImprovementSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          ...points.asMap().entries.map((entry) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: entry.key < points.length - 1 ? 4.h : 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    '${entry.key + 1}. ',
-                    style: AppStyle.text14.copyWith(
-                      color: const Color(0xFF364152),
-                      height: 1.5,
-                    ),
-                  ),
-                  Expanded(
-                    child: AppText(
-                      entry.value,
-                      maxLines: 100,
-                      style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF364152),
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+          AppText(
+            points,
+            maxLines: 100,
+            style: AppStyle.text14.copyWith(
+              color: const Color(0xFF364152),
+              height: 1.5,
+            ),
+          ),
         ],
       ),
     );

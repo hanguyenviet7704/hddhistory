@@ -14,6 +14,8 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
   Stream<Uint8List> _voiceFeedbackStream = Stream.empty();
   Stream<Uint8List> get voiceFeedbackStream => _voiceFeedbackStream;
+  StreamSubscription<String>? _streamSubscription;
+  String _feedbackStream = '';
 
   // Reset to initial state
   void reset() => emit(SpeakingState.initial());
@@ -67,14 +69,12 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       if (state.audioFilePath == null) return;
       emit(state.copyWith(status: SpeakingStatus.loading));
       uploadAudioFile(state.audioFilePath!);
-      emit(state.copyWith(status: SpeakingStatus.success));
       return;
     }
 
     if (state.textInput.isNotEmpty) {
       emit(state.copyWith(status: SpeakingStatus.loading));
       sendVoiceFeedback();
-      emit(state.copyWith(status: SpeakingStatus.success));
     }
   }
 
@@ -97,6 +97,9 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   }
 
   void sendVoiceFeedback({String? url}) async {
+    await _streamSubscription?.cancel();
+    _feedbackStream = '';
+
     LocaleType localeType = _localeCubit.state;
     String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
     String? audioUrl = state.inputMode == SpeakingInputMode.recording ? url : null;
@@ -113,23 +116,40 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       ),
       onSuccess: (result) {
         _voiceFeedbackStream = result.stream;
-        _voiceFeedbackStream
+
+        _streamSubscription = _voiceFeedbackStream
+            .cast<List<int>>()
             .transform(utf8.decoder)
             .transform(const LineSplitter())
             .listen(
               (line) {
-                if (line.startsWith("data:")) {
-                  LogDev.one("EVENT → ${line.substring(5).trim()}");
+                if (!line.startsWith("data:")) return;
+
+                final payload = _extractSsePayload(line);
+                if (payload == '[DONE]') {
+                  setPoints();
+                  return;
                 }
+
+                if (payload.isEmpty) {
+                  return;
+                }
+
+                _feedbackStream += payload;
+                LogDev.one("SPEAKING STREAM → $payload");
               },
               onDone: () {
                 LogDev.one("✔ Stream ended");
+                if (_feedbackStream.isNotEmpty) {
+                  setPoints();
+                }
+                emit(state.copyWith(status: SpeakingStatus.success));
               },
               onError: (err) {
                 LogDev.one("❌ Stream error: $err");
+                emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: err.toString()));
               },
             );
-        emit(state.copyWith(status: SpeakingStatus.success));
       },
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
@@ -137,10 +157,65 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
   }
 
+  void setPoints() {
+    final rawFeedback = _feedbackStream.replaceAll('[DONE]', '').trim();
+    if (rawFeedback.isEmpty) return;
+
+    final goodHeaderRegex = RegExp(r'🟢\s*\*\*?.*?\*\*?', dotAll: true, caseSensitive: false);
+    final improvementHeaderRegex = RegExp(r'🔵\s*\*\*?.*?\*\*?', dotAll: true, caseSensitive: false);
+
+    final goodMatch = goodHeaderRegex.firstMatch(rawFeedback);
+    final improvementMatch = improvementHeaderRegex.firstMatch(rawFeedback);
+
+    String goodSection = '';
+    String improvementSection = '';
+
+    if (goodMatch != null) {
+      final endIndex = improvementMatch != null ? improvementMatch.start : rawFeedback.length;
+      goodSection = rawFeedback.substring(goodMatch.end, endIndex);
+    }
+
+    if (improvementMatch != null) {
+      improvementSection = rawFeedback.substring(improvementMatch.end);
+    }
+
+    emit(
+      state.copyWith(
+        goodPoints: _normalizePoints(goodSection),
+        improvementPoints: _normalizePoints(improvementSection),
+      ),
+    );
+  }
+
+  String _normalizePoints(String section) {
+    if (section.isEmpty) return '';
+    final cleaned = section.replaceAll(RegExp(r'\s+'), ' ').trim();
+    final parts = cleaned.split(RegExp(r'[-•]\s+')).skip(1).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+    return parts.join('\n');
+  }
+
+  String _extractSsePayload(String line) {
+    var payload = line.replaceAll('\r', '');
+    const prefix = 'data:';
+    while (payload.startsWith(prefix)) {
+      payload = payload.substring(prefix.length);
+      if (payload.startsWith(' ')) {
+        payload = payload.substring(1);
+      }
+    }
+    return payload.trimRight();
+  }
+
   // Toggle explanation visibility
   void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
 
   int pointCalculation() {
     return 100;
+  }
+
+  @override
+  Future<void> close() async {
+    await _streamSubscription?.cancel();
+    return super.close();
   }
 }
