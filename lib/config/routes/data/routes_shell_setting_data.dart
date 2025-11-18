@@ -15,5 +15,5 @@ class SettingRoute extends BaseTransitionRouteData with $SettingRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => Container();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const SettingPage();
 }

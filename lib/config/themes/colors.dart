@@ -94,6 +94,7 @@ mixin AppCustomColor {
   static const Color backgroundBrand = Color(0xFFEBEAFD);
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
+  static const Color surfaceMuted = Color(0xFFEFF3FA);
 
   // Strength indicator colors
   static const Color successGreen = Color(0xFF41AE8C);

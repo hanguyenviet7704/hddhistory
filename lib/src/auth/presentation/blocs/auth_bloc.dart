@@ -31,6 +31,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     on<_LoginSSOGoogle>(_onLoginSSOGoogle);
     on<_LoginSSOApple>(_onLoginSSOApple);
     on<_Register>(_onRegister);
+    on<_Logout>(_onLogout);
   }
 
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
@@ -84,6 +85,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         AppDI.injector.get<UserCubit>().setAuth(data);
         AppGlobalValue.accessToken = data.token.accessToken;
         AppGlobalValue.refreshToken = data.token.refreshToken;
+      },
+      onFailure: (error) {},
+    );
+  }
+
+  FutureOr<void> _onLogout(_Logout event, Emitter<AuthState> emit) {
+    runUseCase(
+      usecase: () => _logoutUsecase(),
+      onSuccess: (data) {
+        AppDI.injector.get<UserCubit>().clearData();
+        AppGlobalValue.accessToken = '';
+        AppGlobalValue.refreshToken = '';
       },
       onFailure: (error) {},
     );

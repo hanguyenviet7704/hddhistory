@@ -36,7 +36,7 @@ class RoleplayLeadingTextCard extends StatelessWidget {
                   color: textColor,
                   fontWeight: FontWeight.w600,
                 ),
-                maxLines: 3,
+                maxLines: 20,
               ),
               if (audioController?.hasAudio ?? false) ...[
                 16.verticalSpace,
