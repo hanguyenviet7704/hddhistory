@@ -111,7 +111,7 @@ dependencies:
   path_provider: ^2.1.5
   
   # Supabase Services
-  supabase_flutter: ^2.10.3
+  # supabase_flutter: ^2.10.3
 
   # App Permissions Services
   permission_handler: ^12.0.1
@@ -146,7 +146,7 @@ dependencies:
   # App Firebase Services
   firebase_core: ^4.2.1
   firebase_auth: ^6.1.2
-  firebase_remote_config: ^6.1.1
+  firebase_remote_config: ^6.1.2
 
   # SSO Auth
   google_sign_in: ^7.2.0
@@ -183,7 +183,7 @@ dependencies:
 
   # App Tracking Services
   sentry_flutter: ^9.8.0
-  firebase_crashlytics: ^5.0.4
+  firebase_crashlytics: ^5.0.5
   firebase_analytics: ^12.0.4
 
   # ffmpeg_kit_flutter_new: ^1.1.0
@@ -192,7 +192,7 @@ dependencies:
 #  socket_io_client: ^3.1.2
 
   # App Deep Links Services
-  app_links: ^6.4.1
+  app_links: ^7.0.0
 
   # App Isolate Services
   flutter_isolate: ^2.1.0
@@ -249,7 +249,7 @@ dev_dependencies:
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
   retrofit_generator: ^10.1.4
-  build_runner: ^2.10.2
+  build_runner: ^2.10.3
   flutter_gen_runner: ^5.12.0
   json_serializable: ^6.11.1
   injectable_generator: ^2.9.1

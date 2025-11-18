@@ -99,6 +99,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   void sendVoiceFeedback({String? url}) async {
     await _streamSubscription?.cancel();
     _feedbackStream = '';
+    emit(state.copyWith(goodPoints: const [], improvementPoints: const []));
 
     LocaleType localeType = _localeCubit.state;
     String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
@@ -137,6 +138,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
                 _feedbackStream += payload;
                 LogDev.one("SPEAKING STREAM → $payload");
+                setPoints();
               },
               onDone: () {
                 LogDev.one("✔ Stream ended");
@@ -179,19 +181,24 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       improvementSection = rawFeedback.substring(improvementMatch.end);
     }
 
+    final goodPoints = _extractPoints(goodSection);
+    final improvementPoints = _extractPoints(improvementSection);
+
+    if (goodPoints.isEmpty && improvementPoints.isEmpty) return;
+
     emit(
       state.copyWith(
-        goodPoints: _normalizePoints(goodSection),
-        improvementPoints: _normalizePoints(improvementSection),
+        goodPoints: goodPoints,
+        improvementPoints: improvementPoints,
       ),
     );
   }
 
-  String _normalizePoints(String section) {
-    if (section.isEmpty) return '';
+  List<String> _extractPoints(String section) {
+    if (section.trim().isEmpty) return const [];
     final cleaned = section.replaceAll(RegExp(r'\s+'), ' ').trim();
     final parts = cleaned.split(RegExp(r'[-•]\s+')).skip(1).map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
-    return parts.join('\n');
+    return parts;
   }
 
   String _extractSsePayload(String line) {

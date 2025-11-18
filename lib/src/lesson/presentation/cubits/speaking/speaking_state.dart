@@ -22,8 +22,8 @@ sealed class SpeakingState with _$SpeakingState {
     String? audioFilePath,
     @Default(Duration.zero) Duration recordingDuration,
     @Default(false) bool showExplanation,
-    @Default('') String goodPoints,
-    @Default('') String improvementPoints,
+    @Default(<String>[]) List<String> goodPoints,
+    @Default(<String>[]) List<String> improvementPoints,
   }) = _SpeakingState;
 
   factory SpeakingState.initial() => const SpeakingState();

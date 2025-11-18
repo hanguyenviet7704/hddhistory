@@ -41,14 +41,14 @@ class SpeakingResultBottomSheet extends StatelessWidget {
 class SpeakingExplanationContent extends StatelessWidget {
   final String textInput;
   final String audioFilePath;
-  final String goodPoints;
-  final String improvementPoints;
+  final List<String> goodPoints;
+  final List<String> improvementPoints;
   const SpeakingExplanationContent({
     super.key,
     this.textInput = '',
     this.audioFilePath = '',
-    this.goodPoints = '',
-    this.improvementPoints = '',
+    this.goodPoints = const [],
+    this.improvementPoints = const [],
   });
 
   @override
@@ -106,11 +106,11 @@ class SpeakingExplanationContent extends StatelessWidget {
 }
 
 class SpeakingGoodPointsSection extends StatelessWidget {
-  final String points;
+  final List<String> points;
 
   const SpeakingGoodPointsSection({
     super.key,
-    this.points = '',
+    this.points = const [],
   });
 
   @override
@@ -146,13 +146,13 @@ class SpeakingGoodPointsSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          AppText(
-            points,
-            maxLines: 100,
-            style: AppStyle.text14.copyWith(
+          _AnimatedPointsList(
+            points: points,
+            textStyle: AppStyle.text14.copyWith(
               color: const Color(0xFF364152),
               height: 1.5,
             ),
+            indexColor: const Color(0xFF554FF0),
           ),
         ],
       ),
@@ -161,11 +161,11 @@ class SpeakingGoodPointsSection extends StatelessWidget {
 }
 
 class SpeakingImprovementSection extends StatelessWidget {
-  final String points;
+  final List<String> points;
 
   const SpeakingImprovementSection({
     super.key,
-    required this.points,
+    this.points = const [],
   });
 
   @override
@@ -201,15 +201,81 @@ class SpeakingImprovementSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          AppText(
-            points,
-            maxLines: 100,
-            style: AppStyle.text14.copyWith(
+          _AnimatedPointsList(
+            points: points,
+            textStyle: AppStyle.text14.copyWith(
               color: const Color(0xFF364152),
               height: 1.5,
             ),
+            indexColor: const Color(0xFF41AE8C),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _AnimatedPointsList extends StatelessWidget {
+  final List<String> points;
+  final TextStyle textStyle;
+  final Color indexColor;
+
+  const _AnimatedPointsList({
+    required this.points,
+    required this.textStyle,
+    required this.indexColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (points.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: points.asMap().entries.map((entry) {
+          return TweenAnimationBuilder<double>(
+            key: ValueKey('point-${entry.key}'),
+            duration: const Duration(milliseconds: 300),
+            tween: Tween(begin: 0, end: 1),
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, (1 - value) * 8),
+                  child: child,
+                ),
+              );
+            },
+            child: Padding(
+              padding: EdgeInsets.only(bottom: entry.key < points.length - 1 ? 4.h : 0),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  AppText(
+                    '${entry.key + 1}. ',
+                    style: textStyle.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: indexColor,
+                    ),
+                  ),
+                  Expanded(
+                    child: AppText(
+                      entry.value,
+                      maxLines: 100,
+                      style: textStyle,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }).toList(),
       ),
     );
   }
