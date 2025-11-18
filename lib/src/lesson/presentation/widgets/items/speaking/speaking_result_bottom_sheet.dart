@@ -1,3 +1,4 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of '../../../../lesson.dart';
 
 class SpeakingResultBottomSheet extends StatelessWidget {
@@ -12,27 +13,43 @@ class SpeakingResultBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final explanationVisible = true;
-
-    return LessonResultOverlay(
-      showExplanation: explanationVisible,
-      // onBackdropTap: explanationVisible ? onExplain : null,
-      explanation: SpeakingExplanationContent(),
-      summary: ExerciseResultSummary(
-        type: type,
-        onContinue: onContinue,
-        onExplain: () => context.read<SpeakingCubit>().toggleExplanation(),
-        continueLabel: context.text.onboardingSkipGreetingButton,
-        explainLabel: context.text.exerciseExplainButton,
-        closeExplainLabel: context.text.exerciseCloseExplainButton,
-        title: context.text.exerciseCompleteVoiceTask,
+    return BlocBuilder<SpeakingCubit, SpeakingState>(
+      builder: (context, state) => LessonResultOverlay(
+        showExplanation: state.showExplanation,
+        // onBackdropTap: explanationVisible ? onExplain : null,
+        explanation: SpeakingExplanationContent(
+          textInput: state.textInput,
+          audioFilePath: state.audioFilePath ?? '',
+          goodPoints: ['Paraphrasing means restating', 'what the other person has said in your own words'],
+          improvementPoints: ['Try to use more varied vocabulary', 'Improve pronunciation clarity'],
+        ),
+        summary: ExerciseResultSummary(
+          type: type,
+          onContinue: onContinue,
+          showExplanation: state.showExplanation,
+          onExplain: () => context.read<SpeakingCubit>().toggleExplanation(),
+          continueLabel: context.text.onboardingSkipGreetingButton,
+          explainLabel: context.text.exerciseExplainButton,
+          closeExplainLabel: context.text.exerciseCloseExplainButton,
+          title: context.text.exerciseCompleteVoiceTask,
+        ),
       ),
     );
   }
 }
 
 class SpeakingExplanationContent extends StatelessWidget {
-  const SpeakingExplanationContent({super.key});
+  final String textInput;
+  final String audioFilePath;
+  final List<String> goodPoints;
+  final List<String> improvementPoints;
+  const SpeakingExplanationContent({
+    super.key,
+    this.textInput = '',
+    this.audioFilePath = '',
+    this.goodPoints = const [],
+    this.improvementPoints = const [],
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -53,57 +70,29 @@ class SpeakingExplanationContent extends StatelessWidget {
               color: const Color(0xFF0D121C),
             ),
           ),
-          BlocSelector<SpeakingCubit, SpeakingState, String>(
-            selector: (state) => state.textInput,
-            builder: (context, textInput) {
-              if (textInput.isEmpty) return const SizedBox.shrink();
-              return AppText(
-                textInput,
-                maxLines: 100,
-                margin: EdgeInsets.only(top: 16.h),
-                style: AppStyle.text14.copyWith(
-                  color: const Color(0xFF364152),
-                  height: 1.5,
-                ),
-              );
-            },
-          ),
-          BlocSelector<SpeakingCubit, SpeakingState, String>(
-            selector: (state) => state.audioFilePath ?? '',
-            builder: (context, audioFilePath) {
-              if (audioFilePath.isEmpty) return const SizedBox.shrink();
-              return Container(
-                margin: EdgeInsets.only(top: 16.h),
-                width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
-                decoration: BoxDecoration(
-                  border: Border.all(color: AppCustomColor.borderDefault, width: 2.w),
-                  borderRadius: BorderRadius.circular(16.r),
-                ),
-                child: AudioPlayerWidget(filePath: audioFilePath),
-              );
-            },
-          ),
-          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
-            selector: (state) => [
-              'Paraphrasing means restating',
-              'what the other person has said in your own words',
-            ],
-            builder: (context, goodPoints) {
-              if (goodPoints.isEmpty) return const SizedBox.shrink();
-              return SpeakingGoodPointsSection(points: goodPoints);
-            },
-          ),
-          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
-            selector: (state) => [
-              'Try to use more varied vocabulary',
-              'Improve pronunciation clarity',
-            ],
-            builder: (context, improvementPoints) {
-              if (improvementPoints.isEmpty) return const SizedBox.shrink();
-              return SpeakingImprovementSection(points: improvementPoints);
-            },
-          ),
+          if (textInput.isNotEmpty)
+            AppText(
+              textInput,
+              maxLines: 100,
+              margin: EdgeInsets.only(top: 16.h),
+              style: AppStyle.text14.copyWith(
+                color: const Color(0xFF364152),
+                height: 1.5,
+              ),
+            ),
+          if (audioFilePath.isNotEmpty)
+            Container(
+              margin: EdgeInsets.only(top: 16.h),
+              width: double.infinity,
+              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+              decoration: BoxDecoration(
+                border: Border.all(color: AppCustomColor.borderDefault, width: 2.w),
+                borderRadius: BorderRadius.circular(16.r),
+              ),
+              child: AudioPlayerWidget(filePath: audioFilePath),
+            ),
+          SpeakingGoodPointsSection(points: goodPoints),
+          SpeakingImprovementSection(points: improvementPoints),
         ],
       ),
     );
