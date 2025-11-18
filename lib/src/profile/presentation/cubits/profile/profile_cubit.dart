@@ -1,4 +1,4 @@
-part of '../../profile.dart';
+part of '../../../profile.dart';
 
 @lazySingleton
 class ProfileCubit extends Cubit<ProfileState> with CubitUseCaseHandlerMixin<ProfileState> {

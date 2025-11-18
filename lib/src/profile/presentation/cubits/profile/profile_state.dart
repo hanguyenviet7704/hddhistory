@@ -1,4 +1,4 @@
-part of '../../profile.dart';
+part of '../../../profile.dart';
 
 enum ProfileStatus { initial, loading, success, failure }
 
