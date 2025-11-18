@@ -7,5 +7,4 @@
     "crud_operations": "list,detail,create,update,delete",
     "include_remote_datasource": true,
     "include_local_cache": true
-  }
-  
+}
