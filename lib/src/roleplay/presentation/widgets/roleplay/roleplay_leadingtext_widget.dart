@@ -30,7 +30,7 @@ class RoleplayLeadingTextCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                leadingText.content,
+                leadingText.content.text,
                 textAlign: TextAlign.center,
                 style: AppStyle.text12.copyWith(
                   color: textColor,

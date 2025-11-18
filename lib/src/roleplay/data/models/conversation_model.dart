@@ -8,7 +8,7 @@ abstract class ConversationModel with _$ConversationModel {
     @Default(SectionConversationPosition.left) SectionConversationPosition position,
     @Default('') String backgroundColor,
     @Default('') String textColor,
-    @Default('') String content,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
     @Default('') String audio,
   }) = _ConversationModel;
 

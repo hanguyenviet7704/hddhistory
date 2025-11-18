@@ -5,7 +5,7 @@ abstract class LeadingTextModel with _$LeadingTextModel {
   const factory LeadingTextModel({
     @Default('') String backgroundColor,
     @Default('') String textColor,
-    @Default('') String content,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
     @Default('') String audio,
   }) = _LeadingTextModel;
 

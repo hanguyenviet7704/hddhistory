@@ -35,7 +35,7 @@ class RoleplayHintCard extends StatelessWidget {
                 WidgetSpan(child: 6.horizontalSpace),
               ],
               TextSpan(
-                text: hint.content,
+                text: hint.content.text,
                 style: AppStyle.text14.copyWith(color: textColor, height: 1.5),
               ),
             ],

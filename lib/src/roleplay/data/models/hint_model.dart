@@ -5,7 +5,7 @@ abstract class HintModel with _$HintModel {
   const factory HintModel({
     @Default('') String icon,
     @Default('') String textColor,
-    @Default('') String content,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
   }) = _HintModel;
 
   factory HintModel.fromJson(Map<String, dynamic> json) => _$HintModelFromJson(json);

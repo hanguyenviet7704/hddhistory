@@ -90,7 +90,7 @@ class _RoleplayBubbleContent extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
-                conversation.content,
+                conversation.content.text,
                 style: AppStyle.text14.copyWith(
                   color: textColor,
                   height: 1.5,
