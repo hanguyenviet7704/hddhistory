@@ -41,7 +41,7 @@ extension LessonStateExtension on LessonState {
 
   String get currentLessonSpeechBubble {
     return switch (currentLearningItem.type) {
-      LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble,
+      LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble.text,
       LearningItemType.exercise || LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble.text,
     };
   }

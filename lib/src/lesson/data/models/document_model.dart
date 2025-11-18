@@ -4,7 +4,7 @@ part of '../../lesson.dart';
 abstract class DocumentModel with _$DocumentModel {
   const factory DocumentModel({
     @Default(0) int id,
-    @Default('') String speechBubble,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage speechBubble,
     @Default(TagModel()) TagModel tag,
     @Default([]) List<ContentDocumentModel> document,
   }) = _DocumentModel;

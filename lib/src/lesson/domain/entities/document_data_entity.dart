@@ -3,7 +3,7 @@ part of '../../lesson.dart';
 @freezed
 abstract class DocumentDataEntity with _$DocumentDataEntity {
   const factory DocumentDataEntity({
-    @Default('') String content,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
     @Default('') String url,
     @Default('') String thumbnail,
   }) = _DocumentDataEntity;

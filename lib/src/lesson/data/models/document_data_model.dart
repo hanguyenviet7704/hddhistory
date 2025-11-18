@@ -3,7 +3,7 @@ part of '../../lesson.dart';
 @freezed
 abstract class DocumentDataModel with _$DocumentDataModel {
   const factory DocumentDataModel({
-    @Default('') String content,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
     @Default('') String url,
     @Default('') String thumbnail,
   }) = _DocumentDataModel;

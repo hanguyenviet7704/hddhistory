@@ -12,7 +12,7 @@ class DocumentItem extends StatelessWidget {
     if (!document.dataAvailable) return const SizedBox.shrink();
 
     return switch (document.type) {
-      ContentDocumentType.title || ContentDocumentType.text || ContentDocumentType.caption => DocumentContentWidget(content: data.content, type: document.type),
+      ContentDocumentType.title || ContentDocumentType.text || ContentDocumentType.caption => DocumentContentWidget(content: data.content.text, type: document.type),
       ContentDocumentType.image || ContentDocumentType.audio => DocumentMediaWidget(url: data.url, type: document.type),
       ContentDocumentType.video => DocumentVideoWidget(url: data.url, thumbnail: data.thumbnail),
     };
