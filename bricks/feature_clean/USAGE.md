@@ -27,9 +27,14 @@ $ mason make feature_clean
 ? What is the feature name? user_profile
 ? What is the entity name? UserProfile
 ? Use BLoC instead of Cubit? (y/N) N
+? Which architecture profile do you need? (Use arrow keys) full_stack
+? Which presentation profile fits best? (Use arrow keys) paged_list
+? Which CRUD operations do you need? (comma separated) list,detail,create,update,delete
+? Include remote data source (Retrofit/Dio)? (Y/n) y
+? Include local cache data source? (Y/n) y
 
-✓ Made brick feature_clean (0.1s)
-  21 files created
+✓ Made brick feature_clean (0.2s)
+  20+ files created (varies per profile)
 ```
 
 ## After Generation
@@ -37,54 +42,25 @@ $ mason make feature_clean
 ### 1. Run Code Generation
 
 ```bash
-# Generate all code (freezed, retrofit, injectable, etc.)
 dart run build_runner build --delete-conflicting-outputs
 ```
 
 ### 2. Update API Endpoints
 
-Edit `lib/core/constants/manual/endpoint.dart`:
+Edit `lib/core/constants/manual/endpoint.dart` (or your preferred constants file) with the URLs used by this feature.
 
-```dart
-mixin AppEndpoint {
-  // ... existing endpoints
+### 3. Customize API/Data Layer
 
-  // Add your new feature endpoints
-  static const String getUserProfile = '/user/profile/{id}';
-  static const String getAllUserProfiles = '/user/profiles';
-  static const String createUserProfile = '/user/profile';
-  static const String updateUserProfile = '/user/profile/{id}';
-  static const String deleteUserProfile = '/user/profile/{id}';
-}
-```
+- Update `data/datasources/{{feature_name}}_api.dart` to reflect your endpoints and payloads.
+- If you disabled the Retrofit client, wire up your own data source implementation before using the generated repository.
 
-### 3. Update Retrofit API
+### 4. Refresh DI (if needed)
 
-Edit the generated `data/datasources/user_profile_api.dart` to match your API:
+Whenever you add new injectable classes, rerun build_runner to regenerate the Injectable output.
 
-```dart
-@RestApi()
-@lazySingleton
-abstract class UserProfileApi {
-  @factoryMethod
-  factory UserProfileApi(@Named(DIKey.mainDio) Dio dio) = _UserProfileApi;
+### 5. Add Tests
 
-  @GET(AppEndpoint.getUserProfile)  // Update to use your endpoint
-  Future<UserProfileModel> getUserProfile(@Path('id') String id);
-
-  // ... rest of the methods
-}
-```
-
-### 4. Run Tests
-
-```bash
-# Generate test mocks first
-dart run build_runner build --delete-conflicting-outputs
-
-# Run tests
-flutter test test/src/user_profile/
-```
+Tests are not scaffolded automatically. Mirror the `lib/src/{{feature_name}}` folder under `test/`, create mocks with Mockito, and reuse `bloc_test`/`fpdart` helpers from the existing codebase.
 
 ### 5. Use in Your App
 

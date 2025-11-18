@@ -1,4 +1,4 @@
-part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#include_domain_layer}}{{#has_delete}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
 class Delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase implements UseCaseWithParams<String, Unit> {
@@ -11,3 +11,4 @@ class Delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase implements UseC
     return _repository.delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}(params);
   }
 }
+{{/has_delete}}{{/include_domain_layer}}

@@ -1,4 +1,4 @@
-part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#include_domain_layer}}{{#has_update}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
 class Update{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase implements UseCaseWithParams<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity, {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity> {
@@ -11,3 +11,4 @@ class Update{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase implements UseC
     return _repository.update{{#pascalCase}}{{entity_name}}{{/pascalCase}}(params);
   }
 }
+{{/has_update}}{{/include_domain_layer}}

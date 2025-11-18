@@ -1,4 +1,4 @@
-part of '../../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#has_local_cache}}part of '../../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 /// Local data source for {{#titleCase}}{{feature_name}}{{/titleCase}}
 ///
@@ -122,3 +122,4 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}LocalDataSourceImpl implemen
     }
   }
 }
+{{/has_local_cache}}

@@ -1,0 +1,11 @@
+{
+    "feature_name": "setting",
+    "entity_name": "setting",
+    "use_bloc": true,
+    "architecture_profile": "full_stack",
+    "presentation_profile": "paged_list",
+    "crud_operations": "list,detail,create,update,delete",
+    "include_remote_datasource": true,
+    "include_local_cache": true
+  }
+  

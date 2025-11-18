@@ -1,4 +1,4 @@
-part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#include_domain_layer}}{{#has_list}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
 class GetAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}sUseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>> {
@@ -11,3 +11,4 @@ class GetAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}sUseCase implements Use
     return _repository.getAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s(params);
   }
 }
+{{/has_list}}{{/include_domain_layer}}

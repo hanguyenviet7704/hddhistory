@@ -1,4 +1,4 @@
-part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#include_data_layer}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @freezed
 abstract class {{#pascalCase}}{{entity_name}}{{/pascalCase}}Model with _${{#pascalCase}}{{entity_name}}{{/pascalCase}}Model {
@@ -21,3 +21,4 @@ extension {{#pascalCase}}{{entity_name}}{{/pascalCase}}ModelExtension on {{#pasc
         updatedAt: updatedAt,
       );
 }
+{{/include_data_layer}}
