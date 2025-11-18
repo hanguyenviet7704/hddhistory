@@ -1,9 +1,19 @@
 part of '../../../lesson.dart';
 
 @lazySingleton
-class SpeakingCubit extends Cubit<SpeakingState> {
+class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<SpeakingState> {
   final SendVoiceFeedbackStreamUseCase _sendVoiceFeedbackStreamUseCase;
-  SpeakingCubit(this._sendVoiceFeedbackStreamUseCase) : super(SpeakingState.initial());
+  final UploadCubit _uploadCubit;
+  final LocaleCubit _localeCubit;
+
+  SpeakingCubit(
+    this._sendVoiceFeedbackStreamUseCase,
+    this._uploadCubit,
+    this._localeCubit,
+  ) : super(SpeakingState.initial());
+
+  Stream<Uint8List> _voiceFeedbackStream = Stream.empty();
+  Stream<Uint8List> get voiceFeedbackStream => _voiceFeedbackStream;
 
   // Reset to initial state
   void reset() => emit(SpeakingState.initial());
@@ -56,21 +66,76 @@ class SpeakingCubit extends Cubit<SpeakingState> {
     if (state.inputMode == SpeakingInputMode.recording) {
       if (state.audioFilePath == null) return;
       emit(state.copyWith(status: SpeakingStatus.loading));
-      // TODO: Implement audio submission logic
-      // This will be handled by the parent exercise cubit
+      uploadAudioFile(state.audioFilePath!);
       emit(state.copyWith(status: SpeakingStatus.success));
       return;
     }
 
     if (state.textInput.isNotEmpty) {
       emit(state.copyWith(status: SpeakingStatus.loading));
-      // TODO: Implement text submission logic
-      // This will be handled by the parent exercise cubit
+      sendVoiceFeedback();
       emit(state.copyWith(status: SpeakingStatus.success));
     }
   }
 
-  
+  void uploadAudioFile(String filePath) async {
+    _uploadCubit.uploadFile(
+      UploadFileParams(
+        file: MultipartFile.fromFileSync(filePath),
+        key: DateTime.now().millisecondsSinceEpoch.toString(),
+        prefix: 'audio_',
+        folder: 'user_lesson',
+      ),
+      onSuccess: (result) {
+        emit(state.copyWith(status: SpeakingStatus.success));
+        sendVoiceFeedback(url: result.url);
+      },
+      onFailure: (error) {
+        emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
+      },
+    );
+  }
+
+  void sendVoiceFeedback({String? url}) async {
+    LocaleType localeType = _localeCubit.state;
+    String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
+    String? audioUrl = state.inputMode == SpeakingInputMode.recording ? url : null;
+    await runUseCase<ResponseBody>(
+      usecase: () => _sendVoiceFeedbackStreamUseCase.call(
+        VoiceFeedbackRequest(
+          inputType: state.inputMode == SpeakingInputMode.recording ? 'audio' : 'text',
+          answerText: answerText,
+          audioUrl: audioUrl,
+          knowledge: 'Machine Learning (học máy) là một nhánh của trí tuệ nhân tạo (AI), cho phép máy tính tự học từ dữ liệu mà không cần lập trình rõ ràng',
+          originLanguage: localeType.languageAISupport,
+          languageFeedback: localeType.languageAISupport,
+        ),
+      ),
+      onSuccess: (result) {
+        _voiceFeedbackStream = result.stream;
+        _voiceFeedbackStream
+            .transform(utf8.decoder)
+            .transform(const LineSplitter())
+            .listen(
+              (line) {
+                if (line.startsWith("data:")) {
+                  LogDev.one("EVENT → ${line.substring(5).trim()}");
+                }
+              },
+              onDone: () {
+                LogDev.one("✔ Stream ended");
+              },
+              onError: (err) {
+                LogDev.one("❌ Stream error: $err");
+              },
+            );
+        emit(state.copyWith(status: SpeakingStatus.success));
+      },
+      onFailure: (error) {
+        emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
+      },
+    );
+  }
 
   // Toggle explanation visibility
   void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));

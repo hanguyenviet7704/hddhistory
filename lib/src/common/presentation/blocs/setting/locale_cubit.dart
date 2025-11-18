@@ -36,6 +36,12 @@ enum LocaleType {
     };
   }
 
+  String get languageAISupport => switch (this) {
+    LocaleType.en => 'English',
+    LocaleType.vi => 'Vietnamese',
+    LocaleType.zh => 'Chinese',
+  };
+
   Locale get localeData {
     return switch (this) {
       LocaleType.en => const Locale.fromSubtags(languageCode: 'en'),
