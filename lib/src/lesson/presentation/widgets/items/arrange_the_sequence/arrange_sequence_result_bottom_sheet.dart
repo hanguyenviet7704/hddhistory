@@ -95,7 +95,7 @@ class ArrangeSequenceExplanationContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12.r),
                   ),
                   child: AppText(
-                    answer.text,
+                    answer.text.text,
                     maxLines: 10,
                     style: AppStyle.text14.copyWith(
                       color: const Color(0xFF364152),

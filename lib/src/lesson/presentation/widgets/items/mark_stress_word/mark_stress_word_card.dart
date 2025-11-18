@@ -58,8 +58,8 @@ class MarkStressWordCard extends StatelessWidget {
 
   String get displayText {
     return switch (state) {
-      AnswerState.correct || AnswerState.correctNotSelected || AnswerState.selected || AnswerState.incorrect => option.text.toUpperCase(),
-      _ => option.text,
+      AnswerState.correct || AnswerState.correctNotSelected || AnswerState.selected || AnswerState.incorrect => option.text.text.toUpperCase(),
+      _ => option.text.text,
     };
   }
 

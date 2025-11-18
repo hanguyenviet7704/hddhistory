@@ -15,12 +15,12 @@ class SingleChoiceLessonBody extends StatelessWidget {
         value: context.read<ChoiceCubit>(),
         child: BlocBuilder<ChoiceCubit, ChoiceState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.isNotEmpty;
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
 
             return ResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation,
+              explanationText: state.question.explanation.text,
               onContinue: () {
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();

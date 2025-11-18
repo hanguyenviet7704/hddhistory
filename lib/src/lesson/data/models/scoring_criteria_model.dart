@@ -4,7 +4,7 @@ part of '../../lesson.dart';
 abstract class ScoringCriteriaModel with _$ScoringCriteriaModel {
   const factory ScoringCriteriaModel({
     @Default(0) int maxScore,
-    @Default('') String criteria,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage criteria,
   }) = _ScoringCriteriaModel;
 
   factory ScoringCriteriaModel.fromJson(Map<String, dynamic> json) => _$ScoringCriteriaModelFromJson(json);

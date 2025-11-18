@@ -21,12 +21,12 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 orElse: () => const OptionEntity(),
               );
             }).toList();
-            final hasExplanation = state.question.explanation.isNotEmpty;
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
 
             return ArrangeSequenceResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation,
+              explanationText: state.question.explanation.text,
               arrangedAnswers: correctAnswers,
               onContinue: () {
                 LessonResultOverlayManager.hide();
@@ -97,7 +97,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                     key: Key('${item.id}'),
                     padding: EdgeInsets.only(bottom: 8.h),
                     child: ArrangeSequenceAnswerCard(
-                      text: item.text,
+                      text: item.text.text,
                       index: index,
                     ),
                   );

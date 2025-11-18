@@ -15,12 +15,12 @@ class CuesPlacementLessonBody extends StatelessWidget {
         value: context.read<CuesPlacementCubit>(),
         child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.isNotEmpty;
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
 
             return CuesPlacementResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation,
+              explanationText: state.question.explanation.text,
               words: state.words,
               placedMarks: state.placedMarks,
               correctPositions: state.correctPositions,

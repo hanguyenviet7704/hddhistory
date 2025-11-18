@@ -15,15 +15,15 @@ class DragAndDropLessonBody extends StatelessWidget {
         value: context.read<DragAndDropCubit>(),
         child: BlocBuilder<DragAndDropCubit, DragAndDropState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.isNotEmpty;
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
 
             return DragAndDropResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation,
-              targetArea: state.question.targetArea,
+              explanationText: state.question.explanation.text,
+              targetArea: state.question.targetArea.text,
               placedWords: state.placedWords,
-              correctAnswers: state.question.answer.map((a) => a.correctAnswer).toList(),
+              correctAnswers: state.question.answer.map((a) => a.correctAnswer.text).toList(),
               onContinue: () {
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
@@ -63,7 +63,7 @@ class DragAndDropLessonBody extends StatelessWidget {
               ],
               SentenceBuilder(
                 placedWords: state.placedWords,
-                targetArea: currentQuestion.targetArea,
+                targetArea: currentQuestion.targetArea.text,
                 answerCount: state.dropZoneCount,
                 onWordPlaced: (index, word, fromIndex) {
                   context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
@@ -86,7 +86,7 @@ class DragAndDropLessonBody extends StatelessWidget {
               12.verticalSpace,
               AnswerCardsArea(
                 availableWords: state.availableWords,
-                allWords: currentQuestion.options.map((option) => option.text).toList(),
+                allWords: currentQuestion.options.map((option) => option.text.text).toList(),
                 onWordReturnedFromSlot: (word, fromIndex) {
                   // Word is being dragged back to available area from a slot
                   context.read<DragAndDropCubit>().removeWord(fromIndex);

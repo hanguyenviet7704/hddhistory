@@ -15,12 +15,12 @@ class MarkStressWordLessonBody extends StatelessWidget {
         value: context.read<MarkStressWordCubit>(),
         child: BlocBuilder<MarkStressWordCubit, MarkStressWordState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.isNotEmpty;
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
 
             return MarkStressWordResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation,
+              explanationText: state.question.explanation.text,
               words: state.words,
               selectedIndices: state.selectedWordIndices,
               correctIndices: state.correctWordIndices,
@@ -98,8 +98,8 @@ class MarkStressWordLessonBody extends StatelessWidget {
                       // Create a temporary OptionEntity for each word
                       final wordOption = OptionEntity(
                         id: index,
-                        text: words[index],
-                        value: words[index],
+                        text: BaseMultiLanguage(en: words[index], vi: words[index], zh: words[index]),
+                        value: BaseMultiLanguage(en: words[index], vi: words[index], zh: words[index]),
                       );
 
                       return MarkStressWordCard(
