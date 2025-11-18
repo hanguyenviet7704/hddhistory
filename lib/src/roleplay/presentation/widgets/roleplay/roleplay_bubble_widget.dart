@@ -127,7 +127,7 @@ class _RoleplayParticipantAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Widget avatar = DCachedImage(
-      url: conversation.avartar,
+      url: conversation.avartar.url,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(50.r),
       width: 44.w,

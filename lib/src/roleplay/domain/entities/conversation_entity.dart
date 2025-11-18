@@ -4,7 +4,7 @@ part of '../../roleplay.dart';
 abstract class ConversationEntity with _$ConversationEntity {
   const factory ConversationEntity({
     @Default('') String name,
-    @Default('') String avartar,
+    @Default(ConversationAvatarEntity()) ConversationAvatarEntity avartar,
     @Default(SectionConversationPosition.left) SectionConversationPosition position,
     @Default('') String backgroundColor,
     @Default('') String textColor,
