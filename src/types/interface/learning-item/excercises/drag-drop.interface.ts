@@ -1,4 +1,5 @@
 import { KeypointLevel } from "../../../../utils/enum/course.enum";
+import { ITranslation } from "../../../../utils/translate";
 import {
   ExerciseType,
   FormDragDropType,
@@ -8,23 +9,23 @@ import { IDocument } from "../document.interface";
 
 export interface IAnswer {
   id: number;
-  correctAnswer: string;
+  correctAnswer: ITranslation;
 }
 
 export interface IOptions {
   id: number;
-  text: string;
+  text: ITranslation;
 }
 
 export interface IExerciseDragDrop {
   id: number;
   type: ExerciseType;
   form: FormDragDropType;
-  speechBubble: string;
+  speechBubble: ITranslation;
   tag: ITag | null;
   document: IDocument[];
-  explanation: string;
-  targetArea: string;
+  explanation: ITranslation;
+  targetArea: ITranslation;
   answer: IAnswer[];
   options: IOptions[];
   level: KeypointLevel[];
@@ -38,11 +39,11 @@ export interface ExerciseDragDropPayload {
   id: number;
   type: ExerciseType;
   form: FormDragDropType;
-  speechBubble: string;
+  speechBubble: ITranslation;
   tag: string;
   document: IDocument[];
-  explanation: string;
-  targetArea: string;
+  explanation: ITranslation;
+  targetArea: ITranslation;
   answer: IAnswer[];
   options: IOptions[];
   level: KeypointLevel[];

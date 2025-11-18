@@ -9,6 +9,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
+import { ITranslation } from "../../utils/translate";
+import { updateTranslationValue, cleanTranslation } from "../../utils/translation";
 
 interface Props {
   isOpen: boolean;
@@ -29,33 +31,44 @@ export default function SkillsetModal({
 }: Props) {
   const lang = useSelector((state: RootState) => state.lang.code);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState<ITranslation>({});
+  const [description, setDescription] = useState<ITranslation>({});
   const [image, setImage] = useState("");
 
   useEffect(() => {
     if (isOpen) {
       if (initial) {
-        setTitle(initial.title?.[lang] ?? "");
-        setDescription(initial.description?.[lang] ?? "");
+        setTitle(initial.title ?? {});
+        setDescription(initial.description ?? {});
         setImage(initial.image ?? "");
       } else {
-        setTitle("");
-        setDescription("");
+        setTitle({});
+        setDescription({});
         setImage("");
       }
     }
-  }, [initial, isOpen, lang]);
+  }, [initial, isOpen]);
 
   if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Update and clean translations
+    const cleanedTitle = cleanTranslation(
+      updateTranslationValue(title, lang, title[lang] || "")
+    );
+    const cleanedDescription = cleanTranslation(
+      updateTranslationValue(description, lang, description[lang] || "")
+    );
+
+    // Create SkillsetPayload with cleaned translations
     const payload: SkillsetPayload = {
-      title: typeof title === "string" ? title : "",
-      description: typeof description === "string" ? description : "",
+      title: cleanedTitle || { [lang]: "" }, // Always include title
+      ...(cleanedDescription && { description: cleanedDescription }),
       image,
     };
+
     await onSubmit(payload, initial?._id);
   };
 
@@ -99,8 +112,10 @@ export default function SkillsetModal({
                   Title *
                 </label>
                 <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={title[lang] || ""}
+                  onChange={(e) =>
+                    setTitle((prev) => updateTranslationValue(prev, lang, e.target.value))
+                  }
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                   required
                 />
@@ -112,8 +127,10 @@ export default function SkillsetModal({
                   Description
                 </label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={description[lang] || ""}
+                  onChange={(e) =>
+                    setDescription((prev) => updateTranslationValue(prev, lang, e.target.value))
+                  }
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                   rows={4}
                 />

@@ -26,6 +26,7 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { ITag } from "../../types/interface/tag.interface";
 import { tagService } from "../../services/tagService";
+import { getTranslationValue, updateTranslationValue, cleanTranslation } from "../../utils/translation";
 
 interface LessonFormProps {
   lesson?: ILesson; // Nếu có -> edit mode, không có -> create mode
@@ -164,23 +165,45 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
   const handleSaveLesson = async () => {
     try {
       setSaving(true);
-      const payload: LessonPayload = {
-        title: currentLesson.title?.[lang] || "",
-        estimateCompleTime: currentLesson.estimateCompleTime?.[lang] || "",
-        icon: currentLesson.icon?._id.toString() || "",
+
+      // Prepare lesson data with all ITranslation fields
+      // Update translation values and clean empty ones
+      const title = cleanTranslation(
+        updateTranslationValue(currentLesson.title, lang, currentLesson.title?.[lang] || "")
+      );
+      const description = cleanTranslation(
+        updateTranslationValue(currentLesson.description, lang, currentLesson.description?.[lang] || "")
+      );
+      const estimateCompleTime = cleanTranslation(
+        updateTranslationValue(currentLesson.estimateCompleTime, lang, currentLesson.estimateCompleTime?.[lang] || "")
+      );
+
+      // Prepare LessonPayload with all ITranslation fields
+      // keypoints in LessonPayload should be string array (IDs)
+      // Extract IDs from IKeypoint objects in currentLesson
+      const keypointIds = currentLesson.keypoints?.map((kp) => kp._id) || [];
+
+      const lessonPayload: any = {
+        courseId: currentLesson.courseId,
+        learningItemId: currentLesson.learningItemId,
         type: LessonType.LESSON,
-        description: currentLesson.description?.[lang] || "",
+        title: title || { [lang]: "" }, // Always include title for validation
+        ...(description && { description }),
+        ...(estimateCompleTime && { estimateCompleTime }),
+        icon: (currentLesson.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         image: currentLesson.image,
-        keypoints: (currentLesson.keypoints || []).map((k) => k._id.toString()),
+        keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentLesson.status,
         index: currentLesson.index,
-        courseId: currentLesson.courseId,
       };
+
+      // Optional fields already handled by conditional spread operator above
+
       let res;
       if (currentLesson._id) {
-        res = await lessonService.update(currentLesson._id, payload);
+        res = await lessonService.update(currentLesson._id, lessonPayload as Partial<LessonPayload>);
       } else {
-        res = await lessonService.create(payload);
+        res = await lessonService.create(lessonPayload as LessonPayload);
       }
       const savedLesson = res.data?.data ?? res.data;
 
@@ -205,8 +228,10 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
     const targetLesson = customLesson || currentLesson;
     if (!targetLesson) return;
     try {
-      const payload = {
-        [section]: (targetLesson[section] || []).map((k) => k._id.toString()),
+      // For keypoints, convert IKeypoint[] to string[] for LessonPayload
+      const keypointIds = targetLesson.keypoints?.map((kp) => kp._id) || [];
+      const payload: Partial<LessonPayload> = {
+        [section]: keypointIds, // Convert IKeypoint[] to string[]
       };
       if (targetLesson._id) {
         await lessonService.update(targetLesson._id, payload);
@@ -225,9 +250,9 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
   ) => {
     setCurrentLesson((prev) => {
       if (!prev) return prev;
-      const list = prev[section] || [];
-      const oldIndex = list.findIndex((i) => i._id === activeId);
-      const newIndex = list.findIndex((i) => i._id === overId);
+      const list = (prev[section] as any[]) || [];
+      const oldIndex = list.findIndex((i) => (i as any)._id === activeId || i === activeId);
+      const newIndex = list.findIndex((i) => (i as any)._id === overId || i === overId);
       return { ...prev, [section]: arrayMove(list, oldIndex, newIndex) };
     });
   };
@@ -253,10 +278,12 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
     const section = modalOpen.section;
 
     setCurrentLesson((prev) => {
-      const existing = prev[section] || [];
+      const existing = (prev[section] as any[]) || [];
 
       // kiểm tra trùng bằng _id (nếu có)
-      const isDuplicate = existing.some((item) => item._id === kp._id);
+      const isDuplicate = existing.some((item) =>
+        (item as any)._id === kp._id || item === kp._id
+      );
 
       // nếu có trùng, bỏ qua không thêm
       if (isDuplicate) return prev;
@@ -264,7 +291,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
       return {
         ...prev,
         [section]: [...existing, kp],
-      };
+      } as ILesson;
     });
 
     setModalOpen({ section: null });
@@ -282,7 +309,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
   const handleSelectIcon = (icon: ITag) => {
     setCurrentLesson((prev) => ({
       ...prev,
-      icon: icon,
+      icon: icon as any,
     }));
     setIconQuery("");
   };
@@ -298,7 +325,9 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
 
     setCurrentLesson((prev) => {
       if (!prev) return prev;
-      const newList = (prev[section] || []).filter((i) => i._id !== itemId);
+      const newList = (prev[section] as any[]).filter((i) =>
+        (i as any)._id !== itemId && i !== itemId
+      );
       const updated = { ...prev, [section]: newList };
       // try to save section (will do nothing if _id is empty)
       // call in next tick to ensure state updated visually first
@@ -351,41 +380,44 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
           }}
         >
           <SortableContext
-            items={list.map((i) => i._id)}
+            items={list.map((i) => (i as any)._id || i)}
             strategy={verticalListSortingStrategy}
           >
             {list.length > 0 ? (
-              list.map((item) => (
-                <SortableItem key={item._id} id={item._id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white border rounded-lg mb-3 cursor-pointer hover:shadow-md transition-all duration-300"
-                  >
-                    {/* {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.title?.[lang]}
-                        className="w-full sm:w-32 h-32 object-cover rounded-lg"
-                      />
-                    )} */}
-                    <PuzzlePieceIcon className="h-8 w- text-yellow-500" />
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-800 text-lg">
-                        {item.title?.[lang] || "Untitled"}
-                      </div>
-                      {item.description?.[lang] && (
-                        <div className="text-sm text-gray-600 mt-1">
-                          {item.description?.[lang]}
+              list.map((item) => {
+                const itemObj = item as any;
+                const itemId = itemObj._id || item;
+                return (
+                  <SortableItem key={itemId} id={itemId}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white border rounded-lg mb-3 cursor-pointer hover:shadow-md transition-all duration-300"
+                    >
+                      {/* {itemObj.image && (
+                        <img
+                          src={itemObj.image}
+                          alt={itemObj.title?.[lang]}
+                          className="w-full sm:w-32 h-32 object-cover rounded-lg"
+                        />
+                      )} */}
+                      <PuzzlePieceIcon className="h-8 w-8 text-yellow-500" />
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-800 text-lg">
+                          {itemObj.title?.[lang] || "Untitled"}
                         </div>
-                      )}
-                      {/* Hiển thị tag nếu có */}
-                      {item.tag && item.tag.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {item.tag.map((t, index) => (
-                            <span
-                              key={index}
-                              className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                        {itemObj.description?.[lang] && (
+                          <div className="text-sm text-gray-600 mt-1">
+                            {itemObj.description?.[lang]}
+                          </div>
+                        )}
+                        {/* Hiển thị tag nếu có */}
+                        {itemObj.tag && Array.isArray(itemObj.tag) && itemObj.tag.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {itemObj.tag.map((t: any, index: number) => (
+                              <span
+                                key={index}
+                                className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
                             >
                               {t}
                             </span>
@@ -400,8 +432,8 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                         e.preventDefault();
                         requestDeleteItem(
                           section,
-                          item._id,
-                          item.title?.[lang] || "item"
+                          itemId,
+                          itemObj.title?.[lang] || "item"
                         );
                       }}
                     >
@@ -409,7 +441,8 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                     </button>
                   </motion.div>
                 </SortableItem>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
                 No items added yet. Click "Add" to get started.
@@ -432,7 +465,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
               {currentLesson.image ? (
                 <img
                   src={currentLesson.image}
-                  alt={currentLesson.title?.[lang]}
+                  alt={getTranslationValue(currentLesson.title, lang)}
                   className="w-full max-h-[320px] object-cover rounded-xl shadow-lg border border-gray-200"
                 />
               ) : (
@@ -476,7 +509,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   onChange={(e) =>
                     setCurrentLesson((prev) => ({
                       ...prev,
-                      title: { ...prev.title, [lang]: e.target.value },
+                      title: updateTranslationValue(prev.title, lang, e.target.value),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -495,10 +528,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   onChange={(e) =>
                     setCurrentLesson((prev) => ({
                       ...prev,
-                      description: {
-                        ...prev.description,
-                        [lang]: e.target.value,
-                      },
+                      description: updateTranslationValue(prev.description, lang, e.target.value),
                     }))
                   }
                   rows={4}
@@ -516,10 +546,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   onChange={(e) =>
                     setCurrentLesson((prev) => ({
                       ...prev,
-                      estimateCompleTime: {
-                        ...prev.estimateCompleTime,
-                        [lang]: e.target.value,
-                      },
+                      estimateCompleTime: updateTranslationValue(prev.estimateCompleTime, lang, e.target.value),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -539,13 +566,13 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                     value={
                       isIconSearchActive
                         ? iconQuery
-                        : currentLesson.icon?.title?.[lang] || ""
+                        : getTranslationValue((currentLesson.icon as any)?.title, lang) || ""
                     }
                     onChange={(e) => setIconQuery(e.target.value)}
                     onFocus={() => {
                       setIsIconSearchActive(true);
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
-                      setIconQuery(currentLesson.icon?.title?.[lang] || "");
+                      setIconQuery(getTranslationValue((currentLesson.icon as any)?.title, lang) || "");
                     }}
                     onBlur={() => {
                       // Dùng setTimeout để cho phép click vào nút 'x' hoặc dropdown item
@@ -662,7 +689,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                         displayValue={(val: string | null) => {
                           // Nếu có selected course, hiển thị title của nó
                           if (selectedCourse) {
-                            return selectedCourse.title?.[lang] || "";
+                            return getTranslationValue(selectedCourse.title, lang);
                           }
                           // Nếu không, hiển thị courseQuery (đang nhập hoặc courseId)
 
@@ -678,7 +705,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                       <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                         {courses
                           .filter((c) =>
-                            c.title?.[lang]
+                            getTranslationValue(c.title, lang)
                               ?.toLowerCase()
                               .includes(courseQuery.toLowerCase())
                           )
@@ -688,7 +715,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                               value={c._id} // value is courseId (string)
                               className="cursor-pointer px-3 py-3 hover:bg-blue-50"
                             >
-                              {c.title?.[lang]}
+                              {getTranslationValue(c.title, lang)}
                             </Combobox.Option>
                           ))}
                       </Combobox.Options>

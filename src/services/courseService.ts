@@ -21,7 +21,7 @@ export const courseService = {
     return res.data;
   },
 
-  async create(payload: CoursePayload) {
+  async create(payload: Partial<CoursePayload>) {
     return axiosClient.post(`/courses`, payload, {});
   },
 

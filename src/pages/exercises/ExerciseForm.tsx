@@ -47,6 +47,13 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
 import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
+import {
+  getTranslationValue,
+  getCurrentTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
+import { LangCode } from "../../types/enum/common.enum";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 
 const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
@@ -69,24 +76,28 @@ const getDocumentContentLabel = (type: DocumentType) => {
   }
 };
 
-const createEmptyMediaDocument = (): IMediaDocument => ({
-  content: "",
+const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+  content: { [currentLang]: "" },
   url: "",
   thumbnail: "",
 });
 
 // Helper component to display text with truncation and tooltip
-const TextWithTooltip = ({ text = "", maxLength = 100 }) => {
+const TextWithTooltip = ({ text = "", maxLength = 100, lang = LangCode.EN }: { text?: string | ITranslation; maxLength?: number; lang?: LangCode }) => {
   if (!text) return null;
+
+  const displayText = typeof text === 'string' ? text : getTranslationValue(text, lang);
+
+  if (!displayText) return null;
 
   return (
     <div className="relative group">
       <span className="truncate inline-block max-w-xl">
-        {text.length > maxLength ? `${text.substring(0, maxLength)}...` : text}
+        {displayText.length > maxLength ? `${displayText.substring(0, maxLength)}...` : displayText}
       </span>
-      {text.length > maxLength && (
+      {displayText.length > maxLength && (
         <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 bg-gray-800 text-white text-xs rounded py-2 px-3 w-64 max-h-40 overflow-y-auto shadow-lg">
-          {text}
+          {displayText}
         </div>
       )}
     </div>
@@ -99,7 +110,7 @@ const TagDisplay = ({
   lang,
 }: {
   tag: ITag | null;
-  lang: keyof ITranslation;
+  lang: LangCode;
 }) => {
   if (!tag) return null;
 
@@ -131,7 +142,7 @@ export default function ExerciseForm({
   const navigate = useNavigate();
   const lang = useSelector(
     (state: RootState) => state.lang.code
-  ) as keyof ITranslation;
+  ) as keyof ITranslation as LangCode;
   const isEditMode = !!exercise;
   const { showSuccess, showError } = useNotification();
 
@@ -202,27 +213,19 @@ export default function ExerciseForm({
         .flatMap((q) => (q as IExerciseDragDrop).answer || [])
         .reduce((max, ans) => Math.max(max, ans.id || 0), 0);
       setNextAnswerId(maxAnswerId + 1);
-    } else {
-      // Reset form when creating new exercise
-      setCurrentExercise({
-        _id: "",
-        keypointId: "",
-        type: LearningItemType.EXERCISE,
-        title: { [lang]: "" },
-        image: "",
-        isSub: false,
-        tag: [],
-        questions: [],
-        subQuestions: [],
-        documents: [],
-        index: 0,
-      } as ILearningItem);
-      setNextQuestionIdForQuestions(1);
-      setNextQuestionIdForSubQuestions(1);
-      setNextOptionId(1);
-      setNextAnswerId(1);
     }
-  }, [exercise, lang]);
+  }, [exercise]); // Remove lang from dependency to prevent reset on language change
+
+  // Separate effect to update title language when creating new exercise
+  useEffect(() => {
+    if (!exercise && currentExercise._id === "") {
+      // Only update the title field to ensure it has the current language
+      setCurrentExercise(prev => ({
+        ...prev,
+        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" }
+      }));
+    }
+  }, [lang, exercise, currentExercise._id]);
 
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -309,8 +312,70 @@ export default function ExerciseForm({
       // Convert tag from ITag to string (ID)
       const tagId = question.tag?._id || "";
 
-      // Create a copy of the question with the converted tag
-      const convertedQuestion = { ...question, tag: tagId };
+      // Clean ITranslation fields
+      const convertedQuestion: any = {
+        ...question,
+        tag: tagId,
+      };
+
+      // Only add fields that have non-empty translations
+      const cleanedSpeechBubble = cleanTranslation(question.speechBubble);
+      if (cleanedSpeechBubble) {
+        convertedQuestion.speechBubble = cleanedSpeechBubble;
+      }
+
+      const cleanedExplanation = cleanTranslation(question.explanation);
+      if (cleanedExplanation) {
+        convertedQuestion.explanation = cleanedExplanation;
+      }
+
+      const cleanedTargetArea = cleanTranslation(question.targetArea);
+      if (cleanedTargetArea) {
+        convertedQuestion.targetArea = cleanedTargetArea;
+      }
+
+      // Process options with translations
+      if (question.options?.length) {
+        convertedQuestion.options = question.options.map((opt: any) => {
+          const cleanedOption: any = { ...opt };
+          const cleanedValue = cleanTranslation(opt.value);
+          if (cleanedValue) {
+            cleanedOption.value = cleanedValue;
+          }
+          const cleanedText = cleanTranslation(opt.text);
+          if (cleanedText) {
+            cleanedOption.text = cleanedText;
+          }
+          return cleanedOption;
+        });
+      }
+
+      // Process answers with translations
+      if (question.answer?.length) {
+        convertedQuestion.answer = question.answer.map((ans: any) => {
+          const cleanedAnswer: any = { ...ans };
+          const cleanedCorrectAnswer = cleanTranslation(ans.correctAnswer);
+          if (cleanedCorrectAnswer) {
+            cleanedAnswer.correctAnswer = cleanedCorrectAnswer;
+          }
+          return cleanedAnswer;
+        });
+      }
+
+      // Process documents with translations
+      if (question.document?.length) {
+        convertedQuestion.document = question.document.map((doc: IDocument) => {
+          const cleanedDoc: any = { ...doc };
+          if (doc.data?.content) {
+            // Always include content field but clean empty translations
+            cleanedDoc.data = {
+              ...doc.data,
+              content: cleanTranslation(doc.data.content) || {},
+            };
+          }
+          return cleanedDoc;
+        });
+      }
 
       return convertedQuestion;
     });
@@ -322,7 +387,7 @@ export default function ExerciseForm({
       setSaving(true);
       const payload: LearningItemPayload = {
         keypointId: currentExercise.keypointId,
-        title: currentExercise.title?.[lang] || "",
+        title: (cleanTranslation(currentExercise.title) || "") as string,
         type: LearningItemType.EXERCISE,
         image: currentExercise.image,
         tag: currentExercise.tag || [],
@@ -450,12 +515,12 @@ export default function ExerciseForm({
   };
 
   // Create empty question based on type
-  const createEmptyQuestion = (type: ExerciseType, id: number) => {
+  const createEmptyQuestion = (type: ExerciseType, id: number, currentLang: LangCode = lang) => {
     // Mỗi câu hỏi mới sẽ bắt đầu với một document có ID là 1
     const initialDocument = {
       id: 1,
       type: DocumentType.TEXT,
-      data: createEmptyMediaDocument(),
+      data: createEmptyMediaDocument(currentLang),
     };
 
     switch (type) {
@@ -463,44 +528,50 @@ export default function ExerciseForm({
         return {
           id,
           type,
-          speechBubble: "",
+          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [initialDocument],
-          explanation: "",
+          explanation: { [currentLang]: "" },
           options: [
-            { value: "", isCorrect: false },
-            { value: "", isCorrect: false },
+            { value: { [currentLang]: "" }, isCorrect: false },
+            { value: { [currentLang]: "" }, isCorrect: false },
           ] as IExerciseChoiceOption[],
           level: [KeypointLevel.WEAK_POINT],
+          maxScore: 10,
+          completionTime: 60,
           mainQuestion: 0,
         } as IExerciseSingleChoice;
       case ExerciseType.MULTIPLE_CHOICE:
         return {
           id,
           type,
-          speechBubble: "",
+          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [initialDocument],
-          explanation: "",
+          explanation: { [currentLang]: "" },
           options: [
-            { value: "", isCorrect: false },
-            { value: "", isCorrect: false },
+            { value: { [currentLang]: "" }, isCorrect: false },
+            { value: { [currentLang]: "" }, isCorrect: false },
           ] as IExerciseChoiceOption[],
           level: [KeypointLevel.WEAK_POINT],
+          maxScore: 10,
+          completionTime: 60,
           mainQuestion: 0,
         } as IExerciseMultipleChoice;
       case ExerciseType.DRAG_DROP:
         return {
           id,
           type,
-          speechBubble: "",
+          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [initialDocument],
-          explanation: "",
-          targetArea: "",
+          explanation: { [currentLang]: "" },
+          targetArea: { [currentLang]: "" },
           answer: [] as IAnswer[],
           options: [] as IOptions[],
           level: [KeypointLevel.WEAK_POINT],
+          maxScore: 10,
+          completionTime: 60,
           form: FormDragDropType.TextGapFilling,
           mainQuestion: 0,
         } as IExerciseDragDrop;
@@ -508,13 +579,16 @@ export default function ExerciseForm({
         return {
           id,
           type,
-          speechBubble: "",
+          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [initialDocument],
-          explanation: "",
+          explanation: { [currentLang]: "" },
           record: "",
           maxDuration: 30,
+          scoringCriteria: [],
           level: [KeypointLevel.WEAK_POINT],
+          maxScore: 10,
+          completionTime: 60,
           mainQuestion: 0,
         } as IExerciseRecord;
       default:
@@ -584,7 +658,7 @@ export default function ExerciseForm({
 
       const payload: LearningItemPayload = {
         keypointId: updatedExercise.keypointId,
-        title: updatedExercise.title?.[lang] || "",
+        title: (cleanTranslation(updatedExercise.title) || "") as string,
         type: LearningItemType.EXERCISE,
         image: updatedExercise.image,
         tag: updatedExercise.tag || [],
@@ -647,7 +721,7 @@ export default function ExerciseForm({
 
       const payload: LearningItemPayload = {
         keypointId: updatedExercise.keypointId,
-        title: updatedExercise.title?.[lang] || "",
+        title: (cleanTranslation(updatedExercise.title) || "") as string,
         type: LearningItemType.EXERCISE,
         image: updatedExercise.image,
         tag: updatedExercise.tag || [],
@@ -770,7 +844,7 @@ export default function ExerciseForm({
                                 <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
                                   Speech Bubble:
                                 </span>
-                                <TextWithTooltip text={question.speechBubble} />
+                                <TextWithTooltip text={question.speechBubble} lang={lang} />
                               </div>
                             )}
 
@@ -815,6 +889,7 @@ export default function ExerciseForm({
                                               <TextWithTooltip
                                                 text={doc.data.content}
                                                 maxLength={50}
+                                                lang={lang}
                                               />
                                             </div>
                                           )}
@@ -867,7 +942,7 @@ export default function ExerciseForm({
                                 <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
                                   Explanation:
                                 </span>
-                                <TextWithTooltip text={question.explanation} />
+                                <TextWithTooltip text={question.explanation} lang={lang} />
                               </div>
                             )}
 
@@ -892,7 +967,7 @@ export default function ExerciseForm({
                                                 : "bg-gray-300"
                                             }`}
                                           ></span>
-                                          <TextWithTooltip text={opt.value} />
+                                          <TextWithTooltip text={opt.value} lang={lang} />
                                         </li>
                                       )
                                     )}
@@ -919,7 +994,7 @@ export default function ExerciseForm({
                                   <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
                                     Target Area:
                                   </span>
-                                  <TextWithTooltip text={question.targetArea} />
+                                  <TextWithTooltip text={question.targetArea} lang={lang} />
                                 </div>
                               )}
 
@@ -938,7 +1013,7 @@ export default function ExerciseForm({
                                           key={opt.id || idx}
                                           className="flex items-center"
                                         >
-                                          <TextWithTooltip text={opt.text} />
+                                          <TextWithTooltip text={opt.text} lang={lang} />
                                         </li>
                                       )
                                     )}
@@ -963,6 +1038,7 @@ export default function ExerciseForm({
                                         >
                                           <TextWithTooltip
                                             text={ans.correctAnswer}
+                                            lang={lang}
                                           />
                                         </li>
                                       )
@@ -1104,7 +1180,7 @@ export default function ExerciseForm({
           [field]: value,
         };
         if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument();
+          updatedDoc.data = createEmptyMediaDocument(lang);
         }
         newDocuments[index] = updatedDoc;
         return { ...prev, document: newDocuments };
@@ -1114,7 +1190,7 @@ export default function ExerciseForm({
     const handleDataChange = (
       docIndex: number,
       field: keyof IMediaDocument,
-      value: string
+      value: string | ITranslation
     ) => {
       setLocalFormData((prev: any) => {
         const newDocuments = [...prev.document];
@@ -1122,7 +1198,9 @@ export default function ExerciseForm({
           ...newDocuments[docIndex],
           data: {
             ...newDocuments[docIndex].data,
-            [field]: value,
+            [field]: field === 'content' && typeof value === 'string'
+              ? updateTranslationValue(newDocuments[docIndex].data.content || {}, lang, value)
+              : value,
           },
         };
         return { ...prev, document: newDocuments };
@@ -1145,7 +1223,7 @@ export default function ExerciseForm({
             </label>
             {isLongForm ? (
               <textarea
-                value={doc.data.content}
+                value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
                   handleDataChange(index, "content", e.target.value)
                 }
@@ -1156,7 +1234,7 @@ export default function ExerciseForm({
             ) : (
               <input
                 type="text"
-                value={doc.data.content}
+                value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
                   handleDataChange(index, "content", e.target.value)
                 }
@@ -1249,7 +1327,7 @@ export default function ExerciseForm({
           {
             id: newId,
             type: DocumentType.TEXT,
-            data: createEmptyMediaDocument(),
+            data: createEmptyMediaDocument(lang),
           },
         ],
       }));
@@ -1281,14 +1359,14 @@ export default function ExerciseForm({
       ) {
         const newOptions = [
           ...localFormData.options,
-          { value: "", isCorrect: false },
+          { value: { [lang]: "" }, isCorrect: false },
         ];
         handleChange("options", newOptions);
       } else if (questionType === ExerciseType.DRAG_DROP) {
         const newId = localNextOptionId;
         setLocalNextOptionId(newId + 1);
 
-        const newOptions = [...localFormData.options, { text: "", id: newId }];
+        const newOptions = [...localFormData.options, { text: { [lang]: "" }, id: newId }];
         handleChange("options", newOptions);
       }
     };
@@ -1316,11 +1394,15 @@ export default function ExerciseForm({
         questionType === ExerciseType.MULTIPLE_CHOICE
       ) {
         const newOptions = [...localFormData.options];
-        newOptions[index] = { ...newOptions[index], value };
+        const currentTranslation = newOptions[index].value || {};
+        const updatedTranslation = updateTranslationValue(currentTranslation, lang, value);
+        newOptions[index] = { ...newOptions[index], value: updatedTranslation };
         handleChange("options", newOptions);
       } else if (questionType === ExerciseType.DRAG_DROP) {
         const newOptions = [...localFormData.options];
-        newOptions[index] = { ...newOptions[index], text: value };
+        const currentTranslation = newOptions[index].text || {};
+        const updatedTranslation = updateTranslationValue(currentTranslation, lang, value);
+        newOptions[index] = { ...newOptions[index], text: updatedTranslation };
         handleChange("options", newOptions);
       }
     };
@@ -1344,7 +1426,7 @@ export default function ExerciseForm({
 
       const newAnswer = [
         ...localFormData.answer,
-        { correctAnswer: "", id: newId },
+        { correctAnswer: { [lang]: "" }, id: newId },
       ];
       handleChange("answer", newAnswer);
     };
@@ -1360,7 +1442,9 @@ export default function ExerciseForm({
     // Update answer value
     const updateAnswerValue = (index: number, value: string) => {
       const newAnswer = [...localFormData.answer];
-      newAnswer[index] = { ...newAnswer[index], correctAnswer: value };
+      const currentTranslation = newAnswer[index].correctAnswer || {};
+      const updatedTranslation = updateTranslationValue(currentTranslation, lang, value);
+      newAnswer[index] = { ...newAnswer[index], correctAnswer: updatedTranslation };
       handleChange("answer", newAnswer);
     };
 
@@ -1369,7 +1453,7 @@ export default function ExerciseForm({
       tagQuery === ""
         ? allTags
         : allTags.filter((tag) =>
-            tag.title?.[lang]?.toLowerCase().includes(tagQuery.toLowerCase())
+            getTranslationValue(tag.title, lang)?.toLowerCase().includes(tagQuery.toLowerCase())
           );
 
     return (
@@ -1381,8 +1465,8 @@ export default function ExerciseForm({
           </label>
           <input
             type="text"
-            value={localFormData.speechBubble || ""}
-            onChange={(e) => handleChange("speechBubble", e.target.value)}
+            value={getCurrentTranslationValue(localFormData.speechBubble, lang)}
+            onChange={(e) => handleChange("speechBubble", updateTranslationValue(localFormData.speechBubble || {}, lang, e.target.value))}
             className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="Enter speech bubble text"
           />
@@ -1394,6 +1478,7 @@ export default function ExerciseForm({
             Tag
           </label>
           <Combobox<ITag | null>
+            key={`tag-selector-${lang}`} // Force re-render when language changes
             value={localFormData.tag}
             onChange={(val: ITag | null) => {
               handleChange("tag", val);
@@ -1402,7 +1487,7 @@ export default function ExerciseForm({
           >
             <div className="relative">
               <Combobox.Input
-                displayValue={(tag: ITag | null) => tag?.title?.[lang] || ""}
+                displayValue={(tag: ITag | null) => getTranslationValue(tag?.title, lang)}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setTagQuery(e.target.value)
                 }
@@ -1420,11 +1505,11 @@ export default function ExerciseForm({
                       {tag.url && (
                         <img
                           src={tag.url}
-                          alt={tag.title?.[lang] || "Tag url"}
+                          alt={getTranslationValue(tag.title, lang) || "Tag url"}
                           className="w-6 h-6 object-contain flex-shrink-0"
                         />
                       )}
-                      <span>{tag.title?.[lang]}</span>
+                      <span>{getTranslationValue(tag.title, lang)}</span>
                     </Combobox.Option>
                   ))
                 ) : (
@@ -1526,8 +1611,8 @@ export default function ExerciseForm({
             Explanation
           </label>
           <textarea
-            value={localFormData.explanation || ""}
-            onChange={(e) => handleChange("explanation", e.target.value)}
+            value={getCurrentTranslationValue(localFormData.explanation, lang)}
+            onChange={(e) => handleChange("explanation", updateTranslationValue(localFormData.explanation || {}, lang, e.target.value))}
             rows={3}
             className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="Enter explanation"
@@ -1546,7 +1631,7 @@ export default function ExerciseForm({
                 <div key={idx} className="flex items-center gap-2">
                   <input
                     type="text"
-                    value={opt.value}
+                    value={getCurrentTranslationValue(opt.value, lang)}
                     onChange={(e) => updateOptionValue(idx, e.target.value)}
                     className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder={`Option ${idx + 1}`}
@@ -1622,8 +1707,8 @@ export default function ExerciseForm({
             </label>
             <input
               type="text"
-              value={localFormData.targetArea || ""}
-              onChange={(e) => handleChange("targetArea", e.target.value)}
+              value={getCurrentTranslationValue(localFormData.targetArea, lang)}
+              onChange={(e) => handleChange("targetArea", updateTranslationValue(localFormData.targetArea || {}, lang, e.target.value))}
               className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter target area"
             />
@@ -1640,7 +1725,7 @@ export default function ExerciseForm({
                 <div key={opt.id} className="flex items-center">
                   <input
                     type="text"
-                    value={opt.text}
+                    value={getCurrentTranslationValue(opt.text, lang)}
                     onChange={(e) => updateOptionValue(idx, e.target.value)}
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder={`Option ${idx + 1}`}
@@ -1676,7 +1761,7 @@ export default function ExerciseForm({
                 <div key={ans.id} className="flex items-center">
                   <input
                     type="text"
-                    value={ans.correctAnswer}
+                    value={getCurrentTranslationValue(ans.correctAnswer, lang)}
                     onChange={(e) => updateAnswerValue(idx, e.target.value)}
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder={`Answer ${idx + 1}`}

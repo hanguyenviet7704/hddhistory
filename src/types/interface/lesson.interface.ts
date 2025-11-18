@@ -19,24 +19,24 @@ export interface ILesson {
   index: number;
 }
 
+export interface LessonPayload {
+  courseId: string;
+  learningItemId?: string;
+  type: LessonType;
+  title: ITranslation;
+  description?: ITranslation;
+  image: string;
+  status: LessonStatus;
+  keypoints: string[];
+  estimateCompleTime?: ITranslation;
+  icon: string;
+  index: number;
+}
+
 export interface ILessonBrief {
   _id: string;
   type: LessonType;
   title: ITranslation;
-}
-
-export interface LessonPayload {
-  title: string; // chỉ gửi string theo lang
-  description?: string;
-  image?: string;
-  type: LessonType;
-  status: LessonStatus;
-  keypoints?: string[];
-  estimateCompleTime: string;
-  icon: string;
-  index: number;
-  courseId: string;
-  learningItemId?: string;
 }
 
 interface LessonIndex {

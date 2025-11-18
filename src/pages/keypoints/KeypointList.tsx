@@ -12,6 +12,7 @@ import { RootState } from "../../store";
 import KeypointConfirm from "../../components/keypoints/KeypointConfirm";
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
+import { getTranslationValue } from "../../utils/translation";
 
 const KeypointList: React.FC = () => {
   const navigate = useNavigate();
@@ -183,10 +184,10 @@ const KeypointList: React.FC = () => {
                     navigate(`/keypoint/${kp._id}`);
                   }}
                 >
-                  {kp.title[lang]}
+                  {getTranslationValue(kp.title, lang)}
                 </h2>
                 <p className="text-gray-600 mt-1.5 leading-relaxed">
-                  {kp.description?.[lang]}
+                  {getTranslationValue(kp.description, lang)}
                 </p>
                 {/* Hiển thị tag nếu có */}
                 {kp.tag && kp.tag.length > 0 && (

@@ -39,6 +39,13 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
 import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
+import {
+  getTranslationValue,
+  getCurrentTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
+import { LangCode } from "../../types/enum/common.enum";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 
 const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
@@ -61,23 +68,39 @@ const getDocumentContentLabel = (type: DocumentType) => {
   }
 };
 
-const createEmptyMediaDocument = (): IMediaDocument => ({
-  content: "",
+const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+  content: { [currentLang]: "" },
   url: "",
   thumbnail: "",
 });
 
 // Helper component để hiển thị văn bản với cắt bớt và tooltip
-const TextWithTooltip = ({ text = "", maxLength = 100 }) => {
+const TextWithTooltip = ({
+  text = "",
+  maxLength = 100,
+  lang = LangCode.EN,
+}: {
+  text?: string | ITranslation;
+  maxLength?: number;
+  lang?: LangCode;
+}) => {
   if (!text) return null;
+
+  const displayText =
+    typeof text === "string" ? text : getTranslationValue(text, lang);
+
+  if (!displayText) return null;
+
   return (
     <div className="relative group">
       <span className="truncate inline-block max-w-xl">
-        {text.length > maxLength ? `${text.substring(0, maxLength)}...` : text}
+        {displayText.length > maxLength
+          ? `${displayText.substring(0, maxLength)}...`
+          : displayText}
       </span>
-      {text.length > maxLength && (
+      {displayText.length > maxLength && (
         <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 bg-gray-800 text-white text-xs rounded py-2 px-3 w-64 max-h-40 overflow-y-auto shadow-lg">
-          {text}
+          {displayText}
         </div>
       )}
     </div>
@@ -101,7 +124,7 @@ export default function TheoryForm({
   const navigate = useNavigate();
   const lang = useSelector(
     (state: RootState) => state.lang.code
-  ) as keyof ITranslation;
+  ) as keyof ITranslation as LangCode;
   const isEditMode = !!theory;
   const { showSuccess, showError } = useNotification();
 
@@ -137,23 +160,19 @@ export default function TheoryForm({
       const maxDocId =
         theory.documents?.reduce((max, doc) => Math.max(max, doc.id), 0) || 0;
       setNextDocId(maxDocId + 1);
-    } else {
-      setCurrentTheory({
-        _id: "",
-        keypointId: "",
-        type: LearningItemType.THEORY,
-        title: { [lang]: "" },
-        image: "",
-        isSub: false,
-        tag: [],
-        questions: [],
-        subQuestions: [],
-        documents: [],
-        index: 0,
-      } as ILearningItem);
-      setNextDocId(1);
     }
-  }, [theory, lang]);
+  }, [theory]); // Remove lang from dependency to prevent reset on language change
+
+  // Separate effect to update title language when creating new theory
+  useEffect(() => {
+    if (!theory && currentTheory._id === "") {
+      // Only update the title field to ensure it has the current language
+      setCurrentTheory(prev => ({
+        ...prev,
+        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" }
+      }));
+    }
+  }, [lang, theory, currentTheory._id]);
 
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -225,12 +244,36 @@ export default function TheoryForm({
   const convertDocumentsToPayload = (
     documents: ITheoryDocument[]
   ): TheoryDocumentPayload[] => {
-    return documents.map((doc) => ({
-      id: doc.id,
-      speechBubble: doc.speechBubble,
-      tag: doc.tag?._id || "",
-      document: doc.document,
-    }));
+    return documents.map((doc) => {
+      const payload: any = {
+        id: doc.id,
+        tag: doc.tag?._id || "",
+        document: [],
+      };
+
+      // Only add speechBubble if it has non-empty translations
+      const cleanedSpeechBubble = cleanTranslation(doc.speechBubble);
+      if (cleanedSpeechBubble) {
+        payload.speechBubble = cleanedSpeechBubble;
+      }
+
+      // Process document array and clean content translations
+      if (doc.document?.length) {
+        payload.document = doc.document.map((docItem) => {
+          const cleanedDoc: any = { ...docItem };
+          if (docItem.data?.content) {
+            // Always include content field but clean empty translations
+            cleanedDoc.data = {
+              ...docItem.data,
+              content: cleanTranslation(docItem.data.content) || {},
+            };
+          }
+          return cleanedDoc;
+        });
+      }
+
+      return payload;
+    });
   };
 
   const handleSaveTheory = async () => {
@@ -238,7 +281,7 @@ export default function TheoryForm({
       setSaving(true);
       const payload: LearningItemPayload = {
         keypointId: currentTheory.keypointId,
-        title: currentTheory.title?.[lang] || "",
+        title: (cleanTranslation(currentTheory.title) || "") as string,
         type: LearningItemType.THEORY,
         image: currentTheory.image,
         tag: currentTheory.tag || [],
@@ -310,7 +353,7 @@ export default function TheoryForm({
       setCurrentTheory(updatedTheory);
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: updatedTheory.title?.[lang] || "",
+        title: (cleanTranslation(updatedTheory.title) || "") as string,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],
@@ -486,6 +529,7 @@ export default function TheoryForm({
                                 </span>
                                 <TextWithTooltip
                                   text={theoryDoc.speechBubble}
+                                  lang={lang}
                                 />
                               </div>
                             )}
@@ -499,12 +543,20 @@ export default function TheoryForm({
                                     <img
                                       src={theoryDoc.tag.url}
                                       alt={
-                                        theoryDoc.tag.title?.[lang] || "Tag url"
+                                        getTranslationValue(
+                                          theoryDoc.tag.title,
+                                          lang
+                                        ) || "Tag url"
                                       }
                                       className="w-5 h-5 object-contain flex-shrink-0"
                                     />
                                   )}
-                                  <span>{theoryDoc.tag.title?.[lang]}</span>
+                                  <span>
+                                    {getTranslationValue(
+                                      theoryDoc.tag.title,
+                                      lang
+                                    )}
+                                  </span>
                                 </div>
                               </div>
                             )}
@@ -528,6 +580,7 @@ export default function TheoryForm({
                                             <TextWithTooltip
                                               text={doc.data.content}
                                               maxLength={50}
+                                              lang={lang}
                                             />
                                           </div>
                                         )}
@@ -606,7 +659,7 @@ export default function TheoryForm({
     onChange: (itemIndex: number, field: AllDocFields, value: string) => void;
     onRemove: (index: number) => void;
     availableTypes: DocumentType[];
-    lang: keyof ITranslation;
+    lang: LangCode;
   }
 
   // Document form component
@@ -621,7 +674,7 @@ export default function TheoryForm({
     onSave: (doc: ITheoryDocument) => void;
     onCancel: () => void;
     availableTags: ITag[];
-    lang: keyof ITranslation;
+    lang: LangCode;
   }) => {
     const [formData, setFormData] = useState<DocumentFormState>(() => {
       if (theoryDocument) {
@@ -629,13 +682,13 @@ export default function TheoryForm({
       }
       return {
         id: nextDocId,
-        speechBubble: "",
+        speechBubble: { [lang]: "" },
         tag: null,
         document: [
           {
             id: 1,
             type: DocumentType.TEXT,
-            data: createEmptyMediaDocument(),
+            data: createEmptyMediaDocument(lang),
           },
         ],
       };
@@ -643,6 +696,13 @@ export default function TheoryForm({
 
     const [tagQuery, setTagQuery] = useState("");
     const selectedTag = formData.tag;
+
+    // Update formData when theoryDocument changes (for editing) or language changes
+    useEffect(() => {
+      if (theoryDocument) {
+        setFormData({ ...theoryDocument });
+      }
+    }, [theoryDocument]);
 
     const renderDocumentFields = (doc: IDocument, index: number) => {
       if (isTextualDocumentType(doc.type)) {
@@ -660,9 +720,13 @@ export default function TheoryForm({
             </label>
             {isLongForm ? (
               <textarea
-                value={doc.data.content}
+                value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
-                  handleDataChange(index, "content", e.target.value)
+                  handleDataChange(
+                    index,
+                    "content",
+                    e.target.value
+                  )
                 }
                 rows={3}
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -671,9 +735,13 @@ export default function TheoryForm({
             ) : (
               <input
                 type="text"
-                value={doc.data.content}
+                value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
-                  handleDataChange(index, "content", e.target.value)
+                  handleDataChange(
+                    index,
+                    "content",
+                    e.target.value
+                  )
                 }
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder={placeholder}
@@ -761,7 +829,7 @@ export default function TheoryForm({
         const newDocuments = [...prev.document];
         const updatedDoc = { ...newDocuments[index], [field]: value };
         if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument();
+          updatedDoc.data = createEmptyMediaDocument(lang);
         }
         newDocuments[index] = updatedDoc;
         return { ...prev, document: newDocuments };
@@ -770,13 +838,18 @@ export default function TheoryForm({
     const handleDataChange = (
       docIndex: number,
       field: keyof IMediaDocument,
-      value: string
+      value: string | ITranslation
     ) => {
       setFormData((prev) => {
         const newDocuments = [...prev.document];
         newDocuments[docIndex] = {
           ...newDocuments[docIndex],
-          data: { ...newDocuments[docIndex].data, [field]: value },
+          data: {
+            ...newDocuments[docIndex].data,
+            [field]: field === 'content' && typeof value === 'string'
+              ? updateTranslationValue(newDocuments[docIndex].data.content || {}, lang, value)
+              : value
+          },
         };
         return { ...prev, document: newDocuments };
       });
@@ -794,7 +867,7 @@ export default function TheoryForm({
           {
             id: newId,
             type: DocumentType.TEXT,
-            data: createEmptyMediaDocument(),
+            data: createEmptyMediaDocument(lang),
           },
         ],
       }));
@@ -812,15 +885,42 @@ export default function TheoryForm({
         showError("Please select a tag.");
         return;
       }
-      const dataToSave: ITheoryDocument = { ...formData, tag: selectedTag };
-      onSave(dataToSave);
+
+      // Clean speechBubble if empty
+      const cleanedData: any = {
+        ...formData,
+        tag: selectedTag,
+      };
+
+      const cleanedSpeechBubble = cleanTranslation(formData.speechBubble);
+      if (cleanedSpeechBubble) {
+        cleanedData.speechBubble = cleanedSpeechBubble;
+      } else {
+        delete cleanedData.speechBubble;
+      }
+
+      // Clean document content fields
+      if (formData.document?.length) {
+        cleanedData.document = formData.document.map((doc) => {
+          const cleanedDoc: any = { ...doc };
+          if (doc.data?.content) {
+            cleanedDoc.data = {
+              ...doc.data,
+              content: cleanTranslation(doc.data.content) || {},
+            };
+          }
+          return cleanedDoc;
+        });
+      }
+
+      onSave(cleanedData);
     };
 
     const filteredTags =
       tagQuery === ""
         ? availableTags
         : availableTags.filter((tag) =>
-            tag.title?.[lang]?.toLowerCase().includes(tagQuery.toLowerCase())
+            getTranslationValue(tag.title, lang)?.toLowerCase().includes(tagQuery.toLowerCase())
           );
 
     return (
@@ -831,8 +931,17 @@ export default function TheoryForm({
           </label>
           <input
             type="text"
-            value={formData.speechBubble}
-            onChange={(e) => handleChange("speechBubble", e.target.value)}
+            value={getCurrentTranslationValue(formData.speechBubble, lang)}
+            onChange={(e) =>
+              handleChange(
+                "speechBubble",
+                updateTranslationValue(
+                  formData.speechBubble || {},
+                  lang,
+                  e.target.value
+                )
+              )
+            }
             className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="Enter speech bubble text"
           />
@@ -842,6 +951,7 @@ export default function TheoryForm({
             Tag
           </label>
           <Combobox<ITag | null>
+            key={`tag-selector-${lang}`} // Force re-render when language changes
             value={selectedTag}
             onChange={(val: ITag | null) => {
               handleChange("tag", val);
@@ -850,7 +960,10 @@ export default function TheoryForm({
           >
             <div className="relative">
               <Combobox.Input
-                displayValue={(tag: ITag | null) => tag?.title?.[lang] || ""}
+                displayValue={(tag: ITag | null) => {
+                  if (tagQuery) return tagQuery;
+                  return getTranslationValue(tag?.title, lang);
+                }}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setTagQuery(e.target.value)
                 }
@@ -868,11 +981,11 @@ export default function TheoryForm({
                       {tag.url && (
                         <img
                           src={tag.url}
-                          alt={tag.title?.[lang] || "Tag url"}
+                          alt={getTranslationValue(tag.title, lang) || "Tag url"}
                           className="w-6 h-6 object-contain flex-shrink-0"
                         />
                       )}
-                      <span>{tag.title?.[lang]}</span>
+                      <span>{getTranslationValue(tag.title, lang)}</span>
                     </Combobox.Option>
                   ))
                 ) : (

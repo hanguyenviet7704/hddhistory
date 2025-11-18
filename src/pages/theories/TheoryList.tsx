@@ -10,6 +10,7 @@ import { Combobox } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
+import { getTranslationValue } from "../../utils/translation";
 
 const TheoryList: React.FC = () => {
   const navigate = useNavigate();
@@ -145,7 +146,7 @@ const TheoryList: React.FC = () => {
                   className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Search keypoint..."
                   displayValue={(keypoint: IKeypoint) =>
-                    keypoint?.title?.[lang] || ""
+                    getTranslationValue(keypoint?.title, lang)
                   }
                   onChange={(e) => setKeypointQuery(e.target.value)}
                 />
@@ -162,7 +163,7 @@ const TheoryList: React.FC = () => {
                       value={kp}
                       className="cursor-pointer px-3 py-2 hover:bg-gray-100"
                     >
-                      {kp.title[lang] || ""}
+                      {getTranslationValue(kp.title, lang)}
                     </Combobox.Option>
                   ))}
                 </Combobox.Options>
@@ -259,7 +260,7 @@ const TheoryList: React.FC = () => {
                         <div className="relative h-48 overflow-hidden flex-shrink-0">
                           <img
                             src={theory.image}
-                            alt={theory.title[lang] || ""}
+                            alt={getTranslationValue(theory.title, lang)}
                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
@@ -285,7 +286,7 @@ const TheoryList: React.FC = () => {
                           </div>
                           <div className="ml-4">
                             <h3 className="text-lg font-medium text-gray-900">
-                              {theory.title[lang] || ""}
+                              {getTranslationValue(theory.title, lang)}
                             </h3>
                             <p className="text-sm text-green-500">Theory</p>
                           </div>

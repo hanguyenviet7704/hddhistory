@@ -10,6 +10,7 @@ import { ICourse } from "../../types/interface/cource.interface";
 import { Combobox } from "@headlessui/react";
 import { PlusIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { getTranslationValue } from "../../utils/translation";
 
 export default function LessonList() {
   const [lessons, setLessons] = useState<ILesson[]>([]);
@@ -148,7 +149,7 @@ export default function LessonList() {
                   className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Search course..."
                   displayValue={(course: ICourse) =>
-                    course?.title?.[lang] || ""
+                    getTranslationValue(course?.title, lang)
                   }
                   onChange={(e) => setCourseQuery(e.target.value)}
                 />
@@ -165,7 +166,7 @@ export default function LessonList() {
                       value={c}
                       className="cursor-pointer px-3 py-2 hover:bg-gray-100"
                     >
-                      {c.title[lang]}
+                      {getTranslationValue(c.title, lang)}
                     </Combobox.Option>
                   ))}
                 </Combobox.Options>
@@ -264,7 +265,7 @@ export default function LessonList() {
                             lesson.image ||
                             "https://placehold.co/600x400/?text=Lesson+Image&font=roboto"
                           }
-                          alt={lesson.title[lang]}
+                          alt={getTranslationValue(lesson.title, lang)}
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
@@ -272,7 +273,7 @@ export default function LessonList() {
                       {/* Content */}
                       <div className="p-5 flex flex-col flex-grow">
                         <h2 className="font-semibold text-lg mb-2 truncate text-gray-900">
-                          {lesson.title[lang]}
+                          {getTranslationValue(lesson.title, lang)}
                         </h2>
 
                         <p
@@ -283,26 +284,28 @@ export default function LessonList() {
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
                           }}
-                          title={lesson.description?.[lang]}
+                          title={getTranslationValue(lesson.description, lang)}
                         >
-                          {lesson.description?.[lang]}
+                          {getTranslationValue(lesson.description, lang)}
                         </p>
 
                         <div className="flex items-center justify-start mt-auto gap-8">
                           <div className="rounded flex items-start justify-center">
-                            <img
-                              src={lesson.icon?.url}
-                              alt={lesson.icon?.title?.[lang] || ""}
-                              className="w-5 h-5 object-cover rounded"
-                            />
+                            {(lesson.icon as any)?.url && (
+                              <img
+                                src={(lesson.icon as any).url}
+                                alt={getTranslationValue((lesson.icon as any)?.title, lang)}
+                                className="w-5 h-5 object-cover rounded"
+                              />
+                            )}
                             <span
                               style={{
-                                color: lesson.icon?.color || "#f3f4f6",
+                                color: (lesson.icon as any)?.color || "#f3f4f6",
                                 fontSize: 14,
-                                marginLeft: 6,
+                                marginLeft: (lesson.icon as any)?.url ? 6 : 0,
                               }}
                             >
-                              {lesson.icon?.title?.[lang] || ""}
+                              {getTranslationValue((lesson.icon as any)?.title, lang)}
                             </span>
                           </div>
 
@@ -313,7 +316,7 @@ export default function LessonList() {
                               className="w-5 h-5 mr-2"
                             />
                             <span className="text-sm text-gray-500">
-                              {lesson.estimateCompleTime?.[lang] || ""}
+                              {getTranslationValue(lesson.estimateCompleTime, lang)}
                             </span>
                           </div>
                         </div>

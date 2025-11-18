@@ -11,6 +11,8 @@ import { useInView } from "react-intersection-observer";
 import { ILesson } from "../../types/interface/lesson.interface";
 import { lessonService } from "../../services/lessonService";
 import { LessonStatus, LessonType } from "../../types/enum/lesson.enum";
+import { getTranslationValue } from "../../utils/translation";
+import { ITag } from "../../types/interface/tag.interface";
 
 export default function LessonList() {
   const [entrances, setEntrances] = useState<ILesson[]>([]);
@@ -154,7 +156,7 @@ export default function LessonList() {
                   className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
                   placeholder="Search course..."
                   displayValue={(course: ICourse) =>
-                    course?.title?.[lang] || ""
+                    getTranslationValue(course?.title, lang)
                   }
                   onChange={(e) => setCourseQuery(e.target.value)}
                 />
@@ -171,7 +173,7 @@ export default function LessonList() {
                       value={c}
                       className="cursor-pointer px-3 py-2 hover:bg-gray-100"
                     >
-                      {c.title[lang]}
+                      {getTranslationValue(c.title, lang)}
                     </Combobox.Option>
                   ))}
                 </Combobox.Options>
@@ -270,7 +272,7 @@ export default function LessonList() {
                             entrance.image ||
                             "https://placehold.co/600x400?text=Entrance+Test&font=roboto"
                           }
-                          alt={entrance.title[lang]}
+                          alt={getTranslationValue(entrance.title, lang)}
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
                       </div>
@@ -278,7 +280,7 @@ export default function LessonList() {
                       {/* Content */}
                       <div className="p-5 flex flex-col flex-grow">
                         <h2 className="font-semibold text-lg mb-2 truncate text-gray-900">
-                          {entrance.title[lang]}
+                          {getTranslationValue(entrance.title, lang)}
                         </h2>
 
                         <p
@@ -289,26 +291,28 @@ export default function LessonList() {
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
                           }}
-                          title={entrance.description?.[lang]}
+                          title={getTranslationValue(entrance.description, lang)}
                         >
-                          {entrance.description?.[lang]}
+                          {getTranslationValue(entrance.description, lang)}
                         </p>
 
                         <div className="flex items-center justify-start mt-auto gap-8">
                           <div className="rounded flex items-start justify-center">
-                            <img
-                              src={entrance.icon?.url}
-                              alt={entrance.icon?.title?.[lang] || ""}
-                              className="w-5 h-5 object-cover rounded"
-                            />
+                            {(entrance.icon as any)?.url && (
+                              <img
+                                src={(entrance.icon as any).url}
+                                alt={getTranslationValue((entrance.icon as any)?.title, lang)}
+                                className="w-5 h-5 object-cover rounded"
+                              />
+                            )}
                             <span
                               style={{
-                                color: entrance.icon?.color || "#f3f4f6",
+                                color: (entrance.icon as any)?.color || "#f3f4f6",
                                 fontSize: 14,
-                                marginLeft: 6,
+                                marginLeft: (entrance.icon as any)?.url ? 6 : 0,
                               }}
                             >
-                              {entrance.icon?.title?.[lang] || ""}
+                              {getTranslationValue((entrance.icon as any)?.title, lang)}
                             </span>
                           </div>
 
@@ -319,7 +323,7 @@ export default function LessonList() {
                               className="w-5 h-5 mr-2"
                             />
                             <span className="text-sm text-gray-500">
-                              {entrance.estimateCompleTime?.[lang] || ""}
+                              {getTranslationValue(entrance.estimateCompleTime, lang)}
                             </span>
                           </div>
                         </div>

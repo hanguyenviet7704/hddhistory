@@ -1,4 +1,5 @@
 import { KeypointLevel } from "../../../../utils/enum/course.enum";
+import { ITranslation } from "../../../../utils/translate";
 import { ExerciseType } from "../../../enum/learningItem.enum";
 import { ITag } from "../../tag.interface";
 import { IDocument } from "../document.interface";
@@ -7,10 +8,10 @@ import { IExerciseChoiceOption } from "./single-choice.interface";
 export interface IExerciseMultipleChoice {
   id: number;
   type: ExerciseType;
-  speechBubble: string;
+  speechBubble: ITranslation;
   tag: ITag | null;
   document: IDocument[];
-  explanation: string;
+  explanation: ITranslation;
   options: IExerciseChoiceOption[];
   level: KeypointLevel[];
   maxScore: number;
@@ -22,10 +23,10 @@ export interface IExerciseMultipleChoice {
 export interface ExerciseMultipleChoicePayload {
   id: number;
   type: ExerciseType;
-  speechBubble: string;
+  speechBubble: ITranslation;
   tag: string;
   document: IDocument[];
-  explanation: string;
+  explanation: ITranslation;
   options: IExerciseChoiceOption[];
   level: KeypointLevel[];
   maxScore: number;

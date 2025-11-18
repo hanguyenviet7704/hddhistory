@@ -10,6 +10,7 @@ import { Combobox } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
+import { getTranslationValue } from "../../utils/translation";
 
 const RoleplayList: React.FC = () => {
   const navigate = useNavigate();
@@ -163,7 +164,7 @@ const RoleplayList: React.FC = () => {
                         value={kp}
                         className="cursor-pointer px-3 py-2 hover:bg-gray-100"
                       >
-                        {kp.title[lang] || ""}
+                        {getTranslationValue(kp.title, lang)}
                       </Combobox.Option>
                     ))}
                   </Combobox.Options>
@@ -263,7 +264,7 @@ const RoleplayList: React.FC = () => {
                               roleplay.image ||
                               "https://placehold.co/600x400/?text=Roleplay+Image&font=roboto"
                             }
-                            alt={roleplay.title[lang] || ""}
+                            alt={getTranslationValue(roleplay.title, lang)}
                             className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                           />
                         </div>
@@ -288,7 +289,7 @@ const RoleplayList: React.FC = () => {
                             </div>
                             <div className="ml-4">
                               <h3 className="text-lg font-medium text-gray-900">
-                                {roleplay.title[lang] || ""}
+                                {getTranslationValue(roleplay.title, lang)}
                               </h3>
                               <p className="text-sm text-purple-600">
                                 Roleplay

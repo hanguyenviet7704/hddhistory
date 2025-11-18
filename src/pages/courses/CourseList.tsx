@@ -10,6 +10,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { getTranslationValue } from "../../utils/translation";
 
 export default function CourseList() {
   const navigate = useNavigate();
@@ -108,7 +109,10 @@ export default function CourseList() {
     setIsConfirmOpen(true);
   };
 
-  const handleModalSubmit = async (payload: CoursePayload, id?: string) => {
+  const handleModalSubmit = async (
+    payload: Partial<CoursePayload>,
+    id?: string
+  ) => {
     setModalLoading(true);
     setModalError(null);
     try {
@@ -264,7 +268,7 @@ export default function CourseList() {
                             course.image ||
                             "https://via.placeholder.com/400x600?text=Course"
                           }
-                          alt={course.title[lang]}
+                          alt={getTranslationValue(course.title, lang)}
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
 
@@ -291,10 +295,10 @@ export default function CourseList() {
                       <div className="p-5 flex flex-col flex-grow">
                         <h2
                           className="font-semibold text-lg mb-2 truncate cursor-pointer text-gray-900 hover:text-blue-600 transition-colors"
-                          title={course.title[lang]}
+                          title={getTranslationValue(course.title, lang)}
                           onClick={() => navigate(`/course/${course._id}`)}
                         >
-                          {course.title[lang]}
+                          {getTranslationValue(course.title, lang)}
                         </h2>
 
                         <p
@@ -305,9 +309,9 @@ export default function CourseList() {
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
                           }}
-                          title={course.description?.[lang]}
+                          title={getTranslationValue(course.description, lang)}
                         >
-                          {course.description?.[lang]}
+                          {getTranslationValue(course.description, lang)}
                         </p>
 
                         {/* Price */}

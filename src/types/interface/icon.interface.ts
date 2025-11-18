@@ -6,7 +6,6 @@ export interface IIcon {
 }
 
 export interface IconPayload {
-  _id: string;
   url: string;
 }
 

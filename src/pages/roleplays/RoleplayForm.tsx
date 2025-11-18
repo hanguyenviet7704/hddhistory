@@ -15,6 +15,7 @@ import {
   RoleplaySectionType,
   SectionConversationPosition,
 } from "../../types/enum/learningItem.enum";
+import { KeypointLevel } from "../../utils/enum/course.enum";
 import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
@@ -47,6 +48,13 @@ import {
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
 import { ITranslation } from "../../utils/translate";
+import {
+  getTranslationValue,
+  getCurrentTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
+import { LangCode } from "../../types/enum/common.enum";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { avatarService } from "../../services/avatarService";
 import { iconService } from "../../services/iconService";
@@ -59,6 +67,7 @@ import {
   ISectionContentPayload,
   ISectionPayload,
 } from "../../types/interface/learning-item/roleplays/section.interface";
+import { IAvatar } from "../../types/interface/avatar.interface";
 
 const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
   DocumentType.TITLE,
@@ -80,8 +89,8 @@ const getDocumentContentLabel = (type: DocumentType) => {
   }
 };
 
-const createEmptyMediaDocument = (): IMediaDocument => ({
-  content: "",
+const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+  content: { [currentLang]: "" },
   url: "",
   thumbnail: "",
 });
@@ -135,14 +144,15 @@ const scaleValuesToTotal = (values: number[], target: number) => {
 
 const rebalanceRecordScoringCriteria = (
   criteriaInput?: Partial<IScoringCriteria>[],
-  exerciseMaxScore?: number
+  exerciseMaxScore?: number,
+  lang?: LangCode
 ): IScoringCriteria[] => {
   const isValidNumber = (value: unknown): value is number =>
     typeof value === "number" && !Number.isNaN(value);
 
   const sanitized =
     criteriaInput?.map((item) => ({
-      criteria: item.criteria ?? "",
+      criteria: (item.criteria ?? { en: "" }) as ITranslation,
       maxScore: isValidNumber(item.maxScore)
         ? Math.max(0, Math.round(item.maxScore))
         : undefined,
@@ -175,9 +185,7 @@ const rebalanceRecordScoringCriteria = (
   });
 
   if (manualSum > exerciseMaxScore) {
-    const manualValues = manualIndices.map(
-      (idx) => result[idx].maxScore || 0
-    );
+    const manualValues = manualIndices.map((idx) => result[idx].maxScore || 0);
     const scaled = scaleValuesToTotal(manualValues, exerciseMaxScore);
     manualIndices.forEach((idx, order) => {
       result[idx].maxScore = scaled[order] || 0;
@@ -195,17 +203,32 @@ const rebalanceRecordScoringCriteria = (
 };
 
 // Helper component to display text with truncation and tooltip
-const TextWithTooltip = ({ text = "", maxLength = 150 }) => {
+const TextWithTooltip = ({
+  text = "",
+  maxLength = 150,
+  lang = LangCode.EN,
+}: {
+  text?: string | ITranslation;
+  maxLength?: number;
+  lang?: LangCode;
+}) => {
   if (!text) return null;
+
+  const displayText =
+    typeof text === "string" ? text : getTranslationValue(text, lang);
+
+  if (!displayText) return null;
 
   return (
     <div className="relative group">
       <span className="truncate inline-block max-w-xl">
-        {text.length > maxLength ? `${text.substring(0, maxLength)}...` : text}
+        {displayText.length > maxLength
+          ? `${displayText.substring(0, maxLength)}...`
+          : displayText}
       </span>
-      {text.length > maxLength && (
+      {displayText.length > maxLength && (
         <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 bg-gray-800 text-white text-xs rounded py-2 px-3 w-64 max-h-40 overflow-y-auto shadow-lg">
-          {text}
+          {displayText}
         </div>
       )}
     </div>
@@ -276,18 +299,18 @@ const AvatarSelector = ({
   onChange,
   label,
 }: {
-  value: string;
-  onChange: (value: string) => void;
+  value: IAvatar | null | undefined;
+  onChange: (value: IAvatar | null) => void;
   label: string;
 }) => {
-  const [avatars, setAvatars] = useState<any[]>([]);
+  const [avatars, setAvatars] = useState<IAvatar[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAvatars = async () => {
       try {
-        const res = await avatarService.getList({ page: 1, take: 100 });
-        setAvatars(res.data.items || []);
+        const res = await avatarService.getList({ page: 1, take: 1000 });
+        setAvatars(res.data.items || res.data || []);
       } catch (err) {
         console.error("fetchAvatars", err);
       } finally {
@@ -313,16 +336,21 @@ const AvatarSelector = ({
               <button
                 key={avatar._id}
                 type="button"
-                onClick={() => onChange(avatar.url)}
-                className={`w-10 h-10 rounded-full border-2 ${
-                  value === avatar.url ? "border-blue-500" : "border-gray-300"
-                } overflow-hidden`}
+                onClick={() => onChange(avatar)}
+                className={`w-full flex flex-col items-center gap-1 p-1 rounded-lg border-2 text-xs ${
+                  value?._id === avatar._id
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                }`}
               >
-                <img
-                  src={avatar.url}
-                  alt={avatar.name}
-                  className="w-full h-full object-cover"
-                />
+                <div className="w-12 h-12 rounded-full overflow-hidden border">
+                  <img
+                    src={avatar.url}
+                    alt={avatar.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="truncate max-w-[72px]">{avatar.name}</span>
               </button>
             ))}
           </div>
@@ -411,7 +439,7 @@ const KeypointSelector = ({
   );
   const lang = useSelector(
     (state: RootState) => state.lang.code
-  ) as keyof ITranslation;
+  ) as keyof ITranslation as LangCode;
 
   useEffect(() => {
     let active = true;
@@ -515,7 +543,7 @@ export default function RoleplayForm({
   const navigate = useNavigate();
   const lang = useSelector(
     (state: RootState) => state.lang.code
-  ) as keyof ITranslation;
+  ) as keyof ITranslation as LangCode;
   const isEditMode = !!roleplay;
   const { showSuccess, showError } = useNotification();
 
@@ -609,7 +637,21 @@ export default function RoleplayForm({
       setNextOptionId(1);
       setNextAnswerId(1);
     }
-  }, [roleplay, lang]);
+  }, [roleplay]); // Remove lang from dependency to prevent reset on language change
+
+  // Separate effect to update title and description language when creating new roleplay
+  useEffect(() => {
+    if (!roleplay && currentRoleplay._id === "") {
+      // Only update the title and description fields to ensure they have the current language
+      setCurrentRoleplay((prev) => ({
+        ...prev,
+        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" },
+        description: {
+          [lang]: (prev.description as ITranslation)?.[lang] || "",
+        },
+      }));
+    }
+  }, [lang, roleplay, currentRoleplay._id]);
 
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -650,6 +692,87 @@ export default function RoleplayForm({
         typeof tagValue === "string" ? tagValue : tagValue?._id || "";
     }
 
+    // Clean ITranslation fields - only add if not empty
+    if ("speechBubble" in exercisePayload && exercisePayload.speechBubble) {
+      const cleanedSpeechBubble = cleanTranslation(
+        exercisePayload.speechBubble as ITranslation
+      );
+      if (cleanedSpeechBubble) {
+        (exercisePayload as any).speechBubble = cleanedSpeechBubble;
+      } else {
+        delete (exercisePayload as any).speechBubble;
+      }
+    }
+    if ("explanation" in exercisePayload && exercisePayload.explanation) {
+      const cleanedExplanation = cleanTranslation(
+        exercisePayload.explanation as ITranslation
+      );
+      if (cleanedExplanation) {
+        (exercisePayload as any).explanation = cleanedExplanation;
+      } else {
+        delete (exercisePayload as any).explanation;
+      }
+    }
+    if ("targetArea" in exercisePayload && exercisePayload.targetArea) {
+      const cleanedTargetArea = cleanTranslation(
+        exercisePayload.targetArea as ITranslation
+      );
+      if (cleanedTargetArea) {
+        (exercisePayload as any).targetArea = cleanedTargetArea;
+      } else {
+        delete (exercisePayload as any).targetArea;
+      }
+    }
+    if (
+      "options" in exercisePayload &&
+      Array.isArray(exercisePayload.options)
+    ) {
+      (exercisePayload as any).options = exercisePayload.options.map(
+        (opt: any) => {
+          const cleanedOption: any = { ...opt };
+          const cleanedValue = cleanTranslation(opt.value);
+          if (cleanedValue) {
+            cleanedOption.value = cleanedValue;
+          }
+          const cleanedText = cleanTranslation(opt.text);
+          if (cleanedText) {
+            cleanedOption.text = cleanedText;
+          }
+          return cleanedOption;
+        }
+      );
+    }
+    if ("answer" in exercisePayload && Array.isArray(exercisePayload.answer)) {
+      (exercisePayload as any).answer = exercisePayload.answer.map(
+        (ans: any) => {
+          const cleanedAnswer: any = { ...ans };
+          const cleanedCorrectAnswer = cleanTranslation(ans.correctAnswer);
+          if (cleanedCorrectAnswer) {
+            cleanedAnswer.correctAnswer = cleanedCorrectAnswer;
+          }
+          return cleanedAnswer;
+        }
+      );
+    }
+    if (
+      "document" in exercisePayload &&
+      Array.isArray(exercisePayload.document)
+    ) {
+      (exercisePayload as any).document = exercisePayload.document.map(
+        (doc: any) => {
+          const cleanedDoc: any = { ...doc };
+          if (doc.data?.content) {
+            // Always include content field but clean empty translations
+            cleanedDoc.data = {
+              ...doc.data,
+              content: cleanTranslation(doc.data.content) || {},
+            };
+          }
+          return cleanedDoc;
+        }
+      );
+    }
+
     return exercisePayload;
   };
 
@@ -658,37 +781,111 @@ export default function RoleplayForm({
   ): ISectionPayload[] | undefined => {
     if (!sectionList) return undefined;
 
-    return sectionList.map((section) => ({
-      ...section,
-      contents: (section.contents || []).map((content) => {
-        const exercisePayload = transformExerciseToPayload(content.exercise);
+    return sectionList.map((section) => {
+      const sectionPayload: any = {
+        id: section.id,
+        textColor: section.textColor,
+        backgroundColor: section.backgroundColor,
+        image: section.image || "",
+        contents: [],
+      };
 
-        if (exercisePayload) {
-          return {
-            ...content,
-            exercise: exercisePayload,
-          } as ISectionContentPayload;
-        }
+      // Always include title field but clean empty translations
+      sectionPayload.title = cleanTranslation(section.title) || {};
 
-        const { exercise, ...rest } = content as ISectionContent;
-        return { ...rest } as ISectionContentPayload;
-      }),
-    }));
+      // Always include transition field but clean empty translations
+      sectionPayload.transition = cleanTranslation(section.transition) || {};
+
+      // Process contents
+      if (section.contents?.length) {
+        sectionPayload.contents = section.contents.map((content) => {
+          const contentPayload: any = {
+            id: content.id,
+            type: content.type,
+          };
+
+          // Handle exercise content
+          if (content.type === RoleplaySectionType.EXERCISE) {
+            const exercisePayload = transformExerciseToPayload(
+              content.exercise
+            );
+            if (exercisePayload) {
+              contentPayload.exercise = exercisePayload;
+            }
+          }
+          // Handle conversation content
+          else if (
+            content.type === RoleplaySectionType.CONVERSATION &&
+            content.conversation
+          ) {
+            contentPayload.conversation = {
+              position: content.conversation.position,
+              backgroundColor: content.conversation.backgroundColor,
+              textColor: content.conversation.textColor,
+              avatarId:
+                content.conversation.avatar?._id ||
+                content.conversation.avatarId ||
+                "",
+              // Always include content field but clean empty translations
+              content: content.conversation.content
+                ? cleanTranslation(content.conversation.content) || {}
+                : {},
+              audio: content.conversation.audio || "",
+            };
+          }
+          // Handle leading text content
+          else if (
+            content.type === RoleplaySectionType.LEADING_TEXT &&
+            content.leadingText
+          ) {
+            contentPayload.leadingText = {
+              ...content.leadingText,
+              // Always include content field but clean empty translations
+              content: content.leadingText.content
+                ? cleanTranslation(content.leadingText.content) || {}
+                : {},
+            };
+          }
+          // Handle hint content
+          else if (content.type === RoleplaySectionType.HINT && content.hint) {
+            contentPayload.hint = {
+              ...content.hint,
+              // Always include content field but clean empty translations
+              content: content.hint.content
+                ? cleanTranslation(content.hint.content) || {}
+                : {},
+            };
+          }
+
+          return contentPayload as ISectionContentPayload;
+        });
+      }
+
+      return sectionPayload;
+    });
   };
 
   const buildLearningItemPayload = (
     item: ILearningItem
-  ): LearningItemPayload => ({
-    keypointId: item.keypointId,
-    title: item.title?.[lang] || "",
-    description: item.description?.[lang] || "",
-    type: LearningItemType.ROLEPLAY,
-    image: item.image,
-    tag: item.tag || [],
-    isSub: item.isSub,
-    sections: transformSectionsToPayload(item.sections) || [],
-    index: item.index,
-  });
+  ): LearningItemPayload => {
+    const payload: any = {
+      keypointId: item.keypointId,
+      title: cleanTranslation(item.title) || {},
+      type: LearningItemType.ROLEPLAY,
+      image: item.image,
+      tag: item.tag || [],
+      isSub: item.isSub,
+      sections: transformSectionsToPayload(item.sections),
+      index: item.index,
+    };
+
+    const cleanedDescription = cleanTranslation(item.description);
+    if (cleanedDescription && Object.keys(cleanedDescription).length > 0) {
+      payload.description = cleanedDescription;
+    }
+
+    return payload as LearningItemPayload;
+  };
 
   // Fetch keypoint based on query
   useEffect(() => {
@@ -875,12 +1072,12 @@ export default function RoleplayForm({
           id,
           type,
           conversation: {
-            name: "",
-            avartar: "",
+            avatar: undefined,
+            avatarId: "",
             position: SectionConversationPosition.LEFT,
             backgroundColor: "#FFFFFF",
             textColor: "#000000", // Added textColor
-            content: "",
+            content: { [lang]: "" },
             audio: "",
           } as IConversation,
         } as ISectionContent;
@@ -891,7 +1088,7 @@ export default function RoleplayForm({
           leadingText: {
             backgroundColor: "#000000",
             textColor: "#000000", // Added textColor
-            content: "",
+            content: { [lang]: "" },
             audio: "",
           } as ILeadingText,
         } as ISectionContent;
@@ -902,7 +1099,7 @@ export default function RoleplayForm({
           hint: {
             icon: "",
             textColor: "#000000", // Added textColor
-            content: "",
+            content: { [lang]: "" },
           } as IHint,
         } as ISectionContent;
       case RoleplaySectionType.EXERCISE:
@@ -913,21 +1110,24 @@ export default function RoleplayForm({
           exercise: {
             id: 1,
             type: ExerciseType.SINGLE_CHOICE,
-            speechBubble: "",
+            speechBubble: { [lang]: "" },
             tag: null,
             keypointId: "",
             document: [
               {
                 id: 1,
                 type: DocumentType.TEXT,
-                data: createEmptyMediaDocument(),
+                data: createEmptyMediaDocument(lang),
               },
             ],
-            explanation: "",
+            explanation: { [lang]: "" },
             options: [
-              { value: "", isCorrect: false },
-              { value: "", isCorrect: false },
+              { value: { [lang]: "" }, isCorrect: false },
+              { value: { [lang]: "" }, isCorrect: false },
             ] as IExerciseChoiceOption[],
+            level: [KeypointLevel.WEAK_POINT],
+            maxScore: 10,
+            completionTime: 60,
             mainQuestion: 0,
           } as IExerciseSingleChoice,
         } as ISectionContent;
@@ -977,30 +1177,50 @@ export default function RoleplayForm({
       // Xóa lỗi cũ
       setValidationErrors({});
 
+      // Chuẩn hóa avatarId cho conversation
+      let normalizedContent = contentData;
+      if (
+        contentData.type === RoleplaySectionType.CONVERSATION &&
+        contentData.conversation
+      ) {
+        const avatarObj = contentData.conversation.avatar;
+        const avatarId =
+          contentData.conversation.avatarId || avatarObj?._id || "";
+        normalizedContent = {
+          ...contentData,
+          conversation: {
+            ...contentData.conversation,
+            avatar: avatarObj,
+            avatarId,
+          },
+        };
+      }
+
       // Thực hiện xác thực dựa trên loại nội dung
       let hasError = false;
       const errors: { [key: string]: string } = {};
 
-      if (contentData.type === RoleplaySectionType.CONVERSATION) {
-        if (!contentData.conversation.name) {
-          errors.name = "Name is required for conversation content";
-          hasError = true;
-        }
-        if (!contentData.conversation.avartar) {
+      if (normalizedContent.type === RoleplaySectionType.CONVERSATION) {
+        if (!normalizedContent.conversation.avatarId) {
           errors.avatar = "Avatar is required for conversation content";
           hasError = true;
         }
-      } else if (contentData.type === RoleplaySectionType.LEADING_TEXT) {
-        if (!contentData.leadingText.content) {
+      } else if (normalizedContent.type === RoleplaySectionType.LEADING_TEXT) {
+        if (
+          !getCurrentTranslationValue(
+            normalizedContent.leadingText.content,
+            lang
+          )
+        ) {
           errors.content = "Content is required for leading text";
           hasError = true;
         }
-      } else if (contentData.type === RoleplaySectionType.HINT) {
-        if (!contentData.hint.icon) {
+      } else if (normalizedContent.type === RoleplaySectionType.HINT) {
+        if (!normalizedContent.hint.icon) {
           errors.icon = "Icon is required for hint content";
           hasError = true;
         }
-        if (!contentData.hint.content) {
+        if (!getCurrentTranslationValue(normalizedContent.hint.content, lang)) {
           errors.hintContent = "Content is required for hint content";
           hasError = true;
         }
@@ -1026,7 +1246,7 @@ export default function RoleplayForm({
         const section = sections[sectionIndex];
         const contentList = section.contents || [];
         const updatedContentList = contentList.map((c) =>
-          c.id === contentData.id ? contentData : c
+          c.id === normalizedContent.id ? normalizedContent : c
         );
 
         const updatedSections = [...sections];
@@ -1046,7 +1266,7 @@ export default function RoleplayForm({
 
         const section = sections[sectionIndex];
         const contentList = section.contents || [];
-        const updatedContentList = [...contentList, contentData];
+        const updatedContentList = [...contentList, normalizedContent];
 
         const updatedSections = [...sections];
         updatedSections[sectionIndex] = {
@@ -1182,8 +1402,8 @@ export default function RoleplayForm({
   const addNewSection = () => {
     const newSection: ISection = {
       id: nextSectionId,
-      title: `Section ${nextSectionId}`,
-      transition: "",
+      title: { [lang]: `Section ${nextSectionId}` },
+      transition: { [lang]: "" },
       textColor: "#000000",
       backgroundColor: "#ffffff",
       image: "", // Added image field
@@ -1199,7 +1419,7 @@ export default function RoleplayForm({
   };
 
   // Update section title
-  const updateSectionTitle = (sectionId: number, title: string) => {
+  const updateSectionTitle = (sectionId: number, title: ITranslation) => {
     setCurrentRoleplay((prev) => {
       const sections = prev.sections || [];
       const sectionIndex = sections.findIndex((s) => s.id === sectionId);
@@ -1217,7 +1437,10 @@ export default function RoleplayForm({
   };
 
   // Update section transition
-  const updateSectionTransition = (sectionId: number, transition: string) => {
+  const updateSectionTransition = (
+    sectionId: number,
+    transition: ITranslation
+  ) => {
     setCurrentRoleplay((prev) => {
       const sections = prev.sections || [];
       const sectionIndex = sections.findIndex((s) => s.id === sectionId);
@@ -1341,7 +1564,7 @@ export default function RoleplayForm({
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <h3 className="font-medium text-gray-800">
-                            {section.title}
+                            {getTranslationValue(section.title, lang)}
                           </h3>
                           <span className="text-xs text-gray-500">
                             ID: {section.id}
@@ -1352,7 +1575,7 @@ export default function RoleplayForm({
                             onClick={() =>
                               requestDeleteSection(
                                 section.id || 0,
-                                section.title
+                                getTranslationValue(section.title, lang)
                               )
                             }
                             className="text-red-500 hover:text-red-700 p-1 rounded"
@@ -1370,9 +1593,19 @@ export default function RoleplayForm({
                           </label>
                           <input
                             type="text"
-                            value={section.title}
+                            value={getCurrentTranslationValue(
+                              section.title,
+                              lang
+                            )}
                             onChange={(e) =>
-                              updateSectionTitle(section.id, e.target.value)
+                              updateSectionTitle(
+                                section.id,
+                                updateTranslationValue(
+                                  section.title || {},
+                                  lang,
+                                  e.target.value
+                                )
+                              )
                             }
                             className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                             placeholder="Enter section title"
@@ -1384,11 +1617,18 @@ export default function RoleplayForm({
                           </label>
                           <input
                             type="text"
-                            value={section.transition}
+                            value={getCurrentTranslationValue(
+                              section.transition,
+                              lang
+                            )}
                             onChange={(e) =>
                               updateSectionTransition(
                                 section.id,
-                                e.target.value
+                                updateTranslationValue(
+                                  section.transition || {},
+                                  lang,
+                                  e.target.value
+                                )
                               )
                             }
                             className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -1431,7 +1671,7 @@ export default function RoleplayForm({
                             label=""
                             uploadPayload={{
                               prefix: "",
-                              folder: "roleplay",
+                              folder: "roleplays",
                             }}
                           />
                         </div>
@@ -1489,19 +1729,25 @@ export default function RoleplayForm({
                                           {content.type ===
                                             RoleplaySectionType.CONVERSATION && (
                                             <div className="flex items-center gap-1">
-                                              {content.conversation.avartar && (
+                                              {content.conversation.avatar
+                                                ?.url && (
                                                 <img
                                                   src={
-                                                    content.conversation.avartar
+                                                    content.conversation.avatar
+                                                      .url
                                                   }
                                                   alt={
-                                                    content.conversation.name
+                                                    content.conversation.avatar
+                                                      .name
                                                   }
                                                   className="w-4 h-4 rounded-full object-cover"
                                                 />
                                               )}
                                               <span className="text-xs text-gray-500">
-                                                {content.conversation.name}
+                                                {
+                                                  content.conversation.avatar
+                                                    ?.name
+                                                }
                                               </span>
                                               <div
                                                 className="w-3 h-3 rounded-full border border-gray-300"
@@ -1543,6 +1789,7 @@ export default function RoleplayForm({
                                                   content.conversation.content
                                                 }
                                                 maxLength={100}
+                                                lang={lang}
                                               />
                                             </div>
                                           )}
@@ -1586,6 +1833,7 @@ export default function RoleplayForm({
                                                   content.leadingText.content
                                                 }
                                                 maxLength={100}
+                                                lang={lang}
                                               />
                                             </div>
                                           )}
@@ -1609,6 +1857,7 @@ export default function RoleplayForm({
                                               <TextWithTooltip
                                                 text={content.hint.content}
                                                 maxLength={100}
+                                                lang={lang}
                                               />
                                             </div>
                                           )}
@@ -1627,6 +1876,7 @@ export default function RoleplayForm({
                                                         .speechBubble
                                                     }
                                                     maxLength={100}
+                                                    lang={lang}
                                                   />
                                                 )}
                                                 {content.exercise.tag && (
@@ -1700,6 +1950,7 @@ export default function RoleplayForm({
                                                                   maxLength={
                                                                     100
                                                                   }
+                                                                  lang={lang}
                                                                 />
                                                               </div>
                                                             )}
@@ -1790,6 +2041,7 @@ export default function RoleplayForm({
                                                         .explanation
                                                     }
                                                     maxLength={100}
+                                                    lang={lang}
                                                   />
                                                 </div>
                                               )}
@@ -1826,6 +2078,7 @@ export default function RoleplayForm({
                                                             ></span>
                                                             <TextWithTooltip
                                                               text={opt.value}
+                                                              lang={lang}
                                                             />
                                                           </li>
                                                         )
@@ -1862,6 +2115,7 @@ export default function RoleplayForm({
                                                               .targetArea
                                                           }
                                                           maxLength={100}
+                                                          lang={lang}
                                                         />
                                                       </div>
                                                     )}
@@ -1893,6 +2147,7 @@ export default function RoleplayForm({
                                                                   text={
                                                                     opt.text
                                                                   }
+                                                                  lang={lang}
                                                                 />
                                                               </li>
                                                             )
@@ -1928,6 +2183,7 @@ export default function RoleplayForm({
                                                                   text={
                                                                     ans.correctAnswer
                                                                   }
+                                                                  lang={lang}
                                                                 />
                                                               </li>
                                                             )
@@ -2121,26 +2377,65 @@ export default function RoleplayForm({
       setValidationErrors({});
     }, [formData]);
 
+    // Ensure translation objects have current language key when language changes
+    useEffect(() => {
+      if (localFormData.exercise) {
+        setLocalFormData((prev: any) => {
+          const updated = { ...prev };
+          if (updated.exercise) {
+            // Ensure speechBubble, explanation, and targetArea exist and have current language
+            updated.exercise = {
+              ...updated.exercise,
+              speechBubble: updated.exercise.speechBubble || { [lang]: "" },
+              explanation: updated.exercise.explanation || { [lang]: "" },
+              targetArea: updated.exercise.targetArea || { [lang]: "" },
+            };
+
+            // Ensure options have current language for value/text
+            if (updated.exercise.options) {
+              updated.exercise.options = updated.exercise.options.map(
+                (opt: any) => ({
+                  ...opt,
+                  value: opt.value || { [lang]: "" },
+                  text: opt.text || { [lang]: "" },
+                })
+              );
+            }
+
+            // Ensure answers have current language for correctAnswer
+            if (updated.exercise.answer) {
+              updated.exercise.answer = updated.exercise.answer.map(
+                (ans: any) => ({
+                  ...ans,
+                  correctAnswer: ans.correctAnswer || { [lang]: "" },
+                })
+              );
+            }
+          }
+          return updated;
+        });
+      }
+    }, [lang]);
+
     // --- Validation Function ---
     const validateForm = () => {
       const errors: { [key: string]: string } = {};
 
       if (contentType === RoleplaySectionType.CONVERSATION) {
-        if (!localFormData.conversation?.name?.trim()) {
-          errors.name = "Name is required.";
-        }
-        if (!localFormData.conversation?.avartar?.trim()) {
+        if (!localFormData.conversation?.avatar?._id) {
           errors.avatar = "Avatar is required.";
         }
       } else if (contentType === RoleplaySectionType.LEADING_TEXT) {
-        if (!localFormData.leadingText?.content?.trim()) {
+        if (
+          !getTranslationValue(localFormData.leadingText?.content, lang)?.trim()
+        ) {
           errors.content = "Content is required.";
         }
       } else if (contentType === RoleplaySectionType.HINT) {
         if (!localFormData.hint?.icon?.trim()) {
           errors.icon = "Icon is required.";
         }
-        if (!localFormData.hint?.content?.trim()) {
+        if (!getTranslationValue(localFormData.hint?.content, lang)?.trim()) {
           errors.hintContent = "Content is required.";
         }
       }
@@ -2162,10 +2457,7 @@ export default function RoleplayForm({
         },
       }));
       // Clear error on change
-      if (field === "name" && validationErrors.name) {
-        setValidationErrors((prev) => ({ ...prev, name: "" }));
-      }
-      if (field === "avartar" && validationErrors.avatar) {
+      if (field === "avatar" || field === "avatarId") {
         setValidationErrors((prev) => ({ ...prev, avatar: "" }));
       }
     };
@@ -2244,7 +2536,7 @@ export default function RoleplayForm({
           [field]: value,
         };
         if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument();
+          updatedDoc.data = createEmptyMediaDocument(lang);
         }
         newDocuments[index] = updatedDoc;
         return {
@@ -2260,15 +2552,23 @@ export default function RoleplayForm({
     const handleDataChange = (
       docIndex: number,
       field: keyof IMediaDocument,
-      value: string
+      value: string | ITranslation
     ) => {
       setLocalFormData((prev: any) => {
+        if (!prev.exercise) return prev;
         const newDocuments = [...prev.exercise.document];
         newDocuments[docIndex] = {
           ...newDocuments[docIndex],
           data: {
             ...newDocuments[docIndex].data,
-            [field]: value,
+            [field]:
+              field === "content" && typeof value === "string"
+                ? updateTranslationValue(
+                    newDocuments[docIndex].data.content || {},
+                    lang,
+                    value
+                  )
+                : value,
           },
         };
         return {
@@ -2297,7 +2597,7 @@ export default function RoleplayForm({
             </label>
             {isLongForm ? (
               <textarea
-                value={doc.data.content}
+                value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
                   handleDataChange(index, "content", e.target.value)
                 }
@@ -2308,7 +2608,7 @@ export default function RoleplayForm({
             ) : (
               <input
                 type="text"
-                value={doc.data.content}
+                value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
                   handleDataChange(index, "content", e.target.value)
                 }
@@ -2329,7 +2629,7 @@ export default function RoleplayForm({
               label="Image URL"
               uploadPayload={{
                 prefix: "",
-                folder: "roleplay",
+                folder: "roleplays",
               }}
             />
           </div>
@@ -2345,7 +2645,7 @@ export default function RoleplayForm({
               label="Audio URL"
               uploadPayload={{
                 prefix: "",
-                folder: "roleplay",
+                folder: "roleplays",
               }}
             />
           </div>
@@ -2362,7 +2662,7 @@ export default function RoleplayForm({
                 label="Video URL"
                 uploadPayload={{
                   prefix: "",
-                  folder: "roleplay",
+                  folder: "roleplays",
                 }}
               />
             </div>
@@ -2375,7 +2675,7 @@ export default function RoleplayForm({
                 label="Video Thumbnail"
                 uploadPayload={{
                   prefix: "",
-                  folder: "roleplay",
+                  folder: "roleplays",
                 }}
               />
             </div>
@@ -2387,6 +2687,12 @@ export default function RoleplayForm({
     };
 
     const addNewDocument = () => {
+      if (
+        contentType !== RoleplaySectionType.EXERCISE ||
+        !localFormData.exercise
+      )
+        return;
+
       const currentMaxId = localFormData.exercise.document.reduce(
         (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
         0
@@ -2402,7 +2708,7 @@ export default function RoleplayForm({
             {
               id: newId,
               type: DocumentType.TEXT,
-              data: createEmptyMediaDocument(),
+              data: createEmptyMediaDocument(lang),
             },
           ],
         },
@@ -2410,6 +2716,11 @@ export default function RoleplayForm({
     };
 
     const removeDocument = (index: number) => {
+      if (
+        contentType !== RoleplaySectionType.EXERCISE ||
+        !localFormData.exercise
+      )
+        return;
       if (localFormData.exercise.document.length === 1) return;
       setLocalFormData((prev: any) => ({
         ...prev,
@@ -2433,7 +2744,10 @@ export default function RoleplayForm({
 
       let dataToSave = localFormData;
 
-      if (localFormData.exercise.type === ExerciseType.RECORD) {
+      if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise?.type === ExerciseType.RECORD
+      ) {
         const normalizedCriteria = rebalanceRecordScoringCriteria(
           localFormData.exercise.scoringCriteria,
           typeof localFormData.exercise.maxScore === "number"
@@ -2458,15 +2772,19 @@ export default function RoleplayForm({
     // Add new option
     const addOption = () => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [
           ...localFormData.exercise.options,
           { value: "", isCorrect: false },
         ];
         handleExerciseChange("options", newOptions);
-      } else if (localFormData.exercise.type === ExerciseType.DRAG_DROP) {
+      } else if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise.type === ExerciseType.DRAG_DROP
+      ) {
         const newId = localNextOptionId;
         setLocalNextOptionId(newId + 1);
 
@@ -2481,13 +2799,17 @@ export default function RoleplayForm({
     // Remove option
     const removeOption = (index: number) => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [...localFormData.exercise.options];
         newOptions.splice(index, 1);
         handleExerciseChange("options", newOptions);
-      } else if (localFormData.exercise.type === ExerciseType.DRAG_DROP) {
+      } else if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise.type === ExerciseType.DRAG_DROP
+      ) {
         const newOptions = [...localFormData.exercise.options];
         newOptions.splice(index, 1);
         handleExerciseChange("options", newOptions);
@@ -2497,15 +2819,31 @@ export default function RoleplayForm({
     // Update option value
     const updateOptionValue = (index: number, value: string) => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [...localFormData.exercise.options];
-        newOptions[index] = { ...newOptions[index], value };
+        const currentTranslation = newOptions[index].value || {};
+        const updatedTranslation = updateTranslationValue(
+          currentTranslation,
+          lang,
+          value
+        );
+        newOptions[index] = { ...newOptions[index], value: updatedTranslation };
         handleExerciseChange("options", newOptions);
-      } else if (localFormData.exercise.type === ExerciseType.DRAG_DROP) {
+      } else if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise.type === ExerciseType.DRAG_DROP
+      ) {
         const newOptions = [...localFormData.exercise.options];
-        newOptions[index] = { ...newOptions[index], text: value };
+        const currentTranslation = newOptions[index].text || {};
+        const updatedTranslation = updateTranslationValue(
+          currentTranslation,
+          lang,
+          value
+        );
+        newOptions[index] = { ...newOptions[index], text: updatedTranslation };
         handleExerciseChange("options", newOptions);
       }
     };
@@ -2513,8 +2851,9 @@ export default function RoleplayForm({
     // Update option correctness
     const updateOptionCorrectness = (index: number, isCorrect: boolean) => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [...localFormData.exercise.options];
         newOptions[index] = { ...newOptions[index], isCorrect };
@@ -2554,13 +2893,23 @@ export default function RoleplayForm({
         : [];
 
       const newAnswer = [...existingAnswers];
-      newAnswer[index] = { ...newAnswer[index], correctAnswer: value };
+      const currentTranslation = newAnswer[index].correctAnswer || {};
+      const updatedTranslation = updateTranslationValue(
+        currentTranslation,
+        lang,
+        value
+      );
+      newAnswer[index] = {
+        ...newAnswer[index],
+        correctAnswer: updatedTranslation,
+      };
       handleExerciseChange("answer", newAnswer);
     };
 
     const getScoringCriteria = () =>
       Array.isArray(localFormData.exercise?.scoringCriteria)
-        ? (localFormData.exercise.scoringCriteria as Partial<IScoringCriteria>[])
+        ? (localFormData.exercise
+            .scoringCriteria as Partial<IScoringCriteria>[])
         : [];
 
     const addScoringCriteria = () => {
@@ -2580,7 +2929,7 @@ export default function RoleplayForm({
     const updateScoringCriteria = (
       index: number,
       field: keyof IScoringCriteria,
-      value: string
+      value: string | ITranslation
     ) => {
       const current = getScoringCriteria();
       if (!current[index]) return;
@@ -2590,6 +2939,8 @@ export default function RoleplayForm({
           ? value === ""
             ? undefined
             : Number(value)
+          : field === "criteria" && typeof value === "string"
+          ? updateTranslationValue(current[index].criteria || {}, lang, value)
           : value;
 
       const next = current.map((item, idx) =>
@@ -2647,31 +2998,11 @@ export default function RoleplayForm({
         {contentType === RoleplaySectionType.CONVERSATION && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                value={localFormData.conversation.name || ""}
-                onChange={(e) =>
-                  handleConversationChange("name", e.target.value)
-                }
-                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                  validationErrors.name ? "border-red-500" : ""
-                }`}
-                placeholder="Enter name"
-              />
-              {validationErrors.name && (
-                <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.name}
-                </p>
-              )}
-            </div>
-
-            <div>
               <AvatarSelector
-                value={localFormData.conversation.avartar || ""}
-                onChange={(value) => handleConversationChange("avartar", value)}
+                value={localFormData.conversation.avatar}
+                onChange={(value) =>
+                  handleConversationChange("avatar", value || undefined)
+                }
                 label="Avatar"
               />
               {validationErrors.avatar && (
@@ -2719,9 +3050,19 @@ export default function RoleplayForm({
                 Content
               </label>
               <textarea
-                value={localFormData.conversation.content || ""}
+                value={getCurrentTranslationValue(
+                  localFormData.conversation.content,
+                  lang
+                )}
                 onChange={(e) =>
-                  handleConversationChange("content", e.target.value)
+                  handleConversationChange(
+                    "content",
+                    updateTranslationValue(
+                      localFormData.conversation.content || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
                 }
                 rows={3}
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -2741,7 +3082,7 @@ export default function RoleplayForm({
                 label=""
                 uploadPayload={{
                   prefix: "",
-                  folder: "roleplay",
+                  folder: "roleplays",
                 }}
               />
             </div>
@@ -2769,9 +3110,19 @@ export default function RoleplayForm({
                 Content
               </label>
               <textarea
-                value={localFormData.leadingText.content || ""}
+                value={getCurrentTranslationValue(
+                  localFormData.leadingText.content,
+                  lang
+                )}
                 onChange={(e) =>
-                  handleLeadingTextChange("content", e.target.value)
+                  handleLeadingTextChange(
+                    "content",
+                    updateTranslationValue(
+                      localFormData.leadingText.content || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
                 }
                 rows={3}
                 className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
@@ -2798,7 +3149,7 @@ export default function RoleplayForm({
                 label=""
                 uploadPayload={{
                   prefix: "",
-                  folder: "roleplay",
+                  folder: "roleplays",
                 }}
               />
             </div>
@@ -2831,8 +3182,20 @@ export default function RoleplayForm({
                 Content
               </label>
               <textarea
-                value={localFormData.hint.content || ""}
-                onChange={(e) => handleHintChange("content", e.target.value)}
+                value={getCurrentTranslationValue(
+                  localFormData.hint.content,
+                  lang
+                )}
+                onChange={(e) =>
+                  handleHintChange(
+                    "content",
+                    updateTranslationValue(
+                      localFormData.hint.content || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
+                }
                 rows={3}
                 className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
                   validationErrors.hintContent ? "border-red-500" : ""
@@ -2878,9 +3241,19 @@ export default function RoleplayForm({
               </label>
               <input
                 type="text"
-                value={localFormData.exercise.speechBubble || ""}
+                value={getCurrentTranslationValue(
+                  localFormData.exercise?.speechBubble,
+                  lang
+                )}
                 onChange={(e) =>
-                  handleExerciseChange("speechBubble", e.target.value)
+                  handleExerciseChange(
+                    "speechBubble",
+                    updateTranslationValue(
+                      localFormData.exercise.speechBubble || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
                 }
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Enter speech bubble text"
@@ -2961,28 +3334,24 @@ export default function RoleplayForm({
               </div>
             </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Score
-                </label>
-                <input
-                  type="number"
-                  value={localFormData.exercise.maxScore ?? ""}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    const isEmpty = val === "";
-                    handleExerciseChange(
-                      "maxScore",
-                      isEmpty ? "" : Number(val),
-                      {
-                        skipRebalance: isEmpty,
-                      }
-                    );
-                  }}
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder="Enter max score"
-                />
-              </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Max Score
+              </label>
+              <input
+                type="number"
+                value={localFormData.exercise.maxScore ?? ""}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  const isEmpty = val === "";
+                  handleExerciseChange("maxScore", isEmpty ? "" : Number(val), {
+                    skipRebalance: isEmpty,
+                  });
+                }}
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="Enter max score"
+              />
+            </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -3015,7 +3384,7 @@ export default function RoleplayForm({
                       <div key={idx} className="flex items-center gap-2">
                         <input
                           type="text"
-                          value={opt.value}
+                          value={getCurrentTranslationValue(opt.value, lang)}
                           onChange={(e) =>
                             updateOptionValue(idx, e.target.value)
                           }
@@ -3098,9 +3467,19 @@ export default function RoleplayForm({
                 </label>
                 <input
                   type="text"
-                  value={localFormData.exercise.targetArea || ""}
+                  value={getCurrentTranslationValue(
+                    localFormData.exercise?.targetArea,
+                    lang
+                  )}
                   onChange={(e) =>
-                    handleExerciseChange("targetArea", e.target.value)
+                    handleExerciseChange(
+                      "targetArea",
+                      updateTranslationValue(
+                        localFormData.exercise.targetArea || {},
+                        lang,
+                        e.target.value
+                      )
+                    )
                   }
                   className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   placeholder="Enter target area"
@@ -3119,7 +3498,7 @@ export default function RoleplayForm({
                       <div key={opt.id} className="flex items-center">
                         <input
                           type="text"
-                          value={opt.text}
+                          value={getCurrentTranslationValue(opt.text, lang)}
                           onChange={(e) =>
                             updateOptionValue(idx, e.target.value)
                           }
@@ -3159,7 +3538,10 @@ export default function RoleplayForm({
                       <div key={ans.id} className="flex items-center">
                         <input
                           type="text"
-                          value={ans.correctAnswer}
+                          value={getCurrentTranslationValue(
+                            ans.correctAnswer,
+                            lang
+                          )}
                           onChange={(e) =>
                             updateAnswerValue(idx, e.target.value)
                           }
@@ -3272,9 +3654,11 @@ export default function RoleplayForm({
                             <label className="block text-xs font-medium text-gray-600 mb-1">
                               Description
                             </label>
-                            <input
-                              type="text"
-                              value={criteriaItem.criteria || ""}
+                            <textarea
+                              value={getCurrentTranslationValue(
+                                criteriaItem.criteria,
+                                lang
+                              )}
                               onChange={(e) =>
                                 updateScoringCriteria(
                                   index,
@@ -3282,7 +3666,8 @@ export default function RoleplayForm({
                                   e.target.value
                                 )
                               }
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              rows={2}
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
                               placeholder="e.g., Pronunciation clarity"
                             />
                           </div>
@@ -3320,7 +3705,8 @@ export default function RoleplayForm({
                       ? ` / ${localFormData.exercise.maxScore}`
                       : ""}
                     {localFormData.exercise.maxScore &&
-                      scoringCriteriaTotal !== localFormData.exercise.maxScore &&
+                      scoringCriteriaTotal !==
+                        localFormData.exercise.maxScore &&
                       " • Missing values are auto-filled on save to match the exercise max score."}
                   </p>
                 )}
@@ -3417,11 +3803,18 @@ export default function RoleplayForm({
                   Title *
                 </label>
                 <input
-                  value={currentRoleplay.title[lang] || ""}
+                  value={getCurrentTranslationValue(
+                    currentRoleplay.title,
+                    lang
+                  )}
                   onChange={(e) =>
                     setCurrentRoleplay((prev) => ({
                       ...prev,
-                      title: { ...prev.title, [lang]: e.target.value },
+                      title: updateTranslationValue(
+                        prev.title,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -3436,14 +3829,18 @@ export default function RoleplayForm({
                   Description
                 </label>
                 <textarea
-                  value={currentRoleplay.description?.[lang] || ""}
+                  value={getCurrentTranslationValue(
+                    currentRoleplay.description,
+                    lang
+                  )}
                   onChange={(e) =>
                     setCurrentRoleplay((prev) => ({
                       ...prev,
-                      description: {
-                        ...prev.description,
-                        [lang]: e.target.value,
-                      },
+                      description: updateTranslationValue(
+                        prev.description,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   rows={4}

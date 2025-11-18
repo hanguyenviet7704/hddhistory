@@ -8,8 +8,8 @@ import {
 } from "@heroicons/react/24/outline";
 import {
   ICourse,
-  CoursePayload,
   IPrice,
+  CoursePayload,
 } from "../../types/interface/cource.interface";
 import { CourseLevel, CourseStatus } from "../../types/enum/course.enum";
 import { useSelector } from "react-redux";
@@ -18,12 +18,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ISkillset } from "../../types/interface/skillset.interface";
 import { skillsetService } from "../../services/skillsetService";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
+import { ITranslation } from "../../utils/translate";
+import { cleanTranslation, getTranslationValue } from "../../utils/translation";
 
 interface Props {
   isOpen: boolean;
   initial?: ICourse | null;
   onClose: () => void;
-  onSubmit: (payload: CoursePayload, id?: string) => Promise<void>;
+  onSubmit: (payload: Partial<CoursePayload>, id?: string) => Promise<void>;
   loading?: boolean;
   error?: string | null;
 }
@@ -38,8 +40,8 @@ export default function CourseModal({
 }: Props) {
   const lang = useSelector((state: RootState) => state.lang.code);
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [title, setTitle] = useState<ITranslation>({});
+  const [description, setDescription] = useState<ITranslation>({});
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<CourseStatus>(CourseStatus.DRAFT);
   const [level, setLevel] = useState<CourseLevel>(CourseLevel.LEVEL1);
@@ -52,36 +54,45 @@ export default function CourseModal({
   const [skillsets, setSkillsets] = useState<ISkillset[]>([]);
   const [loadingSkillsets, setLoadingSkillsets] = useState(false);
   const [showSkillsetDropdown, setShowSkillsetDropdown] = useState(false);
+  const [selectedSkillsetLabel, setSelectedSkillsetLabel] = useState("");
 
   // Effect để reset form khi modal mở/đóng hoặc thay đổi initial
   useEffect(() => {
-    if (isOpen) {
-      if (initial) {
-        setTitle(initial.title?.[lang] ?? "");
-        setDescription(initial.description?.[lang] ?? "");
-        setImage(initial.image ?? "");
-        setStatus(initial.status);
-        setPrices(initial.prices ?? []);
-        setSkillsetId(initial.skillsetId ?? "");
-        // Tìm và hiển thị tên skillset đã chọn
-        const selectedSkillset = skillsets.find(
-          (s) => s._id === initial.skillsetId
-        );
-        setSkillsetQuery(selectedSkillset?.title?.[lang] || "");
-      } else {
-        setTitle("");
-        setDescription("");
-        setImage("");
-        setStatus(CourseStatus.DRAFT);
-        setLevel(CourseLevel.LEVEL1);
-        setPrices([]);
-        setSkillsetId("");
-        setSkillsetQuery("");
-      }
-      // Reset query search khi mở modal
-      setDebouncedQuery("");
+    if (!isOpen) return;
+    if (initial) {
+      setTitle(initial.title ?? {});
+      setDescription(initial.description ?? {});
+      setImage(initial.image ?? "");
+      setStatus(initial.status);
+      setPrices(initial.prices ?? []);
+      setSkillsetId(initial.skillsetId ?? "");
+      setSelectedSkillsetLabel("");
+    } else {
+      setTitle({});
+      setDescription({});
+      setImage("");
+      setStatus(CourseStatus.DRAFT);
+      setLevel(CourseLevel.LEVEL1);
+      setPrices([]);
+      setSkillsetId("");
+      setSkillsetQuery("");
+      setSelectedSkillsetLabel("");
     }
-  }, [initial, isOpen, lang]); // Bỏ skillsets khỏi dependency để tránh vòng lặp
+
+    setDebouncedQuery("");
+  }, [initial, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    if (!skillsetId) {
+      setSelectedSkillsetLabel("");
+      return;
+    }
+    const selectedSkillset = skillsets.find((s) => s._id === skillsetId);
+    if (!selectedSkillset) return;
+    const label = getTranslationValue(selectedSkillset.title, lang);
+    setSelectedSkillsetLabel((prev) => (prev === label ? prev : label));
+  }, [skillsetId, skillsets, lang, isOpen]);
 
   // Effect để debounce search query
   useEffect(() => {
@@ -121,14 +132,25 @@ export default function CourseModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: CoursePayload = {
-      title: typeof title === "string" ? title : "",
-      description: typeof description === "string" ? description : "",
+
+    // Clean translation values to remove empty strings
+    const cleanedTitle = cleanTranslation(title);
+    const cleanedDescription = cleanTranslation(description);
+
+    // Create CoursePayload with cleaned translations
+    const payload: Partial<CoursePayload> = {
+      title: cleanedTitle || { [lang]: "" }, // Always include title
       image,
       status,
       prices: prices,
-      skillsetId, // Thêm skillsetId vào payload
+      skillsetId, // Add skillsetId to payload
     };
+
+    // Only include description if it has values
+    if (cleanedDescription) {
+      payload.description = cleanedDescription;
+    }
+
     await onSubmit(payload, initial?._id);
   };
 
@@ -168,13 +190,15 @@ export default function CourseModal({
 
   const handleSelectSkillset = (skillset: ISkillset) => {
     setSkillsetId(skillset._id);
-    setSkillsetQuery(skillset.title?.[lang] || "");
+    setSelectedSkillsetLabel(getTranslationValue(skillset.title, lang));
+    setSkillsetQuery("");
     setShowSkillsetDropdown(false);
   };
 
   const handleClearSkillset = () => {
     setSkillsetId("");
     setSkillsetQuery("");
+    setSelectedSkillsetLabel("");
     setShowSkillsetDropdown(true);
   };
 
@@ -187,6 +211,7 @@ export default function CourseModal({
     // Nếu người dùng xóa hết nội dung, xóa cả skillsetId
     if (!value.trim()) {
       setSkillsetId("");
+      setSelectedSkillsetLabel("");
     }
 
     // Hiển thị dropdown khi người dùng bắt đầu gõ
@@ -194,9 +219,6 @@ export default function CourseModal({
       setShowSkillsetDropdown(true);
     }
   };
-
-  const selectedSkillsetName =
-    skillsets.find((s) => s._id === skillsetId)?.title?.[lang] || "";
 
   return (
     <AnimatePresence>
@@ -238,8 +260,10 @@ export default function CourseModal({
                   Title *
                 </label>
                 <input
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
+                  value={title[lang] || ""}
+                  onChange={(e) =>
+                    setTitle((prev) => ({ ...prev, [lang]: e.target.value }))
+                  }
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                   required
                 />
@@ -251,8 +275,13 @@ export default function CourseModal({
                   Description
                 </label>
                 <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
+                  value={description[lang] || ""}
+                  onChange={(e) =>
+                    setDescription((prev) => ({
+                      ...prev,
+                      [lang]: e.target.value,
+                    }))
+                  }
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                   rows={4}
                 />
@@ -266,7 +295,7 @@ export default function CourseModal({
                 <div className="relative">
                   <input
                     type="text"
-                    value={skillsetQuery || selectedSkillsetName}
+                    value={skillsetQuery || selectedSkillsetLabel}
                     onChange={handleSkillsetInputChange}
                     onFocus={() => setShowSkillsetDropdown(true)}
                     placeholder="Search for a skillset..."
@@ -301,7 +330,8 @@ export default function CourseModal({
                             onClick={() => handleSelectSkillset(skillset)}
                             className="px-4 py-2 hover:bg-gray-100 cursor-pointer text-sm font-bold"
                           >
-                            {skillset.title?.[lang] || "Unnamed Skillset"}
+                            {getTranslationValue(skillset.title, lang) ||
+                              "Unnamed Skillset"}
                           </div>
                         ))
                       )}

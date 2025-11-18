@@ -19,9 +19,14 @@ import { learningItemService } from "../../services/learningItemService";
 import { ILearningItem } from "../../types/interface/learning-item/learning-item.interface";
 import { AnimatePresence } from "framer-motion";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
+import {
+  getTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
 
 interface EntranceFormProps {
-  entrance?: ILesson; // Nếu có -> edit mode, không có -> create mode
+  entrance?: ILesson;
   onSave?: (entrance: ILesson) => void;
 }
 
@@ -195,24 +200,59 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
   const handleSaveEntrance = async () => {
     try {
       setSaving(true);
-      const payload: LessonPayload = {
-        title: currentEntrance.title?.[lang] || "",
-        estimateCompleTime: currentEntrance.estimateCompleTime?.[lang] || "",
-        icon: currentEntrance.icon?._id.toString() || "",
+
+      // Prepare LessonPayload with all ITranslation fields
+      // Update translation values and clean empty ones
+      const title = cleanTranslation(
+        updateTranslationValue(
+          currentEntrance.title,
+          lang,
+          currentEntrance.title?.[lang] || ""
+        )
+      );
+      const description = cleanTranslation(
+        updateTranslationValue(
+          currentEntrance.description,
+          lang,
+          currentEntrance.description?.[lang] || ""
+        )
+      );
+      const estimateCompleTime = cleanTranslation(
+        updateTranslationValue(
+          currentEntrance.estimateCompleTime,
+          lang,
+          currentEntrance.estimateCompleTime?.[lang] || ""
+        )
+      );
+
+      // keypoints in LessonPayload should be string array (IDs)
+      // Since ILesson.keypoints is IKeypoint[], we need to extract IDs
+      const keypointIds = currentEntrance.keypoints?.map((kp) => kp._id) || [];
+
+      const lessonPayload: any = {
+        courseId: currentEntrance.courseId,
+        learningItemId: currentEntrance.learningItemId,
         type: LessonType.ENTRANCE,
-        description: currentEntrance.description?.[lang] || "",
+        title: title || { [lang]: "" }, // Always include title for validation
+        ...(description && { description }),
+        ...(estimateCompleTime && { estimateCompleTime }),
+        icon: (currentEntrance.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         image: currentEntrance.image,
-        keypoints: [],
+        keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentEntrance.status,
         index: currentEntrance.index,
-        courseId: currentEntrance.courseId,
-        learningItemId: currentEntrance.learningItemId || undefined,
       };
+
+      // Optional fields already handled by conditional spread operator above
+
       let res;
       if (currentEntrance._id) {
-        res = await lessonService.update(currentEntrance._id, payload);
+        res = await lessonService.update(
+          currentEntrance._id,
+          lessonPayload as Partial<LessonPayload>
+        );
       } else {
-        res = await lessonService.create(payload);
+        res = await lessonService.create(lessonPayload as LessonPayload);
       }
       const savedEntrance = res.data?.data ?? res.data;
 
@@ -233,7 +273,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
   const handleSelectIcon = (icon: ITag) => {
     setCurrentEntrance((prev) => ({
       ...prev,
-      icon: icon,
+      icon: icon as any, // Store full ITag object for display
     }));
     setIconQuery("");
   };
@@ -262,7 +302,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
               {currentEntrance.image ? (
                 <img
                   src={currentEntrance.image}
-                  alt={currentEntrance.title?.[lang]}
+                  alt={getTranslationValue(currentEntrance.title, lang)}
                   className="w-full max-h-[320px] object-cover rounded-xl shadow-lg border border-gray-200"
                 />
               ) : (
@@ -304,7 +344,11 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                   onChange={(e) =>
                     setCurrentEntrance((prev) => ({
                       ...prev,
-                      title: { ...prev.title, [lang]: e.target.value },
+                      title: updateTranslationValue(
+                        prev.title,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -323,10 +367,11 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                   onChange={(e) =>
                     setCurrentEntrance((prev) => ({
                       ...prev,
-                      description: {
-                        ...prev.description,
-                        [lang]: e.target.value,
-                      },
+                      description: updateTranslationValue(
+                        prev.description,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   rows={4}
@@ -396,10 +441,11 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                   onChange={(e) =>
                     setCurrentEntrance((prev) => ({
                       ...prev,
-                      estimateCompleTime: {
-                        ...prev.estimateCompleTime,
-                        [lang]: e.target.value,
-                      },
+                      estimateCompleTime: updateTranslationValue(
+                        prev.estimateCompleTime,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -419,13 +465,21 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                     value={
                       isIconSearchActive
                         ? iconQuery
-                        : currentEntrance.icon?.title?.[lang] || ""
+                        : getTranslationValue(
+                            (currentEntrance.icon as any)?.title,
+                            lang
+                          ) || ""
                     }
                     onChange={(e) => setIconQuery(e.target.value)}
                     onFocus={() => {
                       setIsIconSearchActive(true);
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
-                      setIconQuery(currentEntrance.icon?.title?.[lang] || "");
+                      setIconQuery(
+                        getTranslationValue(
+                          (currentEntrance.icon as any)?.title,
+                          lang
+                        ) || ""
+                      );
                     }}
                     onBlur={() => {
                       // Dùng setTimeout để cho phép click vào nút 'x' hoặc dropdown item
@@ -542,7 +596,10 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                         displayValue={(val: string | null) => {
                           // Nếu có selected course, hiển thị title của nó
                           if (selectedCourse) {
-                            return selectedCourse.title?.[lang] || "";
+                            return getTranslationValue(
+                              selectedCourse.title,
+                              lang
+                            );
                           }
                           // Nếu không, hiển thị courseQuery (đang nhập hoặc courseId)
                           return courseQuery;
@@ -557,7 +614,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                       <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                         {courses
                           .filter((c) =>
-                            c.title?.[lang]
+                            getTranslationValue(c.title, lang)
                               ?.toLowerCase()
                               .includes(courseQuery.toLowerCase())
                           )
@@ -567,7 +624,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                               value={c._id} // value is courseId (string)
                               className="cursor-pointer px-3 py-3 hover:bg-blue-50"
                             >
-                              {c.title?.[lang]}
+                              {getTranslationValue(c.title, lang)}
                             </Combobox.Option>
                           ))}
                       </Combobox.Options>

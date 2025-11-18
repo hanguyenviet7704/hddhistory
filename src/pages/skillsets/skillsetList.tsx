@@ -30,6 +30,7 @@ import { CourseLevel, CourseStatus } from "../../types/enum/course.enum";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import SkillsetModal from "../../components/skillsets/SkillsetModal";
 import SkillsetConfirm from "../../components/skillsets/SkillsetConfirm";
+import { getTranslationValue } from "../../utils/translation";
 
 // --- Component chính ---
 const SkillsetList: React.FC = () => {
@@ -308,7 +309,7 @@ const SkillsetList: React.FC = () => {
                             >
                               <img
                                 src={skillset.image}
-                                alt={skillset.title[lang]}
+                                alt={getTranslationValue(skillset.title, lang)}
                                 style={{
                                   width: "100%",
                                   height: "100%",
@@ -331,7 +332,7 @@ const SkillsetList: React.FC = () => {
                                 sx={{ fontWeight: "bold" }}
                                 noWrap
                               >
-                                {skillset.title[lang]}
+                                {getTranslationValue(skillset.title, lang)}
                               </Typography>
                               <Typography
                                 variant="body2"
@@ -345,7 +346,10 @@ const SkillsetList: React.FC = () => {
                                   WebkitBoxOrient: "vertical",
                                 }}
                               >
-                                {skillset.description?.[lang]}
+                                {getTranslationValue(
+                                  skillset.description,
+                                  lang
+                                )}
                               </Typography>
                               <Box sx={{ mt: "auto" }}>
                                 <button
@@ -393,14 +397,16 @@ const SkillsetList: React.FC = () => {
                                       component="div"
                                       sx={{ fontWeight: "bold" }}
                                     >
-                                      {course.title[lang]}
+                                      {getTranslationValue(course.title, lang)}
                                     </Typography>
                                     <Typography
                                       variant="body2"
                                       color="text.secondary"
                                     >
-                                      {course.description?.[lang] ||
-                                        "No description"}
+                                      {getTranslationValue(
+                                        course.description,
+                                        lang
+                                      ) || "No description"}
                                     </Typography>
                                     <div className="flex justify-start gap-4 mb-3">
                                       <span

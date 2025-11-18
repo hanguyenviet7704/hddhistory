@@ -9,12 +9,12 @@ import {
   IRoadmap,
   IRoadmapLevel,
   IRoadmapNode,
-  RoadmapPayload,
-  RoadmapLevelPayload,
+  CoursePayload,
 } from "../../types/interface/cource.interface";
 import { ILessonBrief } from "../../types/interface/lesson.interface";
 import { LessonType } from "../../types/enum/lesson.enum";
 import { CourseLevel } from "../../types/enum/course.enum";
+import { getTranslationValue, updateTranslationValue, cleanTranslation } from "../../utils/translation";
 
 // Services
 import { courseService } from "../../services/courseService";
@@ -198,7 +198,7 @@ const RoadmapPage: React.FC = () => {
     const output = outputLessons[0] || null;
 
     const newNode: IRoadmapNode = {
-      title: { vi: newNodeTitle, en: newNodeTitle },
+      title: updateTranslationValue(undefined, lang, newNodeTitle),
       entranceId: entrance?._id || "",
       lessonIds: [],
       outputId: output?._id || "",
@@ -330,16 +330,25 @@ const RoadmapPage: React.FC = () => {
   const handleSaveRoadmap = async () => {
     if (!roadmap) return;
 
-    const payload: RoadmapPayload = {
-      levels: roadmap.levels.map<RoadmapLevelPayload>((level) => ({
+    const payload: any = {
+      levels: roadmap.levels.map((level) => ({
         id: level.id,
         level: level.level,
-        nodes: level.nodes.map((n) => ({
-          title: n.title?.[lang] ?? "",
-          entranceId: n.entranceId || "",
-          lessonIds: n.lessonIds || [],
-          outputId: n.outputId || "",
-        })),
+        nodes: level.nodes.map((n) => {
+          const cleanedTitle = cleanTranslation(n.title);
+          const nodePayload: any = {
+            entranceId: n.entranceId || "",
+            lessonIds: n.lessonIds || [],
+            outputId: n.outputId || "",
+          };
+
+          // Only include title if it has values
+          if (cleanedTitle) {
+            nodePayload.title = cleanedTitle;
+          }
+
+          return nodePayload;
+        }),
       })),
     };
 
@@ -371,7 +380,8 @@ const RoadmapPage: React.FC = () => {
         icon = "📖";
         color = "bg-purple-100 text-purple-800";
     }
-    const title = lesson.title?.[lang] ?? "(Không có tiêu đề)";
+    const title =
+      getTranslationValue(lesson.title, lang) || "(Không có tiêu đề)";
     return (
       <div className={`flex items-center px-3 py-2 rounded-lg ${color} mb-2`}>
         <span className="mr-2">{icon}</span>
@@ -387,7 +397,9 @@ const RoadmapPage: React.FC = () => {
 
     const filtered = searchTerm
       ? lessonList.filter((l) =>
-          l.title?.[lang]?.toLowerCase().includes(searchTerm.toLowerCase())
+          getTranslationValue(l.title, lang)
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase())
         )
       : lessonList;
 
@@ -525,6 +537,9 @@ const RoadmapPage: React.FC = () => {
                   ) : (
                     level.nodes.map((node, nodeIndex) => {
                       const isLeft = nodeIndex % 2 === 0;
+                      const nodeTitle =
+                        getTranslationValue(node.title, lang) ||
+                        "Node chưa đặt tên";
                       return (
                         <div
                           key={`node-${levelIndex}-${nodeIndex}`}
@@ -551,7 +566,7 @@ const RoadmapPage: React.FC = () => {
                             >
                               <div className="flex justify-between items-start mb-4">
                                 <h3 className="text-lg font-semibold">
-                                  {node.title?.[lang]}
+                                  {nodeTitle}
                                 </h3>
                                 {/* Delete node - icon only */}
                                 <IconButton
@@ -633,7 +648,10 @@ const RoadmapPage: React.FC = () => {
                                         >
                                           <span className="mr-2">📖</span>
                                           <span className="text-sm">
-                                            {l.title?.[lang]}
+                                            {getTranslationValue(
+                                              l.title,
+                                              lang
+                                            ) || "Bài học chưa đặt tên"}
                                           </span>
                                         </li>
                                       ))}

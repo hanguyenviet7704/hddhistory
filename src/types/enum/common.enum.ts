@@ -1,4 +1,4 @@
-import { ITranslation } from "../../utils/translate";
+import { ITranslation } from "../../utils/translation";
 
 export enum LangCode {
   EN = "en",
@@ -21,6 +21,6 @@ export interface ILablel {
 export interface LablelPayload {
   id: number;
   icon: string;
-  title: string;
-  label: string;
+  title: ITranslation;
+  label: ITranslation;
 }

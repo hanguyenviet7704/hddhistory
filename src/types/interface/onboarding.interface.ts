@@ -11,9 +11,9 @@ export interface IOnboardingIntro {
 
 export interface OnboardingIntroPayload {
   id: number;
-  title: string;
+  title: ITranslation;
   image: string;
-  content: string;
+  content: ITranslation;
 }
 
 export interface IOnboarding {

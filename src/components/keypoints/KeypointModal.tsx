@@ -5,6 +5,8 @@ import {
 } from "../../types/interface/keypoint.interface";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
+import { ITranslation } from "../../utils/translate";
+import { updateTranslationValue, cleanTranslation } from "../../utils/translation";
 
 interface Props {
   open: boolean;
@@ -21,61 +23,60 @@ const KeypointModal: React.FC<Props> = ({
 }) => {
   const lang = useSelector((state: RootState) => state.lang.code);
 
-  const [form, setForm] = useState<KeypointPayload>({
-    title: "",
-    description: "",
-    image: "",
-    tag: [],
-  });
+  const [title, setTitle] = useState<ITranslation>({});
+  const [description, setDescription] = useState<ITranslation>({});
+  const [image, setImage] = useState("");
+  const [tag, setTag] = useState<string[]>([]);
 
   const [newTag, setNewTag] = useState("");
 
   useEffect(() => {
     if (keypoint) {
-      setForm({
-        title: keypoint.title[lang] || "",
-        description: keypoint.description?.[lang] || "",
-        image: keypoint.image || "",
-        tag: keypoint.tag || [],
-      });
+      setTitle(keypoint.title ?? {});
+      setDescription(keypoint.description ?? {});
+      setImage(keypoint.image ?? "");
+      setTag(keypoint.tag || []);
       setNewTag("");
     } else {
-      setForm({
-        title: "",
-        description: "",
-        image: "",
-        tag: [],
-      });
+      setTitle({});
+      setDescription({});
+      setImage("");
+      setTag([]);
       setNewTag("");
     }
-  }, [keypoint, lang]);
-
-  const handleChange = (field: keyof KeypointPayload, value: any) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
-  };
+  }, [keypoint]);
 
   const addTag = () => {
     if (newTag.trim()) {
-      setForm((prev) => ({
-        ...prev,
-        tag: [...(prev.tag || []), newTag.trim()],
-      }));
+      setTag((prev) => [...prev, newTag.trim()]);
       setNewTag("");
     }
   };
 
   const removeTag = (index: number) => {
-    setForm((prev) => ({
-      ...prev,
-      tag: (prev.tag || []).filter((_, i) => i !== index),
-    }));
+    setTag((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      addTag();
-    }
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Update and clean translations
+    const cleanedTitle = cleanTranslation(
+      updateTranslationValue(title, lang, title[lang] || "")
+    );
+    const cleanedDescription = cleanTranslation(
+      updateTranslationValue(description, lang, description[lang] || "")
+    );
+
+    // Create KeypointPayload with cleaned translations
+    const payload: KeypointPayload = {
+      title: cleanedTitle || { [lang]: "" }, // Always include title
+      ...(cleanedDescription && { description: cleanedDescription }),
+      image,
+      tag,
+    };
+
+    onSave(payload);
   };
 
   if (!open) return null;
@@ -87,37 +88,39 @@ const KeypointModal: React.FC<Props> = ({
           {keypoint ? "Edit Keypoint" : "Create Keypoint"}
         </h2>
 
-        <div className="space-y-3">
+        <form onSubmit={handleSubmit} className="space-y-3">
           {/* Title */}
           <label className="block text-sm font-medium mb-1">Title</label>
           <input
             className="w-full border rounded-lg px-3 py-2"
             placeholder="Title"
-            value={form.title}
-            onChange={(e) => handleChange("title", e.target.value)}
+            value={title[lang] || ""}
+            onChange={(e) => setTitle((prev) => updateTranslationValue(prev, lang, e.target.value))}
+            required
           />
 
           {/* Description */}
           <label className="block text-sm font-medium mb-1">Description</label>
-          <input
+          <textarea
             className="w-full border rounded-lg px-3 py-2"
             placeholder="Description"
-            value={form.description}
-            onChange={(e) => handleChange("description", e.target.value)}
+            value={description[lang] || ""}
+            onChange={(e) => setDescription((prev) => updateTranslationValue(prev, lang, e.target.value))}
+            rows={3}
           />
 
           {/* Tag */}
           <label className="block text-sm font-medium mb-1">Tags</label>
 
           {/* Hiển thị các tag hiện có */}
-          {form.tag && form.tag.length > 0 && (
+          {tag && tag.length > 0 && (
             <div className="flex flex-wrap gap-2 mb-2">
-              {form.tag.map((tag, index) => (
+              {tag.map((tagItem, index) => (
                 <div
                   key={index}
                   className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
                 >
-                  <span>{tag}</span>
+                  <span>{tagItem}</span>
                   <button
                     type="button"
                     className="ml-2 text-blue-600 hover:text-blue-800"
@@ -138,7 +141,12 @@ const KeypointModal: React.FC<Props> = ({
               placeholder="Add a tag"
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={handleKeyPress}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  addTag();
+                }
+              }}
             />
             <button
               type="button"
@@ -149,31 +157,23 @@ const KeypointModal: React.FC<Props> = ({
             </button>
           </div>
 
-          {/* Image */}
-          {/* <label className="block text-sm font-medium mb-1">Image</label>
-          <input
-            className="w-full border rounded-lg px-3 py-2"
-            placeholder="Image url"
-            value={form.image}
-            onChange={(e) => handleChange("image", e.target.value)}
-          /> */}
-
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4">
             <button
+              type="button"
               className="px-4 py-2 rounded-lg border hover:bg-gray-100"
               onClick={onClose}
             >
               Cancel
             </button>
             <button
+              type="submit"
               className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
-              onClick={() => onSave(form)}
             >
               Save
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

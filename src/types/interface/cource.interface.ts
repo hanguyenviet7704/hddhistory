@@ -22,8 +22,8 @@ export interface ICourse {
 }
 
 export interface CoursePayload {
-  title: string;
-  description: string;
+  title: ITranslation;
+  description: ITranslation;
   skillsetId: string;
   image: string;
   status: CourseStatus;
@@ -69,7 +69,7 @@ export interface IRoadmap {
 }
 
 export interface RoadmapNodePayload {
-  title: string;
+  title: ITranslation;
   entranceId: string;
   lessonIds: string[];
   outputId: string;

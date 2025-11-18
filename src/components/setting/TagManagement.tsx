@@ -33,8 +33,8 @@ const TagManagement = () => {
   const fetchTags = async () => {
     try {
       setLoading(true);
-      const response = await tagService.getList();
-      setTags(response.data.items || []);
+      const response = await tagService.getList({ page: 1, take: 1000 });
+      setTags(response.data.items || response.data || []);
     } catch (error) {
       console.error("Error fetching tags:", error);
     } finally {
