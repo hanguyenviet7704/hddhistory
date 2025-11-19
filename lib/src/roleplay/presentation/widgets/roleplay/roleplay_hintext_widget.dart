@@ -21,7 +21,7 @@ class RoleplayHintCard extends StatelessWidget {
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 16.h),
         decoration: BoxDecoration(
-          // color: Colors.white,
+          color: hint.backgroundColor.toHexColor,
           borderRadius: BorderRadius.circular(20.r),
         ),
         child: RichText(
