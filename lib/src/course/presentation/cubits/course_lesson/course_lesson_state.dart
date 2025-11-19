@@ -26,4 +26,20 @@ extension CourseLessonStateExtension on CourseLessonState {
     if (otherKeypoints.isEmpty) return true;
     return otherKeypoints.every((keypoint) => keypoint.progess == ProcessEnum.done);
   }
+
+  LessonEntity updateLessonWithResults(LessonResultEntity currentLessonResult) {
+    final updatedKeypoints = selectedLesson.keypoints.map((keypoint) {
+      final matchingResult = currentLessonResult.keypointsResult.firstWhere(
+        (result) => result.keypointId == keypoint.id,
+        orElse: () => KeypointResultEntity(),
+      );
+
+      if (matchingResult.keypointId.isNotEmpty) {
+        return keypoint.copyWith(point: matchingResult.averageScore.toInt(), isUseProgressData: true);
+      }
+      return keypoint.copyWith(isUseProgressData: true);
+    }).toList();
+
+    return selectedLesson.copyWith(keypoints: updatedKeypoints);
+  }
 }

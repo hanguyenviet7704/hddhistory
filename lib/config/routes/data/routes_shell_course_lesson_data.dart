@@ -12,6 +12,7 @@ class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
     providers: [
       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
     ],
     child: const LessonListPage(),
   );

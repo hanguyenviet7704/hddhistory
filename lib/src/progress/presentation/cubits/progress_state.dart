@@ -7,10 +7,10 @@ abstract class ProgressState with _$ProgressState {
   const factory ProgressState({
     @Default(ProgressStatus.initial) ProgressStatus status,
     @Default(BasePageBreak<CourseEntity>()) BasePageBreak<CourseEntity> myCoursesPageData,
-    @Default(UserProgressEntity()) UserProgressEntity selectedUserProgress,
-    @Default(LessonResultEntity()) LessonResultEntity lessonResult,
-    @Default(KeypointResultEntity()) KeypointResultEntity keypointResult,
-    @Default(ExerciseResultEntity()) ExerciseResultEntity exerciseResult,
+    @Default(UserProgressEntity()) UserProgressEntity userCourseProgress,
+    @Default(LessonResultEntity()) LessonResultEntity currentLessonResult,
+    @Default(KeypointResultEntity()) KeypointResultEntity currentKeypointResult,
+    @Default(ExerciseResultEntity()) ExerciseResultEntity currentExerciseResult,
     String? errorMessage,
   }) = _ProgressState;
 

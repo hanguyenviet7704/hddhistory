@@ -23,6 +23,7 @@ class LessonListPage extends StatelessWidget {
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
         child: BlocBuilder<CourseLessonCubit, CourseLessonState>(
+          buildWhen: (previous, current) => previous.status != current.status || previous.selectedLesson != current.selectedLesson,
           builder: (context, state) {
             if (state.status == CourseLessonStatus.loading) {
               return const Center(child: CircularProgressIndicator());
@@ -54,7 +55,8 @@ class LessonListPage extends StatelessWidget {
               );
             }
 
-            final lesson = state.selectedLesson;
+            final LessonResultEntity currentLessonResult = context.read<ProgressCubit>().state.currentLessonResult;
+            final lesson = state.updateLessonWithResults(currentLessonResult);
 
             // Check if lesson data is empty (id is empty means no data loaded)
             if (lesson.id.isEmpty) {

@@ -49,7 +49,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: ProgressStatus.success, selectedUserProgress: item));
+        emit(state.copyWith(status: ProgressStatus.success, userCourseProgress: item));
       },
     );
   }
@@ -74,7 +74,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: ProgressStatus.success, lessonResult: item));
+        emit(state.copyWith(status: ProgressStatus.success, currentLessonResult: item));
       },
     );
   }
@@ -100,7 +100,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: ProgressStatus.success, keypointResult: item));
+        emit(state.copyWith(status: ProgressStatus.success, currentKeypointResult: item));
       },
     );
   }
@@ -127,7 +127,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: ProgressStatus.success, exerciseResult: item));
+        emit(state.copyWith(status: ProgressStatus.success, currentExerciseResult: item));
       },
     );
   }
