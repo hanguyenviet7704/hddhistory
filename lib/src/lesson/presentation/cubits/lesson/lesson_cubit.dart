@@ -52,11 +52,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         return;
       }
 
-      LessonCompleteRoute(
-        type: 'keypoint',
-        keypointTitle: state.currentLearningItem.title.en,
-        progress: 1.0,
-      ).go(AppConfig.instance.context!);
+      const KeypointCompleteRoute().go(AppConfig.instance.context!);
 
       UpdateUserProgressKeypointData keypointData = UpdateUserProgressKeypointData(
         keypointId: state.currentLearningItem.keypointId,
@@ -64,18 +60,12 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         passed: true,
         reviews: '',
       );
-      
+
       UpdateUserProgressKeypointParams keypointParams = UpdateUserProgressKeypointParams(keypoints: [keypointData]);
       AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(LessonType.lesson, keypointParams);
       return;
     }
 
-    // final currentProgress = (state.currentLearningItemIndex + 1) / state.pageData.items.length;
-    // LessonCompleteRoute(
-    //   type: 'keypoint',
-    //   keypointTitle: state.currentLearningItem.title.en,
-    //   progress: currentProgress,
-    // ).go(AppConfig.instance.context!);
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
     setCurrentLearningItem(state.currentLearningItem);
     preloadNextLearningItem();

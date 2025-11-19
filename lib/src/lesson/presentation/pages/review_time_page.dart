@@ -58,14 +58,7 @@ class ReviewTimePage extends StatelessWidget {
               onTap: () {
                 final lessonCubit = context.read<LessonCubit>();
                 lessonCubit.reviewDone();
-                
-                // if (lessonCubit.state.subQuestions.isEmpty) {
-                //   LessonCompleteRoute(
-                //     type: 'lesson',
-                //     keypointTitle: lessonCubit.state.currentLearningItem.title.en,
-                //     progress: 1.0,
-                //   ).go(context);
-                // }
+                // TODO: Show LessonCompleteRoute when the entire lesson flow is complete.
               },
               child: Container(
                 padding: EdgeInsets.symmetric(

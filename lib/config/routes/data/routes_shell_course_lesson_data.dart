@@ -64,32 +64,13 @@ class KeypointCompleteRoute extends BaseTransitionRouteData with $KeypointComple
 }
 
 class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {
-  final String? type;
-  final String? keypointTitle;
-  final double? progress;
-
-  const LessonCompleteRoute({
-    this.type,
-    this.keypointTitle,
-    this.progress,
-  });
+  const LessonCompleteRoute();
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) {
-    final lessonType = type == 'lesson' ? LessonCompleteType.lesson : LessonCompleteType.keypoint;
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
-      ],
-      child: LessonCompletePage(
-        type: lessonType,
-        keypointTitle: keypointTitle,
-        progress: progress,
-      ),
-    );
+    return const LessonCompletePage();
   }
 }

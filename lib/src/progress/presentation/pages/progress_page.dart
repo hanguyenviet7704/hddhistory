@@ -130,9 +130,7 @@ class _ProgressPageState extends State<ProgressPage> {
             title: Text('Course: ${item.courseId}'),
             subtitle: Text('User: ${item.userId} | Lessons: ${item.lessonsResult.length}'),
             trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () {
-              // TODO: Navigate to detail page to view progress details
-            },
+            onTap: () {},
           );
         },
       ),

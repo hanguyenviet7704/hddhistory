@@ -25,9 +25,9 @@ enum StrengthLevel {
   optionalPractice;
 
   String get point => switch (this) {
-    weakPoint => '0-40',
-    morePractice => '41-75',
-    optionalPractice => '76-100',
+    weakPoint => '0-50',
+    morePractice => '51-84',
+    optionalPractice => '85-100',
   };
 }
 

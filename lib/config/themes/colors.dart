@@ -90,6 +90,9 @@ mixin AppCustomColor {
   static const Color borderDefault = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
   static const Color brandPrimary = Color(0xFF554FF0);
+  static const Color brandPrimary50 = Color(0xFFEBEAFD);
+  static const Color brandPrimary100 = Color(0xFFD6CAFD);
+  static const Color brandPrimary200 = Color(0xFFC7C5FA);
   static const Color brandPrimary300 = Color(0xFF917FF6);
   static const Color backgroundBrand = Color(0xFFEBEAFD);
   static const Color iconPrimary = Color(0xFF344054);
