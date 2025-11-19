@@ -6,7 +6,7 @@ enum ProgressStatus { initial, loading, success, failure }
 abstract class ProgressState with _$ProgressState {
   const factory ProgressState({
     @Default(ProgressStatus.initial) ProgressStatus status,
-    @Default(BasePageBreak<UserProgressEntity>()) BasePageBreak<UserProgressEntity> pageData,
+    @Default(BasePageBreak<UserProgressEntity>()) BasePageBreak<UserProgressEntity> userProgressData,
     @Default(BasePageBreak<CourseEntity>()) BasePageBreak<CourseEntity> myCoursesPageData,
     UserProgressEntity? selectedLesson,
     UserProgressEntity? selectedKeypoint,
@@ -20,6 +20,6 @@ abstract class ProgressState with _$ProgressState {
 }
 
 extension ProgressStateExtension on ProgressState {
-  List<UserProgressEntity> get userProgresses => pageData.items;
+  List<UserProgressEntity> get userProgresses => userProgressData.items;
   List<CourseEntity> get myCourses => myCoursesPageData.items;
 }

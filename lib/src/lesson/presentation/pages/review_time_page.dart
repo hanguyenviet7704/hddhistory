@@ -31,7 +31,7 @@ class ReviewTimePage extends StatelessWidget {
                     // Title and subtitle
                     AppText(
                       // context.text.reviewTimeTitle,
-                      'Review time!',
+                      context.text.exerciseRedoTitle,
                       style: AppStyle.textBold24.copyWith(
                         color: const Color(0xFF1A202C),
                         height: 1.5,
@@ -41,7 +41,7 @@ class ReviewTimePage extends StatelessWidget {
                     4.verticalSpace,
                     AppText(
                       // context.text.reviewTimeSubtitle,
-                      'Let’s review the lesson you missed!',
+                      context.text.exerciseRedoMessage,
                       style: AppStyle.text14.copyWith(
                         color: const Color(0xFF7F8EA4),
                         height: 1.75,

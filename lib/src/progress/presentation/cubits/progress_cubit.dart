@@ -18,20 +18,20 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
 
   void loadAllUserProgresss({bool isInit = false}) async {
     if (!isInit && state.status == ProgressStatus.loading) return;
-    if (!isInit && state.pageData.isLastPage) return;
+    if (!isInit && state.userProgressData.isLastPage) return;
 
-    PageBreakRequest pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+    PageBreakRequest pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.userProgressData.nextPage);
 
     await runUseCasePageBreak<UserProgressEntity>(
       usecase: () => _getAllUserProgresssUseCase(pageRequest),
-      currentPageData: state.pageData,
+      currentPageData: state.userProgressData,
       isInit: isInit,
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (pageData) {
-        emit(state.copyWith(status: ProgressStatus.success, pageData: pageData));
+        emit(state.copyWith(status: ProgressStatus.success, userProgressData: pageData));
       },
     );
   }
