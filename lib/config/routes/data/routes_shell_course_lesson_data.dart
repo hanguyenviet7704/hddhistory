@@ -1,6 +1,5 @@
 part of '../routes.dart';
 
-
 //? Course - Lesson
 class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
   const LessonListRoute();
@@ -52,6 +51,16 @@ class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {
     value: AppDI.injector.get<LessonCubit>(),
     child: const ReviewTimePage(),
   );
+}
+
+class KeypointCompleteRoute extends BaseTransitionRouteData with $KeypointCompleteRoute {
+  const KeypointCompleteRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const KeypointCompletePage();
 }
 
 class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {

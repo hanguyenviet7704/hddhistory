@@ -22,6 +22,7 @@ part of '../routes.dart';
               routes: [
                 TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
                 TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
+                TypedGoRoute<KeypointCompleteRoute>(path: RoutePath.keypointComplete, name: RouteNamed.keypointComplete),
                 TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
               ],
             ),

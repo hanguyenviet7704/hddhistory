@@ -16,7 +16,10 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
   Duration _currentTimerValue = Duration.zero;
   bool _isRecorderActive = false;
 
-  SpeakingCubit get _cubit => context.read<SpeakingCubit>();
+  SpeakingCubit get _cubit {
+    if (!mounted) return AppDI.injector.get<SpeakingCubit>();
+    return context.read<SpeakingCubit>();
+  }
 
   @override
   void initState() {

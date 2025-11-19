@@ -50,13 +50,12 @@ part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
 part 'domain/usecases/send_voice_feedback_stream_usecase.dart';
 part 'domain/usecases/send_voice_feedback_usecase.dart';
-//* Presentation Layer - Widgets
 
 //* Parts for generated files
 part 'lesson.freezed.dart';
 part 'lesson.g.dart';
-part 'presentation/blocs/lesson_voice_state.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
+part 'presentation/blocs/lesson_voice_state.dart';
 part 'presentation/cubits/arrange_the_sequence/arrange_the_sequence_cubit.dart';
 part 'presentation/cubits/arrange_the_sequence/arrange_the_sequence_state.dart';
 part 'presentation/cubits/choice/choice_cubit.dart';
@@ -77,9 +76,11 @@ part 'presentation/cubits/speaking/speaking_state.dart';
 part 'presentation/cubits/theory/theory_cubit.dart';
 part 'presentation/cubits/theory/theory_state.dart';
 //* Presentation Layer - Pages
+part 'presentation/pages/keypoint_complete_page.dart';
 part 'presentation/pages/lesson_complete_page.dart';
 part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/review_time_page.dart';
+//* Presentation Layer - Widgets
 part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
 part 'presentation/widgets/body/cues_placement_lesson_body.dart';
 part 'presentation/widgets/body/drag_and_drop_lesson_body.dart';
