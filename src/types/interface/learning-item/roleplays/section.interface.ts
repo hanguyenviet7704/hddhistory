@@ -28,6 +28,7 @@ export interface ILeadingText {
 
 export interface IHint {
   icon: string;
+  backgroundColor: string;
   textColor: string;
   content: ITranslation;
 }
@@ -48,6 +49,7 @@ export interface ISection {
   textColor: string;
   backgroundColor: string;
   image: string;
+  colorTemplateId?: string;
   contents: ISectionContent[];
 }
 

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ILearningItem,
   LearningItemPayload,
@@ -67,6 +67,8 @@ import {
   ISectionContentPayload,
   ISectionPayload,
 } from "../../types/interface/learning-item/roleplays/section.interface";
+import { IRoleplayColorTemplate } from "../../types/interface/learning-item/roleplays/color-template.interface";
+import { roleplayColorTemplateService } from "../../services/roleplayColorTemplateService";
 import { IAvatar } from "../../types/interface/avatar.interface";
 
 const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
@@ -577,6 +579,10 @@ export default function RoleplayForm({
   ) as keyof ITranslation as LangCode;
   const isEditMode = !!roleplay;
   const { showSuccess, showError } = useNotification();
+  const showErrorRef = useRef(showError);
+  useEffect(() => {
+    showErrorRef.current = showError;
+  }, [showError]);
 
   // State for keypoint search
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
@@ -684,6 +690,31 @@ export default function RoleplayForm({
     }
   }, [lang, roleplay, currentRoleplay._id]);
 
+  useEffect(() => {
+    let active = true;
+    const fetchTemplates = async () => {
+      try {
+        setColorTemplatesLoading(true);
+        const res = await roleplayColorTemplateService.getList({
+          page: 1,
+          take: 1000,
+        });
+        const list: IRoleplayColorTemplate[] =
+          res?.data?.items || res?.items || res?.data || res || [];
+        if (active) setColorTemplates(list);
+      } catch (err) {
+        console.error("fetchRoleplayColorTemplates", err);
+        showErrorRef.current?.("Failed to load roleplay color templates");
+      } finally {
+        if (active) setColorTemplatesLoading(false);
+      }
+    };
+    fetchTemplates();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
     sectionId: number | null;
@@ -709,6 +740,19 @@ export default function RoleplayForm({
   const [validationErrors, setValidationErrors] = useState<{
     [key: string]: string;
   }>({});
+  const [colorTemplates, setColorTemplates] = useState<
+    IRoleplayColorTemplate[]
+  >([]);
+  const [colorTemplatesLoading, setColorTemplatesLoading] = useState(false);
+
+  const getColorTemplateForSection = (
+    sectionId?: number | null
+  ): IRoleplayColorTemplate | undefined => {
+    if (!sectionId) return undefined;
+    const section = currentRoleplay.sections?.find((s) => s.id === sectionId);
+    if (!section?.colorTemplateId) return undefined;
+    return colorTemplates.find((t) => t._id === section.colorTemplateId);
+  };
 
   const transformExerciseToPayload = (
     exercise?: ExerciseInput
@@ -1063,7 +1107,8 @@ export default function RoleplayForm({
   const handleSelectContentType = (contentType: RoleplaySectionType) => {
     if (currentSectionForPopup === null) return;
 
-    const formData = createEmptyContent(contentType, nextContentId);
+    const template = getColorTemplateForSection(currentSectionForPopup);
+    const formData = createEmptyContent(contentType, nextContentId, template);
 
     setModalOpen({
       sectionId: currentSectionForPopup,
@@ -1082,18 +1127,24 @@ export default function RoleplayForm({
   ) => {
     // If there is content data (editing), copy the data
     // If not (adding new), create empty content
+    const sectionTemplate = getColorTemplateForSection(sectionId);
     const formData = content
       ? { ...content }
-      : createEmptyContent(contentType, nextContentId);
+      : createEmptyContent(contentType, nextContentId, sectionTemplate);
 
     // Open modal with corresponding information
     setModalOpen({ sectionId, contentType, content, formData });
   };
 
   // Create empty content based on type
-  const createEmptyContent = (type: RoleplaySectionType, id: number) => {
+  const createEmptyContent = (
+    type: RoleplaySectionType,
+    id: number,
+    template?: IRoleplayColorTemplate
+  ) => {
     switch (type) {
       case RoleplaySectionType.CONVERSATION:
+        const leftStyle = template?.conversation?.left;
         return {
           id,
           type,
@@ -1101,8 +1152,8 @@ export default function RoleplayForm({
             avatar: undefined,
             avatarId: "",
             position: SectionConversationPosition.LEFT,
-            backgroundColor: "#FFFFFF",
-            textColor: "#000000", // Added textColor
+            backgroundColor: leftStyle?.backgroundColor || "#FFFFFF",
+            textColor: leftStyle?.textColor || "#000000",
             content: { [lang]: "" },
             audio: "",
           } as IConversation,
@@ -1112,8 +1163,9 @@ export default function RoleplayForm({
           id,
           type,
           leadingText: {
-            backgroundColor: "#000000",
-            textColor: "#000000", // Added textColor
+            backgroundColor:
+              template?.leadingText?.backgroundColor || "#000000",
+            textColor: template?.leadingText?.textColor || "#000000",
             content: { [lang]: "" },
             audio: "",
           } as ILeadingText,
@@ -1124,7 +1176,8 @@ export default function RoleplayForm({
           type,
           hint: {
             icon: "",
-            textColor: "#000000", // Added textColor
+            backgroundColor: template?.hint?.backgroundColor || "#FFFFFF",
+            textColor: template?.hint?.textColor || "#000000",
             content: { [lang]: "" },
           } as IHint,
         } as ISectionContent;
@@ -1418,15 +1471,15 @@ export default function RoleplayForm({
     }
   };
 
-  // Add new section
-  const addNewSection = () => {
+  const addNewSection = (template: IRoleplayColorTemplate) => {
     const newSection: ISection = {
       id: nextSectionId,
       title: { [lang]: `Section ${nextSectionId}` },
       transition: { [lang]: "" },
-      textColor: "#000000",
-      backgroundColor: "#ffffff",
+      textColor: template?.transition?.textColor || "#000000",
+      backgroundColor: template?.transition?.backgroundColor || "#ffffff",
       image: "", // Added image field
+      colorTemplateId: template?._id,
       contents: [],
     };
 
@@ -1437,6 +1490,87 @@ export default function RoleplayForm({
 
     setNextSectionId(nextSectionId + 1);
   };
+
+  const updateSectionColorTemplate = (
+    sectionId: number,
+    templateId: string
+  ) => {
+    const template = colorTemplates.find((item) => item._id === templateId);
+    if (!template) return;
+
+    setCurrentRoleplay((prev) => {
+      const sections = prev.sections || [];
+      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+      if (sectionIndex === -1) return prev;
+
+      const updatedSection = {
+        ...sections[sectionIndex],
+        colorTemplateId: templateId,
+        textColor:
+          template.transition?.textColor || sections[sectionIndex].textColor,
+        backgroundColor:
+          template.transition?.backgroundColor ||
+          sections[sectionIndex].backgroundColor,
+        contents: (sections[sectionIndex].contents || []).map((content) => {
+          if (content.type === RoleplaySectionType.CONVERSATION) {
+            const style =
+              content.conversation.position ===
+              SectionConversationPosition.RIGHT
+                ? template.conversation?.right
+                : template.conversation?.left;
+            return {
+              ...content,
+              conversation: {
+                ...content.conversation,
+                backgroundColor:
+                  style?.backgroundColor ||
+                  content.conversation.backgroundColor,
+                textColor: style?.textColor || content.conversation.textColor,
+              },
+            };
+          }
+          if (content.type === RoleplaySectionType.LEADING_TEXT) {
+            return {
+              ...content,
+              leadingText: {
+                ...content.leadingText,
+                backgroundColor:
+                  template.leadingText?.backgroundColor ||
+                  content.leadingText.backgroundColor,
+                textColor:
+                  template.leadingText?.textColor ||
+                  content.leadingText.textColor,
+              },
+            };
+          }
+          if (content.type === RoleplaySectionType.HINT) {
+            return {
+              ...content,
+              hint: {
+                ...content.hint,
+                backgroundColor:
+                  template.hint?.backgroundColor ||
+                  content.hint.backgroundColor,
+                textColor: template.hint?.textColor || content.hint.textColor,
+              },
+            };
+          }
+          return content;
+        }),
+      };
+
+      const updatedSections = [...sections];
+      updatedSections[sectionIndex] = updatedSection;
+      return { ...prev, sections: updatedSections };
+    });
+  };
+
+  // const handleSelectTemplateForSection = (
+  //   template: IRoleplayColorTemplate
+  // ) => {
+  //   addNewSection(template);
+  //   setTemplateModalOpen(false);
+  // };
 
   // Update section title
   const updateSectionTitle = (sectionId: number, title: ITranslation) => {
@@ -1574,438 +1708,446 @@ export default function RoleplayForm({
           >
             {sections.length > 0 ? (
               <div className="space-y-3">
-                {sections.map((section) => (
-                  <SortableItem key={section.id} id={section.id!.toString()}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-gray-800">
-                            {getTranslationValue(section.title, lang)}
-                          </h3>
-                          <span className="text-xs text-gray-500">
-                            ID: {section.id}
-                          </span>
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() =>
-                              requestDeleteSection(
-                                section.id || 0,
-                                getTranslationValue(section.title, lang)
-                              )
-                            }
-                            className="text-red-500 hover:text-red-700 p-1 rounded"
-                            title="Delete Section"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Section Title
-                          </label>
-                          <input
-                            type="text"
-                            value={getCurrentTranslationValue(
-                              section.title,
-                              lang
+                {sections.map((section) => {
+                  const template = colorTemplates.find(
+                    (item) => item._id === section.colorTemplateId
+                  );
+                  return (
+                    <SortableItem key={section.id} id={section.id!.toString()}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-gray-800">
+                              {getTranslationValue(section.title, lang)}
+                            </h3>
+                            <span className="text-xs text-gray-500">
+                              ID: {section.id}
+                            </span>
+                            {template && (
+                              <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                {template.title}
+                              </span>
                             )}
-                            onChange={(e) =>
-                              updateSectionTitle(
-                                section.id,
-                                updateTranslationValue(
-                                  section.title || {},
-                                  lang,
-                                  e.target.value
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() =>
+                                requestDeleteSection(
+                                  section.id || 0,
+                                  getTranslationValue(section.title, lang)
                                 )
-                              )
-                            }
-                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter section title"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Transition
-                          </label>
-                          <input
-                            type="text"
-                            value={getCurrentTranslationValue(
-                              section.transition,
-                              lang
-                            )}
-                            onChange={(e) =>
-                              updateSectionTransition(
-                                section.id,
-                                updateTranslationValue(
-                                  section.transition || {},
-                                  lang,
-                                  e.target.value
-                                )
-                              )
-                            }
-                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter transition text"
-                          />
-                        </div>
-                        <div>
-                          <ColorPicker
-                            value={section.backgroundColor || "#000000"}
-                            onChange={(value) =>
-                              updateSectionTransitionBackgoundColor(
-                                section.id,
-                                value
-                              )
-                            }
-                            label="Backgound Color"
-                          />
-                        </div>
-                        <div>
-                          <ColorPicker
-                            value={section.textColor || "#ffffff"}
-                            onChange={(value) =>
-                              updateSectionTransitionTextColor(
-                                section.id,
-                                value
-                              )
-                            }
-                            label="Text Color"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Section Image
-                          </label>
-                          <CloudflareFileUpload
-                            initialUrl={section.image || ""}
-                            onUrlChange={(url) =>
-                              updateSectionImage(section.id, url)
-                            }
-                            label=""
-                            uploadPayload={{
-                              prefix: "",
-                              folder: "roleplays",
-                            }}
-                          />
-                        </div>
-                      </div>
-
-                      <div className="border-t pt-3">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="text-sm font-medium text-gray-700">
-                            Content
-                          </h4>
-                        </div>
-
-                        {section.contents && section.contents.length > 0 ? (
-                          <DndContext
-                            collisionDetection={closestCenter}
-                            onDragEnd={(event) => {
-                              const { active, over } = event;
-
-                              if (over && active.id !== over.id) {
-                                const activeId =
-                                  typeof active.id === "string"
-                                    ? parseInt(active.id)
-                                    : active.id;
-                                const overId =
-                                  typeof over.id === "string"
-                                    ? parseInt(over.id)
-                                    : over.id;
-
-                                handleReorderContent(
-                                  section.id,
-                                  activeId,
-                                  overId
-                                );
                               }
-                            }}
-                          >
-                            <SortableContext
-                              items={section.contents.map((item) =>
-                                item.id!.toString()
-                              )}
-                              strategy={verticalListSortingStrategy}
+                              className="text-red-500 hover:text-red-700 p-1 rounded"
+                              title="Delete Section"
                             >
-                              <div className="space-y-2">
-                                {section.contents.map((content) => (
-                                  <SortableItem
-                                    key={content.id}
-                                    id={content.id!.toString()}
-                                  >
-                                    <div className="bg-gray-50 border border-gray-200 rounded p-2 hover:bg-gray-100 transition-colors">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-xs font-medium text-pink-400">
-                                            {content.type}
-                                          </span>
-                                          {content.type ===
-                                            RoleplaySectionType.CONVERSATION && (
-                                            <div className="flex items-center gap-1">
-                                              {content.conversation.avatar
-                                                ?.url && (
-                                                <img
-                                                  src={
-                                                    content.conversation.avatar
-                                                      .url
-                                                  }
-                                                  alt={
-                                                    content.conversation.avatar
-                                                      .name
-                                                  }
-                                                  className="w-4 h-4 rounded-full object-cover"
-                                                />
-                                              )}
-                                              <span className="text-xs text-gray-500">
-                                                {
-                                                  content.conversation.avatar
-                                                    ?.name
-                                                }
-                                              </span>
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{
-                                                  backgroundColor:
-                                                    content.conversation
-                                                      .backgroundColor,
-                                                }}
-                                              ></div>
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{
-                                                  backgroundColor:
-                                                    content.conversation
-                                                      .textColor,
-                                                }}
-                                              ></div>
-                                              <span className="text-xs text-gray-500">
-                                                {content.conversation.position}
-                                              </span>
-                                              {content.conversation.audio && (
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  className="h-3 w-3 text-gray-500"
-                                                  fill="none"
-                                                  viewBox="0 0 24 24"
-                                                  stroke="currentColor"
-                                                >
-                                                  <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                                                  />
-                                                </svg>
-                                              )}
-                                              <TextWithTooltip
-                                                text={
-                                                  content.conversation.content
-                                                }
-                                                maxLength={100}
-                                                lang={lang}
-                                              />
-                                            </div>
-                                          )}
-                                          {content.type ===
-                                            RoleplaySectionType.LEADING_TEXT && (
-                                            <div className="flex items-center gap-1">
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{
-                                                  backgroundColor:
-                                                    content.leadingText
-                                                      .backgroundColor,
-                                                }}
-                                              ></div>
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{
-                                                  backgroundColor:
-                                                    content.leadingText
-                                                      .textColor,
-                                                }}
-                                              ></div>
-                                              {content.leadingText.audio && (
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  className="h-3 w-3 text-gray-500"
-                                                  fill="none"
-                                                  viewBox="0 0 24 24"
-                                                  stroke="currentColor"
-                                                >
-                                                  <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                                                  />
-                                                </svg>
-                                              )}
-                                              <TextWithTooltip
-                                                text={
-                                                  content.leadingText.content
-                                                }
-                                                maxLength={100}
-                                                lang={lang}
-                                              />
-                                            </div>
-                                          )}
-                                          {content.type ===
-                                            RoleplaySectionType.HINT && (
-                                            <div className="flex items-center gap-1">
-                                              {content.hint.icon && (
-                                                <img
-                                                  src={content.hint.icon}
-                                                  alt="Hint icon"
-                                                  className="w-4 h-4 object-contain"
-                                                />
-                                              )}
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{
-                                                  backgroundColor:
-                                                    content.hint.textColor,
-                                                }}
-                                              ></div>
-                                              <TextWithTooltip
-                                                text={content.hint.content}
-                                                maxLength={100}
-                                                lang={lang}
-                                              />
-                                            </div>
-                                          )}
-                                          {content.type ===
-                                            RoleplaySectionType.EXERCISE && (
-                                            <div className="flex flex-col gap-1">
+                              <TrashIcon className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Section Title
+                            </label>
+                            <input
+                              type="text"
+                              value={getCurrentTranslationValue(
+                                section.title,
+                                lang
+                              )}
+                              onChange={(e) =>
+                                updateSectionTitle(
+                                  section.id,
+                                  updateTranslationValue(
+                                    section.title || {},
+                                    lang,
+                                    e.target.value
+                                  )
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              placeholder="Enter section title"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Transition
+                            </label>
+                            <input
+                              type="text"
+                              value={getCurrentTranslationValue(
+                                section.transition,
+                                lang
+                              )}
+                              onChange={(e) =>
+                                updateSectionTransition(
+                                  section.id,
+                                  updateTranslationValue(
+                                    section.transition || {},
+                                    lang,
+                                    e.target.value
+                                  )
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              placeholder="Enter transition text"
+                            />
+                          </div>
+                          <div>
+                            <ColorPicker
+                              value={section.backgroundColor || "#000000"}
+                              onChange={(value) =>
+                                updateSectionTransitionBackgoundColor(
+                                  section.id,
+                                  value
+                                )
+                              }
+                              label="Backgound Color"
+                            />
+                          </div>
+                          <div>
+                            <ColorPicker
+                              value={section.textColor || "#ffffff"}
+                              onChange={(value) =>
+                                updateSectionTransitionTextColor(
+                                  section.id,
+                                  value
+                                )
+                              }
+                              label="Text Color"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Section Image
+                            </label>
+                            <CloudflareFileUpload
+                              initialUrl={section.image || ""}
+                              onUrlChange={(url) =>
+                                updateSectionImage(section.id, url)
+                              }
+                              label=""
+                              uploadPayload={{
+                                prefix: "",
+                                folder: "roleplays",
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Color Template
+                            </label>
+                            <select
+                              value={section.colorTemplateId || ""}
+                              onChange={(e) =>
+                                updateSectionColorTemplate(
+                                  section.id,
+                                  e.target.value
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            >
+                              <option value="">Select template</option>
+                              {colorTemplates.map((template) => (
+                                <option key={template._id} value={template._id}>
+                                  {template.title}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="border-t pt-3">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-sm font-medium text-gray-700">
+                              Content
+                            </h4>
+                          </div>
+
+                          {section.contents && section.contents.length > 0 ? (
+                            <DndContext
+                              collisionDetection={closestCenter}
+                              onDragEnd={(event) => {
+                                const { active, over } = event;
+
+                                if (over && active.id !== over.id) {
+                                  const activeId =
+                                    typeof active.id === "string"
+                                      ? parseInt(active.id)
+                                      : active.id;
+                                  const overId =
+                                    typeof over.id === "string"
+                                      ? parseInt(over.id)
+                                      : over.id;
+
+                                  handleReorderContent(
+                                    section.id,
+                                    activeId,
+                                    overId
+                                  );
+                                }
+                              }}
+                            >
+                              <SortableContext
+                                items={section.contents.map((item) =>
+                                  item.id!.toString()
+                                )}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <div className="space-y-2">
+                                  {section.contents.map((content) => (
+                                    <SortableItem
+                                      key={content.id}
+                                      id={content.id!.toString()}
+                                    >
+                                      <div className="bg-gray-50 border border-gray-200 rounded p-2 hover:bg-gray-100 transition-colors">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs font-medium text-pink-400">
+                                              {content.type}
+                                            </span>
+                                            {content.type ===
+                                              RoleplaySectionType.CONVERSATION && (
                                               <div className="flex items-center gap-1">
-                                                <span className="text-xs text-gray-500">
-                                                  {content.exercise.type}
-                                                </span>
-                                                {content.exercise
-                                                  .speechBubble && (
-                                                  <TextWithTooltip
-                                                    text={
-                                                      content.exercise
-                                                        .speechBubble
+                                                {content.conversation.avatar
+                                                  ?.url && (
+                                                  <img
+                                                    src={
+                                                      content.conversation
+                                                        .avatar.url
                                                     }
-                                                    maxLength={100}
-                                                    lang={lang}
+                                                    alt={
+                                                      content.conversation
+                                                        .avatar.name
+                                                    }
+                                                    className="w-4 h-4 rounded-full object-cover"
                                                   />
                                                 )}
-                                                {content.exercise.tag && (
-                                                  <div className="ml-7">
-                                                    <TagDisplay
-                                                      tag={content.exercise.tag}
+                                                <span className="text-xs text-gray-500">
+                                                  {
+                                                    content.conversation.avatar
+                                                      ?.name
+                                                  }
+                                                </span>
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.conversation
+                                                        .backgroundColor,
+                                                  }}
+                                                ></div>
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.conversation
+                                                        .textColor,
+                                                  }}
+                                                ></div>
+                                                <span className="text-xs text-gray-500">
+                                                  {
+                                                    content.conversation
+                                                      .position
+                                                  }
+                                                </span>
+                                                {content.conversation.audio && (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-3 w-3 text-gray-500"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      strokeWidth={2}
+                                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                                    />
+                                                  </svg>
+                                                )}
+                                                <TextWithTooltip
+                                                  text={
+                                                    content.conversation.content
+                                                  }
+                                                  maxLength={100}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
+                                            {content.type ===
+                                              RoleplaySectionType.LEADING_TEXT && (
+                                              <div className="flex items-center gap-1">
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.leadingText
+                                                        .backgroundColor,
+                                                  }}
+                                                ></div>
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.leadingText
+                                                        .textColor,
+                                                  }}
+                                                ></div>
+                                                {content.leadingText.audio && (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-3 w-3 text-gray-500"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      strokeWidth={2}
+                                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                                    />
+                                                  </svg>
+                                                )}
+                                                <TextWithTooltip
+                                                  text={
+                                                    content.leadingText.content
+                                                  }
+                                                  maxLength={100}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
+                                            {content.type ===
+                                              RoleplaySectionType.HINT && (
+                                              <div className="flex items-center gap-1">
+                                                {content.hint.icon && (
+                                                  <img
+                                                    src={content.hint.icon}
+                                                    alt="Hint icon"
+                                                    className="w-4 h-4 object-contain"
+                                                  />
+                                                )}
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.hint.textColor,
+                                                  }}
+                                                ></div>
+                                                <TextWithTooltip
+                                                  text={content.hint.content}
+                                                  maxLength={100}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
+                                            {content.type ===
+                                              RoleplaySectionType.EXERCISE && (
+                                              <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-1">
+                                                  <span className="text-xs text-gray-500">
+                                                    {content.exercise.type}
+                                                  </span>
+                                                  {content.exercise
+                                                    .speechBubble && (
+                                                    <TextWithTooltip
+                                                      text={
+                                                        content.exercise
+                                                          .speechBubble
+                                                      }
+                                                      maxLength={100}
                                                       lang={lang}
                                                     />
-                                                  </div>
+                                                  )}
+                                                  {content.exercise.tag && (
+                                                    <div className="ml-7">
+                                                      <TagDisplay
+                                                        tag={
+                                                          content.exercise.tag
+                                                        }
+                                                        lang={lang}
+                                                      />
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                {content.exercise.maxScore && (
+                                                  <span className="text-xs font-medium text-gray-600">
+                                                    Max score:{" "}
+                                                    {content.exercise.maxScore}
+                                                  </span>
                                                 )}
-                                              </div>
-                                              {content.exercise.maxScore && (
-                                                <span className="text-xs font-medium text-gray-600">
-                                                  Max score:{" "}
-                                                  {content.exercise.maxScore}
-                                                </span>
-                                              )}
-                                              {content.exercise
-                                                .completionTime && (
-                                                <span className="text-xs font-medium text-gray-600">
-                                                  Completion Time:{" "}
-                                                  {
-                                                    content.exercise
-                                                      .completionTime
-                                                  }
-                                                </span>
-                                              )}
-                                              {content.exercise.keypointId && (
-                                                <span className="text-xs font-medium text-gray-600">
-                                                  Keypoint:{" "}
-                                                  {
-                                                    keypoints.find(
-                                                      (k) =>
-                                                        k._id ===
-                                                        content.exercise
-                                                          .keypointId
-                                                    )?.title?.[lang]
-                                                  }
-                                                </span>
-                                              )}
-                                              {content.exercise.document &&
-                                                content.exercise.document
-                                                  .length > 0 && (
-                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      Documents:
-                                                    </span>
-                                                    {content.exercise.document.map(
-                                                      (
-                                                        doc: IDocument,
-                                                        index: number
-                                                      ) => (
-                                                        <div
-                                                          key={index}
-                                                          className="ml-2 mt-1 text-xs"
-                                                        >
-                                                          <span className="font-semibold text-green-600">
-                                                            {doc.type.toUpperCase()}
-                                                          </span>
-                                                          {isTextualDocumentType(
-                                                            doc.type
-                                                          ) &&
-                                                            doc.data
-                                                              .content && (
-                                                              <div className="ml-1">
-                                                                <TextWithTooltip
-                                                                  text={
-                                                                    doc.data
-                                                                      .content
-                                                                  }
-                                                                  maxLength={
-                                                                    100
-                                                                  }
-                                                                  lang={lang}
-                                                                />
-                                                              </div>
-                                                            )}
-                                                          {doc.type ===
-                                                            DocumentType.IMAGE &&
-                                                            doc.data.url && (
-                                                              <div className="ml-1">
-                                                                <TextWithTooltip
-                                                                  text={
-                                                                    doc.data.url
-                                                                  }
-                                                                  maxLength={
-                                                                    100
-                                                                  }
-                                                                />
-                                                              </div>
-                                                            )}
-                                                          {doc.type ===
-                                                            DocumentType.AUDIO &&
-                                                            doc.data.url && (
-                                                              <div className="ml-1">
-                                                                <TextWithTooltip
-                                                                  text={
-                                                                    doc.data.url
-                                                                  }
-                                                                  maxLength={
-                                                                    100
-                                                                  }
-                                                                />
-                                                              </div>
-                                                            )}
-                                                          {doc.type ===
-                                                            DocumentType.VIDEO && (
-                                                            <>
-                                                              {doc.data.url && (
+                                                {content.exercise
+                                                  .completionTime && (
+                                                  <span className="text-xs font-medium text-gray-600">
+                                                    Completion Time:{" "}
+                                                    {
+                                                      content.exercise
+                                                        .completionTime
+                                                    }
+                                                  </span>
+                                                )}
+                                                {content.exercise
+                                                  .keypointId && (
+                                                  <span className="text-xs font-medium text-gray-600">
+                                                    Keypoint:{" "}
+                                                    {
+                                                      keypoints.find(
+                                                        (k) =>
+                                                          k._id ===
+                                                          content.exercise
+                                                            .keypointId
+                                                      )?.title?.[lang]
+                                                    }
+                                                  </span>
+                                                )}
+                                                {content.exercise.document &&
+                                                  content.exercise.document
+                                                    .length > 0 && (
+                                                    <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                      <span className="text-xs font-medium text-gray-600">
+                                                        Documents:
+                                                      </span>
+                                                      {content.exercise.document.map(
+                                                        (
+                                                          doc: IDocument,
+                                                          index: number
+                                                        ) => (
+                                                          <div
+                                                            key={index}
+                                                            className="ml-2 mt-1 text-xs"
+                                                          >
+                                                            <span className="font-semibold text-green-600">
+                                                              {doc.type.toUpperCase()}
+                                                            </span>
+                                                            {isTextualDocumentType(
+                                                              doc.type
+                                                            ) &&
+                                                              doc.data
+                                                                .content && (
+                                                                <div className="ml-1">
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      doc.data
+                                                                        .content
+                                                                    }
+                                                                    maxLength={
+                                                                      100
+                                                                    }
+                                                                    lang={lang}
+                                                                  />
+                                                                </div>
+                                                              )}
+                                                            {doc.type ===
+                                                              DocumentType.IMAGE &&
+                                                              doc.data.url && (
                                                                 <div className="ml-1">
                                                                   <TextWithTooltip
                                                                     text={
@@ -2018,13 +2160,14 @@ export default function RoleplayForm({
                                                                   />
                                                                 </div>
                                                               )}
-                                                              {doc.data
-                                                                .thumbnail && (
+                                                            {doc.type ===
+                                                              DocumentType.AUDIO &&
+                                                              doc.data.url && (
                                                                 <div className="ml-1">
                                                                   <TextWithTooltip
                                                                     text={
                                                                       doc.data
-                                                                        .thumbnail
+                                                                        .url
                                                                     }
                                                                     maxLength={
                                                                       100
@@ -2032,190 +2175,46 @@ export default function RoleplayForm({
                                                                   />
                                                                 </div>
                                                               )}
-                                                            </>
-                                                          )}
-                                                        </div>
-                                                      )
-                                                    )}
-                                                  </div>
-                                                )}
-                                              {content.exercise.explanation && (
-                                                <div className="flex items-center gap-1">
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-3 w-3 text-gray-500"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      strokeWidth={2}
-                                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                  </svg>
-                                                  <TextWithTooltip
-                                                    text={
-                                                      content.exercise
-                                                        .explanation
-                                                    }
-                                                    maxLength={100}
-                                                    lang={lang}
-                                                  />
-                                                </div>
-                                              )}
-                                              {(content.exercise.type ===
-                                                ExerciseType.SINGLE_CHOICE ||
-                                                content.exercise.type ===
-                                                  ExerciseType.MULTIPLE_CHOICE) &&
-                                                Array.isArray(
-                                                  (content.exercise as any)
-                                                    .options
-                                                ) && (
-                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      Options:
-                                                    </span>
-                                                    <ul className="mt-1 space-y-1">
-                                                      {(
-                                                        content.exercise as any
-                                                      ).options.map(
-                                                        (
-                                                          opt: any,
-                                                          idx: number
-                                                        ) => (
-                                                          <li
-                                                            key={idx}
-                                                            className="flex items-center"
-                                                          >
-                                                            <span
-                                                              className={`w-2 h-2 rounded-full mr-1 ${
-                                                                opt.isCorrect
-                                                                  ? "bg-green-500"
-                                                                  : "bg-gray-300"
-                                                              }`}
-                                                            ></span>
-                                                            <TextWithTooltip
-                                                              text={opt.value}
-                                                              lang={lang}
-                                                            />
-                                                          </li>
+                                                            {doc.type ===
+                                                              DocumentType.VIDEO && (
+                                                              <>
+                                                                {doc.data
+                                                                  .url && (
+                                                                  <div className="ml-1">
+                                                                    <TextWithTooltip
+                                                                      text={
+                                                                        doc.data
+                                                                          .url
+                                                                      }
+                                                                      maxLength={
+                                                                        100
+                                                                      }
+                                                                    />
+                                                                  </div>
+                                                                )}
+                                                                {doc.data
+                                                                  .thumbnail && (
+                                                                  <div className="ml-1">
+                                                                    <TextWithTooltip
+                                                                      text={
+                                                                        doc.data
+                                                                          .thumbnail
+                                                                      }
+                                                                      maxLength={
+                                                                        100
+                                                                      }
+                                                                    />
+                                                                  </div>
+                                                                )}
+                                                              </>
+                                                            )}
+                                                          </div>
                                                         )
                                                       )}
-                                                    </ul>
-                                                  </div>
-                                                )}
-                                              {content.exercise.type ===
-                                                ExerciseType.DRAG_DROP && (
-                                                <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                  <div className="flex items-center gap-1 mb-1">
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      Form:
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                      {"form" in
-                                                        content.exercise &&
-                                                        (content.exercise
-                                                          .form ||
-                                                          "Not specified")}
-                                                    </span>
-                                                  </div>
-                                                  {"targetArea" in
-                                                    content.exercise &&
-                                                    content.exercise
-                                                      .targetArea && (
-                                                      <div className="flex items-center gap-1 mb-1">
-                                                        <span className="text-xs font-medium text-gray-600">
-                                                          Target:
-                                                        </span>
-                                                        <TextWithTooltip
-                                                          text={
-                                                            content.exercise
-                                                              .targetArea
-                                                          }
-                                                          maxLength={100}
-                                                          lang={lang}
-                                                        />
-                                                      </div>
-                                                    )}
-                                                  {"options" in
-                                                    content.exercise &&
-                                                    content.exercise.options &&
-                                                    Array.isArray(
-                                                      content.exercise.options
-                                                    ) &&
-                                                    content.exercise.options
-                                                      .length > 0 && (
-                                                      <div className="mb-1">
-                                                        <span className="text-xs font-medium text-gray-600">
-                                                          Options:
-                                                        </span>
-                                                        <ul className="mt-1 space-y-1">
-                                                          {content.exercise.options.map(
-                                                            (
-                                                              opt: any,
-                                                              idx: number
-                                                            ) => (
-                                                              <li
-                                                                key={
-                                                                  opt.id || idx
-                                                                }
-                                                                className="flex items-center"
-                                                              >
-                                                                <TextWithTooltip
-                                                                  text={
-                                                                    opt.text
-                                                                  }
-                                                                  lang={lang}
-                                                                />
-                                                              </li>
-                                                            )
-                                                          )}
-                                                        </ul>
-                                                      </div>
-                                                    )}
-                                                  {"answer" in
-                                                    content.exercise &&
-                                                    content.exercise.answer &&
-                                                    Array.isArray(
-                                                      content.exercise.answer
-                                                    ) &&
-                                                    content.exercise.answer
-                                                      .length > 0 && (
-                                                      <div>
-                                                        <span className="text-xs font-medium text-gray-600">
-                                                          Answers:
-                                                        </span>
-                                                        <ul className="mt-1 space-y-1">
-                                                          {content.exercise.answer.map(
-                                                            (
-                                                              ans: any,
-                                                              idx: number
-                                                            ) => (
-                                                              <li
-                                                                key={
-                                                                  ans.id || idx
-                                                                }
-                                                                className="flex items-center"
-                                                              >
-                                                                <TextWithTooltip
-                                                                  text={
-                                                                    ans.correctAnswer
-                                                                  }
-                                                                  lang={lang}
-                                                                />
-                                                              </li>
-                                                            )
-                                                          )}
-                                                        </ul>
-                                                      </div>
-                                                    )}
-                                                </div>
-                                              )}
-                                              {content.exercise.type ===
-                                                ExerciseType.RECORD && (
-                                                <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                    </div>
+                                                  )}
+                                                {content.exercise
+                                                  .explanation && (
                                                   <div className="flex items-center gap-1">
                                                     <svg
                                                       xmlns="http://www.w3.org/2000/svg"
@@ -2228,22 +2227,173 @@ export default function RoleplayForm({
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
                                                         strokeWidth={2}
-                                                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                       />
                                                     </svg>
-                                                    <span className="text-xs text-gray-500">
-                                                      Max Duration:{" "}
-                                                      {
-                                                        (
-                                                          content.exercise as IExerciseRecord
-                                                        ).maxDuration
+                                                    <TextWithTooltip
+                                                      text={
+                                                        content.exercise
+                                                          .explanation
                                                       }
-                                                      s
-                                                    </span>
+                                                      maxLength={100}
+                                                      lang={lang}
+                                                    />
                                                   </div>
-                                                  {(
-                                                    content.exercise as IExerciseRecord
-                                                  ).maxCharacter && (
+                                                )}
+                                                {(content.exercise.type ===
+                                                  ExerciseType.SINGLE_CHOICE ||
+                                                  content.exercise.type ===
+                                                    ExerciseType.MULTIPLE_CHOICE) &&
+                                                  Array.isArray(
+                                                    (content.exercise as any)
+                                                      .options
+                                                  ) && (
+                                                    <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                      <span className="text-xs font-medium text-gray-600">
+                                                        Options:
+                                                      </span>
+                                                      <ul className="mt-1 space-y-1">
+                                                        {(
+                                                          content.exercise as any
+                                                        ).options.map(
+                                                          (
+                                                            opt: any,
+                                                            idx: number
+                                                          ) => (
+                                                            <li
+                                                              key={idx}
+                                                              className="flex items-center"
+                                                            >
+                                                              <span
+                                                                className={`w-2 h-2 rounded-full mr-1 ${
+                                                                  opt.isCorrect
+                                                                    ? "bg-green-500"
+                                                                    : "bg-gray-300"
+                                                                }`}
+                                                              ></span>
+                                                              <TextWithTooltip
+                                                                text={opt.value}
+                                                                lang={lang}
+                                                              />
+                                                            </li>
+                                                          )
+                                                        )}
+                                                      </ul>
+                                                    </div>
+                                                  )}
+                                                {content.exercise.type ===
+                                                  ExerciseType.DRAG_DROP && (
+                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                      <span className="text-xs font-medium text-gray-600">
+                                                        Form:
+                                                      </span>
+                                                      <span className="text-xs text-gray-500">
+                                                        {"form" in
+                                                          content.exercise &&
+                                                          (content.exercise
+                                                            .form ||
+                                                            "Not specified")}
+                                                      </span>
+                                                    </div>
+                                                    {"targetArea" in
+                                                      content.exercise &&
+                                                      content.exercise
+                                                        .targetArea && (
+                                                        <div className="flex items-center gap-1 mb-1">
+                                                          <span className="text-xs font-medium text-gray-600">
+                                                            Target:
+                                                          </span>
+                                                          <TextWithTooltip
+                                                            text={
+                                                              content.exercise
+                                                                .targetArea
+                                                            }
+                                                            maxLength={100}
+                                                            lang={lang}
+                                                          />
+                                                        </div>
+                                                      )}
+                                                    {"options" in
+                                                      content.exercise &&
+                                                      content.exercise
+                                                        .options &&
+                                                      Array.isArray(
+                                                        content.exercise.options
+                                                      ) &&
+                                                      content.exercise.options
+                                                        .length > 0 && (
+                                                        <div className="mb-1">
+                                                          <span className="text-xs font-medium text-gray-600">
+                                                            Options:
+                                                          </span>
+                                                          <ul className="mt-1 space-y-1">
+                                                            {content.exercise.options.map(
+                                                              (
+                                                                opt: any,
+                                                                idx: number
+                                                              ) => (
+                                                                <li
+                                                                  key={
+                                                                    opt.id ||
+                                                                    idx
+                                                                  }
+                                                                  className="flex items-center"
+                                                                >
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      opt.text
+                                                                    }
+                                                                    lang={lang}
+                                                                  />
+                                                                </li>
+                                                              )
+                                                            )}
+                                                          </ul>
+                                                        </div>
+                                                      )}
+                                                    {"answer" in
+                                                      content.exercise &&
+                                                      content.exercise.answer &&
+                                                      Array.isArray(
+                                                        content.exercise.answer
+                                                      ) &&
+                                                      content.exercise.answer
+                                                        .length > 0 && (
+                                                        <div>
+                                                          <span className="text-xs font-medium text-gray-600">
+                                                            Answers:
+                                                          </span>
+                                                          <ul className="mt-1 space-y-1">
+                                                            {content.exercise.answer.map(
+                                                              (
+                                                                ans: any,
+                                                                idx: number
+                                                              ) => (
+                                                                <li
+                                                                  key={
+                                                                    ans.id ||
+                                                                    idx
+                                                                  }
+                                                                  className="flex items-center"
+                                                                >
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      ans.correctAnswer
+                                                                    }
+                                                                    lang={lang}
+                                                                  />
+                                                                </li>
+                                                              )
+                                                            )}
+                                                          </ul>
+                                                        </div>
+                                                      )}
+                                                  </div>
+                                                )}
+                                                {content.exercise.type ===
+                                                  ExerciseType.RECORD && (
+                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
                                                     <div className="flex items-center gap-1">
                                                       <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -2256,88 +2406,127 @@ export default function RoleplayForm({
                                                           strokeLinecap="round"
                                                           strokeLinejoin="round"
                                                           strokeWidth={2}
-                                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                                                         />
                                                       </svg>
                                                       <span className="text-xs text-gray-500">
-                                                        Max Character:{" "}
+                                                        Max Duration:{" "}
                                                         {
                                                           (
                                                             content.exercise as IExerciseRecord
-                                                          ).maxCharacter
+                                                          ).maxDuration
                                                         }
+                                                        s
                                                       </span>
                                                     </div>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="flex gap-1">
-                                          <button
-                                            onClick={() =>
-                                              handleOpenModal(
-                                                section.id,
-                                                content.type,
-                                                content
-                                              )
-                                            }
-                                            className="text-blue-600 hover:text-blue-800 p-1 rounded"
-                                            title="Edit"
-                                          >
-                                            <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              className="h-4 w-4"
-                                              viewBox="0 0 20 20"
-                                              fill="currentColor"
+                                                    {(
+                                                      content.exercise as IExerciseRecord
+                                                    ).maxCharacter && (
+                                                      <div className="flex items-center gap-1">
+                                                        <svg
+                                                          xmlns="http://www.w3.org/2000/svg"
+                                                          className="h-3 w-3 text-gray-500"
+                                                          fill="none"
+                                                          viewBox="0 0 24 24"
+                                                          stroke="currentColor"
+                                                        >
+                                                          <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                          />
+                                                        </svg>
+                                                        <span className="text-xs text-gray-500">
+                                                          Max Character:{" "}
+                                                          {
+                                                            (
+                                                              content.exercise as IExerciseRecord
+                                                            ).maxCharacter
+                                                          }
+                                                        </span>
+                                                      </div>
+                                                    )}
+                                                  </div>
+                                                )}
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="flex gap-1">
+                                            <button
+                                              onClick={() =>
+                                                handleOpenModal(
+                                                  section.id,
+                                                  content.type,
+                                                  content
+                                                )
+                                              }
+                                              className="text-blue-600 hover:text-blue-800 p-1 rounded"
+                                              title="Edit"
                                             >
-                                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                            </svg>
-                                          </button>
-                                          <button
-                                            onClick={() =>
-                                              requestDeleteContent(
-                                                section.id,
-                                                content.id || 0,
-                                                `${content.type} content`
-                                              )
-                                            }
-                                            className="text-red-500 hover:text-red-700 p-1 rounded"
-                                            title="Delete"
-                                          >
-                                            <TrashIcon className="h-4 w-4" />
-                                          </button>
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                              >
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                              </svg>
+                                            </button>
+                                            <button
+                                              onClick={() =>
+                                                requestDeleteContent(
+                                                  section.id,
+                                                  content.id || 0,
+                                                  `${content.type} content`
+                                                )
+                                              }
+                                              className="text-red-500 hover:text-red-700 p-1 rounded"
+                                              title="Delete"
+                                            >
+                                              <TrashIcon className="h-4 w-4" />
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  </SortableItem>
-                                ))}
-                              </div>
-                            </SortableContext>
-                          </DndContext>
-                        ) : null}
-                        <div className="text-center pt-5">
-                          <button
-                            className="text-blue-500 hover:text-blue-700 transition-colors"
-                            onClick={() =>
-                              handleOpenContentTypePopup(section.id)
-                            }
-                          >
-                            <PlusIcon className="h-5 w-5" />
-                          </button>
+                                    </SortableItem>
+                                  ))}
+                                </div>
+                              </SortableContext>
+                            </DndContext>
+                          ) : null}
+                          <div className="text-center pt-5">
+                            <button
+                              className="text-blue-500 hover:text-blue-700 transition-colors"
+                              onClick={() =>
+                                handleOpenContentTypePopup(section.id)
+                              }
+                            >
+                              <PlusIcon className="h-5 w-5" />
+                            </button>
+                          </div>
                         </div>
-                      </div>
-                    </motion.div>
-                  </SortableItem>
-                ))}
+                      </motion.div>
+                    </SortableItem>
+                  );
+                })}
               </div>
             ) : null}
 
             <div className="text-center pt-5">
               <button
                 className="text-blue-500 hover:text-blue-700 transition-colors"
-                onClick={addNewSection}
+                onClick={() => {
+                  if (colorTemplatesLoading) {
+                    showError("Please wait for color templates to load");
+                    return;
+                  }
+                  if (!colorTemplates.length) {
+                    showError("Please create a roleplay color template first");
+                    return;
+                  }
+                  addNewSection(colorTemplates[0]);
+                }}
               >
                 <PlusCircleIcon className="h-8 w-8" />
               </button>
@@ -2468,14 +2657,33 @@ export default function RoleplayForm({
       setLocalFormData((prev: any) => ({ ...prev, [field]: value }));
     };
 
+    const sectionTemplate = getColorTemplateForSection(sectionId);
+
     const handleConversationChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        conversation: {
+      setLocalFormData((prev: any) => {
+        const updatedConversation: any = {
           ...prev.conversation,
           [field]: value,
-        },
-      }));
+        };
+
+        if (field === "position" && sectionTemplate && value) {
+          const style =
+            value === SectionConversationPosition.RIGHT
+              ? sectionTemplate.conversation?.right
+              : sectionTemplate.conversation?.left;
+          if (style?.backgroundColor) {
+            updatedConversation.backgroundColor = style.backgroundColor;
+          }
+          if (style?.textColor) {
+            updatedConversation.textColor = style.textColor;
+          }
+        }
+
+        return {
+          ...prev,
+          conversation: updatedConversation,
+        };
+      });
       // Clear error on change
       if (field === "avatar" || field === "avatarId") {
         setValidationErrors((prev) => ({ ...prev, avatar: "" }));
@@ -3205,6 +3413,12 @@ export default function RoleplayForm({
                 </p>
               )}
             </div>
+
+            <ColorPicker
+              value={localFormData.hint.backgroundColor || "#FFFFFF"}
+              onChange={(value) => handleHintChange("backgroundColor", value)}
+              label="Background Color"
+            />
 
             <ColorPicker
               value={localFormData.hint.textColor || "#000000"}
