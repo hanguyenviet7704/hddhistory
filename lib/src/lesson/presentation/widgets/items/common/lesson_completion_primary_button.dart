@@ -25,13 +25,6 @@ class LessonCompletionPrimaryButton extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppCustomColor.brandPrimary,
               borderRadius: BorderRadius.circular(1000.r),
-              boxShadow: [
-                BoxShadow(
-                  color: AppCustomColor.brandPrimary.op(0.25),
-                  blurRadius: 20,
-                  offset: Offset(0, 10.h),
-                ),
-              ],
             ),
             alignment: Alignment.center,
             child: AppText(

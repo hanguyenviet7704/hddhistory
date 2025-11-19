@@ -1,18 +1,11 @@
 part of '../../../../lesson.dart';
 
 class LessonCompletionProgressBar extends StatelessWidget {
-  const LessonCompletionProgressBar({
-    super.key,
-    this.progress = 0.68,
-    this.label,
-  });
-
-  final double progress;
-  final String? label;
+  const LessonCompletionProgressBar({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final double clampedProgress = progress.clamp(0, 1);
+    final double clampedProgress = 68.0 / 100.0;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -38,7 +31,7 @@ class LessonCompletionProgressBar extends StatelessWidget {
         ),
         8.horizontalSpace,
         AppText(
-          label ?? '${(clampedProgress * 100).round()}%',
+          '${(clampedProgress * 100).round()}%',
           maxLines: 1,
           style: AppStyle.textBold12.copyWith(
             color: AppCustomColor.textPrimary,

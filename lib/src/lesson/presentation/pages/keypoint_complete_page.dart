@@ -21,8 +21,11 @@ class KeypointCompletePage extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const LessonCompletionHeroCard(),
-                  32.verticalSpace,
+                  Image.asset(
+                    AppAsset.images.app.keypointCompleteDecoration.path,
+                    width: 227.w,
+                  ),
+                  16.verticalSpace,
                   AppText(
                     'Keypoint complete!',
                     maxLines: 1,
@@ -32,8 +35,10 @@ class KeypointCompletePage extends StatelessWidget {
                       height: 1.4,
                     ),
                   ),
-                  12.verticalSpace,
-                  const LessonCompletionProgressBar(progress: 0.68),
+                  if (kDebugMode) ...[
+                    12.verticalSpace,
+                    const LessonCompletionProgressBar(),
+                  ],
                 ],
               ),
             ),

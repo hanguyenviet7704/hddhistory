@@ -101,7 +101,6 @@ part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/close_popup_lesson.dart';
 part 'presentation/widgets/items/common/document_content_widget.dart';
 part 'presentation/widgets/items/common/lesson_completion_header.dart';
-part 'presentation/widgets/items/common/lesson_completion_hero_card.dart';
 part 'presentation/widgets/items/common/lesson_completion_primary_button.dart';
 part 'presentation/widgets/items/common/lesson_completion_progress_bar.dart';
 part 'presentation/widgets/items/common/document_item.dart';
