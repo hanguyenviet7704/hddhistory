@@ -78,6 +78,37 @@ const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
 const isTextualDocumentType = (type: DocumentType) =>
   TEXTUAL_DOCUMENT_TYPES.includes(type);
 
+const cleanDocumentItems = (documents: IDocument[]) => {
+  return documents
+    .map((doc) => {
+      const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedData: any = { ...doc.data };
+      if (cleanedContent && Object.keys(cleanedContent).length > 0) {
+        cleanedData.content = cleanedContent;
+      } else {
+        delete cleanedData.content;
+      }
+      if (!cleanedData.url) {
+        delete cleanedData.url;
+      }
+      if (!cleanedData.thumbnail) {
+        delete cleanedData.thumbnail;
+      }
+
+      const hasValue =
+        (isTextualDocumentType(doc.type) &&
+          !!cleanedData.content &&
+          Object.keys(cleanedData.content).length > 0) ||
+        ((doc.type === DocumentType.IMAGE || doc.type === DocumentType.AUDIO) &&
+          !!cleanedData.url) ||
+        (doc.type === DocumentType.VIDEO &&
+          (!!cleanedData.url || !!cleanedData.thumbnail));
+
+      return hasValue ? ({ ...doc, data: cleanedData } as IDocument) : null;
+    })
+    .filter(Boolean) as IDocument[];
+};
+
 const getDocumentContentLabel = (type: DocumentType) => {
   switch (type) {
     case DocumentType.TITLE:
@@ -758,19 +789,14 @@ export default function RoleplayForm({
       "document" in exercisePayload &&
       Array.isArray(exercisePayload.document)
     ) {
-      (exercisePayload as any).document = exercisePayload.document.map(
-        (doc: any) => {
-          const cleanedDoc: any = { ...doc };
-          if (doc.data?.content) {
-            // Always include content field but clean empty translations
-            cleanedDoc.data = {
-              ...doc.data,
-              content: cleanTranslation(doc.data.content) || {},
-            };
-          }
-          return cleanedDoc;
-        }
+      const cleanedDocuments = cleanDocumentItems(
+        exercisePayload.document as IDocument[]
       );
+      if (cleanedDocuments.length > 0) {
+        (exercisePayload as any).document = cleanedDocuments;
+      } else {
+        delete (exercisePayload as any).document;
+      }
     }
 
     return exercisePayload;
@@ -1113,13 +1139,7 @@ export default function RoleplayForm({
             speechBubble: { [lang]: "" },
             tag: null,
             keypointId: "",
-            document: [
-              {
-                id: 1,
-                type: DocumentType.TEXT,
-                data: createEmptyMediaDocument(lang),
-              },
-            ],
+            document: [],
             explanation: { [lang]: "" },
             options: [
               { value: { [lang]: "" }, isCorrect: false },
@@ -2721,7 +2741,6 @@ export default function RoleplayForm({
         !localFormData.exercise
       )
         return;
-      if (localFormData.exercise.document.length === 1) return;
       setLocalFormData((prev: any) => ({
         ...prev,
         exercise: {
@@ -2743,6 +2762,22 @@ export default function RoleplayForm({
       setNextAnswerId(localNextAnswerId);
 
       let dataToSave = localFormData;
+
+      if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise
+      ) {
+        const cleanedDocuments = cleanDocumentItems(
+          localFormData.exercise.document || []
+        );
+        dataToSave = {
+          ...dataToSave,
+          exercise: {
+            ...localFormData.exercise,
+            document: cleanedDocuments,
+          },
+        };
+      }
 
       if (
         contentType === RoleplaySectionType.EXERCISE &&
@@ -3281,15 +3316,13 @@ export default function RoleplayForm({
                       <h4 className="font-medium text-sky-400">
                         Content {index + 1}
                       </h4>
-                      {localFormData.exercise.document.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeDocument(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeDocument(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </div>
 
                     <div className="space-y-3">

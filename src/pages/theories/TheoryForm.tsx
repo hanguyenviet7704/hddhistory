@@ -57,6 +57,37 @@ const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
 const isTextualDocumentType = (type: DocumentType) =>
   TEXTUAL_DOCUMENT_TYPES.includes(type);
 
+const cleanDocumentItems = (documents: IDocument[]) => {
+  return documents
+    .map((doc) => {
+      const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedData: any = { ...doc.data };
+      if (cleanedContent && Object.keys(cleanedContent).length > 0) {
+        cleanedData.content = cleanedContent;
+      } else {
+        delete cleanedData.content;
+      }
+      if (!cleanedData.url) {
+        delete cleanedData.url;
+      }
+      if (!cleanedData.thumbnail) {
+        delete cleanedData.thumbnail;
+      }
+
+      const hasValue =
+        (isTextualDocumentType(doc.type) &&
+          !!cleanedData.content &&
+          Object.keys(cleanedData.content).length > 0) ||
+        ((doc.type === DocumentType.IMAGE || doc.type === DocumentType.AUDIO) &&
+          !!cleanedData.url) ||
+        (doc.type === DocumentType.VIDEO &&
+          (!!cleanedData.url || !!cleanedData.thumbnail));
+
+      return hasValue ? ({ ...doc, data: cleanedData } as IDocument) : null;
+    })
+    .filter(Boolean) as IDocument[];
+};
+
 const getDocumentContentLabel = (type: DocumentType) => {
   switch (type) {
     case DocumentType.TITLE:
@@ -244,36 +275,39 @@ export default function TheoryForm({
   const convertDocumentsToPayload = (
     documents: ITheoryDocument[]
   ): TheoryDocumentPayload[] => {
-    return documents.map((doc) => {
-      const payload: any = {
-        id: doc.id,
-        tag: doc.tag?._id || "",
-        document: [],
-      };
+    return (
+      documents
+        .map((doc) => {
+          const payload: any = {
+            id: doc.id,
+            tag: doc.tag?._id || "",
+            document: [],
+          };
 
-      // Only add speechBubble if it has non-empty translations
-      const cleanedSpeechBubble = cleanTranslation(doc.speechBubble);
-      if (cleanedSpeechBubble) {
-        payload.speechBubble = cleanedSpeechBubble;
-      }
-
-      // Process document array and clean content translations
-      if (doc.document?.length) {
-        payload.document = doc.document.map((docItem) => {
-          const cleanedDoc: any = { ...docItem };
-          if (docItem.data?.content) {
-            // Always include content field but clean empty translations
-            cleanedDoc.data = {
-              ...docItem.data,
-              content: cleanTranslation(docItem.data.content) || {},
-            };
+          // Only add speechBubble if it has non-empty translations
+          const cleanedSpeechBubble = cleanTranslation(doc.speechBubble);
+          if (cleanedSpeechBubble) {
+            payload.speechBubble = cleanedSpeechBubble;
           }
-          return cleanedDoc;
-        });
-      }
 
-      return payload;
-    });
+          const cleanedDocuments = doc.document?.length
+            ? cleanDocumentItems(doc.document)
+            : [];
+
+          if (cleanedDocuments.length > 0) {
+            payload.document = cleanedDocuments;
+          }
+
+          // Skip if nothing to send
+          if (!payload.speechBubble && (!payload.document || payload.document.length === 0)) {
+            return null;
+          }
+
+          return payload;
+        })
+        // Remove empty payloads
+        .filter(Boolean) as TheoryDocumentPayload[]
+    );
   };
 
   const handleSaveTheory = async () => {
@@ -684,13 +718,7 @@ export default function TheoryForm({
         id: nextDocId,
         speechBubble: { [lang]: "" },
         tag: null,
-        document: [
-          {
-            id: 1,
-            type: DocumentType.TEXT,
-            data: createEmptyMediaDocument(lang),
-          },
-        ],
+        document: [],
       };
     });
 
@@ -873,7 +901,6 @@ export default function TheoryForm({
       }));
     };
     const removeInnerDocument = (index: number) => {
-      if (formData.document.length === 1) return;
       setFormData((prev) => ({
         ...prev,
         document: prev.document.filter((_, i) => i !== index),
@@ -881,11 +908,6 @@ export default function TheoryForm({
     };
 
     const handleSave = () => {
-      if (!selectedTag) {
-        showError("Please select a tag.");
-        return;
-      }
-
       // Clean speechBubble if empty
       const cleanedData: any = {
         ...formData,
@@ -899,18 +921,13 @@ export default function TheoryForm({
         delete cleanedData.speechBubble;
       }
 
-      // Clean document content fields
-      if (formData.document?.length) {
-        cleanedData.document = formData.document.map((doc) => {
-          const cleanedDoc: any = { ...doc };
-          if (doc.data?.content) {
-            cleanedDoc.data = {
-              ...doc.data,
-              content: cleanTranslation(doc.data.content) || {},
-            };
-          }
-          return cleanedDoc;
-        });
+      const cleanedDocuments = formData.document?.length
+        ? cleanDocumentItems(formData.document)
+        : [];
+      if (cleanedDocuments.length > 0) {
+        cleanedData.document = cleanedDocuments;
+      } else {
+        cleanedData.document = [];
       }
 
       onSave(cleanedData);
@@ -1005,15 +1022,13 @@ export default function TheoryForm({
                 <h4 className="font-medium text-sky-400">
                   Content {index + 1}
                 </h4>
-                {formData.document.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeInnerDocument(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => removeInnerDocument(index)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
               </div>
               <div className="space-y-3">
                 <div>

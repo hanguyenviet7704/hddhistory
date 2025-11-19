@@ -65,6 +65,37 @@ const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
 const isTextualDocumentType = (type: DocumentType) =>
   TEXTUAL_DOCUMENT_TYPES.includes(type);
 
+const cleanDocumentItems = (documents: IDocument[]) => {
+  return documents
+    .map((doc) => {
+      const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedData: any = { ...doc.data };
+      if (cleanedContent && Object.keys(cleanedContent).length > 0) {
+        cleanedData.content = cleanedContent;
+      } else {
+        delete cleanedData.content;
+      }
+      if (!cleanedData.url) {
+        delete cleanedData.url;
+      }
+      if (!cleanedData.thumbnail) {
+        delete cleanedData.thumbnail;
+      }
+
+      const hasValue =
+        (isTextualDocumentType(doc.type) &&
+          !!cleanedData.content &&
+          Object.keys(cleanedData.content).length > 0) ||
+        ((doc.type === DocumentType.IMAGE || doc.type === DocumentType.AUDIO) &&
+          !!cleanedData.url) ||
+        (doc.type === DocumentType.VIDEO &&
+          (!!cleanedData.url || !!cleanedData.thumbnail));
+
+      return hasValue ? ({ ...doc, data: cleanedData } as IDocument) : null;
+    })
+    .filter(Boolean) as IDocument[];
+};
+
 const getDocumentContentLabel = (type: DocumentType) => {
   switch (type) {
     case DocumentType.TITLE:
@@ -363,18 +394,11 @@ export default function ExerciseForm({
       }
 
       // Process documents with translations
-      if (question.document?.length) {
-        convertedQuestion.document = question.document.map((doc: IDocument) => {
-          const cleanedDoc: any = { ...doc };
-          if (doc.data?.content) {
-            // Always include content field but clean empty translations
-            cleanedDoc.data = {
-              ...doc.data,
-              content: cleanTranslation(doc.data.content) || {},
-            };
-          }
-          return cleanedDoc;
-        });
+      const cleanedDocuments = question.document?.length
+        ? cleanDocumentItems(question.document)
+        : [];
+      if (cleanedDocuments.length > 0) {
+        convertedQuestion.document = cleanedDocuments;
       }
 
       return convertedQuestion;
@@ -516,13 +540,6 @@ export default function ExerciseForm({
 
   // Create empty question based on type
   const createEmptyQuestion = (type: ExerciseType, id: number, currentLang: LangCode = lang) => {
-    // Mỗi câu hỏi mới sẽ bắt đầu với một document có ID là 1
-    const initialDocument = {
-      id: 1,
-      type: DocumentType.TEXT,
-      data: createEmptyMediaDocument(currentLang),
-    };
-
     switch (type) {
       case ExerciseType.SINGLE_CHOICE:
         return {
@@ -530,7 +547,7 @@ export default function ExerciseForm({
           type,
           speechBubble: { [currentLang]: "" },
           tag: null,
-          document: [initialDocument],
+          document: [],
           explanation: { [currentLang]: "" },
           options: [
             { value: { [currentLang]: "" }, isCorrect: false },
@@ -547,7 +564,7 @@ export default function ExerciseForm({
           type,
           speechBubble: { [currentLang]: "" },
           tag: null,
-          document: [initialDocument],
+          document: [],
           explanation: { [currentLang]: "" },
           options: [
             { value: { [currentLang]: "" }, isCorrect: false },
@@ -564,7 +581,7 @@ export default function ExerciseForm({
           type,
           speechBubble: { [currentLang]: "" },
           tag: null,
-          document: [initialDocument],
+          document: [],
           explanation: { [currentLang]: "" },
           targetArea: { [currentLang]: "" },
           answer: [] as IAnswer[],
@@ -581,7 +598,7 @@ export default function ExerciseForm({
           type,
           speechBubble: { [currentLang]: "" },
           tag: null,
-          document: [initialDocument],
+          document: [],
           explanation: { [currentLang]: "" },
           record: "",
           maxDuration: 30,
@@ -1334,7 +1351,6 @@ export default function ExerciseForm({
     };
 
     const removeDocument = (index: number) => {
-      if (localFormData.document.length === 1) return;
       setLocalFormData((prev: any) => ({
         ...prev,
         document: prev.document.filter(
@@ -1348,7 +1364,14 @@ export default function ExerciseForm({
       setNextOptionId(localNextOptionId);
       setNextAnswerId(localNextAnswerId);
 
-      onSave(localFormData);
+      const cleanedDocuments = localFormData.document?.length
+        ? cleanDocumentItems(localFormData.document)
+        : [];
+
+      onSave({
+        ...localFormData,
+        document: cleanedDocuments,
+      });
     };
 
     // Add new option
@@ -1555,16 +1578,14 @@ export default function ExerciseForm({
                 <h4 className="font-medium text-sky-400">
                   Content {index + 1}
                 </h4>
-                {localFormData.document.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeDocument(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
+                      <button
+                        type="button"
+                        onClick={() => removeDocument(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
 
               <div className="space-y-3">
                 <div>

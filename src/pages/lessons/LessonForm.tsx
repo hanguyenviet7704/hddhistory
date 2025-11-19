@@ -75,7 +75,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
     itemId: string | null;
     itemTitle: string;
   } | null>(null);
-
+  const [selectedKeypoints, setSelectedKeypoints] = useState<IKeypoint[]>([]);
   const [confirmDeleteLesson, setConfirmDeleteLesson] = useState(false);
 
   const [icons, setIcons] = useState<ITag[]>([]);
@@ -257,43 +257,61 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
     });
   };
 
-  // Open modal to choose keypoint (fetch list)
-  const handleOpenModal = async (section: "keypoints") => {
-    try {
-      const res = await keypointService.getList({
-        page: 1,
-        take: 100,
-        search: searchKeypoint,
-      });
-      setKeypointList(res.data.items ?? []);
-      setModalOpen({ section });
-      setSearchKeypoint("");
-    } catch (err) {
-      console.error("handleOpenModal", err);
-    }
+  // fetch keypoints whenever modal opens or search changes
+  useEffect(() => {
+    if (!modalOpen.section) return;
+    let active = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await keypointService.getList({
+          page: 1,
+          take: 100,
+          search: searchKeypoint,
+        });
+        if (active) setKeypointList(res.data.items ?? []);
+      } catch (err) {
+        console.error("fetchKeypoints", err);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [modalOpen.section, searchKeypoint]);
+
+  // Open modal to choose keypoint (triggered above effect)
+  const handleOpenModal = (section: "keypoints") => {
+    setSearchKeypoint("");
+    setSelectedKeypoints([]);
+    setModalOpen({ section });
   };
 
-  const handleAddKeypoint = (kp: IKeypoint) => {
+  const toggleKeypointSelection = (kp: IKeypoint) => {
+    setSelectedKeypoints((prev) => {
+      const exists = prev.some((item) => item._id === kp._id);
+      if (exists) return prev.filter((item) => item._id !== kp._id);
+      return [...prev, kp];
+    });
+  };
+
+  const handleAddSelectedKeypoints = () => {
     if (!modalOpen.section) return;
     const section = modalOpen.section;
-
     setCurrentLesson((prev) => {
       const existing = (prev[section] as any[]) || [];
-
-      // kiểm tra trùng bằng _id (nếu có)
-      const isDuplicate = existing.some((item) =>
-        (item as any)._id === kp._id || item === kp._id
+      const existingIds = new Set(
+        existing.map((item: any) => (item as any)._id || item)
       );
-
-      // nếu có trùng, bỏ qua không thêm
-      if (isDuplicate) return prev;
-
+      const additions = selectedKeypoints.filter(
+        (kp) => !existingIds.has(kp._id)
+      );
       return {
         ...prev,
-        [section]: [...existing, kp],
+        [section]: [...existing, ...additions],
       } as ILesson;
     });
-
+    setSelectedKeypoints([]);
     setModalOpen({ section: null });
   };
 
@@ -807,47 +825,58 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                           ?.toLowerCase()
                           .includes(searchKeypoint.toLowerCase())
                       )
-                      .map((kp) => (
-                        <motion.div
-                          key={kp._id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-4 p-4 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
-                          onClick={() => handleAddKeypoint(kp)}
-                        >
-                          {/* {kp.image && (
-                            <img
-                              src={kp.image}
-                              className="w-16 h-16 rounded-lg object-cover"
-                              alt={kp.title?.[lang]}
-                            />
-                          )} */}
-                          <PuzzlePieceIcon className="h-8 w- text-yellow-500" />
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-800">
-                              {kp.title?.[lang]}
+                      .map((kp) => {
+                        const selected = selectedKeypoints.some(
+                          (item) => item._id === kp._id
+                        );
+                        return (
+                          <motion.div
+                            key={kp._id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`flex items-center gap-4 p-4 cursor-pointer rounded-lg transition-colors border ${
+                              selected
+                                ? "bg-blue-50 border-blue-200"
+                                : "hover:bg-gray-100 border-transparent"
+                            }`}
+                            onClick={() => toggleKeypointSelection(kp)}
+                          >
+                            <div
+                              className={`h-6 w-6 rounded-full border flex items-center justify-center ${
+                                selected
+                                  ? "bg-blue-600 border-blue-600 text-white"
+                                  : "border-gray-300 text-transparent"
+                              }`}
+                            >
+                              ✓
                             </div>
-                            {kp.description?.[lang] && (
-                              <div className="text-sm text-gray-600 mt-1">
-                                {kp.description?.[lang]}
+                            <PuzzlePieceIcon className="h-8 w-8 text-yellow-500" />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-800">
+                                {kp.title?.[lang]}
                               </div>
-                            )}
-                            {/* Hiển thị tag nếu có */}
-                            {kp.tag && kp.tag.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {kp.tag.map((t, index) => (
-                                  <span
-                                    key={index}
-                                    className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                  >
-                                    {t}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))
+                              {kp.description?.[lang] && (
+                                <div className="text-sm text-gray-600 mt-1">
+                                  {kp.description?.[lang]}
+                                </div>
+                              )}
+                              {/* Hiển thị tag nếu có */}
+                              {kp.tag && kp.tag.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {kp.tag.map((t, index) => (
+                                    <span
+                                      key={index}
+                                      className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                                    >
+                                      {t}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })
                   ) : (
                     <div className="text-center py-8 text-gray-500">
                       No keypoints found
@@ -857,8 +886,18 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
 
                 <div className="mt-4 text-right">
                   <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed mr-2"
+                    disabled={selectedKeypoints.length === 0}
+                    onClick={handleAddSelectedKeypoints}
+                  >
+                    Add selected
+                  </button>
+                  <button
                     className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
-                    onClick={() => setModalOpen({ section: null })}
+                    onClick={() => {
+                      setSelectedKeypoints([]);
+                      setModalOpen({ section: null });
+                    }}
                   >
                     Cancel
                   </button>
