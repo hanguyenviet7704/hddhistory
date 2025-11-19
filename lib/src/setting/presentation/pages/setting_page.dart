@@ -15,41 +15,41 @@ class SettingPage extends StatelessWidget {
           physics: const BouncingScrollPhysics(),
           children: [
             SettingProfileCard(user: user),
-            SizedBox(height: 24.h),
+            24.verticalSpace,
             SettingSectionCard(
-              title: context.text.settingGeneralSection,
+              title: context.text.settingSectionHeaderGeneral,
               children: [
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icBell,
-                  title: context.text.settingNotificationsLabel,
-                  trailingText: context.text.settingNotificationsDefaultTime,
+                  title: context.text.settingRowNoti,
+                  trailingText: '05:05',
                 ),
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icGlobe,
-                  title: context.text.settingLanguageLabel,
-                  trailingText: context.text.settingLanguageDefaultValue,
+                  title: context.text.settingRowLanguage,
+                  trailingText: 'English',
                 ),
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icCreditCard,
-                  title: context.text.settingUpgradePremiumLabel,
+                  title: context.text.settingRowUpgradePremium,
                 ),
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icSet,
-                  title: context.text.settingRestorePurchaseLabel,
+                  title: context.text.settingRowRestorePurchase,
                 ),
               ],
             ),
-            SizedBox(height: 24.h),
-            SettingSectionCard(
-              title: context.text.settingAboutSection,
+            24.verticalSpace,
+            SettingSectionCard( 
+              title: context.text.settingSectionHeaderAbout,
               children: [
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icShieldPlus,
-                  title: context.text.settingTermsConditionsLabel,
+                  title: context.text.settingAboutSectionTerm,
                 ),
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icLogOut,
-                  title: context.text.settingLogoutLabel,
+                  title: context.text.settingLogOut,
                   titleColor: AppCustomColor.errorRed,
                   iconColor: AppCustomColor.errorRed,
                   iconBackgroundColor: AppCustomColor.errorRed.op(.08),

@@ -64,14 +64,14 @@ class SettingProfileCard extends StatelessWidget {
     if (user.name.trim().isNotEmpty) {
       return user.name.trim();
     }
-    return context.text.settingProfileGuestName;
+    return 'Guest';
   }
 
   String _resolveEmail(BuildContext context) {
     if (user.email.trim().isNotEmpty) {
       return user.email.trim();
     }
-    return context.text.settingProfileGuestEmailPlaceholder;
+    return 'Guest Email';
   }
 }
 
@@ -120,7 +120,7 @@ class _SettingProfileAvatar extends StatelessWidget {
       reference = user.email.trim();
     }
     if (reference.isEmpty) {
-      reference = context.text.settingProfileGuestName;
+      reference = 'Guest';
     }
     final int rune = reference.runes.first;
     return String.fromCharCode(rune).toUpperCase();
