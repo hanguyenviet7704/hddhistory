@@ -14,7 +14,12 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
   @override
   Map<String, dynamic> toJson(CourseRoadmapState state) => state.toJson();
 
-  void loadRoadmap(String courseId) async {
+  void loadRoadmap({String courseId = ''}) async {
+    if (courseId.isEmpty) {
+      courseId = state.roadmap.courseId;
+    }
+    if (courseId.isEmpty) return;
+
     await runUseCase<RoadmapEntity>(
       usecase: () => _getRoadmapUseCase(courseId),
       buildLoadingState: () => state.copyWith(status: CourseRoadmapStatus.loading),

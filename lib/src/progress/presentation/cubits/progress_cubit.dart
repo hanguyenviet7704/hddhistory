@@ -7,6 +7,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
   final UpdateUserProgressExerciseUseCase _updateUserProgressExerciseUseCase;
   final GetAllUserProgresssUseCase _getAllUserProgresssUseCase;
   final GetUserProgressMyCoursesUseCase _getUserProgressMyCoursesUseCase;
+  final HomeCubit _homeCubit;
+  final CourseLessonCubit _courseLessonCubit;
+  final UserCubit _userCubit;
 
   ProgressCubit(
     this._getAllUserProgresssUseCase,
@@ -14,13 +17,31 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     this._updateUserProgressKeypointUseCase,
     this._updateUserProgressExerciseUseCase,
     this._getUserProgressMyCoursesUseCase,
+    this._homeCubit,
+    this._courseLessonCubit,
+    this._userCubit,
   ) : super(ProgressState.initial());
 
-  void loadAllUserProgresss({bool isInit = false}) async {
+  void loadAllUserProgresss({bool isInit = false, String? lessonId}) async {
     if (!isInit && state.status == ProgressStatus.loading) return;
     if (!isInit && state.userProgressData.isLastPage) return;
 
-    PageBreakRequest pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.userProgressData.nextPage);
+    final String requestUserId = _userCubit.state.user.id;
+    final String requestCourseId = _homeCubit.state.currentCourse.id;
+    // final String requestLessonId = lessonId ?? _courseLessonCubit.state.selectedLesson.id;
+    final UserProgressFilter filter = UserProgressFilter(
+      userId: requestUserId,
+      courseId: requestCourseId,
+      // lessonId: requestLessonId,
+      grade: UserProgressFilterType.course,
+    );
+
+    PageBreakRequest pageRequest = isInit
+        ? PageBreakRequest(filter: filter)
+        : PageBreakRequest(
+            page: state.userProgressData.nextPage,
+            filter: filter,
+          );
 
     await runUseCasePageBreak<UserProgressEntity>(
       usecase: () => _getAllUserProgresssUseCase(pageRequest),
@@ -45,7 +66,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ProgressStatus.success, selectedLesson: item));
-        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(params.body["courseId"]);
+        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: params.body["courseId"]);
       },
     );
   }
@@ -96,7 +117,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         }
         emit(state.copyWith(status: ProgressStatus.success, selectedKeypoint: item));
         AppDI.injector.get<CourseLessonCubit>().loadLesson(courseLessonState.selectedLesson.id);
-        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId);
+        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: courseId);
         loadUserProgressMyCourses(isInit: true, recent: true);
       },
     );

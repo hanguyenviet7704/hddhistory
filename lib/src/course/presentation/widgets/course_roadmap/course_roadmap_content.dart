@@ -7,12 +7,7 @@ class CourseRoadmapContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Expanded(
       child: RefreshIndicator(
-        onRefresh: () async {
-          // final courseId = progress.courseId.isNotEmpty ? progress.courseId : course.id;
-          // if (courseId.isNotEmpty) {
-          //   context.read<CourseCubit>().loadRoadmap(courseId);
-          // }
-        },
+        onRefresh: () async => context.read<CourseRoadmapCubit>().loadRoadmap(),
         child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, RoadmapEntity>(
           selector: (state) => state.roadmap,
           builder: (context, roadmap) {

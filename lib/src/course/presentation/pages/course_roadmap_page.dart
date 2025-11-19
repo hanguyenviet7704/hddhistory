@@ -9,9 +9,7 @@ class CourseRoadmapPage extends StatelessWidget {
       backgroundColor: AppCustomColor.backgroundGray,
       body: Column(
         children: [
-          // Top progress bar
           TopProgressBar(),
-          // Main content
           CourseRoadmapContent(),
         ],
       ),

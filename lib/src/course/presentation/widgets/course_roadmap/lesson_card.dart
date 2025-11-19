@@ -37,18 +37,19 @@ class LessonCard extends StatelessWidget {
     return null;
   }
 
-  bool get _showInProgressBadge {
-    return lesson.progess == ProcessEnum.inProgress;
-  }
+  bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
 
   void _onTap(BuildContext context) {
     switch (lesson.type) {
+
       case LessonType.lesson:
         context.read<CourseLessonCubit>()
           ..reset()
           ..loadLesson(lesson.id);
+        context.read<ProgressCubit>().loadAllUserProgresss(lessonId: lesson.id);
         LessonListRoute().go(context);
         break;
+
       case LessonType.roleplay:
         AppDI.injector.get<RoleplayCubit>()
           ..reset()
@@ -56,6 +57,7 @@ class LessonCard extends StatelessWidget {
           ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
         RoleplayIntroRoute().go(context);
         break;
+        
       case LessonType.output:
         break;
     }
