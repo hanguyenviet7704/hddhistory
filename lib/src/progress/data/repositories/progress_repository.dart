@@ -8,27 +8,85 @@ class ProgressRepository with RestfulRequestHandlerMixin implements IProgressRep
   ProgressRepository(this._api, this._localDataSource);
 
   @override
-  TaskEither<AppException, BasePageBreak<UserProgressEntity>> getAllUserProgresss(
-    PageBreakRequest request,
+  TaskEither<AppException, UserProgressEntity> getAllUserProgresss(
+    UserProgressFilter filter,
   ) {
-    return callApiPageBreak<UserProgressModel, UserProgressEntity>(
-      apiCall: () => _api.getAllUserProgresss(request),
+    return callApiWithTransform<UserProgressModel, UserProgressEntity>(
+      apiCall: () => _api.getAllUserProgresss(filter),
       transform: (model) => model.toEntity(),
-      onSuccess: (pageData) async {
-        await _localDataSource.cacheUserProgresss(pageData.items);
+      onSuccess: (data) async {
+        if (data != null) {
+          await _localDataSource.cacheUserProgresss([data]);
+        }
       },
       onError: () async {
         final cachedModels = await _localDataSource.getCachedUserProgresss();
         if (cachedModels.isNotEmpty) {
-          return BasePageBreak<UserProgressEntity>(
-            currentPage: 1,
-            totalPages: 1,
-            itemsPerPage: cachedModels.length,
-            items: cachedModels.map((model) => model.toEntity()).toList(),
-          );
+          return cachedModels.first.toEntity();
         }
         return null;
       },
+      defaultValue: UserProgressEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, LessonResultEntity> getUserProgressLesson(
+    UserProgressFilter filter,
+  ) {
+    return callApiWithTransform<LessonResultModel, LessonResultEntity>(
+      apiCall: () => _api.getUserProgressLesson(filter),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async {
+        if (data != null) {
+          await _localDataSource.cacheLessonResult(data);
+        }
+      },
+      onError: () async {
+        final cachedModel = await _localDataSource.getCachedLessonResult();
+        return cachedModel?.toEntity();
+      },
+      defaultValue: LessonResultEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, KeypointResultEntity> getUserProgressKeypoint(
+    UserProgressFilter filter,
+  ) {
+    return callApiWithTransform<KeypointResultModel, KeypointResultEntity>(
+      apiCall: () => _api.getUserProgressKeypoint(filter),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async {
+        if (data != null) {
+          await _localDataSource.cacheKeypointResult(data);
+        }
+      },
+      onError: () async {
+        final cachedModel = await _localDataSource.getCachedKeypointResult();
+        return cachedModel?.toEntity();
+      },
+      defaultValue: KeypointResultEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, ExerciseResultEntity> getUserProgressExercise(
+    UserProgressFilter filter,
+  ) {
+    return callApiWithTransform<ExerciseResultModel, ExerciseResultEntity>(
+      apiCall: () => _api.getUserProgressExercise(filter),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async {
+        if (data != null) {
+          await _localDataSource.cacheExerciseResult(data);
+        }
+      },
+      onError: () async {
+        final cachedModel = await _localDataSource.getCachedExerciseResult();
+        return cachedModel?.toEntity();
+      },
+      defaultValue: ExerciseResultEntity(),
     );
   }
 

@@ -6,11 +6,11 @@ enum ProgressStatus { initial, loading, success, failure }
 abstract class ProgressState with _$ProgressState {
   const factory ProgressState({
     @Default(ProgressStatus.initial) ProgressStatus status,
-    @Default(BasePageBreak<UserProgressEntity>()) BasePageBreak<UserProgressEntity> userProgressData,
     @Default(BasePageBreak<CourseEntity>()) BasePageBreak<CourseEntity> myCoursesPageData,
-    UserProgressEntity? selectedLesson,
-    UserProgressEntity? selectedKeypoint,
-    UserProgressEntity? selectedExercise,
+    @Default(UserProgressEntity()) UserProgressEntity selectedUserProgress,
+    @Default(LessonResultEntity()) LessonResultEntity lessonResult,
+    @Default(KeypointResultEntity()) KeypointResultEntity keypointResult,
+    @Default(ExerciseResultEntity()) ExerciseResultEntity exerciseResult,
     String? errorMessage,
   }) = _ProgressState;
 
@@ -20,6 +20,7 @@ abstract class ProgressState with _$ProgressState {
 }
 
 extension ProgressStateExtension on ProgressState {
-  List<UserProgressEntity> get userProgresses => userProgressData.items;
+  // List<UserProgressEntity> get userProgresses => userProgressData.items;
+  List<UserProgressEntity> get userProgresses => [];
   List<CourseEntity> get myCourses => myCoursesPageData.items;
 }

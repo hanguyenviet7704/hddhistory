@@ -2,10 +2,13 @@ part of '../../progress.dart';
 
 @lazySingleton
 class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<ProgressState> {
+  final GetAllUserProgresssUseCase _getAllUserProgresssUseCase;
+  final GetUserProgressLessonUseCase _getUserProgressLessonUseCase;
+  final GetUserProgressKeypointUseCase _getUserProgressKeypointUseCase;
+  final GetUserProgressExerciseUseCase _getUserProgressExerciseUseCase;
   final UpdateUserProgressLessonUseCase _updateUserProgressLessonUseCase;
   final UpdateUserProgressKeypointUseCase _updateUserProgressKeypointUseCase;
   final UpdateUserProgressExerciseUseCase _updateUserProgressExerciseUseCase;
-  final GetAllUserProgresssUseCase _getAllUserProgresssUseCase;
   final GetUserProgressMyCoursesUseCase _getUserProgressMyCoursesUseCase;
   final HomeCubit _homeCubit;
   // ignore: unused_field
@@ -14,6 +17,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
 
   ProgressCubit(
     this._getAllUserProgresssUseCase,
+    this._getUserProgressLessonUseCase,
+    this._getUserProgressKeypointUseCase,
+    this._getUserProgressExerciseUseCase,
     this._updateUserProgressLessonUseCase,
     this._updateUserProgressKeypointUseCase,
     this._updateUserProgressExerciseUseCase,
@@ -23,12 +29,11 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     this._userCubit,
   ) : super(ProgressState.initial());
 
-  void loadAllUserProgresss({bool isInit = false, String? lessonId}) async {
-    if (!isInit && state.status == ProgressStatus.loading) return;
-    if (!isInit && state.userProgressData.isLastPage) return;
+  void loadAllUserProgresss({String? userId, String? courseId, String? lessonId}) async {
+    if (state.status == ProgressStatus.loading) return;
 
-    final String requestUserId = _userCubit.state.user.id;
-    final String requestCourseId = _homeCubit.state.currentCourse.id;
+    final String requestUserId = userId ?? _userCubit.state.user.id;
+    final String requestCourseId = courseId ?? _homeCubit.state.currentCourse.id;
     final String requestLessonId = lessonId ?? _courseLessonCubit.state.selectedLesson.id;
     final UserProgressFilter filter = UserProgressFilter(
       userId: requestUserId,
@@ -37,23 +42,92 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       grade: UserProgressFilterType.course,
     );
 
-    PageBreakRequest pageRequest = isInit
-        ? PageBreakRequest(filter: filter)
-        : PageBreakRequest(
-            page: state.userProgressData.nextPage,
-            filter: filter,
-          );
-
-    await runUseCasePageBreak<UserProgressEntity>(
-      usecase: () => _getAllUserProgresssUseCase(pageRequest),
-      currentPageData: state.userProgressData,
-      isInit: isInit,
+    await runUseCase<UserProgressEntity>(
+      usecase: () => _getAllUserProgresssUseCase(filter),
       buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
-      onSuccess: (pageData) {
-        emit(state.copyWith(status: ProgressStatus.success, userProgressData: pageData));
+      onSuccess: (item) {
+        emit(state.copyWith(status: ProgressStatus.success, selectedUserProgress: item));
+      },
+    );
+  }
+
+  void loadUserProgressLesson({String? userId, String? courseId, String? lessonId}) async {
+    if (state.status == ProgressStatus.loading) return;
+
+    final String requestUserId = userId ?? _userCubit.state.user.id;
+    final String requestCourseId = courseId ?? _homeCubit.state.currentCourse.id;
+    final String requestLessonId = lessonId ?? _courseLessonCubit.state.selectedLesson.id;
+    final UserProgressFilter filter = UserProgressFilter(
+      userId: requestUserId,
+      courseId: requestCourseId,
+      lessonId: requestLessonId,
+      grade: UserProgressFilterType.lesson,
+    );
+
+    await runUseCase<LessonResultEntity>(
+      usecase: () => _getUserProgressLessonUseCase(filter),
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (item) {
+        emit(state.copyWith(status: ProgressStatus.success, lessonResult: item));
+      },
+    );
+  }
+
+  void loadUserProgressKeypoint({String? userId, String? courseId, String? lessonId, String? keypointId}) async {
+    if (state.status == ProgressStatus.loading) return;
+
+    final String requestUserId = userId ?? _userCubit.state.user.id;
+    final String requestCourseId = courseId ?? _homeCubit.state.currentCourse.id;
+    final String requestLessonId = lessonId ?? _courseLessonCubit.state.selectedLesson.id;
+    final UserProgressFilter filter = UserProgressFilter(
+      userId: requestUserId,
+      courseId: requestCourseId,
+      lessonId: requestLessonId,
+      keypointId: keypointId,
+      grade: UserProgressFilterType.keypoint,
+    );
+
+    await runUseCase<KeypointResultEntity>(
+      usecase: () => _getUserProgressKeypointUseCase(filter),
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (item) {
+        emit(state.copyWith(status: ProgressStatus.success, keypointResult: item));
+      },
+    );
+  }
+
+  void loadUserProgressExercise({String? userId, String? courseId, String? lessonId, String? keypointId, String? exerciseId}) async {
+    if (state.status == ProgressStatus.loading) return;
+
+    final String requestUserId = userId ?? _userCubit.state.user.id;
+    final String requestCourseId = courseId ?? _homeCubit.state.currentCourse.id;
+    final String requestLessonId = lessonId ?? _courseLessonCubit.state.selectedLesson.id;
+    final UserProgressFilter filter = UserProgressFilter(
+      userId: requestUserId,
+      courseId: requestCourseId,
+      lessonId: requestLessonId,
+      keypointId: keypointId,
+      exerciseId: exerciseId,
+      grade: UserProgressFilterType.exercise,
+    );
+
+    await runUseCase<ExerciseResultEntity>(
+      usecase: () => _getUserProgressExerciseUseCase(filter),
+      buildLoadingState: () => state.copyWith(status: ProgressStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
+      },
+      onSuccess: (item) {
+        emit(state.copyWith(status: ProgressStatus.success, exerciseResult: item));
       },
     );
   }
@@ -66,7 +140,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: ProgressStatus.success, selectedLesson: item));
+        emit(state.copyWith(status: ProgressStatus.success));
         AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: params.body["courseId"]);
       },
     );
@@ -116,7 +190,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
             },
           );
         }
-        emit(state.copyWith(status: ProgressStatus.success, selectedKeypoint: item));
+        emit(state.copyWith(status: ProgressStatus.success));
         AppDI.injector.get<CourseLessonCubit>().loadLesson(courseLessonState.selectedLesson.id);
         AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: courseId);
         loadUserProgressMyCourses(isInit: true, recent: true);
@@ -136,7 +210,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         emit(state.copyWith(status: ProgressStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(status: ProgressStatus.success, selectedExercise: item));
+        emit(state.copyWith(status: ProgressStatus.success));
       },
     );
   }
