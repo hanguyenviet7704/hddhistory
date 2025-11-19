@@ -3,8 +3,7 @@ part of '../../roleplay.dart';
 @freezed
 abstract class ConversationEntity with _$ConversationEntity {
   const factory ConversationEntity({
-    @Default('') String name,
-    @Default(ConversationAvatarEntity()) ConversationAvatarEntity avartar,
+    @Default(ConversationAvatarEntity()) ConversationAvatarEntity avatar,
     @Default(SectionConversationPosition.left) SectionConversationPosition position,
     @Default('') String backgroundColor,
     @Default('') String textColor,

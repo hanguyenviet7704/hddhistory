@@ -176,7 +176,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
 
   bool _isSamePerson(ConversationEntity conversation, ConversationEntity? nextConversation) {
     if (nextConversation == null) return false;
-    return nextConversation.name == conversation.name;
+    return nextConversation.avatar.id == conversation.avatar.id;
   }
 
   double _getBottomPadding(int index, int contentIndex) {

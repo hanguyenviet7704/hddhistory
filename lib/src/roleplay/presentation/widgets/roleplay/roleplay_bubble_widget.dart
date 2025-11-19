@@ -15,7 +15,7 @@ class RoleplayConversationBubble extends StatelessWidget {
   bool get _isRight => conversation.position == SectionConversationPosition.right;
   bool get _isSamePerson {
     if (previousConversation == null) return false;
-    return previousConversation!.name == conversation.name;
+    return previousConversation!.avatar.id == conversation.avatar.id;
   }
 
   @override
@@ -126,15 +126,15 @@ class _RoleplayParticipantAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isSamePerson) return SizedBox.shrink();
+    
     Widget avatar = DCachedImage(
-      url: conversation.avartar.url,
+      url: conversation.avatar.url,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(50.r),
       width: 44.w,
       height: 44.w,
     );
-
-    if (isSamePerson) return SizedBox.shrink();
 
     return Row(
       mainAxisAlignment: !isRight ? MainAxisAlignment.start : MainAxisAlignment.end,
@@ -144,7 +144,7 @@ class _RoleplayParticipantAvatar extends StatelessWidget {
           12.horizontalSpace,
         ],
         AppText(
-          conversation.name,
+          conversation.avatar.name,
           style: AppStyle.text14.copyWith(
             fontWeight: FontWeight.w600,
             color: conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor,

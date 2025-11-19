@@ -3,6 +3,7 @@ part of '../../roleplay.dart';
 @freezed
 abstract class ConversationAvatarEntity with _$ConversationAvatarEntity {
   const factory ConversationAvatarEntity({
+    @Default('') String id,
     @Default('') String name,
     @Default('') String url,
   }) = _ConversationAvatarEntity;

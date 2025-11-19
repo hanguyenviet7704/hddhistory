@@ -3,8 +3,7 @@ part of '../../roleplay.dart';
 @freezed
 abstract class ConversationModel with _$ConversationModel {
   const factory ConversationModel({
-    @Default('') String name,
-    @Default(ConversationAvatarModel()) ConversationAvatarModel avartar,
+    @Default(ConversationAvatarModel()) ConversationAvatarModel avatar,
     @Default(SectionConversationPosition.left) SectionConversationPosition position,
     @Default('') String backgroundColor,
     @Default('') String textColor,
@@ -17,8 +16,7 @@ abstract class ConversationModel with _$ConversationModel {
 
 extension ConversationModelExtension on ConversationModel {
   ConversationEntity toEntity() => ConversationEntity(
-    name: name,
-    avartar: avartar.toEntity(),
+    avatar: avatar.toEntity(),
     position: position,
     backgroundColor: backgroundColor,
     textColor: textColor,
