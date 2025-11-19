@@ -8,6 +8,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
   final GetAllUserProgresssUseCase _getAllUserProgresssUseCase;
   final GetUserProgressMyCoursesUseCase _getUserProgressMyCoursesUseCase;
   final HomeCubit _homeCubit;
+  // ignore: unused_field
   final CourseLessonCubit _courseLessonCubit;
   final UserCubit _userCubit;
 
@@ -28,11 +29,11 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
 
     final String requestUserId = _userCubit.state.user.id;
     final String requestCourseId = _homeCubit.state.currentCourse.id;
-    // final String requestLessonId = lessonId ?? _courseLessonCubit.state.selectedLesson.id;
+    final String requestLessonId = lessonId ?? _courseLessonCubit.state.selectedLesson.id;
     final UserProgressFilter filter = UserProgressFilter(
       userId: requestUserId,
       courseId: requestCourseId,
-      // lessonId: requestLessonId,
+      lessonId: requestLessonId,
       grade: UserProgressFilterType.course,
     );
 

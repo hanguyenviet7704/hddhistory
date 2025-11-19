@@ -20,3 +20,14 @@ abstract class LessonEntity with _$LessonEntity {
 
   factory LessonEntity.fromJson(Map<String, dynamic> json) => _$LessonEntityFromJson(json);
 }
+
+extension LessonEntityListExtension on List<LessonEntity> {
+  LessonEntity lessonRolePlay(String lessonId) {
+    int index = indexWhere((lesson) => lesson.id == lessonId);
+    if (index == -1) return LessonEntity();
+    for (int i = index; i >= 0; i--) {
+      if (elementAt(i).type == LessonType.roleplay) return elementAt(i);
+    }
+    return LessonEntity();
+  }
+}

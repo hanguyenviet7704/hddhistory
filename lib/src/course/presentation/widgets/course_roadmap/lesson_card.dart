@@ -2,10 +2,12 @@ part of '../../../course.dart';
 
 class LessonCard extends StatelessWidget {
   final LessonEntity lesson;
+  final LessonEntity lessonRolePlay;
 
   const LessonCard({
     super.key,
     required this.lesson,
+    required this.lessonRolePlay,
   });
 
   Color get _backgroundColor {
@@ -43,10 +45,10 @@ class LessonCard extends StatelessWidget {
     switch (lesson.type) {
 
       case LessonType.lesson:
+        context.read<ProgressCubit>().loadAllUserProgresss(lessonId: lessonRolePlay.id);
         context.read<CourseLessonCubit>()
           ..reset()
           ..loadLesson(lesson.id);
-        context.read<ProgressCubit>().loadAllUserProgresss(lessonId: lesson.id);
         LessonListRoute().go(context);
         break;
 
