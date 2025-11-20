@@ -43,6 +43,7 @@ class IntroPage extends StatelessWidget {
                   flex: 2,
                   child: BlocBuilder<IntroCubit, IntroState>(
                     builder: (context, state) {
+                      if (state.intros.isEmpty) return const SizedBox.shrink();
                       final content = state.intros[state.currentPage];
                       return IntroContent(content: content);
                     },

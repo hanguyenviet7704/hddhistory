@@ -10,6 +10,7 @@ class StartJourneyButton extends StatelessWidget {
       child: AppButton.primary(
         onPressed: () {
           AppDI.injector.get<HomeCubit>().initializeData();
+          AppDI.injector.get<UserCubit>().setIsFirstTime(false);
           RegisterRoute().go(context);
         },
         fullWidthBtn: true,

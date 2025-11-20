@@ -5,7 +5,6 @@ class ChooseLanguagePage extends StatelessWidget {
 
   void _handleSelectLanguage(BuildContext context, LocaleType locale) {
     context.read<LocaleCubit>().changeLocale(locale);
-    context.read<UserCubit>().setIsFirstTime(false);
     IntroRoute().go(context);
   }
 

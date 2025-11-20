@@ -18,36 +18,30 @@ class _ProfileView extends StatefulWidget {
 
 class _ProfileViewState extends State<_ProfileView> {
   late final TextEditingController _nameController;
-  bool _isEditing = false;
+  late final ValueNotifier<bool> _isEditingNotifier;
 
   @override
   void initState() {
     super.initState();
     final profileCubit = context.read<ProfileCubit>();
-    final userCubit = context.read<UserCubit>();
-
-    final UserEntity initialUser = profileCubit.state.user.id.isNotEmpty ? profileCubit.state.user : userCubit.state.user;
-    if (initialUser.id.isNotEmpty) {
-      profileCubit
-        ..setUser(initialUser)
-        ..loadUser();
-    }
-
+    final UserEntity initialUser = profileCubit.state.user;
     _nameController = TextEditingController(text: initialUser.name);
+    _isEditingNotifier = ValueNotifier(false);
   }
 
   @override
   void dispose() {
     _nameController.dispose();
+    _isEditingNotifier.dispose();
     super.dispose();
   }
 
   void _onToggleEdit() {
-    if (_isEditing) {
+    if (_isEditingNotifier.value) {
       _submitUpdate();
       return;
     }
-    setState(() => _isEditing = true);
+    _isEditingNotifier.value = true;
   }
 
   void _submitUpdate() {
@@ -80,6 +74,8 @@ class _ProfileViewState extends State<_ProfileView> {
 
   @override
   Widget build(BuildContext context) {
+    final double bottomPadding = MediaQuery.paddingOf(context).bottom;
+
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
@@ -94,7 +90,7 @@ class _ProfileViewState extends State<_ProfileView> {
 
             if (state.status == ProfileStatus.success) {
               _nameController.text = state.user.name;
-              if (_isEditing) setState(() => _isEditing = false);
+              if (_isEditingNotifier.value) _isEditingNotifier.value = false;
             }
 
             if (state.status == ProfileStatus.failure) {
@@ -104,31 +100,44 @@ class _ProfileViewState extends State<_ProfileView> {
               );
             }
           },
-          child: BlocBuilder<ProfileCubit, ProfileState>(
-            builder: (context, state) {
-              final user = state.user;
-              final double bottomPadding = MediaQuery.paddingOf(context).bottom;
-
+          child: ValueListenableBuilder<bool>(
+            valueListenable: _isEditingNotifier,
+            builder: (context, isEditing, _) {
               return Column(
                 children: [
                   ProfileHeader(
-                    isEditing: _isEditing,
+                    isEditing: isEditing,
                     onBack: () => context.back(),
                     onActionTap: _onToggleEdit,
                   ),
                   Expanded(
-                    child: ListView(
-                      padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 24.h),
-                      physics: const BouncingScrollPhysics(),
-                      children: [
-                        _isEditing ? _EditableSection(controller: _nameController, user: user, onSubmit: _submitUpdate) : _ReadonlySection(user: user),
-                      ],
+                    child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                      selector: (state) => state.user,
+                      builder: (context, user) {
+                        return ListView(
+                          padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 24.h),
+                          physics: const BouncingScrollPhysics(),
+                          children: [
+                            isEditing
+                                ? _EditableSection(
+                                    controller: _nameController,
+                                    user: user,
+                                    onSubmit: _submitUpdate,
+                                  )
+                                : _ReadonlySection(user: user),
+                          ],
+                        );
+                      },
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h + bottomPadding),
-                    child: ProfileDeleteButton(onTap: () => _handleDeleteAccount(user)),
-                  ),
+                  if (!isEditing)
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h + bottomPadding),
+                      child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                        selector: (state) => state.user,
+                        builder: (context, user) => ProfileDeleteButton(onTap: () => _handleDeleteAccount(user)),
+                      ),
+                    ),
                 ],
               );
             },
