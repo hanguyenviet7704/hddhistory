@@ -19,7 +19,7 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
           "deviceName": deviceName,
         },
         "name": nameController.text,
-        "languagge": languageCode,
+        "language": languageCode,
         "age": state.selectedAgeRange?.label.text,
         "gender": state.selectedGender?.label.text,
         "onboarding": {

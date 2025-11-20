@@ -34,7 +34,7 @@ mixin AppEndpoint {
   static const String usersLogout = '/api/v1/users/logout';
   static const String usersLoginProvider = '/api/v1/users/login/provider';
   static const String usersRefreshToken = '/api/v1/users/{id}/refresh-token';
-  static const String usersMe = '/api/v1/users/me';
+  static const String getUserProfile = '/api/v1/users/me';
   static const String users = '/api/v1/users';
   static const String usersById = '/api/v1/users/{id}';
 

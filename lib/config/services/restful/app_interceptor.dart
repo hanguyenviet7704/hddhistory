@@ -20,7 +20,7 @@ class AppInterceptor extends BaseInterceptor {
     if (!hasAuthorizationHeader && AppGlobalValue.accessToken.isNotEmpty) {
       options.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
     }
-    options.headers['language'] = _getCurrentLanguage();
+    options.headers['lang'] = _getCurrentLanguage();
   }
 
   String _getCurrentLanguage() {

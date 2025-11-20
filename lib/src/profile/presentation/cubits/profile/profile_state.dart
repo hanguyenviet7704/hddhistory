@@ -6,8 +6,7 @@ enum ProfileStatus { initial, loading, success, failure }
 abstract class ProfileState with _$ProfileState {
   const factory ProfileState({
     @Default(ProfileStatus.initial) ProfileStatus status,
-    @Default(BasePageBreak<UserEntity>()) BasePageBreak<UserEntity> pageData,
-    UserEntity? selectedItem,
+    @Default(UserEntity()) UserEntity user,
     String? errorMessage,
   }) = _ProfileState;
 

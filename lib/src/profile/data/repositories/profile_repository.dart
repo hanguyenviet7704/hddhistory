@@ -10,51 +10,13 @@ class ProfileRepository with RestfulRequestHandlerMixin implements IProfileRepos
   @override
   TaskEither<AppException, UserEntity> getUser(String id) {
     return callApiWithTransform<UserModel, UserEntity>(
-      apiCall: () => _api.getUser(id),
+      apiCall: () => _api.getUserProfile(id),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUser(data ?? UserModel()),
       onError: () async {
         final cachedModel = await _localDataSource.getCachedUser(id);
         return cachedModel?.toEntity();
       },
-      defaultValue: UserEntity(),
-    );
-  }
-
-  @override
-  TaskEither<AppException, BasePageBreak<UserEntity>> getAllUsers(
-    PageBreakRequest request,
-  ) {
-    return callApiPageBreak<UserModel, UserEntity>(
-      apiCall: () => _api.getAllUsers(request),
-      transform: (model) => model.toEntity(),
-      onSuccess: (pageData) async {
-        // Cache only the items from the current page
-        await _localDataSource.cacheUsers(pageData.items);
-      },
-      onError: () async {
-        final cachedModels = await _localDataSource.getCachedUsers();
-        if (cachedModels.isNotEmpty) {
-          return BasePageBreak<UserEntity>(
-            currentPage: 1,
-            totalPages: 1,
-            itemsPerPage: cachedModels.length,
-            items: cachedModels.map((model) => model.toEntity()).toList(),
-          );
-        }
-        return null;
-      },
-    );
-  }
-
-  @override
-  TaskEither<AppException, UserEntity> createUser(
-    UserEntity entity,
-  ) {
-    return callApiWithTransform<UserModel, UserEntity>(
-      apiCall: () => _api.createUser(_entityToJson(entity)),
-      transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheUser(data ?? UserModel()),
       defaultValue: UserEntity(),
     );
   }
@@ -68,14 +30,6 @@ class ProfileRepository with RestfulRequestHandlerMixin implements IProfileRepos
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUser(data ?? UserModel()),
       defaultValue: UserEntity(),
-    );
-  }
-
-  @override
-  TaskEither<AppException, Unit> deleteUser(String id) {
-    return executeApiAction(
-      apiCall: () => _api.deleteUser(id),
-      onSuccess: () async => await _localDataSource.deleteCachedUser(id),
     );
   }
 

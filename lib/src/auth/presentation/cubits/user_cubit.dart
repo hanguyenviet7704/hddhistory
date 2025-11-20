@@ -29,13 +29,8 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
 
   void setAuth(AuthEntity auth) {
     emit(state.copyWith(auth: auth));
+    AppDI.injector.get<ProfileCubit>().setUser(auth.user);
     setTrackingUser();
-
-    if (auth.user.id.isEmpty) return;
-    // getMyProfiles();
-    // AppConfig.instance.context!.read<PaywallCubit>()
-    //   ..reactiveFakePremium(auth.user.id)
-    //   ..addUserPremiumId(auth.user.id);
   }
 
   void setTrackingUser() {
@@ -51,6 +46,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   Future<void> clearData() async {
     bool isFirstTime = state.isFirstTimeUserAccessApp;
     emit(UserState.initial());
+    AppDI.injector.get<ProfileCubit>().reset();
     emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
     _appTrackingService.setUserId(null);
     _appTrackingService.setUserProperties({});

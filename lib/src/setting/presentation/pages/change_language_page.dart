@@ -14,8 +14,9 @@ class ChangeLanguagePage extends StatelessWidget {
   Widget build(BuildContext context) {
     final double bottomPadding = MediaQuery.paddingOf(context).bottom;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
+    return CupertinoScaffold(
+      topRadius: const Radius.circular(24),
+      transitionBackgroundColor: AppCustomColor.backgroundWhite,
       body: Padding(
         padding: EdgeInsets.only(bottom: bottomPadding + 12.h),
         child: Column(
