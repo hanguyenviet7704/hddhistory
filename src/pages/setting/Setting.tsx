@@ -5,15 +5,17 @@ import {
   TagIcon,
   PhotoIcon,
   SparklesIcon,
+  PaintBrushIcon,
 } from "@heroicons/react/24/outline";
 import UserManagement from "../../components/setting/UserManagement";
 import TagManagement from "../../components/setting/TagManagement";
 import AvatarManagement from "../../components/setting/AvatarManagement";
 import IconManagement from "../../components/setting/IconManagement";
+import RoleplayColorManagement from "../../components/setting/RoleplayColorManagement";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<
-    "users" | "tags" | "avatars" | "icons"
+    "users" | "tags" | "avatars" | "icons" | "roleplayColors"
   >("tags");
 
   return (
@@ -77,6 +79,20 @@ const SettingsPage = () => {
             <SparklesIcon className="h-4 w-4 mr-2" />
             Icons
           </button>
+          <button
+            onClick={() => setActiveTab("roleplayColors")}
+            className={`
+              flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
+              ${
+                activeTab === "roleplayColors"
+                  ? "bg-indigo-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }
+            `}
+          >
+            <PaintBrushIcon className="h-4 w-4 mr-2" />
+            Roleplay Colors
+          </button>
         </div>
 
         {/* Content based on active tab */}
@@ -84,6 +100,7 @@ const SettingsPage = () => {
         {activeTab === "tags" && <TagManagement />}
         {activeTab === "avatars" && <AvatarManagement />}
         {activeTab === "icons" && <IconManagement />}
+        {activeTab === "roleplayColors" && <RoleplayColorManagement />}
       </div>
     </div>
   );

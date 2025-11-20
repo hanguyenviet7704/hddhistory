@@ -1,9 +1,8 @@
 import { DocumentType } from "../../../utils/enum/course.enum";
+import { ITranslation } from "../../../utils/translate";
 
 export interface IMediaDocument {
-  title: string;
-  content: string;
-  caption: string;
+  content: ITranslation;
   url?: string;
   thumbnail?: string;
 }

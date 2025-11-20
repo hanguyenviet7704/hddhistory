@@ -18,17 +18,22 @@ import {
   IOnboardingIntro,
   IOnboarding,
   OnboardingPayload,
+  OnboardingIntroPayload,
 } from "../../types/interface/onboarding.interface";
+import { LablelPayload } from "../../types/enum/common.enum";
+import type { ITranslation } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
 import { useCallback, useEffect, useState } from "react";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
-
-export interface ITranslation {
-  [key: string]: string;
-}
+import {
+  getTranslationValue,
+  getCurrentTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
 
 const IntroInput: React.FC<{
   item: IOnboardingIntro;
@@ -63,11 +68,11 @@ const IntroInput: React.FC<{
         <Box sx={{ mr: 2, flex: 1 }}>
           <TextField
             label="Title"
-            value={(item.title as ITranslation)[lang] || ""}
+            value={getCurrentTranslationValue(item.title, lang)}
             onChange={(e) =>
               onChange(item.id, {
                 ...item,
-                title: { ...item.title, [lang]: e.target.value },
+                title: updateTranslationValue(item.title, lang, e.target.value),
               })
             }
             fullWidth
@@ -110,11 +115,17 @@ const IntroInput: React.FC<{
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <Box sx={{ flex: 1 }}>
           <TextField
-            label={lang}
-            value={(item.content as ITranslation)[lang] || ""}
+            label="Content"
+            value={getCurrentTranslationValue(item.content, lang)}
             onChange={(e) => {
-              const newContent = { ...item.content, [lang]: e.target.value };
-              onChange(item.id, { ...item, content: newContent });
+              onChange(item.id, {
+                ...item,
+                content: updateTranslationValue(
+                  item.content,
+                  lang,
+                  e.target.value
+                ),
+              });
             }}
             fullWidth
             multiline
@@ -177,11 +188,11 @@ const LabelInput: React.FC<{
         <Box sx={{ flex: 1 }}>
           <TextField
             label="Title"
-            value={(item.title as ITranslation)[lang] || ""}
+            value={getCurrentTranslationValue(item.title, lang)}
             onChange={(e) =>
               onChange(item.id, {
                 ...item,
-                title: { ...item.title, [lang]: e.target.value },
+                title: updateTranslationValue(item.title, lang, e.target.value),
               })
             }
             fullWidth
@@ -192,16 +203,16 @@ const LabelInput: React.FC<{
       </Box>
     )}
 
-    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-      <Box sx={{ flex: 1 }}>
-        <TextField
-          label="Label"
-          value={(item.label as ITranslation)[lang] || ""}
-          onChange={(e) =>
-            onChange(item.id, {
-              ...item,
-              label: { ...item.label, [lang]: e.target.value },
-            })
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <Box sx={{ flex: 1 }}>
+          <TextField
+            label="Label"
+            value={getCurrentTranslationValue(item.label, lang)}
+            onChange={(e) =>
+              onChange(item.id, {
+                ...item,
+                label: updateTranslationValue(item.label, lang, e.target.value),
+              })
           }
           fullWidth
           size="small"
@@ -300,6 +311,52 @@ const OnboardingManagement: React.FC = () => {
     fetchOnboarding();
   }, []); // ĐÃ SỬA: Chỉ chạy 1 lần
 
+  const buildIntroPayload = (list: IOnboardingIntro[]): OnboardingIntroPayload[] =>
+    list
+      .map((intro) => {
+        const cleanedTitle = cleanTranslation(intro.title);
+        const cleanedContent = cleanTranslation(intro.content);
+
+        if (!cleanedTitle || !cleanedContent) return null;
+
+        return {
+          id: intro.id,
+          image: intro.image,
+          title: cleanedTitle,
+          content: cleanedContent,
+        } as OnboardingIntroPayload;
+      })
+      .filter(Boolean) as OnboardingIntroPayload[];
+
+  const buildLabelPayload = (
+    list: ILablel[],
+    requireTitle: boolean = false
+  ): LablelPayload[] =>
+    list
+      .map((l) => {
+        const cleanedLabel = cleanTranslation(l.label);
+        const cleanedTitle = cleanTranslation(l.title);
+
+        // Bỏ item nếu label trống
+        if (!cleanedLabel || Object.keys(cleanedLabel).length === 0) {
+          return null;
+        }
+
+        const payload: Partial<LablelPayload> = {
+          id: l.id,
+          icon: l.icon,
+          label: cleanedLabel,
+        };
+
+        // Chỉ thêm title khi có giá trị (tránh gửi object rỗng)
+        if (cleanedTitle && Object.keys(cleanedTitle).length > 0) {
+          payload.title = cleanedTitle;
+        }
+
+        return payload as LablelPayload;
+      })
+      .filter(Boolean) as LablelPayload[];
+
   const handleEdit = (tab: string): void => {
     setActiveTab(tab);
     setIsDialogOpen(true);
@@ -311,62 +368,30 @@ const OnboardingManagement: React.FC = () => {
     setLoading(true);
     try {
       const payload: OnboardingPayload = {
-        intro: onboarding.intro.map((intro) => ({
-          id: intro.id,
-          image: intro.image,
-          title: (intro.title as ITranslation)[lang] || "",
-          content: (intro.content as ITranslation)[lang] || "",
-        })),
-        age: onboarding.age.map((l) => ({
-          id: l.id,
-          icon: l.icon,
-          title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-          label: (l.label as ITranslation)[lang] || "",
-        })),
-        gender: onboarding.gender.map((l) => ({
-          id: l.id,
-          icon: l.icon,
-          title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-          label: (l.label as ITranslation)[lang] || "",
-        })),
-        skillsetWantToMaster: onboarding.skillsetWantToMaster.map((l) => ({
-          id: l.id,
-          icon: l.icon,
-          title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-          label: (l.label as ITranslation)[lang] || "",
-        })),
-        seemLikeYou: onboarding.seemLikeYou.map((l) => ({
-          id: l.id,
-          icon: l.icon,
-          title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-          label: (l.label as ITranslation)[lang] || "",
-        })),
-        strugglesWhenSpeaking: onboarding.strugglesWhenSpeaking.map((l) => ({
-          id: l.id,
-          icon: l.icon,
-          title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-          label: (l.label as ITranslation)[lang] || "",
-        })),
-        comfortableLearningTime: onboarding.comfortableLearningTime.map(
-          (l) => ({
-            id: l.id,
-            icon: l.icon,
-            title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-            label: (l.label as ITranslation)[lang] || "",
-          })
+        intro: buildIntroPayload(onboarding.intro || []),
+        age: buildLabelPayload(onboarding.age || [], false),
+        gender: buildLabelPayload(onboarding.gender || [], false),
+        skillsetWantToMaster: buildLabelPayload(
+          onboarding.skillsetWantToMaster || [],
+          false
         ),
-        dailyLearningGoal: onboarding.dailyLearningGoal.map((l) => ({
-          id: l.id,
-          icon: l.icon,
-          title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-          label: (l.label as ITranslation)[lang] || "",
-        })),
-        timeToBecomeSkilled: onboarding.timeToBecomeSkilled.map((l) => ({
-          id: l.id,
-          icon: l.icon,
-          title: (l.title as ITranslation | undefined)?.[lang] ?? "",
-          label: (l.label as ITranslation)[lang] || "",
-        })),
+        seemLikeYou: buildLabelPayload(onboarding.seemLikeYou || [], false),
+        strugglesWhenSpeaking: buildLabelPayload(
+          onboarding.strugglesWhenSpeaking || [],
+          false
+        ),
+        comfortableLearningTime: buildLabelPayload(
+          onboarding.comfortableLearningTime || [],
+          false
+        ),
+        dailyLearningGoal: buildLabelPayload(
+          onboarding.dailyLearningGoal || [],
+          false
+        ),
+        timeToBecomeSkilled: buildLabelPayload(
+          onboarding.timeToBecomeSkilled || [],
+          false
+        ),
       };
 
       await onboardingService.update(onboarding._id, payload);
@@ -594,7 +619,7 @@ const OnboardingManagement: React.FC = () => {
         >
           <img
             src={item.icon}
-            alt={(item.label as ITranslation)[lang]}
+            alt={getTranslationValue(item.label, lang)}
             style={{
               width: 32,
               height: 32,
@@ -604,7 +629,7 @@ const OnboardingManagement: React.FC = () => {
             }}
           />
           <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-            {(item.label as ITranslation)[lang]}
+            {getTranslationValue(item.label, lang)}
           </Typography>
         </Box>
       );
@@ -629,7 +654,7 @@ const OnboardingManagement: React.FC = () => {
           {item.icon}
         </Typography>
         <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-          {(item.label as ITranslation)[lang]}
+          {getTranslationValue(item.label, lang)}
         </Typography>
       </Box>
     );
@@ -654,7 +679,7 @@ const OnboardingManagement: React.FC = () => {
         >
           <img
             src={item.icon}
-            alt={(item.label as ITranslation)[lang]}
+            alt={getTranslationValue(item.label, lang)}
             style={{
               width: 32,
               height: 32,
@@ -663,13 +688,13 @@ const OnboardingManagement: React.FC = () => {
               display: "block",
             }}
           />
-          {(item.title as ITranslation)[lang] && (
+          {getTranslationValue(item.title, lang) && (
             <Typography variant="body1" sx={{ mr: 1, fontWeight: "medium" }}>
-              {(item.title as ITranslation)[lang]}
+              {getTranslationValue(item.title, lang)}
             </Typography>
           )}
           <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-            {(item.label as ITranslation)[lang]}
+            {getTranslationValue(item.label, lang)}
           </Typography>
         </Box>
       );
@@ -693,13 +718,13 @@ const OnboardingManagement: React.FC = () => {
         <Typography variant="body1" sx={{ mr: 1 }}>
           {item.icon}
         </Typography>
-        {(item.title as ITranslation)[lang] && (
+        {getTranslationValue(item.title, lang) && (
           <Typography variant="body1" sx={{ mr: 1, fontWeight: "medium" }}>
-            {(item.title as ITranslation)[lang]}
+            {getTranslationValue(item.title, lang)}
           </Typography>
         )}
         <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-          {(item.label as ITranslation)[lang]}
+          {getTranslationValue(item.label, lang)}
         </Typography>
       </Box>
     );
@@ -787,7 +812,7 @@ const OnboardingManagement: React.FC = () => {
                         {intro.image && (
                           <img
                             src={intro.image}
-                            alt={(intro.title as ITranslation)[lang]}
+                            alt={getTranslationValue(intro.title, lang)}
                             style={{
                               width: "100%",
                               height: 200,
@@ -799,12 +824,12 @@ const OnboardingManagement: React.FC = () => {
                       </Box>
                       <Box sx={{ flex: 2 }}>
                         <Typography gutterBottom sx={{ fontWeight: "bold" }}>
-                          {(intro.title as ITranslation)[lang]}
+                          {getTranslationValue(intro.title, lang)}
                         </Typography>
                         <Typography
                           sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
                         >
-                          {(intro.content as ITranslation)[lang]}
+                          {getTranslationValue(intro.content, lang)}
                         </Typography>
                       </Box>
                     </Box>

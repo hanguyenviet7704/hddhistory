@@ -28,6 +28,7 @@ import {
   LearningItemsIndexPayload,
 } from "../../types/interface/learning-item/learning-item.interface";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
+import { getTranslationValue } from "../../utils/translation";
 
 // Custom SortableItem for grid layout
 const SortableItem = ({
@@ -179,7 +180,7 @@ const KeypointDetail: React.FC = () => {
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
           <h1 className="text-2xl font-bold">
-            {keypoint?.title[lang] || "Keypoint Details"}
+            {getTranslationValue(keypoint?.title, lang) || "Keypoint Details"}
           </h1>
         </div>
 
@@ -261,7 +262,7 @@ const KeypointDetail: React.FC = () => {
                           </div>
                           <div className="ml-4 flex-1">
                             <h3 className="text-lg font-medium text-gray-900 line-clamp-2 overflow-hidden">
-                              {item.title[lang] || ""}
+                              {getTranslationValue(item.title, lang) || ""}
                             </h3>
                             {item.type === LearningItemType.THEORY ? (
                               <p className="text-sm text-green-500">Theory</p>

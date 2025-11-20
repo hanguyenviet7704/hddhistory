@@ -7,6 +7,7 @@ import { ITag } from "./tag.interface";
 export interface ILesson {
   _id: string;
   courseId: string;
+  learningItemId?: string;
   type: LessonType;
   title: ITranslation;
   description: ITranslation;
@@ -18,23 +19,24 @@ export interface ILesson {
   index: number;
 }
 
+export interface LessonPayload {
+  courseId: string;
+  learningItemId?: string;
+  type: LessonType;
+  title: ITranslation;
+  description?: ITranslation;
+  image: string;
+  status: LessonStatus;
+  keypoints: string[];
+  estimateCompleTime?: ITranslation;
+  icon: string;
+  index: number;
+}
+
 export interface ILessonBrief {
   _id: string;
   type: LessonType;
   title: ITranslation;
-}
-
-export interface LessonPayload {
-  title: string; // chỉ gửi string theo lang
-  description?: string;
-  image?: string;
-  type: LessonType;
-  status: LessonStatus;
-  keypoints?: string[];
-  estimateCompleTime: string;
-  icon: string;
-  index: number;
-  courseId: string;
 }
 
 interface LessonIndex {

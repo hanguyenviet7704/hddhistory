@@ -2,11 +2,12 @@ import { BaseQuery } from "./common.interface";
 
 export interface IAvatar {
   _id: string;
+  name: string;
   url: string;
 }
 
 export interface AvatarPayload {
-  _id: string;
+  name: string;
   url: string;
 }
 

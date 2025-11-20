@@ -17,7 +17,7 @@ import {
   ExerciseSingleChoicePayload,
   IExerciseSingleChoice,
 } from "./excercises/single-choice.interface";
-import { ISection } from "./roleplays/section.interface";
+import { ISection, ISectionPayload } from "./roleplays/section.interface";
 import {
   ITheoryDocument,
   TheoryDocumentPayload,
@@ -70,7 +70,7 @@ export interface LearningItemPayload {
   subQuestions?: ExerciseInputPayload[];
   isSub: boolean;
   documents?: TheoryDocumentPayload[];
-  sections?: ISection[];
+  sections?: ISectionPayload[];
   index: number;
 }
 

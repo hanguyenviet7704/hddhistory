@@ -1,251 +1,237 @@
-// src/components/setting/AvatarManagement.tsx
-import { useState, useEffect } from "react";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { IAvatar, AvatarPayload } from "../../types/interface/avatar.interface";
-import { avatarService } from "../../services/avatarService";
+import React, { useEffect, useState } from "react";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useNotification } from "../../utils/hooks/useNotification";
+import { avatarService } from "../../services/avatarService";
+import { IAvatar } from "../../types/interface/avatar.interface";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import AvatarConfirm from "./AvatarConfirm";
 
-const AvatarManagement = () => {
+interface AvatarFormState {
+  _id?: string;
+  name: string;
+  url: string;
+}
+
+const emptyAvatar = (): AvatarFormState => ({
+  name: "",
+  url: "",
+});
+
+const AvatarManagement: React.FC = () => {
   const { showSuccess, showError } = useNotification();
-
   const [avatars, setAvatars] = useState<IAvatar[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [showForm, setShowForm] = useState(false);
-  const [editingAvatar, setEditingAvatar] = useState<IAvatar | null>(null);
-  const [formData, setFormData] = useState<AvatarPayload>({
-    _id: "",
-    url: "",
-  });
-  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
-  const [selected, setSelected] = useState<IAvatar | null>(null);
-
-  useEffect(() => {
-    fetchAvatars();
-  }, []);
+  const [form, setForm] = useState<AvatarFormState>(emptyAvatar());
+  const [deleteTarget, setDeleteTarget] = useState<IAvatar | null>(null);
 
   const fetchAvatars = async () => {
     try {
       setLoading(true);
-      const response = await avatarService.getList();
-      setAvatars(response.data.items || []);
-    } catch (error) {
-      console.error("Error fetching avatars:", error);
+      const res = await avatarService.getList({ page: 1, take: 1000 });
+      const list: IAvatar[] = res.data?.items || res.data || [];
+      setAvatars(list);
+    } catch (err) {
+      console.error(err);
+      showError("Failed to load avatars");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleCreateAvatar = async () => {
+  useEffect(() => {
+    fetchAvatars();
+  }, []);
+
+  const resetForm = () => setForm(emptyAvatar());
+
+  const handleSave = async () => {
+    const trimmedName = form.name.trim();
+    const trimmedUrl = form.url.trim();
+
+    if (!trimmedName || !trimmedUrl) {
+      showError("Please provide both name and image URL");
+      return;
+    }
+
     try {
-      await avatarService.create(formData);
-      fetchAvatars();
+      setSaving(true);
+      const payload = { name: trimmedName, url: trimmedUrl };
+
+      if (form._id) {
+        await avatarService.update(form._id, payload);
+        showSuccess("Avatar updated");
+      } else {
+        await avatarService.create(payload);
+        showSuccess("Avatar created");
+      }
+
       resetForm();
-      showSuccess("Create avatar successfully");
-    } catch (error) {
-      console.error("Error creating avatar:", error);
-      showError("Failed to save avatar");
-    }
-  };
-
-  const handleUpdateAvatar = async () => {
-    if (!editingAvatar) return;
-    try {
-      await avatarService.update(editingAvatar._id, formData);
+      setShowForm(false);
       fetchAvatars();
-      resetForm();
-      showSuccess("Saved avatar successfully");
-    } catch (error) {
-      console.error("Error updating avatar:", error);
+    } catch (err) {
+      console.error(err);
       showError("Failed to save avatar");
+    } finally {
+      setSaving(false);
     }
   };
 
-  const handleDeleteAvatar = async (id: string) => {
-    try {
-      await avatarService.remove(id);
-      fetchAvatars();
-      setIsConfirmOpen(false);
-      setSelected(null);
-      showSuccess("Delete avatar successfully");
-    } catch (error) {
-      showError("Failed to save avatar");
-      console.error("Error deleting avatar:", error);
-    }
-  };
-
-  // Mở modal xác nhận xóa
-  const openDelete = (avatar: IAvatar) => {
-    setSelected(avatar);
-    setIsConfirmOpen(true);
-  };
-
-  const handleEditAvatar = (avatar: IAvatar) => {
-    setEditingAvatar(avatar);
-    setFormData({
+  const handleEdit = (avatar: IAvatar) => {
+    setForm({
       _id: avatar._id,
-      url: avatar.url,
+      name: avatar.name || "",
+      url: avatar.url || "",
     });
     setShowForm(true);
   };
 
-  const resetForm = () => {
-    setFormData({
-      _id: "",
-      url: "",
-    });
-    setEditingAvatar(null);
-    setShowForm(false);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (editingAvatar) {
-      handleUpdateAvatar();
-    } else {
-      handleCreateAvatar();
+  const handleDelete = async (id: string) => {
+    if (!id) return;
+    try {
+      setSaving(true);
+      await avatarService.remove(id);
+      showSuccess("Avatar deleted");
+      if (form._id === id) {
+        resetForm();
+        setShowForm(false);
+      }
+      fetchAvatars();
+    } catch (err) {
+      console.error(err);
+      showError("Failed to delete avatar");
+    } finally {
+      setSaving(false);
     }
   };
 
   return (
-    <div>
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add New Avatar
-        </button>
-      </div>
+    <div className="space-y-6">
+      <div className="bg-white shadow rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Avatars</h2>
+          <div className="flex gap-2">
+            <button
+              className="flex items-center gap-2 text-sm px-3 py-2 bg-blue-600 text-white rounded-lg"
+              onClick={() => {
+                resetForm();
+                setShowForm((prev) => !prev);
+              }}
+            >
+              <PlusIcon className="h-4 w-4" />
+              {showForm ? "Close form" : "New Avatar"}
+            </button>
+          </div>
+        </div>
 
-      {showForm && (
-        <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            {editingAvatar ? "Edit Avatar" : "Create New Avatar"}
-          </h2>
-          <form onSubmit={handleSubmit}>
-            <div className="w-48">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Avatar Image
+        {showForm && (
+          <div className="border rounded-lg p-4 space-y-4">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Name
+                </label>
+                <input
+                  className="border rounded-lg px-3 py-2 w-full focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter avatar name"
+                  value={form.name}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, name: e.target.value }))
+                  }
+                />
+              </div>
+
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700">
+                  Image URL
                 </label>
                 <CloudflareFileUpload
-                  initialUrl={formData.url}
-                  onUrlChange={(newUrl) =>
-                    setFormData({ ...formData, url: newUrl })
-                  }
-                  label=""
-                  uploadPayload={{
-                    prefix: "",
-                    folder: "avatars",
-                  }}
+                  initialUrl={form.url}
+                  onUrlChange={(url) => setForm((prev) => ({ ...prev, url }))}
+                  label="Upload image"
+                  uploadPayload={{ prefix: "", folder: "avatars" }}
                 />
               </div>
             </div>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
-              >
-                {editingAvatar ? "Update" : "Create"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-500">Loading avatars...</div>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {avatars.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              No avatars found. Create your first avatar to get started.
+            <div className="flex gap-2">
+              <button
+                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg disabled:opacity-60"
+                onClick={handleSave}
+                disabled={saving}
+              >
+                <PlusIcon className="h-5 w-5" />
+                {form._id ? "Update" : "Create"}
+              </button>
+              {form._id && (
+                <button
+                  className="px-4 py-2 bg-gray-200 rounded-lg"
+                  onClick={() => {
+                    resetForm();
+                    setShowForm(false);
+                  }}
+                  disabled={saving}
+                >
+                  Cancel edit
+                </button>
+              )}
             </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Avatar
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    URL
-                  </th>
-                  <th
-                    scope="col"
-                    className="relative px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {avatars.map((avatar) => (
-                  <tr key={avatar._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="h-12 w-12">
-                        {avatar.url ? (
-                          <img
-                            src={avatar.url}
-                            alt="Avatar"
-                            className="h-full w-full object-cover rounded-full"
-                            onError={(e) =>
-                              (e.currentTarget.style.display = "none")
-                            }
-                          />
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate">
-                      {avatar.url}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleEditAvatar(avatar)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => openDelete(avatar)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+          </div>
+        )}
+      </div>
+
+      <div className="bg-white shadow rounded-xl p-4">
+        {loading ? (
+          <div className="text-center py-6 text-gray-500">Loading...</div>
+        ) : avatars.length === 0 ? (
+          <div className="text-center py-6 text-gray-500">No avatars found</div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {avatars.map((avatar) => (
+              <div
+                key={avatar._id}
+                className="border rounded-lg p-3 flex items-start gap-3"
+              >
+                <img
+                  src={avatar.url}
+                  alt={avatar.name}
+                  className="w-16 h-16 object-cover rounded"
+                />
+                <div className="flex-1">
+                  <div className="font-semibold">{avatar.name}</div>
+                  <div className="mt-2 flex gap-2">
+                    <button
+                      className="px-3 py-1 text-sm bg-gray-100 rounded"
+                      onClick={() => handleEdit(avatar)}
+                    >
+                      Edit
+                    </button>
+                    <button
+                      className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded inline-flex items-center gap-1"
+                      onClick={() => setDeleteTarget(avatar)}
+                      disabled={saving}
+                    >
+                      <TrashIcon className="h-4 w-4" /> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       <AvatarConfirm
-        isOpen={isConfirmOpen}
-        avatar={selected ?? undefined}
-        onClose={() => {
-          setIsConfirmOpen(false);
-          setSelected(null);
+        isOpen={!!deleteTarget}
+        avatar={deleteTarget || undefined}
+        onClose={() => setDeleteTarget(null)}
+        onConfirm={() => {
+          if (deleteTarget?._id) {
+            handleDelete(deleteTarget._id);
+          }
+          setDeleteTarget(null);
         }}
-        onConfirm={() => selected && handleDeleteAvatar(selected._id)}
       />
     </div>
   );

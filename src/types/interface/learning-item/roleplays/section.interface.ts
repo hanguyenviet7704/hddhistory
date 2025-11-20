@@ -1,26 +1,36 @@
+import { ITranslation } from "../../../../utils/translate";
 import {
   RoleplaySectionType,
   SectionConversationPosition,
 } from "../../../enum/learningItem.enum";
-import { ExerciseInput } from "../learning-item.interface";
+import { IAvatar } from "../../avatar.interface";
+import {
+  ExerciseInput,
+  ExerciseInputPayload,
+} from "../learning-item.interface";
 
 export interface IConversation {
-  name: string;
-  avartar: string;
+  avatarId: string;
+  avatar?: IAvatar;
   position: SectionConversationPosition;
-  bubbleColor: string;
-  content: string;
+  backgroundColor: string;
+  textColor: string;
+  content: ITranslation;
   audio: string;
 }
 
 export interface ILeadingText {
-  frameColor: string;
-  content: string;
+  backgroundColor: string;
+  textColor: string;
+  content: ITranslation;
+  audio: string;
 }
 
 export interface IHint {
   icon: string;
-  content: string;
+  backgroundColor: string;
+  textColor: string;
+  content: ITranslation;
 }
 
 export interface ISectionContent {
@@ -34,8 +44,19 @@ export interface ISectionContent {
 
 export interface ISection {
   id: number;
-  title: string;
-  transition: string;
-  transitionColor: string;
+  title: ITranslation;
+  transition: ITranslation;
+  textColor: string;
+  backgroundColor: string;
+  image: string;
+  colorTemplateId?: string;
   contents: ISectionContent[];
 }
+
+export type ISectionContentPayload = Omit<ISectionContent, "exercise"> & {
+  exercise?: ExerciseInputPayload;
+};
+
+export type ISectionPayload = Omit<ISection, "contents"> & {
+  contents: ISectionContentPayload[];
+};

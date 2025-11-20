@@ -26,6 +26,7 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { tagService } from "../../services/tagService";
 import { ITag } from "../../types/interface/tag.interface";
+import { getTranslationValue, updateTranslationValue, cleanTranslation } from "../../utils/translation";
 
 interface OutputFormProps {
   output?: ILesson; // Nếu có -> edit mode, không có -> create mode
@@ -74,6 +75,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     itemId: string | null;
     itemTitle: string;
   } | null>(null);
+  const [selectedKeypoints, setSelectedKeypoints] = useState<IKeypoint[]>([]);
 
   const [confirmDeleteOutput, setConfirmDeleteOutput] = useState(false);
 
@@ -164,23 +166,45 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
   const handleSaveOutput = async () => {
     try {
       setSaving(true);
-      const payload: LessonPayload = {
-        title: currentOutput.title?.[lang] || "",
-        estimateCompleTime: currentOutput.estimateCompleTime?.[lang] || "",
-        icon: currentOutput.icon?._id.toString() || "",
+
+      // Prepare lesson data with all ITranslation fields
+      // Update translation values and clean empty ones
+      const title = cleanTranslation(
+        updateTranslationValue(currentOutput.title, lang, currentOutput.title?.[lang] || "")
+      );
+      const description = cleanTranslation(
+        updateTranslationValue(currentOutput.description, lang, currentOutput.description?.[lang] || "")
+      );
+      const estimateCompleTime = cleanTranslation(
+        updateTranslationValue(currentOutput.estimateCompleTime, lang, currentOutput.estimateCompleTime?.[lang] || "")
+      );
+
+      // Prepare LessonPayload with all ITranslation fields
+      // keypoints in LessonPayload should be string array (IDs)
+      // Extract IDs from IKeypoint objects in currentOutput
+      const keypointIds = currentOutput.keypoints?.map((kp) => kp._id) || [];
+
+      const lessonPayload: any = {
+        courseId: currentOutput.courseId,
+        learningItemId: currentOutput.learningItemId,
         type: LessonType.OUTPUT,
-        description: currentOutput.description?.[lang] || "",
+        title: title || { [lang]: "" }, // Always include title for validation
+        ...(description && { description }),
+        ...(estimateCompleTime && { estimateCompleTime }),
+        icon: (currentOutput.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         image: currentOutput.image,
-        keypoints: (currentOutput.keypoints || []).map((k) => k._id.toString()),
+        keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentOutput.status,
         index: currentOutput.index,
-        courseId: currentOutput.courseId,
       };
+
+      // Optional fields already handled by conditional spread operator above
+
       let res;
       if (currentOutput._id) {
-        res = await lessonService.update(currentOutput._id, payload);
+        res = await lessonService.update(currentOutput._id, lessonPayload as Partial<LessonPayload>);
       } else {
-        res = await lessonService.create(payload);
+        res = await lessonService.create(lessonPayload as LessonPayload);
       }
       const savedOutput = res.data?.data ?? res.data;
 
@@ -205,8 +229,10 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     const targetOutput = customOutput || currentOutput;
     if (!targetOutput) return;
     try {
-      const payload = {
-        [section]: (targetOutput[section] || []).map((k) => k._id.toString()),
+      // For keypoints, convert IKeypoint[] to string[] for LessonPayload
+      const keypointIds = targetOutput.keypoints?.map((kp) => kp._id) || [];
+      const payload: Partial<LessonPayload> = {
+        [section]: keypointIds, // Convert IKeypoint[] to string[]
       };
       if (targetOutput._id) {
         await lessonService.update(targetOutput._id, payload);
@@ -225,56 +251,79 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
   ) => {
     setCurrentOutput((prev) => {
       if (!prev) return prev;
-      const list = prev[section] || [];
-      const oldIndex = list.findIndex((i) => i._id === activeId);
-      const newIndex = list.findIndex((i) => i._id === overId);
+      const list = (prev[section] as any[]) || [];
+      const oldIndex = list.findIndex((i) => (i as any)._id === activeId || i === activeId);
+      const newIndex = list.findIndex((i) => (i as any)._id === overId || i === overId);
       return { ...prev, [section]: arrayMove(list, oldIndex, newIndex) };
     });
   };
 
-  // Open modal to choose keypoint (fetch list)
-  const handleOpenModal = async (section: "keypoints") => {
-    try {
-      const res = await keypointService.getList({
-        page: 1,
-        take: 100,
-        search: searchKeypoint,
-      });
-      setKeypointList(res.data?.data?.list ?? res.data.list ?? []);
-      setModalOpen({ section });
-      setSearchKeypoint("");
-    } catch (err) {
-      console.error("handleOpenModal", err);
-    }
+  // fetch keypoints whenever modal opens or search changes
+  useEffect(() => {
+    if (!modalOpen.section) return;
+    let active = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await keypointService.getList({
+          page: 1,
+          take: 100,
+          search: searchKeypoint,
+        });
+        if (active) {
+          const list = res.data?.items ?? res.data?.data?.list ?? res.data.list ?? [];
+          setKeypointList(list);
+        }
+      } catch (err) {
+        console.error("fetchKeypoints", err);
+      }
+    }, 300);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [modalOpen.section, searchKeypoint]);
+
+  // Open modal to choose keypoint (triggered above effect)
+  const handleOpenModal = (section: "keypoints") => {
+    setSearchKeypoint("");
+    setSelectedKeypoints([]);
+    setModalOpen({ section });
   };
 
   const handleSelectIcon = (icon: ITag) => {
     setCurrentOutput((prev) => ({
       ...prev,
-      icon: icon,
+      icon: icon as any,
     }));
     setIconQuery("");
   };
 
-  const handleAddKeypoint = (kp: IKeypoint) => {
+  const toggleKeypointSelection = (kp: IKeypoint) => {
+    setSelectedKeypoints((prev) => {
+      const exists = prev.some((item) => item._id === kp._id);
+      if (exists) return prev.filter((item) => item._id !== kp._id);
+      return [...prev, kp];
+    });
+  };
+
+  const handleAddSelectedKeypoints = () => {
     if (!modalOpen.section) return;
     const section = modalOpen.section;
-
     setCurrentOutput((prev) => {
-      const existing = prev[section] || [];
-
-      // kiểm tra trùng bằng _id (nếu có)
-      const isDuplicate = existing.some((item) => item._id === kp._id);
-
-      // nếu có trùng, bỏ qua không thêm
-      if (isDuplicate) return prev;
-
+      const existing = (prev[section] as any[]) || [];
+      const existingIds = new Set(
+        existing.map((item: any) => (item as any)._id || item)
+      );
+      const additions = selectedKeypoints.filter(
+        (kp) => !existingIds.has(kp._id)
+      );
       return {
         ...prev,
-        [section]: [...existing, kp],
-      };
+        [section]: [...existing, ...additions],
+      } as ILesson;
     });
-
+    setSelectedKeypoints([]);
     setModalOpen({ section: null });
   };
 
@@ -298,7 +347,9 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
     setCurrentOutput((prev) => {
       if (!prev) return prev;
-      const newList = (prev[section] || []).filter((i) => i._id !== itemId);
+      const newList = (prev[section] as any[]).filter((i) =>
+        (i as any)._id !== itemId && i !== itemId
+      );
       const updated = { ...prev, [section]: newList };
       // try to save section (will do nothing if _id is empty)
       // call in next tick to ensure state updated visually first
@@ -351,41 +402,44 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
           }}
         >
           <SortableContext
-            items={list.map((i) => i._id)}
+            items={list.map((i) => (i as any)._id || i)}
             strategy={verticalListSortingStrategy}
           >
             {list.length > 0 ? (
-              list.map((item) => (
-                <SortableItem key={item._id} id={item._id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white border rounded-lg mb-3 cursor-pointer hover:shadow-md transition-all duration-300"
-                  >
-                    {/* {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.title?.[lang]}
-                        className="w-full sm:w-32 h-32 object-cover rounded-lg"
-                      />
-                    )} */}
-                    <PuzzlePieceIcon className="h-8 w- text-yellow-500" />
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-800 text-lg">
-                        {item.title?.[lang] || "Untitled"}
-                      </div>
-                      {item.description?.[lang] && (
-                        <div className="text-sm text-gray-600 mt-1">
-                          {item.description?.[lang]}
+              list.map((item) => {
+                const itemObj = item as any;
+                const itemId = itemObj._id || item;
+                return (
+                  <SortableItem key={itemId} id={itemId}>
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white border rounded-lg mb-3 cursor-pointer hover:shadow-md transition-all duration-300"
+                    >
+                      {/* {itemObj.image && (
+                        <img
+                          src={itemObj.image}
+                          alt={itemObj.title?.[lang]}
+                          className="w-full sm:w-32 h-32 object-cover rounded-lg"
+                        />
+                      )} */}
+                      <PuzzlePieceIcon className="h-8 w-8 text-yellow-500" />
+                      <div className="flex-1">
+                        <div className="font-semibold text-gray-800 text-lg">
+                          {itemObj.title?.[lang] || "Untitled"}
                         </div>
-                      )}
-                      {/* Hiển thị tag nếu có */}
-                      {item.tag && item.tag.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {item.tag.map((t, index) => (
-                            <span
-                              key={index}
-                              className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                        {itemObj.description?.[lang] && (
+                          <div className="text-sm text-gray-600 mt-1">
+                            {itemObj.description?.[lang]}
+                          </div>
+                        )}
+                        {/* Hiển thị tag nếu có */}
+                        {itemObj.tag && Array.isArray(itemObj.tag) && itemObj.tag.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {itemObj.tag.map((t: any, index: number) => (
+                              <span
+                                key={index}
+                                className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
                             >
                               {t}
                             </span>
@@ -400,8 +454,8 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         e.preventDefault();
                         requestDeleteItem(
                           section,
-                          item._id,
-                          item.title?.[lang] || "item"
+                          itemId,
+                          itemObj.title?.[lang] || "item"
                         );
                       }}
                     >
@@ -409,7 +463,8 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                     </button>
                   </motion.div>
                 </SortableItem>
-              ))
+                );
+              })
             ) : (
               <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
                 No items added yet. Click "Add" to get started.
@@ -432,7 +487,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
               {currentOutput.image ? (
                 <img
                   src={currentOutput.image}
-                  alt={currentOutput.title?.[lang]}
+                  alt={getTranslationValue(currentOutput.title, lang)}
                   className="w-full max-h-[320px] object-cover rounded-xl shadow-lg border border-gray-200"
                 />
               ) : (
@@ -476,7 +531,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
                       ...prev,
-                      title: { ...prev.title, [lang]: e.target.value },
+                      title: updateTranslationValue(prev.title, lang, e.target.value),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -495,10 +550,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
                       ...prev,
-                      description: {
-                        ...prev.description,
-                        [lang]: e.target.value,
-                      },
+                      description: updateTranslationValue(prev.description, lang, e.target.value),
                     }))
                   }
                   rows={4}
@@ -516,10 +568,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
                       ...prev,
-                      estimateCompleTime: {
-                        ...prev.estimateCompleTime,
-                        [lang]: e.target.value,
-                      },
+                      estimateCompleTime: updateTranslationValue(prev.estimateCompleTime, lang, e.target.value),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -539,13 +588,13 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                     value={
                       isIconSearchActive
                         ? iconQuery
-                        : currentOutput.icon?.title?.[lang] || ""
+                        : getTranslationValue((currentOutput.icon as any)?.title, lang) || ""
                     }
                     onChange={(e) => setIconQuery(e.target.value)}
                     onFocus={() => {
                       setIsIconSearchActive(true);
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
-                      setIconQuery(currentOutput.icon?.title?.[lang] || "");
+                      setIconQuery(getTranslationValue((currentOutput.icon as any)?.title, lang) || "");
                     }}
                     onBlur={() => {
                       // Dùng setTimeout để cho phép click vào nút 'x' hoặc dropdown item
@@ -662,7 +711,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         displayValue={(val: string | null) => {
                           // Nếu có selected course, hiển thị title của nó
                           if (selectedCourse) {
-                            return selectedCourse.title?.[lang] || "";
+                            return getTranslationValue(selectedCourse.title, lang);
                           }
                           // Nếu không, hiển thị courseQuery (đang nhập hoặc courseId)
                           return courseQuery;
@@ -677,7 +726,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                         {courses
                           .filter((c) =>
-                            c.title?.[lang]
+                            getTranslationValue(c.title, lang)
                               ?.toLowerCase()
                               .includes(courseQuery.toLowerCase())
                           )
@@ -687,7 +736,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                               value={c._id} // value is courseId (string)
                               className="cursor-pointer px-3 py-3 hover:bg-blue-50"
                             >
-                              {c.title?.[lang]}
+                              {getTranslationValue(c.title, lang)}
                             </Combobox.Option>
                           ))}
                       </Combobox.Options>
@@ -779,47 +828,58 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                           ?.toLowerCase()
                           .includes(searchKeypoint.toLowerCase())
                       )
-                      .map((kp) => (
-                        <motion.div
-                          key={kp._id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-4 p-4 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
-                          onClick={() => handleAddKeypoint(kp)}
-                        >
-                          {/* {kp.image && (
-                            <img
-                              src={kp.image}
-                              className="w-16 h-16 rounded-lg object-cover"
-                              alt={kp.title?.[lang]}
-                            />
-                          )} */}
-                          <PuzzlePieceIcon className="h-8 w- text-yellow-500" />
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-800">
-                              {kp.title?.[lang]}
+                      .map((kp) => {
+                        const selected = selectedKeypoints.some(
+                          (item) => item._id === kp._id
+                        );
+                        return (
+                          <motion.div
+                            key={kp._id}
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className={`flex items-center gap-4 p-4 cursor-pointer rounded-lg transition-colors border ${
+                              selected
+                                ? "bg-blue-50 border-blue-200"
+                                : "hover:bg-gray-100 border-transparent"
+                            }`}
+                            onClick={() => toggleKeypointSelection(kp)}
+                          >
+                            <div
+                              className={`h-6 w-6 rounded-full border flex items-center justify-center ${
+                                selected
+                                  ? "bg-blue-600 border-blue-600 text-white"
+                                  : "border-gray-300 text-transparent"
+                              }`}
+                            >
+                              ✓
                             </div>
-                            {kp.description?.[lang] && (
-                              <div className="text-sm text-gray-600 mt-1">
-                                {kp.description?.[lang]}
+                            <PuzzlePieceIcon className="h-8 w-8 text-yellow-500" />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-800">
+                                {kp.title?.[lang]}
                               </div>
-                            )}
-                            {/* Hiển thị tag nếu có */}
-                            {kp.tag && kp.tag.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {kp.tag.map((t, index) => (
-                                  <span
-                                    key={index}
-                                    className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                  >
-                                    {t}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))
+                              {kp.description?.[lang] && (
+                                <div className="text-sm text-gray-600 mt-1">
+                                  {kp.description?.[lang]}
+                                </div>
+                              )}
+                              {/* Hiển thị tag nếu có */}
+                              {kp.tag && kp.tag.length > 0 && (
+                                <div className="flex flex-wrap gap-1 mt-2">
+                                  {kp.tag.map((t, index) => (
+                                    <span
+                                      key={index}
+                                      className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                                    >
+                                      {t}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          </motion.div>
+                        );
+                      })
                   ) : (
                     <div className="text-center py-8 text-gray-500">
                       No keypoints found
@@ -829,8 +889,18 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
                 <div className="mt-4 text-right">
                   <button
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed mr-2"
+                    disabled={selectedKeypoints.length === 0}
+                    onClick={handleAddSelectedKeypoints}
+                  >
+                    Add selected
+                  </button>
+                  <button
                     className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
-                    onClick={() => setModalOpen({ section: null })}
+                    onClick={() => {
+                      setSelectedKeypoints([]);
+                      setModalOpen({ section: null });
+                    }}
                   >
                     Cancel
                   </button>

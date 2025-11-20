@@ -8,19 +8,24 @@ import { LearningItemType } from "../../types/enum/learningItem.enum";
 import { PlusIcon } from "lucide-react";
 import { Combobox } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
+import { getTranslationValue } from "../../utils/translation";
 
 const ExerciseList: React.FC = () => {
   const navigate = useNavigate();
   const [exercises, setExercises] = useState<ILearningItem[]>([]);
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedKeypoint, setSelectedKeypoint] = useState<any>(null);
   const [keypointQuery, setKeypointQuery] = useState("");
 
   const debounceRef = useRef<number | undefined>(undefined);
+  const observer = useRef<IntersectionObserver | null>(null);
   const lang = useSelector((state: RootState) => state.lang.code);
 
   // fetch keypoints (with search)
@@ -35,37 +40,60 @@ const ExerciseList: React.FC = () => {
   };
 
   // fetch exercises
-  const fetchExercises = async (search = "", keypointId?: string) => {
-    setLoading(true);
+  const fetchExercises = async (
+    search = "",
+    keypointId?: string,
+    pageNum = 1,
+    isLoadMore = false
+  ) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
       const res = await learningItemService.getList({
         type: LearningItemType.EXERCISE,
         keypointId,
         search,
+        page: pageNum,
+        take: 12,
       });
       const list: ILearningItem[] = res.data.items;
-      setExercises(list);
+      const totalPages =
+        res.data.totalPages || Math.ceil(res.data.total / res.data.limit);
+
+      if (isLoadMore) {
+        setExercises((prev) => [...prev, ...list]);
+      } else {
+        setExercises(list);
+      }
+
+      setHasMore(pageNum < totalPages);
+      setPage(pageNum);
     } catch (err) {
       console.error("Failed to fetch exercises:", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
     fetchKeypoints();
-    fetchExercises("", selectedKeypoint?._id);
+    fetchExercises("", selectedKeypoint?._id, 1, false);
   }, []);
 
   useEffect(() => {
-    fetchExercises(searchTerm.trim(), selectedKeypoint?._id);
+    fetchExercises(searchTerm.trim(), selectedKeypoint?._id, 1, false);
   }, [selectedKeypoint]);
 
   // debounce search exercises
   useEffect(() => {
     window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      fetchExercises(searchTerm.trim(), selectedKeypoint?._id);
+      fetchExercises(searchTerm.trim(), selectedKeypoint?._id, 1, false);
     }, 500);
     return () => window.clearTimeout(debounceRef.current);
   }, [searchTerm]);
@@ -78,6 +106,26 @@ const ExerciseList: React.FC = () => {
     }, 400);
     return () => window.clearTimeout(debounceRef.current);
   }, [keypointQuery]);
+
+  // Observer for infinite scroll
+  const lastExerciseElementRef = useCallback(
+    (node: any) => {
+      if (loading || loadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchExercises(
+            searchTerm.trim(),
+            selectedKeypoint?._id,
+            page + 1,
+            true
+          );
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, loadingMore, hasMore, page, searchTerm, selectedKeypoint]
+  );
 
   return (
     <div className="exercise-list">
@@ -97,7 +145,7 @@ const ExerciseList: React.FC = () => {
                     className="border rounded-lg px-3 py-2 w-56 focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Search keypoint..."
                     displayValue={(keypoint: IKeypoint) =>
-                      keypoint?.title?.[lang] || ""
+                      getTranslationValue(keypoint?.title, lang)
                     }
                     onChange={(e) => setKeypointQuery(e.target.value)}
                   />
@@ -114,7 +162,7 @@ const ExerciseList: React.FC = () => {
                         value={kp}
                         className="cursor-pointer px-3 py-2 hover:bg-gray-100"
                       >
-                        {kp.title[lang] || ""}
+                        {getTranslationValue(kp.title, lang)}
                       </Combobox.Option>
                     ))}
                   </Combobox.Options>
@@ -190,95 +238,118 @@ const ExerciseList: React.FC = () => {
               </p>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence>
-                {exercises.map((exercise) => (
-                  <motion.div
-                    key={exercise._id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9 }}
-                    transition={{ duration: 0.3 }}
-                    className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full cursor-pointer"
-                    onClick={() =>
-                      (window.location.href = `/exercise/${exercise._id}`)
-                    }
-                  >
-                    {/* Image */}
-                    {exercise.image && (
-                      <div className="relative h-48 overflow-hidden flex-shrink-0">
-                        <img
-                          src={exercise.image}
-                          alt={exercise.title[lang] || exercise.title.en}
-                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                        />
-                      </div>
-                    )}
-
-                    {/* Content */}
-                    <div className="relative p-5 flex flex-col flex-grow">
-                      <div className="flex items-center mb-4">
-                        <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
-                          <svg
-                            className="h-6 w-6 text-green-600"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 12h6m-6 4h6"
+            <>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <AnimatePresence>
+                  {exercises.map((exercise, index) => {
+                    // Add ref to the last element
+                    const isLast = index === exercises.length - 1;
+                    return (
+                      <motion.div
+                        key={exercise._id}
+                        ref={isLast ? lastExerciseElementRef : null}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full cursor-pointer"
+                        onClick={() =>
+                          (window.location.href = `/exercise/${exercise._id}`)
+                        }
+                      >
+                        {/* Image */}
+                        {exercise.image && (
+                          <div className="relative h-48 overflow-hidden flex-shrink-0">
+                            <img
+                              src={exercise.image}
+                              alt={getTranslationValue(exercise.title, lang)}
+                              className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                             />
-                          </svg>
-                        </div>
-                        <div className="ml-4">
-                          <h3 className="text-lg font-medium text-gray-900">
-                            {exercise.title[lang] || exercise.title.en}
-                          </h3>
-                          <p className="text-sm text-orange-400">Exercise</p>
-                        </div>
-                      </div>
+                          </div>
+                        )}
 
-                      {/* Tags */}
-                      <div className="flex flex-wrap gap-2 mb-4">
-                        {exercise.tag.map((tag, index) => (
-                          <span
-                            key={index}
-                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
-                          >
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
+                        {/* Content */}
+                        <div className="relative p-5 flex flex-col flex-grow">
+                          <div className="flex items-center mb-4">
+                            <div className="flex-shrink-0 bg-green-100 rounded-md p-3">
+                              <svg
+                                className="h-6 w-6 text-green-600"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                                stroke="currentColor"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 12h6m-6 4h6"
+                                />
+                              </svg>
+                            </div>
+                            <div className="ml-4">
+                              <h3 className="text-lg font-medium text-gray-900">
+                                {getTranslationValue(exercise.title, lang)}
+                              </h3>
+                              <p className="text-sm text-orange-400">
+                                Exercise
+                              </p>
+                            </div>
+                          </div>
 
-                      {/* Additional info */}
-                      <div className="grid grid-cols-2 gap-4 text-sm mt-auto">
-                        <div>
-                          <span className="text-gray-500">isSub:</span>
-                          <span
-                            className={`ml-2 font-medium ${
-                              exercise.isSub
-                                ? "text-green-600"
-                                : "text-violet-300"
-                            }`}
-                          >
-                            {exercise.isSub ? "Yes" : "No"}
-                          </span>
+                          {/* Tags */}
+                          <div className="flex flex-wrap gap-2 mb-4">
+                            {exercise.tag.map((tag, index) => (
+                              <span
+                                key={index}
+                                className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800"
+                              >
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+
+                          {/* Additional info */}
+                          <div className="grid grid-cols-2 gap-4 text-sm mt-auto">
+                            <div>
+                              <span className="text-gray-500">isSub:</span>
+                              <span
+                                className={`ml-2 font-medium ${
+                                  exercise.isSub
+                                    ? "text-green-600"
+                                    : "text-violet-300"
+                                }`}
+                              >
+                                {exercise.isSub ? "Yes" : "No"}
+                              </span>
+                            </div>
+                            <div>
+                              <span className="text-gray-500">Questions:</span>
+                              <span className="ml-2 font-medium">
+                                {exercise.questions.length}
+                              </span>
+                            </div>
+                          </div>
                         </div>
-                        <div>
-                          <span className="text-gray-500">Questions:</span>
-                          <span className="ml-2 font-medium">
-                            {exercise.questions.length}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </motion.div>
-                ))}
-              </AnimatePresence>
-            </div>
+                      </motion.div>
+                    );
+                  })}
+                </AnimatePresence>
+              </div>
+
+              {/* Loading more indicator */}
+              {loadingMore && (
+                <div className="flex justify-center mt-6">
+                  <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+                </div>
+              )}
+
+              {/* No more exercises message */}
+              {!hasMore && exercises.length > 0 && (
+                <div className="text-center mt-6 text-gray-500">
+                  No more exercises to load
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

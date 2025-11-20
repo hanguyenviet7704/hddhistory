@@ -7,7 +7,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { learningItemService } from "../../services/learningItemService";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
-import { TrashIcon, PlusCircleIcon } from "@heroicons/react/24/outline";
+import {
+  TrashIcon,
+  PlusCircleIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -35,19 +39,99 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
 import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
+import {
+  getTranslationValue,
+  getCurrentTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
+import { LangCode } from "../../types/enum/common.enum";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 
+const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
+  DocumentType.TITLE,
+  DocumentType.CAPTION,
+  DocumentType.TEXT,
+];
+
+const isTextualDocumentType = (type: DocumentType) =>
+  TEXTUAL_DOCUMENT_TYPES.includes(type);
+
+const cleanDocumentItems = (documents: IDocument[]) => {
+  return documents
+    .map((doc) => {
+      const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedData: any = { ...doc.data };
+      if (cleanedContent && Object.keys(cleanedContent).length > 0) {
+        cleanedData.content = cleanedContent;
+      } else {
+        delete cleanedData.content;
+      }
+      if (!cleanedData.url) {
+        delete cleanedData.url;
+      }
+      if (!cleanedData.thumbnail) {
+        delete cleanedData.thumbnail;
+      }
+
+      const hasValue =
+        (isTextualDocumentType(doc.type) &&
+          !!cleanedData.content &&
+          Object.keys(cleanedData.content).length > 0) ||
+        ((doc.type === DocumentType.IMAGE || doc.type === DocumentType.AUDIO) &&
+          !!cleanedData.url) ||
+        (doc.type === DocumentType.VIDEO &&
+          (!!cleanedData.url || !!cleanedData.thumbnail));
+
+      return hasValue ? ({ ...doc, data: cleanedData } as IDocument) : null;
+    })
+    .filter(Boolean) as IDocument[];
+};
+
+const getDocumentContentLabel = (type: DocumentType) => {
+  switch (type) {
+    case DocumentType.TITLE:
+      return "Title";
+    case DocumentType.CAPTION:
+      return "Caption";
+    default:
+      return "Content";
+  }
+};
+
+const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+  content: { [currentLang]: "" },
+  url: "",
+  thumbnail: "",
+});
+
 // Helper component để hiển thị văn bản với cắt bớt và tooltip
-const TextWithTooltip = ({ text = "", maxLength = 100 }) => {
+const TextWithTooltip = ({
+  text = "",
+  maxLength = 100,
+  lang = LangCode.EN,
+}: {
+  text?: string | ITranslation;
+  maxLength?: number;
+  lang?: LangCode;
+}) => {
   if (!text) return null;
+
+  const displayText =
+    typeof text === "string" ? text : getTranslationValue(text, lang);
+
+  if (!displayText) return null;
+
   return (
     <div className="relative group">
       <span className="truncate inline-block max-w-xl">
-        {text.length > maxLength ? `${text.substring(0, maxLength)}...` : text}
+        {displayText.length > maxLength
+          ? `${displayText.substring(0, maxLength)}...`
+          : displayText}
       </span>
-      {text.length > maxLength && (
+      {displayText.length > maxLength && (
         <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 bg-gray-800 text-white text-xs rounded py-2 px-3 w-64 max-h-40 overflow-y-auto shadow-lg">
-          {text}
+          {displayText}
         </div>
       )}
     </div>
@@ -71,7 +155,7 @@ export default function TheoryForm({
   const navigate = useNavigate();
   const lang = useSelector(
     (state: RootState) => state.lang.code
-  ) as keyof ITranslation;
+  ) as keyof ITranslation as LangCode;
   const isEditMode = !!theory;
   const { showSuccess, showError } = useNotification();
 
@@ -107,23 +191,19 @@ export default function TheoryForm({
       const maxDocId =
         theory.documents?.reduce((max, doc) => Math.max(max, doc.id), 0) || 0;
       setNextDocId(maxDocId + 1);
-    } else {
-      setCurrentTheory({
-        _id: "",
-        keypointId: "",
-        type: LearningItemType.THEORY,
-        title: { [lang]: "" },
-        image: "",
-        isSub: false,
-        tag: [],
-        questions: [],
-        subQuestions: [],
-        documents: [],
-        index: 0,
-      } as ILearningItem);
-      setNextDocId(1);
     }
-  }, [theory, lang]);
+  }, [theory]); // Remove lang from dependency to prevent reset on language change
+
+  // Separate effect to update title language when creating new theory
+  useEffect(() => {
+    if (!theory && currentTheory._id === "") {
+      // Only update the title field to ensure it has the current language
+      setCurrentTheory(prev => ({
+        ...prev,
+        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" }
+      }));
+    }
+  }, [lang, theory, currentTheory._id]);
 
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -195,12 +275,39 @@ export default function TheoryForm({
   const convertDocumentsToPayload = (
     documents: ITheoryDocument[]
   ): TheoryDocumentPayload[] => {
-    return documents.map((doc) => ({
-      id: doc.id,
-      speechBubble: doc.speechBubble,
-      tag: doc.tag?._id || "",
-      document: doc.document,
-    }));
+    return (
+      documents
+        .map((doc) => {
+          const payload: any = {
+            id: doc.id,
+            tag: doc.tag?._id || "",
+            document: [],
+          };
+
+          // Only add speechBubble if it has non-empty translations
+          const cleanedSpeechBubble = cleanTranslation(doc.speechBubble);
+          if (cleanedSpeechBubble) {
+            payload.speechBubble = cleanedSpeechBubble;
+          }
+
+          const cleanedDocuments = doc.document?.length
+            ? cleanDocumentItems(doc.document)
+            : [];
+
+          if (cleanedDocuments.length > 0) {
+            payload.document = cleanedDocuments;
+          }
+
+          // Skip if nothing to send
+          if (!payload.speechBubble && (!payload.document || payload.document.length === 0)) {
+            return null;
+          }
+
+          return payload;
+        })
+        // Remove empty payloads
+        .filter(Boolean) as TheoryDocumentPayload[]
+    );
   };
 
   const handleSaveTheory = async () => {
@@ -208,7 +315,7 @@ export default function TheoryForm({
       setSaving(true);
       const payload: LearningItemPayload = {
         keypointId: currentTheory.keypointId,
-        title: currentTheory.title?.[lang] || "",
+        title: (cleanTranslation(currentTheory.title) || "") as string,
         type: LearningItemType.THEORY,
         image: currentTheory.image,
         tag: currentTheory.tag || [],
@@ -280,7 +387,7 @@ export default function TheoryForm({
       setCurrentTheory(updatedTheory);
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: updatedTheory.title?.[lang] || "",
+        title: (cleanTranslation(updatedTheory.title) || "") as string,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],
@@ -377,14 +484,6 @@ export default function TheoryForm({
       <div className="mb-6 bg-gray-50 rounded-xl p-6 shadow-sm">
         <div className="flex justify-start gap-3 mb-4">
           <h2 className="text-xl font-semibold text-gray-800">Documents</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              className="text-blue-500 hover:text-blue-700 transition-colors"
-              onClick={() => handleOpenModal("documents")}
-            >
-              <PlusCircleIcon className="h-6 w-6" />
-            </button>
-          </div>
         </div>
         <p className="text-sm text-gray-500 mb-4">
           👉 Drag to reorder. Click on item to edit.
@@ -464,6 +563,7 @@ export default function TheoryForm({
                                 </span>
                                 <TextWithTooltip
                                   text={theoryDoc.speechBubble}
+                                  lang={lang}
                                 />
                               </div>
                             )}
@@ -477,12 +577,20 @@ export default function TheoryForm({
                                     <img
                                       src={theoryDoc.tag.url}
                                       alt={
-                                        theoryDoc.tag.title?.[lang] || "Tag url"
+                                        getTranslationValue(
+                                          theoryDoc.tag.title,
+                                          lang
+                                        ) || "Tag url"
                                       }
                                       className="w-5 h-5 object-contain flex-shrink-0"
                                     />
                                   )}
-                                  <span>{theoryDoc.tag.title?.[lang]}</span>
+                                  <span>
+                                    {getTranslationValue(
+                                      theoryDoc.tag.title,
+                                      lang
+                                    )}
+                                  </span>
                                 </div>
                               </div>
                             )}
@@ -500,26 +608,53 @@ export default function TheoryForm({
                                       <span className="font-semibold text-green-600">
                                         {doc.type.toUpperCase()}:
                                       </span>
-                                      {doc.data.title && (
-                                        <span className="ml-1">
-                                          Title: {doc.data.title}
-                                        </span>
-                                      )}
-                                      {doc.data.content && (
-                                        <div className="ml-1">
-                                          <TextWithTooltip
-                                            text={doc.data.content}
-                                            maxLength={50}
-                                          />
-                                        </div>
-                                      )}
-                                      {doc.data.url && (
-                                        <div className="ml-1">
-                                          <TextWithTooltip
-                                            text={doc.data.url}
-                                            maxLength={50}
-                                          />
-                                        </div>
+                                      {isTextualDocumentType(doc.type) &&
+                                        doc.data.content && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.content}
+                                              maxLength={50}
+                                              lang={lang}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.IMAGE &&
+                                        doc.data.url && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.url}
+                                              maxLength={50}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.AUDIO &&
+                                        doc.data.url && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.url}
+                                              maxLength={50}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.VIDEO && (
+                                        <>
+                                          {doc.data.url && (
+                                            <div className="ml-1">
+                                              <TextWithTooltip
+                                                text={doc.data.url}
+                                                maxLength={50}
+                                              />
+                                            </div>
+                                          )}
+                                          {doc.data.thumbnail && (
+                                            <div className="ml-1">
+                                              <TextWithTooltip
+                                                text={doc.data.thumbnail}
+                                                maxLength={50}
+                                              />
+                                            </div>
+                                          )}
+                                        </>
                                       )}
                                     </div>
                                   ))}
@@ -532,11 +667,15 @@ export default function TheoryForm({
                   </SortableItem>
                 ))}
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                No documents added yet
-              </div>
-            )}
+            ) : null}
+            <div className="text-center pt-5">
+              <button
+                className="text-blue-500 hover:text-blue-700 transition-colors"
+                onClick={() => handleOpenModal("documents")}
+              >
+                <PlusCircleIcon className="h-8 w-8" />
+              </button>
+            </div>
           </SortableContext>
         </DndContext>
       </div>
@@ -554,7 +693,7 @@ export default function TheoryForm({
     onChange: (itemIndex: number, field: AllDocFields, value: string) => void;
     onRemove: (index: number) => void;
     availableTypes: DocumentType[];
-    lang: keyof ITranslation;
+    lang: LangCode;
   }
 
   // Document form component
@@ -569,7 +708,7 @@ export default function TheoryForm({
     onSave: (doc: ITheoryDocument) => void;
     onCancel: () => void;
     availableTags: ITag[];
-    lang: keyof ITranslation;
+    lang: LangCode;
   }) => {
     const [formData, setFormData] = useState<DocumentFormState>(() => {
       if (theoryDocument) {
@@ -577,26 +716,134 @@ export default function TheoryForm({
       }
       return {
         id: nextDocId,
-        speechBubble: "",
+        speechBubble: { [lang]: "" },
         tag: null,
-        document: [
-          {
-            id: 1,
-            type: DocumentType.TEXT,
-            data: {
-              title: "",
-              content: "",
-              caption: "",
-              url: "",
-              thumbnail: "",
-            },
-          },
-        ],
+        document: [],
       };
     });
 
     const [tagQuery, setTagQuery] = useState("");
     const selectedTag = formData.tag;
+
+    // Update formData when theoryDocument changes (for editing) or language changes
+    useEffect(() => {
+      if (theoryDocument) {
+        setFormData({ ...theoryDocument });
+      }
+    }, [theoryDocument]);
+
+    const renderDocumentFields = (doc: IDocument, index: number) => {
+      if (isTextualDocumentType(doc.type)) {
+        const label = getDocumentContentLabel(doc.type);
+        const isLongForm = doc.type === DocumentType.TEXT;
+        const placeholder =
+          doc.type === DocumentType.TEXT
+            ? "Enter content"
+            : `Enter ${label.toLowerCase()}`;
+
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {label}
+            </label>
+            {isLongForm ? (
+              <textarea
+                value={getCurrentTranslationValue(doc.data.content, lang)}
+                onChange={(e) =>
+                  handleDataChange(
+                    index,
+                    "content",
+                    e.target.value
+                  )
+                }
+                rows={3}
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            ) : (
+              <input
+                type="text"
+                value={getCurrentTranslationValue(doc.data.content, lang)}
+                onChange={(e) =>
+                  handleDataChange(
+                    index,
+                    "content",
+                    e.target.value
+                  )
+                }
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            )}
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.IMAGE) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={doc.data.url || ""}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Image URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "theories",
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.AUDIO) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={doc.data.url || ""}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Audio URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "theories",
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.VIDEO) {
+        return (
+          <div className="flex flex-col gap-3">
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={doc.data.url || ""}
+                onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+                label="Video URL"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "theories",
+                }}
+              />
+            </div>
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={doc.data.thumbnail || ""}
+                onUrlChange={(newUrl) =>
+                  handleDataChange(index, "thumbnail", newUrl)
+                }
+                label="Video Thumbnail"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "theories",
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
+
+      return null;
+    };
 
     const handleChange = (field: keyof DocumentFormState, value: any) => {
       setFormData((prev) => ({ ...prev, [field]: value }));
@@ -608,20 +855,29 @@ export default function TheoryForm({
     ) => {
       setFormData((prev) => {
         const newDocuments = [...prev.document];
-        newDocuments[index] = { ...newDocuments[index], [field]: value };
+        const updatedDoc = { ...newDocuments[index], [field]: value };
+        if (field === "type") {
+          updatedDoc.data = createEmptyMediaDocument(lang);
+        }
+        newDocuments[index] = updatedDoc;
         return { ...prev, document: newDocuments };
       });
     };
     const handleDataChange = (
       docIndex: number,
       field: keyof IMediaDocument,
-      value: string
+      value: string | ITranslation
     ) => {
       setFormData((prev) => {
         const newDocuments = [...prev.document];
         newDocuments[docIndex] = {
           ...newDocuments[docIndex],
-          data: { ...newDocuments[docIndex].data, [field]: value },
+          data: {
+            ...newDocuments[docIndex].data,
+            [field]: field === 'content' && typeof value === 'string'
+              ? updateTranslationValue(newDocuments[docIndex].data.content || {}, lang, value)
+              : value
+          },
         };
         return { ...prev, document: newDocuments };
       });
@@ -639,13 +895,7 @@ export default function TheoryForm({
           {
             id: newId,
             type: DocumentType.TEXT,
-            data: {
-              title: "",
-              content: "",
-              caption: "",
-              url: "",
-              thumbnail: "",
-            },
+            data: createEmptyMediaDocument(lang),
           },
         ],
       }));
@@ -658,19 +908,36 @@ export default function TheoryForm({
     };
 
     const handleSave = () => {
-      if (!selectedTag) {
-        showError("Please select a tag.");
-        return;
+      // Clean speechBubble if empty
+      const cleanedData: any = {
+        ...formData,
+        tag: selectedTag,
+      };
+
+      const cleanedSpeechBubble = cleanTranslation(formData.speechBubble);
+      if (cleanedSpeechBubble) {
+        cleanedData.speechBubble = cleanedSpeechBubble;
+      } else {
+        delete cleanedData.speechBubble;
       }
-      const dataToSave: ITheoryDocument = { ...formData, tag: selectedTag };
-      onSave(dataToSave);
+
+      const cleanedDocuments = formData.document?.length
+        ? cleanDocumentItems(formData.document)
+        : [];
+      if (cleanedDocuments.length > 0) {
+        cleanedData.document = cleanedDocuments;
+      } else {
+        cleanedData.document = [];
+      }
+
+      onSave(cleanedData);
     };
 
     const filteredTags =
       tagQuery === ""
         ? availableTags
         : availableTags.filter((tag) =>
-            tag.title?.[lang]?.toLowerCase().includes(tagQuery.toLowerCase())
+            getTranslationValue(tag.title, lang)?.toLowerCase().includes(tagQuery.toLowerCase())
           );
 
     return (
@@ -681,8 +948,17 @@ export default function TheoryForm({
           </label>
           <input
             type="text"
-            value={formData.speechBubble}
-            onChange={(e) => handleChange("speechBubble", e.target.value)}
+            value={getCurrentTranslationValue(formData.speechBubble, lang)}
+            onChange={(e) =>
+              handleChange(
+                "speechBubble",
+                updateTranslationValue(
+                  formData.speechBubble || {},
+                  lang,
+                  e.target.value
+                )
+              )
+            }
             className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
             placeholder="Enter speech bubble text"
           />
@@ -692,6 +968,7 @@ export default function TheoryForm({
             Tag
           </label>
           <Combobox<ITag | null>
+            key={`tag-selector-${lang}`} // Force re-render when language changes
             value={selectedTag}
             onChange={(val: ITag | null) => {
               handleChange("tag", val);
@@ -700,7 +977,10 @@ export default function TheoryForm({
           >
             <div className="relative">
               <Combobox.Input
-                displayValue={(tag: ITag | null) => tag?.title?.[lang] || ""}
+                displayValue={(tag: ITag | null) => {
+                  if (tagQuery) return tagQuery;
+                  return getTranslationValue(tag?.title, lang);
+                }}
                 onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                   setTagQuery(e.target.value)
                 }
@@ -718,11 +998,11 @@ export default function TheoryForm({
                       {tag.url && (
                         <img
                           src={tag.url}
-                          alt={tag.title?.[lang] || "Tag url"}
+                          alt={getTranslationValue(tag.title, lang) || "Tag url"}
                           className="w-6 h-6 object-contain flex-shrink-0"
                         />
                       )}
-                      <span>{tag.title?.[lang]}</span>
+                      <span>{getTranslationValue(tag.title, lang)}</span>
                     </Combobox.Option>
                   ))
                 ) : (
@@ -735,13 +1015,6 @@ export default function TheoryForm({
         <div className="border-t pt-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-medium text-gray-800">Content Documents</h3>
-            <button
-              type="button"
-              onClick={addNewInnerDocument}
-              className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-            >
-              Add Content
-            </button>
           </div>
           {formData.document.map((doc, index) => (
             <div key={doc.id} className="border rounded-lg p-4 bg-gray-50 mb-3">
@@ -749,15 +1022,13 @@ export default function TheoryForm({
                 <h4 className="font-medium text-sky-400">
                   Content {index + 1}
                 </h4>
-                {formData.document.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeInnerDocument(index)}
-                    className="text-red-500 hover:text-red-700"
-                  >
-                    <TrashIcon className="h-4 w-4" />
-                  </button>
-                )}
+                <button
+                  type="button"
+                  onClick={() => removeInnerDocument(index)}
+                  className="text-red-500 hover:text-red-700"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
               </div>
               <div className="space-y-3">
                 <div>
@@ -767,97 +1038,36 @@ export default function TheoryForm({
                   <select
                     value={doc.type}
                     onChange={(e) =>
-                      handleDocumentChange(index, "type", e.target.value)
+                      handleDocumentChange(
+                        index,
+                        "type",
+                        e.target.value as DocumentType
+                      )
                     }
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   >
+                    <option value={DocumentType.TITLE}>Title</option>
+                    <option value={DocumentType.CAPTION}>Caption</option>
                     <option value={DocumentType.TEXT}>Text</option>
                     <option value={DocumentType.IMAGE}>Image</option>
                     <option value={DocumentType.VIDEO}>Video</option>
                     <option value={DocumentType.AUDIO}>Audio</option>
                   </select>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Title
-                  </label>
-                  <input
-                    type="text"
-                    value={doc.data.title}
-                    onChange={(e) =>
-                      handleDataChange(index, "title", e.target.value)
-                    }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter title"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Content
-                  </label>
-                  <textarea
-                    value={doc.data.content}
-                    onChange={(e) =>
-                      handleDataChange(index, "content", e.target.value)
-                    }
-                    rows={3}
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter content"
-                  />
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Caption
-                  </label>
-                  <input
-                    type="text"
-                    value={doc.data.caption}
-                    onChange={(e) =>
-                      handleDataChange(index, "caption", e.target.value)
-                    }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Enter caption"
-                  />
-                </div>
-                {(doc.type === DocumentType.IMAGE ||
-                  doc.type === DocumentType.VIDEO ||
-                  doc.type === DocumentType.AUDIO) && (
-                  <div className="w-52">
-                    <CloudflareFileUpload
-                      initialUrl={doc.data.url || ""}
-                      onUrlChange={(newUrl) =>
-                        handleDataChange(index, "url", newUrl)
-                      }
-                      label={`${
-                        doc.type.charAt(0).toUpperCase() + doc.type.slice(1)
-                      } Url`}
-                      uploadPayload={{
-                        prefix: "",
-                        folder: "theories",
-                      }}
-                    />
-                  </div>
-                )}
-                {doc.type === DocumentType.VIDEO && (
-                  <div className="w-52">
-                    <CloudflareFileUpload
-                      initialUrl={doc.data.thumbnail || ""}
-                      onUrlChange={(newUrl) =>
-                        handleDataChange(index, "thumbnail", newUrl)
-                      }
-                      label={`${
-                        doc.type.charAt(0).toUpperCase() + doc.type.slice(1)
-                      } Thumbnail`}
-                      uploadPayload={{
-                        prefix: "",
-                        folder: "theories",
-                      }}
-                    />
-                  </div>
-                )}
+                {renderDocumentFields(doc, index)}
               </div>
             </div>
           ))}
+
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={addNewInnerDocument}
+              className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+            >
+              Add Content
+            </button>
+          </div>
         </div>
         <div className="flex justify-end gap-2 mt-6">
           <button
@@ -1124,12 +1334,18 @@ export default function TheoryForm({
                 className="bg-white w-[600px] rounded-xl shadow-xl flex flex-col"
                 style={{ maxHeight: "90vh" }}
               >
-                <div className="p-6 pt-6 border-b border-gray-200">
+                <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold">
                     {modalOpen.theoryDocument
                       ? "Edit Document"
                       : "New Document"}
                   </h2>
+                  <button
+                    onClick={() => setModalOpen({ section: null })}
+                    className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
                 </div>
                 <div className="flex-grow overflow-y-auto p-6">
                   <DocumentForm

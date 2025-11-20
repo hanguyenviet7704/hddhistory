@@ -1,6 +1,6 @@
 // src/components/setting/IconManagement.tsx
 import { useState, useEffect } from "react";
-import { PlusIcon, PencilIcon, TrashIcon } from "@heroicons/react/24/outline";
+import { PlusIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { IIcon, IconPayload } from "../../types/interface/icon.interface";
 import { iconService } from "../../services/iconService";
 import { useNotification } from "../../utils/hooks/useNotification";
@@ -15,7 +15,6 @@ const IconManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingIcon, setEditingIcon] = useState<IIcon | null>(null);
   const [formData, setFormData] = useState<IconPayload>({
-    _id: "",
     url: "",
   });
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
@@ -28,8 +27,8 @@ const IconManagement = () => {
   const fetchIcons = async () => {
     try {
       setLoading(true);
-      const response = await iconService.getList();
-      setIcons(response.data.items || []);
+      const response = await iconService.getList({ page: 1, take: 1000 });
+      setIcons(response.data.items || response.data || []);
     } catch (error) {
       console.error("Error fetching icons:", error);
     } finally {
@@ -84,7 +83,6 @@ const IconManagement = () => {
   const handleEditIcon = (icon: IIcon) => {
     setEditingIcon(icon);
     setFormData({
-      _id: icon._id,
       url: icon.url,
     });
     setShowForm(true);
@@ -92,7 +90,6 @@ const IconManagement = () => {
 
   const resetForm = () => {
     setFormData({
-      _id: "",
       url: "",
     });
     setEditingIcon(null);
@@ -109,25 +106,29 @@ const IconManagement = () => {
   };
 
   return (
-    <div>
-      <div className="mb-4 flex justify-end">
-        <button
-          onClick={() => setShowForm(true)}
-          className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Add New Icon
-        </button>
-      </div>
+    <div className="space-y-6">
+      <div className="bg-white shadow rounded-xl p-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Icons</h2>
+          <button
+            onClick={() => {
+              resetForm();
+              setShowForm((prev) => !prev);
+            }}
+            className="flex items-center px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            {showForm ? "Close form" : "Add New Icon"}
+          </button>
+        </div>
 
-      {showForm && (
-        <div className="mb-6 bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">
-            {editingIcon ? "Edit Icon" : "Create New Icon"}
-          </h2>
-          <form onSubmit={handleSubmit}>
-            <div className="w-48">
-              <div>
+        {showForm && (
+          <div className="border rounded-lg p-4 space-y-4">
+            <h2 className="text-lg font-medium text-gray-900">
+              {editingIcon ? "Edit Icon" : "Create New Icon"}
+            </h2>
+            <form onSubmit={handleSubmit}>
+              <div className="w-48">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Icon Image
                 </label>
@@ -143,101 +144,73 @@ const IconManagement = () => {
                   }}
                 />
               </div>
-            </div>
-            <div className="mt-4 flex justify-end space-x-2">
-              <button
-                type="button"
-                onClick={resetForm}
-                className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
-              >
-                {editingIcon ? "Update" : "Create"}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
+              <div className="mt-4 flex justify-end space-x-2">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 transition-colors"
+                >
+                  {editingIcon ? "Update" : "Create"}
+                </button>
+              </div>
+            </form>
+          </div>
+        )}
+      </div>
 
-      {loading ? (
-        <div className="flex justify-center items-center h-64">
-          <div className="text-gray-500">Loading icons...</div>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          {icons.length === 0 ? (
-            <div className="p-8 text-center text-gray-500">
-              No icons found. Create your first icon to get started.
-            </div>
-          ) : (
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Icon
-                  </th>
-                  <th
-                    scope="col"
-                    className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    URL
-                  </th>
-                  <th
-                    scope="col"
-                    className="relative px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {icons.map((icon) => (
-                  <tr key={icon._id}>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="h-10 w-10">
-                        {icon.url ? (
-                          <img
-                            src={icon.url}
-                            alt="Icon"
-                            className="h-full w-full object-cover"
-                            onError={(e) =>
-                              (e.currentTarget.style.display = "none")
-                            }
-                          />
-                        ) : null}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 max-w-xs truncate">
-                      {icon.url}
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                      <button
-                        onClick={() => handleEditIcon(icon)}
-                        className="text-indigo-600 hover:text-indigo-900 mr-3"
-                      >
-                        <PencilIcon className="h-5 w-5" />
-                      </button>
-                      <button
-                        onClick={() => openDelete(icon)}
-                        className="text-red-600 hover:text-red-900"
-                      >
-                        <TrashIcon className="h-5 w-5" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          )}
-        </div>
-      )}
+      <div className="bg-white shadow rounded-xl p-4">
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="text-gray-500">Loading icons...</div>
+          </div>
+        ) : icons.length === 0 ? (
+          <div className="p-8 text-center text-gray-500">
+            No icons found. Create your first icon to get started.
+          </div>
+        ) : (
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {icons.map((icon) => (
+              <div
+                key={icon._id}
+                className="border rounded-lg p-3 flex items-start gap-3"
+              >
+                <div className="h-12 w-12 flex-shrink-0">
+                  {icon.url && (
+                    <img
+                      src={icon.url}
+                      alt="Icon"
+                      className="h-full w-full object-cover rounded"
+                    />
+                  )}
+                </div>
+                <div className="flex-1">
+                  <div className="mt-1 flex gap-2">
+                    <button
+                      onClick={() => handleEditIcon(icon)}
+                      className="px-3 py-1 text-sm bg-gray-100 rounded"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => openDelete(icon)}
+                      className="px-3 py-1 text-sm bg-red-100 text-red-600 rounded inline-flex items-center gap-1"
+                      disabled={loading}
+                    >
+                      <TrashIcon className="h-4 w-4" /> Delete
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
       <IconConfirm
         isOpen={isConfirmOpen}
         icon={selected ?? undefined}

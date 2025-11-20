@@ -1,36 +1,32 @@
 import React, { useEffect, useState } from "react";
-import { IKeypoint } from "../../types/interface/keypoint.interface";
-import { keypointService } from "../../services/keypointService";
-import { DndContext, closestCenter } from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import SortableItem from "../../components/common/SortableItem";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { TrashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { Combobox } from "@headlessui/react";
 import { ICourse } from "../../types/interface/cource.interface";
 import { courseService } from "../../services/courseService";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { PlusIcon } from "lucide-react";
-import { PuzzlePieceIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { ILesson, LessonPayload } from "../../types/interface/lesson.interface";
 import { LessonStatus, LessonType } from "../../types/enum/lesson.enum";
 import { lessonService } from "../../services/lessonService";
 import LessonConfirm from "../../components/lessons/LessonConfirm";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
-
 import { tagService } from "../../services/tagService";
-
 import { ITag } from "../../types/interface/tag.interface";
+import { learningItemService } from "../../services/learningItemService";
+import { ILearningItem } from "../../types/interface/learning-item/learning-item.interface";
+import { AnimatePresence } from "framer-motion";
+import { LearningItemType } from "../../types/enum/learningItem.enum";
+import {
+  getTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
 
 interface EntranceFormProps {
-  entrance?: ILesson; // Nếu có -> edit mode, không có -> create mode
+  entrance?: ILesson;
   onSave?: (entrance: ILesson) => void;
 }
 
@@ -46,6 +42,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
       ({
         _id: "",
         courseId: "",
+        learningItemId: "",
         type: LessonType.ENTRANCE,
         title: { [lang]: "" },
         description: { [lang]: "" },
@@ -63,25 +60,19 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
   }, [entrance]);
 
   const [saving, setSaving] = useState(false);
-  const [modalOpen, setModalOpen] = useState<{
-    section: "keypoints" | null;
-  }>({ section: null });
-  const [keypointList, setKeypointList] = useState<IKeypoint[]>([]);
-  const [searchKeypoint, setSearchKeypoint] = useState("");
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [courseQuery, setCourseQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
-  const [confirmDeleteKeypont, setConfirmDeleteKeypoint] = useState<{
-    section: "keypoints" | null;
-    itemId: string | null;
-    itemTitle: string;
-  } | null>(null);
-
   const [confirmDeleteEntrance, setConfirmDeleteEntrance] = useState(false);
-
   const [icons, setIcons] = useState<ITag[]>([]);
   const [iconQuery, setIconQuery] = useState("");
   const [isIconSearchActive, setIsIconSearchActive] = useState(false);
+
+  // New states for learning items
+  const [learningItems, setLearningItems] = useState<ILearningItem[]>([]);
+  const [learningItemQuery, setLearningItemQuery] = useState("");
+  const [selectedLearningItem, setSelectedLearningItem] =
+    useState<ILearningItem | null>(null);
 
   // Hàm mới để xoá icon
   const handleClearIcon = () => {
@@ -112,6 +103,50 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
       active = false;
     };
   }, [iconQuery]);
+
+  // Fetch learning items based on query
+  useEffect(() => {
+    let active = true;
+    const fetchLearningItems = async () => {
+      try {
+        const res = await learningItemService.getList({
+          page: 1,
+          take: 20,
+          search: learningItemQuery,
+          type: LearningItemType.ROLEPLAY,
+        });
+        const list: ILearningItem[] = res.data.items ?? [];
+        if (active) setLearningItems(list);
+      } catch (err) {
+        console.error("fetchLearningItems", err);
+      }
+    };
+    fetchLearningItems();
+    return () => {
+      active = false;
+    };
+  }, [learningItemQuery]);
+
+  // Fetch selected learning item details when learningItemId changes
+  useEffect(() => {
+    if (currentEntrance.learningItemId) {
+      const fetchLearningItemDetails = async () => {
+        try {
+          const res = await learningItemService.getById(
+            currentEntrance.learningItemId || ""
+          );
+          if (res.data) {
+            setSelectedLearningItem(res.data);
+          }
+        } catch (err) {
+          console.error("fetchLearningItemDetails", err);
+        }
+      };
+      fetchLearningItemDetails();
+    } else {
+      setSelectedLearningItem(null);
+    }
+  }, [currentEntrance.learningItemId]);
 
   const handleEntranceImageChange = (newUrl: string) => {
     setCurrentEntrance((prev) => ({
@@ -148,7 +183,6 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
       const fetchCourseDetails = async () => {
         try {
           const res = await courseService.getById(currentEntrance.courseId);
-
           if (res.data) {
             setSelectedCourse(res.data);
           }
@@ -166,25 +200,59 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
   const handleSaveEntrance = async () => {
     try {
       setSaving(true);
-      const payload: LessonPayload = {
-        title: currentEntrance.title?.[lang] || "",
-        estimateCompleTime: currentEntrance.estimateCompleTime?.[lang] || "",
-        icon: currentEntrance.icon?._id.toString() || "",
+
+      // Prepare LessonPayload with all ITranslation fields
+      // Update translation values and clean empty ones
+      const title = cleanTranslation(
+        updateTranslationValue(
+          currentEntrance.title,
+          lang,
+          currentEntrance.title?.[lang] || ""
+        )
+      );
+      const description = cleanTranslation(
+        updateTranslationValue(
+          currentEntrance.description,
+          lang,
+          currentEntrance.description?.[lang] || ""
+        )
+      );
+      const estimateCompleTime = cleanTranslation(
+        updateTranslationValue(
+          currentEntrance.estimateCompleTime,
+          lang,
+          currentEntrance.estimateCompleTime?.[lang] || ""
+        )
+      );
+
+      // keypoints in LessonPayload should be string array (IDs)
+      // Since ILesson.keypoints is IKeypoint[], we need to extract IDs
+      const keypointIds = currentEntrance.keypoints?.map((kp) => kp._id) || [];
+
+      const lessonPayload: any = {
+        courseId: currentEntrance.courseId,
+        learningItemId: currentEntrance.learningItemId,
         type: LessonType.ENTRANCE,
-        description: currentEntrance.description?.[lang] || "",
+        title: title || { [lang]: "" }, // Always include title for validation
+        ...(description && { description }),
+        ...(estimateCompleTime && { estimateCompleTime }),
+        icon: (currentEntrance.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         image: currentEntrance.image,
-        keypoints: (currentEntrance.keypoints || []).map((k) =>
-          k._id.toString()
-        ),
+        keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentEntrance.status,
         index: currentEntrance.index,
-        courseId: currentEntrance.courseId,
       };
+
+      // Optional fields already handled by conditional spread operator above
+
       let res;
       if (currentEntrance._id) {
-        res = await lessonService.update(currentEntrance._id, payload);
+        res = await lessonService.update(
+          currentEntrance._id,
+          lessonPayload as Partial<LessonPayload>
+        );
       } else {
-        res = await lessonService.create(payload);
+        res = await lessonService.create(lessonPayload as LessonPayload);
       }
       const savedEntrance = res.data?.data ?? res.data;
 
@@ -202,116 +270,12 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
     }
   };
 
-  // Save only one section (entrances/keypoints/outputs)
-  const handleSaveSection = async (
-    section: "keypoints",
-    customEntrance?: ILesson
-  ) => {
-    const targetEntrance = customEntrance || currentEntrance;
-    if (!targetEntrance) return;
-    try {
-      const payload = {
-        [section]: (targetEntrance[section] || []).map((k) => k._id.toString()),
-      };
-      if (targetEntrance._id) {
-        await lessonService.update(targetEntrance._id, payload);
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    } catch (err) {
-      console.error("handleSaveSection", err);
-    }
-  };
-
-  // Reorder inside a section
-  const handleReorder = (
-    section: "keypoints",
-    activeId: string,
-    overId: string
-  ) => {
-    setCurrentEntrance((prev) => {
-      if (!prev) return prev;
-      const list = prev[section] || [];
-      const oldIndex = list.findIndex((i) => i._id === activeId);
-      const newIndex = list.findIndex((i) => i._id === overId);
-      return { ...prev, [section]: arrayMove(list, oldIndex, newIndex) };
-    });
-  };
-
-  // Open modal to choose keypoint (fetch list)
-  const handleOpenModal = async (section: "keypoints") => {
-    try {
-      const res = await keypointService.getList({
-        page: 1,
-        take: 100,
-        search: searchKeypoint,
-      });
-      setKeypointList(res.data.items ?? []);
-      setModalOpen({ section });
-      setSearchKeypoint("");
-    } catch (err) {
-      console.error("handleOpenModal", err);
-    }
-  };
-
   const handleSelectIcon = (icon: ITag) => {
     setCurrentEntrance((prev) => ({
       ...prev,
-      icon: icon,
+      icon: icon as any, // Store full ITag object for display
     }));
     setIconQuery("");
-  };
-
-  const handleAddKeypoint = (kp: IKeypoint) => {
-    if (!modalOpen.section) return;
-    const section = modalOpen.section;
-
-    setCurrentEntrance((prev) => {
-      const existing = prev[section] || [];
-
-      // kiểm tra trùng bằng _id (nếu có)
-      const isDuplicate = existing.some((item) => item._id === kp._id);
-
-      // nếu có trùng, bỏ qua không thêm
-      if (isDuplicate) return prev;
-
-      return {
-        ...prev,
-        [section]: [...existing, kp],
-      };
-    });
-
-    setModalOpen({ section: null });
-  };
-
-  // Request delete -> open confirm modal
-  const requestDeleteItem = (
-    section: "keypoints",
-    itemId: string,
-    itemTitle = "item"
-  ) => {
-    setConfirmDeleteKeypoint({ section, itemId, itemTitle });
-  };
-
-  // Confirm delete -> remove from state and save section (if entrance exists)
-  const confirmDeleteItem = () => {
-    if (!confirmDeleteKeypont) return;
-    const { section, itemId } = confirmDeleteKeypont;
-    if (!section || !itemId) {
-      setConfirmDeleteKeypoint(null);
-      return;
-    }
-
-    setCurrentEntrance((prev) => {
-      if (!prev) return prev;
-      const newList = (prev[section] || []).filter((i) => i._id !== itemId);
-      const updated = { ...prev, [section]: newList };
-      // try to save section (will do nothing if _id is empty)
-      // call in next tick to ensure state updated visually first
-      setTimeout(() => handleSaveSection(section, updated), 0);
-      return updated;
-    });
-
-    setConfirmDeleteKeypoint(null);
   };
 
   const handleDeleteEntrance = async () => {
@@ -327,117 +291,18 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
     }
   };
 
-  const renderSection = (label: string, section: "keypoints") => {
-    const list = currentEntrance[section] || [];
-    return (
-      <div className="mb-6 bg-gray-50 rounded-xl p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">{label}</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-              onClick={() => handleOpenModal(section)}
-            >
-              <PlusIcon className="h-5 w-5" />
-              Add
-            </button>
-          </div>
-        </div>
-
-        <p className="text-sm text-gray-500 mb-4">
-          👉 Drag to reorder. Click on item to view details.
-        </p>
-
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={({ active, over }) => {
-            if (over && active.id !== over.id)
-              handleReorder(section, active.id as string, over.id as string);
-          }}
-        >
-          <SortableContext
-            items={list.map((i) => i._id)}
-            strategy={verticalListSortingStrategy}
-          >
-            {list.length > 0 ? (
-              list.map((item) => (
-                <SortableItem key={item._id} id={item._id}>
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white border rounded-lg mb-3 cursor-pointer hover:shadow-md transition-all duration-300"
-                  >
-                    {/* {item.image && (
-                      <img
-                        src={item.image}
-                        alt={item.title?.[lang]}
-                        className="w-full sm:w-32 h-32 object-cover rounded-lg"
-                      />
-                    )} */}
-                    <PuzzlePieceIcon className="h-8 w- text-yellow-500" />
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-800 text-lg">
-                        {item.title?.[lang] || "Untitled"}
-                      </div>
-                      {item.description?.[lang] && (
-                        <div className="text-sm text-gray-600 mt-1">
-                          {item.description?.[lang]}
-                        </div>
-                      )}
-                      {/* Hiển thị tag nếu có */}
-                      {item.tag && item.tag.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-2">
-                          {item.tag.map((t, index) => (
-                            <span
-                              key={index}
-                              className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        requestDeleteItem(
-                          section,
-                          item._id,
-                          item.title?.[lang] || "item"
-                        );
-                      }}
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  </motion.div>
-                </SortableItem>
-              ))
-            ) : (
-              <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                No items added yet. Click "Add" to get started.
-              </div>
-            )}
-          </SortableContext>
-        </DndContext>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
         {/* Card: left image / right form */}
         <div className="bg-white shadow-xl rounded-xl overflow-hidden flex flex-col md:flex-row">
           {/* LEFT: image + image input */}
-          <div className="flex-1 flex flex-col items-start p-6 bg-gray-50">
+          <div className="flex-1 flex flex-col items-start p-6 bg-gray-50 ">
             <div className="w-full">
               {currentEntrance.image ? (
                 <img
                   src={currentEntrance.image}
-                  alt={currentEntrance.title?.[lang]}
+                  alt={getTranslationValue(currentEntrance.title, lang)}
                   className="w-full max-h-[320px] object-cover rounded-xl shadow-lg border border-gray-200"
                 />
               ) : (
@@ -454,7 +319,6 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                 initialUrl={currentEntrance.image || ""}
                 onUrlChange={handleEntranceImageChange}
                 label="Upload Image"
-                // Bạn có thể tùy chỉnh payload này theo nhu cầu
                 uploadPayload={{
                   prefix: "",
                   folder: "lessons",
@@ -464,7 +328,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
           </div>
 
           {/* RIGHT: form */}
-          <div className="flex-[1.5] p-6">
+          <div className="flex-[1.5] p-6 relative">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
               {isEditMode ? "✏️ Edit Entrance" : "🌱 Create New Entrance"}
             </h1>
@@ -480,7 +344,11 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                   onChange={(e) =>
                     setCurrentEntrance((prev) => ({
                       ...prev,
-                      title: { ...prev.title, [lang]: e.target.value },
+                      title: updateTranslationValue(
+                        prev.title,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -499,16 +367,69 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                   onChange={(e) =>
                     setCurrentEntrance((prev) => ({
                       ...prev,
-                      description: {
-                        ...prev.description,
-                        [lang]: e.target.value,
-                      },
+                      description: updateTranslationValue(
+                        prev.description,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   rows={4}
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
                   placeholder="Short description..."
                 />
+              </div>
+
+              {/* Learning Item - New field */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Learning Item
+                </label>
+                <Combobox<string | null>
+                  value={currentEntrance.learningItemId || null}
+                  onChange={(val: string | null) => {
+                    setCurrentEntrance((prev) =>
+                      prev ? { ...prev, learningItemId: val ?? "" } : prev
+                    );
+                    setLearningItemQuery("");
+                  }}
+                >
+                  <div className="relative">
+                    <Combobox.Input
+                      displayValue={(val: string | null) => {
+                        // If there's a selected learning item, display its title
+                        if (selectedLearningItem) {
+                          return selectedLearningItem.title?.[lang] || "";
+                        }
+                        // Otherwise, display the search query
+                        return learningItemQuery;
+                      }}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                        setLearningItemQuery(e.target.value)
+                      }
+                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                      placeholder="Search learning item..."
+                    />
+
+                    <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                      {learningItems
+                        .filter((item) =>
+                          item.title?.[lang]
+                            ?.toLowerCase()
+                            .includes(learningItemQuery.toLowerCase())
+                        )
+                        .map((item) => (
+                          <Combobox.Option
+                            key={item._id}
+                            value={item._id} // value is learningItemId (string)
+                            className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                          >
+                            {item.title?.[lang]}
+                          </Combobox.Option>
+                        ))}
+                    </Combobox.Options>
+                  </div>
+                </Combobox>
               </div>
 
               <div>
@@ -520,10 +441,11 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                   onChange={(e) =>
                     setCurrentEntrance((prev) => ({
                       ...prev,
-                      estimateCompleTime: {
-                        ...prev.estimateCompleTime,
-                        [lang]: e.target.value,
-                      },
+                      estimateCompleTime: updateTranslationValue(
+                        prev.estimateCompleTime,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -543,13 +465,21 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                     value={
                       isIconSearchActive
                         ? iconQuery
-                        : currentEntrance.icon?.title?.[lang] || ""
+                        : getTranslationValue(
+                            (currentEntrance.icon as any)?.title,
+                            lang
+                          ) || ""
                     }
                     onChange={(e) => setIconQuery(e.target.value)}
                     onFocus={() => {
                       setIsIconSearchActive(true);
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
-                      setIconQuery(currentEntrance.icon?.title?.[lang] || "");
+                      setIconQuery(
+                        getTranslationValue(
+                          (currentEntrance.icon as any)?.title,
+                          lang
+                        ) || ""
+                      );
                     }}
                     onBlur={() => {
                       // Dùng setTimeout để cho phép click vào nút 'x' hoặc dropdown item
@@ -666,7 +596,10 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                         displayValue={(val: string | null) => {
                           // Nếu có selected course, hiển thị title của nó
                           if (selectedCourse) {
-                            return selectedCourse.title?.[lang] || "";
+                            return getTranslationValue(
+                              selectedCourse.title,
+                              lang
+                            );
                           }
                           // Nếu không, hiển thị courseQuery (đang nhập hoặc courseId)
                           return courseQuery;
@@ -681,7 +614,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                       <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                         {courses
                           .filter((c) =>
-                            c.title?.[lang]
+                            getTranslationValue(c.title, lang)
                               ?.toLowerCase()
                               .includes(courseQuery.toLowerCase())
                           )
@@ -691,7 +624,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                               value={c._id} // value is courseId (string)
                               className="cursor-pointer px-3 py-3 hover:bg-blue-50"
                             >
-                              {c.title?.[lang]}
+                              {getTranslationValue(c.title, lang)}
                             </Combobox.Option>
                           ))}
                       </Combobox.Options>
@@ -699,9 +632,19 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                   </Combobox>
                 </div>
               </div>
+            </div>
 
-              {/* Save button */}
-              <div className="pt-4 flex justify-end">
+            <div className="flex gap-4 absolute top-5 right-5">
+              <div>
+                <button
+                  onClick={() => setConfirmDeleteEntrance(true)}
+                  className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg shadow hover:from-red-700 hover:to-red-800 transition-all flex items-center gap-2"
+                >
+                  Delete
+                </button>
+              </div>
+
+              <div>
                 <button
                   onClick={handleSaveEntrance}
                   disabled={saving}
@@ -711,150 +654,24 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
                       : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
                   }`}
                 >
-                  {saving ? (
-                    <>Saving...</>
-                  ) : isEditMode ? (
-                    "Save Entrance"
-                  ) : (
-                    "Create Entrance"
-                  )}
+                  {saving ? <>Saving...</> : isEditMode ? "Save" : "Create"}
                 </button>
               </div>
             </div>
           </div>
+
+          {/* Modal xác nhận xoá */}
+          <AnimatePresence>
+            {confirmDeleteEntrance && (
+              <LessonConfirm
+                title="Confirm Delete"
+                message="Are you sure you want to delete this entrance? This action cannot be undone."
+                onCancel={() => setConfirmDeleteEntrance(false)}
+                onConfirm={handleDeleteEntrance}
+              />
+            )}
+          </AnimatePresence>
         </div>
-
-        {/* Sections below */}
-        <div className="mt-8">{renderSection("Keypoints", "keypoints")}</div>
-
-        {/* nếu đang edit thì hiển thị nút Delete */}
-        {currentEntrance._id && (
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={() => setConfirmDeleteEntrance(true)}
-              className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg shadow hover:from-red-700 hover:to-red-800 transition-all flex items-center gap-2"
-            >
-              <TrashIcon className="h-5 w-5" />
-              Delete Entrance
-            </button>
-          </div>
-        )}
-
-        {/* Modal xác nhận xoá */}
-        <AnimatePresence>
-          {confirmDeleteEntrance && (
-            <LessonConfirm
-              title="Confirm Delete"
-              message="Are you sure you want to delete this entrance? This action cannot be undone."
-              onCancel={() => setConfirmDeleteEntrance(false)}
-              onConfirm={handleDeleteEntrance}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Modal chọn keypoint */}
-        <AnimatePresence>
-          {modalOpen.section && (
-            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-white w-[600px] rounded-xl shadow-xl p-6 max-w-full max-h-[90vh] overflow-hidden flex flex-col"
-              >
-                <h2 className="text-xl font-bold mb-4">
-                  Select Keypoint for {modalOpen.section}
-                </h2>
-
-                <div className="relative mb-4">
-                  <input
-                    value={searchKeypoint}
-                    onChange={(e) => setSearchKeypoint(e.target.value)}
-                    placeholder="Search keypoint..."
-                    className="border rounded-lg w-full p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  />
-                </div>
-
-                <div className="flex-grow overflow-y-auto max-h-[60vh]">
-                  {keypointList.length > 0 ? (
-                    keypointList
-                      .filter((kp) =>
-                        kp.title?.[lang]
-                          ?.toLowerCase()
-                          .includes(searchKeypoint.toLowerCase())
-                      )
-                      .map((kp) => (
-                        <motion.div
-                          key={kp._id}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="flex items-center gap-4 p-4 hover:bg-gray-100 cursor-pointer rounded-lg transition-colors"
-                          onClick={() => handleAddKeypoint(kp)}
-                        >
-                          {/* {kp.image && (
-                            <img
-                              src={kp.image}
-                              className="w-16 h-16 rounded-lg object-cover"
-                              alt={kp.title?.[lang]}
-                            />
-                          )} */}
-                          <PuzzlePieceIcon className="h-8 w- text-yellow-500" />
-                          <div className="flex-1">
-                            <div className="font-medium text-gray-800">
-                              {kp.title?.[lang]}
-                            </div>
-                            {kp.description?.[lang] && (
-                              <div className="text-sm text-gray-600 mt-1">
-                                {kp.description?.[lang]}
-                              </div>
-                            )}
-                            {/* Hiển thị tag nếu có */}
-                            {kp.tag && kp.tag.length > 0 && (
-                              <div className="flex flex-wrap gap-1 mt-2">
-                                {kp.tag.map((t, index) => (
-                                  <span
-                                    key={index}
-                                    className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                  >
-                                    {t}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        </motion.div>
-                      ))
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      No keypoints found
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4 text-right">
-                  <button
-                    className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
-                    onClick={() => setModalOpen({ section: null })}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Modal confirm delete */}
-        <AnimatePresence>
-          {confirmDeleteKeypont && (
-            <LessonConfirm
-              title="Confirm Delete"
-              message={`Are you sure you want to delete "${confirmDeleteKeypont.itemTitle}"?`}
-              onCancel={() => setConfirmDeleteKeypoint(null)}
-              onConfirm={() => confirmDeleteItem()}
-            />
-          )}
-        </AnimatePresence>
       </div>
     </div>
   );

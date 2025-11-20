@@ -1,5 +1,5 @@
 // src/pages/courses/CourseList.tsx
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { courseService } from "../../services/courseService";
 import { ICourse, CoursePayload } from "../../types/interface/cource.interface";
@@ -10,14 +10,19 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
+import { getTranslationValue } from "../../utils/translation";
 
 export default function CourseList() {
   const navigate = useNavigate();
 
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(true);
+  const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const debounceRef = useRef<number | undefined>(undefined);
+  const observer = useRef<IntersectionObserver | null>(null);
   const lang = useSelector((state: RootState) => state.lang.code);
 
   // modal / confirm state
@@ -28,17 +33,37 @@ export default function CourseList() {
   const [modalError, setModalError] = useState<string | null>(null);
 
   // fetch helper
-  const fetchCourses = async (search = "") => {
-    setLoading(true);
+  const fetchCourses = async (search = "", pageNum = 1, isLoadMore = false) => {
+    if (isLoadMore) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+    }
+
     try {
-      const res = await courseService.getList({ search });
+      const res = await courseService.getList({
+        search,
+        page: pageNum,
+        take: 12,
+      });
 
       const list: ICourse[] = res.data.items;
-      setCourses(list);
+      const totalPages =
+        res.data.totalPages || Math.ceil(res.data.total / res.data.limit);
+
+      if (isLoadMore) {
+        setCourses((prev) => [...prev, ...list]);
+      } else {
+        setCourses(list);
+      }
+
+      setHasMore(pageNum < totalPages);
+      setPage(pageNum);
     } catch (err) {
       console.error("Failed to fetch courses:", err);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
@@ -46,11 +71,26 @@ export default function CourseList() {
   useEffect(() => {
     window.clearTimeout(debounceRef.current);
     debounceRef.current = window.setTimeout(() => {
-      fetchCourses(searchTerm.trim());
+      fetchCourses(searchTerm.trim(), 1, false);
     }, 10);
     return () => window.clearTimeout(debounceRef.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchTerm]);
+
+  // Observer for infinite scroll
+  const lastCourseElementRef = useCallback(
+    (node: any) => {
+      if (loading || loadingMore) return;
+      if (observer.current) observer.current.disconnect();
+      observer.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting && hasMore) {
+          fetchCourses(searchTerm.trim(), page + 1, true);
+        }
+      });
+      if (node) observer.current.observe(node);
+    },
+    [loading, loadingMore, hasMore, page, searchTerm]
+  );
 
   const openCreate = () => {
     setSelectedCourse(null);
@@ -69,20 +109,23 @@ export default function CourseList() {
     setIsConfirmOpen(true);
   };
 
-  const handleModalSubmit = async (payload: CoursePayload, id?: string) => {
+  const handleModalSubmit = async (
+    payload: Partial<CoursePayload>,
+    id?: string
+  ) => {
     setModalLoading(true);
     setModalError(null);
     try {
       if (id) {
         await courseService.update(id, payload);
-        await fetchCourses(searchTerm.trim());
+        await fetchCourses(searchTerm.trim(), 1, false);
       } else {
         const res = await courseService.create(payload);
         const created = res.data?.data ?? res.data;
         if (created && created._id) {
           setCourses((prev) => [created, ...prev]);
         } else {
-          await fetchCourses(searchTerm.trim());
+          await fetchCourses(searchTerm.trim(), 1, false);
         }
       }
       setIsModalOpen(false);
@@ -116,17 +159,6 @@ export default function CourseList() {
     [CourseStatus.PUBLISHED]: "Published",
     [CourseStatus.DRAFT]: "Draft",
     [CourseStatus.INACTIVE]: "Inactive",
-  };
-
-  // Add level colors and labels
-  const levelColors: Record<CourseLevel, string> = {
-    [CourseLevel.LEVEL1]: "bg-blue-100 text-blue-700",
-    [CourseLevel.LEVEL2]: "bg-purple-100 text-purple-700",
-  };
-
-  const levelLabels: Record<CourseLevel, string> = {
-    [CourseLevel.LEVEL1]: "Level 1",
-    [CourseLevel.LEVEL2]: "Level 2",
   };
 
   return (
@@ -213,124 +245,141 @@ export default function CourseList() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            <AnimatePresence>
-              {courses.map((course) => (
-                <motion.div
-                  key={course._id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.9 }}
-                  transition={{ duration: 0.3 }}
-                  className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full"
-                >
-                  {/* image */}
-                  <div className="relative h-48 overflow-hidden flex-shrink-0">
-                    <img
-                      src={
-                        course.image ||
-                        "https://via.placeholder.com/400x600?text=Course"
-                      }
-                      alt={course.title[lang]}
-                      className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
-                    />
-
-                    {/* hover buttons */}
-                    <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <button
-                        onClick={() => openEdit(course)}
-                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                        title="Edit"
-                      >
-                        <PencilIcon className="h-5 w-5 text-blue-600" />
-                      </button>
-                      <button
-                        onClick={() => openDelete(course)}
-                        className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
-                        title="Delete"
-                      >
-                        <TrashIcon className="h-5 w-5 text-red-600" />
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* content */}
-                  <div className="p-5 flex flex-col flex-grow">
-                    <h2
-                      className="font-semibold text-lg mb-2 truncate cursor-pointer text-gray-900 hover:text-blue-600 transition-colors"
-                      title={course.title[lang]}
-                      onClick={() => navigate(`/course/${course._id}`)}
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              <AnimatePresence>
+                {courses.map((course, index) => {
+                  // Add ref to the last element
+                  const isLast = index === courses.length - 1;
+                  return (
+                    <motion.div
+                      key={course._id}
+                      ref={isLast ? lastCourseElementRef : null}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, scale: 0.9 }}
+                      transition={{ duration: 0.3 }}
+                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full"
                     >
-                      {course.title[lang]}
-                    </h2>
+                      {/* image */}
+                      <div className="relative h-48 overflow-hidden flex-shrink-0">
+                        <img
+                          src={
+                            course.image ||
+                            "https://via.placeholder.com/400x600?text=Course"
+                          }
+                          alt={getTranslationValue(course.title, lang)}
+                          className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                        />
 
-                    <p
-                      className="text-sm text-gray-600 mb-4 flex-grow"
-                      style={{
-                        display: "-webkit-box",
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
-                      }}
-                      title={course.description?.[lang]}
-                    >
-                      {course.description?.[lang]}
-                    </p>
+                        {/* hover buttons */}
+                        <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                          <button
+                            onClick={() => openEdit(course)}
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                            title="Edit"
+                          >
+                            <PencilIcon className="h-5 w-5 text-blue-600" />
+                          </button>
+                          <button
+                            onClick={() => openDelete(course)}
+                            className="p-2 bg-white rounded-full shadow-md hover:bg-gray-100 transition-colors"
+                            title="Delete"
+                          >
+                            <TrashIcon className="h-5 w-5 text-red-600" />
+                          </button>
+                        </div>
+                      </div>
 
-                    {/* Price */}
-                    {course.prices && course.prices.length > 0 && (
-                      <div className="mb-4">
-                        {course.prices[0].isFree ? (
-                          <span className="text-green-600 font-semibold text-sm bg-green-50 px-2 py-1 rounded-md inline-block">
-                            Free
-                          </span>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            {course.prices[0].salePrice ? (
-                              <>
-                                <span className="text-blue-600 font-semibold text-sm">
-                                  {course.prices[0].currency}{" "}
-                                  {course.prices[0].salePrice.toLocaleString()}
-                                </span>
-                                <span className="text-gray-400 text-xs line-through">
-                                  {course.prices[0].currency}{" "}
-                                  {course.prices[0].originalPrice.toLocaleString()}
-                                </span>
-                              </>
-                            ) : (
-                              <span className="text-gray-800 font-medium text-sm">
-                                {course.prices[0].currency}{" "}
-                                {course.prices[0].originalPrice.toLocaleString()}
+                      {/* content */}
+                      <div className="p-5 flex flex-col flex-grow">
+                        <h2
+                          className="font-semibold text-lg mb-2 truncate cursor-pointer text-gray-900 hover:text-blue-600 transition-colors"
+                          title={getTranslationValue(course.title, lang)}
+                          onClick={() => navigate(`/course/${course._id}`)}
+                        >
+                          {getTranslationValue(course.title, lang)}
+                        </h2>
+
+                        <p
+                          className="text-sm text-gray-600 mb-4 flex-grow"
+                          style={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                          }}
+                          title={getTranslationValue(course.description, lang)}
+                        >
+                          {getTranslationValue(course.description, lang)}
+                        </p>
+
+                        {/* Price */}
+                        {course.prices && course.prices.length > 0 && (
+                          <div className="mb-4">
+                            {course.prices[0].isFree ? (
+                              <span className="text-green-600 font-semibold text-sm bg-green-50 px-2 py-1 rounded-md inline-block">
+                                Free
                               </span>
+                            ) : (
+                              <div className="flex items-center gap-2">
+                                {course.prices[0].salePrice ? (
+                                  <>
+                                    <span className="text-blue-600 font-semibold text-sm">
+                                      {course.prices[0].currency}{" "}
+                                      {course.prices[0].salePrice.toLocaleString()}
+                                    </span>
+                                    <span className="text-gray-400 text-xs line-through">
+                                      {course.prices[0].currency}{" "}
+                                      {course.prices[0].originalPrice.toLocaleString()}
+                                    </span>
+                                  </>
+                                ) : (
+                                  <span className="text-gray-800 font-medium text-sm">
+                                    {course.prices[0].currency}{" "}
+                                    {course.prices[0].originalPrice.toLocaleString()}
+                                  </span>
+                                )}
+                              </div>
                             )}
                           </div>
                         )}
+
+                        {/* Status and Level in the same row */}
+                        <div className="flex justify-between items-center  gap-2 mb-3">
+                          <span
+                            className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                              statusColors[course.status]
+                            }`}
+                          >
+                            {statusLabels[course.status]}
+                          </span>
+
+                          <span className="text-sm font-medium text-gray-500">
+                            {course.numberOfLesson || 0} lessons
+                          </span>
+                        </div>
                       </div>
-                    )}
+                    </motion.div>
+                  );
+                })}
+              </AnimatePresence>
+            </div>
 
-                    {/* Status and Level in the same row */}
-                    <div className="flex justify-between gap-2 mb-3">
-                      <span
-                        className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                          statusColors[course.status]
-                        }`}
-                      >
-                        {statusLabels[course.status]}
-                      </span>
+            {/* Loading more indicator */}
+            {loadingMore && (
+              <div className="flex justify-center mt-6">
+                <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+              </div>
+            )}
 
-                      <span
-                        className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
-                          levelColors[course.level || CourseLevel.LEVEL1]
-                        }`}
-                      >
-                        {levelLabels[course.level || CourseLevel.LEVEL1]}
-                      </span>
-                    </div>
-                  </div>
-                </motion.div>
-              ))}
-            </AnimatePresence>
-          </div>
+            {/* No more courses message */}
+            {!hasMore && courses.length > 0 && (
+              <div className="text-center mt-6 text-gray-500">
+                No more courses to load
+              </div>
+            )}
+          </>
         )}
       </div>
 

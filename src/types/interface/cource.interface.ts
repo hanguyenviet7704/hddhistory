@@ -17,18 +17,18 @@ export interface ICourse {
   skillsetId: string;
   image: string;
   status: CourseStatus;
-  level: CourseLevel;
   prices?: IPrice[];
+  numberOfLesson?: number;
 }
 
 export interface CoursePayload {
-  title: string;
-  description: string;
+  title: ITranslation;
+  description: ITranslation;
   skillsetId: string;
   image: string;
   status: CourseStatus;
-  level: CourseLevel;
   prices?: IPrice[];
+  numberOfLesson?: number;
 }
 
 export class CourseListQuery extends BaseQuery {
@@ -49,23 +49,38 @@ export class CourseListQuery extends BaseQuery {
 
 export interface IRoadmapNode {
   title: ITranslation;
-  entrance: ILessonBrief | null;
-  lessons: ILessonBrief[];
-  output: ILessonBrief | null;
+  entranceId: string;
+  lessonIds: string[];
+  outputId: string;
+  entrance?: ILessonBrief | null;
+  lessons?: ILessonBrief[] | null;
+  output?: ILessonBrief | null;
+}
+
+export interface IRoadmapLevel {
+  id: number;
+  level: CourseLevel;
+  nodes: IRoadmapNode[];
 }
 
 export interface IRoadmap {
   courseId: string;
-  node: IRoadmapNode[];
+  levels: IRoadmapLevel[];
 }
 
 export interface RoadmapNodePayload {
-  title: string;
+  title: ITranslation;
   entranceId: string;
   lessonIds: string[];
   outputId: string;
 }
 
+export interface RoadmapLevelPayload {
+  id: number;
+  level: CourseLevel;
+  nodes: RoadmapNodePayload[];
+}
+
 export interface RoadmapPayload {
-  node: RoadmapNodePayload[];
+  levels: RoadmapLevelPayload[];
 }

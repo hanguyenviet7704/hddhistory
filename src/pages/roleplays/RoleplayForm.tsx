@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ILearningItem,
   LearningItemPayload,
+  ExerciseInput,
+  ExerciseInputPayload,
 } from "../../types/interface/learning-item/learning-item.interface";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -13,8 +15,9 @@ import {
   RoleplaySectionType,
   SectionConversationPosition,
 } from "../../types/enum/learningItem.enum";
+import { KeypointLevel } from "../../utils/enum/course.enum";
 import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { PlusIcon } from "@heroicons/react/24/solid";
+import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import { DndContext, closestCenter } from "@dnd-kit/core";
 import {
@@ -28,26 +31,30 @@ import { Combobox } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import LearningItemConfirm from "../../components/learning-item/LearningItemConfirm";
 import { keypointService } from "../../services/keypointService";
-import { DocumentType, KeypointLevel } from "../../utils/enum/course.enum";
+import { DocumentType } from "../../utils/enum/course.enum";
 import {
   IExerciseChoiceOption,
   IExerciseSingleChoice,
 } from "../../types/interface/learning-item/excercises/single-choice.interface";
-import { IExerciseMultipleChoice } from "../../types/interface/learning-item/excercises/multiple-choice.interface";
+import { IExerciseDragDrop } from "../../types/interface/learning-item/excercises/drag-drop.interface";
 import {
-  IAnswer,
-  IExerciseDragDrop,
-  IOptions,
-} from "../../types/interface/learning-item/excercises/drag-drop.interface";
-import { IExerciseRecord } from "../../types/interface/learning-item/excercises/record.interface";
+  IExerciseRecord,
+  IScoringCriteria,
+} from "../../types/interface/learning-item/excercises/record.interface";
 import {
   IDocument,
   IMediaDocument,
 } from "../../types/interface/learning-item/document.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
-import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
+import {
+  getTranslationValue,
+  getCurrentTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
+import { LangCode } from "../../types/enum/common.enum";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { avatarService } from "../../services/avatarService";
 import { iconService } from "../../services/iconService";
@@ -57,20 +64,204 @@ import {
   ILeadingText,
   ISection,
   ISectionContent,
+  ISectionContentPayload,
+  ISectionPayload,
 } from "../../types/interface/learning-item/roleplays/section.interface";
+import { IRoleplayColorTemplate } from "../../types/interface/learning-item/roleplays/color-template.interface";
+import { roleplayColorTemplateService } from "../../services/roleplayColorTemplateService";
+import { IAvatar } from "../../types/interface/avatar.interface";
+
+const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
+  DocumentType.TITLE,
+  DocumentType.CAPTION,
+  DocumentType.TEXT,
+];
+
+const isTextualDocumentType = (type: DocumentType) =>
+  TEXTUAL_DOCUMENT_TYPES.includes(type);
+
+const cleanDocumentItems = (documents: IDocument[]) => {
+  return documents
+    .map((doc) => {
+      const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedData: any = { ...doc.data };
+      if (cleanedContent && Object.keys(cleanedContent).length > 0) {
+        cleanedData.content = cleanedContent;
+      } else {
+        delete cleanedData.content;
+      }
+      if (!cleanedData.url) {
+        delete cleanedData.url;
+      }
+      if (!cleanedData.thumbnail) {
+        delete cleanedData.thumbnail;
+      }
+
+      const hasValue =
+        (isTextualDocumentType(doc.type) &&
+          !!cleanedData.content &&
+          Object.keys(cleanedData.content).length > 0) ||
+        ((doc.type === DocumentType.IMAGE || doc.type === DocumentType.AUDIO) &&
+          !!cleanedData.url) ||
+        (doc.type === DocumentType.VIDEO &&
+          (!!cleanedData.url || !!cleanedData.thumbnail));
+
+      return hasValue ? ({ ...doc, data: cleanedData } as IDocument) : null;
+    })
+    .filter(Boolean) as IDocument[];
+};
+
+const getDocumentContentLabel = (type: DocumentType) => {
+  switch (type) {
+    case DocumentType.TITLE:
+      return "Title";
+    case DocumentType.CAPTION:
+      return "Caption";
+    default:
+      return "Content";
+  }
+};
+
+const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+  content: { [currentLang]: "" },
+  url: "",
+  thumbnail: "",
+});
+
+const distributeEvenlyIntegers = (slots: number, total: number) => {
+  if (slots <= 0) return [];
+  const base = Math.floor(total / slots);
+  let remainder = total - base * slots;
+  return Array.from({ length: slots }, () => {
+    if (remainder > 0) {
+      remainder -= 1;
+      return base + 1;
+    }
+    return base;
+  });
+};
+
+const scaleValuesToTotal = (values: number[], target: number) => {
+  if (!values.length) return [];
+  const normalized = values.map((val) => Math.max(0, Math.round(val)));
+  const total = normalized.reduce((sum, val) => sum + val, 0);
+
+  if (total === 0) {
+    return distributeEvenlyIntegers(values.length, target);
+  }
+
+  const raw = normalized.map((val) => (val / total) * target);
+  const floored = raw.map((val) => Math.floor(val));
+  let remainder = target - floored.reduce((sum, val) => sum + val, 0);
+
+  const fractionalOrder = raw
+    .map((val, idx) => ({ idx, frac: val - floored[idx] }))
+    .sort((a, b) => b.frac - a.frac);
+
+  fractionalOrder.forEach(({ idx }) => {
+    if (remainder > 0) {
+      floored[idx] += 1;
+      remainder -= 1;
+    }
+  });
+
+  let cursor = 0;
+  while (remainder > 0 && floored.length > 0) {
+    floored[cursor % floored.length] += 1;
+    remainder -= 1;
+    cursor += 1;
+  }
+
+  return floored;
+};
+
+const rebalanceRecordScoringCriteria = (
+  criteriaInput?: Partial<IScoringCriteria>[],
+  exerciseMaxScore?: number,
+  lang?: LangCode
+): IScoringCriteria[] => {
+  const isValidNumber = (value: unknown): value is number =>
+    typeof value === "number" && !Number.isNaN(value);
+
+  const sanitized =
+    criteriaInput?.map((item) => ({
+      criteria: (item.criteria ?? { en: "" }) as ITranslation,
+      maxScore: isValidNumber(item.maxScore)
+        ? Math.max(0, Math.round(item.maxScore))
+        : undefined,
+    })) || [];
+
+  if (!sanitized.length) return [];
+
+  if (!isValidNumber(exerciseMaxScore)) {
+    return sanitized.map((item) => ({
+      ...item,
+      maxScore: isValidNumber(item.maxScore) ? item.maxScore : 0,
+    }));
+  }
+
+  const lastIndex = sanitized.length - 1;
+  if (lastIndex < 0) return [];
+
+  const result = sanitized.map((item) => ({ ...item }));
+
+  const manualIndices = result
+    .map((_, idx) => idx)
+    .filter((idx) => idx !== lastIndex);
+
+  let manualSum = 0;
+  manualIndices.forEach((idx) => {
+    const val = result[idx].maxScore;
+    const normalized = isValidNumber(val) ? Math.max(0, Math.round(val)) : 0;
+    result[idx].maxScore = normalized;
+    manualSum += normalized;
+  });
+
+  if (manualSum > exerciseMaxScore) {
+    const manualValues = manualIndices.map((idx) => result[idx].maxScore || 0);
+    const scaled = scaleValuesToTotal(manualValues, exerciseMaxScore);
+    manualIndices.forEach((idx, order) => {
+      result[idx].maxScore = scaled[order] || 0;
+    });
+    manualSum = exerciseMaxScore;
+  }
+
+  const remaining = Math.max(0, exerciseMaxScore - manualSum);
+  result[lastIndex].maxScore = remaining;
+
+  return result.map((item) => ({
+    ...item,
+    maxScore: item.maxScore || 0,
+  }));
+};
 
 // Helper component to display text with truncation and tooltip
-const TextWithTooltip = ({ text = "", maxLength = 150 }) => {
+const TextWithTooltip = ({
+  text = "",
+  maxLength = 150,
+  lang = LangCode.EN,
+}: {
+  text?: string | ITranslation;
+  maxLength?: number;
+  lang?: LangCode;
+}) => {
   if (!text) return null;
+
+  const displayText =
+    typeof text === "string" ? text : getTranslationValue(text, lang);
+
+  if (!displayText) return null;
 
   return (
     <div className="relative group">
       <span className="truncate inline-block max-w-xl">
-        {text.length > maxLength ? `${text.substring(0, maxLength)}...` : text}
+        {displayText.length > maxLength
+          ? `${displayText.substring(0, maxLength)}...`
+          : displayText}
       </span>
-      {text.length > maxLength && (
+      {displayText.length > maxLength && (
         <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 bg-gray-800 text-white text-xs rounded py-2 px-3 w-64 max-h-40 overflow-y-auto shadow-lg">
-          {text}
+          {displayText}
         </div>
       )}
     </div>
@@ -92,7 +283,7 @@ const TagDisplay = ({
       {tag.url && (
         <img
           src={tag.url}
-          alt={tag.title?.[lang] || "Tag url"}
+          alt={tag.title?.[lang] || ""}
           className="w-5 h-5 object-contain flex-shrink-0"
         />
       )}
@@ -141,18 +332,18 @@ const AvatarSelector = ({
   onChange,
   label,
 }: {
-  value: string;
-  onChange: (value: string) => void;
+  value: IAvatar | null | undefined;
+  onChange: (value: IAvatar | null) => void;
   label: string;
 }) => {
-  const [avatars, setAvatars] = useState<any[]>([]);
+  const [avatars, setAvatars] = useState<IAvatar[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchAvatars = async () => {
       try {
-        const res = await avatarService.getList({ page: 1, take: 100 });
-        setAvatars(res.data.items || []);
+        const res = await avatarService.getList({ page: 1, take: 1000 });
+        setAvatars(res.data.items || res.data || []);
       } catch (err) {
         console.error("fetchAvatars", err);
       } finally {
@@ -178,16 +369,21 @@ const AvatarSelector = ({
               <button
                 key={avatar._id}
                 type="button"
-                onClick={() => onChange(avatar.url)}
-                className={`w-10 h-10 rounded-full border-2 ${
-                  value === avatar.url ? "border-blue-500" : "border-gray-300"
-                } overflow-hidden`}
+                onClick={() => onChange(avatar)}
+                className={`w-full flex flex-col items-center gap-1 p-1 rounded-lg border-2 text-xs ${
+                  value?._id === avatar._id
+                    ? "border-blue-500"
+                    : "border-gray-300"
+                }`}
               >
-                <img
-                  src={avatar.url}
-                  alt={avatar.name}
-                  className="w-full h-full object-cover"
-                />
+                <div className="w-12 h-12 rounded-full overflow-hidden border">
+                  <img
+                    src={avatar.url}
+                    alt={avatar.name}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <span className="truncate max-w-[72px]">{avatar.name}</span>
               </button>
             ))}
           </div>
@@ -276,7 +472,7 @@ const KeypointSelector = ({
   );
   const lang = useSelector(
     (state: RootState) => state.lang.code
-  ) as keyof ITranslation;
+  ) as keyof ITranslation as LangCode;
 
   useEffect(() => {
     let active = true;
@@ -380,9 +576,13 @@ export default function RoleplayForm({
   const navigate = useNavigate();
   const lang = useSelector(
     (state: RootState) => state.lang.code
-  ) as keyof ITranslation;
+  ) as keyof ITranslation as LangCode;
   const isEditMode = !!roleplay;
   const { showSuccess, showError } = useNotification();
+  const showErrorRef = useRef(showError);
+  useEffect(() => {
+    showErrorRef.current = showError;
+  }, [showError]);
 
   // State for keypoint search
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
@@ -390,9 +590,6 @@ export default function RoleplayForm({
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
     null
   );
-
-  // State for all tags
-  const [allTags, setAllTags] = useState<ITag[]>([]);
 
   // State for section ID counter
   const [nextSectionId, setNextSectionId] = useState(1);
@@ -477,7 +674,46 @@ export default function RoleplayForm({
       setNextOptionId(1);
       setNextAnswerId(1);
     }
-  }, [roleplay, lang]);
+  }, [roleplay]); // Remove lang from dependency to prevent reset on language change
+
+  // Separate effect to update title and description language when creating new roleplay
+  useEffect(() => {
+    if (!roleplay && currentRoleplay._id === "") {
+      // Only update the title and description fields to ensure they have the current language
+      setCurrentRoleplay((prev) => ({
+        ...prev,
+        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" },
+        description: {
+          [lang]: (prev.description as ITranslation)?.[lang] || "",
+        },
+      }));
+    }
+  }, [lang, roleplay, currentRoleplay._id]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchTemplates = async () => {
+      try {
+        setColorTemplatesLoading(true);
+        const res = await roleplayColorTemplateService.getList({
+          page: 1,
+          take: 1000,
+        });
+        const list: IRoleplayColorTemplate[] =
+          res?.data?.items || res?.items || res?.data || res || [];
+        if (active) setColorTemplates(list);
+      } catch (err) {
+        console.error("fetchRoleplayColorTemplates", err);
+        showErrorRef.current?.("Failed to load roleplay color templates");
+      } finally {
+        if (active) setColorTemplatesLoading(false);
+      }
+    };
+    fetchTemplates();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -501,6 +737,226 @@ export default function RoleplayForm({
   const [currentSectionForPopup, setCurrentSectionForPopup] = useState<
     number | null
   >(null);
+  const [validationErrors, setValidationErrors] = useState<{
+    [key: string]: string;
+  }>({});
+  const [colorTemplates, setColorTemplates] = useState<
+    IRoleplayColorTemplate[]
+  >([]);
+  const [colorTemplatesLoading, setColorTemplatesLoading] = useState(false);
+
+  const getColorTemplateForSection = (
+    sectionId?: number | null
+  ): IRoleplayColorTemplate | undefined => {
+    if (!sectionId) return undefined;
+    const section = currentRoleplay.sections?.find((s) => s.id === sectionId);
+    if (!section?.colorTemplateId) return undefined;
+    return colorTemplates.find((t) => t._id === section.colorTemplateId);
+  };
+
+  const transformExerciseToPayload = (
+    exercise?: ExerciseInput
+  ): ExerciseInputPayload | undefined => {
+    if (!exercise) return undefined;
+
+    const exercisePayload = { ...(exercise as ExerciseInputPayload) };
+
+    if ("tag" in exercisePayload) {
+      const tagValue = (exercise as { tag?: ITag | string | null }).tag;
+      (exercisePayload as { tag?: string }).tag =
+        typeof tagValue === "string" ? tagValue : tagValue?._id || "";
+    }
+
+    // Clean ITranslation fields - only add if not empty
+    if ("speechBubble" in exercisePayload && exercisePayload.speechBubble) {
+      const cleanedSpeechBubble = cleanTranslation(
+        exercisePayload.speechBubble as ITranslation
+      );
+      if (cleanedSpeechBubble) {
+        (exercisePayload as any).speechBubble = cleanedSpeechBubble;
+      } else {
+        delete (exercisePayload as any).speechBubble;
+      }
+    }
+    if ("explanation" in exercisePayload && exercisePayload.explanation) {
+      const cleanedExplanation = cleanTranslation(
+        exercisePayload.explanation as ITranslation
+      );
+      if (cleanedExplanation) {
+        (exercisePayload as any).explanation = cleanedExplanation;
+      } else {
+        delete (exercisePayload as any).explanation;
+      }
+    }
+    if ("targetArea" in exercisePayload && exercisePayload.targetArea) {
+      const cleanedTargetArea = cleanTranslation(
+        exercisePayload.targetArea as ITranslation
+      );
+      if (cleanedTargetArea) {
+        (exercisePayload as any).targetArea = cleanedTargetArea;
+      } else {
+        delete (exercisePayload as any).targetArea;
+      }
+    }
+    if (
+      "options" in exercisePayload &&
+      Array.isArray(exercisePayload.options)
+    ) {
+      (exercisePayload as any).options = exercisePayload.options.map(
+        (opt: any) => {
+          const cleanedOption: any = { ...opt };
+          const cleanedValue = cleanTranslation(opt.value);
+          if (cleanedValue) {
+            cleanedOption.value = cleanedValue;
+          }
+          const cleanedText = cleanTranslation(opt.text);
+          if (cleanedText) {
+            cleanedOption.text = cleanedText;
+          }
+          return cleanedOption;
+        }
+      );
+    }
+    if ("answer" in exercisePayload && Array.isArray(exercisePayload.answer)) {
+      (exercisePayload as any).answer = exercisePayload.answer.map(
+        (ans: any) => {
+          const cleanedAnswer: any = { ...ans };
+          const cleanedCorrectAnswer = cleanTranslation(ans.correctAnswer);
+          if (cleanedCorrectAnswer) {
+            cleanedAnswer.correctAnswer = cleanedCorrectAnswer;
+          }
+          return cleanedAnswer;
+        }
+      );
+    }
+    if (
+      "document" in exercisePayload &&
+      Array.isArray(exercisePayload.document)
+    ) {
+      const cleanedDocuments = cleanDocumentItems(
+        exercisePayload.document as IDocument[]
+      );
+      if (cleanedDocuments.length > 0) {
+        (exercisePayload as any).document = cleanedDocuments;
+      } else {
+        delete (exercisePayload as any).document;
+      }
+    }
+
+    return exercisePayload;
+  };
+
+  const transformSectionsToPayload = (
+    sectionList?: ISection[]
+  ): ISectionPayload[] | undefined => {
+    if (!sectionList) return undefined;
+
+    return sectionList.map((section) => {
+      const sectionPayload: any = {
+        id: section.id,
+        textColor: section.textColor,
+        backgroundColor: section.backgroundColor,
+        image: section.image || "",
+        colorTemplateId: section.colorTemplateId,
+        contents: [],
+      };
+
+      // Always include title field but clean empty translations
+      sectionPayload.title = cleanTranslation(section.title) || {};
+
+      // Always include transition field but clean empty translations
+      sectionPayload.transition = cleanTranslation(section.transition) || {};
+
+      // Process contents
+      if (section.contents?.length) {
+        sectionPayload.contents = section.contents.map((content) => {
+          const contentPayload: any = {
+            id: content.id,
+            type: content.type,
+          };
+
+          // Handle exercise content
+          if (content.type === RoleplaySectionType.EXERCISE) {
+            const exercisePayload = transformExerciseToPayload(
+              content.exercise
+            );
+            if (exercisePayload) {
+              contentPayload.exercise = exercisePayload;
+            }
+          }
+          // Handle conversation content
+          else if (
+            content.type === RoleplaySectionType.CONVERSATION &&
+            content.conversation
+          ) {
+            contentPayload.conversation = {
+              position: content.conversation.position,
+              backgroundColor: content.conversation.backgroundColor,
+              textColor: content.conversation.textColor,
+              avatarId:
+                content.conversation.avatar?._id ||
+                content.conversation.avatarId ||
+                "",
+              // Always include content field but clean empty translations
+              content: content.conversation.content
+                ? cleanTranslation(content.conversation.content) || {}
+                : {},
+              audio: content.conversation.audio || "",
+            };
+          }
+          // Handle leading text content
+          else if (
+            content.type === RoleplaySectionType.LEADING_TEXT &&
+            content.leadingText
+          ) {
+            contentPayload.leadingText = {
+              ...content.leadingText,
+              // Always include content field but clean empty translations
+              content: content.leadingText.content
+                ? cleanTranslation(content.leadingText.content) || {}
+                : {},
+            };
+          }
+          // Handle hint content
+          else if (content.type === RoleplaySectionType.HINT && content.hint) {
+            contentPayload.hint = {
+              ...content.hint,
+              // Always include content field but clean empty translations
+              content: content.hint.content
+                ? cleanTranslation(content.hint.content) || {}
+                : {},
+            };
+          }
+
+          return contentPayload as ISectionContentPayload;
+        });
+      }
+
+      return sectionPayload;
+    });
+  };
+
+  const buildLearningItemPayload = (
+    item: ILearningItem
+  ): LearningItemPayload => {
+    const payload: any = {
+      keypointId: item.keypointId,
+      title: cleanTranslation(item.title) || {},
+      type: LearningItemType.ROLEPLAY,
+      image: item.image,
+      tag: item.tag || [],
+      isSub: item.isSub,
+      sections: transformSectionsToPayload(item.sections),
+      index: item.index,
+    };
+
+    const cleanedDescription = cleanTranslation(item.description);
+    if (cleanedDescription && Object.keys(cleanedDescription).length > 0) {
+      payload.description = cleanedDescription;
+    }
+
+    return payload as LearningItemPayload;
+  };
 
   // Fetch keypoint based on query
   useEffect(() => {
@@ -523,24 +979,6 @@ export default function RoleplayForm({
       active = false;
     };
   }, [keypointQuery]);
-
-  // Fetch all tags
-  useEffect(() => {
-    let active = true;
-    const fetchAllTags = async () => {
-      try {
-        const res = await tagService.getList({ page: 1, take: 1000 });
-        const list: ITag[] = res.data.items || [];
-        if (active) setAllTags(list);
-      } catch (err) {
-        console.error("fetchAllTags", err);
-      }
-    };
-    fetchAllTags();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Fetch selected keypoint details when keypointId changes
   useEffect(() => {
@@ -566,17 +1004,7 @@ export default function RoleplayForm({
   const handleSaveRoleplay = async () => {
     try {
       setSaving(true);
-      const payload: LearningItemPayload = {
-        keypointId: currentRoleplay.keypointId,
-        title: currentRoleplay.title?.[lang] || "",
-        description: currentRoleplay.description?.[lang] || "",
-        type: LearningItemType.ROLEPLAY,
-        image: currentRoleplay.image,
-        tag: currentRoleplay.tag || [],
-        isSub: currentRoleplay.isSub,
-        sections: currentRoleplay.sections || [],
-        index: currentRoleplay.index,
-      };
+      const payload = buildLearningItemPayload(currentRoleplay);
 
       let res;
       if (currentRoleplay._id) {
@@ -680,7 +1108,8 @@ export default function RoleplayForm({
   const handleSelectContentType = (contentType: RoleplaySectionType) => {
     if (currentSectionForPopup === null) return;
 
-    const formData = createEmptyContent(contentType, nextContentId);
+    const template = getColorTemplateForSection(currentSectionForPopup);
+    const formData = createEmptyContent(contentType, nextContentId, template);
 
     setModalOpen({
       sectionId: currentSectionForPopup,
@@ -699,27 +1128,34 @@ export default function RoleplayForm({
   ) => {
     // If there is content data (editing), copy the data
     // If not (adding new), create empty content
+    const sectionTemplate = getColorTemplateForSection(sectionId);
     const formData = content
       ? { ...content }
-      : createEmptyContent(contentType, nextContentId);
+      : createEmptyContent(contentType, nextContentId, sectionTemplate);
 
     // Open modal with corresponding information
     setModalOpen({ sectionId, contentType, content, formData });
   };
 
   // Create empty content based on type
-  const createEmptyContent = (type: RoleplaySectionType, id: number) => {
+  const createEmptyContent = (
+    type: RoleplaySectionType,
+    id: number,
+    template?: IRoleplayColorTemplate
+  ) => {
     switch (type) {
       case RoleplaySectionType.CONVERSATION:
+        const leftStyle = template?.conversation?.left;
         return {
           id,
           type,
           conversation: {
-            name: "",
-            avartar: "",
+            avatar: undefined,
+            avatarId: "",
             position: SectionConversationPosition.LEFT,
-            bubbleColor: "#FFFFFF",
-            content: "",
+            backgroundColor: leftStyle?.backgroundColor || "#FFFFFF",
+            textColor: leftStyle?.textColor || "#000000",
+            content: { [lang]: "" },
             audio: "",
           } as IConversation,
         } as ISectionContent;
@@ -728,8 +1164,11 @@ export default function RoleplayForm({
           id,
           type,
           leadingText: {
-            frameColor: "#000000",
-            content: "",
+            backgroundColor:
+              template?.leadingText?.backgroundColor || "#000000",
+            textColor: template?.leadingText?.textColor || "#000000",
+            content: { [lang]: "" },
+            audio: "",
           } as ILeadingText,
         } as ISectionContent;
       case RoleplaySectionType.HINT:
@@ -738,7 +1177,9 @@ export default function RoleplayForm({
           type,
           hint: {
             icon: "",
-            content: "",
+            backgroundColor: template?.hint?.backgroundColor || "#FFFFFF",
+            textColor: template?.hint?.textColor || "#000000",
+            content: { [lang]: "" },
           } as IHint,
         } as ISectionContent;
       case RoleplaySectionType.EXERCISE:
@@ -749,28 +1190,18 @@ export default function RoleplayForm({
           exercise: {
             id: 1,
             type: ExerciseType.SINGLE_CHOICE,
-            speechBubble: "",
+            speechBubble: { [lang]: "" },
             tag: null,
             keypointId: "",
-            document: [
-              {
-                id: 1,
-                type: DocumentType.TEXT,
-                data: {
-                  title: "",
-                  content: "",
-                  caption: "",
-                  url: "",
-                  thumbnail: "",
-                } as IMediaDocument,
-              },
-            ],
-            explanation: "",
+            document: [],
+            explanation: { [lang]: "" },
             options: [
-              { value: "", isCorrect: false },
-              { value: "", isCorrect: false },
+              { value: { [lang]: "" }, isCorrect: false },
+              { value: { [lang]: "" }, isCorrect: false },
             ] as IExerciseChoiceOption[],
             level: [KeypointLevel.WEAK_POINT],
+            maxScore: 10,
+            completionTime: 60,
             mainQuestion: 0,
           } as IExerciseSingleChoice,
         } as ISectionContent;
@@ -817,6 +1248,64 @@ export default function RoleplayForm({
   // Handle saving content and roleplay together
   const handleSaveContentAndRoleplay = async (contentData: any) => {
     try {
+      // Xóa lỗi cũ
+      setValidationErrors({});
+
+      // Chuẩn hóa avatarId cho conversation
+      let normalizedContent = contentData;
+      if (
+        contentData.type === RoleplaySectionType.CONVERSATION &&
+        contentData.conversation
+      ) {
+        const avatarObj = contentData.conversation.avatar;
+        const avatarId =
+          contentData.conversation.avatarId || avatarObj?._id || "";
+        normalizedContent = {
+          ...contentData,
+          conversation: {
+            ...contentData.conversation,
+            avatar: avatarObj,
+            avatarId,
+          },
+        };
+      }
+
+      // Thực hiện xác thực dựa trên loại nội dung
+      let hasError = false;
+      const errors: { [key: string]: string } = {};
+
+      if (normalizedContent.type === RoleplaySectionType.CONVERSATION) {
+        if (!normalizedContent.conversation.avatarId) {
+          errors.avatar = "Avatar is required for conversation content";
+          hasError = true;
+        }
+      } else if (normalizedContent.type === RoleplaySectionType.LEADING_TEXT) {
+        if (
+          !getCurrentTranslationValue(
+            normalizedContent.leadingText.content,
+            lang
+          )
+        ) {
+          errors.content = "Content is required for leading text";
+          hasError = true;
+        }
+      } else if (normalizedContent.type === RoleplaySectionType.HINT) {
+        if (!normalizedContent.hint.icon) {
+          errors.icon = "Icon is required for hint content";
+          hasError = true;
+        }
+        if (!getCurrentTranslationValue(normalizedContent.hint.content, lang)) {
+          errors.hintContent = "Content is required for hint content";
+          hasError = true;
+        }
+      }
+
+      // Nếu có lỗi, cập nhật state và dừng việc lưu
+      if (hasError) {
+        setValidationErrors(errors);
+        return;
+      }
+
       setSaving(true);
 
       let updatedRoleplay;
@@ -831,7 +1320,7 @@ export default function RoleplayForm({
         const section = sections[sectionIndex];
         const contentList = section.contents || [];
         const updatedContentList = contentList.map((c) =>
-          c.id === contentData.id ? contentData : c
+          c.id === normalizedContent.id ? normalizedContent : c
         );
 
         const updatedSections = [...sections];
@@ -851,7 +1340,7 @@ export default function RoleplayForm({
 
         const section = sections[sectionIndex];
         const contentList = section.contents || [];
-        const updatedContentList = [...contentList, contentData];
+        const updatedContentList = [...contentList, normalizedContent];
 
         const updatedSections = [...sections];
         updatedSections[sectionIndex] = {
@@ -867,17 +1356,7 @@ export default function RoleplayForm({
 
       setCurrentRoleplay(updatedRoleplay);
 
-      const payload: LearningItemPayload = {
-        keypointId: updatedRoleplay.keypointId,
-        title: updatedRoleplay.title?.[lang] || "",
-        description: updatedRoleplay.description?.[lang] || "",
-        type: LearningItemType.ROLEPLAY,
-        image: updatedRoleplay.image,
-        tag: updatedRoleplay.tag || [],
-        isSub: updatedRoleplay.isSub,
-        sections: updatedRoleplay.sections || [],
-        index: updatedRoleplay.index,
-      };
+      const payload = buildLearningItemPayload(updatedRoleplay);
 
       if (updatedRoleplay._id) {
         await learningItemService.update(updatedRoleplay._id, payload);
@@ -936,17 +1415,7 @@ export default function RoleplayForm({
       const updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
       setCurrentRoleplay(updatedRoleplay);
 
-      const payload: LearningItemPayload = {
-        keypointId: updatedRoleplay.keypointId,
-        title: updatedRoleplay.title?.[lang] || "",
-        description: updatedRoleplay.description?.[lang] || "",
-        type: LearningItemType.ROLEPLAY,
-        image: updatedRoleplay.image,
-        tag: updatedRoleplay.tag || [],
-        isSub: updatedRoleplay.isSub,
-        sections: updatedRoleplay.sections || [],
-        index: updatedRoleplay.index,
-      };
+      const payload = buildLearningItemPayload(updatedRoleplay);
 
       if (updatedRoleplay._id) {
         await learningItemService.update(updatedRoleplay._id, payload);
@@ -987,17 +1456,7 @@ export default function RoleplayForm({
       const updatedRoleplay = { ...currentRoleplay, sections: reassignedList };
       setCurrentRoleplay(updatedRoleplay);
 
-      const payload: LearningItemPayload = {
-        keypointId: updatedRoleplay.keypointId,
-        title: updatedRoleplay.title?.[lang] || "",
-        description: updatedRoleplay.description?.[lang] || "",
-        type: LearningItemType.ROLEPLAY,
-        image: updatedRoleplay.image,
-        tag: updatedRoleplay.tag || [],
-        isSub: updatedRoleplay.isSub,
-        sections: updatedRoleplay.sections || [],
-        index: updatedRoleplay.index,
-      };
+      const payload = buildLearningItemPayload(updatedRoleplay);
 
       if (updatedRoleplay._id) {
         await learningItemService.update(updatedRoleplay._id, payload);
@@ -1013,13 +1472,15 @@ export default function RoleplayForm({
     }
   };
 
-  // Add new section
-  const addNewSection = () => {
+  const addNewSection = (template: IRoleplayColorTemplate) => {
     const newSection: ISection = {
       id: nextSectionId,
-      title: `Section ${nextSectionId}`,
-      transition: "",
-      transitionColor: "#000000",
+      title: { [lang]: `Section ${nextSectionId}` },
+      transition: { [lang]: "" },
+      textColor: template?.transition?.textColor || "#000000",
+      backgroundColor: template?.transition?.backgroundColor || "#ffffff",
+      image: "", // Added image field
+      colorTemplateId: template?._id,
       contents: [],
     };
 
@@ -1031,8 +1492,101 @@ export default function RoleplayForm({
     setNextSectionId(nextSectionId + 1);
   };
 
+  const updateSectionColorTemplate = async (
+    sectionId: number,
+    templateId: string
+  ) => {
+    const template = colorTemplates.find((item) => item._id === templateId);
+    if (!template) return;
+
+    const sections = currentRoleplay.sections || [];
+    const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+    if (sectionIndex === -1) return;
+
+    const updatedSection = {
+      ...sections[sectionIndex],
+      colorTemplateId: templateId,
+      textColor:
+        template.transition?.textColor || sections[sectionIndex].textColor,
+      backgroundColor:
+        template.transition?.backgroundColor ||
+        sections[sectionIndex].backgroundColor,
+      contents: (sections[sectionIndex].contents || []).map((content) => {
+        if (content.type === RoleplaySectionType.CONVERSATION) {
+          const style =
+            content.conversation.position ===
+            SectionConversationPosition.RIGHT
+              ? template.conversation?.right
+              : template.conversation?.left;
+          return {
+            ...content,
+            conversation: {
+              ...content.conversation,
+              backgroundColor:
+                style?.backgroundColor || content.conversation.backgroundColor,
+              textColor: style?.textColor || content.conversation.textColor,
+            },
+          };
+        }
+        if (content.type === RoleplaySectionType.LEADING_TEXT) {
+          return {
+            ...content,
+            leadingText: {
+              ...content.leadingText,
+              backgroundColor:
+                template.leadingText?.backgroundColor ||
+                content.leadingText.backgroundColor,
+              textColor:
+                template.leadingText?.textColor ||
+                content.leadingText.textColor,
+            },
+          };
+        }
+        if (content.type === RoleplaySectionType.HINT) {
+          return {
+            ...content,
+            hint: {
+              ...content.hint,
+              backgroundColor:
+                template.hint?.backgroundColor ||
+                content.hint.backgroundColor,
+              textColor: template.hint?.textColor || content.hint.textColor,
+            },
+          };
+        }
+        return content;
+      }),
+    };
+
+    const updatedSections = [...sections];
+    updatedSections[sectionIndex] = updatedSection;
+    const updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
+    setCurrentRoleplay(updatedRoleplay);
+
+    if (!updatedRoleplay._id) return;
+
+    try {
+      setSaving(true);
+      const payload = buildLearningItemPayload(updatedRoleplay);
+      await learningItemService.update(updatedRoleplay._id, payload);
+      showSuccess("Updated section color template");
+    } catch (err) {
+      console.error("updateSectionColorTemplate", err);
+      showError("Failed to update color template");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  // const handleSelectTemplateForSection = (
+  //   template: IRoleplayColorTemplate
+  // ) => {
+  //   addNewSection(template);
+  //   setTemplateModalOpen(false);
+  // };
+
   // Update section title
-  const updateSectionTitle = (sectionId: number, title: string) => {
+  const updateSectionTitle = (sectionId: number, title: ITranslation) => {
     setCurrentRoleplay((prev) => {
       const sections = prev.sections || [];
       const sectionIndex = sections.findIndex((s) => s.id === sectionId);
@@ -1050,7 +1604,10 @@ export default function RoleplayForm({
   };
 
   // Update section transition
-  const updateSectionTransition = (sectionId: number, transition: string) => {
+  const updateSectionTransition = (
+    sectionId: number,
+    transition: ITranslation
+  ) => {
     setCurrentRoleplay((prev) => {
       const sections = prev.sections || [];
       const sectionIndex = sections.findIndex((s) => s.id === sectionId);
@@ -1067,10 +1624,10 @@ export default function RoleplayForm({
     });
   };
 
-  // Update section transition color
-  const updateSectionTransitionColor = (
+  // Update section transition text color
+  const updateSectionTransitionTextColor = (
     sectionId: number,
-    transitionColor: string
+    textColor: string
   ) => {
     setCurrentRoleplay((prev) => {
       const sections = prev.sections || [];
@@ -1081,7 +1638,46 @@ export default function RoleplayForm({
       const updatedSections = [...sections];
       updatedSections[sectionIndex] = {
         ...updatedSections[sectionIndex],
-        transitionColor,
+        textColor,
+      };
+
+      return { ...prev, sections: updatedSections };
+    });
+  };
+
+  // Update section transition backgound color
+  const updateSectionTransitionBackgoundColor = (
+    sectionId: number,
+    backgroundColor: string
+  ) => {
+    setCurrentRoleplay((prev) => {
+      const sections = prev.sections || [];
+      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+
+      if (sectionIndex === -1) return prev;
+
+      const updatedSections = [...sections];
+      updatedSections[sectionIndex] = {
+        ...updatedSections[sectionIndex],
+        backgroundColor,
+      };
+
+      return { ...prev, sections: updatedSections };
+    });
+  };
+
+  // Update section image
+  const updateSectionImage = (sectionId: number, image: string) => {
+    setCurrentRoleplay((prev) => {
+      const sections = prev.sections || [];
+      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+
+      if (sectionIndex === -1) return prev;
+
+      const updatedSections = [...sections];
+      updatedSections[sectionIndex] = {
+        ...updatedSections[sectionIndex],
+        image,
       };
 
       return { ...prev, sections: updatedSections };
@@ -1098,12 +1694,6 @@ export default function RoleplayForm({
           <h2 className="text-xl font-semibold text-gray-800">
             Roleplay Sections
           </h2>
-          <button
-            className="text-blue-500 hover:text-blue-700 transition-colors"
-            onClick={addNewSection}
-          >
-            <PlusCircleIcon className="h-6 w-6" />
-          </button>
         </div>
 
         <p className="text-sm text-gray-500 mb-4">
@@ -1131,267 +1721,255 @@ export default function RoleplayForm({
           >
             {sections.length > 0 ? (
               <div className="space-y-3">
-                {sections.map((section) => (
-                  <SortableItem key={section.id} id={section.id!.toString()}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-2">
-                          <h3 className="font-medium text-gray-800">
-                            {section.title}
-                          </h3>
-                          <span className="text-xs text-gray-500">
-                            ID: {section.id}
-                          </span>
-                        </div>
-                        <div className="flex gap-1">
-                          <button
-                            onClick={() =>
-                              requestDeleteSection(
-                                section.id || 0,
-                                section.title
-                              )
-                            }
-                            className="text-red-500 hover:text-red-700 p-1 rounded"
-                            title="Delete Section"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Section Title
-                          </label>
-                          <input
-                            type="text"
-                            value={section.title}
-                            onChange={(e) =>
-                              updateSectionTitle(section.id, e.target.value)
-                            }
-                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter section title"
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Transition
-                          </label>
-                          <input
-                            type="text"
-                            value={section.transition}
-                            onChange={(e) =>
-                              updateSectionTransition(
-                                section.id,
-                                e.target.value
-                              )
-                            }
-                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            placeholder="Enter transition text"
-                          />
-                        </div>
-                        <div>
-                          <ColorPicker
-                            value={section.transitionColor || "#000000"}
-                            onChange={(value) =>
-                              updateSectionTransitionColor(section.id, value)
-                            }
-                            label="Transition Color"
-                          />
-                        </div>
-                      </div>
-
-                      <div className="border-t pt-3">
-                        <div className="flex justify-between items-center mb-2">
-                          <h4 className="text-sm font-medium text-gray-700">
-                            Content
-                          </h4>
-                          <button
-                            className="text-blue-500 hover:text-blue-700 transition-colors"
-                            onClick={() =>
-                              handleOpenContentTypePopup(section.id)
-                            }
-                          >
-                            <PlusIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-
-                        {section.contents && section.contents.length > 0 ? (
-                          <DndContext
-                            collisionDetection={closestCenter}
-                            onDragEnd={(event) => {
-                              const { active, over } = event;
-
-                              if (over && active.id !== over.id) {
-                                const activeId =
-                                  typeof active.id === "string"
-                                    ? parseInt(active.id)
-                                    : active.id;
-                                const overId =
-                                  typeof over.id === "string"
-                                    ? parseInt(over.id)
-                                    : over.id;
-
-                                handleReorderContent(
-                                  section.id,
-                                  activeId,
-                                  overId
-                                );
+                {sections.map((section) => {
+                  const template = colorTemplates.find(
+                    (item) => item._id === section.colorTemplateId
+                  );
+                  return (
+                    <SortableItem key={section.id} id={section.id!.toString()}>
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                      >
+                        <div className="flex items-start justify-between mb-3">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-medium text-gray-800">
+                              {getTranslationValue(section.title, lang)}
+                            </h3>
+                            <span className="text-xs text-gray-500">
+                              ID: {section.id}
+                            </span>
+                            {template && (
+                              <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                {template.title}
+                              </span>
+                            )}
+                          </div>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() =>
+                                requestDeleteSection(
+                                  section.id || 0,
+                                  getTranslationValue(section.title, lang)
+                                )
                               }
-                            }}
-                          >
-                            <SortableContext
-                              items={section.contents.map((item) =>
-                                item.id!.toString()
-                              )}
-                              strategy={verticalListSortingStrategy}
+                              className="text-red-500 hover:text-red-700 p-1 rounded"
+                              title="Delete Section"
                             >
-                              <div className="space-y-2">
-                                {section.contents.map((content) => (
-                                  <SortableItem
-                                    key={content.id}
-                                    id={content.id!.toString()}
-                                  >
-                                    <div className="bg-gray-50 border border-gray-200 rounded p-2 hover:bg-gray-100 transition-colors">
-                                      <div className="flex items-center justify-between">
-                                        <div className="flex items-center gap-2">
-                                          <span className="text-xs font-medium text-pink-400">
-                                            {content.type}
-                                          </span>
-                                          {content.type ===
-                                            RoleplaySectionType.CONVERSATION && (
-                                            <div className="flex items-center gap-1">
-                                              {content.conversation.avartar && (
-                                                <img
-                                                  src={
-                                                    content.conversation.avartar
-                                                  }
-                                                  alt={
-                                                    content.conversation.name
-                                                  }
-                                                  className="w-4 h-4 rounded-full object-cover"
-                                                />
-                                              )}
-                                              <span className="text-xs text-gray-500">
-                                                {content.conversation.name}
-                                              </span>
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{
-                                                  backgroundColor:
-                                                    content.conversation
-                                                      .bubbleColor,
-                                                }}
-                                              ></div>
-                                              <span className="text-xs text-gray-500">
-                                                {content.conversation.position}
-                                              </span>
-                                              {content.conversation.audio && (
-                                                <svg
-                                                  xmlns="http://www.w3.org/2000/svg"
-                                                  className="h-3 w-3 text-gray-500"
-                                                  fill="none"
-                                                  viewBox="0 0 24 24"
-                                                  stroke="currentColor"
-                                                >
-                                                  <path
-                                                    strokeLinecap="round"
-                                                    strokeLinejoin="round"
-                                                    strokeWidth={2}
-                                                    d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                                                  />
-                                                </svg>
-                                              )}
-                                              <TextWithTooltip
-                                                text={
-                                                  content.conversation.content
-                                                }
-                                                maxLength={100}
-                                              />
-                                            </div>
-                                          )}
-                                          {content.type ===
-                                            RoleplaySectionType.LEADING_TEXT && (
-                                            <div className="flex items-center gap-1">
-                                              <div
-                                                className="w-3 h-3 rounded-full border border-gray-300"
-                                                style={{
-                                                  backgroundColor:
-                                                    content.leadingText
-                                                      .frameColor,
-                                                }}
-                                              ></div>
-                                              <TextWithTooltip
-                                                text={
-                                                  content.leadingText.content
-                                                }
-                                                maxLength={100}
-                                              />
-                                            </div>
-                                          )}
-                                          {content.type ===
-                                            RoleplaySectionType.HINT && (
-                                            <div className="flex items-center gap-1">
-                                              {content.hint.icon && (
-                                                <img
-                                                  src={content.hint.icon}
-                                                  alt="Hint icon"
-                                                  className="w-4 h-4 object-contain"
-                                                />
-                                              )}
-                                              <TextWithTooltip
-                                                text={content.hint.content}
-                                                maxLength={100}
-                                              />
-                                            </div>
-                                          )}
-                                          {content.type ===
-                                            RoleplaySectionType.EXERCISE && (
-                                            <div className="flex flex-col gap-1">
+                              <TrashIcon className="h-5 w-5" />
+                            </button>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Section Title
+                            </label>
+                            <input
+                              type="text"
+                              value={getCurrentTranslationValue(
+                                section.title,
+                                lang
+                              )}
+                              onChange={(e) =>
+                                updateSectionTitle(
+                                  section.id,
+                                  updateTranslationValue(
+                                    section.title || {},
+                                    lang,
+                                    e.target.value
+                                  )
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              placeholder="Enter section title"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Transition
+                            </label>
+                            <input
+                              type="text"
+                              value={getCurrentTranslationValue(
+                                section.transition,
+                                lang
+                              )}
+                              onChange={(e) =>
+                                updateSectionTransition(
+                                  section.id,
+                                  updateTranslationValue(
+                                    section.transition || {},
+                                    lang,
+                                    e.target.value
+                                  )
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              placeholder="Enter transition text"
+                            />
+                          </div>
+                          <div>
+                            <ColorPicker
+                              value={section.backgroundColor || "#000000"}
+                              onChange={(value) =>
+                                updateSectionTransitionBackgoundColor(
+                                  section.id,
+                                  value
+                                )
+                              }
+                              label="Backgound Color"
+                            />
+                          </div>
+                          <div>
+                            <ColorPicker
+                              value={section.textColor || "#ffffff"}
+                              onChange={(value) =>
+                                updateSectionTransitionTextColor(
+                                  section.id,
+                                  value
+                                )
+                              }
+                              label="Text Color"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Section Image
+                            </label>
+                            <CloudflareFileUpload
+                              initialUrl={section.image || ""}
+                              onUrlChange={(url) =>
+                                updateSectionImage(section.id, url)
+                              }
+                              label=""
+                              uploadPayload={{
+                                prefix: "",
+                                folder: "roleplays",
+                              }}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                              Color Template
+                            </label>
+                            <select
+                              value={section.colorTemplateId || ""}
+                              onChange={(e) =>
+                                updateSectionColorTemplate(
+                                  section.id,
+                                  e.target.value
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            >
+                              <option value="">Select template</option>
+                              {colorTemplates.map((template) => (
+                                <option key={template._id} value={template._id}>
+                                  {template.title}
+                                </option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+
+                        <div className="border-t pt-3">
+                          <div className="flex justify-between items-center mb-2">
+                            <h4 className="text-sm font-medium text-gray-700">
+                              Content
+                            </h4>
+                          </div>
+
+                          {section.contents && section.contents.length > 0 ? (
+                            <DndContext
+                              collisionDetection={closestCenter}
+                              onDragEnd={(event) => {
+                                const { active, over } = event;
+
+                                if (over && active.id !== over.id) {
+                                  const activeId =
+                                    typeof active.id === "string"
+                                      ? parseInt(active.id)
+                                      : active.id;
+                                  const overId =
+                                    typeof over.id === "string"
+                                      ? parseInt(over.id)
+                                      : over.id;
+
+                                  handleReorderContent(
+                                    section.id,
+                                    activeId,
+                                    overId
+                                  );
+                                }
+                              }}
+                            >
+                              <SortableContext
+                                items={section.contents.map((item) =>
+                                  item.id!.toString()
+                                )}
+                                strategy={verticalListSortingStrategy}
+                              >
+                                <div className="space-y-2">
+                                  {section.contents.map((content) => (
+                                    <SortableItem
+                                      key={content.id}
+                                      id={content.id!.toString()}
+                                    >
+                                      <div className="bg-gray-50 border border-gray-200 rounded p-2 hover:bg-gray-100 transition-colors">
+                                        <div className="flex items-center justify-between">
+                                          <div className="flex items-center gap-2">
+                                            <span className="text-xs font-medium text-pink-400">
+                                              {content.type}
+                                            </span>
+                                            {content.type ===
+                                              RoleplaySectionType.CONVERSATION && (
                                               <div className="flex items-center gap-1">
-                                                <span className="text-xs text-gray-500">
-                                                  {content.exercise.type}
-                                                </span>
-                                                {content.exercise
-                                                  .speechBubble && (
-                                                  <TextWithTooltip
-                                                    text={
-                                                      content.exercise
-                                                        .speechBubble
+                                                {content.conversation.avatar
+                                                  ?.url && (
+                                                  <img
+                                                    src={
+                                                      content.conversation
+                                                        .avatar.url
                                                     }
-                                                    maxLength={100}
+                                                    alt={
+                                                      content.conversation
+                                                        .avatar.name
+                                                    }
+                                                    className="w-4 h-4 rounded-full object-cover"
                                                   />
                                                 )}
-                                                {content.exercise.tag && (
-                                                  <TagDisplay
-                                                    tag={content.exercise.tag}
-                                                    lang={lang}
-                                                  />
-                                                )}
-                                              </div>
-                                              {content.exercise.maxScore && (
-                                                <span className="text-xs font-medium text-gray-600">
-                                                  Max score:{" "}
-                                                  {content.exercise.maxScore}
-                                                </span>
-                                              )}
-                                              {content.exercise
-                                                .completionTime && (
-                                                <span className="text-xs font-medium text-gray-600">
-                                                  Completion Time:{" "}
+                                                <span className="text-xs text-gray-500">
                                                   {
-                                                    content.exercise
-                                                      .completionTime
+                                                    content.conversation.avatar
+                                                      ?.name
                                                   }
                                                 </span>
-                                              )}
-                                              {content.exercise.keypointId && (
-                                                <div className="flex items-center gap-1">
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.conversation
+                                                        .backgroundColor,
+                                                  }}
+                                                ></div>
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.conversation
+                                                        .textColor,
+                                                  }}
+                                                ></div>
+                                                <span className="text-xs text-gray-500">
+                                                  {
+                                                    content.conversation
+                                                      .position
+                                                  }
+                                                </span>
+                                                {content.conversation.audio && (
                                                   <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     className="h-3 w-3 text-gray-500"
@@ -1403,10 +1981,136 @@ export default function RoleplayForm({
                                                       strokeLinecap="round"
                                                       strokeLinejoin="round"
                                                       strokeWidth={2}
-                                                      d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
                                                     />
                                                   </svg>
+                                                )}
+                                                <TextWithTooltip
+                                                  text={
+                                                    content.conversation.content
+                                                  }
+                                                  maxLength={100}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
+                                            {content.type ===
+                                              RoleplaySectionType.LEADING_TEXT && (
+                                              <div className="flex items-center gap-1">
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.leadingText
+                                                        .backgroundColor,
+                                                  }}
+                                                ></div>
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.leadingText
+                                                        .textColor,
+                                                  }}
+                                                ></div>
+                                                {content.leadingText.audio && (
+                                                  <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    className="h-3 w-3 text-gray-500"
+                                                    fill="none"
+                                                    viewBox="0 0 24 24"
+                                                    stroke="currentColor"
+                                                  >
+                                                    <path
+                                                      strokeLinecap="round"
+                                                      strokeLinejoin="round"
+                                                      strokeWidth={2}
+                                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                                    />
+                                                  </svg>
+                                                )}
+                                                <TextWithTooltip
+                                                  text={
+                                                    content.leadingText.content
+                                                  }
+                                                  maxLength={100}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
+                                            {content.type ===
+                                              RoleplaySectionType.HINT && (
+                                              <div className="flex items-center gap-1">
+                                                {content.hint.icon && (
+                                                  <img
+                                                    src={content.hint.icon}
+                                                    alt="Hint icon"
+                                                    className="w-4 h-4 object-contain"
+                                                  />
+                                                )}
+                                                <div
+                                                  className="w-3 h-3 rounded-full border border-gray-300"
+                                                  style={{
+                                                    backgroundColor:
+                                                      content.hint.textColor,
+                                                  }}
+                                                ></div>
+                                                <TextWithTooltip
+                                                  text={content.hint.content}
+                                                  maxLength={100}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
+                                            {content.type ===
+                                              RoleplaySectionType.EXERCISE && (
+                                              <div className="flex flex-col gap-1">
+                                                <div className="flex items-center gap-1">
                                                   <span className="text-xs text-gray-500">
+                                                    {content.exercise.type}
+                                                  </span>
+                                                  {content.exercise
+                                                    .speechBubble && (
+                                                    <TextWithTooltip
+                                                      text={
+                                                        content.exercise
+                                                          .speechBubble
+                                                      }
+                                                      maxLength={100}
+                                                      lang={lang}
+                                                    />
+                                                  )}
+                                                  {content.exercise.tag && (
+                                                    <div className="ml-7">
+                                                      <TagDisplay
+                                                        tag={
+                                                          content.exercise.tag
+                                                        }
+                                                        lang={lang}
+                                                      />
+                                                    </div>
+                                                  )}
+                                                </div>
+                                                {content.exercise.maxScore && (
+                                                  <span className="text-xs font-medium text-gray-600">
+                                                    Max score:{" "}
+                                                    {content.exercise.maxScore}
+                                                  </span>
+                                                )}
+                                                {content.exercise
+                                                  .completionTime && (
+                                                  <span className="text-xs font-medium text-gray-600">
+                                                    Completion Time:{" "}
+                                                    {
+                                                      content.exercise
+                                                        .completionTime
+                                                    }
+                                                  </span>
+                                                )}
+                                                {content.exercise
+                                                  .keypointId && (
+                                                  <span className="text-xs font-medium text-gray-600">
+                                                    Keypoint:{" "}
                                                     {
                                                       keypoints.find(
                                                         (k) =>
@@ -1416,231 +2120,114 @@ export default function RoleplayForm({
                                                       )?.title?.[lang]
                                                     }
                                                   </span>
-                                                </div>
-                                              )}
-                                              {content.exercise.document &&
-                                                content.exercise.document
-                                                  .length > 0 && (
-                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      Documents:
-                                                    </span>
-                                                    {content.exercise.document.map(
-                                                      (
-                                                        doc: IDocument,
-                                                        index: number
-                                                      ) => (
-                                                        <div
-                                                          key={index}
-                                                          className="ml-2 mt-1 text-xs"
-                                                        >
-                                                          <span className="font-semibold text-green-600">
-                                                            {doc.type.toUpperCase()}
-                                                          </span>
-                                                          {doc.data.title && (
-                                                            <span className="ml-1">
-                                                              Title:{" "}
-                                                              {doc.data.title}
-                                                            </span>
-                                                          )}
-                                                          {doc.data.content && (
-                                                            <div className="ml-1">
-                                                              <TextWithTooltip
-                                                                text={
-                                                                  doc.data
-                                                                    .content
-                                                                }
-                                                                maxLength={100}
-                                                              />
-                                                            </div>
-                                                          )}
-                                                          {doc.data.url && (
-                                                            <div className="ml-1">
-                                                              <TextWithTooltip
-                                                                text={
-                                                                  doc.data.url
-                                                                }
-                                                                maxLength={100}
-                                                              />
-                                                            </div>
-                                                          )}
-                                                        </div>
-                                                      )
-                                                    )}
-                                                  </div>
                                                 )}
-                                              {content.exercise.explanation && (
-                                                <div className="flex items-center gap-1">
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-3 w-3 text-gray-500"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      strokeWidth={2}
-                                                      d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                    />
-                                                  </svg>
-                                                  <TextWithTooltip
-                                                    text={
-                                                      content.exercise
-                                                        .explanation
-                                                    }
-                                                    maxLength={100}
-                                                  />
-                                                </div>
-                                              )}
-                                              {(content.exercise.type ===
-                                                ExerciseType.SINGLE_CHOICE ||
-                                                content.exercise.type ===
-                                                  ExerciseType.MULTIPLE_CHOICE) &&
-                                                Array.isArray(
-                                                  (content.exercise as any)
-                                                    .options
-                                                ) && (
-                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      Options:
-                                                    </span>
-                                                    <ul className="mt-1 space-y-1">
-                                                      {(
-                                                        content.exercise as any
-                                                      ).options.map(
+                                                {content.exercise.document &&
+                                                  content.exercise.document
+                                                    .length > 0 && (
+                                                    <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                      <span className="text-xs font-medium text-gray-600">
+                                                        Documents:
+                                                      </span>
+                                                      {content.exercise.document.map(
                                                         (
-                                                          opt: any,
-                                                          idx: number
+                                                          doc: IDocument,
+                                                          index: number
                                                         ) => (
-                                                          <li
-                                                            key={idx}
-                                                            className="flex items-center"
+                                                          <div
+                                                            key={index}
+                                                            className="ml-2 mt-1 text-xs"
                                                           >
-                                                            <span
-                                                              className={`w-2 h-2 rounded-full mr-1 ${
-                                                                opt.isCorrect
-                                                                  ? "bg-green-500"
-                                                                  : "bg-gray-300"
-                                                              }`}
-                                                            ></span>
-                                                            <TextWithTooltip
-                                                              text={opt.value}
-                                                            />
-                                                          </li>
+                                                            <span className="font-semibold text-green-600">
+                                                              {doc.type.toUpperCase()}
+                                                            </span>
+                                                            {isTextualDocumentType(
+                                                              doc.type
+                                                            ) &&
+                                                              doc.data
+                                                                .content && (
+                                                                <div className="ml-1">
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      doc.data
+                                                                        .content
+                                                                    }
+                                                                    maxLength={
+                                                                      100
+                                                                    }
+                                                                    lang={lang}
+                                                                  />
+                                                                </div>
+                                                              )}
+                                                            {doc.type ===
+                                                              DocumentType.IMAGE &&
+                                                              doc.data.url && (
+                                                                <div className="ml-1">
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      doc.data
+                                                                        .url
+                                                                    }
+                                                                    maxLength={
+                                                                      100
+                                                                    }
+                                                                  />
+                                                                </div>
+                                                              )}
+                                                            {doc.type ===
+                                                              DocumentType.AUDIO &&
+                                                              doc.data.url && (
+                                                                <div className="ml-1">
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      doc.data
+                                                                        .url
+                                                                    }
+                                                                    maxLength={
+                                                                      100
+                                                                    }
+                                                                  />
+                                                                </div>
+                                                              )}
+                                                            {doc.type ===
+                                                              DocumentType.VIDEO && (
+                                                              <>
+                                                                {doc.data
+                                                                  .url && (
+                                                                  <div className="ml-1">
+                                                                    <TextWithTooltip
+                                                                      text={
+                                                                        doc.data
+                                                                          .url
+                                                                      }
+                                                                      maxLength={
+                                                                        100
+                                                                      }
+                                                                    />
+                                                                  </div>
+                                                                )}
+                                                                {doc.data
+                                                                  .thumbnail && (
+                                                                  <div className="ml-1">
+                                                                    <TextWithTooltip
+                                                                      text={
+                                                                        doc.data
+                                                                          .thumbnail
+                                                                      }
+                                                                      maxLength={
+                                                                        100
+                                                                      }
+                                                                    />
+                                                                  </div>
+                                                                )}
+                                                              </>
+                                                            )}
+                                                          </div>
                                                         )
                                                       )}
-                                                    </ul>
-                                                  </div>
-                                                )}
-                                              {content.exercise.type ===
-                                                ExerciseType.DRAG_DROP && (
-                                                <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                  <div className="flex items-center gap-1 mb-1">
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      Form:
-                                                    </span>
-                                                    <span className="text-xs text-gray-500">
-                                                      {"form" in
-                                                        content.exercise &&
-                                                        (content.exercise
-                                                          .form ||
-                                                          "Not specified")}
-                                                    </span>
-                                                  </div>
-                                                  {"targetArea" in
-                                                    content.exercise &&
-                                                    content.exercise
-                                                      .targetArea && (
-                                                      <div className="flex items-center gap-1 mb-1">
-                                                        <span className="text-xs font-medium text-gray-600">
-                                                          Target:
-                                                        </span>
-                                                        <TextWithTooltip
-                                                          text={
-                                                            content.exercise
-                                                              .targetArea
-                                                          }
-                                                          maxLength={100}
-                                                        />
-                                                      </div>
-                                                    )}
-                                                  {"options" in
-                                                    content.exercise &&
-                                                    content.exercise.options &&
-                                                    Array.isArray(
-                                                      content.exercise.options
-                                                    ) &&
-                                                    content.exercise.options
-                                                      .length > 0 && (
-                                                      <div className="mb-1">
-                                                        <span className="text-xs font-medium text-gray-600">
-                                                          Options:
-                                                        </span>
-                                                        <ul className="mt-1 space-y-1">
-                                                          {content.exercise.options.map(
-                                                            (
-                                                              opt: any,
-                                                              idx: number
-                                                            ) => (
-                                                              <li
-                                                                key={
-                                                                  opt.id || idx
-                                                                }
-                                                                className="flex items-center"
-                                                              >
-                                                                <TextWithTooltip
-                                                                  text={
-                                                                    opt.text
-                                                                  }
-                                                                />
-                                                              </li>
-                                                            )
-                                                          )}
-                                                        </ul>
-                                                      </div>
-                                                    )}
-                                                  {"answer" in
-                                                    content.exercise &&
-                                                    content.exercise.answer &&
-                                                    Array.isArray(
-                                                      content.exercise.answer
-                                                    ) &&
-                                                    content.exercise.answer
-                                                      .length > 0 && (
-                                                      <div>
-                                                        <span className="text-xs font-medium text-gray-600">
-                                                          Answers:
-                                                        </span>
-                                                        <ul className="mt-1 space-y-1">
-                                                          {content.exercise.answer.map(
-                                                            (
-                                                              ans: any,
-                                                              idx: number
-                                                            ) => (
-                                                              <li
-                                                                key={
-                                                                  ans.id || idx
-                                                                }
-                                                                className="flex items-center"
-                                                              >
-                                                                <TextWithTooltip
-                                                                  text={
-                                                                    ans.correctAnswer
-                                                                  }
-                                                                />
-                                                              </li>
-                                                            )
-                                                          )}
-                                                        </ul>
-                                                      </div>
-                                                    )}
-                                                </div>
-                                              )}
-                                              {content.exercise.type ===
-                                                ExerciseType.RECORD && (
-                                                <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                    </div>
+                                                  )}
+                                                {content.exercise
+                                                  .explanation && (
                                                   <div className="flex items-center gap-1">
                                                     <svg
                                                       xmlns="http://www.w3.org/2000/svg"
@@ -1653,22 +2240,173 @@ export default function RoleplayForm({
                                                         strokeLinecap="round"
                                                         strokeLinejoin="round"
                                                         strokeWidth={2}
-                                                        d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
+                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                                       />
                                                     </svg>
-                                                    <span className="text-xs text-gray-500">
-                                                      Max Duration:{" "}
-                                                      {
-                                                        (
-                                                          content.exercise as IExerciseRecord
-                                                        ).maxDuration
+                                                    <TextWithTooltip
+                                                      text={
+                                                        content.exercise
+                                                          .explanation
                                                       }
-                                                      s
-                                                    </span>
+                                                      maxLength={100}
+                                                      lang={lang}
+                                                    />
                                                   </div>
-                                                  {(
-                                                    content.exercise as IExerciseRecord
-                                                  ).maxCharacter && (
+                                                )}
+                                                {(content.exercise.type ===
+                                                  ExerciseType.SINGLE_CHOICE ||
+                                                  content.exercise.type ===
+                                                    ExerciseType.MULTIPLE_CHOICE) &&
+                                                  Array.isArray(
+                                                    (content.exercise as any)
+                                                      .options
+                                                  ) && (
+                                                    <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                      <span className="text-xs font-medium text-gray-600">
+                                                        Options:
+                                                      </span>
+                                                      <ul className="mt-1 space-y-1">
+                                                        {(
+                                                          content.exercise as any
+                                                        ).options.map(
+                                                          (
+                                                            opt: any,
+                                                            idx: number
+                                                          ) => (
+                                                            <li
+                                                              key={idx}
+                                                              className="flex items-center"
+                                                            >
+                                                              <span
+                                                                className={`w-2 h-2 rounded-full mr-1 ${
+                                                                  opt.isCorrect
+                                                                    ? "bg-green-500"
+                                                                    : "bg-gray-300"
+                                                                }`}
+                                                              ></span>
+                                                              <TextWithTooltip
+                                                                text={opt.value}
+                                                                lang={lang}
+                                                              />
+                                                            </li>
+                                                          )
+                                                        )}
+                                                      </ul>
+                                                    </div>
+                                                  )}
+                                                {content.exercise.type ===
+                                                  ExerciseType.DRAG_DROP && (
+                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
+                                                    <div className="flex items-center gap-1 mb-1">
+                                                      <span className="text-xs font-medium text-gray-600">
+                                                        Form:
+                                                      </span>
+                                                      <span className="text-xs text-gray-500">
+                                                        {"form" in
+                                                          content.exercise &&
+                                                          (content.exercise
+                                                            .form ||
+                                                            "Not specified")}
+                                                      </span>
+                                                    </div>
+                                                    {"targetArea" in
+                                                      content.exercise &&
+                                                      content.exercise
+                                                        .targetArea && (
+                                                        <div className="flex items-center gap-1 mb-1">
+                                                          <span className="text-xs font-medium text-gray-600">
+                                                            Target:
+                                                          </span>
+                                                          <TextWithTooltip
+                                                            text={
+                                                              content.exercise
+                                                                .targetArea
+                                                            }
+                                                            maxLength={100}
+                                                            lang={lang}
+                                                          />
+                                                        </div>
+                                                      )}
+                                                    {"options" in
+                                                      content.exercise &&
+                                                      content.exercise
+                                                        .options &&
+                                                      Array.isArray(
+                                                        content.exercise.options
+                                                      ) &&
+                                                      content.exercise.options
+                                                        .length > 0 && (
+                                                        <div className="mb-1">
+                                                          <span className="text-xs font-medium text-gray-600">
+                                                            Options:
+                                                          </span>
+                                                          <ul className="mt-1 space-y-1">
+                                                            {content.exercise.options.map(
+                                                              (
+                                                                opt: any,
+                                                                idx: number
+                                                              ) => (
+                                                                <li
+                                                                  key={
+                                                                    opt.id ||
+                                                                    idx
+                                                                  }
+                                                                  className="flex items-center"
+                                                                >
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      opt.text
+                                                                    }
+                                                                    lang={lang}
+                                                                  />
+                                                                </li>
+                                                              )
+                                                            )}
+                                                          </ul>
+                                                        </div>
+                                                      )}
+                                                    {"answer" in
+                                                      content.exercise &&
+                                                      content.exercise.answer &&
+                                                      Array.isArray(
+                                                        content.exercise.answer
+                                                      ) &&
+                                                      content.exercise.answer
+                                                        .length > 0 && (
+                                                        <div>
+                                                          <span className="text-xs font-medium text-gray-600">
+                                                            Answers:
+                                                          </span>
+                                                          <ul className="mt-1 space-y-1">
+                                                            {content.exercise.answer.map(
+                                                              (
+                                                                ans: any,
+                                                                idx: number
+                                                              ) => (
+                                                                <li
+                                                                  key={
+                                                                    ans.id ||
+                                                                    idx
+                                                                  }
+                                                                  className="flex items-center"
+                                                                >
+                                                                  <TextWithTooltip
+                                                                    text={
+                                                                      ans.correctAnswer
+                                                                    }
+                                                                    lang={lang}
+                                                                  />
+                                                                </li>
+                                                              )
+                                                            )}
+                                                          </ul>
+                                                        </div>
+                                                      )}
+                                                  </div>
+                                                )}
+                                                {content.exercise.type ===
+                                                  ExerciseType.RECORD && (
+                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
                                                     <div className="flex items-center gap-1">
                                                       <svg
                                                         xmlns="http://www.w3.org/2000/svg"
@@ -1681,100 +2419,131 @@ export default function RoleplayForm({
                                                           strokeLinecap="round"
                                                           strokeLinejoin="round"
                                                           strokeWidth={2}
-                                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
                                                         />
                                                       </svg>
                                                       <span className="text-xs text-gray-500">
-                                                        Max Character:{" "}
+                                                        Max Duration:{" "}
                                                         {
                                                           (
                                                             content.exercise as IExerciseRecord
-                                                          ).maxCharacter
+                                                          ).maxDuration
                                                         }
+                                                        s
                                                       </span>
                                                     </div>
-                                                  )}
-                                                </div>
-                                              )}
-                                              {"level" in content.exercise &&
-                                                (content.exercise.level
-                                                  ?.length ?? 0) > 0 && (
-                                                  <div className="flex flex-wrap gap-1 mt-1">
-                                                    {content.exercise.level?.map(
-                                                      (
-                                                        level: KeypointLevel,
-                                                        idx: number
-                                                      ) => (
-                                                        <span
-                                                          key={idx}
-                                                          className="inline-flex items-center px-1 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800"
+                                                    {(
+                                                      content.exercise as IExerciseRecord
+                                                    ).maxCharacter && (
+                                                      <div className="flex items-center gap-1">
+                                                        <svg
+                                                          xmlns="http://www.w3.org/2000/svg"
+                                                          className="h-3 w-3 text-gray-500"
+                                                          fill="none"
+                                                          viewBox="0 0 24 24"
+                                                          stroke="currentColor"
                                                         >
-                                                          {level}
+                                                          <path
+                                                            strokeLinecap="round"
+                                                            strokeLinejoin="round"
+                                                            strokeWidth={2}
+                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                                          />
+                                                        </svg>
+                                                        <span className="text-xs text-gray-500">
+                                                          Max Character:{" "}
+                                                          {
+                                                            (
+                                                              content.exercise as IExerciseRecord
+                                                            ).maxCharacter
+                                                          }
                                                         </span>
-                                                      )
+                                                      </div>
                                                     )}
                                                   </div>
                                                 )}
-                                            </div>
-                                          )}
-                                        </div>
-                                        <div className="flex gap-1">
-                                          <button
-                                            onClick={() =>
-                                              handleOpenModal(
-                                                section.id,
-                                                content.type,
-                                                content
-                                              )
-                                            }
-                                            className="text-blue-600 hover:text-blue-800 p-1 rounded"
-                                            title="Edit"
-                                          >
-                                            <svg
-                                              xmlns="http://www.w3.org/2000/svg"
-                                              className="h-4 w-4"
-                                              viewBox="0 0 20 20"
-                                              fill="currentColor"
+                                              </div>
+                                            )}
+                                          </div>
+                                          <div className="flex gap-1">
+                                            <button
+                                              onClick={() =>
+                                                handleOpenModal(
+                                                  section.id,
+                                                  content.type,
+                                                  content
+                                                )
+                                              }
+                                              className="text-blue-600 hover:text-blue-800 p-1 rounded"
+                                              title="Edit"
                                             >
-                                              <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                            </svg>
-                                          </button>
-                                          <button
-                                            onClick={() =>
-                                              requestDeleteContent(
-                                                section.id,
-                                                content.id || 0,
-                                                `${content.type} content`
-                                              )
-                                            }
-                                            className="text-red-500 hover:text-red-700 p-1 rounded"
-                                            title="Delete"
-                                          >
-                                            <TrashIcon className="h-4 w-4" />
-                                          </button>
+                                              <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                className="h-4 w-4"
+                                                viewBox="0 0 20 20"
+                                                fill="currentColor"
+                                              >
+                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                              </svg>
+                                            </button>
+                                            <button
+                                              onClick={() =>
+                                                requestDeleteContent(
+                                                  section.id,
+                                                  content.id || 0,
+                                                  `${content.type} content`
+                                                )
+                                              }
+                                              className="text-red-500 hover:text-red-700 p-1 rounded"
+                                              title="Delete"
+                                            >
+                                              <TrashIcon className="h-4 w-4" />
+                                            </button>
+                                          </div>
                                         </div>
                                       </div>
-                                    </div>
-                                  </SortableItem>
-                                ))}
-                              </div>
-                            </SortableContext>
-                          </DndContext>
-                        ) : (
-                          <div className="text-center py-4 text-gray-500 bg-white rounded border border-dashed border-gray-300">
-                            No content added yet
+                                    </SortableItem>
+                                  ))}
+                                </div>
+                              </SortableContext>
+                            </DndContext>
+                          ) : null}
+                          <div className="text-center pt-5">
+                            <button
+                              className="text-blue-500 hover:text-blue-700 transition-colors"
+                              onClick={() =>
+                                handleOpenContentTypePopup(section.id)
+                              }
+                            >
+                              <PlusIcon className="h-5 w-5" />
+                            </button>
                           </div>
-                        )}
-                      </div>
-                    </motion.div>
-                  </SortableItem>
-                ))}
+                        </div>
+                      </motion.div>
+                    </SortableItem>
+                  );
+                })}
               </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                No sections added yet
-              </div>
-            )}
+            ) : null}
+
+            <div className="text-center pt-5">
+              <button
+                className="text-blue-500 hover:text-blue-700 transition-colors"
+                onClick={() => {
+                  if (colorTemplatesLoading) {
+                    showError("Please wait for color templates to load");
+                    return;
+                  }
+                  if (!colorTemplates.length) {
+                    showError("Please create a roleplay color template first");
+                    return;
+                  }
+                  addNewSection(colorTemplates[0]);
+                }}
+              >
+                <PlusCircleIcon className="h-8 w-8" />
+              </button>
+            </div>
           </SortableContext>
         </DndContext>
       </div>
@@ -1782,6 +2551,7 @@ export default function RoleplayForm({
   };
 
   // Content form component with dynamic fields
+  // Content form component with dynamic fields and validation
   const ContentForm = ({
     content,
     onSave,
@@ -1798,28 +2568,139 @@ export default function RoleplayForm({
     formData: any;
   }) => {
     const [localFormData, setLocalFormData] = useState<any>(formData);
-    const [tagQuery, setTagQuery] = useState("");
+    const [validationErrors, setValidationErrors] = useState<{
+      [key: string]: string;
+    }>({});
 
     const [localNextOptionId, setLocalNextOptionId] = useState(nextOptionId);
     const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
 
     // Update local form data when formData prop changes
     useEffect(() => {
-      setLocalFormData(formData);
+      if (formData?.exercise?.type === ExerciseType.RECORD) {
+        const normalizedCriteria = rebalanceRecordScoringCriteria(
+          formData.exercise.scoringCriteria,
+          typeof formData.exercise.maxScore === "number"
+            ? formData.exercise.maxScore
+            : undefined
+        );
+
+        setLocalFormData({
+          ...formData,
+          exercise: {
+            ...formData.exercise,
+            scoringCriteria: normalizedCriteria,
+          },
+        });
+      } else {
+        setLocalFormData(formData);
+      }
+      // Clear errors when form data is reset (e.g., when opening a new content form)
+      setValidationErrors({});
     }, [formData]);
+
+    // Ensure translation objects have current language key when language changes
+    useEffect(() => {
+      if (localFormData.exercise) {
+        setLocalFormData((prev: any) => {
+          const updated = { ...prev };
+          if (updated.exercise) {
+            // Ensure speechBubble, explanation, and targetArea exist and have current language
+            updated.exercise = {
+              ...updated.exercise,
+              speechBubble: updated.exercise.speechBubble || { [lang]: "" },
+              explanation: updated.exercise.explanation || { [lang]: "" },
+              targetArea: updated.exercise.targetArea || { [lang]: "" },
+            };
+
+            // Ensure options have current language for value/text
+            if (updated.exercise.options) {
+              updated.exercise.options = updated.exercise.options.map(
+                (opt: any) => ({
+                  ...opt,
+                  value: opt.value || { [lang]: "" },
+                  text: opt.text || { [lang]: "" },
+                })
+              );
+            }
+
+            // Ensure answers have current language for correctAnswer
+            if (updated.exercise.answer) {
+              updated.exercise.answer = updated.exercise.answer.map(
+                (ans: any) => ({
+                  ...ans,
+                  correctAnswer: ans.correctAnswer || { [lang]: "" },
+                })
+              );
+            }
+          }
+          return updated;
+        });
+      }
+    }, [lang]);
+
+    // --- Validation Function ---
+    const validateForm = () => {
+      const errors: { [key: string]: string } = {};
+
+      if (contentType === RoleplaySectionType.CONVERSATION) {
+        if (!localFormData.conversation?.avatar?._id) {
+          errors.avatar = "Avatar is required.";
+        }
+      } else if (contentType === RoleplaySectionType.LEADING_TEXT) {
+        if (
+          !getTranslationValue(localFormData.leadingText?.content, lang)?.trim()
+        ) {
+          errors.content = "Content is required.";
+        }
+      } else if (contentType === RoleplaySectionType.HINT) {
+        if (!localFormData.hint?.icon?.trim()) {
+          errors.icon = "Icon is required.";
+        }
+        if (!getTranslationValue(localFormData.hint?.content, lang)?.trim()) {
+          errors.hintContent = "Content is required.";
+        }
+      }
+
+      setValidationErrors(errors);
+      return Object.keys(errors).length === 0;
+    };
 
     const handleChange = (field: string, value: any) => {
       setLocalFormData((prev: any) => ({ ...prev, [field]: value }));
     };
 
+    const sectionTemplate = getColorTemplateForSection(sectionId);
+
     const handleConversationChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        conversation: {
+      setLocalFormData((prev: any) => {
+        const updatedConversation: any = {
           ...prev.conversation,
           [field]: value,
-        },
-      }));
+        };
+
+        if (field === "position" && sectionTemplate && value) {
+          const style =
+            value === SectionConversationPosition.RIGHT
+              ? sectionTemplate.conversation?.right
+              : sectionTemplate.conversation?.left;
+          if (style?.backgroundColor) {
+            updatedConversation.backgroundColor = style.backgroundColor;
+          }
+          if (style?.textColor) {
+            updatedConversation.textColor = style.textColor;
+          }
+        }
+
+        return {
+          ...prev,
+          conversation: updatedConversation,
+        };
+      });
+      // Clear error on change
+      if (field === "avatar" || field === "avatarId") {
+        setValidationErrors((prev) => ({ ...prev, avatar: "" }));
+      }
     };
 
     const handleLeadingTextChange = (field: string, value: any) => {
@@ -1830,6 +2711,10 @@ export default function RoleplayForm({
           [field]: value,
         },
       }));
+      // Clear error on change
+      if (field === "content" && validationErrors.content) {
+        setValidationErrors((prev) => ({ ...prev, content: "" }));
+      }
     };
 
     const handleHintChange = (field: string, value: any) => {
@@ -1840,16 +2725,44 @@ export default function RoleplayForm({
           [field]: value,
         },
       }));
+      // Clear error on change
+      if (field === "icon" && validationErrors.icon) {
+        setValidationErrors((prev) => ({ ...prev, icon: "" }));
+      }
+      if (field === "content" && validationErrors.hintContent) {
+        setValidationErrors((prev) => ({ ...prev, hintContent: "" }));
+      }
     };
 
-    const handleExerciseChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        exercise: {
+    const handleExerciseChange = (
+      field: string,
+      value: any,
+      options?: { skipRebalance?: boolean }
+    ) => {
+      setLocalFormData((prev: any) => {
+        const nextExercise = {
           ...prev.exercise,
           [field]: value,
-        },
-      }));
+        };
+
+        if (
+          nextExercise.type === ExerciseType.RECORD &&
+          !options?.skipRebalance
+        ) {
+          const normalized = rebalanceRecordScoringCriteria(
+            nextExercise.scoringCriteria,
+            typeof nextExercise.maxScore === "number"
+              ? nextExercise.maxScore
+              : undefined
+          );
+          nextExercise.scoringCriteria = normalized;
+        }
+
+        return {
+          ...prev,
+          exercise: nextExercise,
+        };
+      });
     };
 
     const handleDocumentChange = (
@@ -1859,10 +2772,14 @@ export default function RoleplayForm({
     ) => {
       setLocalFormData((prev: any) => {
         const newDocuments = [...prev.exercise.document];
-        newDocuments[index] = {
+        const updatedDoc = {
           ...newDocuments[index],
           [field]: value,
         };
+        if (field === "type") {
+          updatedDoc.data = createEmptyMediaDocument(lang);
+        }
+        newDocuments[index] = updatedDoc;
         return {
           ...prev,
           exercise: {
@@ -1876,15 +2793,23 @@ export default function RoleplayForm({
     const handleDataChange = (
       docIndex: number,
       field: keyof IMediaDocument,
-      value: string
+      value: string | ITranslation
     ) => {
       setLocalFormData((prev: any) => {
+        if (!prev.exercise) return prev;
         const newDocuments = [...prev.exercise.document];
         newDocuments[docIndex] = {
           ...newDocuments[docIndex],
           data: {
             ...newDocuments[docIndex].data,
-            [field]: value,
+            [field]:
+              field === "content" && typeof value === "string"
+                ? updateTranslationValue(
+                    newDocuments[docIndex].data.content || {},
+                    lang,
+                    value
+                  )
+                : value,
           },
         };
         return {
@@ -1897,8 +2822,118 @@ export default function RoleplayForm({
       });
     };
 
+    const renderDocumentFields = (doc: IDocument, index: number) => {
+      if (isTextualDocumentType(doc.type)) {
+        const label = getDocumentContentLabel(doc.type);
+        const isLongForm = doc.type === DocumentType.TEXT;
+        const placeholder =
+          doc.type === DocumentType.TEXT
+            ? "Enter content"
+            : `Enter ${label.toLowerCase()}`;
+
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {label}
+            </label>
+            {isLongForm ? (
+              <textarea
+                value={getCurrentTranslationValue(doc.data.content, lang)}
+                onChange={(e) =>
+                  handleDataChange(index, "content", e.target.value)
+                }
+                rows={3}
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            ) : (
+              <input
+                type="text"
+                value={getCurrentTranslationValue(doc.data.content, lang)}
+                onChange={(e) =>
+                  handleDataChange(index, "content", e.target.value)
+                }
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            )}
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.IMAGE) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={doc.data.url || ""}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Image URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "roleplays",
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.AUDIO) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={doc.data.url || ""}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Audio URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "roleplays",
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.VIDEO) {
+        return (
+          <div className="flex flex-col gap-3">
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={doc.data.url || ""}
+                onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+                label="Video URL"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "roleplays",
+                }}
+              />
+            </div>
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={doc.data.thumbnail || ""}
+                onUrlChange={(newUrl) =>
+                  handleDataChange(index, "thumbnail", newUrl)
+                }
+                label="Video Thumbnail"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "roleplays",
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
+
+      return null;
+    };
+
     const addNewDocument = () => {
-      // Find max ID currently in the exercise documents
+      if (
+        contentType !== RoleplaySectionType.EXERCISE ||
+        !localFormData.exercise
+      )
+        return;
+
       const currentMaxId = localFormData.exercise.document.reduce(
         (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
         0
@@ -1914,13 +2949,7 @@ export default function RoleplayForm({
             {
               id: newId,
               type: DocumentType.TEXT,
-              data: {
-                title: "",
-                content: "",
-                caption: "",
-                url: "",
-                thumbnail: "",
-              },
+              data: createEmptyMediaDocument(lang),
             },
           ],
         },
@@ -1928,6 +2957,11 @@ export default function RoleplayForm({
     };
 
     const removeDocument = (index: number) => {
+      if (
+        contentType !== RoleplaySectionType.EXERCISE ||
+        !localFormData.exercise
+      )
+        return;
       setLocalFormData((prev: any) => ({
         ...prev,
         exercise: {
@@ -1940,25 +2974,73 @@ export default function RoleplayForm({
     };
 
     const handleSave = () => {
+      if (!validateForm()) {
+        return; // Stop if validation fails
+      }
+
       // Update global counters for options and answers
       setNextOptionId(localNextOptionId);
       setNextAnswerId(localNextAnswerId);
 
-      onSave(localFormData);
+      let dataToSave = localFormData;
+
+      if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise
+      ) {
+        const cleanedDocuments = cleanDocumentItems(
+          localFormData.exercise.document || []
+        );
+        dataToSave = {
+          ...dataToSave,
+          exercise: {
+            ...localFormData.exercise,
+            document: cleanedDocuments,
+          },
+        };
+      }
+
+      if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise?.type === ExerciseType.RECORD
+      ) {
+        const normalizedCriteria = rebalanceRecordScoringCriteria(
+          localFormData.exercise.scoringCriteria,
+          typeof localFormData.exercise.maxScore === "number"
+            ? localFormData.exercise.maxScore
+            : undefined
+        );
+
+        dataToSave = {
+          ...localFormData,
+          exercise: {
+            ...localFormData.exercise,
+            scoringCriteria: normalizedCriteria,
+          },
+        };
+
+        setLocalFormData(dataToSave);
+      }
+
+      onSave(dataToSave);
     };
 
     // Add new option
     const addOption = () => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [
           ...localFormData.exercise.options,
           { value: "", isCorrect: false },
         ];
         handleExerciseChange("options", newOptions);
-      } else if (localFormData.exercise.type === ExerciseType.DRAG_DROP) {
+      } else if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise.type === ExerciseType.DRAG_DROP
+      ) {
         const newId = localNextOptionId;
         setLocalNextOptionId(newId + 1);
 
@@ -1973,13 +3055,17 @@ export default function RoleplayForm({
     // Remove option
     const removeOption = (index: number) => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [...localFormData.exercise.options];
         newOptions.splice(index, 1);
         handleExerciseChange("options", newOptions);
-      } else if (localFormData.exercise.type === ExerciseType.DRAG_DROP) {
+      } else if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise.type === ExerciseType.DRAG_DROP
+      ) {
         const newOptions = [...localFormData.exercise.options];
         newOptions.splice(index, 1);
         handleExerciseChange("options", newOptions);
@@ -1989,15 +3075,31 @@ export default function RoleplayForm({
     // Update option value
     const updateOptionValue = (index: number, value: string) => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [...localFormData.exercise.options];
-        newOptions[index] = { ...newOptions[index], value };
+        const currentTranslation = newOptions[index].value || {};
+        const updatedTranslation = updateTranslationValue(
+          currentTranslation,
+          lang,
+          value
+        );
+        newOptions[index] = { ...newOptions[index], value: updatedTranslation };
         handleExerciseChange("options", newOptions);
-      } else if (localFormData.exercise.type === ExerciseType.DRAG_DROP) {
+      } else if (
+        contentType === RoleplaySectionType.EXERCISE &&
+        localFormData.exercise.type === ExerciseType.DRAG_DROP
+      ) {
         const newOptions = [...localFormData.exercise.options];
-        newOptions[index] = { ...newOptions[index], text: value };
+        const currentTranslation = newOptions[index].text || {};
+        const updatedTranslation = updateTranslationValue(
+          currentTranslation,
+          lang,
+          value
+        );
+        newOptions[index] = { ...newOptions[index], text: updatedTranslation };
         handleExerciseChange("options", newOptions);
       }
     };
@@ -2005,8 +3107,9 @@ export default function RoleplayForm({
     // Update option correctness
     const updateOptionCorrectness = (index: number, isCorrect: boolean) => {
       if (
-        localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-        localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE
+        contentType === RoleplaySectionType.EXERCISE &&
+        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
+          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
       ) {
         const newOptions = [...localFormData.exercise.options];
         newOptions[index] = { ...newOptions[index], isCorrect };
@@ -2019,16 +3122,21 @@ export default function RoleplayForm({
       const newId = localNextAnswerId;
       setLocalNextAnswerId(newId + 1);
 
-      const newAnswer = [
-        ...localFormData.exercise.answer,
-        { correctAnswer: "", id: newId },
-      ];
+      const existingAnswers = Array.isArray(localFormData.exercise.answer)
+        ? localFormData.exercise.answer
+        : [];
+
+      const newAnswer = [...existingAnswers, { correctAnswer: "", id: newId }];
       handleExerciseChange("answer", newAnswer);
     };
 
     // Remove answer
     const removeAnswer = (index: number) => {
-      const newAnswer = localFormData.exercise.answer.filter(
+      const existingAnswers = Array.isArray(localFormData.exercise.answer)
+        ? localFormData.exercise.answer
+        : [];
+
+      const newAnswer = existingAnswers.filter(
         (_: any, i: number) => i !== index
       );
       handleExerciseChange("answer", newAnswer);
@@ -2036,43 +3144,129 @@ export default function RoleplayForm({
 
     // Update answer value
     const updateAnswerValue = (index: number, value: string) => {
-      const newAnswer = [...localFormData.exercise.answer];
-      newAnswer[index] = { ...newAnswer[index], correctAnswer: value };
+      const existingAnswers = Array.isArray(localFormData.exercise.answer)
+        ? localFormData.exercise.answer
+        : [];
+
+      const newAnswer = [...existingAnswers];
+      const currentTranslation = newAnswer[index].correctAnswer || {};
+      const updatedTranslation = updateTranslationValue(
+        currentTranslation,
+        lang,
+        value
+      );
+      newAnswer[index] = {
+        ...newAnswer[index],
+        correctAnswer: updatedTranslation,
+      };
       handleExerciseChange("answer", newAnswer);
     };
 
-    // Filter tags based on query
-    const filteredTags =
-      tagQuery === ""
-        ? allTags
-        : allTags.filter((tag) =>
-            tag.title?.[lang]?.toLowerCase().includes(tagQuery.toLowerCase())
-          );
+    const getScoringCriteria = () =>
+      Array.isArray(localFormData.exercise?.scoringCriteria)
+        ? (localFormData.exercise
+            .scoringCriteria as Partial<IScoringCriteria>[])
+        : [];
+
+    const addScoringCriteria = () => {
+      const current = getScoringCriteria();
+      handleExerciseChange("scoringCriteria", [
+        ...current,
+        { criteria: "", maxScore: undefined },
+      ]);
+    };
+
+    const removeScoringCriteria = (index: number) => {
+      const current = getScoringCriteria();
+      const next = current.filter((_, idx) => idx !== index);
+      handleExerciseChange("scoringCriteria", next);
+    };
+
+    const updateScoringCriteria = (
+      index: number,
+      field: keyof IScoringCriteria,
+      value: string | ITranslation
+    ) => {
+      const current = getScoringCriteria();
+      if (!current[index]) return;
+
+      const parsedValue =
+        field === "maxScore"
+          ? value === ""
+            ? undefined
+            : Number(value)
+          : field === "criteria" && typeof value === "string"
+          ? updateTranslationValue(current[index].criteria || {}, lang, value)
+          : value;
+
+      const next = current.map((item, idx) =>
+        idx === index ? { ...item, [field]: parsedValue } : item
+      );
+
+      const isNumeric =
+        field === "maxScore" &&
+        typeof parsedValue === "number" &&
+        !Number.isNaN(parsedValue);
+      if (isNumeric) {
+        const totalValue =
+          typeof localFormData.exercise.maxScore === "number" &&
+          !Number.isNaN(localFormData.exercise.maxScore)
+            ? localFormData.exercise.maxScore
+            : undefined;
+        if (typeof totalValue === "number") {
+          const lastIndex = next.length - 1;
+          const otherManualSum = next.reduce((sum, item, idx) => {
+            if (idx === index || idx === lastIndex) return sum;
+            const val =
+              typeof item.maxScore === "number" && !Number.isNaN(item.maxScore)
+                ? Math.max(0, Math.round(item.maxScore))
+                : 0;
+            return sum + val;
+          }, 0);
+          const maxAllowed = Math.max(0, totalValue - otherManualSum);
+          const adjusted =
+            typeof parsedValue === "number"
+              ? Math.min(Math.max(0, Math.round(parsedValue)), maxAllowed)
+              : parsedValue;
+          next[index] = { ...next[index], maxScore: adjusted };
+        } else if (typeof parsedValue === "number") {
+          const adjusted = Math.max(0, Math.round(parsedValue));
+          next[index] = { ...next[index], maxScore: adjusted };
+        }
+      }
+
+      handleExerciseChange("scoringCriteria", next, {
+        skipRebalance: field === "maxScore" && !isNumeric,
+      });
+    };
+
+    const scoringCriteria = getScoringCriteria();
+    const scoringCriteriaTotal = scoringCriteria.reduce((sum, item) => {
+      const value =
+        typeof item.maxScore === "number" && !Number.isNaN(item.maxScore)
+          ? item.maxScore
+          : 0;
+      return sum + value;
+    }, 0);
 
     return (
       <div className="space-y-4">
         {contentType === RoleplaySectionType.CONVERSATION && (
           <>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Name
-              </label>
-              <input
-                type="text"
-                value={localFormData.conversation.name || ""}
-                onChange={(e) =>
-                  handleConversationChange("name", e.target.value)
+              <AvatarSelector
+                value={localFormData.conversation.avatar}
+                onChange={(value) =>
+                  handleConversationChange("avatar", value || undefined)
                 }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter name"
+                label="Avatar"
               />
+              {validationErrors.avatar && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.avatar}
+                </p>
+              )}
             </div>
-
-            <AvatarSelector
-              value={localFormData.conversation.avartar || ""}
-              onChange={(value) => handleConversationChange("avartar", value)}
-              label="Avatar"
-            />
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2094,11 +3288,17 @@ export default function RoleplayForm({
             </div>
 
             <ColorPicker
-              value={localFormData.conversation.bubbleColor || "#FFFFFF"}
+              value={localFormData.conversation.backgroundColor || "#FFFFFF"}
               onChange={(value) =>
-                handleConversationChange("bubbleColor", value)
+                handleConversationChange("backgroundColor", value)
               }
-              label="Bubble Color"
+              label="Backgound Color"
+            />
+
+            <ColorPicker
+              value={localFormData.conversation.textColor || "#000000"}
+              onChange={(value) => handleConversationChange("textColor", value)}
+              label="Text Color"
             />
 
             <div>
@@ -2106,9 +3306,19 @@ export default function RoleplayForm({
                 Content
               </label>
               <textarea
-                value={localFormData.conversation.content || ""}
+                value={getCurrentTranslationValue(
+                  localFormData.conversation.content,
+                  lang
+                )}
                 onChange={(e) =>
-                  handleConversationChange("content", e.target.value)
+                  handleConversationChange(
+                    "content",
+                    updateTranslationValue(
+                      localFormData.conversation.content || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
                 }
                 rows={3}
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -2128,7 +3338,7 @@ export default function RoleplayForm({
                 label=""
                 uploadPayload={{
                   prefix: "",
-                  folder: "roleplay",
+                  folder: "roleplays",
                 }}
               />
             </div>
@@ -2138,9 +3348,17 @@ export default function RoleplayForm({
         {contentType === RoleplaySectionType.LEADING_TEXT && (
           <>
             <ColorPicker
-              value={localFormData.leadingText.frameColor || "#000000"}
-              onChange={(value) => handleLeadingTextChange("frameColor", value)}
-              label="Frame Color"
+              value={localFormData.leadingText.backgroundColor || "#000000"}
+              onChange={(value) =>
+                handleLeadingTextChange("backgroundColor", value)
+              }
+              label="Backgound Color"
+            />
+
+            <ColorPicker
+              value={localFormData.leadingText.textColor || "#000000"}
+              onChange={(value) => handleLeadingTextChange("textColor", value)}
+              label="Text Color"
             />
 
             <div>
@@ -2148,13 +3366,47 @@ export default function RoleplayForm({
                 Content
               </label>
               <textarea
-                value={localFormData.leadingText.content || ""}
+                value={getCurrentTranslationValue(
+                  localFormData.leadingText.content,
+                  lang
+                )}
                 onChange={(e) =>
-                  handleLeadingTextChange("content", e.target.value)
+                  handleLeadingTextChange(
+                    "content",
+                    updateTranslationValue(
+                      localFormData.leadingText.content || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
                 }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  validationErrors.content ? "border-red-500" : ""
+                }`}
                 placeholder="Enter content"
+              />
+              {validationErrors.content && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.content}
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Audio
+              </label>
+              <CloudflareFileUpload
+                initialUrl={localFormData.leadingText.audio || ""}
+                onUrlChange={(newUrl) =>
+                  handleLeadingTextChange("audio", newUrl)
+                }
+                label=""
+                uploadPayload={{
+                  prefix: "",
+                  folder: "roleplays",
+                }}
               />
             </div>
           </>
@@ -2162,10 +3414,29 @@ export default function RoleplayForm({
 
         {contentType === RoleplaySectionType.HINT && (
           <>
-            <IconSelector
-              value={localFormData.hint.icon || ""}
-              onChange={(value) => handleHintChange("icon", value)}
-              label="Icon"
+            <div>
+              <IconSelector
+                value={localFormData.hint.icon || ""}
+                onChange={(value) => handleHintChange("icon", value)}
+                label="Icon"
+              />
+              {validationErrors.icon && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.icon}
+                </p>
+              )}
+            </div>
+
+            <ColorPicker
+              value={localFormData.hint.backgroundColor || "#FFFFFF"}
+              onChange={(value) => handleHintChange("backgroundColor", value)}
+              label="Background Color"
+            />
+
+            <ColorPicker
+              value={localFormData.hint.textColor || "#000000"}
+              onChange={(value) => handleHintChange("textColor", value)}
+              label="Text Color"
             />
 
             <div>
@@ -2173,12 +3444,31 @@ export default function RoleplayForm({
                 Content
               </label>
               <textarea
-                value={localFormData.hint.content || ""}
-                onChange={(e) => handleHintChange("content", e.target.value)}
+                value={getCurrentTranslationValue(
+                  localFormData.hint.content,
+                  lang
+                )}
+                onChange={(e) =>
+                  handleHintChange(
+                    "content",
+                    updateTranslationValue(
+                      localFormData.hint.content || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
+                }
                 rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
+                  validationErrors.hintContent ? "border-red-500" : ""
+                }`}
                 placeholder="Enter content"
               />
+              {validationErrors.hintContent && (
+                <p className="mt-1 text-sm text-red-600">
+                  {validationErrors.hintContent}
+                </p>
+              )}
             </div>
           </>
         )}
@@ -2213,9 +3503,19 @@ export default function RoleplayForm({
               </label>
               <input
                 type="text"
-                value={localFormData.exercise.speechBubble || ""}
+                value={getCurrentTranslationValue(
+                  localFormData.exercise?.speechBubble,
+                  lang
+                )}
                 onChange={(e) =>
-                  handleExerciseChange("speechBubble", e.target.value)
+                  handleExerciseChange(
+                    "speechBubble",
+                    updateTranslationValue(
+                      localFormData.exercise.speechBubble || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
                 }
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Enter speech bubble text"
@@ -2228,68 +3528,9 @@ export default function RoleplayForm({
               label="Keypoint"
             />
 
-            {/* Tag selection using Combobox */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Tag
-              </label>
-              <Combobox<ITag | null>
-                value={localFormData.exercise.tag}
-                onChange={(val: ITag | null) => {
-                  handleExerciseChange("tag", val);
-                  setTagQuery("");
-                }}
-              >
-                <div className="relative">
-                  <Combobox.Input
-                    displayValue={(tag: ITag | null) =>
-                      tag?.title?.[lang] || ""
-                    }
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                      setTagQuery(e.target.value)
-                    }
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder="Search tag..."
-                  />
-                  <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                    {filteredTags.length > 0 ? (
-                      filteredTags.map((tag) => (
-                        <Combobox.Option
-                          key={tag._id}
-                          value={tag}
-                          className="cursor-pointer px-3 py-3 hover:bg-blue-50 flex items-center gap-2"
-                        >
-                          {tag.url && (
-                            <img
-                              src={tag.url}
-                              alt={tag.title?.[lang] || "Tag url"}
-                              className="w-6 h-6 object-contain flex-shrink-0"
-                            />
-                          )}
-                          <span>{tag.title?.[lang]}</span>
-                        </Combobox.Option>
-                      ))
-                    ) : (
-                      <div className="px-3 py-3 text-gray-500">
-                        No tags found.
-                      </div>
-                    )}
-                  </Combobox.Options>
-                </div>
-              </Combobox>
-            </div>
-
-            {/* Documents Section */}
             <div className="border rounded-lg p-4 bg-gray-50">
               <div className="flex justify-between items-center mb-3">
                 <h3 className="font-medium text-gray-800">Content Documents</h3>
-                <button
-                  type="button"
-                  onClick={addNewDocument}
-                  className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                >
-                  Add Content
-                </button>
               </div>
 
               {localFormData.exercise.document.map(
@@ -2302,15 +3543,13 @@ export default function RoleplayForm({
                       <h4 className="font-medium text-sky-400">
                         Content {index + 1}
                       </h4>
-                      {localFormData.exercise.document.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeDocument(index)}
-                          className="text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-4 w-4" />
-                        </button>
-                      )}
+                      <button
+                        type="button"
+                        onClick={() => removeDocument(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </div>
 
                     <div className="space-y-3">
@@ -2321,10 +3560,16 @@ export default function RoleplayForm({
                         <select
                           value={doc.type}
                           onChange={(e) =>
-                            handleDocumentChange(index, "type", e.target.value)
+                            handleDocumentChange(
+                              index,
+                              "type",
+                              e.target.value as DocumentType
+                            )
                           }
                           className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         >
+                          <option value={DocumentType.TITLE}>Title</option>
+                          <option value={DocumentType.CAPTION}>Caption</option>
                           <option value={DocumentType.TEXT}>Text</option>
                           <option value={DocumentType.IMAGE}>Image</option>
                           <option value={DocumentType.VIDEO}>Video</option>
@@ -2332,103 +3577,21 @@ export default function RoleplayForm({
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Title
-                        </label>
-                        <input
-                          type="text"
-                          value={doc.data.title}
-                          onChange={(e) =>
-                            handleDataChange(index, "title", e.target.value)
-                          }
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          placeholder="Enter title"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Content
-                        </label>
-                        <textarea
-                          value={doc.data.content}
-                          onChange={(e) =>
-                            handleDataChange(index, "content", e.target.value)
-                          }
-                          rows={3}
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          placeholder="Enter content"
-                        />
-                      </div>
-
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Caption
-                        </label>
-                        <input
-                          type="text"
-                          value={doc.data.caption}
-                          onChange={(e) =>
-                            handleDataChange(index, "caption", e.target.value)
-                          }
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          placeholder="Enter caption"
-                        />
-                      </div>
-
-                      {(doc.type === DocumentType.IMAGE ||
-                        doc.type === DocumentType.VIDEO ||
-                        doc.type === DocumentType.AUDIO) && (
-                        <div className="w-52">
-                          <CloudflareFileUpload
-                            initialUrl={doc.data.url || ""}
-                            onUrlChange={(newUrl) =>
-                              handleDataChange(index, "url", newUrl)
-                            }
-                            label={``}
-                            uploadPayload={{
-                              prefix: "",
-                              folder: "roleplay",
-                            }}
-                          />
-                        </div>
-                      )}
-
-                      {doc.type === DocumentType.VIDEO && (
-                        <div className="w-52">
-                          <CloudflareFileUpload
-                            initialUrl={doc.data.thumbnail || ""}
-                            onUrlChange={(newUrl) =>
-                              handleDataChange(index, "thumbnail", newUrl)
-                            }
-                            label={``}
-                            uploadPayload={{
-                              prefix: "",
-                              folder: "roleplay",
-                            }}
-                          />
-                        </div>
-                      )}
+                      {renderDocumentFields(doc, index)}
                     </div>
                   </div>
                 )
               )}
-            </div>
 
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Explanation
-              </label>
-              <textarea
-                value={localFormData.exercise.explanation || ""}
-                onChange={(e) =>
-                  handleExerciseChange("explanation", e.target.value)
-                }
-                rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter explanation"
-              />
+              <div className="text-center">
+                <button
+                  type="button"
+                  onClick={addNewDocument}
+                  className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                >
+                  Add Content
+                </button>
+              </div>
             </div>
 
             <div>
@@ -2440,10 +3603,10 @@ export default function RoleplayForm({
                 value={localFormData.exercise.maxScore ?? ""}
                 onChange={(e) => {
                   const val = e.target.value;
-                  handleExerciseChange(
-                    "maxScore",
-                    val === "" ? "" : Number(val)
-                  );
+                  const isEmpty = val === "";
+                  handleExerciseChange("maxScore", isEmpty ? "" : Number(val), {
+                    skipRebalance: isEmpty,
+                  });
                 }}
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Enter max score"
@@ -2469,7 +3632,6 @@ export default function RoleplayForm({
               />
             </div>
 
-            {/* Type-specific fields */}
             {(localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
               localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE) && (
               <div>
@@ -2482,7 +3644,7 @@ export default function RoleplayForm({
                       <div key={idx} className="flex items-center gap-2">
                         <input
                           type="text"
-                          value={opt.value}
+                          value={getCurrentTranslationValue(opt.value, lang)}
                           onChange={(e) =>
                             updateOptionValue(idx, e.target.value)
                           }
@@ -2565,9 +3727,19 @@ export default function RoleplayForm({
                 </label>
                 <input
                   type="text"
-                  value={localFormData.exercise.targetArea || ""}
+                  value={getCurrentTranslationValue(
+                    localFormData.exercise?.targetArea,
+                    lang
+                  )}
                   onChange={(e) =>
-                    handleExerciseChange("targetArea", e.target.value)
+                    handleExerciseChange(
+                      "targetArea",
+                      updateTranslationValue(
+                        localFormData.exercise.targetArea || {},
+                        lang,
+                        e.target.value
+                      )
+                    )
                   }
                   className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   placeholder="Enter target area"
@@ -2586,7 +3758,7 @@ export default function RoleplayForm({
                       <div key={opt.id} className="flex items-center">
                         <input
                           type="text"
-                          value={opt.text}
+                          value={getCurrentTranslationValue(opt.text, lang)}
                           onChange={(e) =>
                             updateOptionValue(idx, e.target.value)
                           }
@@ -2626,7 +3798,10 @@ export default function RoleplayForm({
                       <div key={ans.id} className="flex items-center">
                         <input
                           type="text"
-                          value={ans.correctAnswer}
+                          value={getCurrentTranslationValue(
+                            ans.correctAnswer,
+                            lang
+                          )}
                           onChange={(e) =>
                             updateAnswerValue(idx, e.target.value)
                           }
@@ -2695,34 +3870,108 @@ export default function RoleplayForm({
               </div>
             )}
 
-            {/* Level field for all exercise types */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Level
-              </label>
-              <div className="space-y-2">
-                {Object.values(KeypointLevel).map((level) => (
-                  <label key={level} className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={
-                        localFormData.exercise.level?.includes(level) || false
-                      }
-                      onChange={(e) => {
-                        const newLevel = e.target.checked
-                          ? [...(localFormData.exercise.level || []), level]
-                          : (localFormData.exercise.level || []).filter(
-                              (l: KeypointLevel) => l !== level
-                            );
-                        handleExerciseChange("level", newLevel);
-                      }}
-                      className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                    />
-                    <span className="ml-2 text-sm">{level}</span>
+            {localFormData.exercise.type === ExerciseType.RECORD && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Scoring Criteria
                   </label>
-                ))}
+                  <button
+                    type="button"
+                    onClick={addScoringCriteria}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Add Criteria
+                  </button>
+                </div>
+                {scoringCriteria.length === 0 ? (
+                  <p className="text-sm text-gray-500">
+                    Add at least one criterion to describe how this record is
+                    scored.
+                  </p>
+                ) : (
+                  <div className="space-y-3">
+                    {scoringCriteria.map((criteriaItem, index) => (
+                      <div
+                        key={`scoring-${index}`}
+                        className="border rounded-lg p-3 space-y-2"
+                      >
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-semibold text-gray-700">
+                            Criterion {index + 1}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => removeScoringCriteria(index)}
+                            className="text-red-500 hover:text-red-700"
+                          >
+                            <TrashIcon className="h-5 w-5" />
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="md:col-span-2">
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Description
+                            </label>
+                            <textarea
+                              value={getCurrentTranslationValue(
+                                criteriaItem.criteria,
+                                lang
+                              )}
+                              onChange={(e) =>
+                                updateScoringCriteria(
+                                  index,
+                                  "criteria",
+                                  e.target.value
+                                )
+                              }
+                              rows={2}
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                              placeholder="e.g., Pronunciation clarity"
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-medium text-gray-600 mb-1">
+                              Max Score
+                            </label>
+                            <input
+                              type="number"
+                              value={
+                                typeof criteriaItem.maxScore === "number"
+                                  ? criteriaItem.maxScore
+                                  : ""
+                              }
+                              onChange={(e) =>
+                                updateScoringCriteria(
+                                  index,
+                                  "maxScore",
+                                  e.target.value
+                                )
+                              }
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                              placeholder="Auto"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {scoringCriteria.length > 0 && (
+                  <p className="mt-2 text-xs text-gray-500">
+                    Total criteria score: {scoringCriteriaTotal}
+                    {localFormData.exercise.maxScore
+                      ? ` / ${localFormData.exercise.maxScore}`
+                      : ""}
+                    {localFormData.exercise.maxScore &&
+                      scoringCriteriaTotal !==
+                        localFormData.exercise.maxScore &&
+                      " • Missing values are auto-filled on save to match the exercise max score."}
+                  </p>
+                )}
               </div>
-            </div>
+            )}
           </>
         )}
 
@@ -2814,11 +4063,18 @@ export default function RoleplayForm({
                   Title *
                 </label>
                 <input
-                  value={currentRoleplay.title[lang] || ""}
+                  value={getCurrentTranslationValue(
+                    currentRoleplay.title,
+                    lang
+                  )}
                   onChange={(e) =>
                     setCurrentRoleplay((prev) => ({
                       ...prev,
-                      title: { ...prev.title, [lang]: e.target.value },
+                      title: updateTranslationValue(
+                        prev.title,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -2833,14 +4089,18 @@ export default function RoleplayForm({
                   Description
                 </label>
                 <textarea
-                  value={currentRoleplay.description?.[lang] || ""}
+                  value={getCurrentTranslationValue(
+                    currentRoleplay.description,
+                    lang
+                  )}
                   onChange={(e) =>
                     setCurrentRoleplay((prev) => ({
                       ...prev,
-                      description: {
-                        ...prev.description,
-                        [lang]: e.target.value,
-                      },
+                      description: updateTranslationValue(
+                        prev.description,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   rows={4}
@@ -3178,10 +4438,22 @@ export default function RoleplayForm({
                 className="bg-white w-[600px] rounded-xl shadow-xl flex flex-col"
                 style={{ maxHeight: "90vh" }}
               >
-                <div className="p-6 pt-6 border-b border-gray-200">
+                <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold">
                     {modalOpen.content ? "Edit Content" : "New Content"}
                   </h2>
+
+                  <button
+                    onClick={() =>
+                      setModalOpen({
+                        sectionId: null,
+                        contentType: RoleplaySectionType.CONVERSATION,
+                      })
+                    }
+                    className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
+                  >
+                    <XMarkIcon className="h-6 w-6" />
+                  </button>
                 </div>
 
                 <div className="flex-grow overflow-y-auto p-6">

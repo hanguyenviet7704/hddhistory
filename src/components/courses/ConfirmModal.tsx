@@ -5,6 +5,7 @@ import { courseService } from "../../services/courseService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
+import { getTranslationValue } from "../../utils/translation";
 
 interface Props {
   isOpen: boolean;
@@ -71,8 +72,10 @@ export default function CourseConfirm({
             </h3>
             <p className="text-sm text-gray-500 mb-6">
               Are you sure you want to delete "
-              <span className="font-medium">{course.title[lang]}</span>"? This
-              action cannot be undone.
+              <span className="font-medium">
+                {getTranslationValue(course.title, lang) || "Unnamed Course"}
+              </span>
+              "? This action cannot be undone.
             </p>
 
             <div className="flex justify-center gap-3">

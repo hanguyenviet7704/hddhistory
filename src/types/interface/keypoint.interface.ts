@@ -10,8 +10,8 @@ export interface IKeypoint {
 }
 
 export interface KeypointPayload {
-  title: string;
-  description: string;
+  title: ITranslation;
+  description?: ITranslation;
   tag?: string[];
   image: string;
 }

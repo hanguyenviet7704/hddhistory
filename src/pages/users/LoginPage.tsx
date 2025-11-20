@@ -31,6 +31,15 @@ export default function LoginPage() {
         user: { id: string };
       } = res.data?.data;
 
+      // const FcmToken = await getFcmToken();
+
+      // if (FcmToken) {
+      //   await authService.subscribeTopic({
+      //     token: FcmToken,
+      //     topic: result.user.id,
+      //   });
+      // }
+
       localStorage.setItem("accessToken", result.token.accessToken);
       localStorage.setItem("refreshToken", result.token.refreshToken);
       localStorage.setItem("userId", result.user.id);

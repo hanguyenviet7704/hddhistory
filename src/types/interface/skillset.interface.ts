@@ -11,8 +11,8 @@ export interface ISkillset {
 }
 
 export interface SkillsetPayload {
-  title: string;
-  description: string;
+  title: ITranslation;
+  description?: ITranslation;
   image: string;
   courses?: ICourse[];
 }
