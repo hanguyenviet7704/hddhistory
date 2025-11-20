@@ -73,10 +73,10 @@ pipeline {
                     echo "Building for production with tag: ${env.GIT_TAG_NAME}"
                     sshagent(['0a39231d-d882-4824-ae7f-0d892c489685']) {
                        sh """ssh -o StrictHostKeyChecking=no ansible@188.166.208.109 << EOF
-                            cd /home/ansible/resource/meup/
+                            cd /home/ansible/resource/meup/admin-prod/
                             git fetch --all --tags
                             git checkout tags/${env.GIT_TAG_NAME}
-                            docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} . 
+                            docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} --build-arg REACT_APP_BACKEND_AI_TUTOR=https://api.meup.training .
                             docker push registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME}
                             exit
                         EOF"""
