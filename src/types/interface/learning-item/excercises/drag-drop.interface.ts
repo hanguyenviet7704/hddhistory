@@ -40,7 +40,7 @@ export interface ExerciseDragDropPayload {
   type: ExerciseType;
   form: FormDragDropType;
   speechBubble: ITranslation;
-  tag: string;
+  tagId: string;
   document: IDocument[];
   explanation: ITranslation;
   targetArea: ITranslation;

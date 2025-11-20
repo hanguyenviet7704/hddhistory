@@ -12,6 +12,6 @@ export interface ITheoryDocument {
 export interface TheoryDocumentPayload {
   id: number;
   speechBubble: ITranslation;
-  tag: string;
+  tagId: string;
   document: IDocument[];
 }

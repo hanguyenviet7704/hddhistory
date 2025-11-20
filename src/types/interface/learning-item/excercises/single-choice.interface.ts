@@ -28,7 +28,7 @@ export interface ExerciseSingleChoicePayload {
   id: number;
   type: ExerciseType;
   speechBubble: ITranslation;
-  tag: string;
+  tagId: string;
   document: IDocument[];
   explanation: ITranslation;
   options: IExerciseChoiceOption[];
