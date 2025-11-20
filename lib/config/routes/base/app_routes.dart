@@ -58,6 +58,9 @@ mixin RoutePath {
 
   //* Setting
   static const String setting = '/setting';
+  static const String profile = 'profile';
+  static const String notification = 'notification';
+  static const String changeLanguage = 'change-language';
 }
 
 mixin RouteNamed {
@@ -117,4 +120,7 @@ mixin RouteNamed {
 
   //* Setting
   static const String setting = 'Setting';
+  static const String profile = 'Profile';
+  static const String notification = 'Notification';
+  static const String changeLanguage = 'Change Language';
 }

@@ -40,7 +40,17 @@ part of '../routes.dart';
       ],
     ),
     TypedStatefulShellBranch<SettingShellBranchData>(
-      routes: [TypedGoRoute<SettingRoute>(path: RoutePath.setting, name: RouteNamed.setting)],
+      routes: [
+        TypedGoRoute<SettingRoute>(
+          path: RoutePath.setting,
+          name: RouteNamed.setting,
+          routes: [
+            TypedGoRoute<ProfileRoute>(path: RoutePath.profile, name: RouteNamed.profile),
+            TypedGoRoute<NotificationRoute>(path: RoutePath.notification, name: RouteNamed.notification),
+            TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage),
+          ],
+        ),
+      ],
     ),
   ],
 )

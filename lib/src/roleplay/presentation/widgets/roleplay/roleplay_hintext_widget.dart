@@ -12,7 +12,7 @@ class RoleplayHintCard extends StatelessWidget {
     return DottedBorder(
       options: RoundedRectDottedBorderOptions(
         color: AppCustomColor.roleplayHintBorder,
-        strokeWidth: 1.2.w,
+        strokeWidth: 2.w,
         dashPattern: [6.w, 4.w],
         radius: Radius.circular(20.r),
         padding: EdgeInsets.zero,
