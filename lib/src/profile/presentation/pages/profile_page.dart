@@ -66,9 +66,12 @@ class _ProfileViewState extends State<_ProfileView> {
       );
       return;
     }
-    showProfileDeleteDialog(
+    ProfileDeleteDialog.show(
       context,
-      onConfirm: () => context.read<AuthBloc>().add(AuthEvent.deleteAccountPermanently(user.id)),
+      onConfirm: () {
+        context.read<AuthBloc>().add(AuthEvent.deleteAccountPermanently(user.id));
+        context.back();
+      },
     );
   }
 

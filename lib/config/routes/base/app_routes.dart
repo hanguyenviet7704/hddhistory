@@ -61,6 +61,7 @@ mixin RoutePath {
   static const String profile = 'profile';
   static const String notification = 'notification';
   static const String changeLanguage = 'change-language';
+  static const String profileDeleteDialog = 'profile-delete-dialog';
 }
 
 mixin RouteNamed {
@@ -121,6 +122,7 @@ mixin RouteNamed {
   //* Setting
   static const String setting = 'Setting';
   static const String profile = 'Profile';
-  static const String notification = 'Notification';
+  static const String notification = 'Notification';    
   static const String changeLanguage = 'Change Language';
+  static const String profileDeleteDialog = 'Profile Delete Dialog';
 }

@@ -34,6 +34,10 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   }
 
   void updateUser(UserEntity entity) async {
+
+    if (entity.id.isEmpty) return;
+    if (entity.name == state.user.name) return;
+
     Map<String, dynamic> params = {
       'id': entity.id,
       'name': entity.name,
