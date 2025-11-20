@@ -57,7 +57,7 @@ class ProfileRepository with RestfulRequestHandlerMixin implements IProfileRepos
       'role': entity.role.toJsonValue(),
       'provider': entity.provider,
       'enery': entity.enery,
-      'onboarding': entity.onboarding.toJson(),
+      // 'onboarding': entity.onboarding.toJson(),
       'createdAt': entity.createdAt?.toIso8601String(),
       'updatedAt': entity.updatedAt?.toIso8601String(),
     };

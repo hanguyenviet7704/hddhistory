@@ -1,7 +1,7 @@
 part of '../../../profile.dart';
 
 @lazySingleton
-class ProfileCubit extends Cubit<ProfileState> with CubitUseCaseHandlerMixin<ProfileState> {
+class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerMixin<ProfileState> {
   final GetUserUseCase _getUseCase;
   final UpdateUserUseCase _updateUseCase;
 
@@ -9,6 +9,12 @@ class ProfileCubit extends Cubit<ProfileState> with CubitUseCaseHandlerMixin<Pro
     this._getUseCase,
     this._updateUseCase,
   ) : super(ProfileState.initial());
+
+  @override
+  ProfileState fromJson(Map<String, dynamic> json) => ProfileState.fromJson(json);
+
+  @override
+  Map<String, dynamic> toJson(ProfileState state) => state.toJson();
 
   void reset() => emit(ProfileState.initial());
   void setUser(UserEntity user) => emit(state.copyWith(user: user));

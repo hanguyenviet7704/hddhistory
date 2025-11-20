@@ -18,7 +18,7 @@ abstract class UserEntity with _$UserEntity {
     @Default('') String provider,
     @Default('') String enery,
     @Default(false) bool anonymous,
-    @Default(OnboardEntity()) OnboardEntity onboarding,
+    // @Default(OnboardEntity()) OnboardEntity onboarding,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _UserEntity;

@@ -205,8 +205,8 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, BaseResponse> deletePermanentUser(String password) {
-    return callApi(apiCall: () => _authApi.deletePermanentUser(password));
+  TaskEither<AppException, BaseResponse> deletePermanentUser(String userId) {
+    return callApi(apiCall: () => _authApi.deletePermanentUser(userId));
   }
 
   @override

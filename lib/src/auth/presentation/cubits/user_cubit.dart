@@ -14,8 +14,6 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   @override
   Map<String, dynamic> toJson(UserState state) => state.toJson();
 
-  bool fakeUserFullRoadmap() => kDebugMode && state.user.email == "truongdev109@gmail.com";
-
   void setIsFirstTime(bool isFirstTime) => emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
   void setIsFirstTimeUserRunApp(bool isFirstTimeUserRunApp) => emit(state.copyWith(isFirstTimeUserRunApp: isFirstTimeUserRunApp));
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
@@ -29,9 +27,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
 
   void setAuth(AuthEntity auth) {
     emit(state.copyWith(auth: auth));
-    AppDI.injector.get<ProfileCubit>()
-      ..setUser(auth.user)
-      ..loadUser();
+    AppDI.injector.get<ProfileCubit>().setUser(auth.user);
     setTrackingUser();
   }
 

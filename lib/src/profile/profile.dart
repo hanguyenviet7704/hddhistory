@@ -35,6 +35,10 @@ part 'presentation/cubits/upload/upload_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/profile_page.dart';
 //* Presentation Layer - Widgets
+part 'presentation/widgets/profile_header.dart';
+part 'presentation/widgets/profile_field.dart';
+part 'presentation/widgets/profile_delete_button.dart';
+part 'presentation/widgets/profile_delete_dialog.dart';
 
 //* Parts for generated files
 part 'profile.freezed.dart';

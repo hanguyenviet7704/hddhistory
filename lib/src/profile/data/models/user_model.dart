@@ -18,7 +18,7 @@ abstract class UserModel with _$UserModel {
     @Default('') String provider,
     @Default('') String enery,
     @Default(false) bool anonymous,
-    @Default(OnboardModel()) OnboardModel onboarding,
+    // @Default(OnboardModel()) OnboardModel onboarding,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _UserModel;
@@ -79,7 +79,7 @@ extension UserModelExtension on UserModel {
     provider: provider,
     enery: enery,
     anonymous: anonymous,
-    onboarding: onboarding.toEntity(),
+    // onboarding: onboarding.toEntity(),
     createdAt: createdAt,
     updatedAt: updatedAt,
   );
