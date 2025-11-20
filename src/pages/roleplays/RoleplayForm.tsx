@@ -761,10 +761,15 @@ export default function RoleplayForm({
 
     const exercisePayload = { ...(exercise as ExerciseInputPayload) };
 
-    if ("tag" in exercisePayload) {
+    if ("tag" in exercise) {
       const tagValue = (exercise as { tag?: ITag | string | null }).tag;
-      (exercisePayload as { tag?: string }).tag =
+      const payloadWithTag = exercisePayload as {
+        tag?: string;
+        tagId?: string;
+      };
+      payloadWithTag.tagId =
         typeof tagValue === "string" ? tagValue : tagValue?._id || "";
+      delete payloadWithTag.tag;
     }
 
     // Clean ITranslation fields - only add if not empty

@@ -344,9 +344,10 @@ export default function ExerciseForm({
       const tagId = question.tag?._id || "";
 
       // Clean ITranslation fields
+      const { tag, ...questionWithoutTag } = question;
       const convertedQuestion: any = {
-        ...question,
-        tag: tagId,
+        ...questionWithoutTag,
+        tagId,
       };
 
       // Only add fields that have non-empty translations

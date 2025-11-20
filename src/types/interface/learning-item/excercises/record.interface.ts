@@ -31,7 +31,7 @@ export interface ExerciseRecordPayload {
   id: number;
   type: ExerciseType;
   speechBubble: string;
-  tag: string;
+  tagId: string;
   document: IDocument[];
   explanation: string;
   record: string;

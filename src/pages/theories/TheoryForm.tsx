@@ -280,7 +280,7 @@ export default function TheoryForm({
         .map((doc) => {
           const payload: any = {
             id: doc.id,
-            tag: doc.tag?._id || "",
+            tagId: doc.tag?._id || "",
             document: [],
           };
 
