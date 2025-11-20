@@ -857,6 +857,7 @@ export default function RoleplayForm({
         textColor: section.textColor,
         backgroundColor: section.backgroundColor,
         image: section.image || "",
+        colorTemplateId: section.colorTemplateId,
         contents: [],
       };
 
@@ -1491,78 +1492,90 @@ export default function RoleplayForm({
     setNextSectionId(nextSectionId + 1);
   };
 
-  const updateSectionColorTemplate = (
+  const updateSectionColorTemplate = async (
     sectionId: number,
     templateId: string
   ) => {
     const template = colorTemplates.find((item) => item._id === templateId);
     if (!template) return;
 
-    setCurrentRoleplay((prev) => {
-      const sections = prev.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-      if (sectionIndex === -1) return prev;
+    const sections = currentRoleplay.sections || [];
+    const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+    if (sectionIndex === -1) return;
 
-      const updatedSection = {
-        ...sections[sectionIndex],
-        colorTemplateId: templateId,
-        textColor:
-          template.transition?.textColor || sections[sectionIndex].textColor,
-        backgroundColor:
-          template.transition?.backgroundColor ||
-          sections[sectionIndex].backgroundColor,
-        contents: (sections[sectionIndex].contents || []).map((content) => {
-          if (content.type === RoleplaySectionType.CONVERSATION) {
-            const style =
-              content.conversation.position ===
-              SectionConversationPosition.RIGHT
-                ? template.conversation?.right
-                : template.conversation?.left;
-            return {
-              ...content,
-              conversation: {
-                ...content.conversation,
-                backgroundColor:
-                  style?.backgroundColor ||
-                  content.conversation.backgroundColor,
-                textColor: style?.textColor || content.conversation.textColor,
-              },
-            };
-          }
-          if (content.type === RoleplaySectionType.LEADING_TEXT) {
-            return {
-              ...content,
-              leadingText: {
-                ...content.leadingText,
-                backgroundColor:
-                  template.leadingText?.backgroundColor ||
-                  content.leadingText.backgroundColor,
-                textColor:
-                  template.leadingText?.textColor ||
-                  content.leadingText.textColor,
-              },
-            };
-          }
-          if (content.type === RoleplaySectionType.HINT) {
-            return {
-              ...content,
-              hint: {
-                ...content.hint,
-                backgroundColor:
-                  template.hint?.backgroundColor ||
-                  content.hint.backgroundColor,
-                textColor: template.hint?.textColor || content.hint.textColor,
-              },
-            };
-          }
-          return content;
-        }),
-      };
+    const updatedSection = {
+      ...sections[sectionIndex],
+      colorTemplateId: templateId,
+      textColor:
+        template.transition?.textColor || sections[sectionIndex].textColor,
+      backgroundColor:
+        template.transition?.backgroundColor ||
+        sections[sectionIndex].backgroundColor,
+      contents: (sections[sectionIndex].contents || []).map((content) => {
+        if (content.type === RoleplaySectionType.CONVERSATION) {
+          const style =
+            content.conversation.position ===
+            SectionConversationPosition.RIGHT
+              ? template.conversation?.right
+              : template.conversation?.left;
+          return {
+            ...content,
+            conversation: {
+              ...content.conversation,
+              backgroundColor:
+                style?.backgroundColor || content.conversation.backgroundColor,
+              textColor: style?.textColor || content.conversation.textColor,
+            },
+          };
+        }
+        if (content.type === RoleplaySectionType.LEADING_TEXT) {
+          return {
+            ...content,
+            leadingText: {
+              ...content.leadingText,
+              backgroundColor:
+                template.leadingText?.backgroundColor ||
+                content.leadingText.backgroundColor,
+              textColor:
+                template.leadingText?.textColor ||
+                content.leadingText.textColor,
+            },
+          };
+        }
+        if (content.type === RoleplaySectionType.HINT) {
+          return {
+            ...content,
+            hint: {
+              ...content.hint,
+              backgroundColor:
+                template.hint?.backgroundColor ||
+                content.hint.backgroundColor,
+              textColor: template.hint?.textColor || content.hint.textColor,
+            },
+          };
+        }
+        return content;
+      }),
+    };
 
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = updatedSection;
-      return { ...prev, sections: updatedSections };
-    });
+    const updatedSections = [...sections];
+    updatedSections[sectionIndex] = updatedSection;
+    const updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
+    setCurrentRoleplay(updatedRoleplay);
+
+    if (!updatedRoleplay._id) return;
+
+    try {
+      setSaving(true);
+      const payload = buildLearningItemPayload(updatedRoleplay);
+      await learningItemService.update(updatedRoleplay._id, payload);
+      showSuccess("Updated section color template");
+    } catch (err) {
+      console.error("updateSectionColorTemplate", err);
+      showError("Failed to update color template");
+    } finally {
+      setSaving(false);
+    }
   };
 
   // const handleSelectTemplateForSection = (
