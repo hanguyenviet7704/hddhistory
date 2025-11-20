@@ -46,24 +46,30 @@ class SettingPage extends StatelessWidget {
                 ],
               ),
               24.verticalSpace,
-              SettingSectionCard(
-                title: context.text.settingSectionHeaderAbout,
-                children: [
-                  if (kDebugMode)
-                    SettingOptionTile(
-                      iconAsset: AppAsset.svg.app.icShieldPlus,
-                      title: context.text.settingAboutSectionTerm,
-                    ),
-                  SettingOptionTile(
-                    iconAsset: AppAsset.svg.app.icLogOut,
-                    title: context.text.settingLogOut,
-                    titleColor: AppCustomColor.errorRed,
-                    iconColor: AppCustomColor.errorRed,
-                    iconBackgroundColor: AppCustomColor.errorRed.op(.08),
-                    showChevron: false,
-                    onTap: () => context.read<AuthBloc>().add(const AuthEvent.logout()),
-                  ),
-                ],
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  return SettingSectionCard(
+                    title: context.text.settingSectionHeaderAbout,
+                    children: [
+                      if (kDebugMode)
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icShieldPlus,
+                          title: context.text.settingAboutSectionTerm,
+                        ),
+                      if (!user.anonymous)
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icLogOut,
+                          title: context.text.settingLogOut,
+                          titleColor: AppCustomColor.errorRed,
+                          iconColor: AppCustomColor.errorRed,
+                          iconBackgroundColor: AppCustomColor.errorRed.op(.08),
+                          showChevron: false,
+                          onTap: () => context.read<AuthBloc>().add(const AuthEvent.logout()),
+                        ),
+                    ],
+                  );
+                },
               ),
             ],
           ),

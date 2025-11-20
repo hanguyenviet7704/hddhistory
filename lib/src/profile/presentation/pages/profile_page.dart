@@ -138,7 +138,10 @@ class _ProfileViewState extends State<_ProfileView> {
                       padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h + bottomPadding),
                       child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                         selector: (state) => state.user,
-                        builder: (context, user) => ProfileDeleteButton(onTap: () => _handleDeleteAccount(user)),
+                        builder: (context, user) {
+                          if (user.anonymous) return const SizedBox.shrink();
+                          return ProfileDeleteButton(onTap: () => _handleDeleteAccount(user));
+                        },
                       ),
                     ),
                 ],
