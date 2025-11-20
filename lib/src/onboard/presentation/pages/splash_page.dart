@@ -87,7 +87,12 @@ class _SplashPageState extends State<SplashPage> {
       _trackingDrawWelcomeScrView('first_time');
     }
     if (AppGlobalValue.accessToken.isEmpty) {
-      ChooseLanguageRoute().go(context);
+      if (isFirstTime) {
+        ChooseLanguageRoute().go(context);
+        return;
+      }
+
+      RegisterRoute().go(context);
       return;
     }
 
@@ -100,6 +105,7 @@ class _SplashPageState extends State<SplashPage> {
         CourseRoute().go(context);
         return;
       }
+
       HomeRoute().go(context);
     });
   }

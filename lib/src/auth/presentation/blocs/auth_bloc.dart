@@ -97,6 +97,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         AppDI.injector.get<UserCubit>().clearData();
         AppGlobalValue.accessToken = '';
         AppGlobalValue.refreshToken = '';
+        RegisterRoute().go(AppConfig.instance.context!);
       },
       onFailure: (error) {},
     );

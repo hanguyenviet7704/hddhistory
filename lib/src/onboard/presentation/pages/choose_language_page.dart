@@ -3,6 +3,12 @@ part of '../../onboard.dart';
 class ChooseLanguagePage extends StatelessWidget {
   const ChooseLanguagePage({super.key});
 
+  void _handleSelectLanguage(BuildContext context, LocaleType locale) {
+    context.read<LocaleCubit>().changeLocale(locale);
+    context.read<UserCubit>().setIsFirstTime(false);
+    IntroRoute().go(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -30,10 +36,7 @@ class ChooseLanguagePage extends StatelessWidget {
                           flagAsset: AppAsset.svg.common.icUsFlag,
                           languageName: 'English',
                           isSelected: state == LocaleType.en,
-                          onTap: () {
-                            context.read<LocaleCubit>().changeLocale(LocaleType.en);
-                            IntroRoute().go(context);
-                          },
+                          onTap: () => _handleSelectLanguage(context, LocaleType.en),
                         );
                       },
                     ),
@@ -46,10 +49,7 @@ class ChooseLanguagePage extends StatelessWidget {
                           flagAsset: AppAsset.svg.common.icVnFlag,
                           languageName: 'Tiếng Việt',
                           isSelected: state == LocaleType.vi,
-                          onTap: () {
-                            context.read<LocaleCubit>().changeLocale(LocaleType.vi);
-                            IntroRoute().go(context);
-                          },
+                          onTap: () => _handleSelectLanguage(context, LocaleType.vi),
                         );
                       },
                     ),
