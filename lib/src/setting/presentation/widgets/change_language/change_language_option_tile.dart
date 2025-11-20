@@ -16,6 +16,15 @@ class ChangeLanguageOptionTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color borderColor = isSelected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary;
     final Color textColor = isSelected ? AppCustomColor.textPrimary : AppCustomColor.textTertiary;
+    final List<BoxShadow>? shadows = isSelected
+        ? [
+            BoxShadow(
+              color: AppCustomColor.brandPrimary.withValues(alpha: 0.08),
+              blurRadius: 24,
+              offset: const Offset(0, 12),
+            ),
+          ]
+        : null;
 
     return Material(
       color: Colors.transparent,
@@ -24,11 +33,13 @@ class ChangeLanguageOptionTile extends StatelessWidget {
         onTap: onTap,
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 24.h),
+          curve: Curves.easeOut,
+          padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 22.h),
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
             borderRadius: BorderRadius.circular(12.r),
-            border: Border.all(color: borderColor, width: 2),
+            border: Border.all(color: borderColor, width: isSelected ? 2 : 1.2),
+            boxShadow: shadows,
           ),
           child: Row(
             children: [

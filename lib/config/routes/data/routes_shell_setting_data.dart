@@ -47,6 +47,9 @@ class ChangeLanguageRoute extends GoRouteData with $ChangeLanguageRoute {
       key: state.pageKey,
       name: state.name,
       barrierColor: AppCustomColor.bottomSheetScrim,
+      bounce: true,
+      backgroundColor: AppCustomColor.backgroundWhite,
+      topRadius: const Radius.circular(24),
       builder: (_) => const ChangeLanguagePage(),
     );
   }

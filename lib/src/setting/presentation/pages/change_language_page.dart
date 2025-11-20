@@ -15,55 +15,64 @@ class ChangeLanguagePage extends StatelessWidget {
     final double bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Scaffold(
-      body: SafeArea(
-        child: Padding(
-          padding: EdgeInsets.only(bottom: bottomPadding + 12.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
-                child: Stack(
-                  alignment: Alignment.center,
-                  children: [
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: _LanguageSheetBackButton(onPressed: () => context.pop()),
-                    ),
-                    Text(
-                      context.text.settingRowLanguage,
-                      style: AppStyle.text16.copyWith(
-                        color: AppCustomColor.textTertiary,
-                        height: 1.5,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
-                ),
+      backgroundColor: Colors.transparent,
+      body: Padding(
+        padding: EdgeInsets.only(bottom: bottomPadding + 12.h),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            12.verticalSpace,
+            Container(
+              width: 56.w,
+              height: 5.h,
+              decoration: BoxDecoration(
+                color: AppCustomColor.textQuaternary,
+                borderRadius: BorderRadius.circular(20.r),
               ),
-              Divider(height: 1, color: AppCustomColor.borderDefault),
-              Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 24.h),
-                child: BlocBuilder<LocaleCubit, LocaleType>(
-                  builder: (context, state) {
-                    return Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        for (int index = 0; index < _displayLocales.length; index++) ...[
-                          ChangeLanguageOptionTile(
-                            locale: _displayLocales[index],
-                            isSelected: state == _displayLocales[index],
-                            onTap: () => _handleSelectLanguage(context, _displayLocales[index]),
-                          ),
-                          if (index < _displayLocales.length - 1) 16.verticalSpace,
-                        ],
+            ),
+            12.verticalSpace,
+            Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+              child: Stack(
+                alignment: Alignment.center,
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: _LanguageSheetBackButton(onPressed: () => context.pop()),
+                  ),
+                  Text(
+                    context.text.settingRowLanguage,
+                    style: AppStyle.text16.copyWith(
+                      color: AppCustomColor.textTertiary,
+                      height: 1.5,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Divider(height: 1, color: AppCustomColor.borderDefault),
+            Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 0),
+              child: BlocBuilder<LocaleCubit, LocaleType>(
+                builder: (context, state) {
+                  return Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      for (int index = 0; index < _displayLocales.length; index++) ...[
+                        ChangeLanguageOptionTile(
+                          locale: _displayLocales[index],
+                          isSelected: state == _displayLocales[index],
+                          onTap: () => _handleSelectLanguage(context, _displayLocales[index]),
+                        ),
+                        if (index < _displayLocales.length - 1) 16.verticalSpace,
                       ],
-                    );
-                  },
-                ),
+                    ],
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

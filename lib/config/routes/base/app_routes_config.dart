@@ -475,6 +475,11 @@ class ModalSheetPage<T> extends Page<T> {
   const ModalSheetPage({
     required this.builder,
     this.barrierColor,
+    this.backgroundColor,
+    this.topRadius,
+    this.transitionBackgroundColor,
+    this.previousRouteAnimationCurve,
+    this.boxShadow,
     this.enableDrag = true,
     this.expanded = false,
     this.bounce = false,
@@ -482,12 +487,18 @@ class ModalSheetPage<T> extends Page<T> {
     this.duration,
     this.containerBuilder,
     this.closeProgressThreshold,
+    this.useCupertinoStyle = true,
     super.key,
     super.name,
   });
 
   final WidgetBuilder builder;
   final Color? barrierColor;
+  final Color? backgroundColor;
+  final Radius? topRadius;
+  final Color? transitionBackgroundColor;
+  final Curve? previousRouteAnimationCurve;
+  final BoxShadow? boxShadow;
   final bool enableDrag;
   final bool expanded;
   final bool bounce;
@@ -495,11 +506,40 @@ class ModalSheetPage<T> extends Page<T> {
   final Duration? duration;
   final WidgetWithChildBuilder? containerBuilder;
   final double? closeProgressThreshold;
+  final bool useCupertinoStyle;
 
   @override
   Route<T> createRoute(BuildContext context) {
     final MaterialLocalizations? localizations = Localizations.of<MaterialLocalizations>(context, MaterialLocalizations);
     final String barrierLabel = localizations?.modalBarrierDismissLabel ?? 'Dismiss';
+    final Radius effectiveTopRadius = topRadius ?? const Radius.circular(24);
+    final WidgetWithChildBuilder effectiveContainerBuilder =
+        containerBuilder ??
+        (BuildContext context, Animation<double> _, Widget child) => _CupertinoModalSheetContainer(
+          backgroundColor: backgroundColor ?? AppCustomColor.backgroundWhite,
+          topRadius: effectiveTopRadius,
+          boxShadow: boxShadow,
+          child: child,
+        );
+
+    if (useCupertinoStyle) {
+      return CupertinoModalBottomSheetRoute<T>(
+        builder: builder,
+        barrierLabel: barrierLabel,
+        modalBarrierColor: barrierColor,
+        enableDrag: enableDrag,
+        expanded: expanded,
+        bounce: bounce,
+        isDismissible: isDismissible,
+        duration: duration,
+        containerBuilder: effectiveContainerBuilder,
+        closeProgressThreshold: closeProgressThreshold,
+        topRadius: effectiveTopRadius,
+        transitionBackgroundColor: transitionBackgroundColor,
+        previousRouteAnimationCurve: previousRouteAnimationCurve,
+        settings: this,
+      );
+    }
 
     return ModalSheetRoute<T>(
       builder: builder,
@@ -510,9 +550,49 @@ class ModalSheetPage<T> extends Page<T> {
       bounce: bounce,
       isDismissible: isDismissible,
       duration: duration,
-      containerBuilder: containerBuilder,
+      containerBuilder: effectiveContainerBuilder,
       closeProgressThreshold: closeProgressThreshold,
       settings: this,
+    );
+  }
+}
+
+class _CupertinoModalSheetContainer extends StatelessWidget {
+  const _CupertinoModalSheetContainer({
+    required this.child,
+    required this.topRadius,
+    required this.backgroundColor,
+    this.boxShadow,
+  });
+
+  final Widget child;
+  final Radius topRadius;
+  final Color backgroundColor;
+  final BoxShadow? boxShadow;
+
+  @override
+  Widget build(BuildContext context) {
+    final double topPadding = MediaQuery.paddingOf(context).top + 10;
+
+    return Padding(
+      padding: EdgeInsets.only(top: topPadding),
+      child: ClipRRect(
+        borderRadius: BorderRadius.vertical(top: topRadius),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            boxShadow: [
+              boxShadow ??
+                  BoxShadow(
+                    color: AppCustomColor.textPrimary.withValues(alpha: 0.04),
+                    blurRadius: 24,
+                    offset: const Offset(0, -4),
+                  ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
     );
   }
 }
