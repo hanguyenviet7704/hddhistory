@@ -29,7 +29,9 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
 
   void setAuth(AuthEntity auth) {
     emit(state.copyWith(auth: auth));
-    AppDI.injector.get<ProfileCubit>().setUser(auth.user);
+    AppDI.injector.get<ProfileCubit>()
+      ..setUser(auth.user)
+      ..loadUser();
     setTrackingUser();
   }
 
@@ -63,4 +65,3 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     onDone?.call();
   }
 }
-

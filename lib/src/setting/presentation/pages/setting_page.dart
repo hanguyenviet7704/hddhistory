@@ -5,8 +5,6 @@ class SettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final LocaleType locale = context.watch<LocaleCubit>().state;
-
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
       body: CupertinoScaffold(
@@ -30,7 +28,7 @@ class SettingPage extends StatelessWidget {
                   SettingOptionTile(
                     iconAsset: AppAsset.svg.app.icGlobe,
                     title: context.text.settingRowLanguage,
-                    trailingText: locale.label,
+                    trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
                     onTap: () => const ChangeLanguageRoute().go(context),
                   ),
                   SettingOptionTile(
