@@ -29,7 +29,7 @@ class SettingPage extends StatelessWidget {
                   iconAsset: AppAsset.svg.app.icGlobe,
                   title: context.text.settingRowLanguage,
                   trailingText: locale.label,
-                  onTap: () => const ChangeLanguageRoute().push(context),
+                  onTap: () => const ChangeLanguageRoute().go(context),
                 ),
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icCreditCard,

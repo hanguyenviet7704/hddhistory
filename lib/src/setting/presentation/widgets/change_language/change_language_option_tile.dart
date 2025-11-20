@@ -29,15 +29,6 @@ class ChangeLanguageOptionTile extends StatelessWidget {
             color: AppCustomColor.backgroundWhite,
             borderRadius: BorderRadius.circular(12.r),
             border: Border.all(color: borderColor, width: 2),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppCustomColor.brandPrimary.withValues(alpha: .08),
-                      blurRadius: 24,
-                      offset: Offset(0, 12.h),
-                    ),
-                  ]
-                : null,
           ),
           child: Row(
             children: [
