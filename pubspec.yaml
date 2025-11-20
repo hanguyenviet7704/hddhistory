@@ -45,6 +45,7 @@ dependencies:
   flutter_widget_from_html_core: ^0.17.0
   html: ^0.15.6
   flutter_easyloading: ^3.0.5
+  modal_bottom_sheet: ^3.0.0
   video_player: ^2.10.1
   just_audio: ^0.10.5
 #  camera: ^0.11.1
@@ -396,5 +397,4 @@ flutter:
 #     download_include_tags: # Optional list of tags to be downloaded (e.g. ['include', 'Include key']). If not set, all string keys will be considered for download. Default: []
 #     download_exclude_tags: # Optional list of tags to be excluded from download (e.g. ['exclude', 'Exclude key']). If not set, all string keys will be considered for download. Default: []
 #     ota_enabled: # Set to true if you want to use Localizely Over-the-air functionality. Default: false
-
 

@@ -12,15 +12,15 @@ enum RouteTransitionType {
   slide,
   scale,
   rotation,
-  fadeThrough,      // Material Design fade through
-  sharedAxisX,      // Material Design shared axis horizontal
-  sharedAxisY,      // Material Design shared axis vertical
-  sharedAxisZ,      // Material Design shared axis depth
-  zoom,             // Zoom in/out from center
-  slideScale,       // Combined slide and scale
-  fadeSlide,        // Combined fade and slide
-  flip,             // 3D flip animation
-  size,             // Size transition
+  fadeThrough, // Material Design fade through
+  sharedAxisX, // Material Design shared axis horizontal
+  sharedAxisY, // Material Design shared axis vertical
+  sharedAxisZ, // Material Design shared axis depth
+  zoom, // Zoom in/out from center
+  slideScale, // Combined slide and scale
+  fadeSlide, // Combined fade and slide
+  flip, // 3D flip animation
+  size, // Size transition
   custom,
 }
 
@@ -217,15 +217,16 @@ abstract class BaseTransitionRouteData extends GoRouteData {
       case RouteTransitionType.fadeThrough:
         // Material Design fade through pattern
         return FadeTransition(
-          opacity: Tween<double>(
-            begin: 0.0,
-            end: 1.0,
-          ).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
-            ),
-          ),
+          opacity:
+              Tween<double>(
+                begin: 0.0,
+                end: 1.0,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
+                ),
+              ),
           child: child,
         );
 
@@ -346,9 +347,7 @@ abstract class BaseTransitionRouteData extends GoRouteData {
                 ..rotateY(isHorizontal ? angle : 0)
                 ..rotateX(isHorizontal ? 0 : angle),
               alignment: Alignment.center,
-              child: value < 0.5
-                  ? Opacity(opacity: 1 - (value * 2), child: child)
-                  : Opacity(opacity: (value - 0.5) * 2, child: child),
+              child: value < 0.5 ? Opacity(opacity: 1 - (value * 2), child: child) : Opacity(opacity: (value - 0.5) * 2, child: child),
             );
           },
           child: child,
@@ -402,7 +401,8 @@ enum SlideRouteEffect {
   leftToRight(-1, 0),
   rightToLeft(1, 0),
   bottomToTop(0, 1),
-  topToBottom(0, -1);
+  topToBottom(0, -1)
+  ;
 
   final double dx;
   final double dy;
@@ -467,6 +467,52 @@ class AnimatedSlidePage extends MaterialPage {
       barrierDismissible: false,
       barrierColor: Colors.transparent,
       opaque: true,
+    );
+  }
+}
+
+class ModalSheetPage<T> extends Page<T> {
+  const ModalSheetPage({
+    required this.builder,
+    this.barrierColor,
+    this.enableDrag = true,
+    this.expanded = false,
+    this.bounce = false,
+    this.isDismissible = true,
+    this.duration,
+    this.containerBuilder,
+    this.closeProgressThreshold,
+    super.key,
+    super.name,
+  });
+
+  final WidgetBuilder builder;
+  final Color? barrierColor;
+  final bool enableDrag;
+  final bool expanded;
+  final bool bounce;
+  final bool isDismissible;
+  final Duration? duration;
+  final WidgetWithChildBuilder? containerBuilder;
+  final double? closeProgressThreshold;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    final MaterialLocalizations? localizations = Localizations.of<MaterialLocalizations>(context, MaterialLocalizations);
+    final String barrierLabel = localizations?.modalBarrierDismissLabel ?? 'Dismiss';
+
+    return ModalSheetRoute<T>(
+      builder: builder,
+      barrierLabel: barrierLabel,
+      modalBarrierColor: barrierColor,
+      enableDrag: enableDrag,
+      expanded: expanded,
+      bounce: bounce,
+      isDismissible: isDismissible,
+      duration: duration,
+      containerBuilder: containerBuilder,
+      closeProgressThreshold: closeProgressThreshold,
+      settings: this,
     );
   }
 }

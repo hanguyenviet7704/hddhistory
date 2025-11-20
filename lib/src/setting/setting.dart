@@ -20,6 +20,7 @@ part 'presentation/pages/change_language_page.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/setting_page.dart';
 //* Presentation Layer - Widgets
+part 'presentation/widgets/change_language/change_language_option_tile.dart';
 part 'presentation/widgets/setting/setting_profile_card.dart';
 part 'presentation/widgets/setting/setting_section_card.dart';
 //* Parts for generated files

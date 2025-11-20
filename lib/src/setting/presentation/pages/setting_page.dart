@@ -6,6 +6,7 @@ class SettingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final UserEntity user = context.select((UserCubit cubit) => cubit.state.user);
+    final LocaleType locale = context.watch<LocaleCubit>().state;
 
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
@@ -27,7 +28,8 @@ class SettingPage extends StatelessWidget {
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icGlobe,
                   title: context.text.settingRowLanguage,
-                  trailingText: 'English',
+                  trailingText: locale.label,
+                  onTap: () => const ChangeLanguageRoute().push(context),
                 ),
                 SettingOptionTile(
                   iconAsset: AppAsset.svg.app.icCreditCard,
@@ -40,7 +42,7 @@ class SettingPage extends StatelessWidget {
               ],
             ),
             24.verticalSpace,
-            SettingSectionCard( 
+            SettingSectionCard(
               title: context.text.settingSectionHeaderAbout,
               children: [
                 SettingOptionTile(
