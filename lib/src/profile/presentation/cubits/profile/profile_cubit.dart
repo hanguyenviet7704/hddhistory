@@ -13,9 +13,10 @@ class ProfileCubit extends Cubit<ProfileState> with CubitUseCaseHandlerMixin<Pro
   void reset() => emit(ProfileState.initial());
   void setUser(UserEntity user) => emit(state.copyWith(user: user));
 
-  void loadUser(String id) async {
+  void loadUser() async {
+    if (state.user.id.isEmpty) return;
     await runUseCase<UserEntity>(
-      usecase: () => _getUseCase(id),
+      usecase: () => _getUseCase(state.user.id),
       buildLoadingState: () => state.copyWith(status: ProfileStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProfileStatus.failure, errorMessage: error));

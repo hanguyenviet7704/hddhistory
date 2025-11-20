@@ -5,7 +5,6 @@ class SettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final UserEntity user = context.select((UserCubit cubit) => cubit.state.user);
     final LocaleType locale = context.watch<LocaleCubit>().state;
 
     return Scaffold(
@@ -18,7 +17,7 @@ class SettingPage extends StatelessWidget {
             padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
             physics: const BouncingScrollPhysics(),
             children: [
-              SettingProfileCard(user: user),
+              SettingProfileCard(),
               24.verticalSpace,
               SettingSectionCard(
                 title: context.text.settingSectionHeaderGeneral,

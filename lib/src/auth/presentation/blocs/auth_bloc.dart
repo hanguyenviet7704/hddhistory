@@ -34,13 +34,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     on<_Logout>(_onLogout);
   }
 
+  void _onAuthSuccess(AuthEntity auth) {
+    AppDI.injector.get<UserCubit>().setAuth(auth);
+    AppGlobalValue.accessToken = auth.token.accessToken;
+    AppGlobalValue.refreshToken = auth.token.refreshToken;
+    AppDI.injector.get<ProfileCubit>().loadUser();
+  }
+
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
     runUseCase(
       usecase: () => _loginAnonymousUsecase(event.data),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
       },
       onFailure: (error) {},
     );
@@ -50,9 +55,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     runUseCase(
       usecase: () => _loginSSOGoogleUsecase(),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
         AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
         CourseRoute().go(AppConfig.instance.context!);
       },
@@ -64,9 +67,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     runUseCase(
       usecase: () => _loginSSOAppleUsecase(),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
         AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
         CourseRoute().go(AppConfig.instance.context!);
       },
@@ -82,9 +83,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         "passwordConfirm": event.passwordConfirm,
       }),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
       },
       onFailure: (error) {},
     );
