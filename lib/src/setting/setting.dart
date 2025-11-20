@@ -20,8 +20,8 @@ part 'presentation/pages/change_language_page.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/setting_page.dart';
 //* Presentation Layer - Widgets
-part 'presentation/widgets/setting_profile_card.dart';
-part 'presentation/widgets/setting_section_card.dart';
+part 'presentation/widgets/setting/setting_profile_card.dart';
+part 'presentation/widgets/setting/setting_section_card.dart';
 //* Parts for generated files
 part 'setting.freezed.dart';
 part 'setting.g.dart';

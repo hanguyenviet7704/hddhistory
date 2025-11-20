@@ -1,4 +1,4 @@
-part of '../../setting.dart';
+part of '../../../setting.dart';
 
 class SettingProfileCard extends StatelessWidget {
   const SettingProfileCard({super.key, required this.user});

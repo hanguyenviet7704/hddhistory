@@ -1,4 +1,4 @@
-part of '../../setting.dart';
+part of '../../../setting.dart';
 
 class SettingSectionCard extends StatelessWidget {
   const SettingSectionCard({super.key, required this.title, required this.children});
