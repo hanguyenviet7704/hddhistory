@@ -13,6 +13,7 @@ part 'data/datasources/local/profile_local_data_source.dart';
 part 'data/datasources/remote/profile_api.dart';
 part 'data/datasources/remote/upload_api.dart';
 part 'data/models/upload_model.dart';
+part 'data/models/user_last_action_model.dart';
 //* Data Layer - Models, Datasources, Repositories
 part 'data/models/user_model.dart';
 part 'data/repositories/profile_repository.dart';
@@ -20,6 +21,7 @@ part 'data/repositories/upload_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/upload_entity.dart';
 part 'domain/entities/user_entity.dart';
+part 'domain/entities/user_last_action_entity.dart';
 part 'domain/repositories/i_profile_repository.dart';
 part 'domain/repositories/i_upload_repository.dart';
 part 'domain/usecases/create_user_usecase.dart';

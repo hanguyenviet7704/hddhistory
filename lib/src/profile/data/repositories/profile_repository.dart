@@ -88,6 +88,24 @@ class ProfileRepository with RestfulRequestHandlerMixin implements IProfileRepos
     return {
       'id': entity.id,
       'name': entity.name,
+      'email': entity.email,
+      'phone': entity.phone,
+      'age': entity.age,
+      'gender': entity.gender,
+      'status': entity.status.toJsonValue(),
+      'language': entity.language,
+      'country': entity.country,
+      'lastAction': {
+        'time': entity.lastAction.time?.toIso8601String(),
+        'action': entity.lastAction.action,
+      },
+      'avatar': entity.avatar,
+      'role': entity.role.toJsonValue(),
+      'provider': entity.provider,
+      'enery': entity.enery,
+      'onboarding': entity.onboarding.toJson(),
+      'createdAt': entity.createdAt?.toIso8601String(),
+      'updatedAt': entity.updatedAt?.toIso8601String(),
     };
   }
 }

@@ -83,13 +83,13 @@ class _SettingProfileAvatar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final double size = 56.w;
-    if (user.photoUrl.trim().isNotEmpty) {
+    if (user.avatar.trim().isNotEmpty) {
       return SizedBox(
         width: size,
         height: size,
         child: ClipOval(
           child: AnyImageWidget(
-            url: user.photoUrl,
+            url: user.avatar,
             width: size,
             height: size,
             fit: BoxFit.cover,
