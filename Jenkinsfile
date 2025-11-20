@@ -92,7 +92,7 @@ pipeline {
             steps {
                 echo "Deploying to production environment"
                 sshagent(['0a39231d-d882-4824-ae7f-0d892c489685']) {
-                    sh """ssh -o StrictHostKeyChecking=no ansible@128.199.244.114 << EOF
+                    sh """ssh -o StrictHostKeyChecking=no ansible@159.223.67.7 << EOF
                         docker pull registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME}
                         exit
                     EOF"""
