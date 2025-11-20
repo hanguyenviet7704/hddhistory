@@ -31,7 +31,13 @@ class ProfileRoute extends BaseTransitionRouteData with $ProfileRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const ProfilePage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
+      BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+    ],
+    child: const ProfilePage(),
+  );
 }
 
 class NotificationRoute extends BaseTransitionRouteData with $NotificationRoute {

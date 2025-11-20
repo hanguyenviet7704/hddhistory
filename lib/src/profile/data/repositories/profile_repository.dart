@@ -23,43 +23,16 @@ class ProfileRepository with RestfulRequestHandlerMixin implements IProfileRepos
 
   @override
   TaskEither<AppException, UserEntity> updateUser(
-    UserEntity entity,
+    Map<String, dynamic> params,
   ) {
+    Map<String, dynamic> body = params;
+    String userId = body['id'] as String;
+    body.remove('id');
     return callApiWithTransform<UserModel, UserEntity>(
-      apiCall: () => _api.updateUser(entity.id, _entityToJson(entity)),
+      apiCall: () => _api.updateUser(userId, body),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUser(data ?? UserModel()),
       defaultValue: UserEntity(),
     );
-  }
-
-  // ==================== HELPER METHODS ====================
-
-  /// Converts UserEntity to JSON Map for API requests
-  /// Provides flexibility to customize the request body structure without affecting domain models
-  /// Reusable helper to avoid duplication in create/update methods
-  Map<String, dynamic> _entityToJson(UserEntity entity) {
-    return {
-      'id': entity.id,
-      'name': entity.name,
-      'email': entity.email,
-      'phone': entity.phone,
-      'age': entity.age,
-      'gender': entity.gender,
-      'status': entity.status.toJsonValue(),
-      'language': entity.language,
-      'country': entity.country,
-      'lastAction': {
-        'time': entity.lastAction.time?.toIso8601String(),
-        'action': entity.lastAction.action,
-      },
-      'avatar': entity.avatar,
-      'role': entity.role.toJsonValue(),
-      'provider': entity.provider,
-      'enery': entity.enery,
-      // 'onboarding': entity.onboarding.toJson(),
-      'createdAt': entity.createdAt?.toIso8601String(),
-      'updatedAt': entity.updatedAt?.toIso8601String(),
-    };
   }
 }

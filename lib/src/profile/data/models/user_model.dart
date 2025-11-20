@@ -3,7 +3,7 @@ part of '../../profile.dart';
 @freezed
 abstract class UserModel with _$UserModel {
   const factory UserModel({
-    @Default('') String id,
+    @Default('') @JsonKey(name: '_id') String id,
     @Default('') String name,
     @Default('') String email,
     @Default('') String phone,

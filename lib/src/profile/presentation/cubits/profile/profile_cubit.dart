@@ -34,8 +34,14 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   }
 
   void updateUser(UserEntity entity) async {
+
+    Map<String, dynamic> params = {
+      'id': entity.id,
+      'name': entity.name,
+    };
+    
     await runUseCase<UserEntity>(
-      usecase: () => _updateUseCase(entity),
+      usecase: () => _updateUseCase(params),
       buildLoadingState: () => state.copyWith(status: ProfileStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: ProfileStatus.failure, errorMessage: error));

@@ -113,7 +113,7 @@ class _ProfileViewState extends State<_ProfileView> {
                 children: [
                   ProfileHeader(
                     isEditing: _isEditing,
-                    onBack: () => context.pop(),
+                    onBack: () => context.back(),
                     onActionTap: _onToggleEdit,
                   ),
                   Expanded(

@@ -5,59 +5,62 @@ class SettingProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(24.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppCustomColor.textPrimary.op(.05),
-            blurRadius: 32,
-            offset: Offset(0, 18.h),
-          ),
-        ],
-      ),
-      child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
-        selector: (state) => state.user,
-        builder: (context, user) {
-          final String name = _resolveName(user);
-          final String email = _resolveEmail(user);
-          return Row(
-            children: [
-              _SettingProfileAvatar(user: user),
-              SizedBox(width: 16.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppStyle.textBold16.copyWith(
-                        color: AppCustomColor.textPrimary,
-                        height: 1.25,
+    return GestureDetector(
+      onTap: () => const ProfileRoute().go(context),
+      child: Container(
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
+        decoration: BoxDecoration(
+          color: AppCustomColor.backgroundWhite,
+          borderRadius: BorderRadius.circular(24.r),
+          boxShadow: [
+            BoxShadow(
+              color: AppCustomColor.textPrimary.op(.05),
+              blurRadius: 32,
+              offset: Offset(0, 18.h),
+            ),
+          ],
+        ),
+        child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+          selector: (state) => state.user,
+          builder: (context, user) {
+            final String name = _resolveName(user);
+            final String email = _resolveEmail(user);
+            return Row(
+              children: [
+                _SettingProfileAvatar(user: user),
+                SizedBox(width: 16.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        name,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppStyle.textBold16.copyWith(
+                          color: AppCustomColor.textPrimary,
+                          height: 1.25,
+                        ),
                       ),
-                    ),
-                    SizedBox(height: 4.h),
-                    Text(
-                      email,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: AppStyle.text14.copyWith(
-                        color: AppCustomColor.textSecondary,
-                        height: 1.25,
+                      SizedBox(height: 4.h),
+                      Text(
+                        email,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppStyle.text14.copyWith(
+                          color: AppCustomColor.textSecondary,
+                          height: 1.25,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              Icon(Icons.chevron_right, color: AppCustomColor.iconPrimary, size: 20.w),
-            ],
-          );
-        },
+                Icon(Icons.chevron_right, color: AppCustomColor.iconPrimary, size: 20.w),
+              ],
+            );
+          },
+        ),
       ),
     );
   }
