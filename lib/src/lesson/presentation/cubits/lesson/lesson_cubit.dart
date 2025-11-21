@@ -4,10 +4,18 @@ part of '../../../lesson.dart';
 class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<LessonState> {
   final GetAllLearningItemsUseCase _getAllLearningItemUseCase;
   final GetLearningItemUseCase _getLearningItemUseCase;
+  final ProgressCubit _progressCubit;
+  final RoleplayCubit _roleplayCubit;
+  final ExerciseCubit _exerciseCubit;
+  final TheoryCubit _theoryCubit;
 
   LessonCubit(
     this._getAllLearningItemUseCase,
     this._getLearningItemUseCase,
+    this._progressCubit,
+    this._roleplayCubit,
+    this._exerciseCubit,
+    this._theoryCubit,
   ) : super(LessonState.initial());
 
   //* Roleplay Page Flow
@@ -18,7 +26,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void setRoleplayDataToExerciseCubit(LearningItemEntity learningItem) {
     emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem])));
-    AppDI.injector.get<ExerciseCubit>().setRoleplayQuestions(learningItem);
+    _exerciseCubit.setRoleplayQuestions(learningItem);
   }
 
   //* Lesson Page Flow
@@ -27,12 +35,12 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
     switch (learningItem.type) {
       case LearningItemType.theory:
-        AppDI.injector.get<TheoryCubit>()
+        _theoryCubit
           ..reset()
           ..setCurrentLearningItem(learningItem);
         break;
       case LearningItemType.exercise || LearningItemType.roleplay:
-        AppDI.injector.get<ExerciseCubit>()
+        _exerciseCubit
           ..reset()
           ..setCurrentLearningItem(learningItem);
         break;
@@ -43,7 +51,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
       if (state.currentLearningItem.type == LearningItemType.roleplay) {
         AppConfig.instance.context!.back();
-        AppDI.injector.get<RoleplayCubit>().goToNextSection();
+        _roleplayCubit.goToNextSection();
         return;
       }
 
@@ -62,7 +70,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       );
 
       UpdateUserProgressKeypointParams keypointParams = UpdateUserProgressKeypointParams(keypoints: [keypointData]);
-      AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(LessonType.lesson, keypointParams);
+      _progressCubit.updateUserProgressKeypoint(LessonType.lesson, keypointParams);
       return;
     }
 
@@ -91,7 +99,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       subQuestions: [],
       isPlayingSubQuestions: true,
     );
-    AppDI.injector.get<ExerciseCubit>().setSubQuestions(learningItem);
+    _exerciseCubit.setSubQuestions(learningItem);
     List<LearningItemEntity> items = List<LearningItemEntity>.from(state.pageData.items);
     items.add(learningItem);
     emit(

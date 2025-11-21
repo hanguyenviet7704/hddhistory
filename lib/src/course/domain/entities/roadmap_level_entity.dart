@@ -31,12 +31,18 @@ extension RoadmapLevelEntityExtension on RoadmapLevelEntity {
       return [lesson, ...lessonList.sublist(1)];
     }
 
-    /// Check previous lesson is completed, current lesson will be in progress
-    for (int i = 1; i < lessonList.length; i++) {
-      if (lessonList.elementAt(i - 1).progess != ProcessEnum.done) continue;
-      lesson = lessonList.elementAt(i).copyWith(progess: ProcessEnum.inProgress);
-      return [...lessonList.sublist(0, i), lesson, ...lessonList.sublist(i + 1)];
+    List<LessonEntity> newLessonList = [...lessonList];
+
+    for (int i = 1; i < newLessonList.length; i++) {
+      final previousLesson = newLessonList.elementAt(i - 1);
+      final currentLesson = newLessonList.elementAt(i);
+
+      if (previousLesson.progess == ProcessEnum.done && currentLesson.progess == ProcessEnum.notStarted) {
+        lesson = currentLesson.copyWith(progess: ProcessEnum.inProgress);
+        newLessonList = [...newLessonList.sublist(0, i), lesson, ...newLessonList.sublist(i + 1)];
+        break;
+      }
     }
-    return lessonList;
+    return newLessonList;
   }
 }

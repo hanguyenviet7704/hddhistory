@@ -10,10 +10,12 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
   final UpdateUserProgressKeypointUseCase _updateUserProgressKeypointUseCase;
   final UpdateUserProgressExerciseUseCase _updateUserProgressExerciseUseCase;
   final GetUserProgressMyCoursesUseCase _getUserProgressMyCoursesUseCase;
+
   final HomeCubit _homeCubit;
-  // ignore: unused_field
   final CourseLessonCubit _courseLessonCubit;
+  final CourseRoadmapCubit _courseRoadmapCubit;
   final UserCubit _userCubit;
+  final RoleplayCubit _roleplayCubit;
 
   ProgressCubit(
     this._getAllUserProgresssUseCase,
@@ -26,7 +28,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     this._getUserProgressMyCoursesUseCase,
     this._homeCubit,
     this._courseLessonCubit,
+    this._courseRoadmapCubit,
     this._userCubit,
+    this._roleplayCubit,
   ) : super(ProgressState.initial());
 
   void loadAllUserProgresss({String? userId, String? courseId, String? lessonId}) async {
@@ -141,16 +145,16 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ProgressStatus.success));
-        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: params.body["courseId"]);
+        _courseRoadmapCubit.loadRoadmap(courseId: params.body["courseId"]);
       },
     );
   }
 
   void updateUserProgressKeypoint(LessonType lessonType, UpdateUserProgressKeypointParams params) async {
-    final String userId = AppDI.injector.get<UserCubit>().state.user.id;
-    final String courseId = AppDI.injector.get<HomeCubit>().state.currentCourse.id;
-    final CourseLessonState courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
-    final LessonEntity lessonEntity = AppDI.injector.get<RoleplayCubit>().lesson;
+    final String userId = _userCubit.state.user.id;
+    final String courseId = _homeCubit.state.currentCourse.id;
+    final CourseLessonState courseLessonState = _courseLessonCubit.state;
+    final LessonEntity lessonEntity = _roleplayCubit.lesson;
     String lessonId = '';
 
     switch (lessonType) {
@@ -191,8 +195,8 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
           );
         }
         emit(state.copyWith(status: ProgressStatus.success));
-        AppDI.injector.get<CourseLessonCubit>().loadLesson(courseLessonState.selectedLesson.id);
-        AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: courseId);
+        _courseLessonCubit.loadLesson(courseLessonState.selectedLesson.id);
+        _courseRoadmapCubit.loadRoadmap(courseId: courseId);
         loadUserProgressMyCourses(isInit: true, recent: true);
       },
     );
