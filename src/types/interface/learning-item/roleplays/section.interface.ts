@@ -16,14 +16,14 @@ export interface IConversation {
   backgroundColor: string;
   textColor: string;
   content: ITranslation;
-  audio: string;
+  audio: ITranslation;
 }
 
 export interface ILeadingText {
   backgroundColor: string;
   textColor: string;
   content: ITranslation;
-  audio: string;
+  audio: ITranslation;
 }
 
 export interface IHint {

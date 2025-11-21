@@ -61,13 +61,16 @@ const cleanDocumentItems = (documents: IDocument[]) => {
   return documents
     .map((doc) => {
       const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedUrl = cleanTranslation(doc.data?.url);
       const cleanedData: any = { ...doc.data };
       if (cleanedContent && Object.keys(cleanedContent).length > 0) {
         cleanedData.content = cleanedContent;
       } else {
         delete cleanedData.content;
       }
-      if (!cleanedData.url) {
+      if (cleanedUrl && Object.keys(cleanedUrl).length > 0) {
+        cleanedData.url = cleanedUrl;
+      } else {
         delete cleanedData.url;
       }
       if (!cleanedData.thumbnail) {
@@ -101,7 +104,7 @@ const getDocumentContentLabel = (type: DocumentType) => {
 
 const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
   content: { [currentLang]: "" },
-  url: "",
+  url: { [currentLang]: "" },
   thumbnail: "",
 });
 
@@ -619,30 +622,42 @@ export default function TheoryForm({
                                           </div>
                                         )}
                                       {doc.type === DocumentType.IMAGE &&
-                                        doc.data.url && (
+                                        getTranslationValue(
+                                          doc.data.url,
+                                          lang
+                                        ) && (
                                           <div className="ml-1">
                                             <TextWithTooltip
                                               text={doc.data.url}
                                               maxLength={50}
+                                              lang={lang}
                                             />
                                           </div>
                                         )}
                                       {doc.type === DocumentType.AUDIO &&
-                                        doc.data.url && (
+                                        getTranslationValue(
+                                          doc.data.url,
+                                          lang
+                                        ) && (
                                           <div className="ml-1">
                                             <TextWithTooltip
                                               text={doc.data.url}
                                               maxLength={50}
+                                              lang={lang}
                                             />
                                           </div>
                                         )}
                                       {doc.type === DocumentType.VIDEO && (
                                         <>
-                                          {doc.data.url && (
+                                          {getTranslationValue(
+                                            doc.data.url,
+                                            lang
+                                          ) && (
                                             <div className="ml-1">
                                               <TextWithTooltip
                                                 text={doc.data.url}
                                                 maxLength={50}
+                                                lang={lang}
                                               />
                                             </div>
                                           )}
@@ -779,11 +794,13 @@ export default function TheoryForm({
         );
       }
 
+      const mediaUrl = getCurrentTranslationValue(doc.data.url, lang) || "";
+
       if (doc.type === DocumentType.IMAGE) {
         return (
           <div className="w-52">
             <CloudflareFileUpload
-              initialUrl={doc.data.url || ""}
+              initialUrl={mediaUrl}
               onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
               label="Image URL"
               uploadPayload={{
@@ -799,13 +816,14 @@ export default function TheoryForm({
         return (
           <div className="w-52">
             <CloudflareFileUpload
-              initialUrl={doc.data.url || ""}
+              initialUrl={mediaUrl}
               onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
               label="Audio URL"
               uploadPayload={{
                 prefix: "",
                 folder: "theories",
               }}
+              accept="audio/*"
             />
           </div>
         );
@@ -816,7 +834,7 @@ export default function TheoryForm({
           <div className="flex flex-col gap-3">
             <div className="w-52">
               <CloudflareFileUpload
-                initialUrl={doc.data.url || ""}
+                initialUrl={mediaUrl}
                 onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
                 label="Video URL"
                 uploadPayload={{
@@ -870,13 +888,22 @@ export default function TheoryForm({
     ) => {
       setFormData((prev) => {
         const newDocuments = [...prev.document];
+        const currentDoc = newDocuments[docIndex];
+        const targetFieldValue = currentDoc?.data?.[field];
+        const shouldTranslate =
+          (field === "content" || field === "url") && typeof value === "string";
+
         newDocuments[docIndex] = {
-          ...newDocuments[docIndex],
+          ...currentDoc,
           data: {
-            ...newDocuments[docIndex].data,
-            [field]: field === 'content' && typeof value === 'string'
-              ? updateTranslationValue(newDocuments[docIndex].data.content || {}, lang, value)
-              : value
+            ...currentDoc.data,
+            [field]: shouldTranslate
+              ? updateTranslationValue(
+                  (targetFieldValue as ITranslation) || {},
+                  lang,
+                  value
+                )
+              : value,
           },
         };
         return { ...prev, document: newDocuments };

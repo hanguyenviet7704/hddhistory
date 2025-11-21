@@ -3,7 +3,7 @@ import { ITranslation } from "../../../utils/translate";
 
 export interface IMediaDocument {
   content: ITranslation;
-  url?: string;
+  url?: ITranslation;
   thumbnail?: string;
 }
 
