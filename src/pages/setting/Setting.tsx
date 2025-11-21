@@ -16,7 +16,7 @@ import RoleplayColorManagement from "../../components/setting/RoleplayColorManag
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<
     "users" | "tags" | "avatars" | "icons" | "roleplayColors"
-  >("tags");
+  >("users");
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
