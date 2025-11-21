@@ -1251,7 +1251,10 @@ export default function RoleplayForm({
   };
 
   // Handle saving content and roleplay together
-  const handleSaveContentAndRoleplay = async (contentData: any) => {
+  const handleSaveContentAndRoleplay = async (
+    contentData: any,
+    options?: { sectionId?: number | null; isEditing?: boolean }
+  ) => {
     try {
       // Xóa lỗi cũ
       setValidationErrors({});
@@ -1313,12 +1316,22 @@ export default function RoleplayForm({
 
       setSaving(true);
 
+      const targetSectionId = options?.sectionId ?? modalOpen.sectionId;
+      const isEditingExisting =
+        options?.isEditing ?? Boolean(modalOpen.content);
+
+      if (!targetSectionId) {
+        showError("Missing section context");
+        return;
+      }
+
       let updatedRoleplay;
-      if (modalOpen.content) {
+      if (isEditingExisting) {
         // Update existing content
-        const sectionId = modalOpen.sectionId!;
         const sections = currentRoleplay.sections || [];
-        const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+        const sectionIndex = sections.findIndex(
+          (s) => s.id === targetSectionId
+        );
 
         if (sectionIndex === -1) return;
 
@@ -1337,9 +1350,10 @@ export default function RoleplayForm({
         updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
       } else {
         // Add new content
-        const sectionId = modalOpen.sectionId!;
         const sections = currentRoleplay.sections || [];
-        const sectionIndex = sections.findIndex((s) => s.id === sectionId);
+        const sectionIndex = sections.findIndex(
+          (s) => s.id === targetSectionId
+        );
 
         if (sectionIndex === -1) return;
 
@@ -2566,7 +2580,7 @@ export default function RoleplayForm({
     formData,
   }: {
     content?: any;
-    onSave: (c: any) => void;
+    onSave: (c: any, options?: { sectionId?: number; isEditing?: boolean }) => void;
     onCancel: () => void;
     contentType: RoleplaySectionType;
     sectionId: number;
@@ -3027,7 +3041,7 @@ export default function RoleplayForm({
         setLocalFormData(dataToSave);
       }
 
-      onSave(dataToSave);
+      onSave(dataToSave, { sectionId, isEditing: Boolean(content) });
     };
 
     // Add new option
@@ -4472,7 +4486,7 @@ export default function RoleplayForm({
                       })
                     }
                     contentType={modalOpen.contentType}
-                    sectionId={modalOpen.sectionId}
+                    sectionId={modalOpen.sectionId!}
                     formData={modalOpen.formData}
                   />
                 </div>
