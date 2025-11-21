@@ -16,8 +16,8 @@ extension BaseMultiLanguageExtension on BaseMultiLanguage {
     LocaleType locale = AppDI.injector.get<LocaleCubit>().state;
     return switch (locale) {
       LocaleType.en => en,
-      LocaleType.vi => vi,
-      LocaleType.zh => zh,
+      LocaleType.vi => vi.isNotEmpty ? vi : en,
+      LocaleType.zh => zh.isNotEmpty ? zh : en,
     };
   }
 }
