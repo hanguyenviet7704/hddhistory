@@ -1,7 +1,6 @@
 part of '../../../course.dart';
 
 class TopProgressBar extends StatelessWidget {
-
   const TopProgressBar({
     super.key,
   });
@@ -23,11 +22,11 @@ class TopProgressBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              BlocSelector<HomeCubit, HomeState, String>(
-                selector: (state) => state.currentSkillset.title.text,
-                builder: (context, currentSkillsetTitle) {
+              BlocBuilder<HomeCubit, HomeState>(
+                buildWhen: (previous, current) => previous.currentSkillset.title.text != current.currentSkillset.title.text,
+                builder: (context, homeState) {
                   return AppText(
-                    currentSkillsetTitle,
+                    homeState.currentSkillset.title.text,
                     style: AppStyle.text14.copyWith(
                       fontWeight: FontWeight.w500,
                       color: AppCustomColor.textPrimary,

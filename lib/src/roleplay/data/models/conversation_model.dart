@@ -8,7 +8,7 @@ abstract class ConversationModel with _$ConversationModel {
     @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
-    @Default('') String audio,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage audio,
   }) = _ConversationModel;
 
   factory ConversationModel.fromJson(Map<String, dynamic> json) => _$ConversationModelFromJson(json);

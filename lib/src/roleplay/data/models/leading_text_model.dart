@@ -6,7 +6,7 @@ abstract class LeadingTextModel with _$LeadingTextModel {
     @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
-    @Default('') String audio,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage audio,
   }) = _LeadingTextModel;
 
   factory LeadingTextModel.fromJson(Map<String, dynamic> json) => _$LeadingTextModelFromJson(json);

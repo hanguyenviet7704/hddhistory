@@ -4,7 +4,7 @@ part of '../../lesson.dart';
 abstract class DocumentDataEntity with _$DocumentDataEntity {
   const factory DocumentDataEntity({
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
-    @Default('') String url,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage url,
     @Default('') String thumbnail,
   }) = _DocumentDataEntity;
 

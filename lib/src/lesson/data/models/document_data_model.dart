@@ -4,7 +4,7 @@ part of '../../lesson.dart';
 abstract class DocumentDataModel with _$DocumentDataModel {
   const factory DocumentDataModel({
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
-    @Default('') String url,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage url,
     @Default('') String thumbnail,
   }) = _DocumentDataModel;
 

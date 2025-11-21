@@ -11,6 +11,7 @@ class CourseRoadmapContent extends StatelessWidget {
         child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, RoadmapEntity>(
           selector: (state) => state.roadmap,
           builder: (context, roadmap) {
+            if (roadmap.levels.isEmpty) return const CourseEmptyState();
             return ListView.separated(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               separatorBuilder: (context, index) => 20.verticalSpace,

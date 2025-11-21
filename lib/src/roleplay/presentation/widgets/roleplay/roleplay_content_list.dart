@@ -60,8 +60,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     for (var i = 0; i < _displayableContents.length; i++) {
       final content = _displayableContents[i];
       final String audioUrl = switch (content.type) {
-        RoleplaySectionType.conversation => content.conversation.audio,
-        RoleplaySectionType.leadingText => content.leadingText.audio,
+        RoleplaySectionType.conversation => content.conversation.audio.text,
+        RoleplaySectionType.leadingText => content.leadingText.audio.text,
         _ => '',
       };
       if (audioUrl.isNotEmpty) {

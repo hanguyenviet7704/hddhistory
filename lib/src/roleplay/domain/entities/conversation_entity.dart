@@ -8,7 +8,7 @@ abstract class ConversationEntity with _$ConversationEntity {
     @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
-    @Default('') String audio,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage audio,
   }) = _ConversationEntity;
 
   factory ConversationEntity.fromJson(Map<String, dynamic> json) => _$ConversationEntityFromJson(json);
