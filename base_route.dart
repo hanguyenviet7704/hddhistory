@@ -65,7 +65,7 @@ class AnimatedSlidePage extends MaterialPage {
   Route createRoute(BuildContext context) {
     return PageRouteBuilder(
       settings: this,
-      pageBuilder: (_, animation, __) => CupertinoScaffold(
+      pageBuilder: (_, animation, _) => CupertinoScaffold(
         topRadius: Radius.circular(24.r),
         body: RepaintBoundary(child: childWidget),
       ),
