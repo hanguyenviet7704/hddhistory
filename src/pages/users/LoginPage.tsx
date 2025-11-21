@@ -28,7 +28,7 @@ export default function LoginPage() {
 
       const result: {
         token: { accessToken: string; refreshToken: string };
-        user: { id: string };
+        user: { _id: string };
       } = res.data?.data;
 
       // const FcmToken = await getFcmToken();
@@ -42,7 +42,7 @@ export default function LoginPage() {
 
       localStorage.setItem("accessToken", result.token.accessToken);
       localStorage.setItem("refreshToken", result.token.refreshToken);
-      localStorage.setItem("userId", result.user.id);
+      localStorage.setItem("userId", result.user._id);
 
       navigate("/");
     } catch (err) {
