@@ -10,7 +10,7 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
-    _requestTrackingPermission();
+    // _requestTrackingPermission();
     _getAppData();
     _setTrackingUser();
     _onboardingUser();
@@ -18,9 +18,9 @@ class _SplashPageState extends State<SplashPage> {
     super.initState();
   }
 
-  void _requestTrackingPermission() {
-    AppService.instance.appEventService.requestTrackingPermission();
-  }
+  // void _requestTrackingPermission() {
+  //   AppService.instance.appEventService.requestTrackingPermission();
+  // }
 
   void _getAppData() async {
     AppDI.injector.get<OnboardCubit>().loadAllOnboards();

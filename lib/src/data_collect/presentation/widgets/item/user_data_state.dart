@@ -15,7 +15,12 @@ class _UserDataStateState extends State<UserDataState> {
   @override
   void initState() {
     super.initState();
+    _requestTrackingPermission();
     _showStartButtonNotifier = ValueNotifier<bool>(false);
+  }
+
+  void _requestTrackingPermission() {
+    AppService.instance.appEventService.requestTrackingPermission();
   }
 
   @override
