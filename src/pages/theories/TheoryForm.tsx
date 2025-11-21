@@ -872,7 +872,8 @@ export default function TheoryForm({
       value: any
     ) => {
       setFormData((prev) => {
-        const newDocuments = [...prev.document];
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
         const updatedDoc = { ...newDocuments[index], [field]: value };
         if (field === "type") {
           updatedDoc.data = createEmptyMediaDocument(lang);
@@ -887,7 +888,8 @@ export default function TheoryForm({
       value: string | ITranslation
     ) => {
       setFormData((prev) => {
-        const newDocuments = [...prev.document];
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
         const currentDoc = newDocuments[docIndex];
         const targetFieldValue = currentDoc?.data?.[field];
         const shouldTranslate =
@@ -910,7 +912,7 @@ export default function TheoryForm({
       });
     };
     const addNewInnerDocument = () => {
-      const currentMaxId = formData.document.reduce(
+      const currentMaxId = (formData.document || []).reduce(
         (max, doc) => Math.max(max, doc.id),
         0
       );
@@ -930,7 +932,7 @@ export default function TheoryForm({
     const removeInnerDocument = (index: number) => {
       setFormData((prev) => ({
         ...prev,
-        document: prev.document.filter((_, i) => i !== index),
+        document: (prev.document || []).filter((_, i) => i !== index),
       }));
     };
 
