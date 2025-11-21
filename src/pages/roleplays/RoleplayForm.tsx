@@ -1564,8 +1564,7 @@ export default function RoleplayForm({
       contents: (sections[sectionIndex].contents || []).map((content) => {
         if (content.type === RoleplaySectionType.CONVERSATION) {
           const style =
-            content.conversation.position ===
-            SectionConversationPosition.RIGHT
+            content.conversation.position === SectionConversationPosition.RIGHT
               ? template.conversation?.right
               : template.conversation?.left;
           return {
@@ -1598,8 +1597,7 @@ export default function RoleplayForm({
             hint: {
               ...content.hint,
               backgroundColor:
-                template.hint?.backgroundColor ||
-                content.hint.backgroundColor,
+                template.hint?.backgroundColor || content.hint.backgroundColor,
               textColor: template.hint?.textColor || content.hint.textColor,
             },
           };
@@ -2630,7 +2628,10 @@ export default function RoleplayForm({
     formData,
   }: {
     content?: any;
-    onSave: (c: any, options?: { sectionId?: number; isEditing?: boolean }) => void;
+    onSave: (
+      c: any,
+      options?: { sectionId?: number; isEditing?: boolean }
+    ) => void;
     onCancel: () => void;
     contentType: RoleplaySectionType;
     sectionId: number;
@@ -2789,11 +2790,7 @@ export default function RoleplayForm({
         const prevConversation = prev.conversation || {};
         const nextValue =
           field === "audio" && typeof value === "string"
-            ? updateTranslationValue(
-                prevConversation.audio || {},
-                lang,
-                value
-              )
+            ? updateTranslationValue(prevConversation.audio || {}, lang, value)
             : value;
 
         const updatedConversation: any = {
@@ -2901,6 +2898,7 @@ export default function RoleplayForm({
       value: any
     ) => {
       setLocalFormData((prev: any) => {
+        if (!prev.exercise?.document) return prev;
         const newDocuments = [...prev.exercise.document];
         const updatedDoc = {
           ...newDocuments[index],
@@ -2926,7 +2924,7 @@ export default function RoleplayForm({
       value: string | ITranslation
     ) => {
       setLocalFormData((prev: any) => {
-        if (!prev.exercise) return prev;
+        if (!prev.exercise?.document) return prev;
         const newDocuments = [...prev.exercise.document];
         const currentDoc = newDocuments[docIndex];
         const targetFieldValue = currentDoc?.data?.[field];
@@ -3071,7 +3069,7 @@ export default function RoleplayForm({
       )
         return;
 
-      const currentMaxId = localFormData.exercise.document.reduce(
+      const currentMaxId = (localFormData.exercise.document || []).reduce(
         (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
         0
       );
@@ -3082,7 +3080,7 @@ export default function RoleplayForm({
         exercise: {
           ...prev.exercise,
           document: [
-            ...prev.exercise.document,
+            ...(prev.exercise.document || []),
             {
               id: newId,
               type: DocumentType.TEXT,
@@ -3099,15 +3097,19 @@ export default function RoleplayForm({
         !localFormData.exercise
       )
         return;
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        exercise: {
-          ...prev.exercise,
-          document: prev.exercise.document.filter(
-            (_: IDocument, i: number) => i !== index
-          ),
-        },
-      }));
+      setLocalFormData((prev: any) => {
+        const documents = prev.exercise?.document;
+        if (!documents) {
+          return prev;
+        }
+        return {
+          ...prev,
+          exercise: {
+            ...prev.exercise,
+            document: documents.filter((_: IDocument, i: number) => i !== index),
+          },
+        };
+      });
     };
 
     const handleSave = () => {
@@ -3685,7 +3687,7 @@ export default function RoleplayForm({
                 <h3 className="font-medium text-gray-800">Content Documents</h3>
               </div>
 
-              {localFormData.exercise.document.map(
+              {(localFormData.exercise.document || []).map(
                 (doc: IDocument, index: number) => (
                   <div
                     key={doc.id}

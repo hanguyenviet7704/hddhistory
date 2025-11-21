@@ -1231,7 +1231,8 @@ export default function ExerciseForm({
       value: any
     ) => {
       setLocalFormData((prev: any) => {
-        const newDocuments = [...prev.document];
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
         const updatedDoc = {
           ...newDocuments[index],
           [field]: value,
@@ -1250,7 +1251,8 @@ export default function ExerciseForm({
       value: string | ITranslation
     ) => {
       setLocalFormData((prev: any) => {
-        const newDocuments = [...prev.document];
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
         const currentDoc = newDocuments[docIndex];
         const targetFieldValue = currentDoc?.data?.[field];
         const shouldTranslate =
@@ -1383,7 +1385,7 @@ export default function ExerciseForm({
 
     const addNewDocument = () => {
       // Tìm ID lớn nhất hiện tại từ các document trong form
-      const currentMaxId = localFormData.document.reduce(
+      const currentMaxId = (localFormData.document || []).reduce(
         (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
         0
       );
@@ -1392,7 +1394,7 @@ export default function ExerciseForm({
       setLocalFormData((prev: any) => ({
         ...prev,
         document: [
-          ...prev.document,
+          ...(prev.document || []),
           {
             id: newId,
             type: DocumentType.TEXT,
@@ -1403,12 +1405,13 @@ export default function ExerciseForm({
     };
 
     const removeDocument = (index: number) => {
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        document: prev.document.filter(
-          (_: IDocument, i: number) => i !== index
-        ),
-      }));
+      setLocalFormData((prev: any) => {
+        const documents = prev.document || [];
+        return {
+          ...prev,
+          document: documents.filter((_: IDocument, i: number) => i !== index),
+        };
+      });
     };
 
     const handleSave = () => {
