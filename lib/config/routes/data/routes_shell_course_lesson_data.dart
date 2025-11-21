@@ -62,7 +62,10 @@ class KeypointCompleteRoute extends BaseTransitionRouteData with $KeypointComple
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const KeypointCompletePage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<CourseLessonCubit>(),
+    child: const KeypointCompletePage(),
+  );
 }
 
 class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {

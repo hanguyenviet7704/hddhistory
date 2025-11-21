@@ -72,10 +72,10 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       return;
     }
 
-    if (state.textInput.isNotEmpty) {
-      emit(state.copyWith(status: SpeakingStatus.loading));
-      sendVoiceFeedback();
-    }
+    if (state.textInput.isEmpty) return;
+    emit(state.copyWith(status: SpeakingStatus.success));
+    sendVoiceFeedback();
+    emit(state.copyWith(status: SpeakingStatus.loading));
   }
 
   void uploadAudioFile(String filePath) async {
