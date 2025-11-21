@@ -16,6 +16,8 @@ class KeypointCompletePage extends StatelessWidget {
                 right: 20.w,
                 top: 20.h,
               ),
+              title: context.text.exerciseSubheaderLabelBuildNonverbal.toUpperCase(),
+              subtitle: context.text.exerciseLessonCompleteMessage.toUpperCase(),
             ),
             Expanded(
               child: Column(
@@ -27,7 +29,7 @@ class KeypointCompletePage extends StatelessWidget {
                   ),
                   16.verticalSpace,
                   AppText(
-                    'Keypoint complete!',
+                    context.text.exerciseKeypointCompleteTitle,
                     maxLines: 1,
                     textAlign: TextAlign.center,
                     style: AppStyle.textBold24.copyWith(
@@ -43,7 +45,7 @@ class KeypointCompletePage extends StatelessWidget {
               ),
             ),
             LessonCompletionPrimaryButton(
-              label: 'Continue',
+              label: context.text.exerciseCompleteKeypointSkipButton,
               onPressed: () => context.back(),
               margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
             ),

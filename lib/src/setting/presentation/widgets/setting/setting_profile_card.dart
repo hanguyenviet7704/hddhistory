@@ -6,7 +6,15 @@ class SettingProfileCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => const ProfileRoute().go(context),
+      onTap: () {
+        final user = context.read<ProfileCubit>().state.user;
+        bool isAnonymous = user.anonymous;
+        if (isAnonymous) {
+          RegisterRoute().go(context);
+          return;
+        }
+        ProfileRoute().go(context);
+      },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 20.h),
         decoration: BoxDecoration(

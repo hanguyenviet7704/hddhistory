@@ -48,6 +48,7 @@ class LessonCompletionHeader extends StatelessWidget {
                 AppText(
                   subtitle.toUpperCase(),
                   maxLines: 1,
+                  enableFitScaleDown: true,
                   style: AppStyle.text10.copyWith(
                     color: AppCustomColor.textTertiary,
                     height: 1.75,
@@ -59,6 +60,7 @@ class LessonCompletionHeader extends StatelessWidget {
                 AppText(
                   title,
                   maxLines: 2,
+                  enableFitScaleDown: true,
                   style: AppStyle.textBold14.copyWith(
                     color: AppCustomColor.textSecondary,
                     height: 1.4,
