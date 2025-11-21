@@ -69,13 +69,16 @@ const cleanDocumentItems = (documents: IDocument[]) => {
   return documents
     .map((doc) => {
       const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedUrl = cleanTranslation(doc.data?.url);
       const cleanedData: any = { ...doc.data };
       if (cleanedContent && Object.keys(cleanedContent).length > 0) {
         cleanedData.content = cleanedContent;
       } else {
         delete cleanedData.content;
       }
-      if (!cleanedData.url) {
+      if (cleanedUrl && Object.keys(cleanedUrl).length > 0) {
+        cleanedData.url = cleanedUrl;
+      } else {
         delete cleanedData.url;
       }
       if (!cleanedData.thumbnail) {
@@ -109,7 +112,7 @@ const getDocumentContentLabel = (type: DocumentType) => {
 
 const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
   content: { [currentLang]: "" },
-  url: "",
+  url: { [currentLang]: "" },
   thumbnail: "",
 });
 
@@ -923,34 +926,46 @@ export default function ExerciseForm({
                                               />
                                             </div>
                                           )}
-                                        {doc.type === DocumentType.IMAGE &&
-                                          doc.data.url && (
+                                      {doc.type === DocumentType.IMAGE &&
+                                        getTranslationValue(
+                                          doc.data.url,
+                                          lang
+                                        ) && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.url}
+                                              maxLength={50}
+                                              lang={lang}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.AUDIO &&
+                                        getTranslationValue(
+                                          doc.data.url,
+                                          lang
+                                        ) && (
+                                          <div className="ml-1">
+                                            <TextWithTooltip
+                                              text={doc.data.url}
+                                              maxLength={50}
+                                              lang={lang}
+                                            />
+                                          </div>
+                                        )}
+                                      {doc.type === DocumentType.VIDEO && (
+                                        <>
+                                          {getTranslationValue(
+                                            doc.data.url,
+                                            lang
+                                          ) && (
                                             <div className="ml-1">
                                               <TextWithTooltip
                                                 text={doc.data.url}
                                                 maxLength={50}
+                                                lang={lang}
                                               />
                                             </div>
                                           )}
-                                        {doc.type === DocumentType.AUDIO &&
-                                          doc.data.url && (
-                                            <div className="ml-1">
-                                              <TextWithTooltip
-                                                text={doc.data.url}
-                                                maxLength={50}
-                                              />
-                                            </div>
-                                          )}
-                                        {doc.type === DocumentType.VIDEO && (
-                                          <>
-                                            {doc.data.url && (
-                                              <div className="ml-1">
-                                                <TextWithTooltip
-                                                  text={doc.data.url}
-                                                  maxLength={50}
-                                                />
-                                              </div>
-                                            )}
                                             {doc.data.thumbnail && (
                                               <div className="ml-1">
                                                 <TextWithTooltip
@@ -1236,18 +1251,22 @@ export default function ExerciseForm({
     ) => {
       setLocalFormData((prev: any) => {
         const newDocuments = [...prev.document];
+        const currentDoc = newDocuments[docIndex];
+        const targetFieldValue = currentDoc?.data?.[field];
+        const shouldTranslate =
+          (field === "content" || field === "url") && typeof value === "string";
+
         newDocuments[docIndex] = {
-          ...newDocuments[docIndex],
+          ...currentDoc,
           data: {
-            ...newDocuments[docIndex].data,
-            [field]:
-              field === "content" && typeof value === "string"
-                ? updateTranslationValue(
-                    newDocuments[docIndex].data.content || {},
-                    lang,
-                    value
-                  )
-                : value,
+            ...currentDoc.data,
+            [field]: shouldTranslate
+              ? updateTranslationValue(
+                  (targetFieldValue as ITranslation) || {},
+                  lang,
+                  value
+                )
+              : value,
           },
         };
         return { ...prev, document: newDocuments };
@@ -1293,11 +1312,13 @@ export default function ExerciseForm({
         );
       }
 
+      const mediaUrl = getCurrentTranslationValue(doc.data.url, lang) || "";
+
       if (doc.type === DocumentType.IMAGE) {
         return (
           <div className="w-52">
             <CloudflareFileUpload
-              initialUrl={doc.data.url || ""}
+              initialUrl={mediaUrl}
               onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
               label="Image URL"
               uploadPayload={{
@@ -1313,13 +1334,14 @@ export default function ExerciseForm({
         return (
           <div className="w-52">
             <CloudflareFileUpload
-              initialUrl={doc.data.url || ""}
+              initialUrl={mediaUrl}
               onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
               label="Audio URL"
               uploadPayload={{
                 prefix: "",
                 folder: "exercises",
               }}
+              accept="audio/*"
             />
           </div>
         );
@@ -1330,7 +1352,7 @@ export default function ExerciseForm({
           <div className="flex flex-col gap-3">
             <div className="w-52">
               <CloudflareFileUpload
-                initialUrl={doc.data.url || ""}
+                initialUrl={mediaUrl}
                 onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
                 label="Video URL"
                 uploadPayload={{

@@ -84,13 +84,16 @@ const cleanDocumentItems = (documents: IDocument[]) => {
   return documents
     .map((doc) => {
       const cleanedContent = cleanTranslation(doc.data?.content);
+      const cleanedUrl = cleanTranslation(doc.data?.url);
       const cleanedData: any = { ...doc.data };
       if (cleanedContent && Object.keys(cleanedContent).length > 0) {
         cleanedData.content = cleanedContent;
       } else {
         delete cleanedData.content;
       }
-      if (!cleanedData.url) {
+      if (cleanedUrl && Object.keys(cleanedUrl).length > 0) {
+        cleanedData.url = cleanedUrl;
+      } else {
         delete cleanedData.url;
       }
       if (!cleanedData.thumbnail) {
@@ -124,7 +127,7 @@ const getDocumentContentLabel = (type: DocumentType) => {
 
 const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
   content: { [currentLang]: "" },
-  url: "",
+  url: { [currentLang]: "" },
   thumbnail: "",
 });
 
@@ -894,6 +897,9 @@ export default function RoleplayForm({
             content.type === RoleplaySectionType.CONVERSATION &&
             content.conversation
           ) {
+            const cleanedConversationAudio = cleanTranslation(
+              content.conversation.audio
+            );
             contentPayload.conversation = {
               position: content.conversation.position,
               backgroundColor: content.conversation.backgroundColor,
@@ -906,7 +912,7 @@ export default function RoleplayForm({
               content: content.conversation.content
                 ? cleanTranslation(content.conversation.content) || {}
                 : {},
-              audio: content.conversation.audio || "",
+              audio: cleanedConversationAudio || {},
             };
           }
           // Handle leading text content
@@ -914,12 +920,16 @@ export default function RoleplayForm({
             content.type === RoleplaySectionType.LEADING_TEXT &&
             content.leadingText
           ) {
+            const cleanedLeadingAudio = cleanTranslation(
+              content.leadingText.audio
+            );
             contentPayload.leadingText = {
               ...content.leadingText,
               // Always include content field but clean empty translations
               content: content.leadingText.content
                 ? cleanTranslation(content.leadingText.content) || {}
                 : {},
+              audio: cleanedLeadingAudio || {},
             };
           }
           // Handle hint content
@@ -1161,7 +1171,7 @@ export default function RoleplayForm({
             backgroundColor: leftStyle?.backgroundColor || "#FFFFFF",
             textColor: leftStyle?.textColor || "#000000",
             content: { [lang]: "" },
-            audio: "",
+            audio: { [lang]: "" },
           } as IConversation,
         } as ISectionContent;
       case RoleplaySectionType.LEADING_TEXT:
@@ -1173,7 +1183,7 @@ export default function RoleplayForm({
               template?.leadingText?.backgroundColor || "#000000",
             textColor: template?.leadingText?.textColor || "#000000",
             content: { [lang]: "" },
-            audio: "",
+            audio: { [lang]: "" },
           } as ILeadingText,
         } as ISectionContent;
       case RoleplaySectionType.HINT:
@@ -1259,19 +1269,29 @@ export default function RoleplayForm({
       // Xóa lỗi cũ
       setValidationErrors({});
 
+      const embeddedSectionId =
+        typeof contentData?.__sectionId === "number"
+          ? (contentData.__sectionId as number)
+          : null;
+      const baseContent =
+        embeddedSectionId !== null ? { ...contentData } : contentData;
+      if (embeddedSectionId !== null) {
+        delete baseContent.__sectionId;
+      }
+
       // Chuẩn hóa avatarId cho conversation
-      let normalizedContent = contentData;
+      let normalizedContent = baseContent;
       if (
-        contentData.type === RoleplaySectionType.CONVERSATION &&
-        contentData.conversation
+        baseContent.type === RoleplaySectionType.CONVERSATION &&
+        baseContent.conversation
       ) {
-        const avatarObj = contentData.conversation.avatar;
+        const avatarObj = baseContent.conversation.avatar;
         const avatarId =
-          contentData.conversation.avatarId || avatarObj?._id || "";
+          baseContent.conversation.avatarId || avatarObj?._id || "";
         normalizedContent = {
-          ...contentData,
+          ...baseContent,
           conversation: {
-            ...contentData.conversation,
+            ...baseContent.conversation,
             avatar: avatarObj,
             avatarId,
           },
@@ -1316,14 +1336,25 @@ export default function RoleplayForm({
 
       setSaving(true);
 
-      const targetSectionId = options?.sectionId ?? modalOpen.sectionId;
+      const targetSectionId =
+        embeddedSectionId ?? options?.sectionId ?? modalOpen.sectionId;
       const isEditingExisting =
         options?.isEditing ?? Boolean(modalOpen.content);
 
       if (!targetSectionId) {
+        setSaving(false);
         showError("Missing section context");
         return;
       }
+
+      const normalizedInput =
+        contentData && contentData.__sectionId
+          ? (() => {
+              const cloned = { ...contentData };
+              delete cloned.__sectionId;
+              return cloned;
+            })()
+          : contentData;
 
       let updatedRoleplay;
       if (isEditingExisting) {
@@ -1988,7 +2019,10 @@ export default function RoleplayForm({
                                                       .position
                                                   }
                                                 </span>
-                                                {content.conversation.audio && (
+                                                {getTranslationValue(
+                                                  content.conversation.audio,
+                                                  lang
+                                                ) && (
                                                   <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     className="h-3 w-3 text-gray-500"
@@ -2032,7 +2066,10 @@ export default function RoleplayForm({
                                                         .textColor,
                                                   }}
                                                 ></div>
-                                                {content.leadingText.audio && (
+                                                {getTranslationValue(
+                                                  content.leadingText.audio,
+                                                  lang
+                                                ) && (
                                                   <svg
                                                     xmlns="http://www.w3.org/2000/svg"
                                                     className="h-3 w-3 text-gray-500"
@@ -2179,7 +2216,10 @@ export default function RoleplayForm({
                                                               )}
                                                             {doc.type ===
                                                               DocumentType.IMAGE &&
-                                                              doc.data.url && (
+                                                              getTranslationValue(
+                                                                doc.data.url,
+                                                                lang
+                                                              ) && (
                                                                 <div className="ml-1">
                                                                   <TextWithTooltip
                                                                     text={
@@ -2189,12 +2229,16 @@ export default function RoleplayForm({
                                                                     maxLength={
                                                                       100
                                                                     }
+                                                                    lang={lang}
                                                                   />
                                                                 </div>
                                                               )}
                                                             {doc.type ===
                                                               DocumentType.AUDIO &&
-                                                              doc.data.url && (
+                                                              getTranslationValue(
+                                                                doc.data.url,
+                                                                lang
+                                                              ) && (
                                                                 <div className="ml-1">
                                                                   <TextWithTooltip
                                                                     text={
@@ -2204,14 +2248,17 @@ export default function RoleplayForm({
                                                                     maxLength={
                                                                       100
                                                                     }
+                                                                    lang={lang}
                                                                   />
                                                                 </div>
                                                               )}
                                                             {doc.type ===
                                                               DocumentType.VIDEO && (
                                                               <>
-                                                                {doc.data
-                                                                  .url && (
+                                                                {getTranslationValue(
+                                                                  doc.data.url,
+                                                                  lang
+                                                                ) && (
                                                                   <div className="ml-1">
                                                                     <TextWithTooltip
                                                                       text={
@@ -2220,6 +2267,9 @@ export default function RoleplayForm({
                                                                       }
                                                                       maxLength={
                                                                         100
+                                                                      }
+                                                                      lang={
+                                                                        lang
                                                                       }
                                                                     />
                                                                   </div>
@@ -2594,25 +2644,72 @@ export default function RoleplayForm({
     const [localNextOptionId, setLocalNextOptionId] = useState(nextOptionId);
     const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
 
+    const normalizeTranslationField = (
+      value: ITranslation | string | undefined
+    ): ITranslation => {
+      if (!value) return { [lang]: "" };
+      if (typeof value === "string") {
+        const trimmed = value.trim();
+        if (!trimmed) return { [lang]: "" };
+        const normalized: ITranslation = { [lang]: trimmed };
+        if (lang !== LangCode.EN && !normalized[LangCode.EN]) {
+          normalized[LangCode.EN] = trimmed;
+        }
+        return normalized;
+      }
+      return value;
+    };
+
+    const ensureLocalizedContent = (data: any) => {
+      if (!data) return data;
+      const updated: any = { ...data };
+
+      if (updated.conversation) {
+        updated.conversation = {
+          ...updated.conversation,
+          content: updated.conversation.content || { [lang]: "" },
+          audio: normalizeTranslationField(updated.conversation.audio),
+        };
+      }
+
+      if (updated.leadingText) {
+        updated.leadingText = {
+          ...updated.leadingText,
+          content: updated.leadingText.content || { [lang]: "" },
+          audio: normalizeTranslationField(updated.leadingText.audio),
+        };
+      }
+
+      if (updated.hint) {
+        updated.hint = {
+          ...updated.hint,
+          content: updated.hint.content || { [lang]: "" },
+        };
+      }
+
+      return updated;
+    };
+
     // Update local form data when formData prop changes
     useEffect(() => {
-      if (formData?.exercise?.type === ExerciseType.RECORD) {
+      const normalizedFormData = ensureLocalizedContent(formData);
+      if (normalizedFormData?.exercise?.type === ExerciseType.RECORD) {
         const normalizedCriteria = rebalanceRecordScoringCriteria(
-          formData.exercise.scoringCriteria,
-          typeof formData.exercise.maxScore === "number"
-            ? formData.exercise.maxScore
+          normalizedFormData.exercise.scoringCriteria,
+          typeof normalizedFormData.exercise.maxScore === "number"
+            ? normalizedFormData.exercise.maxScore
             : undefined
         );
 
         setLocalFormData({
-          ...formData,
+          ...normalizedFormData,
           exercise: {
-            ...formData.exercise,
+            ...normalizedFormData.exercise,
             scoringCriteria: normalizedCriteria,
           },
         });
       } else {
-        setLocalFormData(formData);
+        setLocalFormData(normalizedFormData);
       }
       // Clear errors when form data is reset (e.g., when opening a new content form)
       setValidationErrors({});
@@ -2620,42 +2717,38 @@ export default function RoleplayForm({
 
     // Ensure translation objects have current language key when language changes
     useEffect(() => {
-      if (localFormData.exercise) {
-        setLocalFormData((prev: any) => {
-          const updated = { ...prev };
-          if (updated.exercise) {
-            // Ensure speechBubble, explanation, and targetArea exist and have current language
-            updated.exercise = {
-              ...updated.exercise,
-              speechBubble: updated.exercise.speechBubble || { [lang]: "" },
-              explanation: updated.exercise.explanation || { [lang]: "" },
-              targetArea: updated.exercise.targetArea || { [lang]: "" },
-            };
+      setLocalFormData((prev: any) => {
+        if (!prev) return prev;
+        const updated = ensureLocalizedContent(prev);
+        if (updated.exercise) {
+          updated.exercise = {
+            ...updated.exercise,
+            speechBubble: updated.exercise.speechBubble || { [lang]: "" },
+            explanation: updated.exercise.explanation || { [lang]: "" },
+            targetArea: updated.exercise.targetArea || { [lang]: "" },
+          };
 
-            // Ensure options have current language for value/text
-            if (updated.exercise.options) {
-              updated.exercise.options = updated.exercise.options.map(
-                (opt: any) => ({
-                  ...opt,
-                  value: opt.value || { [lang]: "" },
-                  text: opt.text || { [lang]: "" },
-                })
-              );
-            }
-
-            // Ensure answers have current language for correctAnswer
-            if (updated.exercise.answer) {
-              updated.exercise.answer = updated.exercise.answer.map(
-                (ans: any) => ({
-                  ...ans,
-                  correctAnswer: ans.correctAnswer || { [lang]: "" },
-                })
-              );
-            }
+          if (updated.exercise.options) {
+            updated.exercise.options = updated.exercise.options.map(
+              (opt: any) => ({
+                ...opt,
+                value: opt.value || { [lang]: "" },
+                text: opt.text || { [lang]: "" },
+              })
+            );
           }
-          return updated;
-        });
-      }
+
+          if (updated.exercise.answer) {
+            updated.exercise.answer = updated.exercise.answer.map(
+              (ans: any) => ({
+                ...ans,
+                correctAnswer: ans.correctAnswer || { [lang]: "" },
+              })
+            );
+          }
+        }
+        return updated;
+      });
     }, [lang]);
 
     // --- Validation Function ---
@@ -2693,9 +2786,19 @@ export default function RoleplayForm({
 
     const handleConversationChange = (field: string, value: any) => {
       setLocalFormData((prev: any) => {
+        const prevConversation = prev.conversation || {};
+        const nextValue =
+          field === "audio" && typeof value === "string"
+            ? updateTranslationValue(
+                prevConversation.audio || {},
+                lang,
+                value
+              )
+            : value;
+
         const updatedConversation: any = {
-          ...prev.conversation,
-          [field]: value,
+          ...prevConversation,
+          [field]: nextValue,
         };
 
         if (field === "position" && sectionTemplate && value) {
@@ -2723,13 +2826,21 @@ export default function RoleplayForm({
     };
 
     const handleLeadingTextChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        leadingText: {
-          ...prev.leadingText,
-          [field]: value,
-        },
-      }));
+      setLocalFormData((prev: any) => {
+        const prevLeading = prev.leadingText || {};
+        const nextValue =
+          field === "audio" && typeof value === "string"
+            ? updateTranslationValue(prevLeading.audio || {}, lang, value)
+            : value;
+
+        return {
+          ...prev,
+          leadingText: {
+            ...prevLeading,
+            [field]: nextValue,
+          },
+        };
+      });
       // Clear error on change
       if (field === "content" && validationErrors.content) {
         setValidationErrors((prev) => ({ ...prev, content: "" }));
@@ -2817,18 +2928,22 @@ export default function RoleplayForm({
       setLocalFormData((prev: any) => {
         if (!prev.exercise) return prev;
         const newDocuments = [...prev.exercise.document];
+        const currentDoc = newDocuments[docIndex];
+        const targetFieldValue = currentDoc?.data?.[field];
+        const shouldTranslate =
+          (field === "content" || field === "url") && typeof value === "string";
+
         newDocuments[docIndex] = {
-          ...newDocuments[docIndex],
+          ...currentDoc,
           data: {
-            ...newDocuments[docIndex].data,
-            [field]:
-              field === "content" && typeof value === "string"
-                ? updateTranslationValue(
-                    newDocuments[docIndex].data.content || {},
-                    lang,
-                    value
-                  )
-                : value,
+            ...currentDoc.data,
+            [field]: shouldTranslate
+              ? updateTranslationValue(
+                  (targetFieldValue as ITranslation) || {},
+                  lang,
+                  value
+                )
+              : value,
           },
         };
         return {
@@ -2880,11 +2995,13 @@ export default function RoleplayForm({
         );
       }
 
+      const mediaUrl = getCurrentTranslationValue(doc.data.url, lang) || "";
+
       if (doc.type === DocumentType.IMAGE) {
         return (
           <div className="w-52">
             <CloudflareFileUpload
-              initialUrl={doc.data.url || ""}
+              initialUrl={mediaUrl}
               onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
               label="Image URL"
               uploadPayload={{
@@ -2900,13 +3017,14 @@ export default function RoleplayForm({
         return (
           <div className="w-52">
             <CloudflareFileUpload
-              initialUrl={doc.data.url || ""}
+              initialUrl={mediaUrl}
               onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
               label="Audio URL"
               uploadPayload={{
                 prefix: "",
                 folder: "roleplays",
               }}
+              accept="audio/*"
             />
           </div>
         );
@@ -2917,7 +3035,7 @@ export default function RoleplayForm({
           <div className="flex flex-col gap-3">
             <div className="w-52">
               <CloudflareFileUpload
-                initialUrl={doc.data.url || ""}
+                initialUrl={mediaUrl}
                 onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
                 label="Video URL"
                 uploadPayload={{
@@ -3041,7 +3159,10 @@ export default function RoleplayForm({
         setLocalFormData(dataToSave);
       }
 
-      onSave(dataToSave, { sectionId, isEditing: Boolean(content) });
+      onSave(
+        { ...dataToSave, __sectionId: sectionId },
+        { sectionId, isEditing: Boolean(content) }
+      );
     };
 
     // Add new option
@@ -3350,7 +3471,12 @@ export default function RoleplayForm({
                 Audio
               </label>
               <CloudflareFileUpload
-                initialUrl={localFormData.conversation.audio || ""}
+                initialUrl={
+                  getCurrentTranslationValue(
+                    localFormData.conversation.audio,
+                    lang
+                  ) || ""
+                }
                 onUrlChange={(newUrl) =>
                   handleConversationChange("audio", newUrl)
                 }
@@ -3359,6 +3485,7 @@ export default function RoleplayForm({
                   prefix: "",
                   folder: "roleplays",
                 }}
+                accept="audio/*"
               />
             </div>
           </>
@@ -3417,7 +3544,12 @@ export default function RoleplayForm({
                 Audio
               </label>
               <CloudflareFileUpload
-                initialUrl={localFormData.leadingText.audio || ""}
+                initialUrl={
+                  getCurrentTranslationValue(
+                    localFormData.leadingText.audio,
+                    lang
+                  ) || ""
+                }
                 onUrlChange={(newUrl) =>
                   handleLeadingTextChange("audio", newUrl)
                 }
@@ -3426,6 +3558,7 @@ export default function RoleplayForm({
                   prefix: "",
                   folder: "roleplays",
                 }}
+                accept="audio/*"
               />
             </div>
           </>
