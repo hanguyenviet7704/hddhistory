@@ -46,7 +46,15 @@ class KeypointCompletePage extends StatelessWidget {
             ),
             LessonCompletionPrimaryButton(
               label: context.text.exerciseCompleteKeypointSkipButton,
-              onPressed: () => context.back(),
+              onPressed: () {
+                bool isAllOtherKeypointsCompleted = context.read<CourseLessonCubit>().state.isAllOtherKeypointsCompleted;
+                if (!isAllOtherKeypointsCompleted) {
+                  context.back();
+                  return;
+                }
+
+                LessonCompleteRoute().go(context);
+              },
               margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
             ),
           ],

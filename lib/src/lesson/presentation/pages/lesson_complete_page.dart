@@ -32,7 +32,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
             Padding(
               padding: EdgeInsets.only(top: 28.h, bottom: 16.h),
               child: AppText(
-                'Building Nonverbal Presence',
+                context.text.exerciseSubheaderLabelBuildNonverbal,
                 maxLines: 1,
                 textAlign: TextAlign.center,
                 style: AppStyle.textBold14.copyWith(
@@ -87,7 +87,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
                   ),
                   24.verticalSpace,
                   AppText(
-                    'Lesson complete!',
+                    context.text.exerciseLessonCompleteTitle,
                     maxLines: 1,
                     textAlign: TextAlign.center,
                     style: AppStyle.textBold24.copyWith(
@@ -97,7 +97,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
                   ),
                   8.verticalSpace,
                   AppText(
-                    'You’re one step closer to your goal',
+                    context.text.exerciseLessonCompleteMessage,
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     style: AppStyle.text14.copyWith(
@@ -109,7 +109,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
               ),
             ),
             LessonCompletionPrimaryButton(
-              label: 'Complete',
+              label: context.text.exerciseCompleteLessonButton,
               onPressed: () => context.back(),
               margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
             ),
