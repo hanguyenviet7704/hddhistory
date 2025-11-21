@@ -20,7 +20,7 @@ class StartJourneyButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(1000.r),
         ),
         child: AppText(
-          context.text.onboardingStartJourneyButton,
+          context.text.onboarding.onboardingStartJourneyButton,
           style: AppStyle.textBold16.copyWith(
             color: Colors.white, // Text/White
             fontWeight: FontWeight.w600,

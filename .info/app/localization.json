@@ -1,32 +1,56 @@
 {
   "googleSheets": {
-    "sheetId": "1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs",
-    "sheetGids": ["288536257"],
-    "columns": {
-      "screen": "Screen",
-      "key": "Translation key",
-      "metadata": "Metadata",
-      "en": "Lang: English",
-      "vi": "Lang: Vietnam",
-      "zh": "Lang: Chinese"
+    "active": {
+      "sheetId": "1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY",
+      "sheetGids": ["0"],
+      "columns": {
+        "module": "Module",
+        "key": "Key",
+        "type": "Type",
+        "context": "Context",
+        "params": "Params",
+        "description": "Description",
+        "status": "Status",
+        "tags": "Tags",
+        "en": "EN",
+        "vi": "VI",
+        "zh": "ZH"
+      }
+    },
+    "legacy": {
+      "sheetId": "1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs",
+      "sheetGids": ["288536257"],
+      "columns": {
+        "module": "Screen",
+        "key": "Translation key",
+        "description": "Metadata",
+        "en": "Lang: English",
+        "vi": "Lang: Vietnam",
+        "zh": "Lang: Chinese"
+      }
     }
   },
   "languages": {
     "mapping": {
       "english": "en",
+      "en": "en",
       "vietnam": "vi",
       "vietnamese": "vi",
+      "vi": "vi",
       "chinese": "zh",
-      "china": "zh"
+      "china": "zh",
+      "zh": "zh"
     },
-    "default": "en"
+    "default": "en",
+    "supported": ["en", "vi", "zh"]
   },
   "paths": {
-    "arbDir": "assets/arb",
-    "moduleDir": "assets/arb/module",
-    "appDir": "assets/arb/app",
-    "l10nConfig": "l10n.yaml",
-    "outputDir": "lib/config/l10n"
+    "i18nDir": "assets/i18n",
+    "legacyArbDir": "assets/arb",
+    "templateDir": "tools/linux/localization/templates",
+    "tempDir": "build/localization",
+    "slangConfig": "slang.yaml",
+    "outputDir": "lib/config/l10n/generated"
   },
   "generation": {
     "author": "Noname Gogeto - Flutter Dcore",

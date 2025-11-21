@@ -207,7 +207,7 @@ class AppInterceptor extends BaseInterceptor {
 
     DMessage.showMessage(
       type: MessageType.error,
-      message: context.text.authSessionHasExpired,
+      message: context.text.auth.authSessionHasExpired,
     );
   }
 

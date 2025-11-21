@@ -35,8 +35,8 @@ class RoleplayFeedbackPage extends StatelessWidget {
                   CourseRoadmapRoute().go(context);
                   context.read<PageCubit>().setCurrentIndex(1);
                 },
-                label: context.text.rolePlayResultStartLearningButton,
-                helperText: context.text.rolePlayHelperTextStartLearnButton,
+                label: context.text.roleplay.rolePlayResultStartLearningButton,
+                helperText: context.text.roleplay.rolePlayHelperTextStartLearnButton,
               ),
             ],
           ),

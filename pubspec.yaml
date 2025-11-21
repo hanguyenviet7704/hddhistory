@@ -99,6 +99,7 @@ dependencies:
   # App Localizations
   flutter_localizations:
     sdk: flutter
+  slang_flutter: ^4.3.0
 
   # App State Management
   bloc: ^9.1.0
@@ -249,6 +250,7 @@ dev_dependencies:
   # flutter pub run build_runner build --delete-conflicting-outputs
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
+  slang: ^4.3.0
   retrofit_generator: ^10.2.0
   build_runner: ^2.10.4
   flutter_gen_runner: ^5.12.0
@@ -352,6 +354,7 @@ flutter:
     - assets/texts/
     - assets/json/
     - assets/lottie/
+    - assets/i18n/
     # - assets/gif/
     # - assets/audio/
     # - assets/video/
@@ -397,4 +400,3 @@ flutter:
 #     download_include_tags: # Optional list of tags to be downloaded (e.g. ['include', 'Include key']). If not set, all string keys will be considered for download. Default: []
 #     download_exclude_tags: # Optional list of tags to be excluded from download (e.g. ['exclude', 'Exclude key']). If not set, all string keys will be considered for download. Default: []
 #     ota_enabled: # Set to true if you want to use Localizely Over-the-air functionality. Default: false
-

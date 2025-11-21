@@ -1,0 +1,77 @@
+onboardingAfterOnboardEncourageMessage: 72% người dùng của chúng tôi có cùng câu trả
+  lời
+onboardingAfterOnboardEncourageSubText: Hãy bắt đầu ngay hôm nay và trở thành phiên
+  bản tốt hơn của chính mình
+onboardingAfterOnboardEncourageTitle: Bạn không đơn độc!
+onboardingBeSkilledExpectTimeOption1: ${number} tháng
+onboardingBeSkilledExpectTimeOption2: ${number} tháng
+onboardingBeSkilledExpectTimeQuestion: Bạn muốn trở nên thành thạo giao tiếp trong
+  bao lâu?
+onboardingChooseSkillsetSubtitle: Lựa chọn này sẽ không giới hạn trải nghiệm học tập
+  của bạn
+onboardingChooseSkillsetTitle: Chọn nhóm kỹ năng bạn muốn thành thạo
+onboardingEarlyCareerAdultOption: 25–34
+onboardingEvaluateBackground: Nền tảng cá nhân
+onboardingEvaluateDificulty: Khó khăn
+onboardingEvaluateLearningGoal: Mục tiêu học tập
+onboardingEvaluateStudyHabits: Thói quen học tập
+onboardingFemaleOption: Nữ
+onboardingFirstAppKeypointIntro: Học nhanh hơn
+onboardingFirstScreenContext: Nâng cao kỹ năng giúp bạn tự tin nắm bắt cơ hội mới.
+onboardingLoadingPersonalizationText: Chúng tôi đang tạo lộ trình học tập cá nhân
+  hóa cho bạn...
+onboardingMaleOption: Nam
+onboardingMascotDialogFirstScreen: Thế giới thay đổi từng ngày<br>Kỹ năng của bạn
+  cũng vậy</br>
+onboardingMascotDialogLearningMethod: Luyện tập với phương pháp học độc quyền của
+  MeUp
+onboardingMascotDialogSecondScreen: Cách học truyền thống không còn hiệu quả
+onboardingMascotGreetingMessage: Cho mình biết một chút về bạn nhé!
+onboardingMascotGreetingTitle: Chào bạn!
+onboardingMidCareerAdultOption: 35–44
+onboardingOlderAdult: 45 tuổi trở lên
+onboardingOtherGenderOption: Khác
+onboardingSecondAppKeypointIntro: Xây dựng thói quen
+onboardingSecondScreenContext: 80% kiến thức bị quên nếu không luyện tập đúng cách.
+onboardingSkipGreetingButton: Tiếp tục
+onboardingSkipIntroButton: Bỏ qua
+onboardingStartJourneyButton: Bắt đầu hành trình của bạn!
+onboardingStruggleOption1: Khó duy trì kỷ luật
+onboardingStruggleOption2: Không thấy tiến bộ rõ ràng
+onboardingStruggleOption3: Quá nhiều thông tin
+onboardingStruggleOption4: Không có nhận xét hay hướng dẫn
+onboardingStruggleOption5: Khó áp dụng vào thực tế
+onboardingStruggleOption6: Phương pháp học không phù hợp với tôi
+onboardingStruggleOption7: Không có lộ trình học cá nhân hóa
+onboardingStruggleQuestion: Bạn thường gặp khó khăn gì khi nâng cao kỹ năng?
+onboardingStruggleQuestionSubtitle: Chọn các tùy chọn phù hợp với bạn
+onboardingTeenAgeOption: 17 tuổi hoặc nhỏ hơn
+onboardingThirdAppKeypointIntro: Tiến bộ rõ rệt
+onboardingTimeSpentOption: ${number} phút
+onboardingTimeSpentTitle: Mục tiêu học hàng ngày của bạn
+onboardingTimeStudyOption1: Buổi sáng
+onboardingTimeStudyOption2: Giờ giải lao
+onboardingTimeStudyOption3: Trước khi ngủ
+onboardingTimeStudyOption4: Lúc rảnh
+onboardingTimeStudyQuestion: Thời gian nào bạn cảm thấy thoải mái nhất để học điều
+  mới?
+onboardingTimeStudySubtitle: Hãy thiết lập thói quen học tập
+onboardingTopicOption1: Giao tiếp
+onboardingTopicOption1Specific: Nói trước đám đông, Nghe chủ động, Quản lý xung đột,
+  Kỹ năng thuyết trình
+onboardingTopicOption2: Hiệu suất cá nhân
+onboardingTopicOption2Specific: Quản lý thời gian, Kỹ năng tổ chức, Ghi nhớ
+onboardingTopicOption3: Kỹ năng tư duy
+onboardingTopicOption3Specific: Tư duy phân tích, Tư duy phản biện, Giải quyết vấn
+  đề
+onboardingTopicOption4: Quản lý cảm xúc và căng thẳng
+onboardingTopicOption4Specific: Động lực
+onboardingTopicOption5: Kỹ năng công nghệ
+onboardingTopicOption5Specific: Trí tuệ nhân tạo (AI)
+onboardingTopicOption6: Xây dựng thương hiệu cá nhân
+onboardingTopicOption6Specific: Thương hiệu cá nhân, Kỹ năng kết nối (Networking)
+onboardingUserAgeQuestion: Bạn bao nhiêu tuổi?
+onboardingUserGenderQuestion: Giới tính của bạn là gì?
+onboardingUserNamePlaceholder: Nhập tên của bạn
+onboardingUserNameQuestion: Tên bạn là gì?
+onboardingYoungAdultOption: 18–24

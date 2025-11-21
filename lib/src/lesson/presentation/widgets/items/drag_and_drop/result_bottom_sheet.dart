@@ -80,9 +80,9 @@ class DragAndDropResultBottomSheet extends StatelessWidget {
         onContinue: onContinue,
         onExplain: hasExplanation ? onExplain : null,
         showExplanation: explanationVisible,
-        continueLabel: context.text.onboardingSkipGreetingButton,
-        explainLabel: context.text.exerciseExplainButton,
-        closeExplainLabel: context.text.exerciseCloseExplainButton,
+        continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
+        explainLabel: context.text.exercise.exerciseExplainButton,
+        closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
         successAccentColor: const Color(0xFF41AE8C),
       ),
     );
@@ -114,7 +114,7 @@ class DragAndDropExplanationContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AppText(
-            context.text.exerciseFeedbackCorrectAnswer,
+            context.text.exercise.exerciseFeedbackCorrectAnswer,
             style: AppStyle.textBold14.copyWith(
               color: const Color(0xFF3A9377),
               height: 1.75,
@@ -159,7 +159,7 @@ class DragAndDropExplanationContent extends StatelessWidget {
                     ),
                     6.horizontalSpace,
                     AppText(
-                      context.text.exerciseExplanationTitle,
+                      context.text.exercise.exerciseExplanationTitle,
                       style: AppStyle.textBold14.copyWith(
                         color: const Color(0xFF175CD3),
                         height: 1.75,

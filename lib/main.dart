@@ -1,3 +1,4 @@
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:meup/meup.dart';
 
 void main() {
@@ -9,20 +10,35 @@ class DMainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      onGenerateTitle: (context) => context.text.appTitle,
-      onNavigationNotification: (notification) => AppService.instance.onNavigationNotification(notification),
-      routeInformationParser: AppPages.routes.routeInformationParser,
-      routerDelegate: AppPages.routes.routerDelegate,
-      routeInformationProvider: AppPages.routes.routeInformationProvider,
-      theme: context.select((ThemeCubit theme) => theme.state.themeMaterial),
-      darkTheme: AppThemeMaterial.darkTheme,
-      themeMode: context.select((ThemeModeCubit themeMode) => themeMode.state.themeModeData),
-      locale: context.select((LocaleCubit locale) => locale.state.localeData),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      builder: EasyLoading.init(),
+    final easyLoadingBuilder = EasyLoading.init();
+
+    return TranslationProvider(
+      child: BlocListener<LocaleCubit, LocaleType>(
+        listenWhen: (previous, current) => previous != current,
+        listener: (_, locale) => LocaleSettings.setLocaleRawSync(locale.value),
+        child: Builder(
+          builder: (context) {
+            final locale = context.select((LocaleCubit cubit) => cubit.state.localeData);
+            LocaleSettings.setLocaleRawSync(locale.languageCode);
+
+            return MaterialApp.router(
+              debugShowCheckedModeBanner: false,
+              onGenerateTitle: (context) => context.text.common.appTitle,
+              onNavigationNotification: (notification) => AppService.instance.onNavigationNotification(notification),
+              routeInformationParser: AppPages.routes.routeInformationParser,
+              routerDelegate: AppPages.routes.routerDelegate,
+              routeInformationProvider: AppPages.routes.routeInformationProvider,
+              theme: context.select((ThemeCubit theme) => theme.state.themeMaterial),
+              darkTheme: AppThemeMaterial.darkTheme,
+              themeMode: context.select((ThemeModeCubit themeMode) => themeMode.state.themeModeData),
+              locale: locale,
+              supportedLocales: AppLocaleUtils.supportedLocales,
+              localizationsDelegates: GlobalMaterialLocalizations.delegates,
+              builder: (context, child) => easyLoadingBuilder(context, child),
+            );
+          },
+        ),
+      ),
     );
   }
 }

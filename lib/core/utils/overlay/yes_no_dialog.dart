@@ -19,10 +19,10 @@ void showDYesNoDialog({
     title = 'notification';
   }
   if (yesText.isEmpty) {
-    yesText = context.text.yes;
+    yesText = context.text.common.yes;
   }
   if (noText.isEmpty) {
-    noText = context.text.cancel;
+    noText = context.text.common.cancel;
   }
 
   showStandardDDiaLog(

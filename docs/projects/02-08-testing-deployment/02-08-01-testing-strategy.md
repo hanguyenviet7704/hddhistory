@@ -628,18 +628,22 @@ Future<void> _performLogout(WidgetTester tester) async {
 // test/helpers/test_helper.dart
 class TestHelper {
   static Widget createTestApp({required Widget child}) {
-    return MaterialApp(
-      home: child,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+    return TranslationProvider(
+      child: MaterialApp(
+        home: child,
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      ),
     );
   }
 
   static Widget createTestAppWithRouter({required GoRouter router}) {
-    return MaterialApp.router(
-      routerConfig: router,
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
+    return TranslationProvider(
+      child: MaterialApp.router(
+        routerConfig: router,
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      ),
     );
   }
 }

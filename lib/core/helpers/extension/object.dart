@@ -174,8 +174,8 @@ extension OpEx on Color {
   Color op(double opacity) => withValues(alpha: opacity);
 }
 
-extension AppLocalizationsHelper on BuildContext {
-  AppLocalizations get text => AppLocalizations.of(this);
+extension AppTranslationsHelper on BuildContext {
+  Translations get text => TranslationProvider.of(this).translations;
 }
 
 extension MapHelper on Map<String, dynamic> {

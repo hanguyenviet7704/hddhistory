@@ -50,13 +50,13 @@ class _LessonExplainBottomSheet extends StatelessWidget {
               children: [
                 // Title
                 AppText(
-                  context.text.keypointTitle,
+                  context.text.keypoint.keypointTitle,
                   style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
                 ),
 
                 // Subtitle
                 AppText(
-                  context.text.keypointMessage,
+                  context.text.keypoint.keypointMessage,
                   style: AppStyle.text14.copyWith(
                     color: AppCustomColor.textSecondary,
                     height: 1.75,
@@ -69,20 +69,20 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 _PracticeSectionCard(
                   badge: _ExplainBadge(
                     iconPath: AppAsset.svg.app.icCheckVerify,
-                    text: context.text.keypointRequireToComplete,
+                    text: context.text.keypoint.keypointRequireToComplete,
                     backgroundColor: AppCustomColor.successGreen,
                   ),
                   items: [
                     _PracticeLevelItem(
                       level: StrengthLevel.weakPoint,
-                      title: context.text.keypointWeakpointTitle,
-                      description: context.text.keypointWeakpointMessage,
+                      title: context.text.keypoint.keypointWeakpointTitle,
+                      description: context.text.keypoint.keypointWeakpointMessage,
                       showPoint: showPoint,
                     ),
                     _PracticeLevelItem(
                       level: StrengthLevel.morePractice,
-                      title: context.text.keypointImprovementTitle,
-                      description: context.text.keypointImprovementMessage,
+                      title: context.text.keypoint.keypointImprovementTitle,
+                      description: context.text.keypoint.keypointImprovementMessage,
                       showPoint: showPoint,
                     ),
                   ],
@@ -93,14 +93,14 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 _PracticeSectionCard(
                   badge: _ExplainBadge(
                     iconPath: AppAsset.svg.app.icChevronRightDouble,
-                    text: context.text.keypointSkipOption,
+                    text: context.text.keypoint.keypointSkipOption,
                     backgroundColor: AppCustomColor.textQuaternary,
                   ),
                   items: [
                     _PracticeLevelItem(
                       level: StrengthLevel.optionalPractice,
-                      title: context.text.keypointSkipOptionPracticeType,
-                      description: context.text.keypointSkipOptionPracticeTypeStatus,
+                      title: context.text.keypoint.keypointSkipOptionPracticeType,
+                      description: context.text.keypoint.keypointSkipOptionPracticeTypeStatus,
                       showPoint: showPoint,
                     ),
                   ],
@@ -110,7 +110,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 // Footer text
                 Center(
                   child: AppText(
-                    context.text.keypointFooterText,
+                    context.text.keypoint.keypointFooterText,
                     style: AppStyle.text12.copyWith(
                       color: AppCustomColor.textQuaternary,
                       height: 1.75,
@@ -131,7 +131,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                     ),
                     child: Center(
                       child: AppText(
-                        context.text.keypointFinishButton,
+                        context.text.keypoint.keypointFinishButton,
                         style: AppStyle.text16.copyWith(
                           color: AppCustomColor.textWhite,
                           fontWeight: FontWeight.w600,

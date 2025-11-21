@@ -28,10 +28,10 @@ class SpeakingResultBottomSheet extends StatelessWidget {
           onContinue: onContinue,
           showExplanation: state.showExplanation,
           onExplain: () => context.read<SpeakingCubit>().toggleExplanation(),
-          continueLabel: context.text.onboardingSkipGreetingButton,
-          explainLabel: context.text.exerciseExplainButton,
-          closeExplainLabel: context.text.exerciseCloseExplainButton,
-          title: context.text.exerciseCompleteVoiceTask,
+          continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
+          explainLabel: context.text.exercise.exerciseExplainButton,
+          closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
+          title: context.text.exercise.exerciseCompleteVoiceTask,
         ),
       ),
     );
@@ -68,7 +68,7 @@ class SpeakingExplanationContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.exerciseVoiceAnalysisTitle,
+                context.text.exercise.exerciseVoiceAnalysisTitle,
                 style: AppStyle.text20.copyWith(
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0D121C),
@@ -137,7 +137,7 @@ class SpeakingGoodPointsSection extends StatelessWidget {
               ),
               6.horizontalSpace,
               AppText(
-                context.text.exerciseGoodPointsTitle,
+                context.text.exercise.exerciseGoodPointsTitle,
                 style: AppStyle.textBold14.copyWith(
                   color: const Color(0xFF554FF0),
                   height: 1.75,
@@ -192,7 +192,7 @@ class SpeakingImprovementSection extends StatelessWidget {
               ),
               6.horizontalSpace,
               AppText(
-                context.text.exerciseBadPointsTitle,
+                context.text.exercise.exerciseBadPointsTitle,
                 style: AppStyle.textBold14.copyWith(
                   color: const Color(0xFF41AE8C),
                   height: 1.75,

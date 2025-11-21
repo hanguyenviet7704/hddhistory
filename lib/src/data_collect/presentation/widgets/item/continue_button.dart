@@ -41,7 +41,7 @@ class ContinueButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(1000.r),
             ),
             child: AppText(
-              context.text.onboardingSkipGreetingButton,
+              context.text.onboarding.onboardingSkipGreetingButton,
               style: AppStyle.textBold16.copyWith(
                 color: state.canContinue
                     ? Colors

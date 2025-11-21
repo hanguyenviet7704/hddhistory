@@ -24,7 +24,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
                       AppText(
-                        context.text.authAlreadyMember,
+                        context.text.auth.authAlreadyMember,
                         style: AppStyle.text14.copyWith(
                           color: const Color(0xFF110751),
                           fontWeight: FontWeight.normal,
@@ -37,7 +37,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           // DNavigator.goNamed(RouteNamed.login);
                         },
                         child: AppText(
-                          context.text.authLogIn,
+                          context.text.auth.authLogIn,
                           style: AppStyle.text14.copyWith(
                             color: const Color(0xFF110751),
                             fontWeight: FontWeight.w600,
@@ -73,7 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           ),
                           24.verticalSpace,
                           AppText(
-                            context.text.authHeadLine,
+                            context.text.auth.authHeadLine,
                             maxLines: 5,
                             style: AppStyle.text24.copyWith(
                               color: const Color(0xFF110751),
@@ -130,7 +130,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Padding(
                 padding: EdgeInsets.only(bottom: 20.h, left: 50.w, right: 50.w),
                 child: AppText(
-                  context.text.authLegalNotice,
+                  context.text.auth.authLegalNotice,
                   maxLines: 5,
                   style: AppStyle.text12.copyWith(
                     color: const Color(0xFF110751).op(0.5),

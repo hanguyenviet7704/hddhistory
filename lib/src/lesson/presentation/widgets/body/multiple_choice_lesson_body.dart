@@ -59,7 +59,7 @@ class MultipleChoiceLessonBody extends StatelessWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exerciseMultiChoicesInstruction,
+                context.text.exercise.exerciseMultiChoicesInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12.copyWith(

@@ -314,6 +314,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.2"
+  csv:
+    dependency: transitive
+    description:
+      name: csv
+      sha256: c6aa2679b2a18cb57652920f674488d89712efaf4d3fdf2e537215b35fc19d6c
+      url: "https://pub.dev"
+    source: hosted
+    version: "6.0.0"
   darq:
     dependency: "direct main"
     description:
@@ -2003,6 +2011,22 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  slang:
+    dependency: "direct dev"
+    description:
+      name: slang
+      sha256: "68019686145c141cfbad52697ed70960957429930c858570248ed23c6d6f859a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.10.1"
+  slang_flutter:
+    dependency: "direct main"
+    description:
+      name: slang_flutter
+      sha256: "7eff3f37dc3fcdc0f76d461540915b6431408f15df5b5d78d137c8ffc90bc60e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "4.10.0"
   smooth_page_indicator:
     dependency: "direct main"
     description:

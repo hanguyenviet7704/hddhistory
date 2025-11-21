@@ -11,7 +11,7 @@ class CourseHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           AppText(
-            context.text.allcourseExploreSkillsets,
+            context.text.allcourse.allcourseExploreSkillsets,
             style: AppStyle.textBold20.copyWith(
               color: AppCustomColor.textPrimary,
               fontWeight: FontWeight.w600,

@@ -506,26 +506,28 @@ class DMainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp.router(
-      debugShowCheckedModeBanner: false,
-      onGenerateTitle: (context) => context.text.appTitle,
-      onNavigationNotification: (notification) => 
-          AppService.instance.onNavigationNotification(notification),
-      routeInformationParser: AppPages.routes.routeInformationParser,
-      routerDelegate: AppPages.routes.routerDelegate,
-      routeInformationProvider: AppPages.routes.routeInformationProvider,
-      
-      // Theme management through Cubit selectors
-      theme: context.select((ThemeCubit theme) => theme.state.themeMaterial),
-      darkTheme: AppThemeMaterial.darkTheme,
-      themeMode: context.select((ThemeModeCubit themeMode) => themeMode.state.themeModeData),
-      
-      // Localization management through Cubit selector
-      locale: context.select((LocaleCubit locale) => locale.state.localeData),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
-      supportedLocales: AppLocalizations.supportedLocales,
-      
-      builder: EasyLoading.init(),
+    return TranslationProvider(
+      child: MaterialApp.router(
+        debugShowCheckedModeBanner: false,
+        onGenerateTitle: (context) => context.text.common.appTitle,
+        onNavigationNotification: (notification) =>
+            AppService.instance.onNavigationNotification(notification),
+        routeInformationParser: AppPages.routes.routeInformationParser,
+        routerDelegate: AppPages.routes.routerDelegate,
+        routeInformationProvider: AppPages.routes.routeInformationProvider,
+        
+        // Theme management through Cubit selectors
+        theme: context.select((ThemeCubit theme) => theme.state.themeMaterial),
+        darkTheme: AppThemeMaterial.darkTheme,
+        themeMode: context.select((ThemeModeCubit themeMode) => themeMode.state.themeModeData),
+        
+        // Localization management through Cubit selector
+        locale: context.select((LocaleCubit locale) => locale.state.localeData),
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        localizationsDelegates: GlobalMaterialLocalizations.delegates,
+        
+        builder: EasyLoading.init(),
+      ),
     );
   }
 }

@@ -2,10 +2,13 @@ part of '../blocs.dart';
 
 @lazySingleton
 class LocaleCubit extends HydratedCubit<LocaleType> {
-  LocaleCubit() : super(LocaleType.en);
+  LocaleCubit() : super(LocaleType.en) {
+    LocaleSettings.setLocaleRawSync(state.value);
+  }
 
   void changeLocale(LocaleType locale) {
     if (locale == state) return;
+    LocaleSettings.setLocaleRawSync(locale.value);
     emit(locale);
     LogDev.trace('Change locale to ${locale.value}');
   }

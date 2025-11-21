@@ -1,0 +1,10 @@
+base_locale: en
+fallback_strategy: base_locale
+namespaces: true
+input_directory: assets/i18n
+input_file_pattern: .yaml
+input_format: yaml
+output_directory: lib/config/l10n/generated
+output_file_name: strings.g.dart
+key_case: camel
+flutter_integration: true

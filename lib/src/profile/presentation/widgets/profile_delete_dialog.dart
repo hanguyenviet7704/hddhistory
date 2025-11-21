@@ -48,7 +48,7 @@ class _DialogBody extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.settingProfileDestructiveWarnTitle,
+                context.text.setting.settingProfileDestructiveWarnTitle,
                 textAlign: TextAlign.center,
                 style: AppStyle.text20.copyWith(
                   color: AppCustomColor.textPrimary,
@@ -58,7 +58,7 @@ class _DialogBody extends StatelessWidget {
               ),
               8.verticalSpace,
               AppText(
-                context.text.settingProfileDestructiveWarnMessage,
+                context.text.setting.settingProfileDestructiveWarnMessage,
                 textAlign: TextAlign.center,
                 style: AppStyle.text14.copyWith(
                   color: AppCustomColor.textSecondary,
@@ -68,7 +68,7 @@ class _DialogBody extends StatelessWidget {
               ),
               24.verticalSpace,
               _DialogButton(
-                text: context.text.settingProfileDestructiveYesButton,
+                text: context.text.setting.settingProfileDestructiveYesButton,
                 textColor: AppCustomColor.errorRed,
                 borderColor: AppCustomColor.borderDefault,
                 backgroundColor: AppCustomColor.backgroundWhite,
@@ -79,7 +79,7 @@ class _DialogBody extends StatelessWidget {
               ),
               16.verticalSpace,
               _DialogButton(
-                text: context.text.settingProfileDestructiveNoButton,
+                text: context.text.setting.settingProfileDestructiveNoButton,
                 textColor: AppCustomColor.textWhite,
                 backgroundColor: AppCustomColor.brandPrimary,
                 onTap: () => context.back(),

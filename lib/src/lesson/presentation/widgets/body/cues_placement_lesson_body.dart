@@ -66,7 +66,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exerciseStressMarkInstruction,
+                context.text.exercise.exerciseStressMarkInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12.copyWith(

@@ -11,17 +11,17 @@ class ScaffoldLayout extends StatelessWidget {
     BottomNavigationBarItem(
       icon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
       activeIcon: SvgPicture.asset(AppAsset.svg.app.icHome, width: 24.w, height: 24.w),
-      label: context.text.homeHomeButton,
+      label: context.text.home.homeHomeButton,
     ),
     BottomNavigationBarItem(
       icon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
       activeIcon: SvgPicture.asset(AppAsset.svg.app.icMap, width: 24.w, height: 24.w),
-      label: context.text.homeCourseButton,
+      label: context.text.home.homeCourseButton,
     ),
     BottomNavigationBarItem(
       icon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w, colorFilter: ColorFilter.mode(AppCustomColor.iconPrimary.op(.3), BlendMode.srcIn)),
       activeIcon: SvgPicture.asset(AppAsset.svg.app.icUser, width: 24.w, height: 24.w),
-      label: context.text.homeSettingButton,
+      label: context.text.home.homeSettingButton,
     ),
   ];
 

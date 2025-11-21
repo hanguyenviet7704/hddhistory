@@ -37,7 +37,7 @@ class ProfileHeader extends StatelessWidget {
             ),
           ),
           Text(
-            context.text.settingProfileLabel,
+            context.text.setting.settingProfileLabel,
             style: AppStyle.text16.copyWith(
               color: AppCustomColor.textTertiary,
               height: 1.5,
@@ -54,7 +54,7 @@ class ProfileHeader extends StatelessWidget {
               ),
               onPressed: onActionTap,
               child: Text(
-                isEditing ? context.text.settingProfileDoneEditButton : context.text.settingEditProfileButton,
+                isEditing ? context.text.setting.settingProfileDoneEditButton : context.text.setting.settingEditProfileButton,
                 style: AppStyle.text16.copyWith(
                   color: AppCustomColor.brandPrimary,
                   height: 1.5,

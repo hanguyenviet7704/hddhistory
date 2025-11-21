@@ -32,7 +32,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
             Padding(
               padding: EdgeInsets.only(top: 28.h, bottom: 16.h),
               child: AppText(
-                context.text.exerciseSubheaderLabelBuildNonverbal,
+                context.text.exercise.exerciseSubheaderLabelBuildNonverbal,
                 maxLines: 1,
                 textAlign: TextAlign.center,
                 style: AppStyle.textBold14.copyWith(
@@ -87,7 +87,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
                   ),
                   24.verticalSpace,
                   AppText(
-                    context.text.exerciseLessonCompleteTitle,
+                    context.text.exercise.exerciseLessonCompleteTitle,
                     maxLines: 1,
                     textAlign: TextAlign.center,
                     style: AppStyle.textBold24.copyWith(
@@ -97,7 +97,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
                   ),
                   8.verticalSpace,
                   AppText(
-                    context.text.exerciseLessonCompleteMessage,
+                    context.text.exercise.exerciseLessonCompleteMessage,
                     maxLines: 2,
                     textAlign: TextAlign.center,
                     style: AppStyle.text14.copyWith(
@@ -106,15 +106,15 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
                     ),
                   ),
                 ],
-              ),
             ),
-            LessonCompletionPrimaryButton(
-              label: context.text.exerciseCompleteLessonButton,
-              onPressed: () => context.back(),
-              margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
-            ),
-          ],
-        ),
+          ),
+          LessonCompletionPrimaryButton(
+            label: context.text.exercise.exerciseCompleteLessonButton,
+            onPressed: () => context.back(),
+            margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
+          ),
+        ],
+      ),
       ),
     );
   }

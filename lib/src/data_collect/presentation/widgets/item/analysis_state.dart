@@ -27,7 +27,7 @@ class AnalysisState extends StatelessWidget {
                     32.verticalSpace,
 
                     AppText(
-                      context.text.onboardingLoadingPersonalizationText,
+                      context.text.onboarding.onboardingLoadingPersonalizationText,
                       maxLines: 20,
                       textAlign: TextAlign.center,
                       style: AppStyle.textBold20.copyWith(

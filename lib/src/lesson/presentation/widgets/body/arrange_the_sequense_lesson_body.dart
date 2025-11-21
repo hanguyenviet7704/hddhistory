@@ -66,7 +66,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exerciseSequenceInstruction,
+                context.text.exercise.exerciseSequenceInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12

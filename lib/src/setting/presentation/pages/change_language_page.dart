@@ -42,7 +42,7 @@ class ChangeLanguagePage extends StatelessWidget {
                     child: _LanguageSheetBackButton(onPressed: () => context.pop()),
                   ),
                   Text(
-                    context.text.settingRowLanguage,
+                    context.text.setting.settingRowLanguage,
                     style: AppStyle.text16.copyWith(
                       color: AppCustomColor.textTertiary,
                       height: 1.5,

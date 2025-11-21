@@ -40,7 +40,7 @@ class ExerciseResultSummary extends StatelessWidget {
 
   String _resolveTitle(BuildContext context) {
     if (title != null) return title!;
-    return isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect;
+    return isCorrect ? context.text.exercise.exerciseFeedbackCorrect : context.text.exercise.exerciseFeedbackIncorrect;
   }
 
   String get _iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;

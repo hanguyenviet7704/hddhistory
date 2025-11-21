@@ -32,7 +32,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                       child: Column(
                         children: [
                           AppText(
-                            context.text.onboardingAfterOnboardEncourageTitle,
+                            context.text.onboarding.onboardingAfterOnboardEncourageTitle,
                             textAlign: TextAlign.center,
                             maxLines: 2,
                             style: AppStyle.textBold24.copyWith(
@@ -42,7 +42,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                           ),
 
                           AppText(
-                            context.text.onboardingAfterOnboardEncourageMessage,
+                            context.text.onboarding.onboardingAfterOnboardEncourageMessage,
                             maxLines: 3,
                             textAlign: TextAlign.center,
                             style: AppStyle.textBold20.copyWith(
@@ -53,7 +53,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                           12.verticalSpace,
                           // Description
                           AppText(
-                            context.text.onboardingAfterOnboardEncourageSubText,
+                            context.text.onboarding.onboardingAfterOnboardEncourageSubText,
                             maxLines: 3,
                             textAlign: TextAlign.center,
                             style: AppStyle.text14.copyWith(
@@ -83,7 +83,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                   borderRadius: BorderRadius.circular(1000.r),
                 ),
                 child: AppText(
-                  context.text.onboardingSkipGreetingButton,
+                  context.text.onboarding.onboardingSkipGreetingButton,
                   style: AppStyle.textBold16.copyWith(
                     color: Colors.white, // Text/White
                     fontWeight: FontWeight.w600,

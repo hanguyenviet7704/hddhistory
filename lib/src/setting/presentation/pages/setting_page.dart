@@ -18,30 +18,30 @@ class SettingPage extends StatelessWidget {
               SettingProfileCard(),
               24.verticalSpace,
               SettingSectionCard(
-                title: context.text.settingSectionHeaderGeneral,
+                title: context.text.setting.settingSectionHeaderGeneral,
                 children: [
                   if (kDebugMode)
                     SettingOptionTile(
                       iconAsset: AppAsset.svg.app.icBell,
-                      title: context.text.settingRowNoti,
+                      title: context.text.setting.settingRowNoti,
                       trailingText: '05:05',
                     ),
 
                   SettingOptionTile(
                     iconAsset: AppAsset.svg.app.icGlobe,
-                    title: context.text.settingRowLanguage,
+                    title: context.text.setting.settingRowLanguage,
                     trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
                     onTap: () => const ChangeLanguageRoute().go(context),
                   ),
                   if (kDebugMode)
                     SettingOptionTile(
                       iconAsset: AppAsset.svg.app.icCreditCard,
-                      title: context.text.settingRowUpgradePremium,
+                      title: context.text.setting.settingRowUpgradePremium,
                     ),
                   if (kDebugMode)
                     SettingOptionTile(
                       iconAsset: AppAsset.svg.app.icSet,
-                      title: context.text.settingRowRestorePurchase,
+                      title: context.text.setting.settingRowRestorePurchase,
                     ),
                 ],
               ),
@@ -50,17 +50,17 @@ class SettingPage extends StatelessWidget {
                 selector: (state) => state.user,
                 builder: (context, user) {
                   return SettingSectionCard(
-                    title: context.text.settingSectionHeaderAbout,
+                    title: context.text.setting.settingSectionHeaderAbout,
                     children: [
                       if (kDebugMode)
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icShieldPlus,
-                          title: context.text.settingAboutSectionTerm,
+                          title: context.text.setting.settingAboutSectionTerm,
                         ),
                       if (!user.anonymous)
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icLogOut,
-                          title: context.text.settingLogOut,
+                          title: context.text.setting.settingLogOut,
                           titleColor: AppCustomColor.errorRed,
                           iconColor: AppCustomColor.errorRed,
                           iconBackgroundColor: AppCustomColor.errorRed.op(.08),

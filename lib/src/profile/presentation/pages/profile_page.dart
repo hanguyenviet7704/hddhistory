@@ -48,7 +48,7 @@ class _ProfileViewState extends State<_ProfileView> {
     final String newName = _nameController.text.trim();
     if (newName.isEmpty) {
       DMessage.showMessage(
-        message: context.text.settingProfileFullnameLabel,
+        message: context.text.setting.settingProfileFullnameLabel,
         type: MessageType.error,
       );
       return;
@@ -61,7 +61,7 @@ class _ProfileViewState extends State<_ProfileView> {
   void _handleDeleteAccount(UserEntity user) {
     if (user.id.isEmpty) {
       DMessage.showMessage(
-        message: context.text.settingProfileDesstructiveButton,
+        message: context.text.setting.settingProfileDesstructiveButton,
         type: MessageType.error,
       );
       return;
@@ -165,12 +165,12 @@ class _ReadonlySection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ProfileFieldDisplay(
-          label: context.text.settingProfileFullnameLabel,
+          label: context.text.setting.settingProfileFullnameLabel,
           value: user.name,
         ),
         SizedBox(height: 16.h),
         ProfileFieldDisplay(
-          label: context.text.settingProfileEmailLabel,
+          label: context.text.setting.settingProfileEmailLabel,
           value: user.email,
         ),
       ],
@@ -195,13 +195,13 @@ class _EditableSection extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         ProfileEditableField(
-          label: context.text.settingProfileFullnameLabel,
+          label: context.text.setting.settingProfileFullnameLabel,
           controller: controller,
           onSubmitted: onSubmit,
         ),
         SizedBox(height: 16.h),
         ProfileReadonlyField(
-          label: context.text.settingProfileEmailLabel,
+          label: context.text.setting.settingProfileEmailLabel,
           value: user.email,
         ),
       ],

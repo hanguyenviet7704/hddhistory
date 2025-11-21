@@ -148,7 +148,7 @@ class _RoleplayChartPlaceholder extends StatelessWidget {
           ),
           12.verticalSpace,
           AppText(
-            context.text.emptyList,
+            context.text.common.emptyList,
             textAlign: TextAlign.center,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,

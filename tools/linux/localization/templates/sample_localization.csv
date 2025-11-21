@@ -1,0 +1,5 @@
+Module,Key,Type,Context,Params,Description,Status,Tags,EN,VI,ZH
+common,appTitle,text,,,"App title shown in system UI",active,,MeUp,MeUp,MeUp
+home,homeHomeButton,text,,,"Bottom navigation label: Home",active,,Home,Trang chủ,首页
+profile,greeting,text,,name:String,"Greeting with a name placeholder",active,,Hello ${name},Xin chào ${name},你好，${name}
+stats,notifications,plural,,count:int,"Notifications count copy with plural support",active,,{count, plural, =0{No notifications} =1{1 notification} other{{count} notifications}},{count, plural, =0{Không có thông báo} =1{1 thông báo} other{{count} thông báo}},{count, plural, =0{暂无通知} =1{1 条通知} other{{count} 条通知}}

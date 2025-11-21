@@ -12,7 +12,7 @@ class TimeToSkilledBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              context.text.onboardingBeSkilledExpectTimeQuestion,
+              context.text.onboarding.onboardingBeSkilledExpectTimeQuestion,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary

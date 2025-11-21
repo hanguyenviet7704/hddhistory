@@ -19,17 +19,17 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppText(
-              context.text.rolePlayResultFeedback,
+              context.text.roleplay.rolePlayResultFeedback,
               style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
             ),
             12.verticalSpace,
             _RoleplayFeedbackSummaryCard(
-              title: context.text.rolePlayResultFeedbackStrength,
+              title: context.text.roleplay.rolePlayResultFeedbackStrength,
               items: strengths,
             ),
             12.verticalSpace,
             _RoleplayFeedbackSummaryCard(
-              title: context.text.rolePlayResultFeedbackWeakness,
+              title: context.text.roleplay.rolePlayResultFeedbackWeakness,
               items: weaknesses,
             ),
           ],
@@ -75,7 +75,7 @@ class _RoleplayFeedbackSummaryCard extends StatelessWidget {
           12.verticalSpace,
           if (items.isEmpty)
             AppText(
-              context.text.emptyList,
+              context.text.common.emptyList,
               style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
             )
           else ...[
@@ -111,7 +111,7 @@ class _RoleplayFeedbackSummaryRow extends StatelessWidget {
         8.horizontalSpace,
         Expanded(
           child: AppText(
-            label.isNotEmpty ? label : context.text.rolePlayResultSkillset,
+            label.isNotEmpty ? label : context.text.roleplay.rolePlayResultSkillset,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
               height: 1.7,

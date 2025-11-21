@@ -12,7 +12,7 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              context.text.onboardingStruggleQuestion,
+              context.text.onboarding.onboardingStruggleQuestion,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -25,7 +25,7 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
 
             // Subtitle
             AppText(
-              context.text.onboardingStruggleQuestionSubtitle,
+              context.text.onboarding.onboardingStruggleQuestionSubtitle,
               style: AppStyle.text12.copyWith(
                 color: const Color(0xFF7F8EA4), // Text/Tertiary
               ),

@@ -362,18 +362,14 @@ Example ARB file:
 ```
 
 #### Generated Output
-Creates localization classes in `lib/config/l10n/`:
-- `app_localizations.dart` - Base localization class
-- `app_localizations_en.dart` - English implementation
-- `app_localizations_es.dart` - Spanish implementation
-- `app_localizations_fr.dart` - French implementation
+`slang` generates translations into `lib/config/l10n/generated/strings*.g.dart` with namespaces per module.
 
 Usage:
 ```dart
-// Access localizations
-final l10n = AppLocalizations.of(context);
-Text(l10n.welcome)
-Text(l10n.greeting('John'))
+// Access localizations (TranslationProvider wraps the app)
+final t = context.text; // shortcut extension
+Text(t.common.appTitle)
+Text(t.auth.authGreeting(name: 'John'))
 ```
 
 ## Build Configuration

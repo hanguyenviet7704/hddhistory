@@ -75,7 +75,7 @@ class DragAndDropLessonBody extends StatelessWidget {
               ),
               24.verticalSpace,
               AppText(
-                context.text.exerciseGapFillingInstruction,
+                context.text.exercise.exerciseGapFillingInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w),
                 style: AppStyle.text12.copyWith(
                   color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),

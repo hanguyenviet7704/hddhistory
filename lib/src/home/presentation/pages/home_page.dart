@@ -55,8 +55,8 @@ class HomePage extends StatelessWidget {
 
               // Skillsets section
               SectionHeaderWidget(
-                title: context.text.homeAllCourseButton,
-                actionText: context.text.homeCourseButton,
+                title: context.text.home.homeAllCourseButton,
+                actionText: context.text.home.homeCourseButton,
                 onActionTap: () => CourseRoute().push(context),
               ),
               16.verticalSpace,
