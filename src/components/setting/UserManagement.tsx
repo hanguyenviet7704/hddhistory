@@ -93,7 +93,7 @@ const UserManagement = () => {
   const [users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
-  const [totalItems, setTotalItems] = useState(0);
+  const [totalPagesCount, setTotalPagesCount] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
@@ -109,11 +109,6 @@ const UserManagement = () => {
 
   const [deletingUser, setDeletingUser] = useState<IUser | null>(null);
   const [deleting, setDeleting] = useState(false);
-
-  const totalPages = useMemo(() => {
-    const count = Math.ceil(totalItems / PAGE_SIZE);
-    return count > 0 ? count : 1;
-  }, [totalItems]);
 
   useEffect(() => {
     const timer = setTimeout(
@@ -161,16 +156,34 @@ const UserManagement = () => {
         : Array.isArray(possibleList)
         ? possibleList
         : [];
-      const total =
+
+      const totalPagesFromApi =
+        parsedData?.totalPages ??
+        parsedData?.pagination?.totalPages ??
+        parsedData?.pagination?.total;
+      const itemsPerPage =
+        parsedData?.itemsPerPage ??
+        parsedData?.take ??
+        parsedData?.pagination?.take ??
+        PAGE_SIZE;
+      const totalFromApi =
         parsedData?.total ??
-        parsedData?.pagination?.total ??
+        parsedData?.pagination?.totalItems ??
         response?.total ??
-        response?.data?.total ??
-        list.length;
+        response?.data?.total;
+      const computedTotalPages =
+        totalPagesFromApi ||
+        (totalFromApi ? Math.ceil(totalFromApi / itemsPerPage) : undefined) ||
+        (itemsPerPage ? Math.ceil(list.length / itemsPerPage) : 1);
+      const currentPage =
+        parsedData?.currentPage ??
+        parsedData?.page ??
+        parsedData?.pagination?.page ??
+        pageNumber;
 
       setUsers(list);
-      setTotalItems(Number(total) || list.length);
-      setPage(pageNumber);
+      setTotalPagesCount(Number(computedTotalPages) || 1);
+      setPage(Number(currentPage) || pageNumber);
     } catch (error) {
       console.error("Failed to fetch users", error);
       showError("Tải danh sách người dùng thất bại");
@@ -460,7 +473,7 @@ const UserManagement = () => {
 
         <div className="p-4 flex justify-end">
           <Pagination
-            count={totalPages}
+            count={totalPagesCount}
             page={page}
             onChange={(_, value) => fetchUsers(value)}
             color="primary"
