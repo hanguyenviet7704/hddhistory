@@ -35,6 +35,16 @@ get_active_sheet_gids() {
     get_localization_config '.googleSheets.active.sheetGids[]' | tr '\n' ' '
 }
 
+get_active_sheet_tabs_json() {
+    local value
+    value=$(get_localization_config '.googleSheets.active.tabs')
+    if [[ -z "$value" || "$value" == "null" ]]; then
+        echo "[]"
+    else
+        echo "$value"
+    fi
+}
+
 get_active_sheet_column() {
     local column="$1"
     get_localization_config ".googleSheets.active.columns.${column}"
@@ -148,6 +158,7 @@ show_localization_config() {
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo "Active Sheet ID: $(get_active_sheet_id)"
     echo "Active Sheet GIDs: $(get_active_sheet_gids)"
+    echo "Active Sheet Tabs: $(get_active_sheet_tabs_json | jq -r '.[].module' 2>/dev/null | tr '\n' ',' | sed 's/,$//')"
     echo "Legacy Sheet ID: $(get_legacy_sheet_id)"
     echo "Legacy Sheet GIDs: $(get_legacy_sheet_gids)"
     echo "Default Language: $(get_default_language)"
@@ -169,9 +180,10 @@ create_python_config() {
     cat > "$config_file" << EOF
 {
   "project_root": "$PROJECT_ROOT",
-  "active_sheet": {
+    "active_sheet": {
     "sheet_id": "$(get_active_sheet_id)",
     "sheet_gids": [$(get_active_sheet_gids | sed 's/ /,/g' | sed 's/,$//')],
+    "tabs": $(get_active_sheet_tabs_json),
     "columns": $(get_localization_config '.googleSheets.active.columns')
   },
   "legacy_sheet": {

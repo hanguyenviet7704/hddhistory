@@ -2,8 +2,8 @@ onboardingAfterOnboardEncourageMessage: 72% of our users shared the same respons
 onboardingAfterOnboardEncourageSubText: Start today and become a better version of
   yourself through your voice
 onboardingAfterOnboardEncourageTitle: You''re not alone!
-onboardingBeSkilledExpectTimeOption1: ${number} months
-onboardingBeSkilledExpectTimeOption2: ${number} month
+onboardingBeSkilledExpectTimeOption1: '{number} months'
+onboardingBeSkilledExpectTimeOption2: '{number} month'
 onboardingBeSkilledExpectTimeQuestion: How much time do you want to become skilled?
 onboardingChooseSkillsetSubtitle: The choice won''t limit your learning experience
 onboardingChooseSkillsetTitle: Choose the skillset you want to master
@@ -44,7 +44,7 @@ onboardingStruggleQuestion: What''s holding you back from improving your skills?
 onboardingStruggleQuestionSubtitle: Select all the options that match your situation
 onboardingTeenAgeOption: 17 or younger
 onboardingThirdAppKeypointIntro: See progress
-onboardingTimeSpentOption: ${number} mins
+onboardingTimeSpentOption: '{number} mins'
 onboardingTimeSpentTitle: Your daily learning goal
 onboardingTimeStudyOption1: In the morning
 onboardingTimeStudyOption2: Quick break

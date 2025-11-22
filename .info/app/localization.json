@@ -3,6 +3,19 @@
     "active": {
       "sheetId": "1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY",
       "sheetGids": ["0"],
+      "tabs": [
+        {"module": "common", "title": "common", "gid": "0"},
+        {"module": "auth", "title": "auth"},
+        {"module": "home", "title": "home"},
+        {"module": "exercise", "title": "exercise"},
+        {"module": "allcourse", "title": "allcourse"},
+        {"module": "courseroadmap", "title": "courseroadmap"},
+        {"module": "keypoint", "title": "keypoint"},
+        {"module": "lesson", "title": "lesson"},
+        {"module": "onboarding", "title": "onboarding"},
+        {"module": "roleplay", "title": "roleplay"},
+        {"module": "setting", "title": "setting"}
+      ],
       "columns": {
         "module": "Module",
         "key": "Key",
@@ -47,7 +60,7 @@
   "paths": {
     "i18nDir": "assets/i18n",
     "legacyArbDir": "assets/arb",
-    "templateDir": "tools/linux/localization/templates",
+    "templateDir": ".info/templates",
     "tempDir": "build/localization",
     "slangConfig": "slang.yaml",
     "outputDir": "lib/config/l10n/generated"

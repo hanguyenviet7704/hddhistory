@@ -20,13 +20,13 @@ tools/linux/localization/localization.sh push --apply
 ```
 
 ## Configuration
-- `.info/app/localization.json` defines the active sheet, legacy sheet, column mappings, supported locales, paths, and encoding.
+- `.info/app/localization.json` defines the active sheet, legacy sheet, column mappings, supported locales, module tabs, paths, and encoding.
 - Service account credentials (for push) via `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to `GOOGLE_APPLICATION_CREDENTIALS`.
 - Dependencies are installed automatically from `tools/linux/localization/requirements.txt` into `.venv_localization`.
-- Template/example CSV lives in `tools/linux/localization/templates/sample_localization.csv`.
+- Template/example CSV lives in `.info/templates/sample_localization.csv` (shared across platforms).
 
 ## Outputs
-- YAML per module/locale: `assets/i18n/<module>/<locale>.yaml` (fed to slang).
+- YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (fed to slang).
 - Intermediate dataset: `build/localization/records.json` (used for push/diff/validation).
 
 ## Legacy
@@ -34,5 +34,5 @@ tools/linux/localization/localization.sh push --apply
 
 ## Tips
 - Ensure `.info/app/localization.json` points to the correct sheet IDs/GIDs before running.
-- `--apply` writes to the sheet; without it, operations are dry-run.
+- `--apply` writes to the sheet; without it, operations are dry-run. Per-module tabs are auto-created when pushing if missing.
 - After pulling/migrating, run `dart run slang` to regenerate `lib/config/l10n/generated`.

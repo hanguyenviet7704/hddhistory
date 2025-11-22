@@ -3,9 +3,9 @@
 Localization management CLI.
 
 Features:
-- Pull active sheet -> validate -> write module/locale YAML for slang and an intermediate JSON.
+- Pull active sheet (module-per-tab) -> validate -> write module/locale YAML for slang and an intermediate JSON.
 - Migrate legacy sheet/ARB -> new schema -> optional push to new sheet -> write YAML.
-- Push local dataset back to the active sheet with a dry-run diff.
+- Push local dataset back to the active sheet with a dry-run diff (auto-creates tabs).
 - Validate placeholders/params/completeness before generation.
 """
 
@@ -165,10 +165,18 @@ def normalize_status(raw_status: str) -> str:
     return value
 
 
-def parse_sheet_rows(rows: List[Dict[str, str]], columns: Dict[str, str], languages: Sequence[str], source: str) -> List[LocalizationRecord]:
+def parse_sheet_rows(
+    rows: List[Dict[str, str]],
+    columns: Dict[str, str],
+    languages: Sequence[str],
+    source: str,
+    default_module: Optional[str] = None,
+) -> List[LocalizationRecord]:
     records: List[LocalizationRecord] = []
     for row in rows:
         module_raw = row.get(columns.get("module", "") or "", "").strip()
+        if not module_raw and default_module:
+            module_raw = default_module
         key = row.get(columns.get("key", "") or "", "").strip()
         if not module_raw or not key:
             continue
@@ -269,8 +277,18 @@ def merge_records_by_identity(records: Iterable[LocalizationRecord], languages: 
     return list(merged.values())
 
 
-def normalize_translations(records: List[LocalizationRecord]) -> None:
+def normalize_translations(
+    records: List[LocalizationRecord],
+    languages: Sequence[str],
+    default_language: Optional[str],
+    fill_missing_from_default: bool = True,
+) -> None:
     for record in records:
+        default_value = record.translations.get(default_language or "", "")
+        for lang in languages:
+            value = record.translations.get(lang, "")
+            if fill_missing_from_default and not value and default_language and default_value:
+                record.translations[lang] = default_value
         for lang, value in list(record.translations.items()):
             record.translations[lang] = normalize_placeholders(value, record.params)
 
@@ -371,8 +389,42 @@ def fetch_sheet_csv(sheet_id: str, gid: str, encoding: str) -> str:
 
 def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str, source_label: str) -> List[LocalizationRecord]:
     sheet_id = sheet_cfg["sheet_id"]
+    tabs = sheet_cfg.get("tabs", [])
     gids = sheet_cfg.get("sheet_gids", [])
     columns = sheet_cfg.get("columns", {})
+
+    if tabs:
+        records: List[LocalizationRecord] = []
+        for tab in tabs:
+            gid = tab.get("gid")
+            module_override = slugify(tab.get("module", "") or tab.get("title", ""))
+            title = tab.get("title") or tab.get("module") or gid
+            if not module_override:
+                log_warning(f"Tab {title} has no module name; skipping.")
+                continue
+
+            try:
+                if gid:
+                    log_step(f"Fetching sheet gid={gid} ({title}) from {sheet_id}")
+                    csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
+                    rows = read_csv_text(csv_text)
+                else:
+                    if gspread is None or Credentials is None:
+                        log_warning(f"Skipping tab '{title}' (no gid and gspread unavailable).")
+                        continue
+                    creds = get_credentials()
+                    if creds is None:
+                        log_warning(f"Skipping tab '{title}' (no gid and credentials missing).")
+                        continue
+                    log_step(f"Fetching sheet '{title}' via gspread from {sheet_id}")
+                    client = gspread.authorize(creds)
+                    worksheet = client.open_by_key(sheet_id).worksheet(title)
+                    rows = worksheet.get_all_records()
+                records.extend(parse_sheet_rows(rows, columns, languages, source_label, default_module=module_override))
+            except Exception as exc:
+                log_warning(f"Failed to fetch tab '{title}': {exc}")
+                continue
+        return records
 
     all_rows: List[Dict[str, str]] = []
     for gid in gids:
@@ -423,6 +475,31 @@ def get_credentials() -> Optional[Credentials]:
     return None
 
 
+def resolve_worksheet(spreadsheet, tab_cfg: Dict, columns: Dict[str, str], languages: Sequence[str], apply: bool):
+    gid = tab_cfg.get("gid")
+    title = tab_cfg.get("title") or tab_cfg.get("module") or str(gid or "")
+
+    worksheet = None
+    if gid is not None:
+        try:
+            worksheet = spreadsheet.get_worksheet_by_id(int(gid))
+        except Exception:
+            worksheet = None
+
+    if worksheet is None and title:
+        try:
+            worksheet = spreadsheet.worksheet(title)
+        except Exception:
+            worksheet = None
+
+    if worksheet is None and apply and title:
+        cols = len(columns) + len(languages)
+        worksheet = spreadsheet.add_worksheet(title=title, rows=500, cols=cols)
+        log_success(f"Created worksheet '{title}' (cols={cols})")
+
+    return worksheet
+
+
 def push_to_sheet(records: List[LocalizationRecord], sheet_cfg: Dict, languages: Sequence[str], apply: bool) -> None:
     if gspread is None or Credentials is None:
         log_error("gspread/google-auth not available. Install requirements via requirements.txt")
@@ -434,26 +511,54 @@ def push_to_sheet(records: List[LocalizationRecord], sheet_cfg: Dict, languages:
         sys.exit(1)
 
     sheet_id = sheet_cfg["sheet_id"]
-    gid = int(sheet_cfg.get("sheet_gids", [0])[0])
     columns = sheet_cfg.get("columns", {})
+    tabs = sheet_cfg.get("tabs", [])
 
     client = gspread.authorize(creds)
     spreadsheet = client.open_by_key(sheet_id)
-    worksheet = spreadsheet.get_worksheet_by_id(gid)
-    if worksheet is None:
-        log_error(f"Worksheet gid={gid} not found in sheet {sheet_id}")
-        sys.exit(1)
 
-    rows = dataset_to_rows(records, columns, languages)
-    if not apply:
-        log_info("Dry-run push: no data written. Preview:")
-        log_info(f"Rows to write (including header): {len(rows)}")
-        log_info(f"First payload row: {rows[1] if len(rows) > 1 else 'n/a'}")
+    if not tabs:
+        gid = int(sheet_cfg.get("sheet_gids", [0])[0])
+        worksheet = spreadsheet.get_worksheet_by_id(gid)
+        if worksheet is None:
+            log_error(f"Worksheet gid={gid} not found in sheet {sheet_id}")
+            sys.exit(1)
+
+        rows = dataset_to_rows(records, columns, languages)
+        if not apply:
+            log_info("Dry-run push: no data written. Preview:")
+            log_info(f"Rows to write (including header): {len(rows)}")
+            log_info(f"First payload row: {rows[1] if len(rows) > 1 else 'n/a'}")
+            return
+
+        worksheet.clear()
+        worksheet.update(rows, value_input_option="USER_ENTERED")
+        log_success(f"Pushed {len(rows) - 1} rows to sheet gid={gid}")
         return
 
-    worksheet.clear()
-    worksheet.update(rows, value_input_option="USER_ENTERED")
-    log_success(f"Pushed {len(rows) - 1} rows to sheet gid={gid}")
+    tab_map = {slugify(tab.get("module", "") or tab.get("title", "")): tab for tab in tabs if tab.get("module") or tab.get("title")}
+
+    for module in sorted(set(r.module for r in records)):
+        module_records = [r for r in records if r.module == module]
+        tab_cfg = tab_map.get(module, {"module": module, "title": module})
+        title = tab_cfg.get("title") or tab_cfg.get("module") or module
+        rows = dataset_to_rows(module_records, columns, languages)
+        worksheet = resolve_worksheet(spreadsheet, tab_cfg, columns, languages, apply)
+
+        if worksheet is None:
+            if not apply:
+                log_info(f"Dry-run: tab '{title}' missing; would create and push {len(rows) - 1} rows.")
+                continue
+            log_error(f"Worksheet for module '{module}' not found and could not be created (title={title}).")
+            sys.exit(1)
+
+        if not apply:
+            log_info(f"Dry-run push for module '{module}' -> tab '{title}': {len(rows) - 1} rows.")
+            continue
+
+        worksheet.clear()
+        worksheet.update(rows, value_input_option="USER_ENTERED")
+        log_success(f"Pushed {len(rows) - 1} rows to tab '{worksheet.title}' (id={worksheet.id})")
 
 
 def diff_datasets(new_records: List[LocalizationRecord], existing_records: List[LocalizationRecord], languages: Sequence[str]) -> Tuple[List[str], List[str], List[str]]:
@@ -478,12 +583,13 @@ def diff_datasets(new_records: List[LocalizationRecord], existing_records: List[
 
 def handle_pull(cfg: Dict) -> None:
     languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
     temp_dir = Path(cfg["paths"]["temp_dir"])
     i18n_dir = Path(cfg["paths"]["i18n_dir"])
     encoding = cfg["generation"]["encoding"]
 
     records = load_sheet_records(cfg["active_sheet"], languages, encoding, "active-sheet")
-    normalize_translations(records)
+    normalize_translations(records, languages, default_language)
     warnings, errors = validate_records(records, languages)
 
     if errors:
@@ -504,6 +610,7 @@ def handle_pull(cfg: Dict) -> None:
 
 def handle_migrate(cfg: Dict, source: str, apply: bool) -> None:
     languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
     temp_dir = Path(cfg["paths"]["temp_dir"])
     i18n_dir = Path(cfg["paths"]["i18n_dir"])
     encoding = cfg["generation"]["encoding"]
@@ -527,7 +634,7 @@ def handle_migrate(cfg: Dict, source: str, apply: bool) -> None:
         record.tags = sorted(set(record.tags))
 
     records = merge_records_by_identity(records, languages)
-    normalize_translations(records)
+    normalize_translations(records, languages, default_language)
     warnings, errors = validate_records(records, languages)
     for warn in warnings:
         log_warning(warn)
@@ -552,6 +659,7 @@ def handle_migrate(cfg: Dict, source: str, apply: bool) -> None:
 
 def handle_push(cfg: Dict, apply: bool) -> None:
     languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
     encoding = cfg["generation"]["encoding"]
     temp_dir = Path(cfg["paths"]["temp_dir"])
 
@@ -577,7 +685,7 @@ def handle_push(cfg: Dict, apply: bool) -> None:
         for item in records_raw
     ]
 
-    normalize_translations(records)
+    normalize_translations(records, languages, default_language)
     warnings, errors = validate_records(records, languages)
     for warn in warnings:
         log_warning(warn)
@@ -605,6 +713,7 @@ def handle_push(cfg: Dict, apply: bool) -> None:
 
 def handle_validate(cfg: Dict) -> None:
     languages = cfg["languages"]["supported"]
+    default_language = cfg["languages"]["default"]
     encoding = cfg["generation"]["encoding"]
     temp_dir = Path(cfg["paths"]["temp_dir"])
 
@@ -629,6 +738,7 @@ def handle_validate(cfg: Dict) -> None:
         )
         for item in records_raw
     ]
+    normalize_translations(records, languages, default_language)
     warnings, errors = validate_records(records, languages)
     for warn in warnings:
         log_warning(warn)

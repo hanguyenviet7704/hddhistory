@@ -5,17 +5,17 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 ## Quick Links
 - Active sheet (new schema): https://docs.google.com/spreadsheets/d/1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY/edit?id=0#gid=0
 - Legacy sheet (for migration only): https://docs.google.com/spreadsheets/d/1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs/edit?gid=288536257#gid=288536257
-- Template/example CSV: `tools/linux/localization/templates/sample_localization.csv`
+- Template/example CSV: `.info/templates/sample_localization.csv`
 
 ## File Layout
 - Per-locale folders with module namespaces: `assets/i18n/<locale>/<module>.yaml`
 - Generated translations (checked in): `lib/config/l10n/generated/strings*.g.dart`
 - CLI cache/intermediate: `build/localization/records.json`
-- Config: `.info/app/localization.json`
+- Config: `.info/app/localization.json` (sheet ids/GIDs, module tabs, paths)
 - Slang config: `slang.yaml`
 
 ## Sheet Schema (columns)
-- `Module`: slug/namespace (e.g., `home`, `auth`), normalized to snake_case.
+- `Module`: slug/namespace (e.g., `home`, `auth`), normalized to snake_case. Each module lives in its own tab (tab name == module) in the active sheet. `common` and `auth` are shared tabs usable by other apps.
 - `Key`: translation key within the module (e.g., `homeGreetingTitle`).
 - `Type`: `text | rich | plural | select | selectordinal | context` (validation only).
 - `Context`: optional axis (gender/platform/experiment).
@@ -23,7 +23,7 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 - `Description`: copy guidance for translators.
 - `Status`: `active | deprecated | draft`.
 - `Tags`: free-form, comma/semicolon delimited.
-- `EN`, `VI`, `ZH`: ICU-capable translations (plural/select allowed). Placeholders should match `Params`; non-ICU placeholders use `${name}`.
+- `EN`, `VI`, `ZH`: ICU-capable translations (plural/select allowed). Placeholders should match `Params`; non-ICU placeholders use `${name}`. Missing `ZH` values will fall back to `EN` during tooling.
 
 ## CLI (tools/linux/localization/localization.sh)
 Runs inside `.venv_localization`, installs deps from `requirements.txt`, and uses `.info/app/localization.json`.
@@ -37,7 +37,7 @@ tools/linux/localization/localization.sh migrate --source sheet   # uses legacy 
 tools/linux/localization/localization.sh migrate --source arb    # uses assets/arb
 tools/linux/localization/localization.sh migrate --source sheet --apply  # also push to active sheet
 
-# Push local records.json back to the active sheet (requires service account)
+# Push local records.json back to the active sheet (requires service account). Modules are written to individual tabs (auto-created if missing).
 tools/linux/localization/localization.sh push --apply
 
 # Validate records.json for schema/placeholders/missing locales

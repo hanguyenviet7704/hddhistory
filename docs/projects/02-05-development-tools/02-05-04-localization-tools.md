@@ -12,7 +12,7 @@ tools/linux/localization/localization.sh migrate --source sheet   # legacy sheet
 tools/linux/localization/localization.sh migrate --source arb
 tools/linux/localization/localization.sh migrate --source sheet --apply  # push to active sheet
 
-# Push local records.json back to the active sheet (requires service account)
+# Push local records.json back to the active sheet (requires service account). Modules are written to per-module tabs (auto-created if missing).
 tools/linux/localization/localization.sh push --apply
 
 # Validate placeholders/missing translations
@@ -22,11 +22,11 @@ tools/linux/localization/localization.sh validate
 Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Data Layout
-- Sheet schema: `Module`, `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `EN/VI/ZH`. ICU is allowed; placeholders use `${name}`.
+- Sheet schema: `Module`, `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `EN/VI/ZH`. ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs.
 - Files: `assets/i18n/<locale>/<module>.yaml`
 - Generated code: `lib/config/l10n/generated/strings*.g.dart`
 - Config: `.info/app/localization.json`, `slang.yaml`
-- Template: `tools/linux/localization/templates/sample_localization.csv`
+- Template: `.info/templates/sample_localization.csv`
 
 ## Using Translations
 - App is wrapped with `TranslationProvider` (see `lib/main.dart`).

@@ -1,8 +1,8 @@
 onboardingAfterOnboardEncourageMessage: '{value}位用户选择了相同的回答'
 onboardingAfterOnboardEncourageSubText: 从今天开始，通过声音成为更好的自己
 onboardingAfterOnboardEncourageTitle: 你并不孤单！
-onboardingBeSkilledExpectTimeOption1: ${number}个月
-onboardingBeSkilledExpectTimeOption2: ${number}个月
+onboardingBeSkilledExpectTimeOption1: '{number}个月'
+onboardingBeSkilledExpectTimeOption2: '{number}个月'
 onboardingBeSkilledExpectTimeQuestion: 你想在多久内掌握技能？
 onboardingChooseSkillsetSubtitle: 这个选择不会限制你的学习体验
 onboardingChooseSkillsetTitle: 选择你想掌握的主题
@@ -35,11 +35,12 @@ onboardingStruggleOption3: 清晰组织思路
 onboardingStruggleOption4: 有效使用声音
 onboardingStruggleOption5: 处理问答与反馈
 onboardingStruggleOption6: 控制紧张
+onboardingStruggleOption7: No personalized learning path
 onboardingStruggleQuestion: 你在说话时通常遇到哪些困难？
 onboardingStruggleQuestionSubtitle: 选择所有符合你情况的选项
 onboardingTeenAgeOption: 17岁或以下
 onboardingThirdAppKeypointIntro: 在短时间内取得明显进步
-onboardingTimeSpentOption: ${number}分钟
+onboardingTimeSpentOption: '{number}分钟'
 onboardingTimeSpentTitle: 你的每日学习目标
 onboardingTimeStudyOption1: 早晨
 onboardingTimeStudyOption2: 短暂休息
@@ -48,13 +49,18 @@ onboardingTimeStudyOption4: 空闲时间
 onboardingTimeStudyQuestion: 一天中你最适合学习新知识的时间是？
 onboardingTimeStudySubtitle: 让我们建立学习习惯
 onboardingTopicOption1: 口头沟通
+onboardingTopicOption1Specific: Public speaking, Active listening, Conflict management,
+  Presentation skills
 onboardingTopicOption2: 公众演讲
+onboardingTopicOption2Specific: Time Management, Organizational Skills, Memory
 onboardingTopicOption3: 主动倾听
 onboardingTopicOption3Specific: 情绪智力
 onboardingTopicOption4: 冲突解决
 onboardingTopicOption4Specific: 演讲技巧
 onboardingTopicOption5: 语言
 onboardingTopicOption5Specific: 其他
+onboardingTopicOption6: Personal brand building
+onboardingTopicOption6Specific: Personal Branding, Networking
 onboardingUserAgeQuestion: 你多大了？
 onboardingUserGenderQuestion: 你的性别是？
 onboardingUserNamePlaceholder: 输入你的名字
