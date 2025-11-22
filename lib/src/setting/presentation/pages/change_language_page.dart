@@ -6,7 +6,7 @@ class ChangeLanguagePage extends StatelessWidget {
   static const List<AppLocale> _displayLocales = [AppLocale.en, AppLocale.vi];
 
   void _handleSelectLanguage(BuildContext context, AppLocale locale) {
-    context.read<LocaleCubit>().changeLocale(locale);
+    context.read<LocaleCubit>().setLocale(locale);
     context.back();
   }
 

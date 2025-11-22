@@ -6,14 +6,12 @@ class LocaleCubit extends HydratedCubit<AppLocale> {
     LocaleSettings.setLocale(state);
   }
 
-  void changeLocale(AppLocale locale) {
+  void setLocale(AppLocale locale) {
     if (locale == state) return;
     LocaleSettings.setLocale(locale);
     emit(locale);
     LogDev.trace('Change locale to ${locale.languageCode}');
   }
-
-  void setLocale(AppLocale locale) => changeLocale(locale);
 
   @override
   AppLocale fromJson(Map<String, dynamic> json) => AppLocaleUtils.parse(json['locale'] as String? ?? AppLocale.en.languageCode);
