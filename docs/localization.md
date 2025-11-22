@@ -9,7 +9,7 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 
 ## File Layout
 - Per-locale folders with module namespaces: `assets/i18n/<locale>/<module>.yaml`
-- Generated translations (checked in): `lib/config/l10n/strings*.g.dart`
+- Generated translations (checked in): `lib/config/l10n/l10n*.dart` (`output_file_name` set to `l10n.g.dart` per slang recommendations: https://pub.dev/packages/slang#configuration)
 - CLI cache/intermediate: `build/localization/records.json`
 - Config: `.info/app/localization.json` (sheet ids/GIDs, module tabs, paths, default service account path/env)
 - Slang config: `slang.yaml`
@@ -54,7 +54,7 @@ Service account credentials (push only):
 3) Regenerate YAML + code:  
 ```bash
 tools/linux/localization/localization.sh pull    # or migrate
-flutter pub run slang                            # regenerates strings.g.dart
+flutter pub run slang                            # regenerates lib/config/l10n/l10n*.dart
 ```
 4) Use translations in code: wrap app with `TranslationProvider` (see `lib/main.dart`) and access via `context.text.<module>.<key>()`.
 5) Validate/tests: `tools/linux/localization/localization.sh validate`, `flutter test test/unit/` (or full suite).
@@ -70,7 +70,7 @@ flutter pub run slang                            # regenerates strings.g.dart
 - Push (`--apply`) writes the normalized dataset back to the active sheet with a dry-run diff by default.
 
 ## Testing & Validation
-- `flutter pub run slang` (or `dart run slang`) regenerates code from YAML.
+- `flutter pub run slang` (or `dart run slang`) regenerates code from YAML (output in `lib/config/l10n/l10n*.dart`).
 - `flutter test test/unit/` at minimum for l10n changes; run `flutter analyze` on larger refactors.
 
 ## Security

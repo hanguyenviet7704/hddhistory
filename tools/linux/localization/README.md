@@ -32,4 +32,4 @@ tools/linux/localization/localization.sh push --apply
 ## Tips
 - Ensure `.info/app/localization.json` points to the correct sheet IDs/GIDs before running.
 - `--apply` writes to the sheet; without it, operations are dry-run. Per-module tabs are auto-created when pushing if missing.
-- After pulling/migrating, run `dart run slang` to regenerate `lib/config/l10n/strings*.g.dart`.
+- After pulling/migrating, regenerate `lib/config/l10n/l10n*.dart` via `dart run slang` or `dart run build_runner build --delete-conflicting-outputs` (slang_build_runner enabled; `output_file_name: l10n.g.dart`).

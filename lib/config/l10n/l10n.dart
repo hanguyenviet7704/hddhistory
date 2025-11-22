@@ -1,3 +1,2 @@
 library;
-
-export 'strings.g.dart';
+export 'l10n.g.dart';

@@ -338,7 +338,7 @@ Generate localization classes from module-based YAML files (synced from Google S
 #### Configuration
 - Source YAML per locale/module: `assets/i18n/<locale>/<module>.yaml`
 - Config: `slang.yaml`
-- Generated output: `lib/config/l10n/strings*.g.dart`
+- Generated output: `lib/config/l10n/l10n*.dart` (`output_file_name: l10n.g.dart` per https://pub.dev/packages/slang#configuration)
 
 Usage:
 ```dart
@@ -347,6 +347,10 @@ final t = context.text; // shortcut extension
 Text(t.common.appTitle)
 Text(t.auth.authGreeting(name: 'John'))
 ```
+
+Regeneration options:
+- `dart run slang` (direct CLI)
+- `dart run build_runner build --delete-conflicting-outputs` (slang_build_runner enabled)
 
 ## Build Configuration
 

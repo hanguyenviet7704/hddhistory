@@ -289,12 +289,20 @@ def normalize_translations(
 ) -> None:
     for record in records:
         default_value = record.translations.get(default_language or "", "")
+        # If params are empty, try to infer from the default translation placeholders
+        if not record.params:
+            inferred = detect_placeholders(default_value)
+            if inferred:
+                record.params = inferred
+
         for lang in languages:
             value = record.translations.get(lang, "")
             if fill_missing_from_default and not value and default_language and default_value:
                 record.translations[lang] = default_value
         for lang, value in list(record.translations.items()):
-            record.translations[lang] = normalize_placeholders(value, record.params)
+            # Fall back to inferring placeholders from each translation if params are still empty
+            params_for_norm = record.params or detect_placeholders(value)
+            record.translations[lang] = normalize_placeholders(value, params_for_norm)
 
 
 def validate_records(records: List[LocalizationRecord], supported_languages: Sequence[str]) -> Tuple[List[str], List[str]]:
@@ -312,6 +320,9 @@ def validate_records(records: List[LocalizationRecord], supported_languages: Seq
             warnings.append(f"{identity}: unsupported type '{record.type}', falling back to text")
 
         placeholders = detect_placeholders(record.translations.get(supported_languages[0], ""))
+        missing_params = sorted(set(placeholders) - set(record.params))
+        if missing_params:
+            warnings.append(f"{identity}: placeholders in text not declared in Params: {', '.join(missing_params)}")
         missing_declared = sorted(set(record.params) - set(placeholders))
         if missing_declared:
             warnings.append(f"{identity}: declared params missing in text: {', '.join(missing_declared)}")

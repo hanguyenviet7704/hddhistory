@@ -24,7 +24,7 @@ Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATIO
 ## Data Layout
 - Sheet schema: `Module`, `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `EN/VI/ZH`. ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs.
 - Files: `assets/i18n/<locale>/<module>.yaml`
-- Generated code: `lib/config/l10n/strings*.g.dart`
+- Generated code: `lib/config/l10n/l10n*.dart` (`output_file_name: l10n.g.dart`)
 - Config: `.info/app/localization.json` (sheet ids/tabs, paths, default SA path/env), `slang.yaml`
 - Template: `.info/templates/sample_localization.csv`
 
