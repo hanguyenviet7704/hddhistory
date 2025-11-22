@@ -3,9 +3,9 @@ part of '../../setting.dart';
 class ChangeLanguagePage extends StatelessWidget {
   const ChangeLanguagePage({super.key});
 
-  static const List<LocaleType> _displayLocales = [LocaleType.en, LocaleType.vi];
+  static const List<AppLocale> _displayLocales = [AppLocale.en, AppLocale.vi];
 
-  void _handleSelectLanguage(BuildContext context, LocaleType locale) {
+  void _handleSelectLanguage(BuildContext context, AppLocale locale) {
     context.read<LocaleCubit>().changeLocale(locale);
     context.back();
   }
@@ -55,7 +55,7 @@ class ChangeLanguagePage extends StatelessWidget {
             Divider(height: 1, color: AppCustomColor.borderDefault),
             Padding(
               padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 0),
-              child: BlocBuilder<LocaleCubit, LocaleType>(
+              child: BlocBuilder<LocaleCubit, AppLocale>(
                 builder: (context, state) {
                   return Column(
                     mainAxisSize: MainAxisSize.min,

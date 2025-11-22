@@ -13,11 +13,11 @@ sealed class BaseMultiLanguage with _$BaseMultiLanguage {
 
 extension BaseMultiLanguageExtension on BaseMultiLanguage {
   String get text {
-    LocaleType locale = AppDI.injector.get<LocaleCubit>().state;
+    AppLocale locale = AppDI.injector.get<LocaleCubit>().state;
     return switch (locale) {
-      LocaleType.en => en,
-      LocaleType.vi => vi.isNotEmpty ? vi : en,
-      LocaleType.zh => zh.isNotEmpty ? zh : en,
+      AppLocale.en => en,
+      AppLocale.vi => vi.isNotEmpty ? vi : en,
+      AppLocale.zh => zh.isNotEmpty ? zh : en,
     };
   }
 }

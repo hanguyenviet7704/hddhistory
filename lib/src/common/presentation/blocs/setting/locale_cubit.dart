@@ -1,78 +1,45 @@
 part of '../blocs.dart';
 
 @lazySingleton
-class LocaleCubit extends HydratedCubit<LocaleType> {
-  LocaleCubit() : super(LocaleType.en) {
-    LocaleSettings.setLocale(state.appLocale);
+class LocaleCubit extends HydratedCubit<AppLocale> {
+  LocaleCubit() : super(AppLocale.en) {
+    LocaleSettings.setLocale(state);
   }
 
-  void changeLocale(LocaleType locale) {
+  void changeLocale(AppLocale locale) {
     if (locale == state) return;
-    LocaleSettings.setLocale(locale.appLocale);
+    LocaleSettings.setLocale(locale);
     emit(locale);
-    LogDev.trace('Change locale to ${locale.value}');
+    LogDev.trace('Change locale to ${locale.languageCode}');
   }
 
-  void setLocale(AppLocale locale) {
-    LocaleType localeType = switch (locale) {
-      AppLocale.en => LocaleType.en,
-      AppLocale.vi => LocaleType.vi,
-      AppLocale.zh => LocaleType.zh,
-    };
-    changeLocale(localeType);
-  }
+  void setLocale(AppLocale locale) => changeLocale(locale);
 
   @override
-  LocaleType fromJson(Map<String, dynamic> json) => LocaleType.fromString(json['locale'] as String);
+  AppLocale fromJson(Map<String, dynamic> json) => AppLocaleUtils.parse(json['locale'] as String? ?? AppLocale.en.languageCode);
 
   @override
-  Map<String, dynamic> toJson(LocaleType state) => {'locale': state.value};
+  Map<String, dynamic> toJson(AppLocale state) => {'locale': state.languageCode};
 }
 
-enum LocaleType {
-  en('en', 'English'),
-  vi('vi', 'Tiếng Việt'),
-  zh('zh', '中文');
-
-  final String value;
-  final String label;
-
-  const LocaleType(this.value, this.label);
-
-  AppLocale get appLocale {
-    return switch (this) {
-      LocaleType.en => AppLocale.en,
-      LocaleType.vi => AppLocale.vi,
-      LocaleType.zh => AppLocale.zh
-    };
-  }
-
-  static LocaleType fromString(String name) {
-    return switch (name) {
-      'en' => LocaleType.en,
-      'vi' => LocaleType.vi,
-      'zh' => LocaleType.zh,
-      _ => LocaleType.en,
-    };
-  }
-
-  String get languageAISupport => switch (this) {
-    LocaleType.en => 'English',
-    LocaleType.vi => 'Vietnamese',
-    LocaleType.zh => 'Chinese',
+extension AppLocaleX on AppLocale {
+  String get label => switch (this) {
+    AppLocale.en => 'English',
+    AppLocale.vi => 'Tiếng Việt',
+    AppLocale.zh => '中文',
   };
 
-  Locale get localeData {
-    return switch (this) {
-      LocaleType.en => const Locale.fromSubtags(languageCode: 'en'),
-      LocaleType.vi => const Locale.fromSubtags(languageCode: 'vi'),
-      LocaleType.zh => const Locale.fromSubtags(languageCode: 'zh'),
-    };
-  }
+  String get languageAISupport => switch (this) {
+    AppLocale.en => 'English',
+    AppLocale.vi => 'Vietnamese',
+    AppLocale.zh => 'Chinese',
+  };
+
+  Locale get localeData => flutterLocale;
 
   String get flagCircle => switch (this) {
-    LocaleType.en => AppAsset.svg.common.icUsFlag,
-    LocaleType.vi => AppAsset.svg.common.icVnFlag,
-    LocaleType.zh => AppAsset.svg.common.icCnFlag,
+    AppLocale.en => AppAsset.svg.common.icUsFlag,
+    AppLocale.vi => AppAsset.svg.common.icVnFlag,
+    AppLocale.zh => AppAsset.svg.common.icCnFlag,
   };
 }

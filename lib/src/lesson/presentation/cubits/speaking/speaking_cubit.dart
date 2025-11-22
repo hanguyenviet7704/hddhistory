@@ -101,7 +101,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     _feedbackStream = '';
     emit(state.copyWith(goodPoints: const [], improvementPoints: const []));
 
-    LocaleType localeType = _localeCubit.state;
+    AppLocale localeType = _localeCubit.state;
     String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
     String? audioUrl = state.inputMode == SpeakingInputMode.recording ? url : null;
     await runUseCase<ResponseBody>(

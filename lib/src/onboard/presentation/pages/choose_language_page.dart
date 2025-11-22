@@ -3,7 +3,7 @@ part of '../../onboard.dart';
 class ChooseLanguagePage extends StatelessWidget {
   const ChooseLanguagePage({super.key});
 
-  Future<void> _handleSelectLanguage(BuildContext context, LocaleType locale) async {
+  Future<void> _handleSelectLanguage(BuildContext context, AppLocale locale) async {
     context.read<LocaleCubit>().changeLocale(locale);
     IntroRoute().go(context);
   }
@@ -29,26 +29,26 @@ class ChooseLanguagePage extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: BlocBuilder<LocaleCubit, LocaleType>(
+                    child: BlocBuilder<LocaleCubit, AppLocale>(
                       builder: (context, state) {
                         return _LanguageOption(
                           flagAsset: AppAsset.svg.common.icUsFlag,
                           languageName: 'English',
-                          isSelected: state == LocaleType.en,
-                          onTap: () => _handleSelectLanguage(context, LocaleType.en),
+                          isSelected: state == AppLocale.en,
+                          onTap: () => _handleSelectLanguage(context, AppLocale.en),
                         );
                       },
                     ),
                   ),
                   16.horizontalSpace,
                   Expanded(
-                    child: BlocBuilder<LocaleCubit, LocaleType>(
+                    child: BlocBuilder<LocaleCubit, AppLocale>(
                       builder: (context, state) {
                         return _LanguageOption(
                           flagAsset: AppAsset.svg.common.icVnFlag,
                           languageName: 'Tiếng Việt',
-                          isSelected: state == LocaleType.vi,
-                          onTap: () => _handleSelectLanguage(context, LocaleType.vi),
+                          isSelected: state == AppLocale.vi,
+                          onTap: () => _handleSelectLanguage(context, AppLocale.vi),
                         );
                       },
                     ),

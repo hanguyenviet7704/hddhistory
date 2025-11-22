@@ -8,7 +8,7 @@ class ChangeLanguageOptionTile extends StatelessWidget {
     required this.onTap,
   });
 
-  final LocaleType locale;
+  final AppLocale locale;
   final bool isSelected;
   final VoidCallback onTap;
 
