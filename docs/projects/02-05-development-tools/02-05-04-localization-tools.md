@@ -2,21 +2,23 @@
 
 Localization now uses `slang` + Google Sheets with module namespaces. The legacy `flutter gen-l10n` + merged ARB flow is deprecated (l10n.yaml has been removed).
 
-## Commands
+## Commands (per platform wrappers)
 ```bash
 # Pull active sheet -> YAML + build/localization/records.json
 tools/linux/localization/localization.sh pull
+tools/macos/localization/localization.sh pull
+tools/windows/localization/localization.bat pull
 
 # Migrate legacy sheet/ARB -> new schema (dry-run by default)
-tools/linux/localization/localization.sh migrate --source sheet   # legacy sheet id/gid from .info/app/localization.json
-tools/linux/localization/localization.sh migrate --source arb
-tools/linux/localization/localization.sh migrate --source sheet --apply  # push to active sheet
+tools/<platform>/localization/localization.(sh|bat) migrate --source sheet   # legacy sheet id/gid from .info/app/localization.json
+tools/<platform>/localization/localization.(sh|bat) migrate --source arb
+tools/<platform>/localization/localization.(sh|bat) migrate --source sheet --apply  # push to active sheet
 
 # Push local records.json back to the active sheet (requires service account). Modules are written to per-module tabs (auto-created if missing).
-tools/linux/localization/localization.sh push --apply
+tools/<platform>/localization/localization.(sh|bat) push --apply
 
 # Validate placeholders/missing translations
-tools/linux/localization/localization.sh validate
+tools/<platform>/localization/localization.(sh|bat) validate
 ```
 
 Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to defaults in `.info/app/localization.json` and then `GOOGLE_APPLICATION_CREDENTIALS`.

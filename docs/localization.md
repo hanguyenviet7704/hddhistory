@@ -25,23 +25,29 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 - `Tags`: free-form, comma/semicolon delimited.
 - `EN`, `VI`, `ZH`: ICU-capable translations (plural/select allowed). Placeholders should match `Params`; non-ICU placeholders use `${name}`. Missing `ZH` values will fall back to `EN` during tooling.
 
-## CLI (tools/linux/localization/localization.sh)
-Runs inside `.venv_localization`, installs deps from `requirements.txt`, and uses `.info/app/localization.json`.
+## CLI (Linux/macOS/Windows)
+Wrappers live under `tools/<platform>/localization/`, run inside `.venv_localization`, install deps from `requirements.txt`, and use `.info/app/localization.json`.
 
+- Linux/macOS: `tools/linux/localization/localization.sh ...` or `tools/macos/localization/localization.sh ...`
+- Windows: `tools/windows/localization/localization.bat ...`
+
+Common commands:
 ```bash
 # Pull active sheet -> YAML + build/localization/records.json
 tools/linux/localization/localization.sh pull
+tools/macos/localization/localization.sh pull
+tools/windows/localization/localization.bat pull
 
 # Migrate legacy sheet or local ARB into new schema/YAML (dry-run by default)
-tools/linux/localization/localization.sh migrate --source sheet   # uses legacy sheet id/gid
-tools/linux/localization/localization.sh migrate --source arb    # uses assets/arb
-tools/linux/localization/localization.sh migrate --source sheet --apply  # also push to active sheet
+tools/<platform>/localization/localization.(sh|bat) migrate --source sheet   # uses legacy sheet id/gid
+tools/<platform>/localization/localization.(sh|bat) migrate --source arb    # uses assets/arb
+tools/<platform>/localization/localization.(sh|bat) migrate --source sheet --apply  # also push to active sheet
 
 # Push local records.json back to the active sheet (requires service account). Modules are written to individual tabs (auto-created if missing).
-tools/linux/localization/localization.sh push --apply
+tools/<platform>/localization/localization.(sh|bat) push --apply
 
 # Validate records.json for schema/placeholders/missing locales
-tools/linux/localization/localization.sh validate
+tools/<platform>/localization/localization.(sh|bat) validate
 ```
 
 Service account credentials (push only):
