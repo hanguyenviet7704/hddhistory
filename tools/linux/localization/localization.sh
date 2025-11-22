@@ -61,9 +61,18 @@ source "$VENV_DIR/bin/activate"
 
 REQ_FILE="${SCRIPT_DIR}/requirements.txt"
 if [[ -f "$REQ_FILE" ]]; then
-    log_step "Ensuring Python dependencies..."
-    pip install --upgrade pip >/dev/null
-    pip install -r "$REQ_FILE" >/dev/null
+    REQ_HASH=$(md5sum "$REQ_FILE" | awk '{print $1}')
+    DEPS_STAMP="$VENV_DIR/.deps_hash"
+    CURRENT_HASH=""
+    [[ -f "$DEPS_STAMP" ]] && CURRENT_HASH=$(cat "$DEPS_STAMP")
+    if [[ "$REQ_HASH" != "$CURRENT_HASH" ]]; then
+        log_step "Ensuring Python dependencies..."
+        pip install --upgrade pip >/dev/null
+        pip install -r "$REQ_FILE" >/dev/null
+        echo "$REQ_HASH" > "$DEPS_STAMP"
+    else
+        log_info "Dependencies already satisfied (cached)."
+    fi
 fi
 
 PYTHON_CONFIG="$(create_python_config)"

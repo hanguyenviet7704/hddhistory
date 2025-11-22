@@ -24,6 +24,7 @@
         "description": "Description",
         "status": "Status",
         "tags": "Tags",
+        "updatedAt": "UpdatedAt",
         "en": "EN",
         "vi": "VI",
         "zh": "ZH"

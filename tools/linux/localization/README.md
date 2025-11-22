@@ -29,7 +29,7 @@ tools/linux/localization/localization.sh push --apply
 
 ## Outputs
 - YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (fed to slang).
-- Intermediate dataset: `build/localization/records.json` (used for push/diff/validation).
+- Intermediate dataset: `build/localization/records.json` (used for push/diff/validation). Optional `UpdatedAt` column is supported; pushes stamp new/changed rows.
 
 ## Tips
 - Ensure `.info/app/localization.json` points to the correct sheet IDs/GIDs before running.

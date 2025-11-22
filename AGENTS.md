@@ -41,6 +41,7 @@ dart format lib/ test/
 
 ## Localization (slang + Sheets)
 - Active sheet is defined in `.info/app/localization.json` (`googleSheets.active.sheetId/tabs`). Module comes from the tab name; no “Module” column is required. Config also sets paths/columns/locales.
+- Optional `UpdatedAt` column is supported; pushes auto-stamp new/changed rows.
 - Commands (per platform wrappers, same flags):  
   - Linux/macOS: `tools/<platform>/localization/localization.sh pull|push|migrate|validate`  
   - Windows: `tools/windows/localization/localization.bat pull|push|migrate|validate`

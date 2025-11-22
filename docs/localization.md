@@ -23,6 +23,7 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 - `Description`: copy guidance for translators.
 - `Status`: `active | deprecated | draft`.
 - `Tags`: free-form, comma/semicolon delimited.
+- `UpdatedAt`: optional ISO8601 timestamp for last change (auto-filled on push for new/changed rows).
 - `EN`, `VI`, `ZH`: ICU-capable translations (plural/select allowed). Placeholders should match `Params`; non-ICU placeholders use `${name}`. Missing `ZH` values will fall back to `EN` during tooling.
 
 ## CLI (Linux/macOS/Windows)

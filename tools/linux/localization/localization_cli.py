@@ -20,6 +20,7 @@ import sys
 import textwrap
 from collections import defaultdict, OrderedDict
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
@@ -83,6 +84,7 @@ class LocalizationRecord:
     status: str
     tags: List[str]
     translations: Dict[str, str]
+    last_updated: str = ""
     source: str = ""
 
     def identity(self) -> str:
@@ -194,6 +196,8 @@ def parse_sheet_rows(
         status = normalize_status(row.get(columns.get("status", "") or "", "active"))
         tags_raw = row.get(columns.get("tags", "") or "", "")
         tags = [t.strip() for t in re.split(r"[;,]", tags_raw) if t.strip()]
+        updated_at_col = (columns.get("updatedAt") or "").strip()
+        updated_at = row.get(updated_at_col, "").strip() if updated_at_col else ""
 
         translations: Dict[str, str] = {}
         for lang in languages:
@@ -210,6 +214,7 @@ def parse_sheet_rows(
             status=status,
             tags=tags,
             translations=translations,
+            last_updated=updated_at,
             source=source,
         )
         records.append(record)
@@ -254,6 +259,7 @@ def load_legacy_arb(arb_dir: Path, languages: Sequence[str]) -> List[Localizatio
                 status="active",
                 tags=[],
                 translations=translations,
+                last_updated="",
                 source="legacy-arb",
             )
             records.append(record)
@@ -279,6 +285,8 @@ def merge_records_by_identity(records: Iterable[LocalizationRecord], languages: 
             existing.params = record.params
         existing.tags = sorted(set(existing.tags + record.tags))
         existing.source = ",".join(sorted(set(filter(None, [existing.source, record.source]))))
+        if record.last_updated:
+            existing.last_updated = record.last_updated
     return list(merged.values())
 
 
@@ -352,6 +360,7 @@ def write_intermediate(records: List[LocalizationRecord], temp_dir: Path) -> Pat
             "status": r.status,
             "tags": r.tags,
             "translations": r.translations,
+            "last_updated": r.last_updated,
             "source": r.source,
         }
         for r in sorted(records, key=lambda rec: rec.identity())
@@ -452,6 +461,7 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
 
 def dataset_to_rows(records: List[LocalizationRecord], columns: Dict[str, str], languages: Sequence[str]) -> List[List[str]]:
     module_col = (columns.get("module") or "").strip()
+    updated_at_col = (columns.get("updatedAt") or "").strip()
     header: List[str] = []
     if module_col:
         header.append(module_col)
@@ -466,6 +476,8 @@ def dataset_to_rows(records: List[LocalizationRecord], columns: Dict[str, str], 
             columns.get("tags", "Tags"),
         ]
     )
+    if updated_at_col:
+        header.append(updated_at_col)
     header.extend([columns.get(lang, lang).strip() or lang for lang in languages])
 
     rows: List[List[str]] = [header]
@@ -484,6 +496,8 @@ def dataset_to_rows(records: List[LocalizationRecord], columns: Dict[str, str], 
                 ", ".join(record.tags),
             ]
         )
+        if updated_at_col:
+            row.append(record.last_updated)
         for lang in languages:
             row.append(record.translations.get(lang, ""))
         rows.append(row)
@@ -713,6 +727,7 @@ def handle_push(cfg: Dict, apply: bool) -> None:
             status=item.get("status", "active"),
             tags=item.get("tags", []),
             translations=item.get("translations", {}),
+            last_updated=item.get("last_updated", ""),
             source=item.get("source", "local"),
         )
         for item in records_raw
@@ -741,6 +756,13 @@ def handle_push(cfg: Dict, apply: bool) -> None:
     if changed:
         log_info(f"Changed keys (sample): {', '.join(changed[:5])}" + (" ..." if len(changed) > 5 else ""))
 
+    if apply:
+        now_iso = datetime.now(timezone.utc).isoformat()
+        touched = set(added + changed)
+        for record in records:
+            if record.identity() in touched or not record.last_updated:
+                record.last_updated = now_iso
+
     push_to_sheet(records, cfg["active_sheet"], languages, apply=apply, auth_cfg=auth_cfg)
 
 
@@ -767,6 +789,7 @@ def handle_validate(cfg: Dict) -> None:
             status=item.get("status", "active"),
             tags=item.get("tags", []),
             translations=item.get("translations", {}),
+            last_updated=item.get("last_updated", ""),
             source=item.get("source", "local"),
         )
         for item in records_raw

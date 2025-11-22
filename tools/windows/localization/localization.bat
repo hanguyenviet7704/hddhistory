@@ -53,9 +53,18 @@ if %errorlevel% neq 0 (
 
 set "REQ_FILE=%SCRIPT_DIR%requirements.txt"
 if exist "%REQ_FILE%" (
-    call "%LCOMMON%" :log_step "Ensuring Python dependencies..."
-    pip install --upgrade pip >nul
-    pip install -r "%REQ_FILE%" >nul
+    for /f "skip=1 tokens=1" %%h in ('certutil -hashfile "%REQ_FILE%" MD5 ^| findstr /R "^[0-9A-F]"') do set "REQ_HASH=%%h"
+    set "DEPS_STAMP=%VENV_DIR%\.deps_hash"
+    set "CURRENT_HASH="
+    if exist "%DEPS_STAMP%" set /p CURRENT_HASH=<"%DEPS_STAMP%"
+    if /I not "%REQ_HASH%"=="%CURRENT_HASH%" (
+        call "%LCOMMON%" :log_step "Ensuring Python dependencies..."
+        pip install --upgrade pip >nul
+        pip install -r "%REQ_FILE%" >nul
+        echo %REQ_HASH% > "%DEPS_STAMP%"
+    ) else (
+        call "%LCOMMON%" :log_info "Dependencies already satisfied (cached)."
+    )
 )
 
 call "%LCOMMON%" :create_python_config PYTHON_CONFIG
