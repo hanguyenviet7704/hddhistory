@@ -324,6 +324,11 @@ def normalize_translations(
             # Fall back to inferring placeholders from each translation if params are still empty
             params_for_norm = record.params or detect_placeholders(value)
             record.translations[lang] = normalize_placeholders(value, params_for_norm)
+            # If we still have no declared params, strip stray placeholders to avoid accidental function signatures
+            if not record.params:
+                record.translations[lang] = re.sub(
+                    r"\$+\s*\{?\s*([a-zA-Z_][\w]*)\s*\}?", r"\1", record.translations[lang]
+                )
 
 
 def validate_records(records: List[LocalizationRecord], supported_languages: Sequence[str]) -> Tuple[List[str], List[str]]:

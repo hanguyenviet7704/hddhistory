@@ -1,4 +1,4 @@
-Key,Type,Context,Params,Description,Status,Tags,UpdatedAt,EN,VI,ZH
+Key,Type,Context,Params,Description,Status,Tags,UpdatedAt,English (EN),Vietnamese (VI),Chinese (ZH)
 appTitle,text,,,"App title shown in system UI",active,,2024-01-01T00:00:00Z,MeUp,MeUp,MeUp
 homeHomeButton,text,,,"Bottom navigation label: Home",active,,2024-01-01T00:00:00Z,Home,Trang chủ,首页
 greeting,text,,name:String,"Greeting with a name placeholder",active,,2024-01-01T00:00:00Z,Hello ${name},Xin chào ${name},你好，${name}

@@ -25,9 +25,9 @@
         "status": "Status",
         "tags": "Tags",
         "updatedAt": "UpdatedAt",
-        "en": "EN",
-        "vi": "VI",
-        "zh": "ZH"
+        "en": "English (EN)",
+        "vi": "Vietnamese (VI)",
+        "zh": "Chinese (ZH)"
       }
     },
     "auth": {

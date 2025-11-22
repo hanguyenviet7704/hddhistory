@@ -24,7 +24,7 @@ tools/<platform>/localization/localization.(sh|bat) validate
 Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to defaults in `.info/app/localization.json` and then `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Data Layout
-- Sheet schema: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `UpdatedAt`, `EN/VI/ZH` (module is inferred from the tab name). ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs. `UpdatedAt` is optional and will be auto-populated for added/changed rows on push.
+- Sheet schema: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `UpdatedAt`, `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)` (module is inferred from the tab name; column labels configurable in `.info/app/localization.json`). ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs. `UpdatedAt` is optional and will be auto-populated for added/changed rows on push.
 - Files: `assets/i18n/<locale>/<module>.yaml`
 - Generated code: `lib/config/l10n/l10n*.dart` (`output_file_name: l10n.g.dart`)
 - Config: `.info/app/localization.json` (sheet ids/tabs, paths, default SA path/env), `slang.yaml`
