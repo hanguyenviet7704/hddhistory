@@ -131,7 +131,7 @@ targets:
       #     fallback_strategy: base_locale
       #     input_directory: assets/i18n
       #     input_file_pattern: .yaml
-      #     output_directory: lib/config/l10n/generated
+      #     output_directory: lib/config/l10n
       #     output_file_name: strings.g.dart
       #     namespaces: true
       #     lazy: true

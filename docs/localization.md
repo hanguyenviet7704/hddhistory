@@ -9,7 +9,7 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 
 ## File Layout
 - Per-locale folders with module namespaces: `assets/i18n/<locale>/<module>.yaml`
-- Generated translations (checked in): `lib/config/l10n/generated/strings*.g.dart`
+- Generated translations (checked in): `lib/config/l10n/strings*.g.dart`
 - CLI cache/intermediate: `build/localization/records.json`
 - Config: `.info/app/localization.json` (sheet ids/GIDs, module tabs, paths, default service account path/env)
 - Slang config: `slang.yaml`

@@ -1,3 +1,3 @@
 library;
 
-export 'generated/strings.g.dart';
+export 'strings.g.dart';

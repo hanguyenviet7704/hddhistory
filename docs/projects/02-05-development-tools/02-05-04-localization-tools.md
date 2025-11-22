@@ -1,6 +1,6 @@
 # Localization Tooling (Updated)
 
-Localization now uses `slang` + Google Sheets with module namespaces. The legacy `flutter gen-l10n` + merged ARB flow is deprecated (see `l10n.yaml` for historical reference only).
+Localization now uses `slang` + Google Sheets with module namespaces. The legacy `flutter gen-l10n` + merged ARB flow is deprecated (l10n.yaml has been removed).
 
 ## Commands
 ```bash
@@ -24,7 +24,7 @@ Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATIO
 ## Data Layout
 - Sheet schema: `Module`, `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `EN/VI/ZH`. ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs.
 - Files: `assets/i18n/<locale>/<module>.yaml`
-- Generated code: `lib/config/l10n/generated/strings*.g.dart`
+- Generated code: `lib/config/l10n/strings*.g.dart`
 - Config: `.info/app/localization.json` (sheet ids/tabs, paths, default SA path/env), `slang.yaml`
 - Template: `.info/templates/sample_localization.csv`
 

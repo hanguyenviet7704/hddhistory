@@ -2,7 +2,7 @@
   "googleSheets": {
     "active": {
       "sheetId": "1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY",
-      "sheetGids": ["0"],
+      "sheetGids": [],
       "tabs": [
         {"module": "common", "title": "common", "gid": "0"},
         {"module": "auth", "title": "auth"},
@@ -68,7 +68,7 @@
     "templateDir": ".info/templates",
     "tempDir": "build/localization",
     "slangConfig": "slang.yaml",
-    "outputDir": "lib/config/l10n/generated"
+    "outputDir": "lib/config/l10n"
   },
   "generation": {
     "author": "Noname Gogeto - Flutter Dcore",

@@ -123,13 +123,8 @@ else
     log_warning "flutter_launcher_icons not found, skipping icon generation"
 fi
 
-# Generate localization
-log_step "Generating localization..."
-if [[ -f "l10n.yaml" ]]; then
-    $FLUTTER_CMD gen-l10n
-else
-    log_warning "l10n.yaml not found, skipping localization generation"
-fi
+# Localization handled by slang; gen-l10n removed
+log_step "Localization generation skipped (slang is used instead)"
 
 # Validate environment files
 log_step "Validating environment files..."
