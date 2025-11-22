@@ -146,9 +146,21 @@ def normalize_placeholders(value: str, params: Sequence[str]) -> str:
     if re.search(r"\{\s*\w+\s*,\s*(plural|select)", value):
         # ICU string: keep as-is
         return value
-    normalized = value
+    # Collapse accidental repeated dollars and normalize parameter placeholders to ${param}
+    normalized = re.sub(r"\$\$+", lambda m: "$", value)
     for param in params:
-        normalized = re.sub(rf"\{{\s*{re.escape(param)}\s*\}}", rf"${{{param}}}", normalized)
+        # Patterns: {param}, ${param}, $param, $$param, $ {param}, etc.
+        normalized = re.sub(
+            rf"\$+\s*\{{?\s*{re.escape(param)}\s*\}}?",
+            lambda m, p=param: f"${{{p}}}",
+            normalized,
+        )
+        normalized = re.sub(
+            rf"\{{\s*{re.escape(param)}\s*\}}",
+            lambda m, p=param: f"${{{p}}}",
+            normalized,
+        )
+    normalized = re.sub(r"\$\$+", lambda m: "$", normalized)
     return normalized
 
 
