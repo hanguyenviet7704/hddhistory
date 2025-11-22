@@ -55,6 +55,8 @@ logs/
 **.freezed.dart
 **.config.dart
 **.graphql.dart
+assets/arb/
+assets/i18n/
 
 # FVM Version Cache
 .fvm/
@@ -67,9 +69,6 @@ node_modules/
 
 # Crashlytics
 .crashlytics/
-
-# Arb files
-assets/arb/
 
 # Localization
 .venv_localization/
