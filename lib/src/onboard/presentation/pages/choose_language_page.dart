@@ -4,7 +4,7 @@ class ChooseLanguagePage extends StatelessWidget {
   const ChooseLanguagePage({super.key});
 
   Future<void> _handleSelectLanguage(BuildContext context, LocaleType locale) async {
-    await context.read<LocaleCubit>().changeLocale(locale);
+    context.read<LocaleCubit>().changeLocale(locale);
     IntroRoute().go(context);
   }
 

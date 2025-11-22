@@ -25,7 +25,7 @@ class LanguageBtn extends StatelessWidget {
           onSelected: (value) async {
             AppService.instance.appTrackingServiceNew.trackProfileLanguageSelect(value.label);
             if (value == state) return;
-            await context.read<LocaleCubit>().changeLocale(value);
+            context.read<LocaleCubit>().changeLocale(value);
             // context.read<HandfeelingCubit>().getBrushes();
             if (enableBack) context.back();
           },

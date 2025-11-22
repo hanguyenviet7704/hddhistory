@@ -6,9 +6,9 @@ class LocaleCubit extends HydratedCubit<LocaleType> {
     LocaleSettings.setLocale(state.appLocale);
   }
 
-  Future<void> changeLocale(LocaleType locale) async {
+  void changeLocale(LocaleType locale) {
     if (locale == state) return;
-    await LocaleSettings.setLocale(locale.appLocale);
+    LocaleSettings.setLocale(locale.appLocale);
     emit(locale);
     LogDev.trace('Change locale to ${locale.value}');
   }
@@ -31,14 +31,11 @@ enum LocaleType {
   const LocaleType(this.value, this.label);
 
   AppLocale get appLocale {
-    switch (this) {
-      case LocaleType.en:
-        return AppLocale.en;
-      case LocaleType.vi:
-        return AppLocale.vi;
-      case LocaleType.zh:
-        return AppLocale.zh;
-    }
+    return switch (this) {
+      LocaleType.en => AppLocale.en,
+      LocaleType.vi => AppLocale.vi,
+      LocaleType.zh => AppLocale.zh
+    };
   }
 
   static LocaleType fromString(String name) {

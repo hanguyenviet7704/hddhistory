@@ -23,7 +23,12 @@ class AppProviders extends StatelessWidget {
         BlocProvider<PageCubit>(create: (_) => AppDI.injector.get<PageCubit>()),
         BlocProvider<OnboardCubit>(create: (_) => AppDI.injector.get<OnboardCubit>()),
       ],
-      child: ScreenUtilInit(designSize: AppGlobalValue.designSize, minTextAdapt: true, splitScreenMode: true, child: _child),
+      child: ScreenUtilInit(
+        designSize: AppGlobalValue.designSize,
+        minTextAdapt: true,
+        splitScreenMode: true,
+        child: TranslationProvider(child: _child),
+      ),
     );
   }
 }
