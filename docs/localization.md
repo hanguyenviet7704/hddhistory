@@ -24,7 +24,7 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 - `Status`: `active | deprecated | draft`.
 - `Tags`: free-form, comma/semicolon delimited.
 - `UpdatedAt`: optional ISO8601 timestamp for last change (auto-filled on push for new/changed rows).
-- Language columns: `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)` (names are configurable via `.info/app/localization.json`). ICU is allowed; placeholders should match `Params`; non-ICU placeholders use `${name}`. Missing `ZH` values will fall back to `EN` during tooling.
+- Language columns: `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)` (names are configurable via `.info/app/localization.json`). ICU is allowed; placeholders should match `Params`; non-ICU placeholders use `${name}`. Missing translations are auto-filled from the default language with a prefix of the missing locale code (e.g., `(ZH) <default>`).
 
 ## CLI (Linux/macOS/Windows)
 Wrappers live under `tools/<platform>/localization/`, run inside `.venv_localization`, install deps from `requirements.txt`, and use `.info/app/localization.json`.

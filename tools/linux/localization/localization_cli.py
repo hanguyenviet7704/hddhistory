@@ -319,7 +319,10 @@ def normalize_translations(
         for lang in languages:
             value = record.translations.get(lang, "")
             if fill_missing_from_default and not value and default_language and default_value:
-                record.translations[lang] = default_value
+                if lang == default_language:
+                    record.translations[lang] = default_value
+                else:
+                    record.translations[lang] = f"({lang.upper()}) {default_value}"
         for lang, value in list(record.translations.items()):
             # Fall back to inferring placeholders from each translation if params are still empty
             params_for_norm = record.params or detect_placeholders(value)
