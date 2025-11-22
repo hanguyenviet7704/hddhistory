@@ -2,7 +2,7 @@ authAlreadyAMember: Already a member?
 authAlreadyMember: Already member?
 authAppleLabel: Continue with Apple
 authBack: Back
-authContinueWithService: Continue with {service}
+authContinueWithService: Continue with ${service}
 authCreateAccount: Create Account
 authCreateAnAccount: Create an account
 authCreateYourFreeAccount: Create Your Free Account
@@ -28,13 +28,13 @@ authNoSpecialSkillsNeeded: No special skills needed — just start and enjoy the
   fun.
 authOr: OR
 authPassword: Password
-authPasswordMustBeAtLeastValue: Password must be at least {amount} characters long.
+authPasswordMustBeAtLeastValue: Password must be at least ${amount} characters long.
 authPleaseFillInAllRequiredInformation: Please fill in all required information.
 authQuickLessonsEngagingChallenge: Quick lessons, engaging challenges, and rewarding
   progress make learning art more exciting than ever.
 authRegistrationFailedPleaseTryAgain: Registration failed, please try again.
 authSessionHasExpired: Session has expired, please log in again.
 authSignIn: Sign In
-authSignInWithService: Sign in with {service}
+authSignInWithService: Sign in with ${service}
 authStartLearningWithCreativity: Start your creative journey!
 authWelcomeBackToYourJourney: Welcome Back to Your Journey!

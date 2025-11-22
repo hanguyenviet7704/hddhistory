@@ -1,8 +1,8 @@
-onboardingAfterOnboardEncourageMessage: '{value}位用户选择了相同的回答'
+onboardingAfterOnboardEncourageMessage: ${value}位用户选择了相同的回答
 onboardingAfterOnboardEncourageSubText: 从今天开始，通过声音成为更好的自己
 onboardingAfterOnboardEncourageTitle: 你并不孤单！
-onboardingBeSkilledExpectTimeOption1: '{number}个月'
-onboardingBeSkilledExpectTimeOption2: '{number}个月'
+onboardingBeSkilledExpectTimeOption1: ${number}个月
+onboardingBeSkilledExpectTimeOption2: ${number}个月
 onboardingBeSkilledExpectTimeQuestion: 你想在多久内掌握技能？
 onboardingChooseSkillsetSubtitle: 这个选择不会限制你的学习体验
 onboardingChooseSkillsetTitle: 选择你想掌握的主题
@@ -20,7 +20,7 @@ onboardingMascotDialogFirstScreen: 不要再让糟糕的沟通阻碍你前进。
 onboardingMascotDialogLearningMethod: 你将通过<strong>MeUp独家学习循环法</strong>进行练习。
 onboardingMascotDialogSecondScreen: <strong>MeUp</strong>为你提供系统的方法，帮助你掌握表达能力……
 onboardingMascotGreetingMessage: 让我们先了解一下你吧！
-onboardingMascotGreetingTitle: 你好！我是{name}
+onboardingMascotGreetingTitle: 你好！我是${name}
 onboardingMidCareerAdultOption: 35–44
 onboardingOlderAdult: 45岁或以上
 onboardingOtherGenderOption: 其他
@@ -40,7 +40,7 @@ onboardingStruggleQuestion: 你在说话时通常遇到哪些困难？
 onboardingStruggleQuestionSubtitle: 选择所有符合你情况的选项
 onboardingTeenAgeOption: 17岁或以下
 onboardingThirdAppKeypointIntro: 在短时间内取得明显进步
-onboardingTimeSpentOption: '{number}分钟'
+onboardingTimeSpentOption: ${number}分钟
 onboardingTimeSpentTitle: 你的每日学习目标
 onboardingTimeStudyOption1: 早晨
 onboardingTimeStudyOption2: 短暂休息

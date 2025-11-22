@@ -24,7 +24,7 @@ tools/<platform>/localization/localization.(sh|bat) validate
 Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to defaults in `.info/app/localization.json` and then `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Data Layout
-- Sheet schema: `Module`, `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `EN/VI/ZH`. ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs.
+- Sheet schema: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `EN/VI/ZH` (module is inferred from the tab name). ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs.
 - Files: `assets/i18n/<locale>/<module>.yaml`
 - Generated code: `lib/config/l10n/l10n*.dart` (`output_file_name: l10n.g.dart`)
 - Config: `.info/app/localization.json` (sheet ids/tabs, paths, default SA path/env), `slang.yaml`
@@ -36,8 +36,8 @@ Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATIO
 - Regenerate after changes: `flutter pub run slang`.
 
 ## Migration Notes
-- Legacy sheet: https://docs.google.com/spreadsheets/d/1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs/edit?gid=288536257#gid=288536257
-- New sheet: https://docs.google.com/spreadsheets/d/1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY/edit?id=0#gid=0
+- Legacy sheet: see `.info/app/localization.json` (`googleSheets.legacy.sheetId/gids`).
+- New sheet: see `.info/app/localization.json` (`googleSheets.active.sheetId/tabs`).
 - `migrate --source arb` imports existing ARB modules and skips merged `assets/arb/app` to avoid duplicate keys.
 - Missing translations are reported in the CLI; zh currently falls back to en where empty.
 

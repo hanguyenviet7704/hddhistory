@@ -4,6 +4,8 @@ New pipeline uses the active Google Sheet (`.info/app/localization.json`) to pro
 
 ## Commands
 
+Sheet IDs/tabs are read from `.info/app/localization.json` (`googleSheets.active/legacy`); no IDs are hardcoded in the scripts.
+
 ```bash
 # Pull active sheet -> YAML under assets/i18n + build/localization/records.json
 tools/windows/localization/localization.bat pull

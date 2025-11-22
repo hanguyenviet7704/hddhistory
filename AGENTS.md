@@ -39,6 +39,16 @@ flutter analyze
 dart format lib/ test/
 ```
 
+## Localization (slang + Sheets)
+- Active sheet is defined in `.info/app/localization.json` (`googleSheets.active.sheetId/tabs`). Module comes from the tab name; no “Module” column is required. Config also sets paths/columns/locales.
+- Commands (per platform wrappers, same flags):  
+  - Linux/macOS: `tools/<platform>/localization/localization.sh pull|push|migrate|validate`  
+  - Windows: `tools/windows/localization/localization.bat pull|push|migrate|validate`
+- Creds for push: set `LOCALIZATION_SA_PATH` (or `LOCALIZATION_SA_JSON`); defaults read from `.info/app/localization.json`.
+- Outputs: YAML per locale/module under `assets/i18n/<locale>/<module>.yaml`, generated Dart under `lib/config/l10n/l10n*.dart` (`output_file_name: l10n.g.dart`). Regenerate with `flutter pub run slang` (slang_build_runner also enabled).
+- Migration helpers: `migrate --source sheet` (legacy sheet id) or `--source arb`; zh gaps fall back to en. Template lives at `.info/templates/sample_localization.csv`.
+- Usage in code: wrap app with `TranslationProvider` (see `lib/main.dart`) and access via `context.text.<module>.<key>(params)`. Avoid old `gen-l10n` ARB workflow.
+
 ## Development Guardrails
 - Respect clean architecture boundaries: route all business logic through `domain` use cases, keep UI-specific logic inside `presentation`.
 - Do not hand-edit generated files; rerun the relevant generator instead.

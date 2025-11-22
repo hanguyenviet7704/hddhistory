@@ -17,7 +17,6 @@
         {"module": "setting", "title": "setting"}
       ],
       "columns": {
-        "module": "Module",
         "key": "Key",
         "type": "Type",
         "context": "Context",

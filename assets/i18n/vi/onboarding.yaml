@@ -3,8 +3,8 @@ onboardingAfterOnboardEncourageMessage: 72% người dùng của chúng tôi có
 onboardingAfterOnboardEncourageSubText: Hãy bắt đầu ngay hôm nay và trở thành phiên
   bản tốt hơn của chính mình
 onboardingAfterOnboardEncourageTitle: Bạn không đơn độc!
-onboardingBeSkilledExpectTimeOption1: '{number} tháng'
-onboardingBeSkilledExpectTimeOption2: '{number} tháng'
+onboardingBeSkilledExpectTimeOption1: ${number} tháng
+onboardingBeSkilledExpectTimeOption2: ${number} tháng
 onboardingBeSkilledExpectTimeQuestion: Bạn muốn trở nên thành thạo giao tiếp trong
   bao lâu?
 onboardingChooseSkillsetSubtitle: Lựa chọn này sẽ không giới hạn trải nghiệm học tập
@@ -47,7 +47,7 @@ onboardingStruggleQuestion: Bạn thường gặp khó khăn gì khi nâng cao k
 onboardingStruggleQuestionSubtitle: Chọn các tùy chọn phù hợp với bạn
 onboardingTeenAgeOption: 17 tuổi hoặc nhỏ hơn
 onboardingThirdAppKeypointIntro: Tiến bộ rõ rệt
-onboardingTimeSpentOption: '{number} phút'
+onboardingTimeSpentOption: ${number} phút
 onboardingTimeSpentTitle: Mục tiêu học hàng ngày của bạn
 onboardingTimeStudyOption1: Buổi sáng
 onboardingTimeStudyOption2: Giờ giải lao

@@ -178,7 +178,8 @@ def parse_sheet_rows(
 ) -> List[LocalizationRecord]:
     records: List[LocalizationRecord] = []
     for row in rows:
-        module_raw = row.get(columns.get("module", "") or "", "").strip()
+        module_col = (columns.get("module") or "").strip()
+        module_raw = row.get(module_col, "").strip() if module_col else ""
         if not module_raw and default_module:
             module_raw = default_module
         key = row.get(columns.get("key", "") or "", "").strip()
@@ -450,29 +451,39 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
 
 
 def dataset_to_rows(records: List[LocalizationRecord], columns: Dict[str, str], languages: Sequence[str]) -> List[List[str]]:
-    header = [
-        columns.get("module", "Module"),
-        columns.get("key", "Key"),
-        columns.get("type", "Type"),
-        columns.get("context", "Context"),
-        columns.get("params", "Params"),
-        columns.get("description", "Description"),
-        columns.get("status", "Status"),
-        columns.get("tags", "Tags"),
-    ] + [columns.get(lang, lang).strip() or lang for lang in languages]
+    module_col = (columns.get("module") or "").strip()
+    header: List[str] = []
+    if module_col:
+        header.append(module_col)
+    header.extend(
+        [
+            columns.get("key", "Key"),
+            columns.get("type", "Type"),
+            columns.get("context", "Context"),
+            columns.get("params", "Params"),
+            columns.get("description", "Description"),
+            columns.get("status", "Status"),
+            columns.get("tags", "Tags"),
+        ]
+    )
+    header.extend([columns.get(lang, lang).strip() or lang for lang in languages])
 
     rows: List[List[str]] = [header]
     for record in sorted(records, key=lambda r: (r.module, r.key)):
-        row = [
-            record.module,
-            record.key,
-            record.type,
-            record.context,
-            ", ".join(record.params),
-            record.description,
-            record.status,
-            ", ".join(record.tags),
-        ]
+        row: List[str] = []
+        if module_col:
+            row.append(record.module)
+        row.extend(
+            [
+                record.key,
+                record.type,
+                record.context,
+                ", ".join(record.params),
+                record.description,
+                record.status,
+                ", ".join(record.tags),
+            ]
+        )
         for lang in languages:
             row.append(record.translations.get(lang, ""))
         rows.append(row)

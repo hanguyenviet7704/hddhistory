@@ -3,8 +3,8 @@
 Modular localization now uses `slang` with namespace files and a secure Google Sheet. Legacy `flutter_localizations` + merged ARB files are deprecated and kept only for historical reference.
 
 ## Quick Links
-- Active sheet (new schema): https://docs.google.com/spreadsheets/d/1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY/edit?id=0#gid=0
-- Legacy sheet (for migration only): https://docs.google.com/spreadsheets/d/1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs/edit?gid=288536257#gid=288536257
+- Active sheet (new schema): see `.info/app/localization.json` (`googleSheets.active.sheetId`, per-tab gids/tabs there).
+- Legacy sheet (for migration only): see `.info/app/localization.json` (`googleSheets.legacy.sheetId/gids`).
 - Template/example CSV: `.info/templates/sample_localization.csv`
 
 ## File Layout
@@ -15,7 +15,7 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 - Slang config: `slang.yaml`
 
 ## Sheet Schema (columns)
-- `Module`: slug/namespace (e.g., `home`, `auth`), normalized to snake_case. Each module lives in its own tab (tab name == module) in the active sheet. `common` and `auth` are shared tabs usable by other apps.
+- Tab name = module/namespace (e.g., `home`, `auth`). `common` and `auth` are shared tabs usable by other apps.
 - `Key`: translation key within the module (e.g., `homeGreetingTitle`).
 - `Type`: `text | rich | plural | select | selectordinal | context` (validation only).
 - `Context`: optional axis (gender/platform/experiment).
