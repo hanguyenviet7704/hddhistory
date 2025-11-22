@@ -3,12 +3,12 @@ part of '../blocs.dart';
 @lazySingleton
 class LocaleCubit extends HydratedCubit<LocaleType> {
   LocaleCubit() : super(LocaleType.en) {
-    LocaleSettings.setLocaleRawSync(state.value);
+    LocaleSettings.setLocale(state.appLocale);
   }
 
-  void changeLocale(LocaleType locale) {
+  Future<void> changeLocale(LocaleType locale) async {
     if (locale == state) return;
-    LocaleSettings.setLocaleRawSync(locale.value);
+    await LocaleSettings.setLocale(locale.appLocale);
     emit(locale);
     LogDev.trace('Change locale to ${locale.value}');
   }
@@ -29,6 +29,17 @@ enum LocaleType {
   final String label;
 
   const LocaleType(this.value, this.label);
+
+  AppLocale get appLocale {
+    switch (this) {
+      case LocaleType.en:
+        return AppLocale.en;
+      case LocaleType.vi:
+        return AppLocale.vi;
+      case LocaleType.zh:
+        return AppLocale.zh;
+    }
+  }
 
   static LocaleType fromString(String name) {
     return switch (name) {

@@ -22,10 +22,10 @@ class LanguageBtn extends StatelessWidget {
                 )
                 .toList();
           },
-          onSelected: (value) {
+          onSelected: (value) async {
             AppService.instance.appTrackingServiceNew.trackProfileLanguageSelect(value.label);
             if (value == state) return;
-            context.read<LocaleCubit>().changeLocale(value);
+            await context.read<LocaleCubit>().changeLocale(value);
             // context.read<HandfeelingCubit>().getBrushes();
             if (enableBack) context.back();
           },

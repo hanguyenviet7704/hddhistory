@@ -15,11 +15,14 @@ class DMainApp extends StatelessWidget {
     return TranslationProvider(
       child: BlocListener<LocaleCubit, LocaleType>(
         listenWhen: (previous, current) => previous != current,
-        listener: (_, locale) => LocaleSettings.setLocaleRawSync(locale.value),
+        listener: (_, locale) {
+          LocaleSettings.setLocale(locale.appLocale);
+        },
         child: Builder(
           builder: (context) {
-            final locale = context.select((LocaleCubit cubit) => cubit.state.localeData);
-            LocaleSettings.setLocaleRawSync(locale.languageCode);
+            final localeState = context.select((LocaleCubit cubit) => cubit.state);
+            LocaleSettings.setLocale(localeState.appLocale);
+            final locale = localeState.localeData;
 
             return MaterialApp.router(
               debugShowCheckedModeBanner: false,

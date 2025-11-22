@@ -3,8 +3,8 @@ part of '../../onboard.dart';
 class ChooseLanguagePage extends StatelessWidget {
   const ChooseLanguagePage({super.key});
 
-  void _handleSelectLanguage(BuildContext context, LocaleType locale) {
-    context.read<LocaleCubit>().changeLocale(locale);
+  Future<void> _handleSelectLanguage(BuildContext context, LocaleType locale) async {
+    await context.read<LocaleCubit>().changeLocale(locale);
     IntroRoute().go(context);
   }
 
