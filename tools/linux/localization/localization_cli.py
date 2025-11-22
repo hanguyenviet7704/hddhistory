@@ -66,6 +66,10 @@ def log_step(message: str) -> None:
 
 ALLOWED_TYPES = {"text", "rich", "plural", "select", "selectordinal", "context"}
 VALID_STATUSES = {"active", "deprecated", "draft"}
+DEFAULT_SCOPES = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive.file",
+]
 
 
 @dataclass
@@ -387,7 +391,7 @@ def fetch_sheet_csv(sheet_id: str, gid: str, encoding: str) -> str:
     return resp.text
 
 
-def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str, source_label: str) -> List[LocalizationRecord]:
+def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str, source_label: str, auth_cfg: Optional[Dict] = None) -> List[LocalizationRecord]:
     sheet_id = sheet_cfg["sheet_id"]
     tabs = sheet_cfg.get("tabs", [])
     gids = sheet_cfg.get("sheet_gids", [])
@@ -412,7 +416,7 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
                     if gspread is None or Credentials is None:
                         log_warning(f"Skipping tab '{title}' (no gid and gspread unavailable).")
                         continue
-                    creds = get_credentials()
+                    creds = get_credentials(auth_cfg)
                     if creds is None:
                         log_warning(f"Skipping tab '{title}' (no gid and credentials missing).")
                         continue
@@ -464,14 +468,18 @@ def dataset_to_rows(records: List[LocalizationRecord], columns: Dict[str, str], 
     return rows
 
 
-def get_credentials() -> Optional[Credentials]:
-    json_path = os.environ.get("LOCALIZATION_SA_PATH") or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
-    raw_json = os.environ.get("LOCALIZATION_SA_JSON")
+def get_credentials(auth_cfg: Optional[Dict] = None) -> Optional[Credentials]:
+    json_path = (
+        os.environ.get("LOCALIZATION_SA_PATH")
+        or (auth_cfg or {}).get("service_account_path")
+        or os.environ.get("GOOGLE_APPLICATION_CREDENTIALS")
+    )
+    raw_json = os.environ.get("LOCALIZATION_SA_JSON") or (auth_cfg or {}).get("service_account_json")
 
     if json_path and Path(json_path).expanduser().exists():
-        return Credentials.from_service_account_file(str(Path(json_path).expanduser()))
+        return Credentials.from_service_account_file(str(Path(json_path).expanduser()), scopes=DEFAULT_SCOPES)
     if raw_json:
-        return Credentials.from_service_account_info(json.loads(raw_json))
+        return Credentials.from_service_account_info(json.loads(raw_json), scopes=DEFAULT_SCOPES)
     return None
 
 
@@ -500,14 +508,14 @@ def resolve_worksheet(spreadsheet, tab_cfg: Dict, columns: Dict[str, str], langu
     return worksheet
 
 
-def push_to_sheet(records: List[LocalizationRecord], sheet_cfg: Dict, languages: Sequence[str], apply: bool) -> None:
+def push_to_sheet(records: List[LocalizationRecord], sheet_cfg: Dict, languages: Sequence[str], apply: bool, auth_cfg: Optional[Dict] = None) -> None:
     if gspread is None or Credentials is None:
         log_error("gspread/google-auth not available. Install requirements via requirements.txt")
         sys.exit(1)
 
-    creds = get_credentials()
+    creds = get_credentials(auth_cfg)
     if creds is None:
-        log_error("Service account credentials not found. Set LOCALIZATION_SA_PATH or LOCALIZATION_SA_JSON.")
+        log_error("Service account credentials not found. Set LOCALIZATION_SA_PATH/LOCALIZATION_SA_JSON or configure googleSheets.auth.serviceAccountPath.")
         sys.exit(1)
 
     sheet_id = sheet_cfg["sheet_id"]
@@ -584,11 +592,12 @@ def diff_datasets(new_records: List[LocalizationRecord], existing_records: List[
 def handle_pull(cfg: Dict) -> None:
     languages = cfg["languages"]["supported"]
     default_language = cfg["languages"]["default"]
+    auth_cfg = cfg.get("auth", {})
     temp_dir = Path(cfg["paths"]["temp_dir"])
     i18n_dir = Path(cfg["paths"]["i18n_dir"])
     encoding = cfg["generation"]["encoding"]
 
-    records = load_sheet_records(cfg["active_sheet"], languages, encoding, "active-sheet")
+    records = load_sheet_records(cfg["active_sheet"], languages, encoding, "active-sheet", auth_cfg)
     normalize_translations(records, languages, default_language)
     warnings, errors = validate_records(records, languages)
 
@@ -611,13 +620,14 @@ def handle_pull(cfg: Dict) -> None:
 def handle_migrate(cfg: Dict, source: str, apply: bool) -> None:
     languages = cfg["languages"]["supported"]
     default_language = cfg["languages"]["default"]
+    auth_cfg = cfg.get("auth", {})
     temp_dir = Path(cfg["paths"]["temp_dir"])
     i18n_dir = Path(cfg["paths"]["i18n_dir"])
     encoding = cfg["generation"]["encoding"]
 
     records: List[LocalizationRecord] = []
     if source == "sheet":
-        records.extend(load_sheet_records(cfg["legacy_sheet"], languages, encoding, "legacy-sheet"))
+        records.extend(load_sheet_records(cfg["legacy_sheet"], languages, encoding, "legacy-sheet", auth_cfg))
     else:
         records.extend(load_legacy_arb(Path(cfg["paths"]["legacy_arb_dir"]), languages))
 
@@ -652,7 +662,7 @@ def handle_migrate(cfg: Dict, source: str, apply: bool) -> None:
     # Optionally push migrated dataset into active sheet
     if apply:
         log_step("Pushing migrated dataset into active sheet...")
-        push_to_sheet(records, cfg["active_sheet"], languages, apply=True)
+        push_to_sheet(records, cfg["active_sheet"], languages, apply=True, auth_cfg=auth_cfg)
     else:
         log_info("Migration completed in dry-run mode (no push).")
 
@@ -660,6 +670,7 @@ def handle_migrate(cfg: Dict, source: str, apply: bool) -> None:
 def handle_push(cfg: Dict, apply: bool) -> None:
     languages = cfg["languages"]["supported"]
     default_language = cfg["languages"]["default"]
+    auth_cfg = cfg.get("auth", {})
     encoding = cfg["generation"]["encoding"]
     temp_dir = Path(cfg["paths"]["temp_dir"])
 
@@ -695,7 +706,7 @@ def handle_push(cfg: Dict, apply: bool) -> None:
         sys.exit(1)
 
     try:
-        existing_records = load_sheet_records(cfg["active_sheet"], languages, encoding, "active-sheet")
+        existing_records = load_sheet_records(cfg["active_sheet"], languages, encoding, "active-sheet", auth_cfg)
     except Exception as exc:  # pragma: no cover - depends on network
         log_warning(f"Could not load remote sheet for diff: {exc}")
         existing_records = []
@@ -708,7 +719,7 @@ def handle_push(cfg: Dict, apply: bool) -> None:
     if changed:
         log_info(f"Changed keys (sample): {', '.join(changed[:5])}" + (" ..." if len(changed) > 5 else ""))
 
-    push_to_sheet(records, cfg["active_sheet"], languages, apply=apply)
+    push_to_sheet(records, cfg["active_sheet"], languages, apply=apply, auth_cfg=auth_cfg)
 
 
 def handle_validate(cfg: Dict) -> None:

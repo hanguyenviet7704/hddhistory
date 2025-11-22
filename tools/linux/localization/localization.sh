@@ -31,6 +31,17 @@ if ! validate_localization_config; then
     exit 1
 fi
 
+# Seed service account env vars from config if not provided
+SA_PATH_CFG=$(get_localization_sa_path)
+SA_ENV_NAME=$(get_localization_sa_path_env)
+SA_JSON_ENV_NAME=$(get_localization_sa_json_env)
+if [[ -n "$SA_PATH_CFG" && -z "${LOCALIZATION_SA_PATH:-}" ]]; then
+    export LOCALIZATION_SA_PATH="$SA_PATH_CFG"
+fi
+if [[ -n "$SA_ENV_NAME" && -z "${!SA_ENV_NAME:-}" && -n "$LOCALIZATION_SA_PATH" ]]; then
+    export "$SA_ENV_NAME"="$LOCALIZATION_SA_PATH"
+fi
+
 log_info "Localization action: ${ACTION}"
 show_localization_config
 

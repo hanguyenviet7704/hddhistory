@@ -20,8 +20,8 @@ tools/linux/localization/localization.sh push --apply
 ```
 
 ## Configuration
-- `.info/app/localization.json` defines the active sheet, legacy sheet, column mappings, supported locales, module tabs, paths, and encoding.
-- Service account credentials (for push) via `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to `GOOGLE_APPLICATION_CREDENTIALS`.
+- `.info/app/localization.json` defines the active sheet, legacy sheet, column mappings, supported locales, module tabs, paths, encoding, and the default service account path/env names.
+- Service account credentials (for push) via `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to the path in `.info/app/localization.json` and then `GOOGLE_APPLICATION_CREDENTIALS`.
 - Dependencies are installed automatically from `tools/linux/localization/requirements.txt` into `.venv_localization`.
 - Template/example CSV lives in `.info/templates/sample_localization.csv` (shared across platforms).
 

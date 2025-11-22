@@ -19,13 +19,13 @@ tools/linux/localization/localization.sh push --apply
 tools/linux/localization/localization.sh validate
 ```
 
-Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to `GOOGLE_APPLICATION_CREDENTIALS`.
+Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to defaults in `.info/app/localization.json` and then `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Data Layout
 - Sheet schema: `Module`, `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `EN/VI/ZH`. ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs.
 - Files: `assets/i18n/<locale>/<module>.yaml`
 - Generated code: `lib/config/l10n/generated/strings*.g.dart`
-- Config: `.info/app/localization.json`, `slang.yaml`
+- Config: `.info/app/localization.json` (sheet ids/tabs, paths, default SA path/env), `slang.yaml`
 - Template: `.info/templates/sample_localization.csv`
 
 ## Using Translations

@@ -30,6 +30,11 @@
         "zh": "ZH"
       }
     },
+    "auth": {
+      "serviceAccountPath": ".info/key/multilang_key.json",
+      "serviceAccountPathEnv": "LOCALIZATION_SA_PATH",
+      "serviceAccountJsonEnv": "LOCALIZATION_SA_JSON"
+    },
     "legacy": {
       "sheetId": "1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs",
       "sheetGids": ["288536257"],

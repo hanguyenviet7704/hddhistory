@@ -63,6 +63,36 @@ get_legacy_sheet_column() {
     get_localization_config ".googleSheets.legacy.columns.${column}"
 }
 
+get_localization_sa_path() {
+    local path
+    path=$(get_localization_config '.googleSheets.auth.serviceAccountPath')
+    if [[ -n "$path" && "$path" != "null" ]]; then
+        get_relative_path "$path"
+    else
+        echo ""
+    fi
+}
+
+get_localization_sa_path_env() {
+    local env_name
+    env_name=$(get_localization_config '.googleSheets.auth.serviceAccountPathEnv')
+    if [[ -n "$env_name" && "$env_name" != "null" ]]; then
+        echo "$env_name"
+    else
+        echo "LOCALIZATION_SA_PATH"
+    fi
+}
+
+get_localization_sa_json_env() {
+    local env_name
+    env_name=$(get_localization_config '.googleSheets.auth.serviceAccountJsonEnv')
+    if [[ -n "$env_name" && "$env_name" != "null" ]]; then
+        echo "$env_name"
+    else
+        echo "LOCALIZATION_SA_JSON"
+    fi
+}
+
 # Language configuration
 get_language_mapping() {
     local language="$1"
@@ -159,6 +189,8 @@ show_localization_config() {
     echo "Active Sheet ID: $(get_active_sheet_id)"
     echo "Active Sheet GIDs: $(get_active_sheet_gids)"
     echo "Active Sheet Tabs: $(get_active_sheet_tabs_json | jq -r '.[].module' 2>/dev/null | tr '\n' ',' | sed 's/,$//')"
+    echo "Service Account Path: $(get_localization_sa_path)"
+    echo "Service Account Env (path/json): $(get_localization_sa_path_env)/$(get_localization_sa_json_env)"
     echo "Legacy Sheet ID: $(get_legacy_sheet_id)"
     echo "Legacy Sheet GIDs: $(get_legacy_sheet_gids)"
     echo "Default Language: $(get_default_language)"
@@ -180,7 +212,7 @@ create_python_config() {
     cat > "$config_file" << EOF
 {
   "project_root": "$PROJECT_ROOT",
-    "active_sheet": {
+  "active_sheet": {
     "sheet_id": "$(get_active_sheet_id)",
     "sheet_gids": [$(get_active_sheet_gids | sed 's/ /,/g' | sed 's/,$//')],
     "tabs": $(get_active_sheet_tabs_json),
@@ -190,6 +222,11 @@ create_python_config() {
     "sheet_id": "$(get_legacy_sheet_id)",
     "sheet_gids": [$(get_legacy_sheet_gids | sed 's/ /,/g' | sed 's/,$//')],
     "columns": $(get_localization_config '.googleSheets.legacy.columns')
+  },
+  "auth": {
+    "service_account_path": "$(get_localization_sa_path)",
+    "service_account_path_env": "$(get_localization_sa_path_env)",
+    "service_account_json_env": "$(get_localization_sa_json_env)"
   },
   "languages": {
     "mapping": $(get_localization_config '.languages.mapping'),
