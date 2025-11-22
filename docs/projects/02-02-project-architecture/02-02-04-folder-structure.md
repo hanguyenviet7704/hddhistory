@@ -446,12 +446,16 @@ tools/
 │   ├── git/
 │   ├── key/
 │   └── localization/
-└── linux/                         # Linux tools (PLACEHOLDER)
+└── linux/                         # Linux tools (localization active)
     ├── build/
     ├── config/
     ├── git/
     ├── key/
-    └── localization/
+    └── localization/              # slang + sheets tooling
+        ├── localization.sh
+        ├── localization_cli.py
+        ├── localization_common.sh
+        └── README.md
 ```
 
 ## Documentation Structure (`docs/`)

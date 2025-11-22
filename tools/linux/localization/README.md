@@ -29,9 +29,6 @@ tools/linux/localization/localization.sh push --apply
 - YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (fed to slang).
 - Intermediate dataset: `build/localization/records.json` (used for push/diff/validation).
 
-## Legacy
-- `generate_localization.sh`, `generate_arb_from_sheets.py`, `merge_arb_files.py`, and `cleanup_old_arb.sh` are kept for historical reference but are deprecated. Use `localization.sh` instead.
-
 ## Tips
 - Ensure `.info/app/localization.json` points to the correct sheet IDs/GIDs before running.
 - `--apply` writes to the sheet; without it, operations are dry-run. Per-module tabs are auto-created when pushing if missing.

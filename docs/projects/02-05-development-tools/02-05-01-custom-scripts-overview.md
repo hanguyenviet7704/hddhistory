@@ -7,10 +7,10 @@ This document provides an overview of the custom development tools and scripts a
 ### ✅ macOS (Fully Functional)
 The `tools/macos/` directory contains **complete and up-to-date** development tools optimized for macOS development environment.
 
-### ⚠️ Windows & Linux (Placeholder Implementation)
-The `tools/windows/` and `tools/linux/` directories contain **placeholder scripts** for future development. These are not currently functional and should not be used for development.
+### ⚠️ Windows (Placeholder) & Linux (Localization only)
+The `tools/windows/` directory contains placeholder scripts for future development. Linux now ships the localization pipeline (`tools/linux/localization/localization.sh`) but other areas remain WIP.
 
-> **Important**: For Windows and Linux development, use manual Flutter commands instead of the custom scripts until these platforms are fully implemented.
+> **Important**: For Windows development, use manual Flutter commands until the platform tools are implemented. On Linux, use the localization tooling only.
 
 ## Tools Directory Structure
 
@@ -24,7 +24,7 @@ tools/
 │   ├── key/            # Key and certificate management
 │   ├── localization/   # Internationalization tools
 │   └── resource/       # Code generation scripts
-├── linux/              # ⚠️ Placeholder scripts
+├── linux/              # ⚠️ Localization tooling available; others placeholder
 └── windows/            # ⚠️ Placeholder scripts
 ```
 
