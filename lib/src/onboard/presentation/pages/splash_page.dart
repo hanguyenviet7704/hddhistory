@@ -11,6 +11,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     // _requestTrackingPermission();
+    _configAppLocalization();
     _getAppData();
     _setTrackingUser();
     _onboardingUser();
@@ -21,6 +22,14 @@ class _SplashPageState extends State<SplashPage> {
   // void _requestTrackingPermission() {
   //   AppService.instance.appEventService.requestTrackingPermission();
   // }
+
+  Future<void> _configAppLocalization() async {
+    bool isFirstTimeUserAccessApp = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
+    if (!isFirstTimeUserAccessApp) return;
+    AppLocale locale = await LocaleSettings.useDeviceLocale();
+    if (!mounted) return;
+    context.read<LocaleCubit>().setLocale(locale);
+  }
 
   void _getAppData() async {
     AppDI.injector.get<OnboardCubit>().loadAllOnboards();
