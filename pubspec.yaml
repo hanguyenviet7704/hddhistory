@@ -353,7 +353,6 @@ flutter:
     - assets/svg/app/
     - assets/svg/common/
     - assets/texts/
-    - assets/json/
     - assets/lottie/
     - assets/i18n/
     # - assets/gif/

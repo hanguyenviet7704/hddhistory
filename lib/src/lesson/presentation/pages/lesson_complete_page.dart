@@ -52,7 +52,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
                       alignment: Alignment.center,
                       children: [
                         Lottie.asset(
-                          AppAsset.json.congratulations,
+                          AppAsset.lottie.congratulations,
                           controller: _lottieController,
                           onLoaded: (composition) {
                             _lottieController
