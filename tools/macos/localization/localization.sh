@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Entry point for localization tooling (sheets <-> slang)
+# Localization orchestrator (macOS) – config-driven wrapper around localization_cli.py
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
@@ -18,8 +18,43 @@ source "${SCRIPT_DIR}/localization_common.sh" || {
     exit 1
 }
 
-ACTION="${1:-pull}"
-shift || true
+usage() {
+    cat <<'EOF'
+Usage: localization.sh [pull|migrate|push|validate] [options]
+
+Commands:
+  pull                      Fetch active sheet -> YAML + records.json
+  migrate [--source sheet|arb] [--apply]
+                            Import from legacy sheet/ARB -> YAML (optionally push)
+  push [--apply]            Push records.json to active sheet (dry-run by default)
+  validate                  Validate local records.json
+
+Examples:
+  localization.sh pull
+  localization.sh migrate --source sheet --apply
+  localization.sh push --apply
+  localization.sh validate
+EOF
+}
+
+ACTION="pull"
+if [[ $# -gt 0 ]]; then
+    case "$1" in
+        -h|--help)
+            usage
+            exit 0
+            ;;
+        pull|migrate|push|validate)
+            ACTION="$1"
+            shift
+            ;;
+        *)
+            log_error "Unknown action: $1"
+            usage
+            exit 1
+            ;;
+    esac
+fi
 
 cd "$PROJECT_ROOT"
 
@@ -38,7 +73,7 @@ SA_JSON_ENV_NAME=$(get_localization_sa_json_env)
 if [[ -n "$SA_PATH_CFG" && -z "${LOCALIZATION_SA_PATH:-}" ]]; then
     export LOCALIZATION_SA_PATH="$SA_PATH_CFG"
 fi
-if [[ -n "$SA_ENV_NAME" && -z "${!SA_ENV_NAME:-}" && -n "$LOCALIZATION_SA_PATH" ]]; then
+if [[ -n "$SA_ENV_NAME" && -z "${!SA_ENV_NAME:-}" && -n "${LOCALIZATION_SA_PATH:-}" ]]; then
     export "$SA_ENV_NAME"="$LOCALIZATION_SA_PATH"
 fi
 

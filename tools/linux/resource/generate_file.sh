@@ -15,11 +15,11 @@ cd "$ROOT_DIR" || {
     exit 1
 }
 
-# Get the dart command based on version manager configuration
-DART_CMD=$(get_dart_command)
+# Prefer flutter pub for build_runner (avoids missing Flutter SDK errors)
+FLUTTER_CMD=$(get_flutter_command)
 
 # Define the build_runner command
-BUILD_RUNNER_CMD="$DART_CMD run build_runner build --delete-conflicting-outputs"
+BUILD_RUNNER_CMD="$FLUTTER_CMD pub run build_runner build --delete-conflicting-outputs"
 
 log_info "Using command: $BUILD_RUNNER_CMD"
 

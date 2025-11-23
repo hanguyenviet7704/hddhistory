@@ -1,14 +1,15 @@
 @echo off
 setlocal enabledelayedexpansion
 
-REM Entry point for localization tooling (Sheets ⇄ slang) on Windows
+REM Localization orchestrator (Windows) – config-driven wrapper around localization_cli.py
 
 set "SCRIPT_DIR=%~dp0"
-set "ACTION=%~1"
-if "%ACTION%"=="" set "ACTION=pull"
-if not "%~1"=="" shift
 set "LCOMMON=%SCRIPT_DIR%localization_common.bat"
 for %%i in ("%SCRIPT_DIR%..\\..\\..") do set "PROJECT_ROOT=%%~fi"
+
+call :parse_action %*
+if %errorlevel% neq 0 exit /b %errorlevel%
+if not "%~1"=="" shift
 
 cd /d "%PROJECT_ROOT%"
 
@@ -77,3 +78,33 @@ del /f "%PYTHON_CONFIG%" >nul 2>&1
 call "%VENV_DIR%\Scripts\deactivate.bat" >nul 2>&1
 
 endlocal & exit /b %EXIT_CODE%
+
+:parse_action
+set "ACTION=pull"
+if "%~1"=="" goto :eof
+if "%~1"=="-h" goto :show_help
+if "%~1"=="--help" goto :show_help
+if /I "%~1"=="pull"      (set "ACTION=pull" & goto :eof)
+if /I "%~1"=="migrate"   (set "ACTION=migrate" & goto :eof)
+if /I "%~1"=="push"      (set "ACTION=push" & goto :eof)
+if /I "%~1"=="validate"  (set "ACTION=validate" & goto :eof)
+call "%LCOMMON%" :log_error "Unknown action: %~1"
+call :show_help
+exit /b 1
+
+:show_help
+echo Usage: localization.bat [pull^|migrate^|push^|validate] [options]
+echo.
+echo Commands:
+echo   pull                      Fetch active sheet -^> YAML + records.json
+echo   migrate [--source sheet^|arb] [--apply]
+echo                             Import legacy sheet/ARB -^> YAML (optionally push)
+echo   push [--apply]            Push records.json to active sheet (dry-run by default)
+echo   validate                  Validate local records.json
+echo.
+echo Examples:
+echo   localization.bat pull
+echo   localization.bat migrate --source sheet --apply
+echo   localization.bat push --apply
+echo   localization.bat validate
+exit /b 0
