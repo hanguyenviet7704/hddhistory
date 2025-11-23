@@ -5,6 +5,7 @@ REM Localization orchestrator (Windows) – config-driven wrapper around localiz
 
 set "SCRIPT_DIR=%~dp0"
 set "LCOMMON=%SCRIPT_DIR%localization_common.bat"
+set "WCOMMON=%SCRIPT_DIR%..\\common\\common.bat"
 for %%i in ("%SCRIPT_DIR%..\\..\\..") do set "PROJECT_ROOT=%%~fi"
 
 call :parse_action %*
@@ -31,6 +32,14 @@ if not "%sa_path%"=="" (
 
 call "%LCOMMON%" :log_info "Localization action: %ACTION%"
 call "%LCOMMON%" :show_localization_config
+
+REM Fast path: slang generation (uses flutter command that respects fvm/puro if configured)
+if /I "%ACTION%"=="slang" (
+    call "%WCOMMON%" :get_flutter_command FLUTTER_CMD
+    call "%LCOMMON%" :log_step "Running slang generator..."
+    %FLUTTER_CMD% pub run slang %*
+    endlocal & exit /b %ERRORLEVEL%
+)
 
 REM Ensure Python + venv
 where python >nul 2>&1
@@ -88,12 +97,13 @@ if /I "%~1"=="pull"      (set "ACTION=pull" & goto :eof)
 if /I "%~1"=="migrate"   (set "ACTION=migrate" & goto :eof)
 if /I "%~1"=="push"      (set "ACTION=push" & goto :eof)
 if /I "%~1"=="validate"  (set "ACTION=validate" & goto :eof)
+if /I "%~1"=="slang"     (set "ACTION=slang" & goto :eof)
 call "%LCOMMON%" :log_error "Unknown action: %~1"
 call :show_help
 exit /b 1
 
 :show_help
-echo Usage: localization.bat [pull^|migrate^|push^|validate] [options]
+echo Usage: localization.bat [pull^|migrate^|push^|validate^|slang] [options]
 echo.
 echo Commands:
 echo   pull                      Fetch active sheet -^> YAML + records.json
@@ -101,10 +111,12 @@ echo   migrate [--source sheet^|arb] [--apply]
 echo                             Import legacy sheet/ARB -^> YAML (optionally push)
 echo   push [--apply]            Push records.json to active sheet (dry-run by default)
 echo   validate                  Validate local records.json
+echo   slang                     Run slang generator (flutter pub run slang)
 echo.
 echo Examples:
 echo   localization.bat pull
 echo   localization.bat migrate --source sheet --apply
 echo   localization.bat push --apply
 echo   localization.bat validate
+echo   localization.bat slang
 exit /b 0

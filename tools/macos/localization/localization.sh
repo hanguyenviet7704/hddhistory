@@ -20,7 +20,7 @@ source "${SCRIPT_DIR}/localization_common.sh" || {
 
 usage() {
     cat <<'EOF'
-Usage: localization.sh [pull|migrate|push|validate] [options]
+Usage: localization.sh [pull|migrate|push|validate|slang] [options]
 
 Commands:
   pull                      Fetch active sheet -> YAML + records.json
@@ -28,6 +28,7 @@ Commands:
                             Import from legacy sheet/ARB -> YAML (optionally push)
   push [--apply]            Push records.json to active sheet (dry-run by default)
   validate                  Validate local records.json
+  slang                     Run slang generator (flutter pub run slang)
 
 Examples:
   localization.sh pull
@@ -44,7 +45,7 @@ if [[ $# -gt 0 ]]; then
             usage
             exit 0
             ;;
-        pull|migrate|push|validate)
+        pull|migrate|push|validate|slang)
             ACTION="$1"
             shift
             ;;
@@ -79,6 +80,17 @@ fi
 
 log_info "Localization action: ${ACTION}"
 show_localization_config
+
+# Fast path for slang generation (respects fvm/puro via get_flutter_command)
+if [[ "$ACTION" == "slang" ]]; then
+    FLUTTER_CMD=$(get_flutter_command)
+    log_step "Running slang generator..."
+    set +e
+    $FLUTTER_CMD pub run slang "$@"
+    EXIT_CODE=$?
+    set -e
+    exit $EXIT_CODE
+fi
 
 if ! command -v python3 >/dev/null 2>&1; then
     log_error "Python 3 is required."
