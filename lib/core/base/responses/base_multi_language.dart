@@ -14,10 +14,15 @@ sealed class BaseMultiLanguage with _$BaseMultiLanguage {
 extension BaseMultiLanguageExtension on BaseMultiLanguage {
   String get text {
     AppLocale locale = AppDI.injector.get<LocaleCubit>().state;
-    return switch (locale) {
+    final preferred = switch (locale) {
       AppLocale.en => en,
-      AppLocale.vi => vi.isNotEmpty ? vi : en,
-      AppLocale.zh => zh.isNotEmpty ? zh : en,
+      AppLocale.vi => vi,
+      AppLocale.zh => zh,
     };
+
+    if (preferred.isNotEmpty) return preferred;
+    if (en.isNotEmpty) return en;
+    if (vi.isNotEmpty) return vi;
+    return zh;
   }
 }

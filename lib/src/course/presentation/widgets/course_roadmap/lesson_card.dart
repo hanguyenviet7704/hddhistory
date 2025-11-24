@@ -68,14 +68,6 @@ class LessonCard extends StatelessWidget {
     }
   }
 
-  String get _lessonTypeText {
-    return switch (lesson.type) {
-      LessonType.lesson => 'Lesson',
-      LessonType.roleplay => 'Roleplay',
-      LessonType.output => 'Output test',
-    };
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -111,7 +103,7 @@ class LessonCard extends StatelessWidget {
                     // Lesson type
                     LessonMetadata(
                       icon: lesson.icon,
-                      text: _lessonTypeText,
+                      text: lesson.icon.title.text,
                       textColor: _textColor,
                     ),
                     20.horizontalSpace,

@@ -3,7 +3,7 @@ part of 'themes.dart';
 abstract class AppStyle {
   AppStyle();
 
-  static String fontFamily = AppFont.nunito;
+  static String fontFamily = AppFont.mulish;
 
   static TextStyle text6 = TextStyle(
     fontSize: 6.sp,

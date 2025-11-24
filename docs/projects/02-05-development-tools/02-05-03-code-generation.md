@@ -326,7 +326,7 @@ Usage:
 ```dart
 // Type-safe asset references
 Image.asset(AppAssets.images.logo.path)
-Text('Hello', style: TextStyle(fontFamily: AppFonts.nunito))
+Text('Hello', style: TextStyle(fontFamily: AppFonts.poppins))
 Container(color: AppColors.primary)
 ```
 

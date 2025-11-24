@@ -61,22 +61,25 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
       }
 
       const KeypointCompleteRoute().go(AppConfig.instance.context!);
-
-      UpdateUserProgressKeypointData keypointData = UpdateUserProgressKeypointData(
-        keypointId: state.currentLearningItem.keypointId,
-        averageScore: 0.0,
-        passed: true,
-        reviews: '',
-      );
-
-      UpdateUserProgressKeypointParams keypointParams = UpdateUserProgressKeypointParams(keypoints: [keypointData]);
-      _progressCubit.updateUserProgressKeypoint(LessonType.lesson, keypointParams);
+      _updateUserProgressKeypoint();
       return;
     }
 
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
     setCurrentLearningItem(state.currentLearningItem);
     preloadNextLearningItem();
+  }
+
+  void _updateUserProgressKeypoint() {
+    UpdateUserProgressKeypointData keypointData = UpdateUserProgressKeypointData(
+      keypointId: state.currentLearningItem.keypointId,
+      averageScore: 0.0,
+      passed: true,
+      reviews: '',
+    );
+
+    UpdateUserProgressKeypointParams keypointParams = UpdateUserProgressKeypointParams(keypoints: [keypointData]);
+    _progressCubit.updateUserProgressKeypoint(LessonType.lesson, keypointParams);
   }
 
   void previousLearningItem() {
@@ -90,7 +93,10 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   void addSubQuestion(QuestionEntity question) => emit(state.copyWith(subQuestions: [...state.subQuestions, question]));
 
   void reviewDone() {
-    if (state.subQuestions.isEmpty) return;
+    if (state.subQuestions.isEmpty) {
+      _updateUserProgressKeypoint();
+      return;
+    }
 
     LearningItemEntity learningItem = state.pageData.items.firstWhere((item) => item.type == LearningItemType.exercise, orElse: () => LearningItemEntity());
     learningItem = learningItem.copyWith(
