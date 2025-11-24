@@ -564,10 +564,7 @@ export default function ExerciseForm({
           tag: null,
           document: [],
           explanation: { [currentLang]: "" },
-          options: [
-            { value: { [currentLang]: "" }, isCorrect: false },
-            { value: { [currentLang]: "" }, isCorrect: false },
-          ] as IExerciseChoiceOption[],
+          options: [] as IExerciseChoiceOption[],
           level: [KeypointLevel.WEAK_POINT],
           maxScore: 10,
           completionTime: 60,
@@ -581,10 +578,7 @@ export default function ExerciseForm({
           tag: null,
           document: [],
           explanation: { [currentLang]: "" },
-          options: [
-            { value: { [currentLang]: "" }, isCorrect: false },
-            { value: { [currentLang]: "" }, isCorrect: false },
-          ] as IExerciseChoiceOption[],
+          options: [] as IExerciseChoiceOption[],
           level: [KeypointLevel.WEAK_POINT],
           maxScore: 10,
           completionTime: 60,
@@ -1550,6 +1544,101 @@ export default function ExerciseForm({
       handleChange("answer", newAnswer);
     };
 
+    const handlePasteOptions = (
+      index: number,
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+      const pasted = e.clipboardData.getData("text");
+      if (!pasted) return;
+      const lines = pasted
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      if (lines.length <= 1) return;
+      e.preventDefault();
+
+      setLocalFormData((prev: any) => {
+        const newOptions = [...(prev.options || [])];
+        let nextId = localNextOptionId;
+        if (!newOptions[index]) {
+          if (questionType === ExerciseType.DRAG_DROP) {
+            newOptions[index] = { text: { [lang]: "" }, id: nextId++ };
+          } else {
+            newOptions[index] = { value: { [lang]: "" }, isCorrect: false };
+          }
+        }
+        const [first, ...rest] = lines;
+
+        if (questionType === ExerciseType.DRAG_DROP) {
+          newOptions[index] = {
+            ...newOptions[index],
+            text: updateTranslationValue(
+              newOptions[index].text || {},
+              lang,
+              first
+            ),
+          };
+          rest.forEach((line) => {
+            newOptions.push({ text: { [lang]: line }, id: nextId++ });
+          });
+          setLocalNextOptionId(nextId);
+        } else {
+          newOptions[index] = {
+            ...newOptions[index],
+            value: updateTranslationValue(
+              newOptions[index].value || {},
+              lang,
+              first
+            ),
+          };
+          rest.forEach((line) => {
+            newOptions.push({ value: { [lang]: line }, isCorrect: false });
+          });
+        }
+
+        return { ...prev, options: newOptions };
+      });
+    };
+
+    const handlePasteAnswers = (
+      index: number,
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+      const pasted = e.clipboardData.getData("text");
+      if (!pasted) return;
+      const lines = pasted
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean);
+      if (lines.length <= 1) return;
+      e.preventDefault();
+
+      setLocalFormData((prev: any) => {
+        const newAnswer = [...(prev.answer || [])];
+        let nextId = localNextAnswerId;
+        if (!newAnswer[index]) {
+          newAnswer[index] = { correctAnswer: { [lang]: "" }, id: nextId++ };
+        }
+        const [first, ...rest] = lines;
+        newAnswer[index] = {
+          ...newAnswer[index],
+          correctAnswer: updateTranslationValue(
+            newAnswer[index].correctAnswer || {},
+            lang,
+            first
+          ),
+        };
+        rest.forEach((line) => {
+          newAnswer.push({
+            correctAnswer: { [lang]: line },
+            id: nextId++,
+          });
+        });
+        setLocalNextAnswerId(nextId);
+        return { ...prev, answer: newAnswer };
+      });
+    };
+
     // Filter tags based on query
     const filteredTags =
       tagQuery === ""
@@ -1757,6 +1846,7 @@ export default function ExerciseForm({
                     type="text"
                     value={getCurrentTranslationValue(opt.value, lang)}
                     onChange={(e) => updateOptionValue(idx, e.target.value)}
+                    onPaste={(e) => handlePasteOptions(idx, e)}
                     className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder={`Option ${idx + 1}`}
                   />
@@ -1860,6 +1950,7 @@ export default function ExerciseForm({
                     type="text"
                     value={getCurrentTranslationValue(opt.text, lang)}
                     onChange={(e) => updateOptionValue(idx, e.target.value)}
+                    onPaste={(e) => handlePasteOptions(idx, e)}
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder={`Option ${idx + 1}`}
                   />
@@ -1896,6 +1987,7 @@ export default function ExerciseForm({
                     type="text"
                     value={getCurrentTranslationValue(ans.correctAnswer, lang)}
                     onChange={(e) => updateAnswerValue(idx, e.target.value)}
+                    onPaste={(e) => handlePasteAnswers(idx, e)}
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder={`Answer ${idx + 1}`}
                   />
