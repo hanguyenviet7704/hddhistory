@@ -598,14 +598,18 @@ def ensure_readme_tab(sheet_id: str, auth_cfg: Optional[Dict]) -> None:
         return
     client = gspread.authorize(creds)
     spreadsheet = client.open_by_key(sheet_id)
+    ws = None
+    created = False
     try:
-        spreadsheet.worksheet(README_TITLE)
-        return
+        ws = spreadsheet.worksheet(README_TITLE)
     except Exception:
-        pass
+        ws = None
 
-    # Create a lightweight README tab with column explanations
-    ws = spreadsheet.add_worksheet(title=README_TITLE, rows=50, cols=12)
+    if ws is None:
+        ws = spreadsheet.add_worksheet(title=README_TITLE, rows=50, cols=12)
+        created = True
+
+    # Instructions content
     instructions = [
         ["Localization Sheet README"],
         ["- One tab per module (common, auth, home, ...)."],
@@ -614,8 +618,23 @@ def ensure_readme_tab(sheet_id: str, auth_cfg: Optional[Dict]) -> None:
         ["- Missing translation rule: fill '(LANGCODE) <default text>' when unknown."],
         ["- Always run pull -> edit -> push -> pull -> slang."],
     ]
-    ws.update("A1", instructions)
-    log_success(f"Created {README_TITLE} tab for instructions (id={ws.id}).")
+
+    # If newly created or currently empty (first cell blank), write instructions
+    try:
+        cell_val = ws.acell("A1").value
+        if created or not cell_val:
+            ws.update("A1", instructions)
+            log_success(f"Seeded README instructions (id={ws.id}).")
+    except Exception as exc:
+        log_warning(f"Could not seed README instructions: {exc}")
+
+    # Move README to index 0 so it is the default/first tab
+    try:
+        if ws.index != 0:
+            ws.update_index(0)
+            log_info("Moved README tab to index 0 (first position).")
+    except Exception as exc:
+        log_warning(f"Could not reorder README tab: {exc}")
 
 
 def update_localization_json(cfg: Dict, metadata: List[Dict[str, str]]) -> None:
@@ -633,28 +652,26 @@ def update_localization_json(cfg: Dict, metadata: List[Dict[str, str]]) -> None:
     active = data.setdefault("googleSheets", {}).setdefault("active", {})
     tabs_cfg: List[Dict[str, str]] = active.setdefault("tabs", [])
 
+    # Sort metadata by worksheet index to reflect sheet order
+    metadata_sorted = sorted(metadata, key=lambda m: m.get("index", 0))
+
     # Map title->gid from metadata (skip README for sheetGids cache)
-    gid_map = {item["title"]: str(item["gid"]) for item in metadata}
-    sheet_gids = [str(item["gid"]) for item in metadata if not is_readme_title(item["title"])]
+    sheet_gids = [str(item["gid"]) for item in metadata_sorted if not is_readme_title(item["title"])]
     active["sheetGids"] = sheet_gids
 
     title_to_tab = {tab.get("title") or tab.get("module"): tab for tab in tabs_cfg}
-    for item in metadata:
+    tabs_cfg = []  # rebuild in sorted order
+    for item in metadata_sorted:
         title = item["title"]
-        if is_readme_title(title):
-            # Store README tab as well for completeness
-            title_to_tab.setdefault(title, {"module": title, "title": title})
         tab = title_to_tab.get(title)
         if tab is None:
-            # New tab: append with slugified module name
-            tabs_cfg.append({"module": slugify(title), "title": title, "gid": str(item["gid"])})
-        else:
-            tab["gid"] = str(item["gid"])
-            tab.setdefault("title", title)
-            if not tab.get("module"):
-                tab["module"] = slugify(title)
+            tab = {"module": slugify(title), "title": title}
+        tab["gid"] = str(item["gid"])
+        tab.setdefault("title", title)
+        if not tab.get("module"):
+            tab["module"] = slugify(title)
+        tabs_cfg.append(tab)
 
-    # Reassign the possibly updated tabs list
     active["tabs"] = tabs_cfg
 
     json_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")

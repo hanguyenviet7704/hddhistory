@@ -3,73 +3,78 @@
     "active": {
       "sheetId": "1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY",
       "sheetGids": [
-        "0",
-        "1838273555",
-        "873277451",
-        "630014637",
-        "334809914",
-        "1215134188",
-        "1866636702",
-        "761576070",
-        "857703660",
-        "1290486529",
-        "1366728413"
+        "1082743703",
+        "1605119473",
+        "1167029718",
+        "1325032808",
+        "1917911303",
+        "324747030",
+        "1736042682",
+        "1490146799",
+        "1179123203",
+        "1257181392",
+        "2086165409"
       ],
       "tabs": [
         {
-          "module": "common",
-          "title": "common",
+          "module": "readme",
+          "title": "README",
           "gid": "0"
-        },
-        {
-          "module": "auth",
-          "title": "auth",
-          "gid": "873277451"
-        },
-        {
-          "module": "home",
-          "title": "home",
-          "gid": "1215134188"
-        },
-        {
-          "module": "exercise",
-          "title": "exercise",
-          "gid": "334809914"
         },
         {
           "module": "allcourse",
           "title": "allcourse",
-          "gid": "1838273555"
+          "gid": "1082743703"
+        },
+        {
+          "module": "auth",
+          "title": "auth",
+          "gid": "1605119473"
+        },
+        {
+          "module": "common",
+          "title": "common",
+          "gid": "1167029718"
         },
         {
           "module": "courseroadmap",
           "title": "courseroadmap",
-          "gid": "630014637"
+          "gid": "1325032808"
+        },
+        {
+          "module": "exercise",
+          "title": "exercise",
+          "gid": "1917911303"
+        },
+        {
+          "module": "home",
+          "title": "home",
+          "gid": "324747030"
         },
         {
           "module": "keypoint",
           "title": "keypoint",
-          "gid": "1866636702"
+          "gid": "1736042682"
         },
         {
           "module": "lesson",
           "title": "lesson",
-          "gid": "761576070"
+          "gid": "1490146799"
         },
         {
           "module": "onboarding",
           "title": "onboarding",
-          "gid": "857703660"
+          "gid": "1179123203"
         },
         {
           "module": "roleplay",
           "title": "roleplay",
-          "gid": "1290486529"
+          "gid": "1257181392"
         },
         {
           "module": "setting",
           "title": "setting",
-          "gid": "1366728413"
+          "gid": "2086165409"
         }
       ],
       "columns": {
