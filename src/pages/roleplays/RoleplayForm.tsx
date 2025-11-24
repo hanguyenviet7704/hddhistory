@@ -1210,17 +1210,14 @@ export default function RoleplayForm({
             speechBubble: { [lang]: "" },
             tag: null,
             keypointId: "",
-            document: [],
-            explanation: { [lang]: "" },
-            options: [
-              { value: { [lang]: "" }, isCorrect: false },
-              { value: { [lang]: "" }, isCorrect: false },
-            ] as IExerciseChoiceOption[],
-            level: [KeypointLevel.WEAK_POINT],
-            maxScore: 10,
-            completionTime: 60,
-            mainQuestion: 0,
-          } as IExerciseSingleChoice,
+          document: [],
+          explanation: { [lang]: "" },
+          options: [] as IExerciseChoiceOption[],
+          level: [KeypointLevel.WEAK_POINT],
+          maxScore: 10,
+          completionTime: 60,
+          mainQuestion: 0,
+        } as IExerciseSingleChoice,
         } as ISectionContent;
       default:
         return null;
@@ -3316,6 +3313,154 @@ export default function RoleplayForm({
       handleExerciseChange("answer", newAnswer);
     };
 
+    const handlePasteExerciseOptions = (
+      index: number,
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+      if (contentType !== RoleplaySectionType.EXERCISE) return;
+      const pasted = e.clipboardData.getData("text");
+      if (!pasted) return;
+      const lines = pasted
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (lines.length <= 1) return;
+      e.preventDefault();
+
+      setLocalFormData((prev: any) => {
+        const currentExercise = prev.exercise || {};
+        const currentOptions = Array.isArray(currentExercise.options)
+          ? [...currentExercise.options]
+          : [];
+        let nextId = localNextOptionId;
+
+        if (!currentOptions[index]) {
+          if (currentExercise.type === ExerciseType.DRAG_DROP) {
+            currentOptions[index] = { text: { [lang]: "" }, id: nextId++ };
+          } else {
+            currentOptions[index] = { value: { [lang]: "" }, isCorrect: false };
+          }
+        }
+
+        const [first, ...rest] = lines;
+        if (currentExercise.type === ExerciseType.DRAG_DROP) {
+          currentOptions[index] = {
+            ...currentOptions[index],
+            text: updateTranslationValue(
+              currentOptions[index].text || {},
+              lang,
+              first
+            ),
+          };
+          rest.forEach((line) => {
+            currentOptions.push({ text: { [lang]: line }, id: nextId++ });
+          });
+        } else {
+          currentOptions[index] = {
+            ...currentOptions[index],
+            value: updateTranslationValue(
+              currentOptions[index].value || {},
+              lang,
+              first
+            ),
+          };
+          rest.forEach((line) => {
+            currentOptions.push({ value: { [lang]: line }, isCorrect: false });
+          });
+        }
+
+        setLocalNextOptionId(nextId);
+        return {
+          ...prev,
+          exercise: { ...currentExercise, options: currentOptions },
+        };
+      });
+    };
+
+    const handlePasteExerciseAnswers = (
+      index: number,
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+    ) => {
+      const pasted = e.clipboardData.getData("text");
+      if (!pasted) return;
+      const lines = pasted
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (lines.length <= 1) return;
+      e.preventDefault();
+
+      setLocalFormData((prev: any) => {
+        const currentExercise = prev.exercise || {};
+        const currentAnswer = Array.isArray(currentExercise.answer)
+          ? [...currentExercise.answer]
+          : [];
+        let nextId = localNextAnswerId;
+
+        if (!currentAnswer[index]) {
+          currentAnswer[index] = {
+            correctAnswer: { [lang]: "" },
+            id: nextId++,
+          };
+        }
+
+        const [first, ...rest] = lines;
+        currentAnswer[index] = {
+          ...currentAnswer[index],
+          correctAnswer: updateTranslationValue(
+            currentAnswer[index].correctAnswer || {},
+            lang,
+            first
+          ),
+        };
+        rest.forEach((line) => {
+          currentAnswer.push({
+            correctAnswer: { [lang]: line },
+            id: nextId++,
+          });
+        });
+
+        setLocalNextAnswerId(nextId);
+        return {
+          ...prev,
+          exercise: { ...currentExercise, answer: currentAnswer },
+        };
+      });
+    };
+
+    const handlePasteCriteria = (
+      index: number,
+      e: React.ClipboardEvent<HTMLTextAreaElement>
+    ) => {
+      const pasted = e.clipboardData.getData("text");
+      if (!pasted) return;
+      const lines = pasted
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (lines.length <= 1) return;
+      e.preventDefault();
+
+      const current = getScoringCriteria();
+      const next = [...current];
+      if (!next[index]) {
+        next[index] = { criteria: { [lang]: "" }, maxScore: undefined };
+      }
+      const [first, ...rest] = lines;
+      next[index] = {
+        ...next[index],
+        criteria: updateTranslationValue(
+          next[index].criteria || {},
+          lang,
+          first
+        ),
+      };
+      rest.forEach((line) => {
+        next.push({ criteria: { [lang]: line }, maxScore: undefined });
+      });
+      handleExerciseChange("scoringCriteria", next);
+    };
+
     const getScoringCriteria = () =>
       Array.isArray(localFormData.exercise?.scoringCriteria)
         ? (localFormData.exercise
@@ -3326,7 +3471,7 @@ export default function RoleplayForm({
       const current = getScoringCriteria();
       handleExerciseChange("scoringCriteria", [
         ...current,
-        { criteria: "", maxScore: undefined },
+        { c: "", maxScore: undefined },
       ]);
     };
 
@@ -3814,6 +3959,7 @@ export default function RoleplayForm({
                           onChange={(e) =>
                             updateOptionValue(idx, e.target.value)
                           }
+                          onPaste={(e) => handlePasteExerciseOptions(idx, e)}
                           className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                           placeholder={`Option ${idx + 1}`}
                         />
@@ -3928,6 +4074,7 @@ export default function RoleplayForm({
                           onChange={(e) =>
                             updateOptionValue(idx, e.target.value)
                           }
+                          onPaste={(e) => handlePasteExerciseOptions(idx, e)}
                           className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                           placeholder={`Option ${idx + 1}`}
                         />
@@ -3971,6 +4118,7 @@ export default function RoleplayForm({
                           onChange={(e) =>
                             updateAnswerValue(idx, e.target.value)
                           }
+                          onPaste={(e) => handlePasteExerciseAnswers(idx, e)}
                           className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                           placeholder={`Answer ${idx + 1}`}
                         />
@@ -4092,8 +4240,9 @@ export default function RoleplayForm({
                                   e.target.value
                                 )
                               }
+                              onPaste={(e) => handlePasteCriteria(index, e)}
                               rows={2}
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 resize-none"
+                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
                               placeholder="e.g., Pronunciation clarity"
                             />
                           </div>
