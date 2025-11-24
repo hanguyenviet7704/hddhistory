@@ -233,7 +233,7 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
         courseId: currentEntrance.courseId,
         learningItemId: currentEntrance.learningItemId,
         type: LessonType.ENTRANCE,
-        title: title || { [lang]: "" }, // Always include title for validation
+        title: title || { [lang]: "" },
         ...(description && { description }),
         ...(estimateCompleTime && { estimateCompleTime }),
         icon: (currentEntrance.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
@@ -264,7 +264,9 @@ export default function EntranceForm({ entrance, onSave }: EntranceFormProps) {
         : showSuccess("Create entrance successfully");
     } catch (err) {
       console.error("handleSaveEntrance", err);
-      showError("Failed to save entrance");
+      showError(
+        (err as any).response?.data?.message || "Failed to save entrance"
+      );
     } finally {
       setSaving(false);
     }

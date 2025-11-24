@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
 import { UserCircleIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
@@ -9,6 +9,7 @@ import { authService } from "../../services/authService";
 import { getClientInfo } from "../../utils/device";
 import { useNavigate } from "react-router-dom";
 import { setLang } from "../../store/slices/lang.slice";
+import { userService } from "../../services/userService";
 
 const langs: LangOption[] = [
   { code: LangCode.EN, label: "English", countryCode: "GB" },
@@ -23,6 +24,35 @@ export default function Header() {
   const dispatch = useDispatch();
   const lang = useSelector((state: RootState) => state.lang.code);
   const device = getClientInfo();
+  const userId =
+    typeof window !== "undefined" ? localStorage.getItem("userId") : null;
+
+  useEffect(() => {
+    let mounted = true;
+    const loadUserLang = async () => {
+      if (!userId) return;
+      try {
+        const res = await userService.getById(userId);
+        const data = res?.data?.data ?? res?.data ?? res;
+        const apiLang: LangCode =
+          (data?.language as LangCode) ||
+          (data?.lang as LangCode) ||
+          LangCode.EN;
+        if (mounted) {
+          dispatch(setLang(apiLang || LangCode.EN));
+        }
+      } catch (error) {
+        console.error("Failed to load user lang", error);
+        if (mounted) {
+          dispatch(setLang(LangCode.EN));
+        }
+      }
+    };
+    loadUserLang();
+    return () => {
+      mounted = false;
+    };
+  }, [dispatch, userId]);
 
   const handleLogout = async () => {
     try {
@@ -48,12 +78,20 @@ export default function Header() {
   };
 
   const handleProfile = () => {
-    setOpen(!open);
+    setLangOpen(false);
+    setOpen((prev) => !prev);
   };
 
-  const handleChangeLang = (code: LangCode) => {
-    dispatch(setLang(code));
+  const handleChangeLang = async (code: LangCode) => {
     setLangOpen(false);
+    dispatch(setLang(code));
+
+    if (!userId) return;
+    try {
+      await userService.update(userId, { language: code });
+    } catch (error) {
+      console.error("Failed to update language preference", error);
+    }
   };
 
   const current = langs.find((l) => l.code === lang) || langs[0];
@@ -82,7 +120,12 @@ export default function Header() {
         {/* Language switcher */}
         <div className="relative">
           <button
-            onClick={() => setLangOpen(!langOpen)}
+            onClick={() => {
+              setLangOpen((prev) => {
+                if (!prev) setOpen(false);
+                return !prev;
+              });
+            }}
             className="flex items-center gap-2 border rounded px-2 py-1 hover:bg-gray-50"
           >
             <ReactCountryFlag

@@ -26,7 +26,11 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { ITag } from "../../types/interface/tag.interface";
 import { tagService } from "../../services/tagService";
-import { getTranslationValue, updateTranslationValue, cleanTranslation } from "../../utils/translation";
+import {
+  getTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
 
 interface LessonFormProps {
   lesson?: ILesson; // Nếu có -> edit mode, không có -> create mode
@@ -169,13 +173,25 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
       // Prepare lesson data with all ITranslation fields
       // Update translation values and clean empty ones
       const title = cleanTranslation(
-        updateTranslationValue(currentLesson.title, lang, currentLesson.title?.[lang] || "")
+        updateTranslationValue(
+          currentLesson.title,
+          lang,
+          currentLesson.title?.[lang] || ""
+        )
       );
       const description = cleanTranslation(
-        updateTranslationValue(currentLesson.description, lang, currentLesson.description?.[lang] || "")
+        updateTranslationValue(
+          currentLesson.description,
+          lang,
+          currentLesson.description?.[lang] || ""
+        )
       );
       const estimateCompleTime = cleanTranslation(
-        updateTranslationValue(currentLesson.estimateCompleTime, lang, currentLesson.estimateCompleTime?.[lang] || "")
+        updateTranslationValue(
+          currentLesson.estimateCompleTime,
+          lang,
+          currentLesson.estimateCompleTime?.[lang] || ""
+        )
       );
 
       // Prepare LessonPayload with all ITranslation fields
@@ -201,7 +217,10 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
 
       let res;
       if (currentLesson._id) {
-        res = await lessonService.update(currentLesson._id, lessonPayload as Partial<LessonPayload>);
+        res = await lessonService.update(
+          currentLesson._id,
+          lessonPayload as Partial<LessonPayload>
+        );
       } else {
         res = await lessonService.create(lessonPayload as LessonPayload);
       }
@@ -214,7 +233,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
         : showSuccess("Create lesson successfully");
     } catch (err) {
       console.error("handleSaveLesson", err);
-      showError("Failed to save lesson");
+      showError((err as any).response.data.message || "Failed to save lesson");
     } finally {
       setSaving(false);
     }
@@ -251,8 +270,12 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
     setCurrentLesson((prev) => {
       if (!prev) return prev;
       const list = (prev[section] as any[]) || [];
-      const oldIndex = list.findIndex((i) => (i as any)._id === activeId || i === activeId);
-      const newIndex = list.findIndex((i) => (i as any)._id === overId || i === overId);
+      const oldIndex = list.findIndex(
+        (i) => (i as any)._id === activeId || i === activeId
+      );
+      const newIndex = list.findIndex(
+        (i) => (i as any)._id === overId || i === overId
+      );
       return { ...prev, [section]: arrayMove(list, oldIndex, newIndex) };
     });
   };
@@ -343,8 +366,8 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
 
     setCurrentLesson((prev) => {
       if (!prev) return prev;
-      const newList = (prev[section] as any[]).filter((i) =>
-        (i as any)._id !== itemId && i !== itemId
+      const newList = (prev[section] as any[]).filter(
+        (i) => (i as any)._id !== itemId && i !== itemId
       );
       const updated = { ...prev, [section]: newList };
       // try to save section (will do nothing if _id is empty)
@@ -430,35 +453,37 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                           </div>
                         )}
                         {/* Hiển thị tag nếu có */}
-                        {itemObj.tag && Array.isArray(itemObj.tag) && itemObj.tag.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {itemObj.tag.map((t: any, index: number) => (
-                              <span
-                                key={index}
-                                className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        requestDeleteItem(
-                          section,
-                          itemId,
-                          itemObj.title?.[lang] || "item"
-                        );
-                      }}
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  </motion.div>
-                </SortableItem>
+                        {itemObj.tag &&
+                          Array.isArray(itemObj.tag) &&
+                          itemObj.tag.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {itemObj.tag.map((t: any, index: number) => (
+                                <span
+                                  key={index}
+                                  className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                                >
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                      </div>
+                      <button
+                        className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          requestDeleteItem(
+                            section,
+                            itemId,
+                            itemObj.title?.[lang] || "item"
+                          );
+                        }}
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </motion.div>
+                  </SortableItem>
                 );
               })
             ) : (
@@ -527,7 +552,11 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   onChange={(e) =>
                     setCurrentLesson((prev) => ({
                       ...prev,
-                      title: updateTranslationValue(prev.title, lang, e.target.value),
+                      title: updateTranslationValue(
+                        prev.title,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -546,7 +575,11 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   onChange={(e) =>
                     setCurrentLesson((prev) => ({
                       ...prev,
-                      description: updateTranslationValue(prev.description, lang, e.target.value),
+                      description: updateTranslationValue(
+                        prev.description,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   rows={4}
@@ -564,7 +597,11 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   onChange={(e) =>
                     setCurrentLesson((prev) => ({
                       ...prev,
-                      estimateCompleTime: updateTranslationValue(prev.estimateCompleTime, lang, e.target.value),
+                      estimateCompleTime: updateTranslationValue(
+                        prev.estimateCompleTime,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -584,13 +621,21 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                     value={
                       isIconSearchActive
                         ? iconQuery
-                        : getTranslationValue((currentLesson.icon as any)?.title, lang) || ""
+                        : getTranslationValue(
+                            (currentLesson.icon as any)?.title,
+                            lang
+                          ) || ""
                     }
                     onChange={(e) => setIconQuery(e.target.value)}
                     onFocus={() => {
                       setIsIconSearchActive(true);
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
-                      setIconQuery(getTranslationValue((currentLesson.icon as any)?.title, lang) || "");
+                      setIconQuery(
+                        getTranslationValue(
+                          (currentLesson.icon as any)?.title,
+                          lang
+                        ) || ""
+                      );
                     }}
                     onBlur={() => {
                       // Dùng setTimeout để cho phép click vào nút 'x' hoặc dropdown item
@@ -707,7 +752,10 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                         displayValue={(val: string | null) => {
                           // Nếu có selected course, hiển thị title của nó
                           if (selectedCourse) {
-                            return getTranslationValue(selectedCourse.title, lang);
+                            return getTranslationValue(
+                              selectedCourse.title,
+                              lang
+                            );
                           }
                           // Nếu không, hiển thị courseQuery (đang nhập hoặc courseId)
 
