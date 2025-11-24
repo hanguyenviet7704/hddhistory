@@ -88,6 +88,7 @@ mixin AppCustomColor {
   static const Color backgroundWhite = Color(0xFFFFFFFF);
   static const Color backgroundGray = Color(0xFFF5F7FB);
   static const Color backgroundError = Color(0xFFFDEAE7);
+  static const Color backgroundSuccess = Color(0xFFEAFFEF);
   static const Color borderDefault = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
   static const Color brandPrimary = Color(0xFF554FF0);

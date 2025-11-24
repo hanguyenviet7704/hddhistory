@@ -27,7 +27,8 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
    - Deduplicate results; ignore tests unless asked.
 
 4. **Propose keys**
-   - Key style: `moduleCamelCaseKey` to match existing YAML (e.g., `homeGreetingTitle`).
+   - Key style (no module prefix): concise lowerCamelCase that describes the string itself, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name.
+   - If the target YAML still uses prefixed keys, migrate them while you are there: rename keys in all locale YAML files and update Dart references in the scanned `path` to drop the module prefix.
    - Default text: English source string.
    - Other locales: leave empty; tool will prefix `(VI)` / `(ZH)` with default text on push.
 
@@ -43,5 +44,6 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
 
 ## Output
 - Summary of new keys added (with file refs).
+- Note any legacy prefixed keys migrated and where references were updated.
 - Commands executed and their results.
 - Any remaining raw strings or warnings to resolve.

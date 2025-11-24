@@ -88,6 +88,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                   return child;
                 },
                 onReorder: (oldIndex, newIndex) {
+                  if (state.hasChecked) return;
                   context.read<ArrangeTheSequenceCubit>().reorderItems(oldIndex, newIndex);
                 },
                 itemCount: state.currentItems.length,
@@ -95,10 +96,12 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                   final item = state.currentItems[index];
                   return Padding(
                     key: Key('${item.id}'),
-                    padding: EdgeInsets.only(bottom: 8.h),
+                    padding: EdgeInsets.only(bottom: 12.h),
                     child: ArrangeSequenceAnswerCard(
                       text: item.text.text,
                       index: index,
+                      state: state.getItemState(index),
+                      dragEnabled: !state.hasChecked,
                     ),
                   );
                 },
@@ -114,7 +117,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
       builder: (context, state) {
-        final canCheck = context.read<ArrangeTheSequenceCubit>().canCheck;
+        final canCheck = state.currentItems.isNotEmpty && !state.hasChecked;
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<ArrangeTheSequenceCubit>().checkAnswer() : null,

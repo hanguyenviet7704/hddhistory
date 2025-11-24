@@ -22,7 +22,8 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
    - Collect candidates and deduplicate.
 
 4) **Propose keys & values**
-   - Key style: `moduleCamelCaseKey`, matching existing YAML (e.g., `homeGreetingTitle`).
+   - Key style (no module prefix): concise lowerCamelCase describing the text, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name.
+   - If the target YAML still has prefixed keys, migrate them while working: rename keys across locale YAML files and update Dart references in the scanned `path` to remove the module prefix.
    - Default text: the English source string.
    - Other locales: leave empty — the tool will prefix `(VI)` / `(ZH)` with default text on push.
 
@@ -42,3 +43,4 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 ## Notes
 - Do **not** edit generated files (`lib/config/l10n/*.g.dart`); rely on slang.
 - Service account path comes from `.info/app/localization.json`; override with `LOCALIZATION_SA_PATH` if needed.
+- When you migrate legacy prefixed keys, mention which keys changed and where references were updated in your summary.

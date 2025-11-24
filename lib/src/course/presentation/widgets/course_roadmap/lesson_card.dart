@@ -54,7 +54,7 @@ class LessonCard extends StatelessWidget {
         break;
 
       case LessonType.roleplay:
-        if (lesson.progess == ProcessEnum.done) return;
+        if (lesson.progess == ProcessEnum.done && !kDebugMode) return;
         
         AppDI.injector.get<RoleplayCubit>()
           ..reset()

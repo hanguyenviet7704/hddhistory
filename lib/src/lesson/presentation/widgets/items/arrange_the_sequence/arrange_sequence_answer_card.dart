@@ -3,34 +3,82 @@ part of '../../../../lesson.dart';
 class ArrangeSequenceAnswerCard extends StatelessWidget {
   final String text;
   final int index;
+  final ArrangeAnswerState state;
+  final bool dragEnabled;
 
   const ArrangeSequenceAnswerCard({
     super.key,
     required this.text,
     required this.index,
+    this.state = ArrangeAnswerState.normal,
+    this.dragEnabled = true,
   });
+
+  Color get _backgroundColor {
+    return switch (state) {
+      ArrangeAnswerState.correct => AppCustomColor.backgroundSuccess,
+      ArrangeAnswerState.incorrect => AppCustomColor.backgroundError,
+      _ => Colors.white,
+    };
+  }
+
+  Color get _borderColor {
+    return switch (state) {
+      ArrangeAnswerState.correct => AppCustomColor.successGreen,
+      ArrangeAnswerState.incorrect => AppCustomColor.errorRed,
+      _ => AppCustomColor.borderSecondary,
+    };
+  }
+
+  Widget? get _statusIcon {
+    return switch (state) {
+      ArrangeAnswerState.correct => _buildStatusIcon(AppCustomColor.successGreen, Icons.check_rounded),
+      ArrangeAnswerState.incorrect => _buildStatusIcon(AppCustomColor.errorRed, Icons.close_rounded),
+      _ => null,
+    };
+  }
+
+  Widget _buildStatusIcon(Color bgColor, IconData icon) {
+    return Container(
+      width: 20.w,
+      height: 20.h,
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6.r),
+      ),
+      child: Icon(
+        icon,
+        size: 14.sp,
+        color: Colors.white,
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
+    final iconColor = AppCustomColor.greyCD.withValues(alpha: dragEnabled ? 1 : 0.6);
+
     return Material(
       color: Colors.transparent,
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _backgroundColor,
           border: Border.all(
-            color: const Color(0xFFE3E8EF),
+            color: _borderColor,
             width: 2,
           ),
           borderRadius: BorderRadius.circular(12.r),
         ),
         child: ReorderableDragStartListener(
           index: index,
+          enabled: dragEnabled,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Icon(
                 Icons.menu_rounded,
-                color: const Color(0xFFCDD5DF),
+                color: iconColor,
                 size: 24.sp,
               ),
               8.horizontalSpace,
@@ -39,12 +87,16 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
                   text,
                   maxLines: 10,
                   style: AppStyle.text14.copyWith(
-                    color: const Color(0xFF364152),
-                    fontWeight: FontWeight.w400,
-                    height: 1.5,
+                    color: AppCustomColor.textSecondary,
+                    fontWeight: FontWeight.w500,
+                    height: 1.75,
                   ),
                 ),
               ),
+              if (_statusIcon != null) ...[
+                10.horizontalSpace,
+                _statusIcon!,
+              ],
             ],
           ),
         ),

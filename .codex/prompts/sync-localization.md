@@ -18,7 +18,8 @@ You are Codex in the Meup Flutter repo. Given a `path`, remove raw strings by pu
    - `rg --glob '*.dart' --no-heading --color never -n "\"[^\"]{2,}\"" {path} | rg -v "context\\.text|AppLocale|\\.tr\\(|l10n|Slang"`
    - Deduplicate; skip tests unless user asked.
 4) Propose keys:
-   - Format: `moduleCamelCaseKey`, matching current YAML (e.g., `homeGreetingTitle`).
+   - Naming update (no module prefix): use concise lowerCamelCase that describes the text itself, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name (`onboardingWelcomeTitle` -> `welcomeTitle`).
+   - If you touch a module that still has prefixed keys, migrate them while you are there: rename in all locale YAML files and update Dart references in the scanned `path` to remove the module prefix.
    - Default text: English string found.
    - Other locales: leave empty; push step auto-prefixes `(VI)` / `(ZH)` with default text.
 5) Write entries into `assets/i18n/en/<module>.yaml` (and stub other locales if needed). Keep placeholders `${param}`, avoid double `$`.
@@ -31,5 +32,6 @@ You are Codex in the Meup Flutter repo. Given a `path`, remove raw strings by pu
 
 ## Reporting
 - List new keys added with file references.
+- Call out any legacy prefixed keys you migrated and where references were updated.
 - Note commands run and any warnings.
 - Call out remaining raw strings, placeholder issues, or sheet auth problems.

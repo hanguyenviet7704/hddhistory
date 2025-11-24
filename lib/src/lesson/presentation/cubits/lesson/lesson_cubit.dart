@@ -60,8 +60,8 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
         return;
       }
 
-      const KeypointCompleteRoute().go(AppConfig.instance.context!);
       _updateUserProgressKeypoint();
+      KeypointCompleteRoute().go(AppConfig.instance.context!);
       return;
     }
 
