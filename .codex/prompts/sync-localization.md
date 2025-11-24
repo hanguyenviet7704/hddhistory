@@ -21,8 +21,8 @@ You are Codex in the Meup Flutter repo. Given a `path`, remove raw strings by pu
    - Naming update (no module prefix): use concise lowerCamelCase that describes the text itself, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name (`onboardingWelcomeTitle` -> `welcomeTitle`).
    - If you touch a module that still has prefixed keys, migrate them while you are there: rename in all locale YAML files and update Dart references in the scanned `path` to remove the module prefix.
    - Default text: English string found.
-   - Other locales: leave empty; push step auto-prefixes `(VI)` / `(ZH)` with default text.
-5) Write entries into `assets/i18n/en/<module>.yaml` (and stub other locales if needed). Keep placeholders `${param}`, avoid double `$`.
+   - Other locales: **translate vi/zh now**; only fall back to English if truly unsure, never leave blanks. Keep placeholders `${param}`, avoid double `$`.
+5) Write entries into `assets/i18n/en/<module>.yaml` **and** `assets/i18n/{vi,zh}/<module>.yaml`, then mirror the same values into `build/localization/records.json` (push reads from this file). Keep placeholders `${param}`, avoid double `$`.
 6) Push updates:
    - `tools/<os>/localization/localization.sh push --apply`
 7) Regenerate + verify:

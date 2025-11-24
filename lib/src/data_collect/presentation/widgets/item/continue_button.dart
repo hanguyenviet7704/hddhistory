@@ -29,25 +29,27 @@ class ContinueButton extends StatelessWidget {
       buildWhen: (previous, current) => previous.canContinue != current.canContinue || previous.currentStep != current.currentStep,
       builder: (context, state) {
         return Container(
-          padding: EdgeInsets.all(20.w),
-          child: AppButton.primary(
-            onPressed: () => _onPressed(context, state),
-            fullWidthBtn: true,
-            height: 54.h,
-            decoration: BoxDecoration(
-              color: state.canContinue
-                  ? const Color(0xFF554FF0) // Brand/Primary
-                  : const Color(0xFFE3E8EF), // Neutral/200
+          margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+          width: double.infinity,
+          height: 54.h,
+          decoration: BoxDecoration(
+            color: state.canContinue ? const Color(0xFF554FF0) : const Color(0xFFE3E8EF),
+            borderRadius: BorderRadius.circular(1000.r),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () => _onPressed(context, state),
               borderRadius: BorderRadius.circular(1000.r),
-            ),
-            child: AppText(
-              context.text.onboarding.onboardingSkipGreetingButton,
-              style: AppStyle.textBold16.copyWith(
-                color: state.canContinue
-                    ? Colors
-                          .white // Text/White
-                    : const Color(0xFF7F8EA4), // Text/Tertiary
-                fontWeight: FontWeight.w600,
+              child: Center(
+                child: AppText(
+                  context.text.onboarding.onboardingSkipGreetingButton,
+                  style: AppStyle.text16.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: state.canContinue ? Colors.white : const Color(0xFF7F8EA4),
+                    height: 1.5,
+                  ),
+                ),
               ),
             ),
           ),

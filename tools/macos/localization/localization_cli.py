@@ -451,8 +451,20 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
             try:
                 if gid:
                     log_step(f"Fetching sheet gid={gid} ({title}) from {sheet_id}")
-                    csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
-                    rows = read_csv_text(csv_text)
+                    try:
+                        csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
+                        rows = read_csv_text(csv_text)
+                    except Exception as exc:
+                        # Some sheets require authentication for CSV export; fall back to gspread using the service account.
+                        log_warning(f"CSV export failed for gid={gid} ({title}): {exc}; trying gspread fallback.")
+                        if gspread is None or Credentials is None:
+                            raise
+                        creds = get_credentials(auth_cfg)
+                        if creds is None:
+                            raise
+                        client = gspread.authorize(creds)
+                        worksheet = client.open_by_key(sheet_id).get_worksheet_by_id(int(gid))
+                        rows = worksheet.get_all_records()
                 else:
                     if gspread is None or Credentials is None:
                         log_warning(f"Skipping tab '{title}' (no gid and gspread unavailable).")

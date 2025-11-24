@@ -95,7 +95,7 @@ class AboutMenu extends StatelessWidget {
                 // ),
                 // 12.horizontalSpace,
                 AppText(
-                  'context.text.roadmapAbout',
+                  context.text.auth.aboutTitle,
                   style: AppStyle.textBold24.copyWith(color: AppCustomColor.black36),
                 ),
               ],
@@ -108,12 +108,12 @@ class AboutMenu extends StatelessWidget {
           Column(
             children: [
               AboutMenuOption(
-                title: 'context.text.roadmapPrivacy',
+                title: context.text.auth.privacyPolicy,
                 onTap: () => _launchURL('https://meup.com/privacy.html', context),
               ),
               4.verticalSpace,
               AboutMenuOption(
-                title: 'context.text.roadmapTermsOfUse',
+                title: context.text.auth.termsOfUse,
                 onTap: () => _launchURL('https://meup.com/terms.html', context),
               ),
             ],
