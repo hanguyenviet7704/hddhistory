@@ -6,24 +6,31 @@ class StartJourneyButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(20.w),
-      child: AppButton.primary(
-        onPressed: () {
-          AppDI.injector.get<HomeCubit>().initializeData();
-          AppDI.injector.get<UserCubit>().setIsFirstTime(false);
-          RegisterRoute().go(context);
-        },
-        fullWidthBtn: true,
-        height: 54.h,
-        decoration: BoxDecoration(
-          color: const Color(0xFF554FF0), // Brand/Primary
+      margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+      width: double.infinity,
+      height: 54.h,
+      decoration: BoxDecoration(
+        color: const Color(0xFF554FF0),
+        borderRadius: BorderRadius.circular(1000.r),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            AppDI.injector.get<HomeCubit>().initializeData();
+            AppDI.injector.get<UserCubit>().setIsFirstTime(false);
+            RegisterRoute().go(context);
+          },
           borderRadius: BorderRadius.circular(1000.r),
-        ),
-        child: AppText(
-          context.text.onboarding.onboardingStartJourneyButton,
-          style: AppStyle.textBold16.copyWith(
-            color: Colors.white, // Text/White
-            fontWeight: FontWeight.w600,
+          child: Center(
+            child: AppText(
+              context.text.onboarding.onboardingStartJourneyButton,
+              style: AppStyle.text16.copyWith(
+                fontWeight: FontWeight.w600,
+                color: Colors.white,
+                height: 1.5,
+              ),
+            ),
           ),
         ),
       ),

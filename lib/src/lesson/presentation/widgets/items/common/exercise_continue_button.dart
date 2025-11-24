@@ -28,21 +28,27 @@ class ExerciseContinueButton extends StatelessWidget {
     final disabledTextColor = this.disabledTextColor ?? const Color(0xFF7F8EA4);
 
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: AppButton.primary(
-        onPressed: isEnabled ? onPressed : null,
-        fullWidthBtn: true,
-        height: 54.h,
-        disabled: !isEnabled,
-        decoration: ShapeDecoration(
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(100.r)),
-          color: isEnabled ? activeBgColor : disabledBgColor,
-        ),
-        child: AppText(
-          text,
-          style: AppStyle.textBold16.copyWith(
-            color: isEnabled ? activeTextColor : disabledTextColor,
-            fontWeight: FontWeight.w600,
+      margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
+      width: double.infinity,
+      height: 54.h,
+      decoration: BoxDecoration(
+        color: isEnabled ? activeBgColor : disabledBgColor,
+        borderRadius: BorderRadius.circular(1000.r),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: isEnabled ? onPressed : null,
+          borderRadius: BorderRadius.circular(1000.r),
+          child: Center(
+            child: AppText(
+              text,
+              style: AppStyle.text16.copyWith(
+                fontWeight: FontWeight.w600,
+                color: isEnabled ? activeTextColor : disabledTextColor,
+                height: 1.5,
+              ),
+            ),
           ),
         ),
       ),
