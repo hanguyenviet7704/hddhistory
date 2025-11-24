@@ -5,6 +5,7 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
   final int index;
   final ArrangeAnswerState state;
   final bool dragEnabled;
+  final bool isDragging;
 
   const ArrangeSequenceAnswerCard({
     super.key,
@@ -12,9 +13,11 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
     required this.index,
     this.state = ArrangeAnswerState.normal,
     this.dragEnabled = true,
+    this.isDragging = false,
   });
 
   Color get _backgroundColor {
+    if (isDragging) return Colors.white;
     return switch (state) {
       ArrangeAnswerState.correct => AppCustomColor.backgroundSuccess,
       ArrangeAnswerState.incorrect => AppCustomColor.backgroundError,
@@ -23,6 +26,7 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
   }
 
   Color get _borderColor {
+    if (isDragging) return AppCustomColor.textSecondary;
     return switch (state) {
       ArrangeAnswerState.correct => AppCustomColor.successGreen,
       ArrangeAnswerState.incorrect => AppCustomColor.errorRed,
@@ -31,6 +35,7 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
   }
 
   Widget? get _statusIcon {
+    if (isDragging) return null;
     return switch (state) {
       ArrangeAnswerState.correct => _buildStatusIcon(AppCustomColor.successGreen, Icons.check_rounded),
       ArrangeAnswerState.incorrect => _buildStatusIcon(AppCustomColor.errorRed, Icons.close_rounded),
@@ -60,6 +65,8 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
 
     return Material(
       color: Colors.transparent,
+      elevation: isDragging ? 4 : 0,
+      shadowColor: isDragging ? Colors.black.withValues(alpha: 0.08) : Colors.transparent,
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 12.h),
         decoration: BoxDecoration(

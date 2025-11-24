@@ -85,7 +85,22 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 buildDefaultDragHandles: false,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 proxyDecorator: (child, index, animation) {
-                  return child;
+                  final cubit = context.read<ArrangeTheSequenceCubit>();
+                  final currentState = cubit.state;
+                  if (index < 0 || index >= currentState.currentItems.length) {
+                    return child;
+                  }
+                  final item = currentState.currentItems[index];
+                  final itemState = currentState.getItemState(index);
+
+                  return ArrangeSequenceAnswerCard(
+                    key: Key('drag-${item.id}'),
+                    text: item.text.text,
+                    index: index,
+                    state: itemState,
+                    dragEnabled: false,
+                    isDragging: true,
+                  );
                 },
                 onReorder: (oldIndex, newIndex) {
                   if (state.hasChecked) return;
