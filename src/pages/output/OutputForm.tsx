@@ -26,7 +26,11 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { tagService } from "../../services/tagService";
 import { ITag } from "../../types/interface/tag.interface";
-import { getTranslationValue, updateTranslationValue, cleanTranslation } from "../../utils/translation";
+import {
+  getTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
 
 interface OutputFormProps {
   output?: ILesson; // Nếu có -> edit mode, không có -> create mode
@@ -170,13 +174,25 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
       // Prepare lesson data with all ITranslation fields
       // Update translation values and clean empty ones
       const title = cleanTranslation(
-        updateTranslationValue(currentOutput.title, lang, currentOutput.title?.[lang] || "")
+        updateTranslationValue(
+          currentOutput.title,
+          lang,
+          currentOutput.title?.[lang] || ""
+        )
       );
       const description = cleanTranslation(
-        updateTranslationValue(currentOutput.description, lang, currentOutput.description?.[lang] || "")
+        updateTranslationValue(
+          currentOutput.description,
+          lang,
+          currentOutput.description?.[lang] || ""
+        )
       );
       const estimateCompleTime = cleanTranslation(
-        updateTranslationValue(currentOutput.estimateCompleTime, lang, currentOutput.estimateCompleTime?.[lang] || "")
+        updateTranslationValue(
+          currentOutput.estimateCompleTime,
+          lang,
+          currentOutput.estimateCompleTime?.[lang] || ""
+        )
       );
 
       // Prepare LessonPayload with all ITranslation fields
@@ -202,7 +218,10 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
       let res;
       if (currentOutput._id) {
-        res = await lessonService.update(currentOutput._id, lessonPayload as Partial<LessonPayload>);
+        res = await lessonService.update(
+          currentOutput._id,
+          lessonPayload as Partial<LessonPayload>
+        );
       } else {
         res = await lessonService.create(lessonPayload as LessonPayload);
       }
@@ -215,7 +234,9 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
         : showSuccess("Create output successfully");
     } catch (err) {
       console.error("handleSaveOutput", err);
-      showError("Failed to save output");
+      showError(
+        (err as any).response?.data?.message || "Failed to save output"
+      );
     } finally {
       setSaving(false);
     }
@@ -252,8 +273,12 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     setCurrentOutput((prev) => {
       if (!prev) return prev;
       const list = (prev[section] as any[]) || [];
-      const oldIndex = list.findIndex((i) => (i as any)._id === activeId || i === activeId);
-      const newIndex = list.findIndex((i) => (i as any)._id === overId || i === overId);
+      const oldIndex = list.findIndex(
+        (i) => (i as any)._id === activeId || i === activeId
+      );
+      const newIndex = list.findIndex(
+        (i) => (i as any)._id === overId || i === overId
+      );
       return { ...prev, [section]: arrayMove(list, oldIndex, newIndex) };
     });
   };
@@ -270,7 +295,8 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
           search: searchKeypoint,
         });
         if (active) {
-          const list = res.data?.items ?? res.data?.data?.list ?? res.data.list ?? [];
+          const list =
+            res.data?.items ?? res.data?.data?.list ?? res.data.list ?? [];
           setKeypointList(list);
         }
       } catch (err) {
@@ -347,8 +373,8 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
     setCurrentOutput((prev) => {
       if (!prev) return prev;
-      const newList = (prev[section] as any[]).filter((i) =>
-        (i as any)._id !== itemId && i !== itemId
+      const newList = (prev[section] as any[]).filter(
+        (i) => (i as any)._id !== itemId && i !== itemId
       );
       const updated = { ...prev, [section]: newList };
       // try to save section (will do nothing if _id is empty)
@@ -434,35 +460,37 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                           </div>
                         )}
                         {/* Hiển thị tag nếu có */}
-                        {itemObj.tag && Array.isArray(itemObj.tag) && itemObj.tag.length > 0 && (
-                          <div className="flex flex-wrap gap-1 mt-2">
-                            {itemObj.tag.map((t: any, index: number) => (
-                              <span
-                                key={index}
-                                className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                            >
-                              {t}
-                            </span>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <button
-                      className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        e.preventDefault();
-                        requestDeleteItem(
-                          section,
-                          itemId,
-                          itemObj.title?.[lang] || "item"
-                        );
-                      }}
-                    >
-                      <TrashIcon className="w-5 h-5" />
-                    </button>
-                  </motion.div>
-                </SortableItem>
+                        {itemObj.tag &&
+                          Array.isArray(itemObj.tag) &&
+                          itemObj.tag.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-2">
+                              {itemObj.tag.map((t: any, index: number) => (
+                                <span
+                                  key={index}
+                                  className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
+                                >
+                                  {t}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                      </div>
+                      <button
+                        className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          e.preventDefault();
+                          requestDeleteItem(
+                            section,
+                            itemId,
+                            itemObj.title?.[lang] || "item"
+                          );
+                        }}
+                      >
+                        <TrashIcon className="w-5 h-5" />
+                      </button>
+                    </motion.div>
+                  </SortableItem>
                 );
               })
             ) : (
@@ -531,7 +559,11 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
                       ...prev,
-                      title: updateTranslationValue(prev.title, lang, e.target.value),
+                      title: updateTranslationValue(
+                        prev.title,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -550,7 +582,11 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
                       ...prev,
-                      description: updateTranslationValue(prev.description, lang, e.target.value),
+                      description: updateTranslationValue(
+                        prev.description,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   rows={4}
@@ -568,7 +604,11 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
                       ...prev,
-                      estimateCompleTime: updateTranslationValue(prev.estimateCompleTime, lang, e.target.value),
+                      estimateCompleTime: updateTranslationValue(
+                        prev.estimateCompleTime,
+                        lang,
+                        e.target.value
+                      ),
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
@@ -588,13 +628,21 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                     value={
                       isIconSearchActive
                         ? iconQuery
-                        : getTranslationValue((currentOutput.icon as any)?.title, lang) || ""
+                        : getTranslationValue(
+                            (currentOutput.icon as any)?.title,
+                            lang
+                          ) || ""
                     }
                     onChange={(e) => setIconQuery(e.target.value)}
                     onFocus={() => {
                       setIsIconSearchActive(true);
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
-                      setIconQuery(getTranslationValue((currentOutput.icon as any)?.title, lang) || "");
+                      setIconQuery(
+                        getTranslationValue(
+                          (currentOutput.icon as any)?.title,
+                          lang
+                        ) || ""
+                      );
                     }}
                     onBlur={() => {
                       // Dùng setTimeout để cho phép click vào nút 'x' hoặc dropdown item
@@ -711,7 +759,10 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         displayValue={(val: string | null) => {
                           // Nếu có selected course, hiển thị title của nó
                           if (selectedCourse) {
-                            return getTranslationValue(selectedCourse.title, lang);
+                            return getTranslationValue(
+                              selectedCourse.title,
+                              lang
+                            );
                           }
                           // Nếu không, hiển thị courseQuery (đang nhập hoặc courseId)
                           return courseQuery;

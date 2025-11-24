@@ -1037,7 +1037,9 @@ export default function RoleplayForm({
         : showSuccess("Create roleplay successfully");
     } catch (err) {
       console.error("handleSaveRoleplay", err);
-      showError("Failed to save roleplay");
+      showError(
+        (err as any).response?.data?.message || "Failed to save roleplay"
+      );
     } finally {
       setSaving(false);
     }
@@ -1424,7 +1426,9 @@ export default function RoleplayForm({
       });
     } catch (err) {
       console.error("handleSaveContentAndRoleplay", err);
-      showError("Failed to save content");
+      showError(
+        (err as any).response?.data?.message || "Failed to save content"
+      );
     } finally {
       setSaving(false);
     }
@@ -1475,7 +1479,9 @@ export default function RoleplayForm({
       setConfirmDeleteContent(null);
     } catch (err) {
       console.error("handleDeleteContentAndSaveRoleplay", err);
-      showError("Failed to delete content");
+      showError(
+        (err as any).response?.data?.message || "Failed to delete content"
+      );
     } finally {
       setSaving(false);
     }
@@ -1516,7 +1522,9 @@ export default function RoleplayForm({
       setConfirmDeleteSection(null);
     } catch (err) {
       console.error("handleDeleteSectionAndSaveRoleplay", err);
-      showError("Failed to delete section");
+      showError(
+        (err as any).response?.data?.message || "Failed to save section "
+      );
     } finally {
       setSaving(false);
     }
@@ -1620,7 +1628,9 @@ export default function RoleplayForm({
       showSuccess("Updated section color template");
     } catch (err) {
       console.error("updateSectionColorTemplate", err);
-      showError("Failed to update color template");
+      showError(
+        (err as any).response?.data?.message || "Failed to save color template"
+      );
     } finally {
       setSaving(false);
     }
@@ -3106,7 +3116,9 @@ export default function RoleplayForm({
           ...prev,
           exercise: {
             ...prev.exercise,
-            document: documents.filter((_: IDocument, i: number) => i !== index),
+            document: documents.filter(
+              (_: IDocument, i: number) => i !== index
+            ),
           },
         };
       });
@@ -3879,8 +3891,8 @@ export default function RoleplayForm({
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Target Area
                 </label>
-                <input
-                  type="text"
+                <textarea
+                  rows={3}
                   value={getCurrentTranslationValue(
                     localFormData.exercise?.targetArea,
                     lang
@@ -3895,7 +3907,7 @@ export default function RoleplayForm({
                       )
                     )
                   }
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
                   placeholder="Enter target area"
                 />
               </div>

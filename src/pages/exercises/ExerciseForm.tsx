@@ -448,7 +448,9 @@ export default function ExerciseForm({
         : showSuccess("Create exercise successfully");
     } catch (err) {
       console.error("handleSaveExercise", err);
-      showError("Failed to save exercise");
+      showError(
+        (err as any).response?.data?.message || "Failed to save exercise"
+      );
     } finally {
       setSaving(false);
     }
@@ -713,7 +715,9 @@ export default function ExerciseForm({
       setModalOpen({ section: null, questionType: ExerciseType.SINGLE_CHOICE });
     } catch (err) {
       console.error("handleSaveQuestionAndExercise", err);
-      showError("Failed to save question");
+      showError(
+        (err as any).response?.data?.message || "Failed to save question"
+      );
     } finally {
       setSaving(false);
     }
@@ -771,7 +775,9 @@ export default function ExerciseForm({
       setConfirmDeleteQuestion(null);
     } catch (err) {
       console.error("handleDeleteQuestionAndSaveExercise", err);
-      showError("Failed to delete question");
+      showError(
+        (err as any).response?.data?.message || "Failed to delete question"
+      );
     } finally {
       setSaving(false);
     }
@@ -926,35 +932,8 @@ export default function ExerciseForm({
                                               />
                                             </div>
                                           )}
-                                      {doc.type === DocumentType.IMAGE &&
-                                        getTranslationValue(
-                                          doc.data.url,
-                                          lang
-                                        ) && (
-                                          <div className="ml-1">
-                                            <TextWithTooltip
-                                              text={doc.data.url}
-                                              maxLength={50}
-                                              lang={lang}
-                                            />
-                                          </div>
-                                        )}
-                                      {doc.type === DocumentType.AUDIO &&
-                                        getTranslationValue(
-                                          doc.data.url,
-                                          lang
-                                        ) && (
-                                          <div className="ml-1">
-                                            <TextWithTooltip
-                                              text={doc.data.url}
-                                              maxLength={50}
-                                              lang={lang}
-                                            />
-                                          </div>
-                                        )}
-                                      {doc.type === DocumentType.VIDEO && (
-                                        <>
-                                          {getTranslationValue(
+                                        {doc.type === DocumentType.IMAGE &&
+                                          getTranslationValue(
                                             doc.data.url,
                                             lang
                                           ) && (
@@ -966,6 +945,33 @@ export default function ExerciseForm({
                                               />
                                             </div>
                                           )}
+                                        {doc.type === DocumentType.AUDIO &&
+                                          getTranslationValue(
+                                            doc.data.url,
+                                            lang
+                                          ) && (
+                                            <div className="ml-1">
+                                              <TextWithTooltip
+                                                text={doc.data.url}
+                                                maxLength={50}
+                                                lang={lang}
+                                              />
+                                            </div>
+                                          )}
+                                        {doc.type === DocumentType.VIDEO && (
+                                          <>
+                                            {getTranslationValue(
+                                              doc.data.url,
+                                              lang
+                                            ) && (
+                                              <div className="ml-1">
+                                                <TextWithTooltip
+                                                  text={doc.data.url}
+                                                  maxLength={50}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
                                             {doc.data.thumbnail && (
                                               <div className="ml-1">
                                                 <TextWithTooltip
@@ -1823,8 +1829,8 @@ export default function ExerciseForm({
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Target Area
             </label>
-            <input
-              type="text"
+            <textarea
+              rows={3}
               value={getCurrentTranslationValue(localFormData.targetArea, lang)}
               onChange={(e) =>
                 handleChange(
@@ -1836,7 +1842,7 @@ export default function ExerciseForm({
                   )
                 )
               }
-              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
               placeholder="Enter target area"
             />
           </div>

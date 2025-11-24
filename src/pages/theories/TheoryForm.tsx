@@ -201,9 +201,9 @@ export default function TheoryForm({
   useEffect(() => {
     if (!theory && currentTheory._id === "") {
       // Only update the title field to ensure it has the current language
-      setCurrentTheory(prev => ({
+      setCurrentTheory((prev) => ({
         ...prev,
-        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" }
+        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" },
       }));
     }
   }, [lang, theory, currentTheory._id]);
@@ -302,7 +302,10 @@ export default function TheoryForm({
           }
 
           // Skip if nothing to send
-          if (!payload.speechBubble && (!payload.document || payload.document.length === 0)) {
+          if (
+            !payload.speechBubble &&
+            (!payload.document || payload.document.length === 0)
+          ) {
             return null;
           }
 
@@ -339,7 +342,9 @@ export default function TheoryForm({
       );
     } catch (err) {
       console.error("handleSaveTheory", err);
-      showError("Failed to save theory");
+      showError(
+        (err as any).response?.data?.message || "Failed to save theory"
+      );
     } finally {
       setSaving(false);
     }
@@ -410,7 +415,9 @@ export default function TheoryForm({
       setModalOpen({ section: null });
     } catch (err) {
       console.error("handleSaveDocumentAndTheory", err);
-      showError("Failed to save document");
+      showError(
+        (err as any).response?.data?.message || "Failed to save document"
+      );
     } finally {
       setSaving(false);
     }
@@ -457,7 +464,7 @@ export default function TheoryForm({
       }
     } catch (err) {
       console.error("confirmDeleteItem", err);
-      showError("Failed to delete document");
+      showError((err as any).response?.data?.message || "Failed to detete");
     } finally {
       setSaving(false);
       setConfirmDeleteDocument(null);
@@ -765,11 +772,7 @@ export default function TheoryForm({
               <textarea
                 value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
-                  handleDataChange(
-                    index,
-                    "content",
-                    e.target.value
-                  )
+                  handleDataChange(index, "content", e.target.value)
                 }
                 rows={3}
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -780,11 +783,7 @@ export default function TheoryForm({
                 type="text"
                 value={getCurrentTranslationValue(doc.data.content, lang)}
                 onChange={(e) =>
-                  handleDataChange(
-                    index,
-                    "content",
-                    e.target.value
-                  )
+                  handleDataChange(index, "content", e.target.value)
                 }
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder={placeholder}
@@ -966,7 +965,9 @@ export default function TheoryForm({
       tagQuery === ""
         ? availableTags
         : availableTags.filter((tag) =>
-            getTranslationValue(tag.title, lang)?.toLowerCase().includes(tagQuery.toLowerCase())
+            getTranslationValue(tag.title, lang)
+              ?.toLowerCase()
+              .includes(tagQuery.toLowerCase())
           );
 
     return (
@@ -1027,7 +1028,9 @@ export default function TheoryForm({
                       {tag.url && (
                         <img
                           src={tag.url}
-                          alt={getTranslationValue(tag.title, lang) || "Tag url"}
+                          alt={
+                            getTranslationValue(tag.title, lang) || "Tag url"
+                          }
                           className="w-6 h-6 object-contain flex-shrink-0"
                         />
                       )}
