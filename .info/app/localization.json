@@ -2,19 +2,75 @@
   "googleSheets": {
     "active": {
       "sheetId": "1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY",
-      "sheetGids": [],
+      "sheetGids": [
+        "0",
+        "1838273555",
+        "873277451",
+        "630014637",
+        "334809914",
+        "1215134188",
+        "1866636702",
+        "761576070",
+        "857703660",
+        "1290486529",
+        "1366728413"
+      ],
       "tabs": [
-        {"module": "common", "title": "common", "gid": "0"},
-        {"module": "auth", "title": "auth"},
-        {"module": "home", "title": "home"},
-        {"module": "exercise", "title": "exercise"},
-        {"module": "allcourse", "title": "allcourse"},
-        {"module": "courseroadmap", "title": "courseroadmap"},
-        {"module": "keypoint", "title": "keypoint"},
-        {"module": "lesson", "title": "lesson"},
-        {"module": "onboarding", "title": "onboarding"},
-        {"module": "roleplay", "title": "roleplay"},
-        {"module": "setting", "title": "setting"}
+        {
+          "module": "common",
+          "title": "common",
+          "gid": "0"
+        },
+        {
+          "module": "auth",
+          "title": "auth",
+          "gid": "873277451"
+        },
+        {
+          "module": "home",
+          "title": "home",
+          "gid": "1215134188"
+        },
+        {
+          "module": "exercise",
+          "title": "exercise",
+          "gid": "334809914"
+        },
+        {
+          "module": "allcourse",
+          "title": "allcourse",
+          "gid": "1838273555"
+        },
+        {
+          "module": "courseroadmap",
+          "title": "courseroadmap",
+          "gid": "630014637"
+        },
+        {
+          "module": "keypoint",
+          "title": "keypoint",
+          "gid": "1866636702"
+        },
+        {
+          "module": "lesson",
+          "title": "lesson",
+          "gid": "761576070"
+        },
+        {
+          "module": "onboarding",
+          "title": "onboarding",
+          "gid": "857703660"
+        },
+        {
+          "module": "roleplay",
+          "title": "roleplay",
+          "gid": "1290486529"
+        },
+        {
+          "module": "setting",
+          "title": "setting",
+          "gid": "1366728413"
+        }
       ],
       "columns": {
         "key": "Key",
@@ -37,7 +93,9 @@
     },
     "legacy": {
       "sheetId": "1WX5ZeUfasdp1wxO_4RVZLL2ND42habrDqmQhfDfkIcs",
-      "sheetGids": ["288536257"],
+      "sheetGids": [
+        "288536257"
+      ],
       "columns": {
         "module": "Screen",
         "key": "Translation key",
@@ -60,7 +118,11 @@
       "zh": "zh"
     },
     "default": "en",
-    "supported": ["en", "vi", "zh"]
+    "supported": [
+      "en",
+      "vi",
+      "zh"
+    ]
   },
   "paths": {
     "i18nDir": "assets/i18n",

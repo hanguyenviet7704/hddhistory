@@ -19,12 +19,18 @@ tools/<platform>/localization/localization.(sh|bat) push --apply
 
 # Validate placeholders/missing translations
 tools/<platform>/localization/localization.(sh|bat) validate
+
+# Refresh cached tab gids (also creates README tab with instructions if missing)
+tools/<platform>/localization/localization.(sh|bat) cache-gids --ensure-readme
+
+# Regenerate slang outputs (wrapper respects flutter/fvm/puro)
+tools/<platform>/localization/localization.(sh|bat) slang
 ```
 
 Service account for push: set `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to defaults in `.info/app/localization.json` and then `GOOGLE_APPLICATION_CREDENTIALS`.
 
 ## Data Layout
-- Sheet schema: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `UpdatedAt`, `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)` (module is inferred from the tab name; column labels configurable in `.info/app/localization.json`). ICU is allowed; placeholders use `${name}`. One tab per module; `common` and `auth` are shared tabs. `UpdatedAt` is optional and will be auto-populated for added/changed rows on push. Missing locale entries are auto-filled from the default language with a locale-code prefix (e.g., `(ZH) <default>`).
+- Sheet: first tab is `README` (instructions only); every module has its own tab. Column schema: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `UpdatedAt`, `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)` (module inferred from tab name; column labels configurable in `.info/app/localization.json`). ICU is allowed; placeholders use `${name}`. `UpdatedAt` auto-populates for added/changed rows on push. Missing locale entries auto-fill from the default language with a locale-code prefix (e.g., `(ZH) <default>`).
 - Files: `assets/i18n/<locale>/<module>.yaml`
 - Generated code: `lib/config/l10n/l10n*.dart` (`output_file_name: l10n.g.dart`)
 - Config: `.info/app/localization.json` (sheet ids/tabs, paths, default SA path/env), `slang.yaml`

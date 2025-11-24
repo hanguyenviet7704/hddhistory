@@ -728,7 +728,11 @@ goto :eof
 
 :get_relative_path
 set "path=%~1"
-set "%~2=%PROJECT_ROOT%\%path%"
+if "%path:~1,1%"==":" (
+  set "%~2=%path%"
+) else (
+  set "%~2=%PROJECT_ROOT%\%path%"
+)
 goto :eof
 
 REM ============================================

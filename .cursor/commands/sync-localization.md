@@ -22,7 +22,7 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
    - Collect candidates and deduplicate.
 
 4) **Propose keys & values**
-   - Key style (no module prefix): concise lowerCamelCase describing the text, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name.
+   - Key style (no module prefix): concise lowerCamelCase describing the text, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name (module == tab name already).
    - If the target YAML still has prefixed keys, migrate them while working: rename keys across locale YAML files and update Dart references in the scanned `path` to remove the module prefix.
    - Default text: the English source string.
    - Other locales: leave empty — the tool will prefix `(VI)` / `(ZH)` with default text on push.
@@ -33,6 +33,7 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 
 6) **Push to sheet + regenerate**
    - `tools/<os>/localization/localization.sh push --apply`
+   - `tools/<os>/localization/localization.sh cache-gids --ensure-readme` (only if you created/renamed tabs)
    - `tools/<os>/localization/localization.sh pull` (ensures YAML matches sheet)
    - `tools/<os>/localization/localization.sh slang` (uses flutter/fvm/puro automatically)
 
@@ -44,3 +45,4 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 - Do **not** edit generated files (`lib/config/l10n/*.g.dart`); rely on slang.
 - Service account path comes from `.info/app/localization.json`; override with `LOCALIZATION_SA_PATH` if needed.
 - When you migrate legacy prefixed keys, mention which keys changed and where references were updated in your summary.
+- The first sheet tab is `README` (instructions only); real data tabs are per module. GID cache lives in `.info/app/localization.json` and is refreshed by the tools.

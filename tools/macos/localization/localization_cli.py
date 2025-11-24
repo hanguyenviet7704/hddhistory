@@ -19,6 +19,7 @@ import re
 import sys
 import textwrap
 from collections import defaultdict, OrderedDict
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from pathlib import Path
@@ -71,6 +72,8 @@ DEFAULT_SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive.file",
 ]
+
+README_TITLE = "README"
 
 
 @dataclass
@@ -181,6 +184,10 @@ def normalize_status(raw_status: str) -> str:
     if value not in VALID_STATUSES:
         return "active"
     return value
+
+
+def is_readme_title(title: str) -> bool:
+    return (title or "").strip().lower() == README_TITLE.lower()
 
 
 def parse_sheet_rows(
@@ -434,60 +441,82 @@ def fetch_sheet_csv(sheet_id: str, gid: str, encoding: str) -> str:
 
 def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str, source_label: str, auth_cfg: Optional[Dict] = None) -> List[LocalizationRecord]:
     sheet_id = sheet_cfg["sheet_id"]
-    tabs = sheet_cfg.get("tabs", [])
-    gids = sheet_cfg.get("sheet_gids", [])
+    tabs = sheet_cfg.get("tabs", []) or []
+    gids = sheet_cfg.get("sheet_gids", []) or []
     columns = sheet_cfg.get("columns", {})
+    creds = get_credentials(auth_cfg) if auth_cfg is not None else None
+    prefer_auth = creds is not None
 
-    if tabs:
+    # Skip README/instruction tab if present
+    filtered_tabs = [tab for tab in tabs if not is_readme_title(tab.get("title", "")) and not is_readme_title(tab.get("module", ""))]
+
+    if filtered_tabs:
         records: List[LocalizationRecord] = []
-        for tab in tabs:
-            gid = tab.get("gid")
-            module_override = slugify(tab.get("module", "") or tab.get("title", ""))
-            title = tab.get("title") or tab.get("module") or gid
+
+        def fetch_tab(tab_cfg: Dict) -> List[LocalizationRecord]:
+            gid = tab_cfg.get("gid")
+            module_override = slugify(tab_cfg.get("module", "") or tab_cfg.get("title", ""))
+            title = tab_cfg.get("title") or tab_cfg.get("module") or gid
             if not module_override:
                 log_warning(f"Tab {title} has no module name; skipping.")
-                continue
+                return []
 
             try:
                 if gid:
                     log_step(f"Fetching sheet gid={gid} ({title}) from {sheet_id}")
-                    try:
-                        csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
-                        rows = read_csv_text(csv_text)
-                    except Exception as exc:
-                        # Some sheets require authentication for CSV export; fall back to gspread using the service account.
-                        log_warning(f"CSV export failed for gid={gid} ({title}): {exc}; trying gspread fallback.")
-                        if gspread is None or Credentials is None:
-                            raise
-                        creds = get_credentials(auth_cfg)
-                        if creds is None:
-                            raise
+                    rows = []
+                    if prefer_auth and gspread is not None and Credentials is not None:
                         client = gspread.authorize(creds)
                         worksheet = client.open_by_key(sheet_id).get_worksheet_by_id(int(gid))
                         rows = worksheet.get_all_records()
+                    else:
+                        csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
+                        rows = read_csv_text(csv_text)
                 else:
                     if gspread is None or Credentials is None:
                         log_warning(f"Skipping tab '{title}' (no gid and gspread unavailable).")
-                        continue
-                    creds = get_credentials(auth_cfg)
+                        return []
                     if creds is None:
                         log_warning(f"Skipping tab '{title}' (no gid and credentials missing).")
-                        continue
+                        return []
                     log_step(f"Fetching sheet '{title}' via gspread from {sheet_id}")
                     client = gspread.authorize(creds)
                     worksheet = client.open_by_key(sheet_id).worksheet(title)
                     rows = worksheet.get_all_records()
-                records.extend(parse_sheet_rows(rows, columns, languages, source_label, default_module=module_override))
-            except Exception as exc:
+                return parse_sheet_rows(rows, columns, languages, source_label, default_module=module_override)
+            except Exception as exc:  # pragma: no cover - network
                 log_warning(f"Failed to fetch tab '{title}': {exc}")
-                continue
+                return []
+
+        # Parallelize CSV exports to reduce wall time
+        with ThreadPoolExecutor(max_workers=min(8, len(filtered_tabs))) as executor:
+            future_to_tab = {executor.submit(fetch_tab, tab): tab for tab in filtered_tabs}
+            for future in as_completed(future_to_tab):
+                records.extend(future.result())
         return records
 
+    # Legacy: list of gids (already filtered/ordered). No README should be included in this list.
     all_rows: List[Dict[str, str]] = []
-    for gid in gids:
-        log_step(f"Fetching sheet gid={gid} from {sheet_id}")
-        csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
-        all_rows.extend(read_csv_text(csv_text))
+    if prefer_auth and gspread is not None and Credentials is not None:
+        client = gspread.authorize(creds)
+        spreadsheet = client.open_by_key(sheet_id)
+        for gid in gids:
+            try:
+                log_step(f"Fetching sheet gid={gid} via gspread from {sheet_id}")
+                worksheet = spreadsheet.get_worksheet_by_id(int(gid))
+                all_rows.extend(worksheet.get_all_records())
+            except Exception as exc:
+                log_warning(f"Failed to fetch gid {gid}: {exc}")
+    else:
+        with ThreadPoolExecutor(max_workers=min(8, len(gids) or 1)) as executor:
+            futures = {executor.submit(fetch_sheet_csv, sheet_id, str(gid), encoding): gid for gid in gids}
+            for future in as_completed(futures):
+                gid = futures[future]
+                try:
+                    csv_text = future.result()
+                    all_rows.extend(read_csv_text(csv_text))
+                except Exception as exc:
+                    log_warning(f"Failed to fetch gid {gid}: {exc}")
     return parse_sheet_rows(all_rows, columns, languages, source_label)
 
 
@@ -534,6 +563,102 @@ def dataset_to_rows(records: List[LocalizationRecord], columns: Dict[str, str], 
             row.append(record.translations.get(lang, ""))
         rows.append(row)
     return rows
+
+
+def fetch_sheet_metadata(sheet_id: str, auth_cfg: Optional[Dict]) -> List[Dict[str, str]]:
+    if gspread is None or Credentials is None:
+        log_error("gspread/google-auth not available; cannot refresh sheet gids.")
+        sys.exit(1)
+
+    creds = get_credentials(auth_cfg)
+    if creds is None:
+        log_error("Service account credentials not found; cannot refresh sheet gids.")
+        sys.exit(1)
+
+    client = gspread.authorize(creds)
+    spreadsheet = client.open_by_key(sheet_id)
+    worksheets = spreadsheet.worksheets()
+    return [
+        {
+            "title": ws.title,
+            "gid": str(ws.id),
+            "index": ws.index,
+            "row_count": ws.row_count,
+            "col_count": ws.col_count,
+        }
+        for ws in worksheets
+    ]
+
+
+def ensure_readme_tab(sheet_id: str, auth_cfg: Optional[Dict]) -> None:
+    if gspread is None or Credentials is None:
+        return
+    creds = get_credentials(auth_cfg)
+    if creds is None:
+        return
+    client = gspread.authorize(creds)
+    spreadsheet = client.open_by_key(sheet_id)
+    try:
+        spreadsheet.worksheet(README_TITLE)
+        return
+    except Exception:
+        pass
+
+    # Create a lightweight README tab with column explanations
+    ws = spreadsheet.add_worksheet(title=README_TITLE, rows=50, cols=12)
+    instructions = [
+        ["Localization Sheet README"],
+        ["- One tab per module (common, auth, home, ...)."],
+        ["- Columns: Key, Type(text/rich/plural/select), Context, Params(comma), Description, Status(active/draft/deprecated), Tags, UpdatedAt, English (EN), Vietnamese (VI), Chinese (ZH)."],
+        ["- Do NOT prefix keys with module name; module == tab name."],
+        ["- Missing translation rule: fill '(LANGCODE) <default text>' when unknown."],
+        ["- Always run pull -> edit -> push -> pull -> slang."],
+    ]
+    ws.update("A1", instructions)
+    log_success(f"Created {README_TITLE} tab for instructions (id={ws.id}).")
+
+
+def update_localization_json(cfg: Dict, metadata: List[Dict[str, str]]) -> None:
+    json_path = Path(cfg.get("localization_config_path", ""))
+    if not json_path.exists():
+        log_warning(f"Localization config path not found; skipping cache update: {json_path}")
+        return
+
+    try:
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+    except Exception as exc:
+        log_warning(f"Could not read localization config: {exc}")
+        return
+
+    active = data.setdefault("googleSheets", {}).setdefault("active", {})
+    tabs_cfg: List[Dict[str, str]] = active.setdefault("tabs", [])
+
+    # Map title->gid from metadata (skip README for sheetGids cache)
+    gid_map = {item["title"]: str(item["gid"]) for item in metadata}
+    sheet_gids = [str(item["gid"]) for item in metadata if not is_readme_title(item["title"])]
+    active["sheetGids"] = sheet_gids
+
+    title_to_tab = {tab.get("title") or tab.get("module"): tab for tab in tabs_cfg}
+    for item in metadata:
+        title = item["title"]
+        if is_readme_title(title):
+            # Store README tab as well for completeness
+            title_to_tab.setdefault(title, {"module": title, "title": title})
+        tab = title_to_tab.get(title)
+        if tab is None:
+            # New tab: append with slugified module name
+            tabs_cfg.append({"module": slugify(title), "title": title, "gid": str(item["gid"])})
+        else:
+            tab["gid"] = str(item["gid"])
+            tab.setdefault("title", title)
+            if not tab.get("module"):
+                tab["module"] = slugify(title)
+
+    # Reassign the possibly updated tabs list
+    active["tabs"] = tabs_cfg
+
+    json_path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+    log_success(f"Cached {len(sheet_gids)} tab gid(s) into {json_path}")
 
 
 def get_credentials(auth_cfg: Optional[Dict] = None) -> Optional[Credentials]:
@@ -837,6 +962,20 @@ def handle_validate(cfg: Dict) -> None:
     log_success("Validation passed")
 
 
+def handle_cache_gids(cfg: Dict, ensure_readme: bool) -> None:
+    auth_cfg = cfg.get("auth", {})
+    sheet_id = cfg["active_sheet"]["sheet_id"]
+    if ensure_readme:
+        ensure_readme_tab(sheet_id, auth_cfg)
+
+    metadata = fetch_sheet_metadata(sheet_id, auth_cfg)
+    update_localization_json(cfg, metadata)
+
+    # Print summary for visibility
+    summary = [f"{item['title']} (gid={item['gid']})" for item in metadata]
+    log_info("Discovered tabs: " + ", ".join(summary))
+
+
 def build_arg_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Localization CLI (sheets <-> slang yaml)",
@@ -866,6 +1005,8 @@ def build_arg_parser() -> argparse.ArgumentParser:
     push_parser.add_argument("--apply", action="store_true", help="Apply changes (default is dry-run)")
 
     subparsers.add_parser("validate", help="Validate local records.json")
+    cache_parser = subparsers.add_parser("cache-gids", help="Refresh sheet gid cache into localization.json")
+    cache_parser.add_argument("--ensure-readme", action="store_true", help="Create README tab with instructions if missing")
     return parser
 
 
@@ -882,6 +1023,8 @@ def main() -> None:
         handle_push(cfg, apply=args.apply)
     elif command == "validate":
         handle_validate(cfg)
+    elif command == "cache-gids":
+        handle_cache_gids(cfg, ensure_readme=args.ensure_readme)
     else:
         log_error(f"Unknown command {command}")
         sys.exit(1)

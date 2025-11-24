@@ -12,6 +12,11 @@ call :parse_action %*
 if %errorlevel% neq 0 exit /b %errorlevel%
 if not "%~1"=="" shift
 
+set "APPLY_FLAG=0"
+for %%a in (%*) do (
+  if "%%a"=="--apply" set "APPLY_FLAG=1"
+)
+
 cd /d "%PROJECT_ROOT%"
 
 call "%LCOMMON%" :validate_environment
@@ -83,6 +88,15 @@ call "%LCOMMON%" :log_info "Using generated config: %PYTHON_CONFIG%"
 python "%SCRIPT_DIR%localization_cli.py" --config "%PYTHON_CONFIG%" %ACTION% %*
 set "EXIT_CODE=%ERRORLEVEL%"
 
+if %EXIT_CODE%==0 if %APPLY_FLAG%==1 if /I "%ACTION%"=="push" (
+    call "%LCOMMON%" :log_step "Refreshing sheet gid cache after apply..."
+    python "%SCRIPT_DIR%localization_cli.py" --config "%PYTHON_CONFIG%" cache-gids --ensure-readme
+)
+if %EXIT_CODE%==0 if %APPLY_FLAG%==1 if /I "%ACTION%"=="migrate" (
+    call "%LCOMMON%" :log_step "Refreshing sheet gid cache after apply..."
+    python "%SCRIPT_DIR%localization_cli.py" --config "%PYTHON_CONFIG%" cache-gids --ensure-readme
+)
+
 del /f "%PYTHON_CONFIG%" >nul 2>&1
 call "%VENV_DIR%\Scripts\deactivate.bat" >nul 2>&1
 
@@ -93,17 +107,18 @@ set "ACTION=pull"
 if "%~1"=="" goto :eof
 if "%~1"=="-h" goto :show_help
 if "%~1"=="--help" goto :show_help
-if /I "%~1"=="pull"      (set "ACTION=pull" & goto :eof)
-if /I "%~1"=="migrate"   (set "ACTION=migrate" & goto :eof)
-if /I "%~1"=="push"      (set "ACTION=push" & goto :eof)
-if /I "%~1"=="validate"  (set "ACTION=validate" & goto :eof)
-if /I "%~1"=="slang"     (set "ACTION=slang" & goto :eof)
+if /I "%~1"=="pull"        (set "ACTION=pull" & goto :eof)
+if /I "%~1"=="migrate"     (set "ACTION=migrate" & goto :eof)
+if /I "%~1"=="push"        (set "ACTION=push" & goto :eof)
+if /I "%~1"=="validate"    (set "ACTION=validate" & goto :eof)
+if /I "%~1"=="slang"       (set "ACTION=slang" & goto :eof)
+if /I "%~1"=="cache-gids"  (set "ACTION=cache-gids" & goto :eof)
 call "%LCOMMON%" :log_error "Unknown action: %~1"
 call :show_help
 exit /b 1
 
 :show_help
-echo Usage: localization.bat [pull^|migrate^|push^|validate^|slang] [options]
+echo Usage: localization.bat [pull^|migrate^|push^|validate^|slang^|cache-gids] [options]
 echo.
 echo Commands:
 echo   pull                      Fetch active sheet -^> YAML + records.json
@@ -112,6 +127,8 @@ echo                             Import legacy sheet/ARB -^> YAML (optionally pu
 echo   push [--apply]            Push records.json to active sheet (dry-run by default)
 echo   validate                  Validate local records.json
 echo   slang                     Run slang generator (flutter pub run slang)
+echo   cache-gids [--ensure-readme]
+echo                             Refresh tab gid cache into .info/app/localization.json (optionally create README tab)
 echo.
 echo Examples:
 echo   localization.bat pull

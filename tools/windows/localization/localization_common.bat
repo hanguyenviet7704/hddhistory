@@ -352,10 +352,12 @@ call :escape_json_path "%template_dir%" template_dir_json
 call :escape_json_path "%legacy_arb_dir%" legacy_arb_dir_json
 call :escape_json_path "%slang_config%" slang_config_json
 call :escape_json_path "%output_dir%" output_dir_json
+call :escape_json_path "%INFO_APP_DIR%/localization.json" localization_config_json
 
 (
     echo {
     echo   "project_root": "%project_root_json%",
+    echo   "localization_config_path": "%localization_config_json%",
     echo   "active_sheet": {
     echo     "sheet_id": "%active_sheet_id%",
     echo     "sheet_gids": %active_sheet_gids%,

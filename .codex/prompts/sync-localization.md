@@ -21,14 +21,21 @@ You are Codex in the Meup Flutter repo. Given a `path`, remove raw strings by pu
    - Naming update (no module prefix): use concise lowerCamelCase that describes the text itself, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name (`onboardingWelcomeTitle` -> `welcomeTitle`).
    - If you touch a module that still has prefixed keys, migrate them while you are there: rename in all locale YAML files and update Dart references in the scanned `path` to remove the module prefix.
    - Default text: English string found.
-   - Other locales: **translate vi/zh now**; only fall back to English if truly unsure, never leave blanks. Keep placeholders `${param}`, avoid double `$`.
-5) Write entries into `assets/i18n/en/<module>.yaml` **and** `assets/i18n/{vi,zh}/<module>.yaml`, then mirror the same values into `build/localization/records.json` (push reads from this file). Keep placeholders `${param}`, avoid double `$`.
+   - Other locales: you may leave blank; tools will fill `(VI)/(ZH) <default text>` on push when missing. Keep placeholders `${param}`, avoid double `$`.
+5) Write entries into `assets/i18n/en/<module>.yaml` and mirror to other locale files. Keep placeholders `${param}`, avoid double `$`.
 6) Push updates:
    - `tools/<os>/localization/localization.sh push --apply`
+   - If you created/renamed tabs, run `tools/<os>/localization/localization.sh cache-gids --ensure-readme` to refresh the gid cache and ensure the README tab exists.
 7) Regenerate + verify:
    - `tools/<os>/localization/localization.sh pull` (or when `clean=true` to force sync)
    - `tools/<os>/localization/localization.sh slang` (respects flutter/fvm/puro)
    - Re-scan `path`; optionally `flutter analyze`.
+
+## Notes
+- First sheet tab is `README` (instructions only); module tabs hold data. GID cache is stored in `.info/app/localization.json` and refreshed by the tools.
+- Do **not** edit generated files (`lib/config/l10n/*.g.dart`); rely on slang.
+- Service account path is defined in `.info/app/localization.json`; override via `LOCALIZATION_SA_PATH` if necessary.
+- Mention renamed keys (from prefixed to unprefixed) in your summary.
 
 ## Reporting
 - List new keys added with file references.

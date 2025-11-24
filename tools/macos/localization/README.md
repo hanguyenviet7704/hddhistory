@@ -2,36 +2,46 @@
 
 New pipeline uses the active Google Sheet (`.info/app/localization.json`) to produce module-based YAML files for `slang` and an intermediate dataset. Legacy ARB scripts remain for reference only.
 
-## Commands
+## Commands (wrapper auto-detects flutter/fvm/puro)
 
-Sheet IDs/tabs are read from `.info/app/localization.json` (`googleSheets.active/legacy`); no IDs are hardcoded in the scripts.
+Sheet IDs/tabs come from `.info/app/localization.json`; nothing is hardcoded.
 
 ```bash
-# Pull active sheet -> YAML under assets/i18n + build/localization/records.json
+# Pull active sheet -> YAML + build/localization/records.json
 tools/macos/localization/localization.sh pull
 
-# Migrate legacy sheet/ARB -> new schema -> YAML (use --apply to push to active sheet)
+# Migrate legacy sheet/ARB -> new schema (add --apply to push)
 tools/macos/localization/localization.sh migrate --source sheet
-tools/macos/localization/localization.sh migrate --source arb --apply   # use local ARB as source
+tools/macos/localization/localization.sh migrate --source arb --apply
 
-# Validate local dataset (records.json)
+# Push local records.json back to active sheet (dry-run unless --apply)
+tools/macos/localization/localization.sh push --apply
+
+# Validate local dataset
 tools/macos/localization/localization.sh validate
 
-# Push local dataset back to active sheet (dry-run by default)
-tools/macos/localization/localization.sh push --apply
+# Refresh cached tab gids and ensure README tab exists
+tools/macos/localization/localization.sh cache-gids --ensure-readme
+
+# Regenerate slang outputs
+tools/macos/localization/localization.sh slang
 ```
 
 ## Configuration
-- `.info/app/localization.json` defines the active sheet, legacy sheet, column mappings, supported locales, module tabs, paths, encoding, and the default service account path/env names.
-- Service account credentials (for push) via `LOCALIZATION_SA_PATH` (file path) or `LOCALIZATION_SA_JSON` (raw JSON). Falls back to the path in `.info/app/localization.json` and then `GOOGLE_APPLICATION_CREDENTIALS`.
-- Dependencies are installed automatically from `tools/macos/localization/requirements.txt` into `.venv_localization`.
-- Template/example CSV lives in `.info/templates/sample_localization.csv` (shared across platforms).
+- `.info/app/localization.json` holds active/legacy sheet IDs, tab list, cached `sheetGids`, column labels, paths, locales, encoding, and service-account env names. Tools update the gid cache automatically after `push/migrate --apply` or via `cache-gids`.
+- Sheet structure: first tab is `README` (instructions only). Each module gets its own tab named after the module; columns: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `UpdatedAt`, `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)`. Module name is the namespace—do **not** prefix keys with the module.
+- Missing translation rule: when a locale cell is empty, push fills it with `(LANGCODE) <default text>` so gaps are obvious.
+- Service account for push: `LOCALIZATION_SA_PATH` (file) or `LOCALIZATION_SA_JSON` (raw). Defaults come from `.info/app/localization.json`; `GOOGLE_APPLICATION_CREDENTIALS` is a fallback.
+- Dependencies install into `.venv_localization` from `requirements.txt`. Template CSV: `.info/templates/sample_localization.csv`.
 
 ## Outputs
-- YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (fed to slang).
-- Intermediate dataset: `build/localization/records.json` (used for push/diff/validation). Optional `UpdatedAt` column is supported; pushes stamp new/changed rows.
+- YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (consumed by slang).
+- Intermediate dataset: `build/localization/records.json` (source for push/diff/validate). `UpdatedAt` is auto-stamped on changed/added rows when applying.
 
-## Tips
-- Ensure `.info/app/localization.json` points to the correct sheet IDs/GIDs before running.
-- `--apply` writes to the sheet; without it, operations are dry-run. Per-module tabs are auto-created when pushing if missing.
-- After pulling/migrating, regenerate `lib/config/l10n/l10n*.dart` via `dart run slang` or `dart run build_runner build --delete-conflicting-outputs` (slang_build_runner enabled; `output_file_name: l10n.g.dart`).
+## Recommended workflow (per task)
+1) `localization.sh pull`
+2) Edit/add keys (lowerCamelCase, no module prefix) in YAML or sheet; keep `${param}` placeholders tidy.
+3) `localization.sh push --apply`
+4) If you added/renamed tabs: `localization.sh cache-gids --ensure-readme`
+5) `localization.sh pull`
+6) `localization.sh slang`

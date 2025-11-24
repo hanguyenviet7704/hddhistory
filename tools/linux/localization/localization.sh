@@ -20,7 +20,7 @@ source "${SCRIPT_DIR}/localization_common.sh" || {
 
 usage() {
     cat <<'EOF'
-Usage: localization.sh [pull|migrate|push|validate|slang] [options]
+Usage: localization.sh [pull|migrate|push|validate|slang|cache-gids] [options]
 
 Commands (forwarded to localization_cli.py):
   pull                      Fetch active sheet -> YAML + records.json
@@ -29,6 +29,8 @@ Commands (forwarded to localization_cli.py):
   push [--apply]            Push records.json to active sheet (dry-run by default)
   validate                  Validate local records.json
   slang                     Run slang generator (flutter pub run slang)
+  cache-gids [--ensure-readme]
+                            Refresh tab gid cache into .info/app/localization.json (optionally create README tab)
 
 Examples:
   localization.sh pull
@@ -39,13 +41,14 @@ EOF
 }
 
 ACTION="pull"
+APPLY_FLAG=0
 if [[ $# -gt 0 ]]; then
     case "$1" in
         -h|--help)
             usage
             exit 0
             ;;
-        pull|migrate|push|validate|slang)
+        pull|migrate|push|validate|slang|cache-gids)
             ACTION="$1"
             shift
             ;;
@@ -56,6 +59,13 @@ if [[ $# -gt 0 ]]; then
             ;;
     esac
 fi
+
+# Track --apply flag for post-actions
+for arg in "$@"; do
+  if [[ "$arg" == "--apply" ]]; then
+    APPLY_FLAG=1
+  fi
+done
 
 cd "$PROJECT_ROOT"
 
@@ -132,3 +142,12 @@ cleanup() {
 trap cleanup EXIT
 
 python3 "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" "$ACTION" "$@"
+EXIT_CODE=$?
+
+# Auto refresh gid cache after mutating actions
+if [[ $EXIT_CODE -eq 0 && $APPLY_FLAG -eq 1 && ( "$ACTION" == "push" || "$ACTION" == "migrate" ) ]]; then
+    log_step "Refreshing sheet gid cache after apply..."
+    python3 "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" cache-gids --ensure-readme || true
+fi
+
+exit $EXIT_CODE

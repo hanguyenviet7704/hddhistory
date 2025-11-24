@@ -212,6 +212,7 @@ create_python_config() {
     cat > "$config_file" << EOF
 {
   "project_root": "$PROJECT_ROOT",
+  "localization_config_path": "$(get_relative_path "$LOCALIZATION_CONFIG")",
   "active_sheet": {
     "sheet_id": "$(get_active_sheet_id)",
     "sheet_gids": [$(get_active_sheet_gids | sed 's/ /,/g' | sed 's/,$//')],
