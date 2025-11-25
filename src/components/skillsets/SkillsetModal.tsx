@@ -5,6 +5,7 @@ import {
   ISkillset,
   SkillsetPayload,
 } from "../../types/interface/skillset.interface";
+import { SkillsetStatus } from "../../types/enum/skillset.enum";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -34,6 +35,7 @@ export default function SkillsetModal({
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
   const [image, setImage] = useState("");
+  const [status, setStatus] = useState<SkillsetStatus>(SkillsetStatus.DRAFT);
 
   useEffect(() => {
     if (isOpen) {
@@ -41,10 +43,12 @@ export default function SkillsetModal({
         setTitle(initial.title ?? {});
         setDescription(initial.description ?? {});
         setImage(initial.image ?? "");
+        setStatus(initial.status ?? SkillsetStatus.DRAFT);
       } else {
         setTitle({});
         setDescription({});
         setImage("");
+        setStatus(SkillsetStatus.DRAFT);
       }
     }
   }, [initial, isOpen]);
@@ -67,6 +71,7 @@ export default function SkillsetModal({
       title: cleanedTitle || { [lang]: "" }, // Always include title
       ...(cleanedDescription && { description: cleanedDescription }),
       image,
+      status,
     };
 
     await onSubmit(payload, initial?._id);
@@ -134,6 +139,22 @@ export default function SkillsetModal({
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
                   rows={4}
                 />
+              </div>
+
+              {/* Status */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Status *
+                </label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value as SkillsetStatus)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  required
+                >
+                  <option value={SkillsetStatus.DRAFT}>Draft</option>
+                  <option value={SkillsetStatus.PUBLISHED}>Published</option>
+                </select>
               </div>
 
               {/* Image */}

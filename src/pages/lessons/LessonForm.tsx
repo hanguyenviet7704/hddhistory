@@ -132,6 +132,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
           page: 1,
           take: 20,
           search: courseQuery,
+          isAll: true,
         });
         const list: ICourse[] = res.data.items ?? [];
         if (active) setCourses(list);

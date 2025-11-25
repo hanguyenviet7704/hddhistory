@@ -35,6 +35,7 @@ export default function LessonList() {
     try {
       const res = await courseService.getList({
         search: query,
+        isAll: true,
       });
       const list: ICourse[] = res.data.items;
       setCourses(list);
@@ -115,7 +116,6 @@ export default function LessonList() {
   const statusColors: Record<LessonStatus, string> = {
     [LessonStatus.PUBLISHED]: "bg-green-100 text-green-700",
     [LessonStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
-    [LessonStatus.INACTIVE]: "bg-gray-200 text-gray-600",
   };
 
   // Using IntersectionObserver for infinite scroll
@@ -291,7 +291,10 @@ export default function LessonList() {
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
                           }}
-                          title={getTranslationValue(entrance.description, lang)}
+                          title={getTranslationValue(
+                            entrance.description,
+                            lang
+                          )}
                         >
                           {getTranslationValue(entrance.description, lang)}
                         </p>
@@ -301,18 +304,25 @@ export default function LessonList() {
                             {(entrance.icon as any)?.url && (
                               <img
                                 src={(entrance.icon as any).url}
-                                alt={getTranslationValue((entrance.icon as any)?.title, lang)}
+                                alt={getTranslationValue(
+                                  (entrance.icon as any)?.title,
+                                  lang
+                                )}
                                 className="w-5 h-5 object-cover rounded"
                               />
                             )}
                             <span
                               style={{
-                                color: (entrance.icon as any)?.color || "#f3f4f6",
+                                color:
+                                  (entrance.icon as any)?.color || "#f3f4f6",
                                 fontSize: 14,
                                 marginLeft: (entrance.icon as any)?.url ? 6 : 0,
                               }}
                             >
-                              {getTranslationValue((entrance.icon as any)?.title, lang)}
+                              {getTranslationValue(
+                                (entrance.icon as any)?.title,
+                                lang
+                              )}
                             </span>
                           </div>
 
@@ -323,7 +333,10 @@ export default function LessonList() {
                               className="w-5 h-5 mr-2"
                             />
                             <span className="text-sm text-gray-500">
-                              {getTranslationValue(entrance.estimateCompleTime, lang)}
+                              {getTranslationValue(
+                                entrance.estimateCompleTime,
+                                lang
+                              )}
                             </span>
                           </div>
                         </div>

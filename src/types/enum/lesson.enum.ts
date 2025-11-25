@@ -1,7 +1,6 @@
 export enum LessonStatus {
   PUBLISHED = "published",
   DRAFT = "draft",
-  INACTIVE = "inactive",
 }
 
 export enum LessonType {

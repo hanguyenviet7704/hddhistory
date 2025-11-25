@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { courseService } from "../../services/courseService";
 import { ICourse, CoursePayload } from "../../types/interface/cource.interface";
-import { CourseStatus, CourseLevel } from "../../types/enum/course.enum";
+import { CourseStatus } from "../../types/enum/course.enum";
 import CourseModal from "../../components/courses/CourseModal";
 import CourseConfirm from "../../components/courses/ConfirmModal";
 import { useSelector } from "react-redux";
@@ -45,6 +45,7 @@ export default function CourseList() {
         search,
         page: pageNum,
         take: 12,
+        isAll: true,
       });
 
       const list: ICourse[] = res.data.items;
@@ -152,13 +153,11 @@ export default function CourseList() {
   const statusColors: Record<CourseStatus, string> = {
     [CourseStatus.PUBLISHED]: "bg-green-100 text-green-700",
     [CourseStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
-    [CourseStatus.INACTIVE]: "bg-gray-200 text-gray-600",
   };
 
   const statusLabels: Record<CourseStatus, string> = {
     [CourseStatus.PUBLISHED]: "Published",
     [CourseStatus.DRAFT]: "Draft",
-    [CourseStatus.INACTIVE]: "Inactive",
   };
 
   return (

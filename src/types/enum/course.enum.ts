@@ -1,7 +1,6 @@
 export enum CourseStatus {
   PUBLISHED = "published",
   DRAFT = "draft",
-  INACTIVE = "inactive",
 }
 
 export enum CourseLevel {
