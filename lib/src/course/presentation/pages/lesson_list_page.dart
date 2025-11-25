@@ -121,7 +121,10 @@ class LessonListPage extends StatelessWidget {
                           return KeypointCard(
                             keypoint: keypoint,
                             onTap: () {
-                              context.read<LessonCubit>().loadAllLearningItems(keypointId: keypoint.id, isInit: true);
+                              context.read<LessonCubit>()
+                                ..reset()
+                                ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
+                              context.read<CourseLessonCubit>().setCurrentKeypointId(keypoint.id);
                               LessonRoute().go(context);
                             },
                           );

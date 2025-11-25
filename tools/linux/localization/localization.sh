@@ -23,10 +23,11 @@ usage() {
 Usage: localization.sh [pull|migrate|push|validate|slang|cache-gids] [options]
 
 Commands (forwarded to localization_cli.py):
-  pull                      Fetch active sheet -> YAML + records.json
+  pull [--sheet-gids "1 2"] Fetch active sheet -> YAML + records.json (optionally restrict gids)
   migrate [--source sheet|arb] [--apply]
                             Import from legacy sheet/ARB -> YAML (optionally push)
-  push [--apply]            Push records.json to active sheet (dry-run by default)
+  push [--apply] [--sheet-gids "1 2"]
+                            Push records.json/YAML to active sheet (dry-run by default; optional gids)
   validate                  Validate local records.json
   slang                     Run slang generator (flutter pub run slang)
   cache-gids [--ensure-readme]
@@ -34,8 +35,10 @@ Commands (forwarded to localization_cli.py):
 
 Examples:
   localization.sh pull
+  localization.sh pull --sheet-gids "324747030"   # home tab only
   localization.sh migrate --source sheet --apply
   localization.sh push --apply
+  localization.sh push --sheet-gids "1167029718 324747030" --apply
   localization.sh validate
 EOF
 }

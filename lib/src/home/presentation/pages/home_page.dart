@@ -26,9 +26,8 @@ class HomePage extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       4.verticalSpace,
-                      // Continue learning
                       AppText(
-                        'Continue learning',
+                        context.text.home.continueLearning,
                         margin: EdgeInsets.symmetric(horizontal: 20.w),
                         style: AppStyle.textBold20.copyWith(color: AppCustomColor.black36),
                       ),

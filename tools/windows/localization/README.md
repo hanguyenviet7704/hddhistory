@@ -9,13 +9,17 @@ Sheet IDs/tabs come from `.info/app/localization.json`; nothing is hardcoded.
 ```bat
 :: Pull active sheet -> YAML + build/localization/records.json
 tools\windows\localization\localization.bat pull
+:: Pull only specific tab gid(s)
+tools\windows\localization\localization.bat pull --sheet-gids "324747030"
 
 :: Migrate legacy sheet/ARB -> new schema (add --apply to push)
 tools\windows\localization\localization.bat migrate --source sheet
 tools\windows\localization\localization.bat migrate --source arb --apply
 
-:: Push local records.json back to active sheet (dry-run unless --apply)
+:: Push local records.json/YAML back to active sheet (dry-run unless --apply)
 tools\windows\localization\localization.bat push --apply
+:: Push only selected gid(s)
+tools\windows\localization\localization.bat push --sheet-gids "1167029718 324747030" --apply
 
 :: Validate local dataset
 tools\windows\localization\localization.bat validate
@@ -36,12 +40,12 @@ tools\windows\localization\localization.bat slang
 
 ## Outputs
 - YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (consumed by slang).
-- Intermediate dataset: `build/localization/records.json` (source for push/diff/validate). `UpdatedAt` is auto-stamped on changed/added rows when applying.
+- Intermediate dataset: `build/localization/records.json` (source for push/diff/validate). `UpdatedAt` is auto-stamped on changed/added rows when applying. `push` refreshes this file from YAML edits before diffing/pushing. Partial `pull --sheet-gids` merges into the dataset and only rewrites the targeted module YAMLs (others stay intact).
 
 ## Recommended workflow (per task)
 1) `localization.bat pull`
 2) Edit/add keys (lowerCamelCase, no module prefix) in YAML or sheet; keep `${param}` placeholders tidy.
-3) `localization.bat push --apply`
+3) `localization.bat push --apply` (uses YAML changes; add `--sheet-gids "<gid list>"` to target specific tabs)
 4) If you added/renamed tabs: `localization.bat cache-gids --ensure-readme`
 5) `localization.bat pull`
 6) `localization.bat slang`
