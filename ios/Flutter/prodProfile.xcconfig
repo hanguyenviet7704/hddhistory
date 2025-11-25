@@ -5,3 +5,5 @@ ASSET_PREFIX=prod
 BUNDLE_NAME=Meup
 BUNDLE_DISPLAY_NAME=Meup
 API_BASE_URL=https://prod.api.com
+GID_CLIENT_ID=116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc.apps.googleusercontent.com
+REVERSED_CLIENT_ID=com.googleusercontent.apps.116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc

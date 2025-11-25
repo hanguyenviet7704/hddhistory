@@ -5,3 +5,5 @@ ASSET_PREFIX=stg
 BUNDLE_NAME=Meup Staging
 BUNDLE_DISPLAY_NAME=Meup Staging
 API_BASE_URL=https://stg.api.com
+GID_CLIENT_ID=116378588635-sv2pe9vmjarvp1srff7bc8v34bt37di4.apps.googleusercontent.com
+REVERSED_CLIENT_ID=com.googleusercontent.apps.116378588635-sv2pe9vmjarvp1srff7bc8v34bt37di4
