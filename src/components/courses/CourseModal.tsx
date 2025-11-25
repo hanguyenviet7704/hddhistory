@@ -368,7 +368,6 @@ export default function CourseModal({
                   >
                     <option value={CourseStatus.PUBLISHED}>Published</option>
                     <option value={CourseStatus.DRAFT}>Draft</option>
-                    <option value={CourseStatus.INACTIVE}>Inactive</option>
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                     <svg

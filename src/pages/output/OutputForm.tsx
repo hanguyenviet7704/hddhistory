@@ -133,6 +133,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
           page: 1,
           take: 20,
           search: courseQuery,
+          isAll: true,
         });
         const list: ICourse[] = res.data.items ?? [];
         if (active) setCourses(list);

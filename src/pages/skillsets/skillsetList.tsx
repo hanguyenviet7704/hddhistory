@@ -26,6 +26,7 @@ import {
   SkillsetPayload,
 } from "../../types/interface/skillset.interface";
 import { skillsetService } from "../../services/skillsetService";
+import { SkillsetStatus } from "../../types/enum/skillset.enum";
 import { CourseLevel, CourseStatus } from "../../types/enum/course.enum";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import SkillsetModal from "../../components/skillsets/SkillsetModal";
@@ -39,6 +40,7 @@ const SkillsetList: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<SkillsetStatus | "">("");
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -56,6 +58,7 @@ const SkillsetList: React.FC = () => {
     title: { [lang]: "" },
     description: { [lang]: "" },
     image: "",
+    status: SkillsetStatus.DRAFT,
   });
 
   // Notification state
@@ -66,13 +69,15 @@ const SkillsetList: React.FC = () => {
   });
 
   // --- Gọi API để lấy danh sách skillset ---
-  const fetchSkillsets = async (page = 1, search = "") => {
+  const fetchSkillsets = async (page = 1, search = "", status = "") => {
     setLoading(true);
     try {
       const params: Partial<SkillsetListQuery> = {
         page,
         take: pagination.take,
         search: search || undefined,
+        ...(status && { status: status as SkillsetStatus }),
+        isAll: true,
       };
       const response = await skillsetService.getList(params);
       setSkillsets(response.data.items || []);
@@ -90,10 +95,10 @@ const SkillsetList: React.FC = () => {
 
   // --- Các hàm xử lý sự kiện ---
   const handlePageChange = (
-    event: React.ChangeEvent<unknown>,
+    _event: React.ChangeEvent<unknown>,
     value: number
   ) => {
-    fetchSkillsets(value, debouncedSearchTerm);
+    fetchSkillsets(value, debouncedSearchTerm, statusFilter);
   };
 
   useEffect(() => {
@@ -104,8 +109,8 @@ const SkillsetList: React.FC = () => {
   }, [searchTerm]);
 
   useEffect(() => {
-    fetchSkillsets(1, debouncedSearchTerm);
-  }, [debouncedSearchTerm]);
+    fetchSkillsets(1, debouncedSearchTerm, statusFilter);
+  }, [debouncedSearchTerm, statusFilter]);
 
   const handleSkillsetSubmit = async (
     payload: SkillsetPayload,
@@ -177,15 +182,9 @@ const SkillsetList: React.FC = () => {
     setNotification((prev) => ({ ...prev, open: false }));
   };
 
-  const statusColors: Record<CourseStatus, string> = {
-    [CourseStatus.PUBLISHED]: "bg-green-100 text-green-700",
-    [CourseStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
-    [CourseStatus.INACTIVE]: "bg-gray-200 text-gray-600",
-  };
-
-  const levelColors: Record<CourseLevel, string> = {
-    [CourseLevel.LEVEL1]: "bg-blue-100 text-blue-700",
-    [CourseLevel.LEVEL2]: "bg-purple-100 text-purple-700",
+  const statusColors: Record<CourseStatus | SkillsetStatus, string> = {
+    [SkillsetStatus.PUBLISHED]: "bg-green-100 text-green-700",
+    [SkillsetStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
   };
 
   useEffect(() => {
@@ -226,6 +225,17 @@ const SkillsetList: React.FC = () => {
                 </svg>
               </div>
             </div>
+            <select
+              value={statusFilter}
+              onChange={(e) =>
+                setStatusFilter(e.target.value as SkillsetStatus | "")
+              }
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+            >
+              <option value="">All Status</option>
+              <option value={SkillsetStatus.DRAFT}>Draft</option>
+              <option value={SkillsetStatus.PUBLISHED}>Published</option>
+            </select>
             <button
               onClick={() => setCreateDialogOpen(true)}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
@@ -264,7 +274,7 @@ const SkillsetList: React.FC = () => {
                         fontSize: "1.1rem",
                         textShadow: "0 1px 2px rgba(0,0,0,0.15)",
                         transition: "all 0.3s ease",
-                        width: "30%",
+                        width: "40%",
                       }}
                     >
                       Skillset
@@ -275,7 +285,7 @@ const SkillsetList: React.FC = () => {
                         fontSize: "1.1rem",
                         textShadow: "0 1px 2px rgba(0,0,0,0.15)",
                         transition: "all 0.3s ease",
-                        width: "70%",
+                        width: "60%",
                       }}
                     >
                       Courses
@@ -324,6 +334,7 @@ const SkillsetList: React.FC = () => {
                                 flex: 1,
                                 display: "flex",
                                 flexDirection: "column",
+                                position: "relative",
                               }}
                             >
                               <Typography
@@ -351,6 +362,24 @@ const SkillsetList: React.FC = () => {
                                   lang
                                 )}
                               </Typography>
+
+                              {/* Status Badge ở góc dưới bên phải */}
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  bottom: 8,
+                                  right: 8,
+                                }}
+                              >
+                                <span
+                                  className={`inline-block px-3 py-1 text-xs font-medium rounded-full ${
+                                    statusColors[skillset.status]
+                                  }`}
+                                >
+                                  {skillset.status}
+                                </span>
+                              </Box>
+
                               <Box sx={{ mt: "auto" }}>
                                 <button
                                   onClick={() => openEditDialog(skillset)}

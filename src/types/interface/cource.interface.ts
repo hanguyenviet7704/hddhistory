@@ -33,6 +33,7 @@ export interface CoursePayload {
 
 export class CourseListQuery extends BaseQuery {
   status?: CourseStatus;
+  isAll?: boolean;
 
   constructor(init?: Partial<CourseListQuery>) {
     super(init);
@@ -42,6 +43,7 @@ export class CourseListQuery extends BaseQuery {
   override toQueryParams(): string {
     const params = new URLSearchParams(super.toQueryParams());
     if (this.status) params.set("status", this.status);
+    if (this.isAll) params.set("isAll", this.isAll.toString());
 
     return params.toString();
   }

@@ -34,6 +34,7 @@ export default function LessonList() {
     try {
       const res = await courseService.getList({
         search: query,
+        isAll: true,
       });
       const data = res.data?.data ?? res.data ?? {};
       const list: ICourse[] =
@@ -133,7 +134,6 @@ export default function LessonList() {
   const statusColors: Record<LessonStatus, string> = {
     [LessonStatus.PUBLISHED]: "bg-green-100 text-green-700",
     [LessonStatus.DRAFT]: "bg-yellow-100 text-yellow-700",
-    [LessonStatus.INACTIVE]: "bg-gray-200 text-gray-600",
   };
 
   return (
