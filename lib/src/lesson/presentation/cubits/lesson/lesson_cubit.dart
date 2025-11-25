@@ -169,7 +169,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   void loadLearningItem(String id, {void Function(LearningItemEntity)? onSuccess}) async {
     await runUseCase<LearningItemEntity>(
       usecase: () => _getLearningItemUseCase(id),
-      buildLoadingState: () => state.copyWith(status: LessonStatus.loading),
+      // buildLoadingState: () => state.copyWith(status: LessonStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: LessonStatus.failure, errorMessage: error));
       },

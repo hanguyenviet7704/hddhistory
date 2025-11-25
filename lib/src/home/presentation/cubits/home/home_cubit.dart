@@ -33,7 +33,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     emit(state.copyWith(selectedCourseIndex: index));
     AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: state.currentCourse.id);
   }
-  
+
   void selectCourse(CourseEntity course) {
     int courseIndex = state.currentSkillset.courses.indexWhere((c) => c.id == course.id);
     if (courseIndex == -1) return;
@@ -52,7 +52,14 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     emit(state.copyWith(status: HomeStatus.loading));
 
     PageBreakRequest pageRequest;
-    pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+    pageRequest = isInit
+        ? const PageBreakRequest(
+            order: PageBreakOrder.asc,
+          )
+        : PageBreakRequest(
+            page: state.pageData.nextPage,
+            order: PageBreakOrder.asc,
+          );
 
     await runUseCasePageBreak<SkillsetEntity>(
       usecase: () => _getAllUseCase(pageRequest),
