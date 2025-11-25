@@ -8,7 +8,7 @@ class LessonLayout extends StatelessWidget {
     super.key,
     required this.body,
     this.bottom,
-    this.isLoading = false,
+    this.isLoading = true,
   });
 
   @override
@@ -68,55 +68,23 @@ class _LessonLoadingOverlay extends StatelessWidget {
       color: AppCustomColor.scrimOverlay,
       alignment: Alignment.center,
       child: Container(
-        width: math.min(340.w, MediaQuery.sizeOf(context).width - 40.w),
-        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
+        width: 64.w,
+        height: 64.w,
         decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.circular(16.r),
-          boxShadow: [
-            BoxShadow(
-              color: AppCustomColor.black0D.op(0.06),
-              blurRadius: 24.r,
-              offset: Offset(0, 12.h),
-            ),
-          ],
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            colors: [
+              AppCustomColor.brandPrimary,
+              AppCustomColor.blue2F,
+            ],
+          ),
         ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 64.w,
-              height: 64.w,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: LinearGradient(
-                  colors: [
-                    AppCustomColor.brandPrimary,
-                    AppCustomColor.blue2F,
-                  ],
-                ),
-              ),
-              child: Padding(
-                padding: EdgeInsets.all(14.w),
-                child: CircularProgressIndicator(
-                  strokeWidth: 3.w,
-                  valueColor: AlwaysStoppedAnimation<Color>(AppCustomColor.backgroundWhite),
-                ),
-              ),
-            ),
-            14.verticalSpace,
-            AppText(
-              'Loading your lesson...',
-              style: AppStyle.textBold16.copyWith(color: AppCustomColor.textPrimary),
-              textAlign: TextAlign.center,
-            ),
-            6.verticalSpace,
-            AppText(
-              "We're setting things up. This won't take long.",
-              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-              textAlign: TextAlign.center,
-            ),
-          ],
+        child: Padding(
+          padding: EdgeInsets.all(14.w),
+          child: CircularProgressIndicator(
+            strokeWidth: 3.w,
+            valueColor: AlwaysStoppedAnimation<Color>(AppCustomColor.backgroundWhite),
+          ),
         ),
       ),
     );
