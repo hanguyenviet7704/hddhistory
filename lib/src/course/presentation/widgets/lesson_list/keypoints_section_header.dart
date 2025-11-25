@@ -41,13 +41,13 @@ class KeypointsSectionHeader extends StatelessWidget {
                   ),
                   shape: BoxShape.circle,
                 ),
-                child: Center(
-                  child: AppText(
-                    'i',
-                    style: AppStyle.text12.copyWith(
-                      color: AppCustomColor.textQuaternary,
-                      fontWeight: FontWeight.w600,
-                    ),
+                alignment: Alignment.center,
+                child: AppText(
+                  'i',
+                  style: AppStyle.text12.copyWith(
+                    color: AppCustomColor.textQuaternary,
+                    fontWeight: FontWeight.w600,
+                    height: 1,
                   ),
                 ),
               ),

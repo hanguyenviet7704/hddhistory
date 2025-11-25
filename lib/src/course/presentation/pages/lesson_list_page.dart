@@ -43,7 +43,7 @@ class LessonListPage extends StatelessWidget {
                       ),
                       SizedBox(height: 16.h),
                       AppText(
-                        'An error occurred',
+                        context.text.allcourse.errorOccurred,
                         style: AppStyle.text16.copyWith(
                           color: AppCustomColor.textSecondary,
                         ),
@@ -64,7 +64,7 @@ class LessonListPage extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.all(20.w),
                   child: AppText(
-                    'No lesson data available',
+                    context.text.allcourse.noLessonData,
                     style: AppStyle.text16.copyWith(
                       color: AppCustomColor.textSecondary,
                     ),
@@ -102,7 +102,7 @@ class LessonListPage extends StatelessWidget {
                         padding: EdgeInsets.symmetric(vertical: 32.w),
                         child: Center(
                           child: AppText(
-                            'No key points available',
+                            context.text.allcourse.noKeypointsAvailable,
                             style: AppStyle.text14.copyWith(
                               color: AppCustomColor.textTertiary,
                             ),

@@ -976,7 +976,14 @@ def resolve_worksheet(spreadsheet, tab_cfg: Dict, columns: Dict[str, str], langu
     return worksheet
 
 
-def push_to_sheet(records: List[LocalizationRecord], sheet_cfg: Dict, languages: Sequence[str], apply: bool, auth_cfg: Optional[Dict] = None) -> None:
+def push_to_sheet(
+    records: List[LocalizationRecord],
+    sheet_cfg: Dict,
+    languages: Sequence[str],
+    apply: bool,
+    auth_cfg: Optional[Dict] = None,
+    allowed_modules: Optional[Set[str]] = None,
+) -> None:
     if gspread is None or Credentials is None:
         log_error("gspread/google-auth not available. Install requirements via requirements.txt")
         sys.exit(1)
@@ -1014,7 +1021,11 @@ def push_to_sheet(records: List[LocalizationRecord], sheet_cfg: Dict, languages:
 
     tab_map = {slugify(tab.get("module", "") or tab.get("title", "")): tab for tab in tabs if tab.get("module") or tab.get("title")}
 
-    for module in sorted(set(r.module for r in records)):
+    target_modules = sorted(set(r.module for r in records))
+    if allowed_modules:
+        target_modules = [m for m in target_modules if m in allowed_modules]
+
+    for module in target_modules:
         module_records = [r for r in records if r.module == module]
         tab_cfg = tab_map.get(module, {"module": module, "title": module})
         title = tab_cfg.get("title") or tab_cfg.get("module") or module
@@ -1256,6 +1267,10 @@ def handle_push(cfg: Dict, apply: bool, sheet_gids: Optional[Sequence[str]] = No
     if changed:
         log_info(f"Changed keys (sample): {', '.join(changed[:5])}" + (" ..." if len(changed) > 5 else ""))
 
+    modules_touched: Set[str] = set(identity.split(".")[0] for identity in (added + removed + changed))
+    if allowed_modules:
+        modules_touched &= allowed_modules
+
     if apply:
         now_iso = datetime.now(timezone.utc).isoformat()
         touched = set(added + changed)
@@ -1263,7 +1278,12 @@ def handle_push(cfg: Dict, apply: bool, sheet_gids: Optional[Sequence[str]] = No
             if record.identity() in touched or not record.last_updated:
                 record.last_updated = now_iso
 
-    push_to_sheet(records_for_scope, sheet_cfg, languages, apply=apply, auth_cfg=auth_cfg)
+    if allowed_modules and not modules_touched and not removed:
+        log_info("No modules changed within requested gid set; skipping push.")
+        return
+
+    modules_to_push = modules_touched if modules_touched else allowed_modules
+    push_to_sheet(records_for_scope, sheet_cfg, languages, apply=apply, auth_cfg=auth_cfg, allowed_modules=modules_to_push)
 
 
 def handle_validate(cfg: Dict) -> None:

@@ -10,7 +10,8 @@ class ClosePopupLesson extends StatelessWidget {
     this.onKeepLearning,
   });
 
-  static void show(BuildContext context, {
+  static void show(
+    BuildContext context, {
     VoidCallback? onQuit,
     VoidCallback? onKeepLearning,
   }) {
@@ -39,22 +40,24 @@ class ClosePopupLesson extends StatelessWidget {
           Column(
             children: [
               AppText(
-                'Hold it right here!',
+                context.text.lesson.closePopupTitle,
                 style: AppStyle.text20.copyWith(
                   color: const Color(0xFF0D121C),
                   fontWeight: FontWeight.w500,
                   height: 1.5,
                 ),
+                maxLines: 2,
                 textAlign: TextAlign.center,
               ),
               8.verticalSpace,
               AppText(
-                'Your lesson will not be saved if you quit now.',
+                context.text.lesson.closePopupDescription,
                 style: AppStyle.text14.copyWith(
                   color: const Color(0xFF364152),
                   fontWeight: FontWeight.w400,
                   height: 1.75,
                 ),
+                maxLines: 3,
                 textAlign: TextAlign.center,
               ),
             ],
@@ -79,7 +82,7 @@ class ClosePopupLesson extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: AppText(
-                      'Quit',
+                      context.text.lesson.closePopupQuit,
                       style: AppStyle.text16.copyWith(
                         color: const Color(0xFFE34646),
                         fontWeight: FontWeight.w600,
@@ -102,7 +105,7 @@ class ClosePopupLesson extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: AppText(
-                      'Keep learning',
+                      context.text.lesson.closePopupKeepLearning,
                       style: AppStyle.text16.copyWith(
                         color: Colors.white,
                         fontWeight: FontWeight.w600,
