@@ -57,10 +57,7 @@ class CourseCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   8.verticalSpace,
-                  if (showProgress && completedLessons != null && totalLessons != null)
-                    _buildProgressView()
-                  else
-                    _buildLessonCountView(),
+                  if (showProgress && completedLessons != null && totalLessons != null) _buildProgressView(context) else _buildLessonCountView(context),
                 ],
               ),
             ),
@@ -70,12 +67,11 @@ class CourseCard extends StatelessWidget {
     );
   }
 
-  Widget _buildProgressView() {
+  Widget _buildProgressView(BuildContext context) {
     final progress = totalLessons! > 0 ? completedLessons! / totalLessons! : 0.0;
 
     return Row(
       children: [
-        // Progress bar
         Container(
           width: 60.w,
           height: 6.h,
@@ -96,7 +92,7 @@ class CourseCard extends StatelessWidget {
         ),
         6.horizontalSpace,
         AppText(
-          '$completedLessons/$totalLessons Lessons',
+          context.text.allcourse.lessonsProgress(completed: completedLessons!, total: totalLessons!),
           style: AppStyle.text12.copyWith(
             color: AppCustomColor.textTertiary,
             fontWeight: FontWeight.w500,
@@ -106,13 +102,13 @@ class CourseCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLessonCountView() {
+  Widget _buildLessonCountView(BuildContext context) {
     return Row(
       children: [
         SvgPicture.asset(AppAsset.svg.app.icBook, width: 16.w),
         8.horizontalSpace,
         AppText(
-          '${course.numberOfLesson} lessons',
+          context.text.allcourse.lessonsCount(count: course.numberOfLesson),
           style: AppStyle.text12.copyWith(
             color: AppCustomColor.textTertiary,
             fontWeight: FontWeight.w500,

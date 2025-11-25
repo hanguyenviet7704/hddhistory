@@ -67,6 +67,20 @@ def log_step(message: str) -> None:
     print(f"{Colors.PURPLE}🔸 {message}{Colors.NC}")
 
 
+def open_spreadsheet_with_retry(client, sheet_id: str, retries: int = 4, base_delay: int = 2):
+    for attempt in range(retries + 1):
+        try:
+            return client.open_by_key(sheet_id)
+        except Exception as exc:
+            status = getattr(getattr(exc, "response", None), "status_code", None)
+            if status == 429 and attempt < retries:
+                delay = base_delay * (attempt + 1)
+                log_warning(f"Rate limited by Sheets API (429). Retrying in {delay}s... ({attempt + 1}/{retries})")
+                time.sleep(delay)
+                continue
+            raise
+
+
 ALLOWED_TYPES = {"text", "rich", "plural", "select", "selectordinal", "context"}
 PLURAL_CATEGORIES = {"zero", "one", "two", "few", "many", "other"}
 VALID_STATUSES = {"active", "deprecated", "draft"}
@@ -709,7 +723,8 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
                     rows = []
                     if prefer_auth and gspread is not None and Credentials is not None:
                         client = gspread.authorize(creds)
-                        worksheet = client.open_by_key(sheet_id).get_worksheet_by_id(int(gid))
+                        spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+                        worksheet = spreadsheet.get_worksheet_by_id(int(gid))
                         rows = worksheet.get_all_records()
                     else:
                         csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
@@ -723,7 +738,8 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
                         return []
                     log_step(f"Fetching sheet '{title}' via gspread from {sheet_id}")
                     client = gspread.authorize(creds)
-                    worksheet = client.open_by_key(sheet_id).worksheet(title)
+                    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+                    worksheet = spreadsheet.worksheet(title)
                     rows = worksheet.get_all_records()
                 return parse_sheet_rows(rows, columns, languages, source_label, default_module=module_override)
             except Exception as exc:  # pragma: no cover - network
@@ -741,7 +757,7 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
     all_rows: List[Dict[str, str]] = []
     if prefer_auth and gspread is not None and Credentials is not None:
         client = gspread.authorize(creds)
-        spreadsheet = client.open_by_key(sheet_id)
+        spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
         for gid in gids:
             try:
                 log_step(f"Fetching sheet gid={gid} via gspread from {sheet_id}")
@@ -818,7 +834,7 @@ def fetch_sheet_metadata(sheet_id: str, auth_cfg: Optional[Dict]) -> List[Dict[s
         sys.exit(1)
 
     client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(sheet_id)
+    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
     worksheets = spreadsheet.worksheets()
     return [
         {
@@ -839,7 +855,7 @@ def ensure_readme_tab(sheet_id: str, auth_cfg: Optional[Dict]) -> None:
     if creds is None:
         return
     client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(sheet_id)
+    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
     ws = None
     created = False
     try:
@@ -975,7 +991,7 @@ def push_to_sheet(records: List[LocalizationRecord], sheet_cfg: Dict, languages:
     tabs = sheet_cfg.get("tabs", [])
 
     client = gspread.authorize(creds)
-    spreadsheet = client.open_by_key(sheet_id)
+    spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
 
     if not tabs:
         gid = int(sheet_cfg.get("sheet_gids", [0])[0])

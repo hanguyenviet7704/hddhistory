@@ -18,7 +18,7 @@ class CourseRoadmapTimeline extends StatelessWidget {
         ),
         child: Center(
           child: AppText(
-            'No roadmap available',
+            context.text.courseroadmap.noRoadmapAvailable,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
             ),

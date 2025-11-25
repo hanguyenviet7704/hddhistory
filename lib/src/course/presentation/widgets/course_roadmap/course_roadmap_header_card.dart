@@ -6,7 +6,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
     super.key,
     required this.level,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -97,7 +97,10 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                 12.horizontalSpace,
                 // Lesson count
                 AppText(
-                  '${level.completedLessons}/${level.totalLessons} Lessons',
+                  context.text.courseroadmap.lessonsProgress(
+                    completed: level.completedLessons,
+                    total: level.totalLessons,
+                  ),
                   style: AppStyle.text14.copyWith(
                     color: AppCustomColor.textTertiary,
                   ),
