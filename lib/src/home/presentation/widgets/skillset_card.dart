@@ -45,7 +45,7 @@ class SkillsetCardWidget extends StatelessWidget {
                   4.verticalSpace,
                   // Course count
                   AppText(
-                    '${skillset.courses.length} courses',
+                    context.text.home.coursesCount(count: skillset.courses.length),
                     style: AppStyle.text12.copyWith(
                       color: AppCustomColor.grey69,
                     ),

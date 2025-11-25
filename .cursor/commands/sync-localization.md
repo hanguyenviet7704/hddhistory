@@ -13,8 +13,9 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
    - Ask whether to auto-create keys (default yes).
 
 2) **Sync latest source**
-   - Run `LOCALIZATION_SA_PATH=.info/key/multilang_key.json tools/<os>/localization/localization.sh pull`  
-     (`tools/linux/...` on Linux, `tools/macos/...` on macOS, `tools/windows/.../localization.bat` on Windows).
+   - Run `LOCALIZATION_SA_PATH=.info/key/multilang_key.json tools/<os>/localization/localization.sh pull --sheet-gids "<gid>"`  
+     - Use the module gid from `.info/app/localization.json` (active.tabs[].gid). Omit `--sheet-gids` for a full pull.
+     - `tools/linux/...` on Linux, `tools/macos/...` on macOS, `tools/windows/.../localization.bat` on Windows.
 
 3) **Detect raw strings**
    - Use ripgrep to find literal strings not already localized:  
@@ -29,12 +30,18 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 
 5) **Write records**
    - Add entries to `assets/i18n/en/<module>.yaml` (and leave mirrors for other langs if needed).
-   - Keep placeholder syntax `${param}`; avoid double `$`.
+   - Keep placeholder syntax `${param}`; avoid double `$`. For plurals/select, keep YAML maps; add `zero` or explicit `=0` cases when needed, e.g.:
+     ```yaml
+     itemCount(param=count):
+       zero: No items
+       one: ${count} item
+       other: ${count} items
+     ```
 
 6) **Push to sheet + regenerate**
-   - `tools/<os>/localization/localization.sh push --apply`
+   - `tools/<os>/localization/localization.sh push --apply [--sheet-gids "<gid>"]` (push reads YAML and refreshes `records.json`)
    - `tools/<os>/localization/localization.sh cache-gids --ensure-readme` (only if you created/renamed tabs)
-   - `tools/<os>/localization/localization.sh pull` (ensures YAML matches sheet)
+   - `tools/<os>/localization/localization.sh pull [--sheet-gids "<gid>"]` (ensures YAML matches sheet; partial pulls keep other modules intact)
    - `tools/<os>/localization/localization.sh slang` (uses flutter/fvm/puro automatically)
 
 7) **Verify**
@@ -46,3 +53,4 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 - Service account path comes from `.info/app/localization.json`; override with `LOCALIZATION_SA_PATH` if needed.
 - When you migrate legacy prefixed keys, mention which keys changed and where references were updated in your summary.
 - The first sheet tab is `README` (instructions only); real data tabs are per module. GID cache lives in `.info/app/localization.json` and is refreshed by the tools.
+- Partial pulls (`--sheet-gids`) merge into the dataset and only rewrite YAML for targeted modules; full pulls clean/rebuild all locale YAMLs.

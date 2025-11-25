@@ -19,8 +19,9 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
    - Ask permission to auto-create keys (default yes).
 
 2. **Sync latest data**
-   - `LOCALIZATION_SA_PATH=.info/key/multilang_key.json tools/<os>/localization/localization.sh pull`
-     (linux/macos paths; windows uses `tools/windows/localization/localization.bat`).
+   - `LOCALIZATION_SA_PATH=.info/key/multilang_key.json tools/<os>/localization/localization.sh pull --sheet-gids "<gid>"`
+     - Use the module gid from `.info/app/localization.json` (active.tabs[].gid). Omit `--sheet-gids` for a full pull.
+     - linux/macos use `tools/<os>/localization/localization.sh`; windows uses `tools/windows/localization/localization.bat`.
 
 3. **Detect raw strings**
    - `rg --glob '*.dart' --no-heading --color never -n "\"[^\"]{2,}\"" {path} | rg -v "context\\.text|AppLocale|\\.tr\\(|l10n|Slang"`
@@ -33,18 +34,25 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
    - Other locales: okay to leave empty; tool will prefix `(VI)` / `(ZH)` with default text on push.
 
 5. **Write + push**
-   - Add entries to `assets/i18n/en/<module>.yaml` (mirror files for other locales if needed).
-   - Keep placeholders as `${param}`; remove stray extra `$`.
-   - Run `tools/<os>/localization/localization.sh push --apply`.
+    - Add entries to `assets/i18n/en/<module>.yaml` (mirror files for other locales if needed).
+    - Keep placeholders as `${param}`; remove stray extra `$`. For plurals/select, keep YAML map form, include zero/explicit counts when relevant, e.g.:
+      ```yaml
+      itemCount(param=count):
+        zero: No items
+        one: ${count} item
+        other: ${count} items
+      ```
+   - Run `tools/<os>/localization/localization.sh push --apply [--sheet-gids "<gid>"]` (push reads YAML and refreshes `records.json`).
    - If you created/renamed tabs, run `tools/<os>/localization/localization.sh cache-gids --ensure-readme` to refresh the gid cache and ensure the README tab exists.
 
 6. **Regenerate + verify**
-   - `tools/<os>/localization/localization.sh pull`
+   - `tools/<os>/localization/localization.sh pull [--sheet-gids "<gid>"]`
    - `tools/<os>/localization/localization.sh slang` (respects flutter/fvm/puro)
    - Re-scan to confirm no raw strings remain; run `flutter analyze` if time permits.
 
 ## Notes
 - First sheet tab is `README` (instructions only); module tabs hold data. GID cache is stored in `.info/app/localization.json` and refreshed by the tools.
+- Partial pulls (`--sheet-gids`) merge into the dataset and only rewrite YAML for targeted modules; full pulls clean/rebuild all locale YAMLs.
 
 ## Output
 - Summary of new keys added (with file refs).

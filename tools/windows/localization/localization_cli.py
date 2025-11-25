@@ -68,6 +68,7 @@ def log_step(message: str) -> None:
 
 
 ALLOWED_TYPES = {"text", "rich", "plural", "select", "selectordinal", "context"}
+PLURAL_CATEGORIES = {"zero", "one", "two", "few", "many", "other"}
 VALID_STATUSES = {"active", "deprecated", "draft"}
 DEFAULT_SCOPES = [
     "https://www.googleapis.com/auth/spreadsheets",
@@ -195,6 +196,16 @@ def parse_params(params_raw: str) -> List[str]:
     return [p for p in params if p]
 
 
+def parse_key_params(raw_key: str) -> Tuple[str, List[str]]:
+    match = re.match(r"^(.*)\((?:param|params)=([^)]*)\)$", raw_key)
+    if not match:
+        return raw_key, []
+    base = match.group(1)
+    params_raw = match.group(2)
+    params = [p.strip() for p in re.split(r"[,;]", params_raw) if p.strip()]
+    return base, params
+
+
 def detect_placeholders(text: str) -> List[str]:
     if not text:
         return []
@@ -229,6 +240,66 @@ def normalize_placeholders(value: str, params: Sequence[str]) -> str:
     return normalized
 
 
+def is_plural_category_dict(value: Dict[str, str]) -> bool:
+    if not value:
+        return False
+    for key in value.keys():
+        if key in PLURAL_CATEGORIES:
+            continue
+        if re.match(r"^=\d+$", key):
+            continue
+        return False
+    return True
+
+
+def plural_dict_to_icu(value: Dict[str, str], param: str) -> str:
+    segments = []
+    for key, text in value.items():
+        segments.append(f"{key} {{{text}}}")
+    return "{" + f"{param}, plural, " + " ".join(segments) + "}"
+
+
+def icu_to_category_map(text: str) -> Optional[Dict[str, str]]:
+    match = re.match(r"^\{\s*(\w+)\s*,\s*(plural|select\w*)\s*,(.*)\}\s*$", text, re.S)
+    if not match:
+        return None
+
+    body = match.group(3).strip()
+    categories: Dict[str, str] = OrderedDict()
+
+    i = 0
+    length = len(body)
+    while i < length:
+        while i < length and body[i].isspace():
+            i += 1
+        if i >= length:
+            break
+        start = i
+        while i < length and not body[i].isspace() and body[i] != '{':
+            i += 1
+        category = body[start:i]
+        while i < length and body[i].isspace():
+            i += 1
+        if i >= length or body[i] != '{':
+            break
+        brace = 0
+        j = i
+        while j < length:
+            if body[j] == '{':
+                brace += 1
+            elif body[j] == '}':
+                brace -= 1
+                if brace == 0:
+                    j += 1
+                    break
+            j += 1
+        content = body[i + 1 : j - 1]
+        categories[category] = content.strip()
+        i = j
+
+    return categories if categories else None
+
+
 def read_csv_text(csv_text: str) -> List[Dict[str, str]]:
     reader = csv.DictReader(csv_text.splitlines())
     return [row for row in reader]
@@ -258,7 +329,8 @@ def load_yaml_records(i18n_dir: Path, languages: Sequence[str], existing_map: Op
                 continue
 
             module = slugify(path.stem)
-            for key, value in data.items():
+            for key_raw, value in data.items():
+                key, key_params = parse_key_params(key_raw)
                 identity = f"{module}.{key}"
                 base = (existing_map or {}).get(identity)
 
@@ -273,7 +345,7 @@ def load_yaml_records(i18n_dir: Path, languages: Sequence[str], existing_map: Op
                             module=module,
                             key=key,
                             type="text",
-                            params=[],
+                            params=key_params,
                             context="",
                             description="",
                             status="active",
@@ -285,6 +357,25 @@ def load_yaml_records(i18n_dir: Path, languages: Sequence[str], existing_map: Op
                     records[identity] = record
 
                 record = records[identity]
+                if key_params and not record.params:
+                    record.params = key_params
+
+                if isinstance(value, dict):
+                    if is_plural_category_dict(value):
+                        param = (record.params or key_params or ["count"])[0]
+                        record.type = "plural"
+                        if not record.params:
+                            record.params = [param]
+                        record.translations[lang] = plural_dict_to_icu(value, param)
+                    else:
+                        param = (record.params or key_params or ["value"])[0]
+                        record.type = "select"
+                        if not record.params:
+                            record.params = [param]
+                        segments = [f"{k} {{{v}}}" for k, v in value.items()]
+                        record.translations[lang] = "{" + f"{param}, select, " + " ".join(segments) + "}"
+                    continue
+
                 record.translations[lang] = "" if value is None else str(value)
 
     return list(records.values())
@@ -523,8 +614,27 @@ def build_yaml_payload(records: List[LocalizationRecord], languages: Sequence[st
                 continue
             locale_bucket = payload.setdefault(lang, {})
             module_bucket = locale_bucket.setdefault(record.module, {})
-            module_bucket[record.key] = translated_value
+            yaml_key = record.key
+            if record.type in {"plural", "select", "selectordinal"} and record.params:
+                yaml_key = f"{record.key}(param={','.join(record.params)})"
+
+            yaml_value: object = translated_value
+            if record.type in {"plural", "select", "selectordinal"}:
+                cat_map = icu_to_category_map(translated_value)
+                if cat_map:
+                    yaml_value = OrderedDict(cat_map)
+            module_bucket[yaml_key] = yaml_value
     return payload
+
+
+def to_builtin(obj):
+    if isinstance(obj, OrderedDict):
+        return {k: to_builtin(v) for k, v in obj.items()}
+    if isinstance(obj, dict):
+        return {k: to_builtin(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [to_builtin(v) for v in obj]
+    return obj
 
 
 def write_yaml_files(
@@ -557,7 +667,7 @@ def write_yaml_files(
                 continue
             target = locale_dir / f"{module}.yaml"
             target.write_text(
-                yaml.safe_dump(dict(content), allow_unicode=True, sort_keys=False, default_flow_style=False),
+                yaml.safe_dump(to_builtin(content), allow_unicode=True, sort_keys=False, default_flow_style=False),
                 encoding=encoding,
             )
             log_success(f"Generated {target}")
