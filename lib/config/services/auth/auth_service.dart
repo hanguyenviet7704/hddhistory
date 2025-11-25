@@ -30,10 +30,13 @@ class AuthService implements IAuthService {
       // Sign in to Firebase with the Google credential
       return await _firebaseAuth.signInWithCredential(credential);
     } on GoogleSignInException catch (e) {
+      if (kDebugMode) LogDev.error('Failed to sign in with Google: ${e.toString()}');
       throw AppException.generic('Google sign-in error: ${e.toString()}');
     } on FirebaseAuthException catch (e) {
+      if (kDebugMode) LogDev.error('Failed to sign in with Google: ${e.toString()}');
       throw AppException.generic(_getFirebaseAuthErrorMessage(e));
     } catch (e) {
+      if (kDebugMode) LogDev.error('Failed to sign in with Google: ${e.toString()}');
       throw AppException.generic('Failed to sign in with Google: ${e.toString()}');
     }
   }
