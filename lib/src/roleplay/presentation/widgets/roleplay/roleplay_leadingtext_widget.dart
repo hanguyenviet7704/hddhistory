@@ -30,13 +30,13 @@ class RoleplayLeadingTextCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                leadingText.content,
+                leadingText.content.text,
                 textAlign: TextAlign.center,
                 style: AppStyle.text12.copyWith(
                   color: textColor,
                   fontWeight: FontWeight.w600,
                 ),
-                maxLines: 3,
+                maxLines: 20,
               ),
               if (audioController?.hasAudio ?? false) ...[
                 16.verticalSpace,

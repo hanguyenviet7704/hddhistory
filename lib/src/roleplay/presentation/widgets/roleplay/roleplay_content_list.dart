@@ -60,8 +60,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     for (var i = 0; i < _displayableContents.length; i++) {
       final content = _displayableContents[i];
       final String audioUrl = switch (content.type) {
-        RoleplaySectionType.conversation => content.conversation.audio,
-        RoleplaySectionType.leadingText => content.leadingText.audio,
+        RoleplaySectionType.conversation => content.conversation.audio.text,
+        RoleplaySectionType.leadingText => content.leadingText.audio.text,
         _ => '',
       };
       if (audioUrl.isNotEmpty) {
@@ -176,7 +176,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
 
   bool _isSamePerson(ConversationEntity conversation, ConversationEntity? nextConversation) {
     if (nextConversation == null) return false;
-    return nextConversation.name == conversation.name;
+    return nextConversation.avatar.id == conversation.avatar.id;
   }
 
   double _getBottomPadding(int index, int contentIndex) {

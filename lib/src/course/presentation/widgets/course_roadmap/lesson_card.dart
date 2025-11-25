@@ -2,10 +2,12 @@ part of '../../../course.dart';
 
 class LessonCard extends StatelessWidget {
   final LessonEntity lesson;
+  final LessonEntity lessonRolePlay;
 
   const LessonCard({
     super.key,
     required this.lesson,
+    required this.lessonRolePlay,
   });
 
   Color get _backgroundColor {
@@ -37,20 +39,30 @@ class LessonCard extends StatelessWidget {
     return null;
   }
 
-  bool get _showInProgressBadge {
-    return lesson.progess == ProcessEnum.inProgress;
-  }
+  bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
 
   void _onTap(BuildContext context) {
+    if (lesson.progess == ProcessEnum.notStarted) return;
+
     switch (lesson.type) {
       case LessonType.lesson:
-        context.read<CourseLessonCubit>().loadLesson(lesson.id);
+        context.read<ProgressCubit>().loadUserProgressLesson(lessonId: lessonRolePlay.id);
+        context.read<CourseLessonCubit>()
+          ..reset()
+          ..loadLesson(lesson.id);
         LessonListRoute().go(context);
         break;
+
       case LessonType.roleplay:
-        AppDI.injector.get<RoleplayCubit>().loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
+        if (lesson.progess == ProcessEnum.done && !kDebugMode) return;
+        
+        AppDI.injector.get<RoleplayCubit>()
+          ..reset()
+          ..setLessonId(lesson)
+          ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
         RoleplayIntroRoute().go(context);
         break;
+
       case LessonType.output:
         break;
     }
@@ -91,7 +103,7 @@ class LessonCard extends StatelessWidget {
                     // Lesson type
                     LessonMetadata(
                       icon: lesson.icon,
-                      text: _getLessonTypeText(),
+                      text: lesson.icon.title.text,
                       textColor: _textColor,
                     ),
                     20.horizontalSpace,
@@ -123,16 +135,5 @@ class LessonCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _getLessonTypeText() {
-    switch (lesson.type) {
-      case LessonType.lesson:
-        return 'Lesson';
-      case LessonType.roleplay:
-        return 'Entrance';
-      case LessonType.output:
-        return 'Output test';
-    }
   }
 }

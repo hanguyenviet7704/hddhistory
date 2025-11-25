@@ -11,7 +11,7 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
   void loginAnonymous() async {
     String deviceId = await _deviceInfoService.deviceToken;
     String deviceName = await _deviceInfoService.deviceName;
-    String languageCode = AppDI.injector.get<LocaleCubit>().state.value;
+    String languageCode = AppDI.injector.get<LocaleCubit>().state.languageCode;
     AppDI.injector.get<AuthBloc>().add(
       AuthEvent.loginAnonymous({
         "device": {
@@ -19,7 +19,7 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
           "deviceName": deviceName,
         },
         "name": nameController.text,
-        "languagge": languageCode,
+        "language": languageCode,
         "age": state.selectedAgeRange?.label.text,
         "gender": state.selectedGender?.label.text,
         "onboarding": {

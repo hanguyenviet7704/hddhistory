@@ -12,7 +12,7 @@ class ChooseTopicBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              context.text.onboardingChooseSkillsetTitle,
+              context.text.onboarding.onboardingChooseSkillsetTitle,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -24,7 +24,7 @@ class ChooseTopicBody extends StatelessWidget {
             4.verticalSpace,
             // Subtitle
             AppText(
-              context.text.onboardingChooseSkillsetSubtitle,
+              context.text.onboarding.onboardingChooseSkillsetSubtitle,
               maxLines: 10,
               style: AppStyle.text12.copyWith(
                 color: const Color(0xFF7F8EA4), // Text/Tertiary

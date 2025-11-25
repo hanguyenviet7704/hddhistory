@@ -14,6 +14,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final ResetPasswordUsecase _resetPasswordUsecase;
   final ResendOtpUsecase _resendOtpUsecase;
   final DeleteAccountUsecase _deleteAccountUsecase;
+  final DeletePermanentUserUsecase _deletePermanentUserUsecase;
 
   AuthBloc(
     this._loginUsecase,
@@ -26,20 +27,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._resetPasswordUsecase,
     this._resendOtpUsecase,
     this._deleteAccountUsecase,
+    this._deletePermanentUserUsecase,
   ) : super(AuthState.initial()) {
     on<_LoginAnonymous>(_onLoginAnonymous);
     on<_LoginSSOGoogle>(_onLoginSSOGoogle);
     on<_LoginSSOApple>(_onLoginSSOApple);
     on<_Register>(_onRegister);
+    on<_Logout>(_onLogout);
+    on<_DeleteAccountPermanently>(_onDeletePermanentUser);
+  }
+
+  void _onAuthSuccess(AuthEntity auth) {
+    AppDI.injector.get<UserCubit>().setAuth(auth);
+    AppGlobalValue.accessToken = auth.token.accessToken;
+    AppGlobalValue.refreshToken = auth.token.refreshToken;
+    AppDI.injector.get<ProfileCubit>().loadUser();
+  }
+
+  void _onResetAuth() {
+    AppDI.injector.get<UserCubit>().clearData();
+    AppGlobalValue.accessToken = '';
+    AppGlobalValue.refreshToken = '';
+    RegisterRoute().go(AppConfig.instance.context!);
   }
 
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
     runUseCase(
       usecase: () => _loginAnonymousUsecase(event.data),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
       },
       onFailure: (error) {},
     );
@@ -49,9 +65,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     runUseCase(
       usecase: () => _loginSSOGoogleUsecase(),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
         AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
         CourseRoute().go(AppConfig.instance.context!);
       },
@@ -63,9 +77,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     runUseCase(
       usecase: () => _loginSSOAppleUsecase(),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
         AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
         CourseRoute().go(AppConfig.instance.context!);
       },
@@ -81,9 +93,27 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         "passwordConfirm": event.passwordConfirm,
       }),
       onSuccess: (data) {
-        AppDI.injector.get<UserCubit>().setAuth(data);
-        AppGlobalValue.accessToken = data.token.accessToken;
-        AppGlobalValue.refreshToken = data.token.refreshToken;
+        _onAuthSuccess(data);
+      },
+      onFailure: (error) {},
+    );
+  }
+
+  FutureOr<void> _onLogout(_Logout event, Emitter<AuthState> emit) {
+    runUseCase(
+      usecase: () => _logoutUsecase(),
+      onSuccess: (data) {
+        _onResetAuth();
+      },
+      onFailure: (error) {},
+    );
+  }
+
+  FutureOr<void> _onDeletePermanentUser(_DeleteAccountPermanently event, Emitter<AuthState> emit) {
+    runUseCase(
+      usecase: () => _deletePermanentUserUsecase(event.userId),
+      onSuccess: (data) {
+        _onResetAuth();
       },
       onFailure: (error) {},
     );

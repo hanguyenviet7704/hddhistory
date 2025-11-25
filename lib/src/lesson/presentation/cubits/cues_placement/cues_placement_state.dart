@@ -18,7 +18,7 @@ sealed class CuesPlacementState with _$CuesPlacementState {
 
 extension CuesPlacementStateX on CuesPlacementState {
   /// Get list of words by splitting targetArea by space
-  List<String> get words => question.targetArea.split(' ');
+  List<String> get words => question.targetArea.text.split(' ');
 
   /// Get total number of pause marks available
   int get totalMarksCount => question.options.length;
@@ -30,7 +30,7 @@ extension CuesPlacementStateX on CuesPlacementState {
   /// The answer contains 1-based indices, so we subtract 1
   Set<int> get correctPositions {
     return question.answer
-        .map((answer) => int.tryParse(answer.correctAnswer) ?? 0)
+        .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
         .where((index) => index > 0)
         .map((index) => index - 1) // Convert from 1-based to 0-based
         .toSet();

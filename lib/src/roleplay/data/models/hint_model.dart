@@ -5,7 +5,8 @@ abstract class HintModel with _$HintModel {
   const factory HintModel({
     @Default('') String icon,
     @Default('') String textColor,
-    @Default('') String content,
+    @Default('') String backgroundColor,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
   }) = _HintModel;
 
   factory HintModel.fromJson(Map<String, dynamic> json) => _$HintModelFromJson(json);
@@ -14,7 +15,8 @@ abstract class HintModel with _$HintModel {
 extension HintModelExtension on HintModel {
   HintEntity toEntity() => HintEntity(
     icon: icon,
-    textColor: textColor,
+    textColor: textColor, 
+    backgroundColor: backgroundColor,
     content: content,
   );
 }

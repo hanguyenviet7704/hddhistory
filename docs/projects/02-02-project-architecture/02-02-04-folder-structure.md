@@ -30,7 +30,7 @@ meup-flutter/
 ├── firebase.json                   # Firebase multi-flavor configuration
 ├── flavorizr.yaml                  # Multi-flavor configuration (dev/stg/prod)
 ├── flutter_launcher_icons.yaml    # App icon generation configuration
-├── l10n.yaml                       # Localization configuration
+├── slang.yaml                      # Localization (slang) configuration
 ├── LICENSE.md                      # Apache 2.0 License
 ├── pubspec.yaml                    # Project dependencies and configuration
 ├── analysis_options.yaml          # Dart analyzer configuration
@@ -107,12 +107,8 @@ App icon generation configuration:
 - **iOS Specific**: Alpha channel removal and tinted variants
 - **Web**: PWA icon generation with theme colors
 
-#### `l10n.yaml`
-Localization configuration:
-- **ARB Files**: Located in `assets/arb/app/`
-- **Output**: Generated to `lib/config/l10n/`
-- **Features**: Deferred loading, escaping, named parameters
-- **Logging**: Untranslated messages tracking
+#### `slang.yaml`
+Localization configuration for the slang-based pipeline (namespaces, input/output paths, casing, lazy loading).
 
 ### Project Information
 
@@ -446,12 +442,16 @@ tools/
 │   ├── git/
 │   ├── key/
 │   └── localization/
-└── linux/                         # Linux tools (PLACEHOLDER)
+└── linux/                         # Linux tools (localization active)
     ├── build/
     ├── config/
     ├── git/
     ├── key/
-    └── localization/
+    └── localization/              # slang + sheets tooling
+        ├── localization.sh
+        ├── localization_cli.py
+        ├── localization_common.sh
+        └── README.md
 ```
 
 ## Documentation Structure (`docs/`)

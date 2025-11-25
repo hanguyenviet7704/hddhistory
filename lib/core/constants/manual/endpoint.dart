@@ -34,7 +34,7 @@ mixin AppEndpoint {
   static const String usersLogout = '/api/v1/users/logout';
   static const String usersLoginProvider = '/api/v1/users/login/provider';
   static const String usersRefreshToken = '/api/v1/users/{id}/refresh-token';
-  static const String usersMe = '/api/v1/users/me';
+  static const String getUserProfile = '/api/v1/users/me';
   static const String users = '/api/v1/users';
   static const String usersById = '/api/v1/users/{id}';
 
@@ -63,7 +63,7 @@ mixin AppEndpoint {
   static const String coursesLessonsById = '/api/v1/courses-lessons/{id}';
   static const String coursesLessonsIndexes = '/api/v1/courses-lessons/indexs';
 
-  //* Courses Keypoints API
+  //* Courses ss API
   static const String coursesKeypoints = '/api/v1/courses-keypoints';
   static const String coursesKeypointsById = '/api/v1/courses-keypoints/{id}';
 
@@ -78,8 +78,8 @@ mixin AppEndpoint {
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/{lessonId}';
-  static const String coursesUserProgressKeypoint = '/api/v1/courses-user-progress/keypoint/{keypointId}';
-  static const String coursesUserProgressExercise = '/api/v1/courses-user-progress/exercise/{exerciseId}';
+  static const String coursesUserProgressKeypoint = '/api/v1/courses-user-progress/keypoints';
+  static const String coursesUserProgressExercise = '/api/v1/courses-user-progress/exercises';
   static const String coursesUserProgressMyCourses = '/api/v1/courses-user-progress/my-course';
 
   //* Skillsets API
@@ -93,4 +93,8 @@ mixin AppEndpoint {
   static const String cloudflareInfo = '/api/v1/cloudflares/info/{key}';
   static const String cloudflareList = '/api/v1/cloudflares';
   static const String cloudflareDelete = '/api/v1/cloudflares/{key}';
+
+  //* AI Services API
+  static const String voiceFeedback = '/feedback';
+  static const String voiceFeedbackStream = '/feedback-stream';
 }

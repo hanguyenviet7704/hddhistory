@@ -14,3 +14,7 @@ abstract class CourseRoadmapState with _$CourseRoadmapState {
 
   factory CourseRoadmapState.fromJson(Map<String, dynamic> json) => _$CourseRoadmapStateFromJson(json);
 }
+
+extension CourseRoadmapStateExtension on CourseRoadmapState {
+  bool get isCompleted => roadmap.levels.every((level) => level.isCompleted);
+}

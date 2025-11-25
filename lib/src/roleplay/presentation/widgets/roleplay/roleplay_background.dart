@@ -15,9 +15,12 @@ class RoleplayHeroBackground extends StatelessWidget {
         return Stack(
           fit: StackFit.expand,
           children: [
-            DCachedImage(
-              url: imageUrl,
-              fit: BoxFit.cover,
+            ImageFiltered(
+              imageFilter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+              child: DCachedImage(
+                url: imageUrl,
+                fit: BoxFit.cover,
+              ),
             ),
             DecoratedBox(
               decoration: BoxDecoration(

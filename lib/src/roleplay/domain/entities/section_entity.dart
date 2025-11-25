@@ -4,8 +4,8 @@ part of '../../roleplay.dart';
 abstract class SectionEntity with _$SectionEntity {
   const factory SectionEntity({
     @Default(0) int id,
-    @Default('') String title,
-    @Default('') String transition,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage transition,
     @Default('') String textColor,
     @Default('') String backgroundColor,
     @Default('') String image,

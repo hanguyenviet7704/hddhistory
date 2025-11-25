@@ -1,5 +1,5 @@
 PODS:
-  - app_links (6.4.1):
+  - app_links (7.0.0):
     - Flutter
   - app_tracking_transparency (0.0.1):
     - Flutter
@@ -14,8 +14,6 @@ PODS:
     - GoogleUtilities/UserDefaults (~> 8.0)
     - PromisesObjC (~> 2.4)
   - audio_session (0.0.1):
-    - Flutter
-  - audio_waveforms (0.0.1):
     - Flutter
   - awesome_notifications (0.10.0):
     - Flutter
@@ -92,7 +90,7 @@ PODS:
   - firebase_core (4.2.1):
     - Firebase/CoreOnly (= 12.4.0)
     - Flutter
-  - firebase_crashlytics (5.0.4):
+  - firebase_crashlytics (5.0.5):
     - Firebase/Crashlytics (= 12.4.0)
     - firebase_core
     - Flutter
@@ -100,7 +98,7 @@ PODS:
     - Firebase/Messaging (= 12.4.0)
     - firebase_core
     - Flutter
-  - firebase_remote_config (6.1.1):
+  - firebase_remote_config (6.1.2):
     - Firebase/RemoteConfig (= 12.4.0)
     - firebase_core
     - Flutter
@@ -295,6 +293,8 @@ PODS:
   - PromisesSwift (2.4.0):
     - PromisesObjC (= 2.4.0)
   - RecaptchaInterop (101.0.0)
+  - record_ios (1.1.0):
+    - Flutter
   - SDWebImage (5.21.3):
     - SDWebImage/Core (= 5.21.3)
   - SDWebImage/Core (5.21.3)
@@ -305,9 +305,6 @@ PODS:
     - Sentry/HybridSDK (= 8.56.2)
   - share_plus (0.0.1):
     - Flutter
-  - shared_preferences_foundation (0.0.1):
-    - Flutter
-    - FlutterMacOS
   - sign_in_with_apple (0.0.1):
     - Flutter
   - sqflite_darwin (0.0.4):
@@ -325,7 +322,6 @@ DEPENDENCIES:
   - app_links (from `.symlinks/plugins/app_links/ios`)
   - app_tracking_transparency (from `.symlinks/plugins/app_tracking_transparency/ios`)
   - audio_session (from `.symlinks/plugins/audio_session/ios`)
-  - audio_waveforms (from `.symlinks/plugins/audio_waveforms/ios`)
   - awesome_notifications (from `.symlinks/plugins/awesome_notifications/ios`)
   - connectivity_plus (from `.symlinks/plugins/connectivity_plus/ios`)
   - device_info_plus (from `.symlinks/plugins/device_info_plus/ios`)
@@ -349,9 +345,9 @@ DEPENDENCIES:
   - package_info_plus (from `.symlinks/plugins/package_info_plus/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
+  - record_ios (from `.symlinks/plugins/record_ios/ios`)
   - sentry_flutter (from `.symlinks/plugins/sentry_flutter/ios`)
   - share_plus (from `.symlinks/plugins/share_plus/ios`)
-  - shared_preferences_foundation (from `.symlinks/plugins/shared_preferences_foundation/darwin`)
   - sign_in_with_apple (from `.symlinks/plugins/sign_in_with_apple/ios`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
   - TikTokBusinessSDK
@@ -407,8 +403,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/app_tracking_transparency/ios"
   audio_session:
     :path: ".symlinks/plugins/audio_session/ios"
-  audio_waveforms:
-    :path: ".symlinks/plugins/audio_waveforms/ios"
   awesome_notifications:
     :path: ".symlinks/plugins/awesome_notifications/ios"
   connectivity_plus:
@@ -455,12 +449,12 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
+  record_ios:
+    :path: ".symlinks/plugins/record_ios/ios"
   sentry_flutter:
     :path: ".symlinks/plugins/sentry_flutter/ios"
   share_plus:
     :path: ".symlinks/plugins/share_plus/ios"
-  shared_preferences_foundation:
-    :path: ".symlinks/plugins/shared_preferences_foundation/darwin"
   sign_in_with_apple:
     :path: ".symlinks/plugins/sign_in_with_apple/ios"
   sqflite_darwin:
@@ -471,12 +465,11 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/video_player_avfoundation/darwin"
 
 SPEC CHECKSUMS:
-  app_links: 3dbc685f76b1693c66a6d9dd1e9ab6f73d97dc0a
+  app_links: a754cbec3c255bd4bbb4d236ecc06f28cd9a7ce8
   app_tracking_transparency: 3d84f147f67ca82d3c15355c36b1fa6b66ca7c92
   AppAuth: 1c1a8afa7e12f2ec3a294d9882dfa5ab7d3cb063
   AppCheckCore: cc8fd0a3a230ddd401f326489c99990b013f0c4f
   audio_session: 9bb7f6c970f21241b19f5a3658097ae459681ba0
-  audio_waveforms: a6dde7fe7c0ea05f06ffbdb0f7c1b2b2ba6cedcf
   awesome_notifications: 0f432b28098d193920b11a44cfa9d2d9313a3888
   connectivity_plus: cb623214f4e1f6ef8fe7403d580fdad517d2f7dd
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
@@ -491,9 +484,9 @@ SPEC CHECKSUMS:
   firebase_analytics: 67fbdd9f3c04e55048024f3da21cfc36f05e56cf
   firebase_auth: 9225db04db5d8e3b46dc8940e04bc6aec6833e27
   firebase_core: f1aafb21c14f497e5498f7ffc4dc63cbb52b2594
-  firebase_crashlytics: 83c7467d7534975a4d779af43bd226d0a4616464
+  firebase_crashlytics: c039028126cb45e32f4c217aa392408b0963d081
   firebase_messaging: c17a29984eafce4b2997fe078bb0a9e0b06f5dde
-  firebase_remote_config: a984c9b1b0ada895a3f03a46f1bbb4c998663aa5
+  firebase_remote_config: c1540fb5adfca6165116fafecf6fcb956b547fb8
   FirebaseABTesting: c05b5ec9f1d9f21a65909525de301d375032d9a4
   FirebaseAnalytics: 0fc2b20091f0ddd21bf73397cf8f0eb5346dc24f
   FirebaseAppCheckInterop: f734c802f21fe1da0837708f0f9a27218c8a4ed0
@@ -533,11 +526,11 @@ SPEC CHECKSUMS:
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
   PromisesSwift: 9d77319bbe72ebf6d872900551f7eeba9bce2851
   RecaptchaInterop: 11e0b637842dfb48308d242afc3f448062325aba
+  record_ios: f75fa1d57f840012775c0e93a38a7f3ceea1a374
   SDWebImage: 16309af6d214ba3f77a7c6f6fdda888cb313a50a
   Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
   sentry_flutter: 4c33648b7e83310aa1fdb1b10c5491027d9643f0
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
-  shared_preferences_foundation: 9e1978ff2562383bd5676f64ec4e9aa8fa06a6f7
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0
   SwiftyGif: 706c60cf65fa2bc5ee0313beece843c8eb8194d4

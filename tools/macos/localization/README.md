@@ -1,114 +1,47 @@
-# Flutter Localization Scripts
+# Localization Tooling (Sheets ⇄ slang)
 
-This directory contains scripts for managing Flutter localization files from Google Sheets.
+New pipeline uses the active Google Sheet (`.info/app/localization.json`) to produce module-based YAML files for `slang` and an intermediate dataset. Legacy ARB scripts remain for reference only.
 
-## Overview
+## Commands (wrapper auto-detects flutter/fvm/puro)
 
-The localization system works in two stages:
-1. **Generate module-specific ARB files** from Google Sheets data
-2. **Merge module ARB files** into combined app ARB files for Flutter
-
-## Scripts
-
-### `generate_localization.sh`
-Main script that orchestrates the entire localization generation process.
+Sheet IDs/tabs come from `.info/app/localization.json`; nothing is hardcoded.
 
 ```bash
-./tool/macos/localization/generate_localization.sh
+# Pull active sheet -> YAML + build/localization/records.json
+tools/macos/localization/localization.sh pull
+
+# Migrate legacy sheet/ARB -> new schema (add --apply to push)
+tools/macos/localization/localization.sh migrate --source sheet
+tools/macos/localization/localization.sh migrate --source arb --apply
+
+# Push local records.json back to active sheet (dry-run unless --apply)
+tools/macos/localization/localization.sh push --apply
+
+# Validate local dataset
+tools/macos/localization/localization.sh validate
+
+# Refresh cached tab gids and ensure README tab exists
+tools/macos/localization/localization.sh cache-gids --ensure-readme
+
+# Regenerate slang outputs
+tools/macos/localization/localization.sh slang
 ```
 
-This script:
-1. Fetches data from Google Sheets
-2. Generates module-specific ARB files
-3. Merges them into app ARB files
-4. Runs Flutter's localization generation
+## Configuration
+- `.info/app/localization.json` holds active/legacy sheet IDs, tab list, cached `sheetGids`, column labels, paths, locales, encoding, and service-account env names. Tools update the gid cache automatically after `push/migrate --apply` or via `cache-gids`.
+- Sheet structure: first tab is `README` (instructions only). Each module gets its own tab named after the module; columns: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `UpdatedAt`, `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)`. Module name is the namespace—do **not** prefix keys with the module.
+- Missing translation rule: when a locale cell is empty, push fills it with `(LANGCODE) <default text>` so gaps are obvious.
+- Service account for push: `LOCALIZATION_SA_PATH` (file) or `LOCALIZATION_SA_JSON` (raw). Defaults come from `.info/app/localization.json`; `GOOGLE_APPLICATION_CREDENTIALS` is a fallback.
+- Dependencies install into `.venv_localization` from `requirements.txt`. Template CSV: `.info/templates/sample_localization.csv`.
 
-### `generate_arb_from_sheets.py`
-Python script that reads Google Sheets data and generates module-specific ARB files.
+## Outputs
+- YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (consumed by slang).
+- Intermediate dataset: `build/localization/records.json` (source for push/diff/validate). `UpdatedAt` is auto-stamped on changed/added rows when applying.
 
-**Configuration:**
-- Google Sheets ID: `1AvcLhnoNk1ARxk68a53tHOidPPq-sIBYk7ov_UcUeVs`
-- Sheet GID: `1063111315`
-
-**Column mappings:**
-- `Screen` → Module name
-- `Translation key` → ARB key
-- `Action` → Description/metadata (English only)
-- `Lang: English` → English translations
-- `Lang: Vietnam` → Vietnamese translations
-- `Lang: Chinese` → Chinese translations
-
-### `merge_arb_files.py`
-Python script that merges all module ARB files into combined app ARB files.
-
-### `cleanup_old_arb.sh`
-Utility script to remove old ARB files after migration to the module-based structure.
-
-## Directory Structure
-
-```
-assets/arb/
-├── module/                    # Module-specific ARB files
-│   ├── home/
-│   │   ├── home_en.arb
-│   │   ├── home_vi.arb
-│   │   └── home_zh.arb
-│   ├── profile/
-│   │   ├── profile_en.arb
-│   │   ├── profile_vi.arb
-│   │   └── profile_zh.arb
-│   └── ...
-└── app/                       # Combined app ARB files
-    ├── app_en.arb
-    ├── app_vi.arb
-    └── app_zh.arb
-```
-
-## Requirements
-
-- Python 3.x
-- `requests` Python package (will be auto-installed if missing)
-- Flutter SDK
-
-## Usage
-
-1. **Update Google Sheets** with new translations
-2. **Run the generation script**:
-   ```bash
-   cd /path/to/project
-   ./tool/macos/localization/generate_localization.sh
-   ```
-3. **Commit the changes** to version control
-
-## Adding New Languages
-
-To add a new language:
-1. Add a new column in Google Sheets with format: `Lang: <Language Name>`
-2. Update the language mapping in `generate_arb_from_sheets.py` if needed
-3. Run the generation script
-
-## Module Naming
-
-Module names are normalized for file naming:
-- Special characters are removed
-- Spaces and hyphens are converted to underscores
-- Names are converted to lowercase
-
-Example: `User Profile` → `user_profile`
-
-## Troubleshooting
-
-### Character Encoding Issues
-The scripts use UTF-8 encoding to properly handle Vietnamese and other non-ASCII characters.
-
-### Missing Translations
-Empty cells in Google Sheets are skipped. Only non-empty values are included in ARB files.
-
-### Placeholder Handling
-The script automatically detects placeholders (e.g., `{price}`, `{count}`) and generates appropriate metadata with type inference.
-
-## Notes
-
-- Metadata (descriptions) are only included in English ARB files
-- The scripts preserve the ARB file structure compatible with Flutter's localization system
-- All generated files use UTF-8 encoding 
+## Recommended workflow (per task)
+1) `localization.sh pull`
+2) Edit/add keys (lowerCamelCase, no module prefix) in YAML or sheet; keep `${param}` placeholders tidy.
+3) `localization.sh push --apply`
+4) If you added/renamed tabs: `localization.sh cache-gids --ensure-readme`
+5) `localization.sh pull`
+6) `localization.sh slang`

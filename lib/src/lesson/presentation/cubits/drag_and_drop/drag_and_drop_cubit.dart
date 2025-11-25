@@ -7,7 +7,7 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
   /// Load question and initialize available words
   void setQuestion(QuestionEntity question) {
     // Extract available words from options
-    final List<String> words = question.options.map((option) => option.text).toList();
+    final List<String> words = question.options.map((option) => option.text.text).toList();
 
     emit(
       state.copyWith(
@@ -75,7 +75,7 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
       final correctAnswer = state.question.answer[i].correctAnswer;
       final placedAnswer = state.placedWords[i];
 
-      if (placedAnswer == null || placedAnswer != correctAnswer) {
+      if (placedAnswer == null || placedAnswer != correctAnswer.text) {
         allCorrect = false;
         break;
       }
@@ -104,20 +104,20 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     final totalPositions = correctAnswers.length;
     if (totalPositions == 0) return 0;
 
-    final pointPerPosition = 100.0 / totalPositions;
+    final pointPerPosition = state.question.maxScore / totalPositions;
     int correctCount = 0;
 
     for (int i = 0; i < totalPositions; i++) {
       final placedWord = placedWords[i];
       final correctWord = correctAnswers[i].correctAnswer;
-      if (placedWord == correctWord) {
+      if (placedWord == correctWord.text) {
         correctCount++;
       }
     }
 
     final score = correctCount * pointPerPosition;
 
-    return score.clamp(0, 100).toInt();
+    return score.clamp(0, state.question.maxScore).toInt();
   }
 
   /// Toggle explanation visibility

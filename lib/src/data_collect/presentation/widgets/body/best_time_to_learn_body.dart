@@ -12,7 +12,7 @@ class BestTimeToLearnBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              context.text.onboardingTimeStudyQuestion,
+              context.text.onboarding.onboardingTimeStudyQuestion,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -25,7 +25,7 @@ class BestTimeToLearnBody extends StatelessWidget {
 
             // Subtitle
             AppText(
-              context.text.onboardingTimeStudySubtitle,
+              context.text.onboarding.onboardingTimeStudySubtitle,
               style: AppStyle.text12.copyWith(
                 color: const Color(0xFF7F8EA4), // Text/Tertiary
               ),

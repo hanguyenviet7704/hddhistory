@@ -6,5 +6,5 @@ class DeletePermanentUserUsecase implements UseCaseWithParams<String, BaseRespon
   DeletePermanentUserUsecase(this._authRepository);
 
   @override
-  TaskEither<AppException, BaseResponse> call(String params) => _authRepository.deletePermanentUser(params);
+  TaskEither<AppException, BaseResponse> call(String userId) => _authRepository.deletePermanentUser(userId);
 }

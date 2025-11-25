@@ -10,7 +10,8 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
-    _requestTrackingPermission();
+    // _requestTrackingPermission();
+    _configAppLocalization();
     _getAppData();
     _setTrackingUser();
     _onboardingUser();
@@ -18,8 +19,16 @@ class _SplashPageState extends State<SplashPage> {
     super.initState();
   }
 
-  void _requestTrackingPermission() {
-    AppService.instance.appEventService.requestTrackingPermission();
+  // void _requestTrackingPermission() {
+  //   AppService.instance.appEventService.requestTrackingPermission();
+  // }
+
+  Future<void> _configAppLocalization() async {
+    bool isFirstTimeUserAccessApp = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
+    if (!isFirstTimeUserAccessApp) return;
+    AppLocale locale = await LocaleSettings.useDeviceLocale();
+    if (!mounted) return;
+    context.read<LocaleCubit>().setLocale(locale);
   }
 
   void _getAppData() async {
@@ -27,7 +36,6 @@ class _SplashPageState extends State<SplashPage> {
     UserState userState = context.read<UserCubit>().state;
     AppGlobalValue.accessToken = userState.accessToken;
     AppGlobalValue.refreshToken = userState.refreshToken;
-    AppGlobalValue.isGuest = userState.isGuest;
 
     if (!mounted) return;
     // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
@@ -76,7 +84,6 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _initScreen(_) async {
-    context.read<UserCubit>().setIsFirstTimeUserAccessPictureStudy(true);
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
 
     if (!mounted) return;
@@ -89,7 +96,12 @@ class _SplashPageState extends State<SplashPage> {
       _trackingDrawWelcomeScrView('first_time');
     }
     if (AppGlobalValue.accessToken.isEmpty) {
-      ChooseLanguageRoute().go(context);
+      if (isFirstTime) {
+        ChooseLanguageRoute().go(context);
+        return;
+      }
+
+      RegisterRoute().go(context);
       return;
     }
 
@@ -102,6 +114,7 @@ class _SplashPageState extends State<SplashPage> {
         CourseRoute().go(context);
         return;
       }
+
       HomeRoute().go(context);
     });
   }

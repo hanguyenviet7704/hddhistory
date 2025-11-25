@@ -12,15 +12,15 @@ enum RouteTransitionType {
   slide,
   scale,
   rotation,
-  fadeThrough,      // Material Design fade through
-  sharedAxisX,      // Material Design shared axis horizontal
-  sharedAxisY,      // Material Design shared axis vertical
-  sharedAxisZ,      // Material Design shared axis depth
-  zoom,             // Zoom in/out from center
-  slideScale,       // Combined slide and scale
-  fadeSlide,        // Combined fade and slide
-  flip,             // 3D flip animation
-  size,             // Size transition
+  fadeThrough, // Material Design fade through
+  sharedAxisX, // Material Design shared axis horizontal
+  sharedAxisY, // Material Design shared axis vertical
+  sharedAxisZ, // Material Design shared axis depth
+  zoom, // Zoom in/out from center
+  slideScale, // Combined slide and scale
+  fadeSlide, // Combined fade and slide
+  flip, // 3D flip animation
+  size, // Size transition
   custom,
 }
 
@@ -217,15 +217,16 @@ abstract class BaseTransitionRouteData extends GoRouteData {
       case RouteTransitionType.fadeThrough:
         // Material Design fade through pattern
         return FadeTransition(
-          opacity: Tween<double>(
-            begin: 0.0,
-            end: 1.0,
-          ).animate(
-            CurvedAnimation(
-              parent: animation,
-              curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
-            ),
-          ),
+          opacity:
+              Tween<double>(
+                begin: 0.0,
+                end: 1.0,
+              ).animate(
+                CurvedAnimation(
+                  parent: animation,
+                  curve: const Interval(0.3, 1.0, curve: Curves.easeIn),
+                ),
+              ),
           child: child,
         );
 
@@ -346,9 +347,7 @@ abstract class BaseTransitionRouteData extends GoRouteData {
                 ..rotateY(isHorizontal ? angle : 0)
                 ..rotateX(isHorizontal ? 0 : angle),
               alignment: Alignment.center,
-              child: value < 0.5
-                  ? Opacity(opacity: 1 - (value * 2), child: child)
-                  : Opacity(opacity: (value - 0.5) * 2, child: child),
+              child: value < 0.5 ? Opacity(opacity: 1 - (value * 2), child: child) : Opacity(opacity: (value - 0.5) * 2, child: child),
             );
           },
           child: child,
@@ -402,7 +401,8 @@ enum SlideRouteEffect {
   leftToRight(-1, 0),
   rightToLeft(1, 0),
   bottomToTop(0, 1),
-  topToBottom(0, -1);
+  topToBottom(0, -1)
+  ;
 
   final double dx;
   final double dy;
@@ -467,6 +467,132 @@ class AnimatedSlidePage extends MaterialPage {
       barrierDismissible: false,
       barrierColor: Colors.transparent,
       opaque: true,
+    );
+  }
+}
+
+class ModalSheetPage<T> extends Page<T> {
+  const ModalSheetPage({
+    required this.builder,
+    this.barrierColor,
+    this.backgroundColor,
+    this.topRadius,
+    this.transitionBackgroundColor,
+    this.previousRouteAnimationCurve,
+    this.boxShadow,
+    this.enableDrag = true,
+    this.expanded = false,
+    this.bounce = false,
+    this.isDismissible = true,
+    this.duration,
+    this.containerBuilder,
+    this.closeProgressThreshold,
+    this.useCupertinoStyle = true,
+    super.key,
+    super.name,
+  });
+
+  final WidgetBuilder builder;
+  final Color? barrierColor;
+  final Color? backgroundColor;
+  final Radius? topRadius;
+  final Color? transitionBackgroundColor;
+  final Curve? previousRouteAnimationCurve;
+  final BoxShadow? boxShadow;
+  final bool enableDrag;
+  final bool expanded;
+  final bool bounce;
+  final bool isDismissible;
+  final Duration? duration;
+  final WidgetWithChildBuilder? containerBuilder;
+  final double? closeProgressThreshold;
+  final bool useCupertinoStyle;
+
+  @override
+  Route<T> createRoute(BuildContext context) {
+    final MaterialLocalizations? localizations = Localizations.of<MaterialLocalizations>(context, MaterialLocalizations);
+    final String barrierLabel = localizations?.modalBarrierDismissLabel ?? 'Dismiss';
+    final Radius effectiveTopRadius = topRadius ?? const Radius.circular(24);
+    final WidgetWithChildBuilder effectiveContainerBuilder =
+        containerBuilder ??
+        (BuildContext context, Animation<double> _, Widget child) => _CupertinoModalSheetContainer(
+          backgroundColor: backgroundColor ?? AppCustomColor.backgroundWhite,
+          topRadius: effectiveTopRadius,
+          boxShadow: boxShadow,
+          child: child,
+        );
+
+    if (useCupertinoStyle) {
+      return CupertinoModalBottomSheetRoute<T>(
+        builder: builder,
+        barrierLabel: barrierLabel,
+        modalBarrierColor: barrierColor,
+        enableDrag: enableDrag,
+        expanded: expanded,
+        bounce: bounce,
+        isDismissible: isDismissible,
+        duration: duration,
+        containerBuilder: effectiveContainerBuilder,
+        closeProgressThreshold: closeProgressThreshold,
+        topRadius: effectiveTopRadius,
+        transitionBackgroundColor: transitionBackgroundColor,
+        previousRouteAnimationCurve: previousRouteAnimationCurve,
+        settings: this,
+      );
+    }
+
+    return ModalSheetRoute<T>(
+      builder: builder,
+      barrierLabel: barrierLabel,
+      modalBarrierColor: barrierColor,
+      enableDrag: enableDrag,
+      expanded: expanded,
+      bounce: bounce,
+      isDismissible: isDismissible,
+      duration: duration,
+      containerBuilder: effectiveContainerBuilder,
+      closeProgressThreshold: closeProgressThreshold,
+      settings: this,
+    );
+  }
+}
+
+class _CupertinoModalSheetContainer extends StatelessWidget {
+  const _CupertinoModalSheetContainer({
+    required this.child,
+    required this.topRadius,
+    required this.backgroundColor,
+    this.boxShadow,
+  });
+
+  final Widget child;
+  final Radius topRadius;
+  final Color backgroundColor;
+  final BoxShadow? boxShadow;
+
+  @override
+  Widget build(BuildContext context) {
+    final double topPadding = MediaQuery.paddingOf(context).top + 10;
+
+    return Padding(
+      padding: EdgeInsets.only(top: topPadding),
+      child: ClipRRect(
+        borderRadius: BorderRadius.vertical(top: topRadius),
+        child: DecoratedBox(
+          decoration: BoxDecoration(
+            color: backgroundColor,
+            boxShadow: [
+              boxShadow ??
+                  BoxShadow(
+                    color: AppCustomColor.textPrimary.withValues(alpha: 0.04),
+                    blurRadius: 24,
+                    offset: const Offset(0, -4),
+                  ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
     );
   }
 }

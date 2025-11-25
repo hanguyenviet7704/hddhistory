@@ -10,7 +10,7 @@ class KeypointsSectionHeader extends StatelessWidget {
       children: [
         // "Key points" title
         AppText(
-          context.text.lessonLessonKeypointTitle,
+          context.text.lesson.lessonLessonKeypointTitle,
           style: AppStyle.text16.copyWith(
             color: AppCustomColor.textPrimary,
             fontWeight: FontWeight.w600,
@@ -24,7 +24,7 @@ class KeypointsSectionHeader extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.lessonLessonKeypointInstruction,
+                context.text.lesson.lessonLessonKeypointInstruction,
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textQuaternary,
                   fontWeight: FontWeight.w600,

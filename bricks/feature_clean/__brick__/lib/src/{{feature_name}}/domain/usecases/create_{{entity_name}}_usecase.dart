@@ -1,4 +1,4 @@
-part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#include_domain_layer}}{{#has_create}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
 class Create{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase implements UseCaseWithParams<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity, {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity> {
@@ -11,3 +11,4 @@ class Create{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase implements UseC
     return _repository.create{{#pascalCase}}{{entity_name}}{{/pascalCase}}(params);
   }
 }
+{{/has_create}}{{/include_domain_layer}}

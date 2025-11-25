@@ -32,17 +32,9 @@ abstract class NetworkModule {
   @Named(DIKey.receiveTimeout)
   int get receiveTimeout => int.parse(EnvConstant.receiveTimeout);
 
-  @Named(DIKey.appInterceptor)
-  @lazySingleton
-  Interceptor get appInterceptor => AppInterceptors();
-
-  @Named(DIKey.thirdPartyInterceptor)
-  @lazySingleton
-  Interceptor get thirdPartyInterceptor => CustomInterceptors();
-
   @Named(DIKey.appDio)
   @lazySingleton
-  Dio appDio(RestfulService networkService, @Named(DIKey.appInterceptor) Interceptor interceptor) {
+  Dio appDio(IRestfulService networkService, @Named(DIKey.appInterceptor) Interceptor interceptor) {
     final dio = networkService.createDio();
     dio.interceptors.add(interceptor);
     return dio;
@@ -50,7 +42,7 @@ abstract class NetworkModule {
 
   @Named(DIKey.aiDio)
   @lazySingleton
-  Dio aiDio(RestfulService networkService, @Named(DIKey.appInterceptor) Interceptor interceptor) {
+  Dio aiDio(IRestfulService networkService, @Named(DIKey.appInterceptor) Interceptor interceptor) {
     final dio = networkService.createAIDio();
     dio.interceptors.add(interceptor);
     return dio;
@@ -58,7 +50,7 @@ abstract class NetworkModule {
 
   @Named(DIKey.thirdPartyDio)
   @lazySingleton
-  Dio thirdPartyDio(RestfulService networkService, @Named(DIKey.thirdPartyInterceptor) Interceptor interceptor) {
+  Dio thirdPartyDio(IRestfulService networkService, @Named(DIKey.thirdPartyInterceptor) Interceptor interceptor) {
     final dio = networkService.createDioThirdParty();
     dio.interceptors.add(interceptor);
     return dio;

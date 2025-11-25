@@ -108,7 +108,7 @@ part 'notification/notification_service.dart';
 part 'remote_config/firebase_remote_config_service.dart';
 part 'restful/app_interceptor.dart';
 part 'restful/custom_interceptor.dart';
-part 'restful/restful_interceptor.dart';
+part 'restful/base_interceptor.dart';
 part 'restful/restful_service.dart';
 part 'tracking/app_tracking_service.dart';
 part 'tracking/base_tracking_service.dart';

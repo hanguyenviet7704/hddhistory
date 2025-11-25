@@ -4,8 +4,8 @@ part of '../../roleplay.dart';
 abstract class SectionModel with _$SectionModel {
   const factory SectionModel({
     @Default(0) int id,
-    @Default('') String title,
-    @Default('') String transition,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage transition,
     @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default('') String image,

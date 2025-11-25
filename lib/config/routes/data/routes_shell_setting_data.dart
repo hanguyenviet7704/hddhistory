@@ -15,5 +15,53 @@ class SettingRoute extends BaseTransitionRouteData with $SettingRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => Container();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+    ],
+    child: const SettingPage(),
+  );
+}
+
+class ProfileRoute extends BaseTransitionRouteData with $ProfileRoute {
+  const ProfileRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
+      BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+    ],
+    child: const ProfilePage(),
+  );
+}
+
+class NotificationRoute extends BaseTransitionRouteData with $NotificationRoute {
+  const NotificationRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const SizedBox();
+}
+
+class ChangeLanguageRoute extends GoRouteData with $ChangeLanguageRoute {
+  const ChangeLanguageRoute();
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return ModalSheetPage<void>(
+      key: state.pageKey,
+      name: state.name,
+      barrierColor: AppCustomColor.bottomSheetScrim,
+      bounce: true,
+      backgroundColor: AppCustomColor.backgroundWhite,
+      topRadius: const Radius.circular(24),
+      builder: (_) => const ChangeLanguagePage(),
+    );
+  }
 }

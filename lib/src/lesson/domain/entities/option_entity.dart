@@ -4,8 +4,8 @@ part of '../../lesson.dart';
 abstract class OptionEntity with _$OptionEntity {
   const factory OptionEntity({
     @Default(0) int id,
-    @Default('') String text,
-    @Default('') String value,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage text,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage value,
     @Default(false) bool isCorrect,
   }) = _OptionEntity;
 

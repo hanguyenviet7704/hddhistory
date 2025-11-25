@@ -3,10 +3,8 @@ part of '../../lesson.dart';
 @freezed
 abstract class DocumentDataModel with _$DocumentDataModel {
   const factory DocumentDataModel({
-    @Default('') String title,
-    @Default('') String content,
-    @Default('') String caption,
-    @Default('') String url,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage url,
     @Default('') String thumbnail,
   }) = _DocumentDataModel;
 
@@ -15,9 +13,7 @@ abstract class DocumentDataModel with _$DocumentDataModel {
 
 extension DocumentDataModelExtension on DocumentDataModel {
   DocumentDataEntity toEntity() => DocumentDataEntity(
-    title: title,
     content: content,
-    caption: caption,
     url: url,
     thumbnail: thumbnail,
   );

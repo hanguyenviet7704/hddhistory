@@ -12,7 +12,7 @@ class AgeCollectBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              context.text.onboardingUserAgeQuestion,
+              context.text.onboarding.onboardingUserAgeQuestion,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
                 fontWeight: FontWeight.w500,

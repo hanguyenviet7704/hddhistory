@@ -21,7 +21,7 @@ import 'package:meup/core/core.dart';
 
 //* Import all local files here
 import '../../config/di/di.dart';
-import '../../config/l10n/app_localizations.dart';
+import '../../config/l10n/l10n.dart';
 import '../../config/services/services.dart';
 import '../../config/share/share.dart';
 import '../../config/themes/themes.dart';

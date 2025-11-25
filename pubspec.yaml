@@ -17,11 +17,11 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.1+2 # ios
+version: 1.0.1+5 # ios
 # version: 1.0.1+1 # android
 
 environment:
-  sdk: ">=3.8.0 <4.0.0"
+  sdk: ">=3.10.0 <4.0.0"
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -39,17 +39,18 @@ dependencies:
   # cupertino_icons: ^1.0.8
   # carousel_slider: ^5.0.0
   smooth_page_indicator: ^1.2.1
-  flutter_svg: ^2.2.2
+  flutter_svg: ^2.2.3
   font_awesome_flutter: ^10.12.0 # App icons
   cached_network_image: ^3.4.1
   flutter_widget_from_html_core: ^0.17.0
   html: ^0.15.6
   flutter_easyloading: ^3.0.5
+  modal_bottom_sheet: ^3.0.0
   video_player: ^2.10.1
   just_audio: ^0.10.5
 #  camera: ^0.11.1
   lottie: ^3.3.2
-  syncfusion_flutter_datepicker: ^31.2.10
+  syncfusion_flutter_datepicker: ^31.2.12
 #  flutter_polyline_points: ^2.1.0
   flutter_screenutil: ^5.9.3
 #  pin_code_fields: ^8.0.1
@@ -62,7 +63,7 @@ dependencies:
   popover: ^0.4.0
   flutter_staggered_grid_view: ^0.7.0
   scrollable_positioned_list: ^0.3.8
-  audio_waveforms: ^1.3.0
+  record: ^6.1.2
   dotted_border: ^3.1.0
   timeline_tile_plus: ^0.0.3
   fl_chart: ^1.1.1
@@ -92,12 +93,13 @@ dependencies:
 
   # App networking
   dio: ^5.9.0
-  retrofit: ^4.9.0
+  retrofit: ^4.9.1
   graphql_flutter: ^5.2.1
 
   # App Localizations
   flutter_localizations:
     sdk: flutter
+  slang_flutter: ^4.11.0
 
   # App State Management
   bloc: ^9.1.0
@@ -111,7 +113,7 @@ dependencies:
   path_provider: ^2.1.5
   
   # Supabase Services
-  supabase_flutter: ^2.10.3
+  # supabase_flutter: ^2.10.3
 
   # App Permissions Services
   permission_handler: ^12.0.1
@@ -121,7 +123,7 @@ dependencies:
   go_router: ^17.0.0
 
   # App Dependencies Injection Services
-  get_it: ^9.0.5
+  get_it: ^9.1.0
   injectable: ^2.6.0
 
   # App Logger
@@ -146,7 +148,7 @@ dependencies:
   # App Firebase Services
   firebase_core: ^4.2.1
   firebase_auth: ^6.1.2
-  firebase_remote_config: ^6.1.1
+  firebase_remote_config: ^6.1.2
 
   # SSO Auth
   google_sign_in: ^7.2.0
@@ -161,7 +163,7 @@ dependencies:
   freezed_annotation: ^3.1.0
 
   # App File Services
-  file_picker: ^10.3.6
+  file_picker: ^10.3.7
   image_picker: ^1.2.1
   device_info_plus: ^12.2.0
   package_info_plus: ^9.0.0
@@ -183,7 +185,7 @@ dependencies:
 
   # App Tracking Services
   sentry_flutter: ^9.8.0
-  firebase_crashlytics: ^5.0.4
+  firebase_crashlytics: ^5.0.5
   firebase_analytics: ^12.0.4
 
   # ffmpeg_kit_flutter_new: ^1.1.0
@@ -192,7 +194,7 @@ dependencies:
 #  socket_io_client: ^3.1.2
 
   # App Deep Links Services
-  app_links: ^6.4.1
+  app_links: ^7.0.0
 
   # App Isolate Services
   flutter_isolate: ^2.1.0
@@ -241,15 +243,15 @@ dev_dependencies:
     sdk: flutter
 
   flutter_lints: ^6.0.0
-  meta: ^1.16.0
+  meta: ^1.17.0
 
   # App Generators
   # To generate code run this command
   # flutter pub run build_runner build --delete-conflicting-outputs
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
-  retrofit_generator: ^10.1.4
-  build_runner: ^2.10.2
+  retrofit_generator: ^10.2.0
+  build_runner: ^2.10.4
   flutter_gen_runner: ^5.12.0
   json_serializable: ^6.11.1
   injectable_generator: ^2.9.1
@@ -257,7 +259,9 @@ dev_dependencies:
   freezed: ^3.2.3
   flutter_gen: ^5.12.0
   graphql_codegen: ^3.0.0
-  mockito: ^5.5.1
+  slang: ^4.11.0
+  slang_build_runner: ^4.11.0
+  mockito: ^5.6.1
 
   # App Change Info
 
@@ -349,8 +353,8 @@ flutter:
     - assets/svg/app/
     - assets/svg/common/
     - assets/texts/
-    - assets/json/
     - assets/lottie/
+    - assets/i18n/
     # - assets/gif/
     # - assets/audio/
     # - assets/video/
@@ -362,39 +366,48 @@ flutter:
   # https://flutter.dev/assets-and-images/#from-packages
 
   fonts:
-    - family: Nunito
+    - family: Mulish
       fonts:
-        - asset: assets/fonts/Nunito/Nunito-Regular.ttf
-          weight: 400
-        - asset: assets/fonts/Nunito/Nunito-Light.ttf
+        - asset: assets/fonts/Mulish/static/Mulish-ExtraLight.ttf
+          weight: 200
+        - asset: assets/fonts/Mulish/static/Mulish-ExtraLightItalic.ttf
+          weight: 200
+          style: italic
+        - asset: assets/fonts/Mulish/static/Mulish-Light.ttf
           weight: 300
-        - asset: assets/fonts/Nunito/Nunito-Medium.ttf
+        - asset: assets/fonts/Mulish/static/Mulish-LightItalic.ttf
+          weight: 300
+          style: italic
+        - asset: assets/fonts/Mulish/static/Mulish-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Mulish/static/Mulish-Italic.ttf
+          weight: 400
+          style: italic
+        - asset: assets/fonts/Mulish/static/Mulish-Medium.ttf
           weight: 500
-        - asset: assets/fonts/Nunito/Nunito-SemiBold.ttf
+        - asset: assets/fonts/Mulish/static/Mulish-MediumItalic.ttf
+          weight: 500
+          style: italic
+        - asset: assets/fonts/Mulish/static/Mulish-SemiBold.ttf
           weight: 600
-        - asset: assets/fonts/Nunito/Nunito-Bold.ttf
+        - asset: assets/fonts/Mulish/static/Mulish-SemiBoldItalic.ttf
+          weight: 600
+          style: italic
+        - asset: assets/fonts/Mulish/static/Mulish-Bold.ttf
           weight: 700
+        - asset: assets/fonts/Mulish/static/Mulish-BoldItalic.ttf
+          weight: 700
+          style: italic
+        - asset: assets/fonts/Mulish/static/Mulish-ExtraBold.ttf
+          weight: 800
+        - asset: assets/fonts/Mulish/static/Mulish-ExtraBoldItalic.ttf
+          weight: 800
+          style: italic
+        - asset: assets/fonts/Mulish/static/Mulish-Black.ttf
+          weight: 900
+        - asset: assets/fonts/Mulish/static/Mulish-BlackItalic.ttf
+          weight: 900
+          style: italic
+
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
-
-# flutter_intl:
-#   enabled: true # Required. Must be set to true to activate the package. Default: false
-#   class_name: S # Optional. Sets the name for the generated localization class. Default: S
-#   main_locale: en # Optional. Sets the main locale used for generating localization files. Provided value should consist of language code and optional script and country codes separated with underscore (e.g. 'en', 'en_GB', 'zh_Hans', 'zh_Hans_CN'). Default: en
-#   arb_dir: lib/l10n # Optional. Sets the directory of your ARB resource files. Provided value should be a valid path on your system. Default: lib/l10n
-#   output_dir: lib/generated # Optional. Sets the directory of generated localization files. Provided value should be a valid path on your system. Default: lib/generated
-#   use_deferred_loading: false # Optional. Must be set to true to generate localization code that is loaded with deferred loading. Default: false
-#   localizely: # Optional settings if you use Localizely platform. Read more: https://localizely.com/blog/flutter-localization-step-by-step/?tab=automated-using-flutter-intl
-#     project_id: # Get it from the https://app.localizely.com/projects page.
-#     branch: # Get it from the "Branches" page on the Localizely platform, in case branching is enabled and you want to use a non-main branch.
-#     upload_overwrite: # Set to true if you want to overwrite translations with upload. Default: false
-#     upload_as_reviewed: # Set to true if you want to mark uploaded translations as reviewed. Default: false
-#     upload_tag_added: # Optional list of tags to add to new translations with upload (e.g. ['new', 'New translation']). Default: []
-#     upload_tag_updated: # Optional list of tags to add to updated translations with upload (e.g. ['updated', 'Updated translation']). Default: []
-#     upload_tag_removed: # Optional list of tags to add to removed translations with upload (e.g. ['removed', 'Removed translation']). Default: []
-#     download_empty_as: # Set to empty|main|skip, to configure how empty translations should be exported from the Localizely platform. Default: empty
-#     download_include_tags: # Optional list of tags to be downloaded (e.g. ['include', 'Include key']). If not set, all string keys will be considered for download. Default: []
-#     download_exclude_tags: # Optional list of tags to be excluded from download (e.g. ['exclude', 'Exclude key']). If not set, all string keys will be considered for download. Default: []
-#     ota_enabled: # Set to true if you want to use Localizely Over-the-air functionality. Default: false
-
-

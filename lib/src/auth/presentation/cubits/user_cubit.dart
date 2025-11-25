@@ -14,12 +14,9 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   @override
   Map<String, dynamic> toJson(UserState state) => state.toJson();
 
-  bool fakeUserFullRoadmap() => kDebugMode && state.user.email == "truongdev109@gmail.com";
-
   void setIsFirstTime(bool isFirstTime) => emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
-  void setIsFirstTimeUserAccessPictureStudy(bool isFirstTimeUserAccessPictureStudy) => emit(state.copyWith(isFirstTimeUserAccessPictureStudy: isFirstTimeUserAccessPictureStudy));
   void setIsFirstTimeUserRunApp(bool isFirstTimeUserRunApp) => emit(state.copyWith(isFirstTimeUserRunApp: isFirstTimeUserRunApp));
-  void setIsAppShowRegisterRecommend(bool isAppShowRegisterRecommend) => emit(state.copyWith(isAppShowRegisterRecommend: isAppShowRegisterRecommend));
+  void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
 
   void setAccessToken(String accessToken) {
     AppGlobalValue.accessToken = accessToken;
@@ -30,13 +27,10 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
 
   void setAuth(AuthEntity auth) {
     emit(state.copyWith(auth: auth));
+    AppDI.injector.get<ProfileCubit>()
+      ..setUser(auth.user)
+      ..loadUser();
     setTrackingUser();
-
-    if (auth.user.id.isEmpty) return;
-    // getMyProfiles();
-    // AppConfig.instance.context!.read<PaywallCubit>()
-    //   ..reactiveFakePremium(auth.user.id)
-    //   ..addUserPremiumId(auth.user.id);
   }
 
   void setTrackingUser() {
@@ -51,9 +45,9 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
 
   Future<void> clearData() async {
     bool isFirstTime = state.isFirstTimeUserAccessApp;
-    bool isGuest = state.isGuest;
     emit(UserState.initial());
-    emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime, isGuest: isGuest));
+    AppDI.injector.get<ProfileCubit>().reset();
+    emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
     _appTrackingService.setUserId(null);
     _appTrackingService.setUserProperties({});
   }
@@ -68,23 +62,4 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     HomeRoute().go(AppConfig.instance.context!);
     onDone?.call();
   }
-
-
-  void getMyProfiles() async {
-    // await executeListUseCase(
-    //   usecase: _getMyProfilesUsecase.call,
-    //   onSuccess: (response) {
-    //     if (response.data.isEmpty) return;
-    //     LogDev.info('getMyProfiles: ${response.data.first}');
-    //     _appTrackingService.setUserId(response.data.first.userId);
-    //     emit(state.copyWith(profile: response.data.first));
-    //   },
-    // );
-  }
-
-  void setIsGuest(bool isGuest) {
-    AppGlobalValue.isGuest = isGuest;
-    emit(state.copyWith(isGuest: isGuest));
-  }
 }
-

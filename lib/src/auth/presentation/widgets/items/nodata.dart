@@ -7,7 +7,7 @@ class NoData extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String displayMessage = message.isEmpty ? context.text.emptyList : message;
+    String displayMessage = message.isEmpty ? context.text.common.emptyList : message;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       mainAxisAlignment: mainAxisAlignment,

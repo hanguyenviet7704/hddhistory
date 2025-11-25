@@ -17,10 +17,7 @@ import 'package:injectable/injectable.dart';
 import 'package:meup/src/auth/auth.dart';
 
 //* Import all local files here
-import '../../../../config/di/di.dart';
-import '../../../../config/routes/routes.dart';
-import '../../../../config/services/services.dart';
-import '../../../../config/themes/themes.dart';
+import '../../../../config/config.dart';
 import '../../../../core/base/base.dart';
 import '../../../../core/constants/constants.dart';
 import '../../../../core/helpers/helpers.dart';

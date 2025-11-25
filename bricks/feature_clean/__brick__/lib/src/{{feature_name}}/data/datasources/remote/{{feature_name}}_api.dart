@@ -1,4 +1,4 @@
-part of '../../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#has_remote_datasource}}part of '../../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
 @RestApi()
@@ -26,3 +26,4 @@ abstract class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Api {
   @DELETE('${'/{{#snakeCase}}{{feature_name}}{{/snakeCase}}s'}/{id}')
   Future<BaseResponse<void>> delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}(@Path('id') String id);
 }
+{{/has_remote_datasource}}

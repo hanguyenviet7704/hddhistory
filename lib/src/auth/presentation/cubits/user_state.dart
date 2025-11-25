@@ -1,17 +1,15 @@
 part of '../../auth.dart';
 
+enum UserStatus { initial, loading, success, failure }
+
 @freezed
 abstract class UserState with _$UserState {
   const factory UserState({
-    @Default(false) bool isLoading,
+    @Default(UserStatus.initial) UserStatus status,
     @Default(AuthEntity()) AuthEntity auth,
-    @Default(Profile()) Profile profile,
     @Default(true) bool isFirstTimeUserRunApp,
     @Default(true) bool isFirstTimeUserAccessApp,
-    @Default(true) bool isFirstTimeUserAccessPictureStudy,
-    @Default(false) bool isAppShowRegisterRecommend,
-    @Default(true) bool isGuest,
-    @Default('') String guestProfileId,
+    @Default(true) bool isFirstTimeUserAccessLessonList,
   }) = _UserState;
 
   factory UserState.initial() => UserState();
@@ -23,13 +21,12 @@ extension UserStateExtension on UserState {
   String get accessToken => auth.token.accessToken;
   String get refreshToken => auth.token.refreshToken;
 
-  bool get isGuestOrNotLogin => isGuest || auth.user.id.isEmpty;
-  String get paymentStatus {
-    if (profile.activeSubscriptions.isEmpty) return 'free';
-    return switch (profile.activeSubscriptions.last.subscriptionPlan.externalPlanId) {
-      String _ when profile.activeSubscriptions.last.subscriptionPlan.externalPlanId.contains('monthly') => 'monthly',
-      String _ when profile.activeSubscriptions.last.subscriptionPlan.externalPlanId.contains('yearly') => 'yearly',
-      _ => 'free',
-    };
-  }
+  // String get paymentStatus {
+  //   if (profile.activeSubscriptions.isEmpty) return 'free';
+  //   return switch (profile.activeSubscriptions.last.subscriptionPlan.externalPlanId) {
+  //     String _ when profile.activeSubscriptions.last.subscriptionPlan.externalPlanId.contains('monthly') => 'monthly',
+  //     String _ when profile.activeSubscriptions.last.subscriptionPlan.externalPlanId.contains('yearly') => 'yearly',
+  //     _ => 'free',
+  //   };
+  // }
 }

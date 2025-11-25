@@ -1,4 +1,4 @@
-part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#include_domain_layer}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @freezed
 abstract class {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity with _${{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity {
@@ -11,3 +11,4 @@ abstract class {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity with _${{#pas
 
   factory {{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity.fromJson(Map<String, dynamic> json) => _${{#pascalCase}}{{entity_name}}{{/pascalCase}}EntityFromJson(json);
 }
+{{/include_domain_layer}}

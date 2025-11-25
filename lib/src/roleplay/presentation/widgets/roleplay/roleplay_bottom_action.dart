@@ -14,7 +14,7 @@ class RoleplayBottomAction extends StatelessWidget {
   }
 
   String get _transitionLabel {
-    if (currentSection.transition.isNotEmpty) return currentSection.transition;
+    if (currentSection.transition.text.isNotEmpty) return currentSection.transition.text;
     if (_isExerciseSection) return 'Start';
     return 'Continue';
   }

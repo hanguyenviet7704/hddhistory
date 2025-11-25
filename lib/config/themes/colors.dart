@@ -75,6 +75,7 @@ mixin AppCustomColor {
   static const Color redEC = Color(0xFFEC2028);
   static const Color redA0 = Color(0xFFA01C21);
   static const Color red4D = Color(0xFF4D1C00);
+  static const Color scrimOverlay = Color(0x99364152);
 
   // New colors from Figma design
   static const Color neutral01 = Color(0xFF1A202C);
@@ -86,13 +87,19 @@ mixin AppCustomColor {
   static const Color textWhite = Color(0xFFFFFFFF);
   static const Color backgroundWhite = Color(0xFFFFFFFF);
   static const Color backgroundGray = Color(0xFFF5F7FB);
+  static const Color backgroundError = Color(0xFFFDEAE7);
+  static const Color backgroundSuccess = Color(0xFFEAFFEF);
   static const Color borderDefault = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
   static const Color brandPrimary = Color(0xFF554FF0);
+  static const Color brandPrimary50 = Color(0xFFEBEAFD);
+  static const Color brandPrimary100 = Color(0xFFD6CAFD);
+  static const Color brandPrimary200 = Color(0xFFC7C5FA);
   static const Color brandPrimary300 = Color(0xFF917FF6);
   static const Color backgroundBrand = Color(0xFFEBEAFD);
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
+  static const Color surfaceMuted = Color(0xFFEFF3FA);
 
   // Strength indicator colors
   static const Color successGreen = Color(0xFF41AE8C);
@@ -105,6 +112,7 @@ mixin AppCustomColor {
   static const Color roleplayHintBorder = Color(0xFFE3E8EF);
   static const Color roleplayLeadingSurface = Color(0x99123F54);
   static const Color roleplayFeedbackRadarGrid = Color(0xFFE1E6F5);
+  static const Color bottomSheetScrim = Color(0x80151123);
 }
 
 mixin AppTheme {

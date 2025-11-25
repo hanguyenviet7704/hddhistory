@@ -1,7 +1,9 @@
 part of '../services.dart';
 
-class AppInterceptors extends BaseInterceptor {
-  AppInterceptors() : super(prefix: '[App]');
+@LazySingleton(as: Interceptor)
+@Named(DIKey.appInterceptor)
+class AppInterceptor extends BaseInterceptor {
+  AppInterceptor() : super(prefix: '[App]');
 
   static const String _retryCountKey = 'retry_count';
   static const int _maxRetryAttempts = 1;
@@ -18,7 +20,7 @@ class AppInterceptors extends BaseInterceptor {
     if (!hasAuthorizationHeader && AppGlobalValue.accessToken.isNotEmpty) {
       options.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
     }
-    options.headers['language'] = _getCurrentLanguage();
+    options.headers['lang'] = _getCurrentLanguage();
   }
 
   String _getCurrentLanguage() {
@@ -205,7 +207,7 @@ class AppInterceptors extends BaseInterceptor {
 
     DMessage.showMessage(
       type: MessageType.error,
-      message: context.text.authSessionHasExpired,
+      message: context.text.auth.authSessionHasExpired,
     );
   }
 

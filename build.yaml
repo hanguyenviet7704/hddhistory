@@ -124,3 +124,24 @@ targets:
           output: lib/core/constants/gen/
           line_length: 200
 
+      slang_build_runner:
+        enabled: true  # Allows regeneration via build_runner in addition to `dart run slang`
+        options:
+          base_locale: en
+          fallback_strategy: base_locale
+          input_directory: assets/i18n
+          input_file_pattern: .yaml
+          output_directory: lib/config/l10n
+          output_file_name: l10n.g.dart
+          namespaces: true
+          lazy: true
+          locale_handling: true
+          flutter_integration: true
+          translation_class_visibility: public
+          key_case: camel
+          param_case: camel
+          string_interpolation: dart
+          flat_map: false
+          pluralization:
+            auto: cardinal
+            default_parameter: count

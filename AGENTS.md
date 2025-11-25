@@ -1,70 +1,52 @@
-# Codex Agent Playbook
+# Repository Guidelines
 
-## Purpose
-- Give the Codex agent the minimum viable context to work confidently inside the Meup Flutter repository.
-- Highlight guardrails that keep the clean architecture, generated code, and multi-flavor setup intact.
-- Point to the highest-leverage commands and scripts so the agent can validate changes quickly.
+## Quick References
+- Architecture overview: `CLAUDE.md`.
+- Localization config: `.info/app/localization.json`, `slang.yaml`.
+- Flavors: `flavorizr.yaml`, `main_<flavor>.dart`, `.env.dev/.stg/.prod`.
 
-## Project Snapshot
-- **App**: Meup, an art-education Flutter app built with Clean Architecture.
-- **Key themes**: feature-based folders under `lib/src`, strong separation of data/domain/presentation, heavy use of code generation, and flavor-specific bootstrapping.
-- **State management**: `flutter_bloc` + `hydrated_bloc`.
-- **Dependency injection**: `get_it` orchestrated by `injectable`.
-- **Networking**: `dio` + `retrofit`, plus GraphQL via `graphql_flutter`.
+## Project Structure & Module Organization
+- Features under `lib/src/<feature>/{data,domain,presentation}`; UI stays in `presentation`, business logic in `domain`, IO/adapters in `data`.
+- App-wide config in `lib/config/` (DI, routes, l10n, themes); shared utilities in `lib/core/`.
+- Shared widgets in `lib/src/presentation/widgets`; prefer reuse over feature-local clones.
+- Localization YAML lives in `assets/i18n/<locale>/<module>.yaml`; generated l10n Dart in `lib/config/l10n/`.
+- Tests mirror features in `test/unit/<feature>/`.
 
-## Repo Layout Cues
-- `lib/config/`: app-wide configuration (DI, routes, l10n, services, themes, shared utilities).
-- `lib/core/`: constants and reusable utils that cross features.
-- `lib/src/`: feature source with clean architecture layers (`data`, `domain`, `presentation`).
-- `tools/macos/`: build, config, and distribution scripts (invoked from repo root).
-- `.env/`: flavor-specific environment files (`.env.dev`, `.env.stg`, `.env.prod`).
+## Build, Test, and Development Commands
+- Deps: `flutter pub get`.
+- Codegen: `dart run build_runner build --delete-conflicting-outputs`; watch: `dart run build_runner watch --delete-conflicting-outputs`; clean: `dart run build_runner clean`.
+- Analysis/format: `flutter analyze`; `dart format lib/ test/`.
+- Tests: `flutter test` (all) or `flutter test test/unit/` (unit-only).
+- Localization: macOS/Linux `tools/macos/localization/localization.sh ...` or `tools/linux/localization/localization.sh ...`; Windows `tools/windows/localization/localization.bat ...`; regenerate Dart with `localization.sh slang` (wraps flutter/fvm/puro).
+- Builds: `./tools/macos/build/build_apk.sh <flavor>` / `build_appbundle.sh`; iOS `./tools/macos/build/build_ios.sh <flavor>`. After flavor changes: `flutter clean && dart run flutter_flavorizr && flutter pub get`.
 
-## High-Value Commands
-```bash
-# Dependencies
-flutter pub get
+## Coding Style & Architecture
+- Dart 2-space indent; files/dirs in `snake_case.dart`; types in `PascalCase`; Cubit/BLoC suffixed `Cubit`/`Bloc`.
+- Enforce flow: Widget → Cubit/BLoC → UseCase → Repository interface → Data source; do not expose `dio`/`graphql` types beyond data layer.
+- DI: annotate with `injectable` (`@LazySingleton`, `@factoryMethod`); resolve via `get_it`.
+- Never edit generated files (`*.g.dart`, `*.config.dart`, Retrofit outputs); rerun generators instead.
 
-# Code generation (run after touching models, DI, routes, Retrofit clients, etc.)
-dart run build_runner build --delete-conflicting-outputs
+## Testing Guidelines
+- Name tests `<target>_test.dart`; colocate under `test/unit/<feature>/`.
+- Add widget/golden tests when changing UI rendering; mock injected services and storage for `hydrated_bloc`.
+- Aim to cover new logic paths; run `flutter test` before PR; cover success/error branches.
 
-# Cleaning build_runner artifacts
-dart run build_runner clean
+## Commit & Pull Request Guidelines
+- Branches: `feature/MEUP-123-description` (or `fix/…`, `chore/…`).
+- Commits: `type-MEUP-123: summary` (e.g., `feat-MEUP-123: add artwork cache`).
+- PR checklist: summary + ticket; UI screenshots/GIFs; `flutter analyze`, `flutter test`; note if `build_runner`/`slang` ran; flag flavor/env touched.
 
-# Tests
-flutter test                # whole suite
-flutter test test/unit/     # unit tests only
+## Flavor & Environment Tips
+- Env mapping: dev → `.env.dev`/`main_dev.dart`; stg → `.env.stg`/`main_stg.dart`; prod → `.env.prod`/`main_prod.dart`.
+- Keep real secrets out of VCS; copy sample values locally. Re-run `flutter_flavorizr` when flavor settings change.
 
-# Static analysis & formatting
-flutter analyze
-dart format lib/ test/
-```
+## Security & Configuration
+- Do not commit `google-services.json`, `GoogleService-Info.plist`, keystores, Apple provisioning, or localization SA JSON; use `LOCALIZATION_SA_PATH`/`LOCALIZATION_SA_JSON` for pushes.
+- Release builds expect `--obfuscate --split-debug-info`; store symbols in `.obfuscation/` and upload to Crashlytics with releases.
 
-## Development Guardrails
-- Respect clean architecture boundaries: route all business logic through `domain` use cases, keep UI-specific logic inside `presentation`.
-- Do not hand-edit generated files; rerun the relevant generator instead.
-- Add or update Cubits/BLoCs within their feature scope; consider hydrated storage when state persistence matters.
-- Touch flavor-specific bootstrapping (`main_dev.dart`, etc.) only when environment differences demand it.
-- Keep commit messages aligned with `type-TICKET-ID: description` if you need to draft examples.
-
-## Testing & QA
-- Prefer targeted unit/widget tests inside `test/unit/` following existing patterns.
-- Use `flutter test --coverage` for coverage checks when the task warrants it.
-- Run `flutter analyze` before concluding significant refactors.
-- Note that widget rendering can depend on injected services; mock via existing testing utilities where possible.
-
-## Build & Distribution Notes
-- Android builds: `./tools/macos/build/build_apk.sh <flavor>` or `build_appbundle.sh`.
-- iOS/TestFlight: `./tools/macos/build/build_ios.sh <flavor>` and `build_ipa.sh`.
-- Release builds expect `--obfuscate` and `--split-debug-info`; Crashlytics symbols live in `.obfuscation/`.
-
-## Troubleshooting Cheatsheet
-- **build_runner conflicts**: `dart run build_runner clean` then rebuild with `--delete-conflicting-outputs`.
-- **Pod issues**: from `ios/`, run `pod install --repo-update`.
-- **Gradle hiccups**: `cd android && ./gradlew clean` followed by `flutter clean && flutter pub get`.
-- **Flavor regeneration**: `flutter clean && dart run flutter_flavorizr && flutter pub get`.
-
-## When In Doubt
-- Check `CLAUDE.md` for the longer-form architecture overview.
-- Look at `.cursorrules` for commit and review etiquette.
-- Favor reusable widgets under `lib/src/presentation/widgets` before creating new ones.
-- Keep an eye on Dio interceptors and BLoC logging when debugging network/state issues.
+## Localization Playbook (critical)
+- Sheet structure: first tab is `README` (instructions); every module has its own tab named after the module (common, auth, home, …). Columns: Key, Type, Context, Params, Description, Status, Tags, UpdatedAt, English (EN), Vietnamese (VI), Chinese (ZH).
+- Keys are lowerCamelCase **without** repeating the module name (module is the namespace). If existing keys are prefixed, strip the prefix when touching that module.
+- Fallback rule: if a translation is missing, tools auto-fill with `(LANGCODE) <default text>` so blanks are obvious.
+- Always workflow: pull → edit/add keys → push --apply → pull → slang → verify. The tools will refresh cached `sheetGids` automatically after apply; you can force it via `localization.sh cache-gids --ensure-readme` (all platforms supported).
+- GID cache lives in `.info/app/localization.json` so agents don’t hardcode sheet IDs; tools sync it when tabs are added/renamed.

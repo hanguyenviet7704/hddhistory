@@ -4,7 +4,7 @@ part of '../../lesson.dart';
 abstract class DocumentEntity with _$DocumentEntity {
   const factory DocumentEntity({
     @Default(0) int id,
-    @Default('') String speechBubble,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage speechBubble,
     @Default(TagEntity()) TagEntity tag,
     @Default([]) List<ContentDocumentEntity> document,
   }) = _DocumentEntity;

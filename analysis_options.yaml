@@ -8,6 +8,8 @@
 # The following line activates a set of recommended lints for Flutter apps,
 # packages, and plugins designed to encourage good coding practices.
 analyzer:
+  enable-experiment:
+    - dot-shorthands
   errors:
     invalid_annotation_target: ignore
     annotate_overrides: ignore
@@ -16,7 +18,7 @@ analyzer:
     - "**/*.freezed.dart"
     - "**/*.graphql.dart"
     - "assets/arb/module/**/*.arb"
-    - "bricks/**/*.dart"
+    - "bricks/**/__brick__/**/*.dart"
 include: package:flutter_lints/flutter.yaml
 
 linter:

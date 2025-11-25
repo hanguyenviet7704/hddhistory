@@ -11,7 +11,7 @@ class GuestLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SocialLoginButton(
-      text: 'Continue as Guest',
+      text: context.text.auth.authGuestOption,
       icon: const SizedBox.shrink(), // No icon for guest button
       backgroundColor: const Color(0xFFEBEAFD),
       textColor: const Color(0xFF110751),

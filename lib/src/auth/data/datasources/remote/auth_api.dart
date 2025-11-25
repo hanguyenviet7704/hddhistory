@@ -39,8 +39,8 @@ abstract class AuthApi {
   @POST(AppEndpoint.updatePassword)
   Future<BaseResponse> updatePassword(@Body() Map<String, dynamic> data);
 
-  @DELETE(AppEndpoint.deletePermanentUser)
-  Future<BaseResponse> deletePermanentUser(@Query('password') String password);
+  @DELETE(AppEndpoint.usersById)
+  Future<BaseResponse> deletePermanentUser(@Path('id') String userId);
 
   @POST(AppEndpoint.deleteAccount)
   Future<BaseResponse> deleteAccount();

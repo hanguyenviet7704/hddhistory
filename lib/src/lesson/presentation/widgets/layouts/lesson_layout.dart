@@ -29,6 +29,7 @@ class LessonLayout extends StatelessWidget {
                     LessonBadge(),
                     ChatInformationWidget(),
                     body,
+                    80.verticalSpace,
                   ],
                 ),
               ),

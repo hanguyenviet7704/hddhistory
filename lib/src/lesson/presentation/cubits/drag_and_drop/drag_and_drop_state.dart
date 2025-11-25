@@ -40,7 +40,7 @@ extension DragAndDropStateExtension on DragAndDropState {
     if (placedAnswer == null || placedAnswer.isEmpty) return SlotState.normal;
 
     final correctAnswer = question.answer[index].correctAnswer;
-    return placedAnswer == correctAnswer ? SlotState.correct : SlotState.incorrect;
+    return placedAnswer == correctAnswer.text ? SlotState.correct : SlotState.incorrect;
   }
 }
 

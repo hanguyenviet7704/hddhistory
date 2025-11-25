@@ -29,6 +29,7 @@ export 'package:go_router/go_router.dart';
 export 'package:hydrated_bloc/hydrated_bloc.dart';
 export 'package:image_picker/image_picker.dart';
 export 'package:in_app_purchase/in_app_purchase.dart';
+export 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 export 'package:json_annotation/json_annotation.dart';
 export 'package:logger/logger.dart';
 export 'package:path_provider/path_provider.dart';

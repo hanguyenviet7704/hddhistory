@@ -56,23 +56,6 @@ abstract class Identity with _$Identity {
   factory Identity.fromJson(Map<String, dynamic> json) => _$IdentityFromJson(json);
 }
 
-enum UserRole {
-  @JsonValue('user')
-  user,
-  @JsonValue('employee')
-  employee,
-  @JsonValue('admin')
-  admin,
-  @JsonValue('streamer')
-  streamer,
-  @JsonValue('digital')
-  digital,
-  @JsonValue('store')
-  store,
-  @JsonValue('censor')
-  censor,
-}
-
 enum UserType {
   @JsonValue('suggested')
   suggested,

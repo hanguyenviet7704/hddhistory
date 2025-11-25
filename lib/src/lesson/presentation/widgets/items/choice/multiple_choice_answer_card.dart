@@ -121,7 +121,7 @@ class MultipleChoiceAnswerCard extends StatelessWidget {
             children: [
               Expanded(
                 child: AppText(
-                  option.value,
+                  option.value.text,
                   maxLines: 10,
                   style: AppStyle.text14.copyWith(
                     color: const Color(0xFF364152),

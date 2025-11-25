@@ -326,55 +326,31 @@ Usage:
 ```dart
 // Type-safe asset references
 Image.asset(AppAssets.images.logo.path)
-Text('Hello', style: TextStyle(fontFamily: AppFonts.nunito))
+Text('Hello', style: TextStyle(fontFamily: AppFonts.poppins))
 Container(color: AppColors.primary)
 ```
 
-### Localization Generation (`intl_utils`)
+### Localization Generation (`slang`)
 
 #### Purpose
-Generate localization classes from ARB files.
+Generate localization classes from module-based YAML files (synced from Google Sheets via tooling).
 
 #### Configuration
-ARB files in `assets/arb/app/`:
-- `app_en.arb` - English translations
-- `app_es.arb` - Spanish translations
-- `app_fr.arb` - French translations
-
-Example ARB file:
-```json
-{
-  "@@locale": "en",
-  "appTitle": "Dcore",
-  "welcome": "Welcome to Dcore",
-  "loginButton": "Login",
-  "emailLabel": "Email",
-  "passwordLabel": "Password",
-  "greeting": "Hello, {name}!",
-  "@greeting": {
-    "placeholders": {
-      "name": {
-        "type": "String"
-      }
-    }
-  }
-}
-```
-
-#### Generated Output
-Creates localization classes in `lib/config/l10n/`:
-- `app_localizations.dart` - Base localization class
-- `app_localizations_en.dart` - English implementation
-- `app_localizations_es.dart` - Spanish implementation
-- `app_localizations_fr.dart` - French implementation
+- Source YAML per locale/module: `assets/i18n/<locale>/<module>.yaml`
+- Config: `slang.yaml`
+- Generated output: `lib/config/l10n/l10n*.dart` (`output_file_name: l10n.g.dart` per https://pub.dev/packages/slang#configuration)
 
 Usage:
 ```dart
-// Access localizations
-final l10n = AppLocalizations.of(context);
-Text(l10n.welcome)
-Text(l10n.greeting('John'))
+// Access localizations (TranslationProvider wraps the app)
+final t = context.text; // shortcut extension
+Text(t.common.appTitle)
+Text(t.auth.authGreeting(name: 'John'))
 ```
+
+Regeneration options:
+- `dart run slang` (direct CLI)
+- `dart run build_runner build --delete-conflicting-outputs` (slang_build_runner enabled)
 
 ## Build Configuration
 

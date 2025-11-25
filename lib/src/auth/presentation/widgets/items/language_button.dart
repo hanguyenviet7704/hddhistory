@@ -7,25 +7,25 @@ class LanguageBtn extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<LocaleCubit, LocaleType>(
+    return BlocBuilder<LocaleCubit, AppLocale>(
       builder: (context, state) {
         return PopupMenuButton(
           color: AppColorLight.surface,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
           itemBuilder: (context) {
-            return LocaleType.values
+            return AppLocale.values
                 .map(
                   (e) => PopupMenuItem(
                     value: e,
-                    child: LanguageItem(localeType: e, isSelected: e == state),
+                    child: LanguageItem(locale: e, isSelected: e == state),
                   ),
                 )
                 .toList();
           },
-          onSelected: (value) {
+          onSelected: (value) async {
             AppService.instance.appTrackingServiceNew.trackProfileLanguageSelect(value.label);
             if (value == state) return;
-            context.read<LocaleCubit>().changeLocale(value);
+            context.read<LocaleCubit>().setLocale(value);
             // context.read<HandfeelingCubit>().getBrushes();
             if (enableBack) context.back();
           },
@@ -38,12 +38,12 @@ class LanguageBtn extends StatelessWidget {
 }
 
 class LanguageItem extends StatelessWidget {
-  final LocaleType localeType;
+  final AppLocale locale;
   final bool isSelected;
 
   const LanguageItem({
     super.key,
-    required this.localeType,
+    required this.locale,
     this.isSelected = false,
   });
 
@@ -59,7 +59,7 @@ class LanguageItem extends StatelessWidget {
         children: [
           // Flag Icon
           SvgPicture.asset(
-            localeType.flagCircle,
+            locale.flagCircle,
             width: 32.r,
             height: 32.r,
           ),
@@ -68,7 +68,7 @@ class LanguageItem extends StatelessWidget {
           // Language Name
           Expanded(
             child: AppText(
-              localeType.label,
+              locale.label,
               style: AppStyle.text20.copyWith(
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: Colors.blue,

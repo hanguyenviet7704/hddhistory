@@ -22,7 +22,13 @@ enum StrengthLevel {
   @JsonValue('more_practice')
   morePractice,
   @JsonValue('optional_practice')
-  optionalPractice,
+  optionalPractice;
+
+  String get point => switch (this) {
+    weakPoint => '0-50',
+    morePractice => '51-84',
+    optionalPractice => '85-100',
+  };
 }
 
 extension KeypointModelExtension on KeypointModel {

@@ -33,7 +33,7 @@ class IntroPage extends StatelessWidget {
                     child: Padding(
                       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
                       child: AppText(
-                        context.text.skip,
+                        context.text.common.skip,
                         style: AppStyle.text16.copyWith(fontWeight: FontWeight.w500),
                       ),
                     ),
@@ -43,6 +43,7 @@ class IntroPage extends StatelessWidget {
                   flex: 2,
                   child: BlocBuilder<IntroCubit, IntroState>(
                     builder: (context, state) {
+                      if (state.intros.isEmpty) return const SizedBox.shrink();
                       final content = state.intros[state.currentPage];
                       return IntroContent(content: content);
                     },

@@ -262,13 +262,13 @@ All release builds use:
 ## Localization
 
 ### Configuration
-- Uses `flutter_localizations`
-- Configuration in `l10n.yaml`
-- ARB files in `lib/config/l10n/arb/`
+- Uses `slang`/`slang_flutter` with module namespaces
+- Configuration in `slang.yaml`
+- YAML per locale/module in `assets/i18n/<locale>/<module>.yaml`
 
 ### Generate Localization
 ```bash
-flutter gen-l10n
+dart run slang
 ```
 
 ## CI/CD and Distribution

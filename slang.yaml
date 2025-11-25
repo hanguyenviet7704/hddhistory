@@ -1,0 +1,59 @@
+# Slang configuration reference: https://pub.dev/packages/slang
+base_locale: en
+fallback_strategy: base_locale
+
+# Input/output
+input_directory: assets/i18n
+input_file_pattern: .yaml
+output_directory: lib/config/l10n
+output_file_name: l10n.g.dart
+namespaces: true
+
+# Generation behavior
+lazy: true # keep deferred loading for non-base locales
+locale_handling: true
+flutter_integration: true
+translate_var: t
+enum_name: AppLocale
+class_name: Translations
+translation_class_visibility: public
+
+# Key/param casing
+key_case: camel
+# key_map_case: camel
+param_case: camel
+string_interpolation: dart
+
+# Output shaping
+flat_map: false # set true if dynamic key lookup is needed
+translation_overrides: false
+timestamp: true
+statistics: true
+pluralization:
+  auto: cardinal
+  default_parameter: count
+maps: []
+imports: []
+generate_enum: true
+
+# Optional toggles (commented out for now; enable as needed)
+# sanitization:
+#   enabled: true
+#   prefix: k
+#   case: camel
+# contexts:
+#   GenderContext:
+#     default_parameter: gender
+#     generate_enum: true
+# interfaces:
+#   PageData: onboarding.pages.*
+# obfuscation:
+#   enabled: false
+#   secret: somekey
+# format:
+#   enabled: true
+#   width: 120
+# autodoc:
+#   enabled: true
+#   locales:
+#     - en

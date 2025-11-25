@@ -8,7 +8,7 @@ class RoleplayFeedbackBreakdownSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _RoleplayFeedbackBreakdownHeader(onTapExplain: () => LessonExplainPopup.show(context)),
+        _RoleplayFeedbackBreakdownHeader(),
         12.verticalSpace,
         BlocSelector<RoleplayPointCubit, RoleplayPointState, List<KeypointEntity>>(
           selector: (state) => state.points,
@@ -23,9 +23,7 @@ class RoleplayFeedbackBreakdownSection extends StatelessWidget {
 }
 
 class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
-  final VoidCallback onTapExplain;
-
-  const _RoleplayFeedbackBreakdownHeader({required this.onTapExplain});
+  const _RoleplayFeedbackBreakdownHeader();
 
   @override
   Widget build(BuildContext context) {
@@ -34,16 +32,16 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         AppText(
-          context.text.rolePlayResultBreakdownTitle,
+          context.text.roleplay.rolePlayResultBreakdownTitle,
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
         GestureDetector(
-          onTap: () => LessonExplainPopup.show(context),
+          onTap: () => LessonExplainPopup.show(context, showPoint: true),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.lessonLessonKeypointInstruction,
+                context.text.lesson.lessonLessonKeypointInstruction,
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textQuaternary,
                   fontWeight: FontWeight.w600,
@@ -91,7 +89,7 @@ class _RoleplayFeedbackBreakdownEmpty extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: AppText(
-        context.text.emptyList,
+        context.text.common.emptyList,
         textAlign: TextAlign.center,
         style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
       ),
@@ -154,7 +152,7 @@ class RoleplayFeedbackPointTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String title = point.title.text.isNotEmpty ? point.title.text : context.text.rolePlayResultSkillset;
+    final String title = point.title.text.isNotEmpty ? point.title.text : context.text.roleplay.rolePlayResultSkillset;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Row(

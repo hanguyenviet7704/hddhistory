@@ -31,11 +31,7 @@ class SentenceBuilder extends StatelessWidget {
             widgets.add(
               AppText(
                 word,
-                style: AppStyle.text20.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF0D121C),
-                  height: 1.5,
-                ),
+                style: AppStyle.text16.copyWith(fontWeight: FontWeight.w600, color: const Color(0xFF0D121C)),
               ),
             );
           }
@@ -77,8 +73,8 @@ class SentenceBuilder extends StatelessWidget {
         ),
       ),
       child: Wrap(
-        spacing: 8,
-        runSpacing: 12,
+        spacing: 6.w,
+        runSpacing: 10.h,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: _buildSentenceWidgets(),
       ),

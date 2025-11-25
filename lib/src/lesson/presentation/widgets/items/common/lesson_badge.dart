@@ -10,6 +10,7 @@ class LessonBadge extends StatelessWidget {
       child: BlocSelector<LessonCubit, LessonState, TagEntity>(
         selector: (state) => state.currentTag,
         builder: (context, tag) {
+          if (tag.url.isEmpty) return const SizedBox.shrink();
           return Row(
             spacing: 6.w,
             children: [

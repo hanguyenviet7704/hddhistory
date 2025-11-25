@@ -9,7 +9,7 @@ class TapToSpeakButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        context.read<SpeakingCubit>().startRecording();
+        context.read<SpeakingCubit>().startRecordingSession();
       },
       child: Container(
         width: 80.w,

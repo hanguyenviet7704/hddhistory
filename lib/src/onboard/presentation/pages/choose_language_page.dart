@@ -3,6 +3,11 @@ part of '../../onboard.dart';
 class ChooseLanguagePage extends StatelessWidget {
   const ChooseLanguagePage({super.key});
 
+  Future<void> _handleSelectLanguage(BuildContext context, AppLocale locale) async {
+    context.read<LocaleCubit>().setLocale(locale);
+    IntroRoute().go(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -24,32 +29,26 @@ class ChooseLanguagePage extends StatelessWidget {
               Row(
                 children: [
                   Expanded(
-                    child: BlocBuilder<LocaleCubit, LocaleType>(
+                    child: BlocBuilder<LocaleCubit, AppLocale>(
                       builder: (context, state) {
                         return _LanguageOption(
                           flagAsset: AppAsset.svg.common.icUsFlag,
                           languageName: 'English',
-                          isSelected: state == LocaleType.en,
-                          onTap: () {
-                            context.read<LocaleCubit>().changeLocale(LocaleType.en);
-                            IntroRoute().go(context);
-                          },
+                          isSelected: state == AppLocale.en,
+                          onTap: () => _handleSelectLanguage(context, AppLocale.en),
                         );
                       },
                     ),
                   ),
                   16.horizontalSpace,
                   Expanded(
-                    child: BlocBuilder<LocaleCubit, LocaleType>(
+                    child: BlocBuilder<LocaleCubit, AppLocale>(
                       builder: (context, state) {
                         return _LanguageOption(
                           flagAsset: AppAsset.svg.common.icVnFlag,
                           languageName: 'Tiếng Việt',
-                          isSelected: state == LocaleType.vi,
-                          onTap: () {
-                            context.read<LocaleCubit>().changeLocale(LocaleType.vi);
-                            IntroRoute().go(context);
-                          },
+                          isSelected: state == AppLocale.vi,
+                          onTap: () => _handleSelectLanguage(context, AppLocale.vi),
                         );
                       },
                     ),

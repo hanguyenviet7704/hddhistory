@@ -47,6 +47,7 @@ mixin RoutePath {
   static const String lesson = 'lesson';
   static const String reviewTime = 'review-time';
   static const String lessonComplete = 'lesson-complete';
+  static const String keypointComplete = 'keypoint-complete';
   static const String exerciseResultPopup = 'exercise-result-popup';
 
   //? Course - Roleplay
@@ -57,6 +58,10 @@ mixin RoutePath {
 
   //* Setting
   static const String setting = '/setting';
+  static const String profile = 'profile';
+  static const String notification = 'notification';
+  static const String changeLanguage = 'change-language';
+  static const String profileDeleteDialog = 'profile-delete-dialog';
 }
 
 mixin RouteNamed {
@@ -105,6 +110,7 @@ mixin RouteNamed {
   static const String lesson = 'Lesson';
   static const String reviewTime = 'Review Time';
   static const String lessonComplete = 'Lesson Complete';
+  static const String keypointComplete = 'Keypoint Complete';
   static const String exerciseResultPopup = 'Exercise Result Popup';
 
   //? Course - Roleplay
@@ -115,4 +121,8 @@ mixin RouteNamed {
 
   //* Setting
   static const String setting = 'Setting';
+  static const String profile = 'Profile';
+  static const String notification = 'Notification';    
+  static const String changeLanguage = 'Change Language';
+  static const String profileDeleteDialog = 'Profile Delete Dialog';
 }

@@ -22,14 +22,6 @@ class MarkStressWordResultBottomSheet extends StatelessWidget {
     required this.correctIndices,
   });
 
-  bool get isCorrect => type == ResultType.correct;
-  Color get backgroundColor => isCorrect ? const Color(0xFFEAFFEF) : const Color(0xFFFDEAE7);
-  Color get buttonColor => isCorrect ? const Color(0xFF41AE8C) : const Color(0xFFE34646);
-  Color get iconColor => isCorrect ? const Color(0xFF41AE8C) : const Color(0xFFE34646);
-  String title(BuildContext context) => isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect;
-  String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
-
-  /// Build sentence with highlighted stressed words showing correct answers
   List<InlineSpan> _buildSentenceSpans() {
     final spans = <InlineSpan>[];
 
@@ -49,7 +41,6 @@ class MarkStressWordResultBottomSheet extends StatelessWidget {
         ),
       );
 
-      // Add space between words (except after last word)
       if (i < words.length - 1) {
         spans.add(
           TextSpan(
@@ -67,138 +58,39 @@ class MarkStressWordResultBottomSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: (child, animation) {
-              final offsetAnimation =
-                  Tween<Offset>(
-                    begin: const Offset(0.0, 0.3),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeOutCubic,
-                    ),
-                  );
+    final hasExplanation = (explanationText ?? '').isNotEmpty;
+    final explanationVisible = hasExplanation && showExplanation;
 
-              return SlideTransition(
-                position: offsetAnimation,
-                child: FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-              );
-            },
-            child: showExplanation && explanationText != null
-                ? _MarkStressWordExplanationContent(
-                    key: const ValueKey('explanation'),
-                    isCorrect: isCorrect,
-                    sentenceSpans: _buildSentenceSpans(),
-                    explanationText: explanationText!,
-                  )
-                : const SizedBox.shrink(key: ValueKey('empty')),
-          ),
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Image.asset(iconAsset, width: 24.w, height: 24.w),
-                          8.horizontalSpace,
-                          Expanded(
-                            child: AppText(
-                              title(context),
-                              style: AppStyle.text16.copyWith(
-                                color: iconColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (onExplain != null)
-                      Opacity(
-                        opacity: 0.5,
-                        child: GestureDetector(
-                          onTap: onExplain,
-                          child: Row(
-                            children: [
-                              (showExplanation)
-                                  ? Icon(Icons.close_rounded, color: const Color(0xFF0D121C), size: 20.w)
-                                  : SvgPicture.asset(
-                                      AppAsset.svg.app.icBookOpen,
-                                      width: 20.w,
-                                      height: 20.w,
-                                    ),
-                              8.horizontalSpace,
-                              AppText(
-                                showExplanation ? context.text.exerciseCloseExplainButton : context.text.exerciseExplainButton,
-                                style: AppStyle.text14.copyWith(
-                                  color: const Color(0xFF0D121C),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                16.verticalSpace,
-                SizedBox(
-                  width: double.infinity,
-                  height: 54.h,
-                  child: ElevatedButton(
-                    onPressed: onContinue,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonColor,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(1000.r),
-                      ),
-                    ),
-                    child: AppText(
-                      context.text.onboardingSkipGreetingButton,
-                      style: AppStyle.text16.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColorLight.surface,
-                      ),
-                    ),
-                  ),
-                ),
-                16.verticalSpace,
-              ],
-            ),
-          ),
-        ],
+    return LessonResultOverlay(
+      showExplanation: explanationVisible,
+      // onBackdropTap: explanationVisible ? onExplain : null,
+      explanation: hasExplanation
+          ? MarkStressWordExplanationContent(
+              isCorrect: type == ResultType.correct,
+              sentenceSpans: _buildSentenceSpans(),
+              explanationText: explanationText!,
+            )
+          : null,
+      summary: ExerciseResultSummary(
+        type: type,
+        onContinue: onContinue,
+        onExplain: hasExplanation ? onExplain : null,
+        showExplanation: explanationVisible,
+        continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
+        explainLabel: context.text.exercise.exerciseExplainButton,
+        closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
+        successAccentColor: const Color(0xFF41AE8C),
       ),
     );
   }
 }
 
-class _MarkStressWordExplanationContent extends StatelessWidget {
+class MarkStressWordExplanationContent extends StatelessWidget {
   final bool isCorrect;
   final List<InlineSpan> sentenceSpans;
   final String explanationText;
 
-  const _MarkStressWordExplanationContent({
+  const MarkStressWordExplanationContent({
     super.key,
     required this.isCorrect,
     required this.sentenceSpans,
@@ -217,21 +109,18 @@ class _MarkStressWordExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // "Correct answer" label
           AppText(
-            context.text.exerciseFeedbackCorrectAnswer,
+            context.text.exercise.exerciseFeedbackCorrectAnswer,
             style: AppStyle.textBold14.copyWith(
               color: const Color(0xFF3A9377),
               height: 1.75,
             ),
           ),
           4.verticalSpace,
-          // Sentence with highlighted stressed words
           RichText(
             text: TextSpan(
               children: sentenceSpans,
               style: TextStyle(
-                fontFamily: 'Poppins',
                 fontSize: 16.sp,
                 fontWeight: FontWeight.w600,
                 height: 1.5,
@@ -239,14 +128,12 @@ class _MarkStressWordExplanationContent extends StatelessWidget {
             ),
           ),
           16.verticalSpace,
-          // Divider line
           Container(
             height: 1,
             width: double.infinity,
             color: const Color(0xFFE3E8EF),
           ),
           16.verticalSpace,
-          // Explanation box
           Container(
             width: double.infinity,
             padding: EdgeInsets.all(12.w),
@@ -258,7 +145,6 @@ class _MarkStressWordExplanationContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Tag with icon
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -269,7 +155,7 @@ class _MarkStressWordExplanationContent extends StatelessWidget {
                     ),
                     6.horizontalSpace,
                     AppText(
-                      context.text.exerciseExplanationTitle,
+                      context.text.exercise.exerciseExplanationTitle,
                       style: AppStyle.textBold14.copyWith(
                         color: const Color(0xFF175CD3),
                         height: 1.75,
@@ -278,7 +164,6 @@ class _MarkStressWordExplanationContent extends StatelessWidget {
                   ],
                 ),
                 8.verticalSpace,
-                // Explanation text
                 AppText(
                   explanationText,
                   maxLines: 100,

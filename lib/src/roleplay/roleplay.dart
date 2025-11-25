@@ -19,6 +19,7 @@ import 'package:retrofit/retrofit.dart';
 //* Data Layer - Models, Datasources, Repositories
 part 'data/datasources/local/roleplay_local_data_source.dart';
 part 'data/datasources/remote/roleplay_api.dart';
+part 'data/models/conversation_avatar_model.dart';
 part 'data/models/conversation_model.dart';
 part 'data/models/hint_model.dart';
 part 'data/models/leading_text_model.dart';
@@ -27,6 +28,7 @@ part 'data/models/section_model.dart';
 part 'data/repositories/roleplay_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/conversation_entity.dart';
+part 'domain/entities/conversation_avatar_entity.dart';
 part 'domain/entities/hint_entity.dart';
 part 'domain/entities/leading_text_entity.dart';
 part 'domain/entities/section_content_entity.dart';

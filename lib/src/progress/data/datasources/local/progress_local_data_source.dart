@@ -8,16 +8,25 @@ part of '../../../progress.dart';
 abstract class ProgressLocalDataSource {
   Future<List<UserProgressModel>> getCachedUserProgresss();
   Future<void> cacheUserProgresss(List<UserProgressModel> models);
-  
+
+  Future<LessonResultModel?> getCachedLessonResult();
+  Future<void> cacheLessonResult(LessonResultModel model);
+
+  Future<KeypointResultModel?> getCachedKeypointResult();
+  Future<void> cacheKeypointResult(KeypointResultModel model);
+
+  Future<ExerciseResultModel?> getCachedExerciseResult();
+  Future<void> cacheExerciseResult(ExerciseResultModel model);
+
   Future<UserProgressModel?> getCachedUserProgressLesson(String lessonId);
   Future<void> cacheUserProgressLesson(String lessonId, UserProgressModel model);
-  
-  Future<UserProgressModel?> getCachedUserProgressKeypoint(String keypointId);
-  Future<void> cacheUserProgressKeypoint(String keypointId, UserProgressModel model);
-  
-  Future<UserProgressModel?> getCachedUserProgressExercise(String exerciseId);
-  Future<void> cacheUserProgressExercise(String exerciseId, UserProgressModel model);
-  
+
+  Future<UserProgressModel?> getCachedUserProgressKeypoint();
+  Future<void> cacheUserProgressKeypoint(UserProgressModel model);
+
+  Future<UserProgressModel?> getCachedUserProgressExercise();
+  Future<void> cacheUserProgressExercise(UserProgressModel model);
+
   Future<List<CourseModel>> getCachedUserProgressMyCourses();
   Future<void> cacheUserProgressMyCourses(List<CourseModel> models);
 
@@ -81,9 +90,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   }
 
   @override
-  Future<UserProgressModel?> getCachedUserProgressKeypoint(String keypointId) async {
+  Future<UserProgressModel?> getCachedUserProgressKeypoint() async {
     try {
-      final cacheKey = '${_cacheKeypointKey}_$keypointId';
+      final cacheKey = _cacheKeypointKey;
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
       return UserProgressModel.fromJson(data);
@@ -93,9 +102,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   }
 
   @override
-  Future<void> cacheUserProgressKeypoint(String keypointId, UserProgressModel model) async {
+  Future<void> cacheUserProgressKeypoint(UserProgressModel model) async {
     try {
-      final cacheKey = '${_cacheKeypointKey}_$keypointId';
+      final cacheKey = _cacheKeypointKey;
       await _localStoreService.setMap(key: cacheKey, value: model.toJson());
     } catch (e) {
       //
@@ -103,9 +112,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   }
 
   @override
-  Future<UserProgressModel?> getCachedUserProgressExercise(String exerciseId) async {
+  Future<UserProgressModel?> getCachedUserProgressExercise() async {
     try {
-      final cacheKey = '${_cacheExerciseKey}_$exerciseId';
+      final cacheKey = _cacheExerciseKey;
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
       return UserProgressModel.fromJson(data);
@@ -115,9 +124,9 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   }
 
   @override
-  Future<void> cacheUserProgressExercise(String exerciseId, UserProgressModel model) async {
+  Future<void> cacheUserProgressExercise(UserProgressModel model) async {
     try {
-      final cacheKey = '${_cacheExerciseKey}_$exerciseId';
+      final cacheKey = _cacheExerciseKey;
       await _localStoreService.setMap(key: cacheKey, value: model.toJson());
     } catch (e) {
       //
@@ -151,6 +160,66 @@ class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
     try {
       await _localStoreService.remove(key: _cacheListKey);
       await _localStoreService.remove(key: _cacheMyCoursesKey);
+    } catch (e) {
+      //
+    }
+  }
+
+  @override
+  Future<LessonResultModel?> getCachedLessonResult() async {
+    try {
+      final data = await _localStoreService.getMap(key: 'progress_lesson_result_cache');
+      if (data.isEmpty) return null;
+      return LessonResultModel.fromJson(data);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> cacheLessonResult(LessonResultModel model) async {
+    try {
+      await _localStoreService.setMap(key: 'progress_lesson_result_cache', value: model.toJson());
+    } catch (e) {
+      //
+    }
+  }
+
+  @override
+  Future<KeypointResultModel?> getCachedKeypointResult() async {
+    try {
+      final data = await _localStoreService.getMap(key: 'progress_keypoint_result_cache');
+      if (data.isEmpty) return null;
+      return KeypointResultModel.fromJson(data);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> cacheKeypointResult(KeypointResultModel model) async {
+    try {
+      await _localStoreService.setMap(key: 'progress_keypoint_result_cache', value: model.toJson());
+    } catch (e) {
+      //
+    }
+  }
+
+  @override
+  Future<ExerciseResultModel?> getCachedExerciseResult() async {
+    try {
+      final data = await _localStoreService.getMap(key: 'progress_exercise_result_cache');
+      if (data.isEmpty) return null;
+      return ExerciseResultModel.fromJson(data);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> cacheExerciseResult(ExerciseResultModel model) async {
+    try {
+      await _localStoreService.setMap(key: 'progress_exercise_result_cache', value: model.toJson());
     } catch (e) {
       //
     }

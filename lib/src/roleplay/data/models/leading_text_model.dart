@@ -5,8 +5,8 @@ abstract class LeadingTextModel with _$LeadingTextModel {
   const factory LeadingTextModel({
     @Default('') String backgroundColor,
     @Default('') String textColor,
-    @Default('') String content,
-    @Default('') String audio,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage content,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage audio,
   }) = _LeadingTextModel;
 
   factory LeadingTextModel.fromJson(Map<String, dynamic> json) => _$LeadingTextModelFromJson(json);

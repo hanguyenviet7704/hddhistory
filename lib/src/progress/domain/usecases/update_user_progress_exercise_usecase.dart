@@ -1,10 +1,30 @@
 part of '../../progress.dart';
 
-class UpdateUserProgressExerciseParams {
-  final String exerciseId;
-  final Map<String, dynamic> body;
+@freezed
+abstract class UpdateUserProgressExerciseParams with _$UpdateUserProgressExerciseParams {
+  const factory UpdateUserProgressExerciseParams({
+    String? userId,
+    String? courseId,
+    String? lessonId,
+    @Default([]) List<UpdateUserProgressExerciseData> exercises,
+  }) = _UpdateUserProgressExerciseParams;
 
-  UpdateUserProgressExerciseParams({required this.exerciseId, required this.body});
+  factory UpdateUserProgressExerciseParams.fromJson(Map<String, dynamic> json) => _$UpdateUserProgressExerciseParamsFromJson(json);
+}
+
+@freezed
+abstract class UpdateUserProgressExerciseData with _$UpdateUserProgressExerciseData {
+  const factory UpdateUserProgressExerciseData({
+    String? exerciseId,
+    double? score,
+    bool? passed,
+    int? numberOfCorrect,
+    int? numberOfIncorrect,
+    String? reviews,
+    DateTime? submittedAt,
+  }) = _UpdateUserProgressExerciseData;
+
+  factory UpdateUserProgressExerciseData.fromJson(Map<String, dynamic> json) => _$UpdateUserProgressExerciseDataFromJson(json);
 }
 
 @lazySingleton
@@ -15,6 +35,6 @@ class UpdateUserProgressExerciseUseCase implements UseCaseWithParams<UpdateUserP
 
   @override
   TaskEither<AppException, UserProgressEntity> call(UpdateUserProgressExerciseParams params) {
-    return _repository.updateUserProgressExercise(params.exerciseId, params.body);
+    return _repository.updateUserProgressExercise(params.toJson());
   }
 }

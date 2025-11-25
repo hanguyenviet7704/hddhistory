@@ -17,7 +17,7 @@ class HomeHeaderWidget extends StatelessWidget {
             selector: (state) => state.user.name,
             builder: (context, username) {
               return AppText(
-                context.text.homeGreetingTitle(username: username),
+                context.text.home.homeGreetingTitle(username: username),
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.grey69,
                 ),

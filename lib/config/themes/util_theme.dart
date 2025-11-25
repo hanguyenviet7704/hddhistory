@@ -3,7 +3,7 @@ part of 'themes.dart';
 mixin AppThemeUtil {
   static final lightTheme = ThemeData(
     useMaterial3: true,
-    fontFamily: AppFont.nunito,
+    fontFamily: AppFont.mulish,
     cardColor: const Color(0xFFFFFFFF),
     canvasColor: const Color(0xFFFFFFFF),
     primarySwatch: Colors.blue,
@@ -60,7 +60,7 @@ mixin AppThemeUtil {
 
   static final darkTheme = ThemeData(
     useMaterial3: true,
-    fontFamily: AppFont.nunito,
+    fontFamily: AppFont.mulish,
     colorScheme: DarkTheme.colorScheme(),
     cardColor: const Color(0xFF000000),
     canvasColor: Colors.transparent,

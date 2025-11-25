@@ -15,7 +15,7 @@ class RoleplayConversationBubble extends StatelessWidget {
   bool get _isRight => conversation.position == SectionConversationPosition.right;
   bool get _isSamePerson {
     if (previousConversation == null) return false;
-    return previousConversation!.name == conversation.name;
+    return previousConversation!.avatar.id == conversation.avatar.id;
   }
 
   @override
@@ -69,11 +69,6 @@ class _RoleplayBubbleContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color bubbleColor = conversation.backgroundColor.toHexColor == Colors.transparent
-        ? (isRight ? AppCustomColor.roleplayRightBubble : AppCustomColor.roleplayLeftBubble)
-        : conversation.backgroundColor.toHexColor;
-    final Color textColor = conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor;
-
     return Align(
       alignment: isRight ? Alignment.centerRight : Alignment.centerLeft,
       child: ConstrainedBox(
@@ -83,16 +78,16 @@ class _RoleplayBubbleContent extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
-            color: bubbleColor,
+            color: conversation.backgroundColor.toHexColor,
             borderRadius: _radius,
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
-                conversation.content,
+                conversation.content.text,
                 style: AppStyle.text14.copyWith(
-                  color: textColor,
+                  color: conversation.textColor.toHexColor,
                   height: 1.5,
                 ),
                 maxLines: 20,
@@ -101,7 +96,7 @@ class _RoleplayBubbleContent extends StatelessWidget {
                 12.verticalSpace,
                 RoleplayAudioButton(
                   controller: audioController,
-                  iconColor: textColor,
+                  iconColor: conversation.textColor.toHexColor,
                   dense: true,
                 ),
               ],
@@ -126,35 +121,41 @@ class _RoleplayParticipantAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget avatar = DCachedImage(
-      url: conversation.avartar,
-      fit: BoxFit.cover,
-      borderRadius: BorderRadius.circular(50.r),
-      width: 44.w,
-      height: 44.w,
-    );
-
     if (isSamePerson) return SizedBox.shrink();
 
-    return Row(
-      mainAxisAlignment: !isRight ? MainAxisAlignment.start : MainAxisAlignment.end,
-      children: [
-        if (!isRight) ...[
-          avatar,
-          12.horizontalSpace,
-        ],
-        AppText(
-          conversation.name,
-          style: AppStyle.text14.copyWith(
-            fontWeight: FontWeight.w600,
-            color: conversation.textColor.toHexColor == Colors.transparent ? AppCustomColor.textPrimary : conversation.textColor.toHexColor,
-          ),
+    Widget avatar = DCachedImage(
+      url: conversation.avatar.url,
+      fit: BoxFit.cover,
+      borderRadius: BorderRadius.circular(50.r),
+      width: 28.w,
+      height: 28.w,
+    );
+
+    return Align(
+      alignment: isRight ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(isRight ? 12.w : 3.w, 3.w, isRight ? 3.w : 12.w, 3.w),
+        decoration: BoxDecoration(color: conversation.backgroundColor.toHexColor, borderRadius: BorderRadius.circular(100.r)),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (!isRight) ...[
+              avatar,
+              8.horizontalSpace,
+            ],
+            AppText(
+              conversation.avatar.name,
+              style: AppStyle.textBold14.copyWith(
+                color: conversation.textColor.toHexColor,
+              ),
+            ),
+            if (isRight) ...[
+              8.horizontalSpace,
+              avatar,
+            ],
+          ],
         ),
-        if (isRight) ...[
-          12.horizontalSpace,
-          avatar,
-        ],
-      ],
+      ),
     );
   }
 }

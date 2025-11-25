@@ -3,13 +3,13 @@ part of 'themes.dart';
 abstract class AppStyle {
   AppStyle();
 
-  static String fontFamily = AppFont.nunito;
+  static String fontFamily = AppFont.mulish;
 
   static TextStyle text6 = TextStyle(
     fontSize: 6.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -17,7 +17,7 @@ abstract class AppStyle {
     fontSize: 8.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -25,7 +25,7 @@ abstract class AppStyle {
     fontSize: 10.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -33,7 +33,7 @@ abstract class AppStyle {
     fontSize: 12.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -41,7 +41,7 @@ abstract class AppStyle {
     fontSize: 13.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -49,7 +49,7 @@ abstract class AppStyle {
     fontSize: 14.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -64,7 +64,7 @@ abstract class AppStyle {
     fontSize: 18.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -72,14 +72,14 @@ abstract class AppStyle {
     fontSize: 20.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
   static TextStyle text22 = TextStyle(
     fontSize: 22.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -87,7 +87,7 @@ abstract class AppStyle {
     fontSize: 24.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -95,7 +95,7 @@ abstract class AppStyle {
     fontSize: 26.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -103,7 +103,7 @@ abstract class AppStyle {
     fontSize: 28.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -111,7 +111,7 @@ abstract class AppStyle {
     fontSize: 30.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -119,7 +119,7 @@ abstract class AppStyle {
     fontSize: 32.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -127,7 +127,7 @@ abstract class AppStyle {
     fontSize: 36.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -135,7 +135,7 @@ abstract class AppStyle {
     fontSize: 38.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -143,7 +143,7 @@ abstract class AppStyle {
     fontSize: 40.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -151,7 +151,7 @@ abstract class AppStyle {
     fontSize: 48.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -159,7 +159,7 @@ abstract class AppStyle {
     fontSize: 56.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.normal,
   );
 
@@ -167,7 +167,7 @@ abstract class AppStyle {
     fontSize: 100.sp,
     fontFamily: fontFamily,
     color: AppColorLight.scrim,
-    height: 1.5,
+    height: 1.5.h,
     fontWeight: FontWeight.bold,
   );
 

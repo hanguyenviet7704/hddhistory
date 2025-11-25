@@ -64,7 +64,7 @@ class ExerciseChatBubble extends StatelessWidget {
         color: isSender ? Colors.blue[100] : Color(0xFFF5F7FB),
       ),
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-      child: AppText(text, style: AppStyle.textBold16, maxLines: 10),
+      child: AppText(text, style: AppStyle.textBold14, maxLines: 10),
     );
   }
 }

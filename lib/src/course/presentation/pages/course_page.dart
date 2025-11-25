@@ -1,7 +1,8 @@
 part of '../../course.dart';
 
 class CoursePage extends StatefulWidget {
-  const CoursePage({super.key});
+  final int? selectedTabIndex;
+  const CoursePage({super.key, this.selectedTabIndex});
 
   @override
   State<CoursePage> createState() => _CoursePageState();
@@ -19,7 +20,7 @@ class _CoursePageState extends State<CoursePage> with SingleTickerProviderStateM
   void _initializeTabController() {
     HomeState homeState = context.read<HomeCubit>().state;
     int skillsetCount = homeState.skillsets.length;
-    int selectedTabIndex = homeState.selectedSkillsetIndex;
+    int selectedTabIndex = widget.selectedTabIndex ?? homeState.selectedSkillsetIndex;
     _tabController = TabController(length: skillsetCount + 1, vsync: this);
     _tabController.addListener(_onTabChanged);
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {

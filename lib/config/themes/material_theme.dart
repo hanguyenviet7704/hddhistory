@@ -3,7 +3,7 @@ part of 'themes.dart';
 mixin AppThemeMaterial {
   static final ThemeData lightTheme = ThemeData(
     useMaterial3: true,
-    fontFamily: AppFont.nunito,
+    fontFamily: AppFont.mulish,
     brightness: Brightness.light,
     visualDensity: VisualDensity.adaptivePlatformDensity,
     colorScheme: lightColorScheme,
@@ -11,7 +11,7 @@ mixin AppThemeMaterial {
 
   static final ThemeData darkTheme = ThemeData(
     useMaterial3: true,
-    fontFamily: AppFont.nunito,
+    fontFamily: AppFont.mulish,
     brightness: Brightness.dark,
     visualDensity: VisualDensity.adaptivePlatformDensity,
     colorScheme: darkColorScheme,

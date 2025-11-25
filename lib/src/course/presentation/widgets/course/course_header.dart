@@ -11,7 +11,7 @@ class CourseHeader extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           AppText(
-            context.text.allcourseExploreSkillsets,
+            context.text.allcourse.allcourseExploreSkillsets,
             style: AppStyle.textBold20.copyWith(
               color: AppCustomColor.textPrimary,
               fontWeight: FontWeight.w600,
@@ -21,6 +21,9 @@ class CourseHeader extends StatelessWidget {
             selector: (state) => state.roadmap.id.isNotEmpty,
             builder: (context, isInitialized) {
               if (!isInitialized) return const SizedBox.shrink();
+              bool canBack = context.canPop();
+              if (!canBack) return const SizedBox.shrink();
+              
               return GestureDetector(
                 onTap: () => context.back(),
                 child: Icon(

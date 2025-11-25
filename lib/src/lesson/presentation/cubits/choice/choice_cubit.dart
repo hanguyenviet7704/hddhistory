@@ -69,19 +69,19 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       if (selectedIndexes.isEmpty) return 0;
       
       final correctCount = correctIndexes.length;
-      final pointPerCorrect = 100.0 / correctCount;
+      final pointPerCorrect = state.question.maxScore / correctCount;
 
       final correctSelections = selectedIndexes.where((index) => correctIndexes.contains(index)).length;
       final wrongSelections = selectedIndexes.where((index) => !correctIndexes.contains(index)).length;
 
       final score = (correctSelections * pointPerCorrect) - (wrongSelections * pointPerCorrect * 0.5);
 
-      return score.clamp(0, 100).toInt();
+      return score.clamp(0, state.question.maxScore).toInt();
     }
 
     final correctIndex = state.correctOptionsIndices.first;
     final selectedIndex = state.selectedAnswerIndex;
-    final score = (selectedIndex == correctIndex ? 100 : 0);
+    final score = (selectedIndex == correctIndex ? state.question.maxScore : 0);
     return score;
   }
 

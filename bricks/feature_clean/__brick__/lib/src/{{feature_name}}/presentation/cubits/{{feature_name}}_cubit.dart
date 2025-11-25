@@ -1,32 +1,31 @@
-{{^use_bloc}}part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
+{{#include_state_management}}
+{{^use_bloc}}
+part of '../../{{#snakeCase}}{{feature_name}}{{/snakeCase}}.dart';
 
 @lazySingleton
-class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> with CubitUseCaseHandlerMixin<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> {
-  final GetAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}sUseCase _getAllUseCase;
-  final Get{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _getUseCase;
-  final Create{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _createUseCase;
-  final Update{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _updateUseCase;
-  final Delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _deleteUseCase;
+class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State>
+    with CubitUseCaseHandlerMixin<{{#pascalCase}}{{feature_name}}{{/pascalCase}}State> {
+  {{#has_list}}final GetAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}sUseCase _getAllUseCase;
+  {{/has_list}}{{#has_detail}}final Get{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _getUseCase;
+  {{/has_detail}}{{#has_create}}final Create{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _createUseCase;
+  {{/has_create}}{{#has_update}}final Update{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _updateUseCase;
+  {{/has_update}}{{#has_delete}}final Delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}UseCase _deleteUseCase;
+  {{/has_delete}}
 
   {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit(
-    this._getAllUseCase,
-    this._getUseCase,
-    this._createUseCase,
-    this._updateUseCase,
-    this._deleteUseCase,
+    {{#has_list}}this._getAllUseCase,
+    {{/has_list}}{{#has_detail}}this._getUseCase,
+    {{/has_detail}}{{#has_create}}this._createUseCase,
+    {{/has_create}}{{#has_update}}this._updateUseCase,
+    {{/has_update}}{{#has_delete}}this._deleteUseCase,
+    {{/has_delete}}
   ) : super({{#pascalCase}}{{feature_name}}{{/pascalCase}}State.initial());
 
-  void loadAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s({
-    bool isInit = false,
-  }) async {
-    // Prevent multiple simultaneous loads
+  {{#has_list}}void loadAll{{#pascalCase}}{{entity_name}}{{/pascalCase}}s({bool isInit = false}) async {
     if (!isInit && state.status == {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading) return;
-
-    // Prevent loading if already on last page (unless it's init)
     if (!isInit && state.pageData.isLastPage) return;
 
-    PageBreakRequest pageRequest;
-    pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+    final pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
 
     await runUseCasePageBreak<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
       usecase: () => _getAllUseCase(pageRequest),
@@ -48,7 +47,7 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pasca
     );
   }
 
-  void load{{#pascalCase}}{{entity_name}}{{/pascalCase}}(String id) async {
+  {{/has_list}}{{#has_detail}}void load{{#pascalCase}}{{entity_name}}{{/pascalCase}}(String id) async {
     await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
       usecase: () => _getUseCase(id),
       buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
@@ -67,7 +66,7 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pasca
     );
   }
 
-  void create{{#pascalCase}}{{entity_name}}{{/pascalCase}}({{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity entity) async {
+  {{/has_detail}}{{#has_create}}{{#has_list}}void create{{#pascalCase}}{{entity_name}}{{/pascalCase}}({{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity entity) async {
     await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
       usecase: () => _createUseCase(entity),
       buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
@@ -83,12 +82,30 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pasca
         emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
           pageData: updatedPageData,
+          {{#has_detail}}selectedItem: newItem,{{/has_detail}}
         ));
       },
     );
   }
-
-  void update{{#pascalCase}}{{entity_name}}{{/pascalCase}}({{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity entity) async {
+  {{/has_list}}{{#no_list}}void create{{#pascalCase}}{{entity_name}}{{/pascalCase}}({{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity entity) async {
+    await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
+      usecase: () => _createUseCase(entity),
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (newItem) {
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
+          {{#has_detail}}selectedItem: newItem,{{/has_detail}}
+        ));
+      },
+    );
+  }
+  {{/no_list}}{{/has_create}}{{#has_update}}{{#has_list}}void update{{#pascalCase}}{{entity_name}}{{/pascalCase}}({{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity entity) async {
     await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
       usecase: () => _updateUseCase(entity),
       buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
@@ -99,18 +116,36 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pasca
         ));
       },
       onSuccess: (updatedItem) {
-        final updatedItems = state.pageData.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
+        final updatedItems =
+            state.pageData.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
         final updatedPageData = state.pageData.copyWith(items: updatedItems);
         emit(state.copyWith(
           status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
           pageData: updatedPageData,
-          selectedItem: updatedItem,
+          {{#has_detail}}selectedItem: updatedItem,{{/has_detail}}
         ));
       },
     );
   }
-
-  void delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}(String id) async {
+  {{/has_list}}{{#no_list}}void update{{#pascalCase}}{{entity_name}}{{/pascalCase}}({{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity entity) async {
+    await runUseCase<{{#pascalCase}}{{entity_name}}{{/pascalCase}}Entity>(
+      usecase: () => _updateUseCase(entity),
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (updatedItem) {
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
+          {{#has_detail}}selectedItem: updatedItem,{{/has_detail}}
+        ));
+      },
+    );
+  }
+  {{/no_list}}{{/has_update}}{{#has_delete}}{{#has_list}}void delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}(String id) async {
     await runUseCase<Unit>(
       usecase: () => _deleteUseCase(id),
       buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
@@ -130,5 +165,25 @@ class {{#pascalCase}}{{feature_name}}{{/pascalCase}}Cubit extends Cubit<{{#pasca
       },
     );
   }
+  {{/has_list}}{{#no_list}}void delete{{#pascalCase}}{{entity_name}}{{/pascalCase}}(String id) async {
+    await runUseCase<Unit>(
+      usecase: () => _deleteUseCase(id),
+      buildLoadingState: () => state.copyWith(status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.loading),
+      onFailure: (error) {
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.failure,
+          errorMessage: error,
+        ));
+      },
+      onSuccess: (_) {
+        emit(state.copyWith(
+          status: {{#pascalCase}}{{feature_name}}{{/pascalCase}}Status.success,
+          {{#has_detail}}selectedItem: state.selectedItem?.id == id ? null : state.selectedItem,{{/has_detail}}
+        ));
+      },
+    );
+  }
+  {{/no_list}}{{/has_delete}}
 }
 {{/use_bloc}}
+{{/include_state_management}}

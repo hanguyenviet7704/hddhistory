@@ -3,19 +3,32 @@ part of '../../course.dart';
 class LessonListPage extends StatelessWidget {
   const LessonListPage({super.key});
 
+  void _showTutorial(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
+      Future.delayed(const Duration(seconds: 2), () {
+        if (!context.mounted) return;
+        bool isFirstTimeUserAccessLessonList = context.read<UserCubit>().state.isFirstTimeUserAccessLessonList;
+        if (!isFirstTimeUserAccessLessonList) return;
+
+        context.read<UserCubit>().setIsFirstTimeUserAccessLessonList(false);
+        LessonExplainPopup.show(context);
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    _showTutorial(context);
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
         child: BlocBuilder<CourseLessonCubit, CourseLessonState>(
+          buildWhen: (previous, current) => previous.status != current.status || previous.selectedLesson != current.selectedLesson,
           builder: (context, state) {
             if (state.status == CourseLessonStatus.loading) {
-              return const Center(
-                child: CircularProgressIndicator(),
-              );
+              return const Center(child: CircularProgressIndicator());
             }
-        
+
             if (state.status == CourseLessonStatus.failure) {
               return Center(
                 child: Padding(
@@ -41,9 +54,10 @@ class LessonListPage extends StatelessWidget {
                 ),
               );
             }
-        
-            final lesson = state.selectedLesson;
-        
+
+            final LessonResultEntity currentLessonResult = context.read<ProgressCubit>().state.currentLessonResult;
+            final lesson = state.updateLessonWithResults(currentLessonResult);
+
             // Check if lesson data is empty (id is empty means no data loaded)
             if (lesson.id.isEmpty) {
               return Center(
@@ -58,7 +72,7 @@ class LessonListPage extends StatelessWidget {
                 ),
               );
             }
-        
+
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: Padding(
@@ -72,14 +86,16 @@ class LessonListPage extends StatelessWidget {
                     // Lesson description
                     AppText(
                       lesson.description.text,
+                      maxLines: 20,
+                      textAlign: TextAlign.justify,
                       style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
                     ),
                     12.verticalSpace,
-        
+
                     // Key points section header
                     const KeypointsSectionHeader(),
                     16.verticalSpace,
-        
+
                     // Key points list
                     if (lesson.keypoints.isEmpty)
                       Padding(
@@ -101,7 +117,7 @@ class LessonListPage extends StatelessWidget {
                         separatorBuilder: (context, index) => 16.verticalSpace,
                         itemBuilder: (context, index) {
                           final keypoint = lesson.keypoints[index];
-        
+
                           return KeypointCard(
                             keypoint: keypoint,
                             onTap: () {
@@ -111,7 +127,7 @@ class LessonListPage extends StatelessWidget {
                           );
                         },
                       ),
-        
+
                     32.verticalSpace,
                   ],
                 ),

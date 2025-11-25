@@ -541,7 +541,11 @@ get_project_root() {
 
 get_relative_path() {
     local path="$1"
-    echo "${PROJECT_ROOT}/${path}"
+    if [[ "$path" == /* ]]; then
+        echo "$path"
+    else
+        echo "${PROJECT_ROOT}/${path}"
+    fi
 }
 
 # Validation and setup

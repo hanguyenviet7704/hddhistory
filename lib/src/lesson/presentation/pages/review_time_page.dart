@@ -31,7 +31,7 @@ class ReviewTimePage extends StatelessWidget {
                     // Title and subtitle
                     AppText(
                       // context.text.reviewTimeTitle,
-                      'Review time!',
+                      context.text.exercise.exerciseRedoTitle,
                       style: AppStyle.textBold24.copyWith(
                         color: const Color(0xFF1A202C),
                         height: 1.5,
@@ -41,7 +41,7 @@ class ReviewTimePage extends StatelessWidget {
                     4.verticalSpace,
                     AppText(
                       // context.text.reviewTimeSubtitle,
-                      'Let’s review the lesson you missed!',
+                      context.text.exercise.exerciseRedoMessage,
                       style: AppStyle.text14.copyWith(
                         color: const Color(0xFF7F8EA4),
                         height: 1.75,
@@ -58,14 +58,6 @@ class ReviewTimePage extends StatelessWidget {
               onTap: () {
                 final lessonCubit = context.read<LessonCubit>();
                 lessonCubit.reviewDone();
-                
-                // if (lessonCubit.state.subQuestions.isEmpty) {
-                //   LessonCompleteRoute(
-                //     type: 'lesson',
-                //     keypointTitle: lessonCubit.state.currentLearningItem.title.en,
-                //     progress: 1.0,
-                //   ).go(context);
-                // }
               },
               child: Container(
                 padding: EdgeInsets.symmetric(
@@ -83,7 +75,7 @@ class ReviewTimePage extends StatelessWidget {
                   ),
                   child: Center(
                     child: AppText(
-                      context.text.exerciseSkipButton,
+                      context.text.exercise.exerciseSkipButton,
                       style: AppStyle.textBold16.copyWith(
                         color: Colors.white,
                         height: 1.5,

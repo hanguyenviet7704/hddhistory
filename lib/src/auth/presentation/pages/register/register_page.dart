@@ -17,36 +17,37 @@ class _RegisterPageState extends State<RegisterPage> {
           child: Column(
             children: [
               // Top section with "Already member? Log in" text
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    AppText(
-                      context.text.authAlreadyMember,
-                      style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF110751),
-                        fontWeight: FontWeight.normal,
-                      ),
-                    ),
-                    SizedBox(width: 4.w),
-                    GestureDetector(
-                      onTap: () {
-                        // Navigate to login page
-                        // DNavigator.goNamed(RouteNamed.login);
-                      },
-                      child: AppText(
-                        context.text.authLogIn,
+              if (kDebugMode)
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      AppText(
+                        context.text.auth.authAlreadyMember,
                         style: AppStyle.text14.copyWith(
                           color: const Color(0xFF110751),
-                          fontWeight: FontWeight.w600,
-                          decoration: TextDecoration.underline,
+                          fontWeight: FontWeight.normal,
                         ),
                       ),
-                    ),
-                  ],
+                      4.horizontalSpace,
+                      GestureDetector(
+                        onTap: () {
+                          // Navigate to login page
+                          // DNavigator.goNamed(RouteNamed.login);
+                        },
+                        child: AppText(
+                          context.text.auth.authLogIn,
+                          style: AppStyle.text14.copyWith(
+                            color: const Color(0xFF110751),
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
 
               // Main content
               Expanded(
@@ -70,9 +71,9 @@ class _RegisterPageState extends State<RegisterPage> {
                               width: 80.w,
                             ),
                           ),
-                          SizedBox(height: 24.h),
+                          24.verticalSpace,
                           AppText(
-                            context.text.authHeadLine,
+                            context.text.auth.authHeadLine,
                             maxLines: 5,
                             style: AppStyle.text24.copyWith(
                               color: const Color(0xFF110751),
@@ -112,7 +113,6 @@ class _RegisterPageState extends State<RegisterPage> {
                           GuestLoginButton(
                             onPressed: () {
                               // Continue as guest
-                              context.read<UserCubit>().setIsGuest(true);
                               // Navigate to home
                               // DNavigator.goNamed(RouteNamed.home);
                               AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
@@ -130,7 +130,7 @@ class _RegisterPageState extends State<RegisterPage> {
               Padding(
                 padding: EdgeInsets.only(bottom: 20.h, left: 50.w, right: 50.w),
                 child: AppText(
-                  context.text.authLegalNotice,
+                  context.text.auth.authLegalNotice,
                   maxLines: 5,
                   style: AppStyle.text12.copyWith(
                     color: const Color(0xFF110751).op(0.5),

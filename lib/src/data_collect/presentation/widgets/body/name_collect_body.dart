@@ -8,22 +8,24 @@ class NameCollectBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      mainAxisAlignment: MainAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      mainAxisSize: MainAxisSize.min,
       children: [
-        // Title
         AppText(
-          context.text.onboardingUserNameQuestion,
+          context.text.onboarding.onboardingUserNameQuestion,
+          textAlign: TextAlign.center,
+          maxLines: 3,
+          enableFitScaleDown: true,
           style: AppStyle.textBold20.copyWith(
             color: const Color(0xFF364152), // Text/Secondary
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
+            height: 1.4,
           ),
         ),
 
         Spacer(),
-        // Input Field
         OnboardingInput(
-          hintText: context.text.onboardingUserNamePlaceholder,
+          hintText: context.text.onboarding.onboardingUserNamePlaceholder,
           controller: context.read<DataCollectCubit>().nameController,
           onChanged: (value) => context.read<DataCollectCubit>().updateUserName(value),
         ),

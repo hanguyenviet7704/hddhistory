@@ -3,9 +3,11 @@ part of '../../lesson.dart';
 @LazySingleton(as: ILessonRepository)
 class LessonRepository with RestfulRequestHandlerMixin implements ILessonRepository {
   final LessonApi _api;
+  final LessonVoiceApi _voiceApi;
+  final LessonVoiceStreamApi _voiceStreamApi;
   final LessonLocalDataSource _localDataSource;
 
-  LessonRepository(this._api, this._localDataSource);
+  LessonRepository(this._api, this._voiceApi, this._voiceStreamApi, this._localDataSource);
 
   @override
   TaskEither<AppException, LearningItemEntity> getLearningItem(String id) {
@@ -43,6 +45,34 @@ class LessonRepository with RestfulRequestHandlerMixin implements ILessonReposit
           );
         }
         return null;
+      },
+    );
+  }
+
+  @override
+  TaskEither<AppException, VoiceFeedbackEntity> sendVoiceFeedback(VoiceFeedbackRequest request) {
+    return callApiWithTransform<VoiceFeedbackModel, VoiceFeedbackEntity>(
+      apiCall: () async => await _voiceApi.sendVoiceFeedback(request.toJson()),
+      transform: (model) => model.toEntity(),
+      defaultValue: VoiceFeedbackEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, ResponseBody> sendVoiceFeedbackStream(VoiceFeedbackRequest request) {
+    return TaskEither.tryCatch(
+      () async {
+        try {
+          return await _voiceStreamApi.sendVoiceFeedbackStream(request.toJson());
+        } catch (e) {
+          rethrow;
+        }
+      },
+      (error, stackTrace) {
+        if (error is DioException) {
+          return AppException.fromDioException(error);
+        }
+        return AppException.unexpected(error.toString());
       },
     );
   }

@@ -32,7 +32,7 @@ class RoleplayIntroDetails extends StatelessWidget {
         12.verticalSpace,
         AppText(
           learningItem.description.text,
-          maxLines: 6,
+          maxLines: 100,
           style: AppStyle.text16.copyWith(
             color: Colors.white.withValues(alpha: 0.7),
             height: 24 / 16,

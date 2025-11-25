@@ -5,12 +5,10 @@ This document provides an overview of the custom development tools and scripts a
 ## Platform Support Status
 
 ### ✅ macOS (Fully Functional)
-The `tools/macos/` directory contains **complete and up-to-date** development tools optimized for macOS development environment.
+The `tools/macos/` directory contains **complete and up-to-date** development tools optimized for macOS development environment (including the new localization pipeline).
 
-### ⚠️ Windows & Linux (Placeholder Implementation)
-The `tools/windows/` and `tools/linux/` directories contain **placeholder scripts** for future development. These are not currently functional and should not be used for development.
-
-> **Important**: For Windows and Linux development, use manual Flutter commands instead of the custom scripts until these platforms are fully implemented.
+### ⚠️ Linux (Localization) & Windows (Localization parity; other areas WIP)
+Linux and Windows ship the shared localization pipeline (`tools/<platform>/localization/localization.(sh|bat)`); other Windows tooling remains a placeholder until implemented.
 
 ## Tools Directory Structure
 
@@ -22,10 +20,10 @@ tools/
 │   ├── distribution/   # App distribution tools
 │   ├── git/            # Git workflow helpers
 │   ├── key/            # Key and certificate management
-│   ├── localization/   # Internationalization tools
+│   ├── localization/   # Internationalization tools (slang + Google Sheets)
 │   └── resource/       # Code generation scripts
-├── linux/              # ⚠️ Placeholder scripts
-└── windows/            # ⚠️ Placeholder scripts
+├── linux/              # ⚠️ Localization tooling available; others placeholder
+└── windows/            # ⚠️ Localization tooling (slang) available; others placeholder
 ```
 
 ## macOS Tools Categories
@@ -58,19 +56,18 @@ tools/
 - API client code
 - Route definitions
 
-### Localization Tools (`tools/macos/localization/`)
-**Purpose**: Manage multi-language support and translations
+### Localization Tools (`tools/<platform>/localization/`)
+**Purpose**: Manage multi-language support and translations (Google Sheets ⇄ slang modules)
 
 #### Key Scripts:
-- `generate_localization.sh` - Complete localization workflow
-- `generate_arb_from_sheets.py` - Extract translations from Google Sheets
-- `merge_arb_files.py` - Merge module translations into app translations
+- `localization.sh` (Linux/macOS) / `localization.bat` (Windows) - pull/push/migrate/validate
+- `localization_cli.py` - shared Python engine
 
 #### Features:
-- Google Sheets integration
-- Automatic Python virtual environment setup
-- Multi-module translation support
-- Flutter localization generation
+- Google Sheets integration with per-module tabs
+- Automatic Python virtual environment setup (`.venv_localization`)
+- Migration from legacy sheet/ARB, zh fallback to en
+- Slang-ready YAML generation and sheet push with dry-run
 
 ### Configuration Management (`tools/macos/config/`)
 **Purpose**: Manage project configuration and external service setup
@@ -115,8 +112,8 @@ sh tools/macos/resource/generate_file.sh
 # 2. Clean and reset project
 sh tools/macos/build/reset_app.sh
 
-# 3. Generate localizations
-sh tools/macos/localization/generate_localization.sh
+# 3. Pull/migrate localizations (Linux/macOS)
+tools/<platform>/localization/localization.sh pull
 ```
 
 #### Daily Development

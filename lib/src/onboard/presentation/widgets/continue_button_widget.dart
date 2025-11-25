@@ -1,13 +1,13 @@
 part of '../../onboard.dart';
 
 class ContinueButtonWidget extends StatelessWidget {
-  final String text;
+  final String? text;
   final VoidCallback? onPressed;
   final bool isEnabled;
 
   const ContinueButtonWidget({
     super.key,
-    this.text = 'Continue',
+    this.text,
     this.onPressed,
     this.isEnabled = true,
   });
@@ -28,7 +28,7 @@ class ContinueButtonWidget extends StatelessWidget {
           borderRadius: BorderRadius.circular(1000.r),
           child: Center(
             child: AppText(
-              text,
+              text ?? context.text.onboarding.onboardingSkipGreetingButton,
               style: AppStyle.text16.copyWith(
                 fontWeight: FontWeight.w600,
                 color: Colors.white,

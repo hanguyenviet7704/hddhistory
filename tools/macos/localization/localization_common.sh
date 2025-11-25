@@ -3,12 +3,15 @@
 # Localization-specific configuration helper functions
 # This extends the common configuration with localization-specific utilities
 
-# Source the main common configuration
+# Source the main common configuration once
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "${SCRIPT_DIR}/../common/common.sh" || {
-    echo "❌ Failed to load common configuration"
-    exit 1
-}
+if [[ -z "${PROJECT_ROOT:-}" ]]; then
+    # shellcheck source=../common/common.sh
+    source "${SCRIPT_DIR}/../common/common.sh" || {
+        echo "❌ Failed to load common configuration"
+        exit 1
+    }
+fi
 
 # Localization configuration file
 readonly LOCALIZATION_CONFIG="${INFO_APP_DIR}/localization.json"
@@ -23,18 +26,71 @@ get_localization_config() {
     fi
 }
 
-# Google Sheets configuration
-get_sheet_id() {
-    get_localization_config '.googleSheets.sheetId'
+# Google Sheets configuration (active + legacy for migration)
+get_active_sheet_id() {
+    get_localization_config '.googleSheets.active.sheetId'
 }
 
-get_sheet_gids() {
-    get_localization_config '.googleSheets.sheetGids[]' | tr '\n' ' '
+get_active_sheet_gids() {
+    get_localization_config '.googleSheets.active.sheetGids[]' | tr '\n' ' '
 }
 
-get_sheet_columns() {
+get_active_sheet_tabs_json() {
+    local value
+    value=$(get_localization_config '.googleSheets.active.tabs')
+    if [[ -z "$value" || "$value" == "null" ]]; then
+        echo "[]"
+    else
+        echo "$value"
+    fi
+}
+
+get_active_sheet_column() {
     local column="$1"
-    get_localization_config ".googleSheets.columns.${column}"
+    get_localization_config ".googleSheets.active.columns.${column}"
+}
+
+get_legacy_sheet_id() {
+    get_localization_config '.googleSheets.legacy.sheetId'
+}
+
+get_legacy_sheet_gids() {
+    get_localization_config '.googleSheets.legacy.sheetGids[]' | tr '\n' ' '
+}
+
+get_legacy_sheet_column() {
+    local column="$1"
+    get_localization_config ".googleSheets.legacy.columns.${column}"
+}
+
+get_localization_sa_path() {
+    local path
+    path=$(get_localization_config '.googleSheets.auth.serviceAccountPath')
+    if [[ -n "$path" && "$path" != "null" ]]; then
+        get_relative_path "$path"
+    else
+        echo ""
+    fi
+}
+
+get_localization_sa_path_env() {
+    local env_name
+    env_name=$(get_localization_config '.googleSheets.auth.serviceAccountPathEnv')
+    if [[ -n "$env_name" && "$env_name" != "null" ]]; then
+        echo "$env_name"
+    else
+        echo "LOCALIZATION_SA_PATH"
+    fi
+}
+
+get_localization_sa_json_env() {
+    local env_name
+    env_name=$(get_localization_config '.googleSheets.auth.serviceAccountJsonEnv')
+    if [[ -n "$env_name" && "$env_name" != "null" ]]; then
+        echo "$env_name"
+    else
+        echo "LOCALIZATION_SA_JSON"
+    fi
 }
 
 # Language configuration
@@ -43,33 +99,48 @@ get_language_mapping() {
     get_localization_config ".languages.mapping.${language}"
 }
 
+get_supported_languages() {
+    get_localization_config '.languages.supported[]' | tr '\n' ' '
+}
+
 get_default_language() {
     get_localization_config '.languages.default'
 }
 
 # Path configuration
-get_arb_dir() {
-    local path=$(get_localization_config '.paths.arbDir')
+get_i18n_dir() {
+    local path
+    path=$(get_localization_config '.paths.i18nDir')
     get_relative_path "$path"
 }
 
-get_module_dir() {
-    local path=$(get_localization_config '.paths.moduleDir')
+get_template_dir() {
+    local path
+    path=$(get_localization_config '.paths.templateDir')
     get_relative_path "$path"
 }
 
-get_app_dir() {
-    local path=$(get_localization_config '.paths.appDir')
+get_temp_dir() {
+    local path
+    path=$(get_localization_config '.paths.tempDir')
     get_relative_path "$path"
 }
 
-get_l10n_config_path() {
-    local path=$(get_localization_config '.paths.l10nConfig')
+get_legacy_arb_dir() {
+    local path
+    path=$(get_localization_config '.paths.legacyArbDir')
+    get_relative_path "$path"
+}
+
+get_slang_config_path() {
+    local path
+    path=$(get_localization_config '.paths.slangConfig')
     get_relative_path "$path"
 }
 
 get_l10n_output_dir() {
-    local path=$(get_localization_config '.paths.outputDir')
+    local path
+    path=$(get_localization_config '.paths.outputDir')
     get_relative_path "$path"
 }
 
@@ -91,17 +162,18 @@ validate_localization_config() {
         return 1
     fi
 
-    # Check required fields
-    local sheet_id=$(get_sheet_id)
-    local arb_dir=$(get_arb_dir)
+    local sheet_id
+    sheet_id=$(get_active_sheet_id)
+    local i18n_dir
+    i18n_dir=$(get_i18n_dir)
 
     if [[ -z "$sheet_id" ]]; then
-        log_error "Sheet ID not configured in localization.json"
+        log_error "Active sheet ID not configured in localization.json"
         return 1
     fi
 
-    if [[ -z "$arb_dir" ]]; then
-        log_error "ARB directory not configured in localization.json"
+    if [[ -z "$i18n_dir" ]]; then
+        log_error "i18n directory not configured in localization.json"
         return 1
     fi
 
@@ -114,14 +186,20 @@ show_localization_config() {
     echo
     log_step "Localization Configuration"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-    echo "Sheet ID: $(get_sheet_id)"
-    echo "Sheet GIDs: $(get_sheet_gids)"
+    echo "Active Sheet ID: $(get_active_sheet_id)"
+    echo "Active Sheet GIDs: $(get_active_sheet_gids)"
+    echo "Active Sheet Tabs: $(get_active_sheet_tabs_json | jq -r '.[].module' 2>/dev/null | tr '\n' ',' | sed 's/,$//')"
+    echo "Service Account Path: $(get_localization_sa_path)"
+    echo "Service Account Env (path/json): $(get_localization_sa_path_env)/$(get_localization_sa_json_env)"
+    echo "Legacy Sheet ID: $(get_legacy_sheet_id)"
+    echo "Legacy Sheet GIDs: $(get_legacy_sheet_gids)"
     echo "Default Language: $(get_default_language)"
-    echo "ARB Directory: $(get_arb_dir)"
-    echo "Module Directory: $(get_module_dir)"
-    echo "App Directory: $(get_app_dir)"
-    echo "L10n Config: $(get_l10n_config_path)"
-    echo "Output Directory: $(get_l10n_output_dir)"
+    echo "Supported Languages: $(get_supported_languages)"
+    echo "i18n Directory: $(get_i18n_dir)"
+    echo "Temp Directory: $(get_temp_dir)"
+    echo "Template Directory: $(get_template_dir)"
+    echo "Slang Config: $(get_slang_config_path)"
+    echo "Generated Output: $(get_l10n_output_dir)"
     echo "Generation Author: $(get_generation_author)"
     echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
     echo
@@ -133,30 +211,41 @@ create_python_config() {
 
     cat > "$config_file" << EOF
 {
-    "sheet_id": "$(get_sheet_id)",
-    "sheet_gids": [$(get_sheet_gids | sed 's/ /,/g' | sed 's/,$//')],
-    "columns": {
-        "screen": "$(get_sheet_columns screen)",
-        "key": "$(get_sheet_columns key)",
-        "metadata": "$(get_sheet_columns metadata)",
-        "en": "$(get_sheet_columns en)",
-        "vi": "$(get_sheet_columns vi)",
-        "zh": "$(get_sheet_columns zh)"
-    },
-    "languages": {
-        "mapping": $(get_localization_config '.languages.mapping'),
-        "default": "$(get_default_language)"
-    },
-    "paths": {
-        "base_dir": "$PROJECT_ROOT",
-        "arb_dir": "$(get_arb_dir)",
-        "module_dir": "$(get_module_dir)",
-        "app_dir": "$(get_app_dir)"
-    },
-    "generation": {
-        "author": "$(get_generation_author)",
-        "encoding": "$(get_generation_encoding)"
-    }
+  "project_root": "$PROJECT_ROOT",
+  "localization_config_path": "$(get_relative_path "$LOCALIZATION_CONFIG")",
+  "active_sheet": {
+    "sheet_id": "$(get_active_sheet_id)",
+    "sheet_gids": [$(get_active_sheet_gids | sed 's/ /,/g' | sed 's/,$//')],
+    "tabs": $(get_active_sheet_tabs_json),
+    "columns": $(get_localization_config '.googleSheets.active.columns')
+  },
+  "legacy_sheet": {
+    "sheet_id": "$(get_legacy_sheet_id)",
+    "sheet_gids": [$(get_legacy_sheet_gids | sed 's/ /,/g' | sed 's/,$//')],
+    "columns": $(get_localization_config '.googleSheets.legacy.columns')
+  },
+  "auth": {
+    "service_account_path": "$(get_localization_sa_path)",
+    "service_account_path_env": "$(get_localization_sa_path_env)",
+    "service_account_json_env": "$(get_localization_sa_json_env)"
+  },
+  "languages": {
+    "mapping": $(get_localization_config '.languages.mapping'),
+    "supported": $(get_localization_config '.languages.supported'),
+    "default": "$(get_default_language)"
+  },
+  "paths": {
+    "i18n_dir": "$(get_i18n_dir)",
+    "temp_dir": "$(get_temp_dir)",
+    "template_dir": "$(get_template_dir)",
+    "legacy_arb_dir": "$(get_legacy_arb_dir)",
+    "slang_config": "$(get_slang_config_path)",
+    "output_dir": "$(get_l10n_output_dir)"
+  },
+  "generation": {
+    "author": "$(get_generation_author)",
+    "encoding": "$(get_generation_encoding)"
+  }
 }
 EOF
 

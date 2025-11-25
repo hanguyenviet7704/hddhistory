@@ -15,7 +15,7 @@ class EmptySlot extends StatelessWidget {
         padding: EdgeInsets.zero,
       ),
       child: Container(
-        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 8.h),
+        padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 4.h),
         decoration: BoxDecoration(
           color: isHighlighted ? const Color(0xFF554FF0).withValues(alpha: 0.08) : const Color(0xFFF8FAFC),
           borderRadius: BorderRadius.circular(8.r),

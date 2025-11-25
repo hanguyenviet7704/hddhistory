@@ -6,11 +6,11 @@ abstract class QuestionModel with _$QuestionModel {
     @Default(QuestionType.singleChoice) QuestionType type,
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
-    @Default('') String speechBubble,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage speechBubble,
     @Default(TagModel()) TagModel tag,
     @Default([]) List<ContentDocumentModel> document,
-    @Default('') String explanation,
-    @Default('') String targetArea,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage explanation,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage targetArea,
     @Default([]) List<AnswerModel> answer,
     @Default([]) List<OptionModel> options,
     @Default([]) List<KeypointLevelType> level,
@@ -19,7 +19,8 @@ abstract class QuestionModel with _$QuestionModel {
     @Default(0) int maxCharacter,
     @Default(0) int maxScore,
     @Default(0) int completionTime,
-    @DefaultInt() @Default(0) int mainQuestion,
+    @Default([]) List<ScoringCriteriaModel> scoringCriteria,
+    @Default(0) int mainQuestion,
     @Default(KeypointModel()) KeypointModel keypoint,
   }) = _QuestionModel;
 
@@ -75,6 +76,7 @@ extension QuestionModelExtension on QuestionModel {
     maxCharacter: maxCharacter,
     maxScore: maxScore,
     completionTime: completionTime,
+    scoringCriteria: scoringCriteria.map((model) => model.toEntity()).toList(),
     mainQuestion: mainQuestion,
     keypoint: keypoint.toEntity(),
   );

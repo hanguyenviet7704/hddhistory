@@ -8,71 +8,31 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
     required this.onAnswerChecked,
   });
 
-  void _showResultBottomSheet(BuildContext context, ResultType type) {
-    showModalBottomSheet(
+  void _showResultOverlay(BuildContext context, ResultType type) {
+    LessonResultOverlayManager.show(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: Colors.transparent,
-      isDismissible: false,
-      enableDrag: false,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
-      routeSettings: const RouteSettings(name: RouteNamed.exerciseResultPopup),
-      builder: (modalContext) => BlocProvider.value(
+      builder: (_) => BlocProvider.value(
         value: context.read<ArrangeTheSequenceCubit>(),
         child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
-          bloc: context.read<ArrangeTheSequenceCubit>(),
           builder: (context, state) {
-            // Get correct answer sequence by mapping answer IDs to options
             final correctAnswers = state.question.answer.map((answer) {
               return state.question.options.firstWhere(
                 (option) => option.id == answer.id,
                 orElse: () => const OptionEntity(),
               );
             }).toList();
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
 
-            return PopScope(
-              canPop: false,
-              child: Stack(
-                children: [
-                  // Animated backdrop overlay
-                  AnimatedOpacity(
-                    duration: const Duration(milliseconds: 350),
-                    curve: Curves.easeInOut,
-                    opacity: state.showExplanation ? 1.0 : 0.0,
-                    child: IgnorePointer(
-                      ignoring: !state.showExplanation,
-                      child: GestureDetector(
-                        onTap: () => context.read<ArrangeTheSequenceCubit>().toggleExplanation(),
-                        child: Container(
-                          color: const Color(0xFF364152).withAlpha((0.6 * 255).round()),
-                          width: double.infinity,
-                          height: double.infinity,
-                        ),
-                      ),
-                    ),
-                  ),
-                  // Result bottom sheet
-                  Positioned(
-                    left: 0,
-                    right: 0,
-                    bottom: 0,
-                    child: ArrangeSequenceResultBottomSheet(
-                      type: type,
-                      showExplanation: state.showExplanation,
-                      explanationText: state.question.explanation,
-                      arrangedAnswers: correctAnswers,
-                      onContinue: () {
-                        modalContext.back();
-                        AppDI.injector.get<ExerciseCubit>().nextQuestion();
-                      },
-                      onExplain: () {
-                        context.read<ArrangeTheSequenceCubit>().toggleExplanation();
-                      },
-                    ),
-                  ),
-                ],
-              ),
+            return ArrangeSequenceResultBottomSheet(
+              type: type,
+              showExplanation: state.showExplanation,
+              explanationText: state.question.explanation.text,
+              arrangedAnswers: correctAnswers,
+              onContinue: () {
+                LessonResultOverlayManager.hide();
+                AppDI.injector.get<ExerciseCubit>().nextQuestion();
+              },
+              onExplain: hasExplanation ? () => context.read<ArrangeTheSequenceCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -89,7 +49,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
       },
       listener: (context, state) {
         onAnswerChecked(state.isCorrect);
-        _showResultBottomSheet(
+        _showResultOverlay(
           context,
           state.isCorrect ? ResultType.correct : ResultType.incorrect,
         );
@@ -106,7 +66,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exerciseSequenceInstruction,
+                context.text.exercise.exerciseSequenceInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12
@@ -125,9 +85,25 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 buildDefaultDragHandles: false,
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 proxyDecorator: (child, index, animation) {
-                  return child;
+                  final cubit = context.read<ArrangeTheSequenceCubit>();
+                  final currentState = cubit.state;
+                  if (index < 0 || index >= currentState.currentItems.length) {
+                    return child;
+                  }
+                  final item = currentState.currentItems[index];
+                  final itemState = currentState.getItemState(index);
+
+                  return ArrangeSequenceAnswerCard(
+                    key: Key('drag-${item.id}'),
+                    text: item.text.text,
+                    index: index,
+                    state: itemState,
+                    dragEnabled: false,
+                    isDragging: true,
+                  );
                 },
                 onReorder: (oldIndex, newIndex) {
+                  if (state.hasChecked) return;
                   context.read<ArrangeTheSequenceCubit>().reorderItems(oldIndex, newIndex);
                 },
                 itemCount: state.currentItems.length,
@@ -135,10 +111,12 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                   final item = state.currentItems[index];
                   return Padding(
                     key: Key('${item.id}'),
-                    padding: EdgeInsets.only(bottom: 8.h),
+                    padding: EdgeInsets.only(bottom: 12.h),
                     child: ArrangeSequenceAnswerCard(
-                      text: item.text,
+                      text: item.text.text,
                       index: index,
+                      state: state.getItemState(index),
+                      dragEnabled: !state.hasChecked,
                     ),
                   );
                 },
@@ -154,7 +132,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
       builder: (context, state) {
-        final canCheck = context.read<ArrangeTheSequenceCubit>().canCheck;
+        final canCheck = state.currentItems.isNotEmpty && !state.hasChecked;
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<ArrangeTheSequenceCubit>().checkAnswer() : null,

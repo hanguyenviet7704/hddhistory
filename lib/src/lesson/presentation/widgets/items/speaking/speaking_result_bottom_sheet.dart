@@ -1,238 +1,122 @@
+// ignore_for_file: public_member_api_docs, sort_constructors_first
 part of '../../../../lesson.dart';
 
 class SpeakingResultBottomSheet extends StatelessWidget {
   final ResultType type;
   final VoidCallback onContinue;
-  final VoidCallback? onExplain;
-  final bool showExplanation;
-  final String? analysisText;
-  final String? audioFilePath;
-  final List<String>? goodPoints;
-  final List<String>? improvementPoints;
 
   const SpeakingResultBottomSheet({
     super.key,
     required this.type,
     required this.onContinue,
-    this.onExplain,
-    this.showExplanation = false,
-    this.analysisText,
-    this.audioFilePath,
-    this.goodPoints,
-    this.improvementPoints,
   });
-
-  bool get isCorrect => type == ResultType.correct;
-  Color get backgroundColor => isCorrect ? const Color(0xFFEAFFEF) : const Color(0xFFFDEAE7);
-  Color get buttonColor => isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
-  Color get iconColor => isCorrect ? const Color(0xFF1DA75E) : const Color(0xFFE34646);
-  String title(BuildContext context) =>
-      isCorrect ? context.text.exerciseFeedbackCorrect : context.text.exerciseFeedbackIncorrect;
-  String get iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp)),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 350),
-            switchInCurve: Curves.easeOutCubic,
-            switchOutCurve: Curves.easeInCubic,
-            transitionBuilder: (child, animation) {
-              final offsetAnimation = Tween<Offset>(
-                begin: const Offset(0.0, 0.3),
-                end: Offset.zero,
-              ).animate(
-                CurvedAnimation(
-                  parent: animation,
-                  curve: Curves.easeOutCubic,
-                ),
-              );
-
-              return SlideTransition(
-                position: offsetAnimation,
-                child: FadeTransition(
-                  opacity: animation,
-                  child: child,
-                ),
-              );
-            },
-            child: showExplanation && analysisText != null
-                ? _SpeakingExplanationContent(
-                    key: const ValueKey('explanation'),
-                    isCorrect: isCorrect,
-                    analysisText: analysisText!,
-                    audioFilePath: audioFilePath,
-                    goodPoints: goodPoints ?? [],
-                    improvementPoints: improvementPoints ?? [],
-                  )
-                : const SizedBox.shrink(key: ValueKey('empty')),
-          ),
-          Container(
-            padding: EdgeInsets.all(20.w),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  children: [
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Image.asset(iconAsset, width: 24.w, height: 24.w),
-                          8.horizontalSpace,
-                          Expanded(
-                            child: AppText(
-                              isCorrect && showExplanation
-                                  ? 'Completed!'
-                                  : title(context),
-                              style: AppStyle.text16.copyWith(
-                                color: iconColor,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (onExplain != null)
-                      Opacity(
-                        opacity: 0.5,
-                        child: GestureDetector(
-                          onTap: onExplain,
-                          child: Row(
-                            children: [
-                              (showExplanation)
-                                  ? Icon(Icons.close_rounded,
-                                      color: const Color(0xFF0D121C), size: 20.w)
-                                  : SvgPicture.asset(
-                                      AppAsset.svg.app.icBookOpen,
-                                      width: 20.w,
-                                      height: 20.w,
-                                    ),
-                              8.horizontalSpace,
-                              AppText(
-                                showExplanation
-                                    ? context.text.exerciseCloseExplainButton
-                                    : context.text.exerciseExplainButton,
-                                style: AppStyle.text14.copyWith(
-                                  color: const Color(0xFF0D121C),
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                16.verticalSpace,
-                SizedBox(
-                  width: double.infinity,
-                  height: 54.h,
-                  child: ElevatedButton(
-                    onPressed: onContinue,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: buttonColor,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(1000.r),
-                      ),
-                    ),
-                    child: AppText(
-                      context.text.onboardingSkipGreetingButton,
-                      style: AppStyle.text16.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: AppColorLight.surface,
-                      ),
-                    ),
-                  ),
-                ),
-                16.verticalSpace,
-              ],
-            ),
-          ),
-        ],
+    return BlocBuilder<SpeakingCubit, SpeakingState>(
+      builder: (context, state) => LessonResultOverlay(
+        showExplanation: state.showExplanation,
+        // onBackdropTap: explanationVisible ? onExplain : null,
+        explanation: SpeakingExplanationContent(
+          textInput: state.textInput,
+          audioFilePath: state.audioFilePath ?? '',
+          goodPoints: state.goodPoints,
+          improvementPoints: state.improvementPoints,
+        ),
+        summary: ExerciseResultSummary(
+          type: type,
+          onContinue: onContinue,
+          showExplanation: state.showExplanation,
+          onExplain: () => context.read<SpeakingCubit>().toggleExplanation(),
+          continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
+          explainLabel: context.text.exercise.exerciseExplainButton,
+          closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
+          title: context.text.exercise.exerciseCompleteVoiceTask,
+        ),
       ),
     );
   }
 }
 
-class _SpeakingExplanationContent extends StatelessWidget {
-  final bool isCorrect;
-  final String analysisText;
-  final String? audioFilePath;
+class SpeakingExplanationContent extends StatelessWidget {
+  final String textInput;
+  final String audioFilePath;
   final List<String> goodPoints;
   final List<String> improvementPoints;
-
-  const _SpeakingExplanationContent({
+  const SpeakingExplanationContent({
     super.key,
-    required this.isCorrect,
-    required this.analysisText,
-    this.audioFilePath,
-    required this.goodPoints,
-    required this.improvementPoints,
+    this.textInput = '',
+    this.audioFilePath = '',
+    this.goodPoints = const [],
+    this.improvementPoints = const [],
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final maxHeight = MediaQuery.of(context).size.height * 0.75;
+    return ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxHeight),
+      child: SingleChildScrollView(
+        child: Container(
+          width: double.infinity,
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppText(
+                context.text.exercise.exerciseVoiceAnalysisTitle,
+                style: AppStyle.text20.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: const Color(0xFF0D121C),
+                ),
+              ),
+              if (textInput.isNotEmpty)
+                AppText(
+                  textInput,
+                  maxLines: 100,
+                  margin: EdgeInsets.only(top: 16.h),
+                  style: AppStyle.text14.copyWith(
+                    color: const Color(0xFF364152),
+                    height: 1.5,
+                  ),
+                ),
+              if (audioFilePath.isNotEmpty)
+                Container(
+                  margin: EdgeInsets.only(top: 16.h),
+                  width: double.infinity,
+                  padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 10.h),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: AppCustomColor.borderDefault, width: 2.w),
+                    borderRadius: BorderRadius.circular(16.r),
+                  ),
+                  child: AudioPlayerWidget(filePath: audioFilePath),
+                ),
+              SpeakingGoodPointsSection(points: goodPoints),
+              SpeakingImprovementSection(points: improvementPoints),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SpeakingGoodPointsSection extends StatelessWidget {
+  final List<String> points;
+
+  const SpeakingGoodPointsSection({
+    super.key,
+    this.points = const [],
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      decoration: const BoxDecoration(
-        color: Colors.white,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // "Answer analysis" heading
-          AppText(
-            'Answer analysis',
-            style: AppStyle.text20.copyWith(
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0D121C),
-            ),
-          ),
-          16.verticalSpace,
-          // Analysis text
-          AppText(
-            analysisText,
-            maxLines: 100,
-            style: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
-            ),
-          ),
-          16.verticalSpace,
-          // Audio player (if available)
-          if (audioFilePath != null) ...[
-            AudioPlayerWidget(audioUrl: audioFilePath),
-            16.verticalSpace,
-          ],
-          // Good points section
-          if (goodPoints.isNotEmpty) ...[
-            _buildGoodPointsSection(),
-            16.verticalSpace,
-          ],
-          // Can be improved section
-          if (improvementPoints.isNotEmpty) ...[
-            _buildImprovementSection(),
-          ],
-        ],
-      ),
-    );
-  }
-
-  
-  Widget _buildGoodPointsSection() {
-    return Container(
+      margin: EdgeInsets.only(top: 16.h),
       width: double.infinity,
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -243,7 +127,6 @@ class _SpeakingExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Tag with icon
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -254,7 +137,7 @@ class _SpeakingExplanationContent extends StatelessWidget {
               ),
               6.horizontalSpace,
               AppText(
-                'Good points',
+                context.text.exercise.exerciseGoodPointsTitle,
                 style: AppStyle.textBold14.copyWith(
                   color: const Color(0xFF554FF0),
                   height: 1.75,
@@ -263,41 +146,32 @@ class _SpeakingExplanationContent extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          // Good points list
-          ...goodPoints.asMap().entries.map((entry) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: entry.key < goodPoints.length - 1 ? 4.h : 0),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    '${entry.key + 1}. ',
-                    style: AppStyle.text14.copyWith(
-                      color: const Color(0xFF364152),
-                      height: 1.5,
-                    ),
-                  ),
-                  Expanded(
-                    child: AppText(
-                      entry.value,
-                      maxLines: 100,
-                      style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF364152),
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          }),
+          _AnimatedPointsList(
+            points: points,
+            textStyle: AppStyle.text14.copyWith(
+              color: const Color(0xFF364152),
+              height: 1.5,
+            ),
+            indexColor: const Color(0xFF554FF0),
+          ),
         ],
       ),
     );
   }
+}
 
-  Widget _buildImprovementSection() {
+class SpeakingImprovementSection extends StatelessWidget {
+  final List<String> points;
+
+  const SpeakingImprovementSection({
+    super.key,
+    this.points = const [],
+  });
+
+  @override
+  Widget build(BuildContext context) {
     return Container(
+      margin: EdgeInsets.only(top: 16.h),
       width: double.infinity,
       padding: EdgeInsets.all(12.w),
       decoration: BoxDecoration(
@@ -308,7 +182,6 @@ class _SpeakingExplanationContent extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: [
-          // Tag with icon
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -319,7 +192,7 @@ class _SpeakingExplanationContent extends StatelessWidget {
               ),
               6.horizontalSpace,
               AppText(
-                'Can be improved',
+                context.text.exercise.exerciseBadPointsTitle,
                 style: AppStyle.textBold14.copyWith(
                   color: const Color(0xFF41AE8C),
                   height: 1.75,
@@ -328,35 +201,81 @@ class _SpeakingExplanationContent extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          // Improvement points list
-          ...improvementPoints.asMap().entries.map((entry) {
-            return Padding(
-              padding: EdgeInsets.only(bottom: entry.key < improvementPoints.length - 1 ? 4.h : 0),
+          _AnimatedPointsList(
+            points: points,
+            textStyle: AppStyle.text14.copyWith(
+              color: const Color(0xFF364152),
+              height: 1.5,
+            ),
+            indexColor: const Color(0xFF41AE8C),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _AnimatedPointsList extends StatelessWidget {
+  final List<String> points;
+  final TextStyle textStyle;
+  final Color indexColor;
+
+  const _AnimatedPointsList({
+    required this.points,
+    required this.textStyle,
+    required this.indexColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (points.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    return AnimatedSize(
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOut,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
+        children: points.asMap().entries.map((entry) {
+          return TweenAnimationBuilder<double>(
+            key: ValueKey('point-${entry.key}'),
+            duration: const Duration(milliseconds: 300),
+            tween: Tween(begin: 0, end: 1),
+            builder: (context, value, child) {
+              return Opacity(
+                opacity: value,
+                child: Transform.translate(
+                  offset: Offset(0, (1 - value) * 8),
+                  child: child,
+                ),
+              );
+            },
+            child: Padding(
+              padding: EdgeInsets.only(bottom: entry.key < points.length - 1 ? 4.h : 0),
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   AppText(
                     '${entry.key + 1}. ',
-                    style: AppStyle.text14.copyWith(
-                      color: const Color(0xFF364152),
-                      height: 1.5,
+                    style: textStyle.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: indexColor,
                     ),
                   ),
                   Expanded(
                     child: AppText(
                       entry.value,
                       maxLines: 100,
-                      style: AppStyle.text14.copyWith(
-                        color: const Color(0xFF364152),
-                        height: 1.5,
-                      ),
+                      style: textStyle,
                     ),
                   ),
                 ],
               ),
-            );
-          }),
-        ],
+            ),
+          );
+        }).toList(),
       ),
     );
   }

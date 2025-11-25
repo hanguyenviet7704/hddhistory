@@ -12,8 +12,12 @@ abstract class ContentDocumentModel with _$ContentDocumentModel {
 }
 
 enum ContentDocumentType {
+  @JsonValue('title')
+  title,
   @JsonValue('text')
   text,
+  @JsonValue('caption')
+  caption,
   @JsonValue('video')
   video,
   @JsonValue('image')

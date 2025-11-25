@@ -12,7 +12,7 @@ class LearningGoalBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              context.text.onboardingTimeSpentTitle,
+              context.text.onboarding.onboardingTimeSpentTitle,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
