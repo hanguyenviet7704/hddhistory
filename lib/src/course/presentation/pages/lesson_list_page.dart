@@ -5,7 +5,7 @@ class LessonListPage extends StatelessWidget {
 
   void _showTutorial(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(microseconds: 1500), () {
         if (!context.mounted) return;
         bool isFirstTimeUserAccessLessonList = context.read<UserCubit>().state.isFirstTimeUserAccessLessonList;
         if (!isFirstTimeUserAccessLessonList) return;

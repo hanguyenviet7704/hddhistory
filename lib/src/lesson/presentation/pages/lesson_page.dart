@@ -26,7 +26,7 @@ class LessonPage extends StatelessWidget {
         return LessonLayout(
           body: lessonBody,
           bottom: bottomButton,
-          isLoading: selected.status == LessonStatus.loading || selected.status == LessonStatus.initial || !selected.hasItems,
+          isLoading: selected.status == LessonStatus.loading,
         );
       },
     );
