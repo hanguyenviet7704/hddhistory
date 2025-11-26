@@ -94,6 +94,12 @@ extension StringDataHelper on String {
       return Colors.transparent;
     }
   }
+
+  Future<void> launchURL() async {
+    final uri = Uri.parse(this);
+    if (!await canLaunchUrl(uri)) return;
+    await launchUrl(uri, mode: LaunchMode.externalApplication);
+  }
 }
 
 extension StringDataParser on String {

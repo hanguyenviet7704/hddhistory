@@ -52,11 +52,11 @@ class SettingPage extends StatelessWidget {
                   return SettingSectionCard(
                     title: context.text.setting.settingSectionHeaderAbout,
                     children: [
-                      if (kDebugMode)
-                        SettingOptionTile(
-                          iconAsset: AppAsset.svg.app.icShieldPlus,
-                          title: context.text.setting.settingAboutSectionTerm,
-                        ),
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icShieldPlus,
+                        title: context.text.setting.settingAboutSectionTerm,
+                        onTap: 'https://meup.training/terms-and-conditions.html'.launchURL,
+                      ),
                       if (!user.anonymous)
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icLogOut,
