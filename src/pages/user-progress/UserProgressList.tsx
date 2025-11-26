@@ -202,7 +202,9 @@ export default function UserProgressList() {
       });
 
       const res = await userProgressService.getList(query);
-      setProgressList(normalizeProgressList(res));
+      const list = normalizeProgressList(res);
+      setProgressList(list);
+      ensureTitles(list);
     } catch (err) {
       console.error("Failed to fetch user progress", err);
       showError("Không tải được kết quả học tập");
@@ -216,10 +218,11 @@ export default function UserProgressList() {
     return data.title ?? data.data?.title ?? null;
   };
 
-  const ensureTitles = async () => {
+  const ensureTitles = async (listOverride?: IUserProgress[]) => {
     const courseIds = new Set<string>();
     const userIds = new Set<string>();
-    progressList.forEach((p) => {
+    const source = listOverride ?? progressList;
+    source.forEach((p) => {
       if (p.courseId) courseIds.add(p.courseId);
       if (p.userId) userIds.add(p.userId);
     });
@@ -230,7 +233,7 @@ export default function UserProgressList() {
     const lessonIds = new Set<string>();
     const keypointIds = new Set<string>();
 
-    progressList.forEach((progress) => {
+    source.forEach((progress) => {
       progress.lessonsResult?.forEach((lesson) => {
         if (lesson.lessonId) lessonIds.add(lesson.lessonId);
         lesson.keypointsResult?.forEach((kp) => {
