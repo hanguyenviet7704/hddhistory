@@ -26,7 +26,7 @@ class _RoleplayRadarChart extends StatelessWidget {
   const _RoleplayRadarChart({required this.points});
 
   final List<KeypointEntity> points;
-  static const int _tickCount = 6;
+  static const int _tickCount = 5;
   static const double _maxChartValue = 100;
 
   @override

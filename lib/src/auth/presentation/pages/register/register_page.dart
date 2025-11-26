@@ -1,13 +1,19 @@
 part of '../../../auth.dart';
 
-class RegisterPage extends StatefulWidget {
+class RegisterPage extends StatelessWidget {
   const RegisterPage({super.key});
 
-  @override
-  State<RegisterPage> createState() => _RegisterPageState();
-}
+  void _onLoginGuest(BuildContext context) {
+    final RoadmapEntity roadmap = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap;
+    if (roadmap.id.isEmpty) {
+      CourseRoute(selectedTabIndex: 0).go(context);
+      return;
+    }
 
-class _RegisterPageState extends State<RegisterPage> {
+    HomeRoute().go(context);
+    context.read<PageCubit>().setCurrentIndex(0);
+  }
+
   @override
   Widget build(BuildContext context) {
     return AuthLayout(
@@ -111,13 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
                           // Guest button
                           GuestLoginButton(
-                            onPressed: () {
-                              // Continue as guest
-                              // Navigate to home
-                              // DNavigator.goNamed(RouteNamed.home);
-                              AppDI.injector.get<LessonCubit>().loadAllLearningItems(isInit: true);
-                              CourseRoute().go(context);
-                            },
+                            onPressed: () => _onLoginGuest(context),
                           ),
                         ],
                       ),

@@ -87,5 +87,11 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
   const RegisterRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const RegisterPage();
+  Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+    ],
+    child: const RegisterPage(),
+  );
 }

@@ -33,6 +33,8 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     this._roleplayCubit,
   ) : super(ProgressState.initial());
 
+  void reset() => emit(ProgressState.initial());
+
   void loadAllUserProgresss({String? userId, String? courseId, String? lessonId}) async {
     if (state.status == ProgressStatus.loading) return;
 
