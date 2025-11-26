@@ -226,7 +226,6 @@ export default function ExerciseForm({
 
   useEffect(() => {
     if (exercise) {
-      setCurrentExercise(exercise);
       // Find max question ID for each section and set nextQuestionId accordingly
       const maxQuestionIdForQuestions = [...exercise.questions].reduce(
         (max, q) => Math.max(max, q.id ?? 0),
@@ -251,7 +250,37 @@ export default function ExerciseForm({
         .filter((q) => q.type === ExerciseType.DRAG_DROP)
         .flatMap((q) => (q as IExerciseDragDrop).answer || [])
         .reduce((max, ans) => Math.max(max, ans.id || 0), 0);
-      setNextAnswerId(maxAnswerId + 1);
+      const startOptionId = maxOptionId + 1;
+      const startAnswerId = maxAnswerId + 1;
+      setNextOptionId(startOptionId);
+      setNextAnswerId(startAnswerId);
+
+      let optionCounter = startOptionId;
+      let answerCounter = startAnswerId;
+
+      const normalizeDragDropIds = (q: any) => {
+        if (q.type !== ExerciseType.DRAG_DROP) return q;
+        const normalizedOptions = (q.options || []).map((opt: any) =>
+          opt && opt.id ? opt : { ...opt, id: optionCounter++ }
+        );
+        const normalizedAnswers = (q.answer || []).map((ans: any) =>
+          ans && ans.id ? ans : { ...ans, id: answerCounter++ }
+        );
+        return { ...q, options: normalizedOptions, answer: normalizedAnswers };
+      };
+
+      const normalizedQuestions = exercise.questions.map(normalizeDragDropIds);
+      const normalizedSubQuestions = exercise.subQuestions.map(
+        normalizeDragDropIds
+      );
+
+      setNextOptionId(optionCounter);
+      setNextAnswerId(answerCounter);
+      setCurrentExercise({
+        ...exercise,
+        questions: normalizedQuestions,
+        subQuestions: normalizedSubQuestions,
+      });
     }
   }, [exercise]); // Remove lang from dependency to prevent reset on language change
 
@@ -1567,35 +1596,31 @@ export default function ExerciseForm({
             newOptions[index] = { value: { [lang]: "" }, isCorrect: false };
           }
         }
-        const [first, ...rest] = lines;
 
-        if (questionType === ExerciseType.DRAG_DROP) {
-          newOptions[index] = {
-            ...newOptions[index],
-            text: updateTranslationValue(
-              newOptions[index].text || {},
-              lang,
-              first
-            ),
-          };
-          rest.forEach((line) => {
-            newOptions.push({ text: { [lang]: line }, id: nextId++ });
-          });
-          setLocalNextOptionId(nextId);
-        } else {
-          newOptions[index] = {
-            ...newOptions[index],
-            value: updateTranslationValue(
-              newOptions[index].value || {},
-              lang,
-              first
-            ),
-          };
-          rest.forEach((line) => {
-            newOptions.push({ value: { [lang]: line }, isCorrect: false });
-          });
-        }
+        lines.forEach((line, offset) => {
+          const targetIndex = index + offset;
+          const existing = newOptions[targetIndex];
+          if (questionType === ExerciseType.DRAG_DROP) {
+            const id = existing?.id ?? nextId++;
+            newOptions[targetIndex] = {
+              ...existing,
+              id,
+              text: updateTranslationValue(existing?.text || {}, lang, line),
+            };
+          } else {
+            newOptions[targetIndex] = {
+              ...existing,
+              value: updateTranslationValue(
+                existing?.value || {},
+                lang,
+                line
+              ),
+              isCorrect: existing?.isCorrect ?? false,
+            };
+          }
+        });
 
+        if (nextId !== localNextOptionId) setLocalNextOptionId(nextId);
         return { ...prev, options: newOptions };
       });
     };
@@ -1619,22 +1644,23 @@ export default function ExerciseForm({
         if (!newAnswer[index]) {
           newAnswer[index] = { correctAnswer: { [lang]: "" }, id: nextId++ };
         }
-        const [first, ...rest] = lines;
-        newAnswer[index] = {
-          ...newAnswer[index],
-          correctAnswer: updateTranslationValue(
-            newAnswer[index].correctAnswer || {},
-            lang,
-            first
-          ),
-        };
-        rest.forEach((line) => {
-          newAnswer.push({
-            correctAnswer: { [lang]: line },
-            id: nextId++,
-          });
+
+        lines.forEach((line, offset) => {
+          const targetIndex = index + offset;
+          const existing = newAnswer[targetIndex];
+          const id = existing?.id ?? nextId++;
+          newAnswer[targetIndex] = {
+            ...existing,
+            id,
+            correctAnswer: updateTranslationValue(
+              existing?.correctAnswer || {},
+              lang,
+              line
+            ),
+          };
         });
-        setLocalNextAnswerId(nextId);
+
+        if (nextId !== localNextAnswerId) setLocalNextAnswerId(nextId);
         return { ...prev, answer: newAnswer };
       });
     };
