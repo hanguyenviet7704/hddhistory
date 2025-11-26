@@ -19,6 +19,7 @@ import os
 import re
 import sys
 import textwrap
+import time
 from collections import defaultdict, OrderedDict
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from dataclasses import dataclass, field

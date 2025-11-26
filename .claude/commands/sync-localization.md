@@ -12,10 +12,12 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
 - `path`: Dart file or folder to scan.
 - Optional: `module` (sheet tab). If omitted, derive from feature folder name; fallback `common`.
 
+**Common-first rule:** Generic/shared UI copy (e.g., “Next”, “Back”, “Yes”, “No”, “Skip”, “Continue”, “Done”, “OK”, “Cancel”) belongs in `assets/i18n/<lang>/common.yaml`. Reuse existing `common` keys before creating anything new in a feature tab.
+
 ## Flow
 1. **Ask upfront**
    - Confirm `path`.
-   - Confirm `module` tab (common, auth, home, exercise, allcourse, courseroadmap, keypoint, lesson, onboarding, roleplay, setting).
+   - Confirm `module` tab (common, auth, home, exercise, allcourse, courseroadmap, keypoint, lesson, onboarding, roleplay, setting). Default to `common` for generic labels/buttons.
    - Ask permission to auto-create keys (default yes).
 
 2. **Sync latest data**
@@ -29,6 +31,7 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
 
 4. **Propose keys**
    - Key style (no module prefix): concise lowerCamelCase that describes the string itself, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name.
+   - Check `assets/i18n/en/common.yaml` for an existing generic string before adding a new key. If it exists, reuse that key and adjust Dart references to point to `common`.
    - If the target YAML still uses prefixed keys, migrate them while you are there: rename keys in all locale YAML files and update Dart references in the scanned `path` to drop the module prefix.
    - Default text: English source string.
    - Other locales: okay to leave empty; tool will prefix `(VI)` / `(ZH)` with default text on push.
@@ -49,6 +52,7 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
    - `tools/<os>/localization/localization.sh pull [--sheet-gids "<gid>"]`
    - `tools/<os>/localization/localization.sh slang` (respects flutter/fvm/puro)
    - Re-scan to confirm no raw strings remain; run `flutter analyze` if time permits.
+   - End with a `pull` (scoped if used) to ensure sheet ↔ local round-trip is clean.
 
 ## Notes
 - First sheet tab is `README` (instructions only); module tabs hold data. GID cache is stored in `.info/app/localization.json` and refreshed by the tools.

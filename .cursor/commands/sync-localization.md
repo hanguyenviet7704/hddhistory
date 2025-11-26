@@ -7,9 +7,11 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 - **path** (required): Dart file or folder to scan.
 - **module/tab** (optional): Sheet tab to write to (defaults to feature folder name, then `common`).
 
+**Common-first rule:** Generic/shared UI copy (e.g., “Next”, “Back”, “Yes”, “No”, “Skip”, “Continue”, “Done”, “OK”, “Cancel”) must live in `assets/i18n/<lang>/common.yaml`. Reuse existing `common` keys before creating anything new in a feature tab.
+
 ## Flow
 1) **Clarify**
-   - Confirm `path` and target `module` tab (common/auth/home/...).
+   - Confirm `path` and target `module` tab (common/auth/home/...). Default to `common` for generic labels/buttons.
    - Ask whether to auto-create keys (default yes).
 
 2) **Sync latest source**
@@ -24,6 +26,7 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 
 4) **Propose keys & values**
    - Key style (no module prefix): concise lowerCamelCase describing the text, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name (module == tab name already).
+   - Check `assets/i18n/en/common.yaml` for an existing generic string before adding a new key; reuse it and point Dart code to `common` when applicable.
    - If the target YAML still has prefixed keys, migrate them while working: rename keys across locale YAML files and update Dart references in the scanned `path` to remove the module prefix.
    - Default text: the English source string.
    - Other locales: leave empty — the tool will prefix `(VI)` / `(ZH)` with default text on push.
@@ -47,6 +50,7 @@ Given a Dart file or folder, find raw user-facing strings, convert them into the
 7) **Verify**
    - Re-scan `path` to ensure no raw strings remain.
    - Optionally run `flutter analyze`.
+   - Finish with a `pull` (matching your gid scope) to confirm sheet/local round-trip is clean.
 
 ## Notes
 - Do **not** edit generated files (`lib/config/l10n/*.g.dart`); rely on slang.
