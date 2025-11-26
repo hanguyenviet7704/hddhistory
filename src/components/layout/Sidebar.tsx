@@ -101,17 +101,16 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         <div
           className={`
           flex items-center justify-center
-          ${
-            collapsed ? "w-10 h-10" : "w-14 h-14"
-          } rounded-lg shadow-md transition-all duration-300
+          ${collapsed ? "w-10 h-8" : "w-24 h-16"}
+          rounded-lg shadow-md transition-all duration-300
         `}
         >
           <img
-            src="https://cdn-icons-png.flaticon.com/512/4712/4712109.png"
+            src="https://cdn.meup.training/onboarding/IMG_5442.jpeg"
             alt="Logo"
             className={`
-              transition-all duration-300 object-contain
-              ${collapsed ? "w-6 h-6" : "w-24 h-auto"}
+              transition-all duration-300
+              w-full h-full max-w-full max-h-full object-fill rounded-xl
             `}
           />
         </div>
