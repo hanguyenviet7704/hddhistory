@@ -6,7 +6,6 @@ import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 //* Single project import
 import 'package:meup/meup.dart';
-import 'package:url_launcher/url_launcher_string.dart';
 
 //* Data Layer - Models, Datasources, Repositories
 
