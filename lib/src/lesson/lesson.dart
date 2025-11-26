@@ -51,7 +51,6 @@ part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
 part 'domain/usecases/send_voice_feedback_stream_usecase.dart';
 part 'domain/usecases/send_voice_feedback_usecase.dart';
-
 //* Parts for generated files
 part 'lesson.freezed.dart';
 part 'lesson.g.dart';
@@ -100,9 +99,6 @@ part 'presentation/widgets/items/common/audio_player_widget.dart';
 part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/close_popup_lesson.dart';
 part 'presentation/widgets/items/common/document_content_widget.dart';
-part 'presentation/widgets/items/common/lesson_completion_header.dart';
-part 'presentation/widgets/items/common/lesson_completion_primary_button.dart';
-part 'presentation/widgets/items/common/lesson_completion_progress_bar.dart';
 part 'presentation/widgets/items/common/document_item.dart';
 part 'presentation/widgets/items/common/document_media_widget.dart';
 part 'presentation/widgets/items/common/document_video_widget.dart';
@@ -111,6 +107,9 @@ part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
 part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/exercise_result_summary.dart';
 part 'presentation/widgets/items/common/lesson_badge.dart';
+part 'presentation/widgets/items/common/lesson_completion_header.dart';
+part 'presentation/widgets/items/common/lesson_completion_primary_button.dart';
+part 'presentation/widgets/items/common/lesson_completion_progress_bar.dart';
 part 'presentation/widgets/items/common/lesson_progress_bar.dart';
 part 'presentation/widgets/items/common/lesson_result_overlay.dart';
 part 'presentation/widgets/items/common/lesson_time_controller.dart';

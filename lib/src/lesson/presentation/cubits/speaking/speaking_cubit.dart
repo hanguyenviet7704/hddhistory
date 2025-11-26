@@ -40,8 +40,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
   }
 
-  void startRecordingSession() {
+  Future<void> startRecordingSession() async {
     if (state.recordingState != SpeakingRecordingState.idle) return;
+
+    final hasPermission = await _ensureMicrophonePermission();
+    if (!hasPermission) return;
 
     final initialDuration = state.question.maxDuration > 0 ? Duration(seconds: state.question.maxDuration) : Duration.zero;
 
@@ -62,6 +65,43 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   void finishRecordingSession(String path) => emit(state.copyWith(recordingState: SpeakingRecordingState.stopped, audioFilePath: path));
   void cancelRecordingSession() => emit(state.copyWith(recordingState: SpeakingRecordingState.idle, audioFilePath: null, recordingDuration: Duration.zero));
   void updateMicrophonePermission(PermissionStatus status) => emit(state.copyWith(microphonePermission: status));
+  Future<bool> _ensureMicrophonePermission() async {
+    var status = await Permission.microphone.status;
+
+    // If already decided (granted or permanently denied), update state and short-circuit
+    if (status.isGranted) {
+      updateMicrophonePermission(status);
+      return true;
+    }
+
+    if (status.isPermanentlyDenied || status.isRestricted) {
+      updateMicrophonePermission(status);
+      setErrorMessage(_permissionMessage(status));
+      return false;
+    }
+
+    // Request runtime permission
+    status = await Permission.microphone.request();
+    updateMicrophonePermission(status);
+
+    if (status.isGranted) {
+      setErrorMessage(null);
+      return true;
+    }
+
+    setErrorMessage(_permissionMessage(status));
+    return false;
+  }
+
+  String _permissionMessage(PermissionStatus status) {
+    if (status.isPermanentlyDenied) {
+      return 'Microphone permission is permanently denied. Please enable it in app settings.';
+    }
+    if (status.isRestricted) {
+      return 'Microphone access is restricted on this device.';
+    }
+    return 'Microphone permission is required to record audio.';
+  }
 
   // Submit answer (recording or text)
   Future<void> submitAnswer() async {

@@ -45,12 +45,17 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
   Future<void> _startRecording() async {
     if (_isRecorderActive) return;
 
-    final hasPermission = await _ensurePermission();
-    if (!hasPermission) {
+    final permissionStatus = await Permission.microphone.status;
+    if (!permissionStatus.isGranted) {
       if (mounted) {
+        _cubit.updateMicrophonePermission(permissionStatus);
         _cubit.cancelRecordingSession();
       }
       return;
+    }
+
+    if (mounted) {
+      _cubit.updateMicrophonePermission(permissionStatus);
     }
 
     final directory = await getApplicationDocumentsDirectory();
@@ -72,43 +77,6 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
       _handleRecordingError('Failed to start recording');
       _cubit.cancelRecordingSession();
     }
-  }
-
-  Future<bool> _ensurePermission() async {
-    var permissionStatus = await Permission.microphone.status;
-    if (mounted) {
-      _cubit.updateMicrophonePermission(permissionStatus);
-    }
-
-    if (!permissionStatus.isGranted) {
-      permissionStatus = await Permission.microphone.request();
-      if (mounted) {
-        _cubit.updateMicrophonePermission(permissionStatus);
-      }
-    }
-
-    if (permissionStatus.isGranted) {
-      return true;
-    }
-
-    final message = () {
-      if (permissionStatus.isPermanentlyDenied) {
-        return 'Microphone permission is permanently denied. Please enable it in app settings.';
-      }
-      if (permissionStatus.isRestricted) {
-        return 'Microphone access is restricted on this device.';
-      }
-      if (permissionStatus.isLimited) {
-        return 'Microphone access is limited. Please grant full access in settings.';
-      }
-      return 'Microphone permission is required to record audio.';
-    }();
-
-    if (mounted) {
-      _cubit.setErrorMessage(message);
-    }
-    EasyLoading.showError(message);
-    return false;
   }
 
   void _startTimer() {
