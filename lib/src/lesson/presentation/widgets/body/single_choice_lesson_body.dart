@@ -103,7 +103,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
             if (!canCheck) return;
             context.read<ChoiceCubit>().checkAnswer();
           },
-          text: 'Check',
+          text: context.text.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

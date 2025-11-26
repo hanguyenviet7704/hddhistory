@@ -165,7 +165,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<CuesPlacementCubit>().checkAnswer() : null,
-          text: 'Check',
+          text: context.text.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

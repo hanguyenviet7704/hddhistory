@@ -99,7 +99,7 @@ class MultipleChoiceLessonBody extends StatelessWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
-          text: 'Check',
+          text: context.text.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

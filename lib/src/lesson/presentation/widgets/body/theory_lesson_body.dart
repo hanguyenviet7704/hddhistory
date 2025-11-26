@@ -42,7 +42,7 @@ class TheoryLessonBody extends StatelessWidget {
       builder: (context, state) {
         return ExerciseContinueButton(
           onPressed: () => context.read<TheoryCubit>().nextDocument(),
-          text: 'Continue',
+          text: context.text.common.kContinue,
           isEnabled: true,
         );
       },

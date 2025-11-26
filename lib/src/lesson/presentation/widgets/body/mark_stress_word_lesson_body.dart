@@ -126,7 +126,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<MarkStressWordCubit>().checkAnswer() : null,
-          text: 'Check',
+          text: context.text.lesson.checkButton,
           isEnabled: canCheck,
         );
       },
