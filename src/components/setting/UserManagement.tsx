@@ -25,7 +25,6 @@ const defaultUserForm: Partial<IUser> = {
   avatar: "",
   role: UserRole.USER,
   status: UserStatus.ACTIVE,
-  anonymous: false,
   provider: "",
   enery: "",
 };
@@ -41,7 +40,6 @@ const SUBMIT_FIELDS: (keyof IUser)[] = [
   "country",
   "avatar",
   "role",
-  "anonymous",
   "enery",
 ];
 
@@ -382,14 +380,14 @@ const UserManagement = () => {
             Chưa có người dùng. Thêm người dùng mới để bắt đầu quản lý.
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-auto relative">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-0 z-20 bg-gray-50 min-w-[120px]">
                     Avatar
                   </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider sticky left-[120px] z-20 bg-gray-50 min-w-[200px]">
                     Name
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -402,9 +400,12 @@ const UserManagement = () => {
                     Role
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Provider
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Anonymous
                   </th>
-                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 z-20 bg-gray-50 min-w-[120px]">
                     Actions
                   </th>
                 </tr>
@@ -414,10 +415,10 @@ const UserManagement = () => {
                   const id = getUserId(user);
                   return (
                     <tr key={id || user.email}>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-white z-10 min-w-[120px]">
                         {renderAvatar(user)}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap sticky left-[120px] bg-white z-10 min-w-[200px]">
                         <div className="text-sm font-medium text-gray-900">
                           {user.name || "-"}
                         </div>
@@ -447,9 +448,12 @@ const UserManagement = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {user.provider || "-"}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {user.anonymous ? "Yes" : "No"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 sticky right-0 bg-white z-10 min-w-[120px]">
                         <button
                           onClick={() => openEditForm(user)}
                           className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"
@@ -496,7 +500,7 @@ const UserManagement = () => {
               {editingUser ? "Chỉnh sửa người dùng" : "Thêm người dùng"}
             </h3>
             <p className="text-sm text-gray-500 mb-4">
-              Cập nhật đầy đủ thông tin hồ sơ, trạng thái, vai trò và cờ ẩn danh.
+              Cập nhật đầy đủ thông tin hồ sơ, trạng thái, vai trò và nhà cung cấp đăng nhập.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -511,7 +515,7 @@ const UserManagement = () => {
                     uploadPayload={{ prefix: "", folder: "users" }}
                   />
                 </div>
-                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Name
@@ -683,24 +687,10 @@ const UserManagement = () => {
                     </select>
                   </div>
                   <div className="flex items-center gap-3">
-                    <input
-                      id="anonymous"
-                      type="checkbox"
-                      checked={Boolean(formData.anonymous)}
-                      onChange={(e) =>
-                        setFormData((prev) => ({
-                          ...prev,
-                          anonymous: e.target.checked,
-                        }))
-                      }
-                      className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    <InfoField
+                      label="Anonymous"
+                      value={String(Boolean(editingUser?.anonymous ?? formData.anonymous ?? false))}
                     />
-                    <label
-                      htmlFor="anonymous"
-                      className="text-sm font-medium text-gray-700"
-                    >
-                      Anonymous
-                    </label>
                   </div>
                 </div>
               </div>

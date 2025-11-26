@@ -627,7 +627,6 @@ export default function RoleplayForm({
 
   useEffect(() => {
     if (roleplay) {
-      setCurrentRoleplay(roleplay);
       // Find max section ID and set nextSectionId accordingly
       const maxSectionId = [...(roleplay.sections || [])].reduce(
         (max, s) => Math.max(max, s.id ?? 0),
@@ -654,7 +653,39 @@ export default function RoleplayForm({
         .filter((c) => c.type === RoleplaySectionType.EXERCISE)
         .flatMap((c) => (c.exercise as IExerciseDragDrop)?.answer || [])
         .reduce((max, ans) => Math.max(max, ans.id || 0), 0);
-      setNextAnswerId(maxAnswerId + 1);
+      const startOptionId = maxOptionId + 1;
+      const startAnswerId = maxAnswerId + 1;
+      setNextOptionId(startOptionId);
+      setNextAnswerId(startAnswerId);
+
+      let optionCounter = startOptionId;
+      let answerCounter = startAnswerId;
+
+      const normalizeExerciseIds = (exerciseData: any) => {
+        if (exerciseData?.type !== ExerciseType.DRAG_DROP) return exerciseData;
+        const options = (exerciseData.options || []).map((opt: any) =>
+          opt && opt.id ? opt : { ...opt, id: optionCounter++ }
+        );
+        const answer = (exerciseData.answer || []).map((ans: any) =>
+          ans && ans.id ? ans : { ...ans, id: answerCounter++ }
+        );
+        return { ...exerciseData, options, answer } as IExerciseDragDrop;
+      };
+
+      const normalizedSections = (roleplay.sections || []).map((section) => ({
+        ...section,
+        contents: (section.contents || []).map((content) => {
+          if (content.type !== RoleplaySectionType.EXERCISE) return content;
+          return {
+            ...content,
+            exercise: normalizeExerciseIds(content.exercise),
+          };
+        }),
+      }));
+
+      setNextOptionId(optionCounter);
+      setNextAnswerId(answerCounter);
+      setCurrentRoleplay({ ...roleplay, sections: normalizedSections });
     } else {
       // Reset form when creating new roleplay
       setCurrentRoleplay({
@@ -3342,34 +3373,30 @@ export default function RoleplayForm({
           }
         }
 
-        const [first, ...rest] = lines;
-        if (currentExercise.type === ExerciseType.DRAG_DROP) {
-          currentOptions[index] = {
-            ...currentOptions[index],
-            text: updateTranslationValue(
-              currentOptions[index].text || {},
-              lang,
-              first
-            ),
-          };
-          rest.forEach((line) => {
-            currentOptions.push({ text: { [lang]: line }, id: nextId++ });
-          });
-        } else {
-          currentOptions[index] = {
-            ...currentOptions[index],
-            value: updateTranslationValue(
-              currentOptions[index].value || {},
-              lang,
-              first
-            ),
-          };
-          rest.forEach((line) => {
-            currentOptions.push({ value: { [lang]: line }, isCorrect: false });
-          });
-        }
+        lines.forEach((line, offset) => {
+          const targetIndex = index + offset;
+          const existing = currentOptions[targetIndex];
+          if (currentExercise.type === ExerciseType.DRAG_DROP) {
+            const id = existing?.id ?? nextId++;
+            currentOptions[targetIndex] = {
+              ...existing,
+              id,
+              text: updateTranslationValue(existing?.text || {}, lang, line),
+            };
+          } else {
+            currentOptions[targetIndex] = {
+              ...existing,
+              value: updateTranslationValue(
+                existing?.value || {},
+                lang,
+                line
+              ),
+              isCorrect: existing?.isCorrect ?? false,
+            };
+          }
+        });
 
-        setLocalNextOptionId(nextId);
+        if (nextId !== localNextOptionId) setLocalNextOptionId(nextId);
         return {
           ...prev,
           exercise: { ...currentExercise, options: currentOptions },
@@ -3404,23 +3431,22 @@ export default function RoleplayForm({
           };
         }
 
-        const [first, ...rest] = lines;
-        currentAnswer[index] = {
-          ...currentAnswer[index],
-          correctAnswer: updateTranslationValue(
-            currentAnswer[index].correctAnswer || {},
-            lang,
-            first
-          ),
-        };
-        rest.forEach((line) => {
-          currentAnswer.push({
-            correctAnswer: { [lang]: line },
-            id: nextId++,
-          });
+        lines.forEach((line, offset) => {
+          const targetIndex = index + offset;
+          const existing = currentAnswer[targetIndex];
+          const id = existing?.id ?? nextId++;
+          currentAnswer[targetIndex] = {
+            ...existing,
+            id,
+            correctAnswer: updateTranslationValue(
+              existing?.correctAnswer || {},
+              lang,
+              line
+            ),
+          };
         });
 
-        setLocalNextAnswerId(nextId);
+        if (nextId !== localNextAnswerId) setLocalNextAnswerId(nextId);
         return {
           ...prev,
           exercise: { ...currentExercise, answer: currentAnswer },
@@ -3446,17 +3472,18 @@ export default function RoleplayForm({
       if (!next[index]) {
         next[index] = { criteria: { [lang]: "" }, maxScore: undefined };
       }
-      const [first, ...rest] = lines;
-      next[index] = {
-        ...next[index],
-        criteria: updateTranslationValue(
-          next[index].criteria || {},
-          lang,
-          first
-        ),
-      };
-      rest.forEach((line) => {
-        next.push({ criteria: { [lang]: line }, maxScore: undefined });
+      lines.forEach((line, offset) => {
+        const targetIndex = index + offset;
+        const existing = next[targetIndex];
+        next[targetIndex] = {
+          ...existing,
+          criteria: updateTranslationValue(
+            (existing as any)?.criteria || {},
+            lang,
+            line
+          ),
+          maxScore: existing?.maxScore,
+        };
       });
       handleExerciseChange("scoringCriteria", next);
     };
