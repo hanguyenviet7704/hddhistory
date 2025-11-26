@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import {
+  ArrowPathIcon,
   PencilIcon,
   PlusIcon,
   TrashIcon,
@@ -61,7 +62,8 @@ const formatLastActionValue = (lastAction?: IUser["lastAction"]) => {
   const timeText = lastAction.time
     ? new Date(lastAction.time).toLocaleString()
     : "";
-  if (lastAction.action && timeText) return `${lastAction.action} @ ${timeText}`;
+  if (lastAction.action && timeText)
+    return `${lastAction.action} @ ${timeText}`;
   if (lastAction.action) return lastAction.action;
   return timeText || "-";
 };
@@ -79,9 +81,7 @@ const formatDevicesValue = (devices?: IUser["devices"]) => {
 
 const InfoField = ({ label, value }: { label: string; value: string }) => (
   <div className="p-3 rounded border border-gray-200 bg-gray-50">
-    <div className="text-xs uppercase text-gray-500 font-semibold">
-      {label}
-    </div>
+    <div className="text-xs uppercase text-gray-500 font-semibold">{label}</div>
     <div className="text-sm text-gray-800 mt-1">{value || "-"}</div>
   </div>
 );
@@ -96,9 +96,9 @@ const UserManagement = () => {
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "">("");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "">("");
-  const [anonymousFilter, setAnonymousFilter] = useState<
-    "" | "true" | "false"
-  >("");
+  const [anonymousFilter, setAnonymousFilter] = useState<"" | "true" | "false">(
+    ""
+  );
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<IUser>>(defaultUserForm);
@@ -109,10 +109,7 @@ const UserManagement = () => {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(
-      () => setDebouncedSearch(searchTerm.trim()),
-      300
-    );
+    const timer = setTimeout(() => setDebouncedSearch(searchTerm.trim()), 300);
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
@@ -226,8 +223,7 @@ const UserManagement = () => {
       SUBMIT_FIELDS.forEach((key) => {
         const value = (formData as any)[key];
         if (value !== undefined) {
-          (payload as any)[key] =
-            key === "anonymous" ? Boolean(value) : value;
+          (payload as any)[key] = key === "anonymous" ? Boolean(value) : value;
         }
       });
 
@@ -306,13 +302,25 @@ const UserManagement = () => {
             Quản lý avatar, thông tin, trạng thái, vai trò và quyền ẩn danh.
           </p>
         </div>
-        <button
-          onClick={openCreateForm}
-          className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          <PlusIcon className="h-5 w-5 mr-2" />
-          Thêm người dùng
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => fetchUsers(page)}
+            className="inline-flex items-center justify-center px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 border border-gray-300 transition-colors"
+            disabled={loading}
+          >
+            <ArrowPathIcon
+              className={`h-5 w-5 mr-2 ${loading ? "animate-spin" : ""}`}
+            />
+            Làm mới
+          </button>
+          <button
+            onClick={openCreateForm}
+            className="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+          >
+            <PlusIcon className="h-5 w-5 mr-2" />
+            Thêm người dùng
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-wrap items-center gap-3">
@@ -342,9 +350,7 @@ const UserManagement = () => {
         <div>
           <select
             value={statusFilter}
-            onChange={(e) =>
-              setStatusFilter(e.target.value as UserStatus | "")
-            }
+            onChange={(e) => setStatusFilter(e.target.value as UserStatus | "")}
             className="px-3 py-2 border border-gray-300 rounded-md bg-white focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm w-[140px]"
           >
             <option value="">status</option>
@@ -500,7 +506,8 @@ const UserManagement = () => {
               {editingUser ? "Chỉnh sửa người dùng" : "Thêm người dùng"}
             </h3>
             <p className="text-sm text-gray-500 mb-4">
-              Cập nhật đầy đủ thông tin hồ sơ, trạng thái, vai trò và nhà cung cấp đăng nhập.
+              Cập nhật đầy đủ thông tin hồ sơ, trạng thái, vai trò và nhà cung
+              cấp đăng nhập.
             </p>
 
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -515,7 +522,7 @@ const UserManagement = () => {
                     uploadPayload={{ prefix: "", folder: "users" }}
                   />
                 </div>
-                  <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Name
@@ -689,17 +696,18 @@ const UserManagement = () => {
                   <div className="flex items-center gap-3">
                     <InfoField
                       label="Anonymous"
-                      value={String(Boolean(editingUser?.anonymous ?? formData.anonymous ?? false))}
+                      value={String(
+                        Boolean(
+                          editingUser?.anonymous ?? formData.anonymous ?? false
+                        )
+                      )}
                     />
                   </div>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <InfoField
-                  label="Provider"
-                  value={formData.provider || "-"}
-                />
+                <InfoField label="Provider" value={formData.provider || "-"} />
                 <InfoField
                   label="Last action"
                   value={formatLastActionValue(formData.lastAction)}
