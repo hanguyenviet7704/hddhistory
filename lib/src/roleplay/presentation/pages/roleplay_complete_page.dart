@@ -19,7 +19,11 @@ class RoleplayCompletePage extends StatelessWidget {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const RoleplayCompleteGraphic(),
+                      Image.asset(
+                        AppAsset.images.app.hexagonDecoration.path,
+                        width: 224.w,
+                        fit: BoxFit.contain,
+                      ),
                       16.verticalSpace,
                       RoleplayCompleteTitle(text: context.text.roleplay.rolePlayComplete),
                     ],

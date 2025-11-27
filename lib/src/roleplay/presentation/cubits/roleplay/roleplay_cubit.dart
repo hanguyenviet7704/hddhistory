@@ -41,7 +41,7 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     final nextIndex = state.currentSectionIndex + 1;
     if (nextIndex >= state.currentLearningItem.sections.length) {
       AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
-      RoleplayFeedbackRoute().go(AppConfig.instance.context!);
+      RoleplayCompleteRoute().go(AppConfig.instance.context!);
       return;
     }
     emit(state.copyWith(currentSectionIndex: nextIndex, isCurrentSectionRevealed: false));
