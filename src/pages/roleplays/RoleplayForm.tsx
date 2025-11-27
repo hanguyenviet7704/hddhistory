@@ -16,7 +16,12 @@ import {
   SectionConversationPosition,
 } from "../../types/enum/learningItem.enum";
 import { KeypointLevel } from "../../utils/enum/course.enum";
-import { PlusCircleIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowDownTrayIcon,
+  ArrowPathIcon,
+  PlusCircleIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
 import { motion, AnimatePresence } from "framer-motion";
 import { DndContext, closestCenter } from "@dnd-kit/core";
@@ -1832,6 +1837,21 @@ export default function RoleplayForm({
                             )}
                           </div>
                           <div className="flex gap-1">
+                            <button
+                              onClick={handleSaveRoleplay}
+                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded flex items-center gap-1 border border-blue-200 bg-blue-50"
+                              title="Save section changes"
+                              disabled={saving}
+                            >
+                              {saving ? (
+                                <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-500" />
+                              ) : (
+                                <ArrowDownTrayIcon className="h-5 w-5" />
+                              )}
+                              <span className="text-sm font-medium">
+                                {saving ? "Saving" : "Save"}
+                              </span>
+                            </button>
                             <button
                               onClick={() =>
                                 requestDeleteSection(
