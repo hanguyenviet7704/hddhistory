@@ -4,8 +4,9 @@ part of '../../roleplay.dart';
 class RoleplayRepository with RestfulRequestHandlerMixin implements IRoleplayRepository {
   final RoleplayApi _api;
   final RoleplayLocalDataSource _localDataSource;
+  final RoleplayFeedbackApi _feedbackApi;
 
-  RoleplayRepository(this._api, this._localDataSource);
+  RoleplayRepository(this._api, this._localDataSource, this._feedbackApi);
 
   @override
   TaskEither<AppException, LearningItemEntity> getLearningItem(String id) {
@@ -21,4 +22,12 @@ class RoleplayRepository with RestfulRequestHandlerMixin implements IRoleplayRep
     );
   }
 
+  @override
+  TaskEither<AppException, RoleplayFeedbackEntity> sendFeedbackRoleplay(Map<String, dynamic> body) {
+    return callApiWithTransform<RoleplayFeedbackModel, RoleplayFeedbackEntity>(
+      apiCall: () => _feedbackApi.sendFeedbackRoleplay(body),
+      transform: (model) => model.toEntity(),
+      defaultValue: RoleplayFeedbackEntity(),
+    );
+  }
 }

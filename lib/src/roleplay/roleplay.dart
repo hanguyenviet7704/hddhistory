@@ -19,10 +19,12 @@ import 'package:retrofit/retrofit.dart';
 //* Data Layer - Models, Datasources, Repositories
 part 'data/datasources/local/roleplay_local_data_source.dart';
 part 'data/datasources/remote/roleplay_api.dart';
+part 'data/datasources/remote/roleplay_feedback_api.dart';
 part 'data/models/conversation_avatar_model.dart';
 part 'data/models/conversation_model.dart';
 part 'data/models/hint_model.dart';
 part 'data/models/leading_text_model.dart';
+part 'data/models/roleplay_feedback_model.dart';
 part 'data/models/section_content_model.dart';
 part 'data/models/section_model.dart';
 part 'data/repositories/roleplay_repository.dart';
@@ -31,10 +33,12 @@ part 'domain/entities/conversation_avatar_entity.dart';
 part 'domain/entities/conversation_entity.dart';
 part 'domain/entities/hint_entity.dart';
 part 'domain/entities/leading_text_entity.dart';
+part 'domain/entities/roleplay_feedback_entity.dart';
 part 'domain/entities/section_content_entity.dart';
 part 'domain/entities/section_entity.dart';
 part 'domain/repositories/i_roleplay_repository.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
+part 'domain/usecases/send_feedback_roleplay_usecase.dart';
 //* Presentation Layer - Cubits
 part 'presentation/cubits/roleplay/roleplay_cubit.dart';
 part 'presentation/cubits/roleplay/roleplay_state.dart';

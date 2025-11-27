@@ -3,9 +3,11 @@ part of '../../../roleplay.dart';
 @lazySingleton
 class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<RoleplayState> {
   final GetRoleplayLearningItemUseCase _getLearningItemUseCase;
+  final SendFeedbackRoleplayUseCase _sendFeedbackRoleplayUseCase;
 
   RoleplayCubit(
     this._getLearningItemUseCase,
+    this._sendFeedbackRoleplayUseCase,
   ) : super(RoleplayState.initial());
 
   LessonEntity lesson = LessonEntity();
@@ -54,5 +56,18 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
   void setCurrentSectionRevealed(bool isRevealed) {
     if (state.isCurrentSectionRevealed == isRevealed) return;
     emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
+  }
+
+  void sendFeedback(Map<String, dynamic> body) async {
+    await runUseCase<RoleplayFeedbackEntity>(
+      usecase: () => _sendFeedbackRoleplayUseCase(body),
+      buildLoadingState: () => state.copyWith(status: RoleplayStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: RoleplayStatus.failure, errorMessage: error));
+      },
+      onSuccess: (feedback) {
+        emit(state.copyWith(status: RoleplayStatus.success, feedback: feedback));
+      },
+    );
   }
 }
