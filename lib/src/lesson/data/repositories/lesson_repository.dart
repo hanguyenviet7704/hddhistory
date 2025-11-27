@@ -76,4 +76,13 @@ class LessonRepository with RestfulRequestHandlerMixin implements ILessonReposit
       },
     );
   }
+
+  @override
+  TaskEither<AppException, VoiceFeedbackEntity> sendScoreRecord(ScoreRecordRequest request) {
+    return callApiWithTransform<VoiceFeedbackModel, VoiceFeedbackEntity>(
+      apiCall: () async => await _voiceApi.sendScoreRecord(request.toJson()),
+      transform: (model) => model.toEntity(),
+      defaultValue: VoiceFeedbackEntity(),
+    );
+  }
 }

@@ -49,6 +49,7 @@ part 'domain/entities/voice_feedback_entity.dart';
 part 'domain/repositories/i_lesson_repository.dart';
 part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
+part 'domain/usecases/send_score_record_usecase.dart';
 part 'domain/usecases/send_voice_feedback_stream_usecase.dart';
 part 'domain/usecases/send_voice_feedback_usecase.dart';
 //* Parts for generated files
