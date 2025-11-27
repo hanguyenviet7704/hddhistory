@@ -4,10 +4,10 @@ part of '../../lesson.dart';
 class LessonRepository with RestfulRequestHandlerMixin implements ILessonRepository {
   final LessonApi _api;
   final LessonVoiceApi _voiceApi;
-  final LessonVoiceStreamApi _voiceStreamApi;
+  final LessonVoiceAIApi _voiceStreamAIApi;
   final LessonLocalDataSource _localDataSource;
 
-  LessonRepository(this._api, this._voiceApi, this._voiceStreamApi, this._localDataSource);
+  LessonRepository(this._api, this._voiceApi, this._voiceStreamAIApi, this._localDataSource);
 
   @override
   TaskEither<AppException, LearningItemEntity> getLearningItem(String id) {
@@ -63,7 +63,7 @@ class LessonRepository with RestfulRequestHandlerMixin implements ILessonReposit
     return TaskEither.tryCatch(
       () async {
         try {
-          return await _voiceStreamApi.sendVoiceFeedbackStream(request.toJson());
+          return await _voiceStreamAIApi.sendVoiceFeedbackStream(request.toJson());
         } catch (e) {
           rethrow;
         }
@@ -79,10 +79,8 @@ class LessonRepository with RestfulRequestHandlerMixin implements ILessonReposit
 
   @override
   TaskEither<AppException, VoiceScoreEntity> sendScoreRecord(Map<String, dynamic> params) {
-    return callApiWithTransform<VoiceScoreModel, VoiceScoreEntity>(
-      apiCall: () async => await _voiceApi.sendScoreRecord(params),
-      transform: (model) => model.toEntity(),
-      defaultValue: VoiceScoreEntity(),
-    );
+    return callApiCustom<VoiceScoreModel>(
+      apiCall: () async => await _voiceStreamAIApi.sendScoreRecord(params),
+    ).map((model) => model.toEntity());
   }
 }

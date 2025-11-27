@@ -7,10 +7,10 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocSelector<RoleplayCubit, RoleplayState, RoleplayFeedbackEntity>(
       selector: (state) => state.feedback,
-      builder: (context, points) {
-        final strengths = points.strongestAreas.split('\n').map((e) => e.trim()).toList();
-        final weaknesses = points.whereToImproveNext.split('\n').map((e) => e.trim()).toList();
-        if (strengths.isEmpty && weaknesses.isEmpty) return const SizedBox.shrink();
+      builder: (context, feedback) {
+        final strengths = feedback.strongestAreas.split('\n');
+        final weaknesses = feedback.whereToImproveNext.split('\n');
+        if (strengths.isEmpty || weaknesses.isEmpty) return const SizedBox.shrink();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -96,24 +96,26 @@ class _RoleplayFeedbackSummaryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 6.w,
           height: 6.w,
+          margin: EdgeInsets.only(top: 10.h),
           decoration: BoxDecoration(
             color: AppCustomColor.textBrand.op(0.16),
-            borderRadius: BorderRadius.circular(30.r),
+            shape: BoxShape.circle,
           ),
         ),
         8.horizontalSpace,
         Expanded(
           child: AppText(
-            label.isNotEmpty ? label : context.text.roleplay.rolePlayResultSkillset,
+            label.replaceAll('- ', ''),
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
               height: 1.7,
             ),
-            maxLines: 2,
+            maxLines: 10,
           ),
         ),
       ],

@@ -24,10 +24,8 @@ class RoleplayRepository with RestfulRequestHandlerMixin implements IRoleplayRep
 
   @override
   TaskEither<AppException, RoleplayFeedbackEntity> sendFeedbackRoleplay(Map<String, dynamic> body) {
-    return callApiWithTransform<RoleplayFeedbackModel, RoleplayFeedbackEntity>(
+    return callApiCustom<RoleplayFeedbackModel>(
       apiCall: () => _feedbackApi.sendFeedbackRoleplay(body),
-      transform: (model) => model.toEntity(),
-      defaultValue: RoleplayFeedbackEntity(),
-    );
+    ).map((model) => model.toEntity());
   }
 }

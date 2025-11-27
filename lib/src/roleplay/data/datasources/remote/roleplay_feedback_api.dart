@@ -1,11 +1,20 @@
 part of '../../../roleplay.dart';
 
 @lazySingleton
-@RestApi()
-abstract class RoleplayFeedbackApi {
-  @factoryMethod
-  factory RoleplayFeedbackApi(@Named(DIKey.aiDio) Dio dio) = _RoleplayFeedbackApi;
+class RoleplayFeedbackApi {
+  final Dio _dio;
 
-  @POST(AppEndpoint.feedbackRoleplay)
-  Future<BaseResponse<RoleplayFeedbackModel>> sendFeedbackRoleplay(@Body() Map<String, dynamic> body);
+  RoleplayFeedbackApi(@Named(DIKey.aiDio) this._dio);
+
+  Future<RoleplayFeedbackModel> sendFeedbackRoleplay(Map<String, dynamic> body) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      AppEndpoint.feedbackRoleplay,
+      data: body,
+      options: Options(
+        headers: const {"Content-Type": "application/json"},
+        responseType: ResponseType.json,
+      ),
+    );
+    return RoleplayFeedbackModel.fromJson(response.data ?? {});
+  }
 }
