@@ -3,11 +3,13 @@ part of '../../../lesson.dart';
 @lazySingleton
 class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<SpeakingState> {
   final SendVoiceFeedbackStreamUseCase _sendVoiceFeedbackStreamUseCase;
+  final SendScoreRecordUseCase _sendScoreRecordUseCase;
   final UploadCubit _uploadCubit;
   final LocaleCubit _localeCubit;
 
   SpeakingCubit(
     this._sendVoiceFeedbackStreamUseCase,
+    this._sendScoreRecordUseCase,
     this._uploadCubit,
     this._localeCubit,
   ) : super(SpeakingState.initial());
@@ -16,9 +18,13 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   Stream<Uint8List> get voiceFeedbackStream => _voiceFeedbackStream;
   StreamSubscription<String>? _streamSubscription;
   String _feedbackStream = '';
+  double _questionScore = 0;
 
   // Reset to initial state
-  void reset() => emit(SpeakingState.initial());
+  void reset() {
+    emit(SpeakingState.initial());
+    _questionScore = 0;
+  }
   void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
   void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
 
@@ -114,7 +120,8 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
     if (state.textInput.isEmpty) return;
     emit(state.copyWith(status: SpeakingStatus.success));
-    sendVoiceFeedback();
+    getVoiceFeedback();
+    getScoreRecord();
     emit(state.copyWith(status: SpeakingStatus.loading));
   }
 
@@ -128,7 +135,8 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       ),
       onSuccess: (result) {
         emit(state.copyWith(status: SpeakingStatus.success));
-        sendVoiceFeedback(url: result.url);
+        getVoiceFeedback(url: result.url);
+        getScoreRecord();
       },
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
@@ -136,7 +144,42 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
   }
 
-  void sendVoiceFeedback({String? url}) async {
+  void getScoreRecord() async {
+    final criteria = <String, int>{};
+    for (final scoringCriteria in state.question.scoringCriteria) {
+      criteria[scoringCriteria.criteria.text] = scoringCriteria.maxScore;
+    }
+
+    final theory = <String, String>{};
+    final keypoint = state.question.keypoint;
+    if (keypoint.title.text.isNotEmpty) {
+      theory[keypoint.title.text] = keypoint.description.text;
+    }
+
+    // final userAnswer = state.inputMode == SpeakingInputMode.recording ? state.audioFilePath ?? '' : state.textInput;
+    final userAnswer = state.inputMode == SpeakingInputMode.recording ? 'audio' : state.textInput;
+
+    final body = <String, dynamic>{
+      'question': state.question.speechBubble.text,
+      'criteria': criteria,
+      'theory': theory,
+      'user_answer': userAnswer,
+    };
+
+    await runUseCase<VoiceScoreEntity>(
+      usecase: () => _sendScoreRecordUseCase(body),
+      buildLoadingState: () => state.copyWith(status: SpeakingStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
+      },
+      onSuccess: (result) {
+        emit(state.copyWith(status: SpeakingStatus.success));
+        _questionScore = result.score;
+      },
+    );
+  }
+
+  void getVoiceFeedback({String? url}) async {
     await _streamSubscription?.cancel();
     _feedbackStream = '';
     emit(state.copyWith(goodPoints: const [], improvementPoints: const []));
@@ -257,9 +300,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   // Toggle explanation visibility
   void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
 
-  int pointCalculation() {
-    return 100;
-  }
+  int pointCalculation() => _questionScore.toInt();
 
   @override
   Future<void> close() async {

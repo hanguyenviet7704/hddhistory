@@ -25,24 +25,11 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     AppDI.injector.get<LessonCubit>().setLearningItemFromRoleplay(learningItem);
   }
 
-  void loadLearningItem(String id, {BaseMultiLanguage? estimateCompleTime}) async {
-    await runUseCase<LearningItemEntity>(
-      usecase: () => _getLearningItemUseCase(id),
-      buildLoadingState: () => state.copyWith(status: RoleplayStatus.loading, isCurrentSectionRevealed: false),
-      onFailure: (error) {
-        emit(state.copyWith(status: RoleplayStatus.failure, errorMessage: error, isCurrentSectionRevealed: false));
-      },
-      onSuccess: (item) {
-        LearningItemEntity newItem = item.copyWith(estimateCompleTime: estimateCompleTime ?? item.estimateCompleTime);
-        emit(state.copyWith(status: RoleplayStatus.success, currentLearningItem: newItem, isCurrentSectionRevealed: false));
-      },
-    );
-  }
-
   void goToNextSection() {
     final nextIndex = state.currentSectionIndex + 1;
     if (nextIndex >= state.currentLearningItem.sections.length) {
       AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
+      _sendFeedback();
       RoleplayCompleteRoute().go(AppConfig.instance.context!);
       return;
     }
@@ -58,7 +45,39 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
   }
 
-  void sendFeedback(Map<String, dynamic> body) async {
+  void loadLearningItem(String id, {BaseMultiLanguage? estimateCompleTime}) async {
+    await runUseCase<LearningItemEntity>(
+      usecase: () => _getLearningItemUseCase(id),
+      buildLoadingState: () => state.copyWith(status: RoleplayStatus.loading, isCurrentSectionRevealed: false),
+      onFailure: (error) {
+        emit(state.copyWith(status: RoleplayStatus.failure, errorMessage: error, isCurrentSectionRevealed: false));
+      },
+      onSuccess: (item) {
+        LearningItemEntity newItem = item.copyWith(estimateCompleTime: estimateCompleTime ?? item.estimateCompleTime);
+        emit(state.copyWith(status: RoleplayStatus.success, currentLearningItem: newItem, isCurrentSectionRevealed: false));
+      },
+    );
+  }
+
+  void _sendFeedback() async {
+    final points = AppDI.injector.get<RoleplayPointCubit>().state.points;
+    final languageCode = AppDI.injector.get<LocaleCubit>().state.languageCode;
+
+    final theory = <String, String>{};
+    final keypointScore = <String, int>{};
+
+    for (final keypoint in points) {
+      final title = keypoint.title.text;
+      theory[title] = keypoint.description.text;
+      keypointScore[title] = keypoint.point;
+    }
+
+    final body = <String, dynamic>{
+      'theory': theory,
+      'keypoint_score': keypointScore,
+      'language_feedback': languageCode,
+    };
+
     await runUseCase<RoleplayFeedbackEntity>(
       usecase: () => _sendFeedbackRoleplayUseCase(body),
       buildLoadingState: () => state.copyWith(status: RoleplayStatus.loading),

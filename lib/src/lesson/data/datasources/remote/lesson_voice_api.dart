@@ -10,7 +10,7 @@ abstract class LessonVoiceApi {
   Future<BaseResponse<VoiceFeedbackModel>> sendVoiceFeedback(@Body() Map<String, dynamic> body);
 
   @POST(AppEndpoint.scoreRecord)
-  Future<BaseResponse<VoiceFeedbackModel>> sendScoreRecord(@Body() Map<String, dynamic> body);
+  Future<BaseResponse<VoiceScoreModel>> sendScoreRecord(@Body() Map<String, dynamic> body);
 }
 
 @lazySingleton

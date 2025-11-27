@@ -5,16 +5,12 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoleplayPointCubit, RoleplayPointState, List<KeypointEntity>>(
-      selector: (state) => state.points,
+    return BlocSelector<RoleplayCubit, RoleplayState, RoleplayFeedbackEntity>(
+      selector: (state) => state.feedback,
       builder: (context, points) {
-        if (points.isEmpty) return const SizedBox.shrink();
-
-        final List<KeypointEntity> sorted = List<KeypointEntity>.from(points)..sort((a, b) => b.point.compareTo(a.point));
-        final strengths = sorted.take(3).toList();
-        final usedIds = strengths.map((point) => point.id).toSet();
-        final weaknesses = sorted.reversed.where((point) => !usedIds.contains(point.id)).take(3).toList();
-
+        final strengths = points.strongestAreas.split('\n').map((e) => e.trim()).toList();
+        final weaknesses = points.whereToImproveNext.split('\n').map((e) => e.trim()).toList();
+        if (strengths.isEmpty && weaknesses.isEmpty) return const SizedBox.shrink();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -32,6 +28,7 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
               title: context.text.roleplay.rolePlayResultFeedbackWeakness,
               items: weaknesses,
             ),
+            32.verticalSpace,
           ],
         );
       },
@@ -41,7 +38,7 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
 
 class _RoleplayFeedbackSummaryCard extends StatelessWidget {
   final String title;
-  final List<KeypointEntity> items;
+  final List<String> items;
 
   const _RoleplayFeedbackSummaryCard({required this.title, required this.items});
 
@@ -82,7 +79,7 @@ class _RoleplayFeedbackSummaryCard extends StatelessWidget {
             for (final item in items)
               Padding(
                 padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8.h),
-                child: _RoleplayFeedbackSummaryRow(label: item.title.text),
+                child: _RoleplayFeedbackSummaryRow(label: item),
               ),
           ],
         ],
