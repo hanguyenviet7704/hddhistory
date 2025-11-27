@@ -9,6 +9,7 @@ class SpeakingLessonBody extends StatelessWidget {
   });
 
   void _showResultOverlay(BuildContext context, ResultType type) {
+    context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
       builder: (_) => BlocProvider.value(
@@ -39,13 +40,6 @@ class SpeakingLessonBody extends StatelessWidget {
           onAnswerChecked(true);
           _showResultOverlay(context, ResultType.correct);
           // AppDI.injector.get<ExerciseCubit>().nextQuestion();
-        }
-
-        // Handle submission failure
-        if (state.status == SpeakingStatus.failure && state.errorMessage != null) {
-          // Show error message using EasyLoading or SnackBar
-          EasyLoading.showError(state.errorMessage!);
-          _showResultOverlay(context, ResultType.incorrect);
         }
       },
       child: BlocBuilder<SpeakingCubit, SpeakingState>(

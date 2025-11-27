@@ -38,7 +38,7 @@ class _TextInputAreaState extends State<TextInputArea> {
         color: Colors.white,
         border: Border.all(
           color: const Color(0xFFE3E8EF),
-          width: 2,
+          width: 2, 
         ),
         borderRadius: BorderRadius.circular(16.r),
       ),
@@ -92,6 +92,7 @@ class _TextInputAreaState extends State<TextInputArea> {
                     onTap: () {
                       if (currentChars <= 0) return;
                       context.read<SpeakingCubit>().submitAnswer();
+                      FocusScope.of(context).unfocus();
                     },
                     child: Container(
                       width: 32.w,

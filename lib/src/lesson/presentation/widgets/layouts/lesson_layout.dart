@@ -15,44 +15,46 @@ class LessonLayout extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: Column(
-                children: [
-                  BlocSelector<LessonCubit, LessonState, double>(
-                    selector: (state) => state.progress,
-                    builder: (context, progress) {
-                      return LessonProgressBar();
-                    },
-                  ),
-                  Expanded(
-                    child: SingleChildScrollView(
-                      child: Column(
-                        children: [
-                          12.verticalSpace,
-                          LessonBadge(),
-                          ChatInformationWidget(),
-                          body,
-                          80.verticalSpace,
-                        ],
+        child: Unfocused(
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: Column(
+                  children: [
+                    BlocSelector<LessonCubit, LessonState, double>(
+                      selector: (state) => state.progress,
+                      builder: (context, progress) {
+                        return LessonProgressBar();
+                      },
+                    ),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        child: Column(
+                          children: [
+                            12.verticalSpace,
+                            LessonBadge(),
+                            ChatInformationWidget(),
+                            body,
+                            80.verticalSpace,
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                  if (bottom != null) bottom!,
-                ],
-              ),
-            ),
-            Positioned.fill(
-              child: IgnorePointer(
-                ignoring: !isLoading,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child: isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
+                    if (bottom != null) bottom!,
+                  ],
                 ),
               ),
-            ),
-          ],
+              Positioned.fill(
+                child: IgnorePointer(
+                  ignoring: !isLoading,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

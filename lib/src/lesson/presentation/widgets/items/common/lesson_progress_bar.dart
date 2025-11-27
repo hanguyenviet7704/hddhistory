@@ -5,22 +5,29 @@ class LessonProgressBar extends StatelessWidget {
     super.key,
   });
 
+  void _onCloseTap(BuildContext context) {
+    bool isShowResultOverlay = AppDI.injector.get<LessonCubit>().isShowResultOverlay;
+    if (isShowResultOverlay) return;
+    
+    ClosePopupLesson.show(
+      context,
+      onQuit: () {
+        context.back();
+        context.back();
+      },
+      onKeepLearning: () {
+        context.back();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         20.horizontalSpace,
         InkWell(
-          onTap: () => ClosePopupLesson.show(
-            context,
-            onQuit: () {
-              context.back();
-              context.back();
-            },
-            onKeepLearning: () {
-              context.back();
-            },
-          ),
+          onTap: () => _onCloseTap(context),
           child: Icon(
             Icons.close_rounded,
             color: const Color(0xFF0D121C), // Brand/Brand/Primary/300
@@ -53,7 +60,7 @@ class LessonProgressBar extends StatelessWidget {
             if (learningItemType != LearningItemType.roleplay) {
               return const SizedBox.shrink();
             }
-            
+
             return Row(
               children: [
                 20.horizontalSpace,

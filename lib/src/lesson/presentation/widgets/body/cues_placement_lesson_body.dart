@@ -9,6 +9,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
   });
 
   void _showResultOverlay(BuildContext context, ResultType type) {
+    context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
       builder: (_) => BlocProvider.value(

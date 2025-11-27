@@ -51,31 +51,21 @@ class DeviceInfoService implements IDeviceInfoService {
 
   @override
   Future<String> get deviceToken async {
-    // String deviceIdFromLocalStore = await LocalStoreService.instance.getString(key: LocalStoreKey.deviceTokenUID);
-    String deviceIdFromLocalStore = '';
-    if (deviceIdFromLocalStore.isNotEmpty) {
-      return deviceIdFromLocalStore;
-    }
-
     String deviceId = '';
     try {
       if (Platform.isAndroid) {
         final AndroidDeviceInfo androidInfo = await _deviceInfoPlugin.androidInfo;
-        deviceId = androidInfo.id; // This is a unique ID on Android
+        deviceId = androidInfo.id;
       } else if (Platform.isIOS) {
         final IosDeviceInfo iosInfo = await _deviceInfoPlugin.iosInfo;
-        deviceId = iosInfo.identifierForVendor ?? ''; // Unique ID on iOS
+        deviceId = iosInfo.identifierForVendor ?? '';
       }
     } catch (e) {
       LogDev.warning('Error getting device info: $e');
     }
 
-    // If we couldn't get a device ID, generate a UUID
     if (deviceId.isEmpty) {
-      deviceId = const Uuid().v8();
-      // await LocalStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: deviceId);
-      // You might want to store this generated UUID persistently
-      // so it remains consistent across app launches
+      deviceId = const Uuid().v4();
     }
 
     return deviceId;

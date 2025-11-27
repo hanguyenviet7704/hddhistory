@@ -97,4 +97,6 @@ mixin AppEndpoint {
   //* AI Services API
   static const String voiceFeedback = '/feedback';
   static const String voiceFeedbackStream = '/feedback-stream';
+  static const String scoreRecord = '/score-record';
+  static const String feedbackRoleplay = '/feedback-roleplay';
 }
