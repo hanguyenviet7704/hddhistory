@@ -28,9 +28,7 @@ import { useNotification } from "../../utils/hooks/useNotification";
 const StatusBadge: React.FC<{ passed?: boolean }> = ({ passed }) => (
   <span
     className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${
-      passed
-        ? "bg-green-100 text-green-700"
-        : "bg-amber-100 text-amber-700"
+      passed ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"
     }`}
   >
     {passed ? (
@@ -101,10 +99,15 @@ export default function UserProgressList() {
 
   const [progressList, setProgressList] = useState<IUserProgress[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(false);
   const [removing, setRemoving] = useState<string | null>(null);
   const [courseTitles, setCourseTitles] = useState<Record<string, string>>({});
   const [lessonTitles, setLessonTitles] = useState<Record<string, string>>({});
-  const [keypointTitles, setKeypointTitles] = useState<Record<string, string>>({});
+  const [keypointTitles, setKeypointTitles] = useState<Record<string, string>>(
+    {}
+  );
   const [userNames, setUserNames] = useState<Record<string, string>>({});
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
@@ -173,6 +176,35 @@ export default function UserProgressList() {
     return data;
   };
 
+  const resolveHasMore = (
+    payload: any,
+    fetchedLength: number,
+    pageNumber: number,
+    take: number
+  ) => {
+    const data = payload?.data ?? payload ?? {};
+    const pagination = data?.pagination ?? {};
+
+    const totalPages =
+      data?.totalPages ?? pagination?.totalPages ?? pagination?.total;
+    const currentPage =
+      data?.currentPage ?? data?.page ?? pagination?.page ?? pageNumber;
+    const totalItems =
+      data?.total ?? pagination?.totalItems ?? data?.data?.total;
+    const itemsPerPage =
+      data?.itemsPerPage ?? data?.take ?? pagination?.take ?? take;
+
+    if (totalPages && currentPage) {
+      return Number(currentPage) < Number(totalPages);
+    }
+
+    if (totalItems && itemsPerPage) {
+      return Number(currentPage) * Number(itemsPerPage) < Number(totalItems);
+    }
+
+    return fetchedLength >= itemsPerPage;
+  };
+
   const fetchCourses = async (query = "") => {
     try {
       const res = await courseService.getList({ search: query, isAll: true });
@@ -196,30 +228,51 @@ export default function UserProgressList() {
     }
   };
 
-  const fetchProgress = async () => {
+  const fetchProgress = async (pageNumber = 1, append = false) => {
     const userId = getUserId(selectedUser) || undefined;
     if (!selectedCourse?._id) {
       setProgressList([]);
+      setHasMore(false);
+      setPage(1);
       return;
     }
 
-    setLoading(true);
+    const isAppend = append && pageNumber > 1;
+    if (isAppend) {
+      setLoadingMore(true);
+    } else {
+      setLoading(true);
+      setHasMore(false);
+    }
+
     try {
       const query = new UserProgressListQuery({
         courseId: selectedCourse._id,
         grade: GradeResultType.COURSE,
         userId,
+        page: pageNumber,
+        take: 12,
       });
 
       const res = await userProgressService.getList(query);
       const list = normalizeProgressList(res);
-      setProgressList(list);
-      ensureTitles(list);
+      setProgressList((prev) => {
+        const merged = isAppend ? [...prev, ...list] : list;
+        ensureTitles(merged);
+        return merged;
+      });
+
+      setHasMore(resolveHasMore(res, list.length, pageNumber, 12));
+      setPage(pageNumber);
     } catch (err) {
       console.error("Failed to fetch user progress", err);
       showError("Không tải được kết quả học tập");
     } finally {
-      setLoading(false);
+      if (isAppend) {
+        setLoadingMore(false);
+      } else {
+        setLoading(false);
+      }
     }
   };
 
@@ -277,32 +330,35 @@ export default function UserProgressList() {
     });
 
     try {
-      const [coursesRes, lessonsRes, keypointsRes, usersRes] = await Promise.all([
-        Promise.all(
-          missingCourseIds.map(async (id) => {
-            const res = await courseService.getById(id);
-            return { id, title: extractTitle(res) };
-          })
-        ),
-        Promise.all(
-          missingLessonIds.map(async (id) => {
-            const res = await lessonService.getById(id);
-            return { id, title: extractTitle(res) };
-          })
-        ),
-        Promise.all(
-          missingKeypointIds.map(async (id) => {
-            const res = await keypointService.getById(id);
-            return { id, title: extractTitle(res) };
-          })
-        ),
-        Promise.all(
-          missingUserIds.map(async (id) => {
-            const res = await userService.getById(id);
-            return { id, user: normalizeUserDetail(res) };
-          })
-        ),
-      ]);
+      const [coursesRes, lessonsRes, keypointsRes, usersRes] =
+        await Promise.all([
+          Promise.all(
+            missingCourseIds.map(async (id) => {
+              const res = await courseService.getById(id);
+              return { id, title: extractTitle(res) };
+            })
+          ),
+          Promise.all(
+            missingLessonIds.map(async (id) => {
+              const res = await lessonService.getById(id);
+              return { id, title: extractTitle(res) };
+            })
+          ),
+          Promise.all(
+            missingKeypointIds.map(async (id) => {
+              const res = await keypointService.getById(id);
+              return { id, title: extractTitle(res) };
+            })
+          ),
+          Promise.all(
+            missingUserIds.map(async (id) => {
+              const res = await userService.getById(id);
+              console.log(111, res);
+
+              return { id, user: normalizeUserDetail(res) };
+            })
+          ),
+        ]);
 
       const courseUpdate: Record<string, string> = {};
       coursesRes.forEach(({ id, title }) => {
@@ -334,7 +390,10 @@ export default function UserProgressList() {
         setLessonTitles((prev) => ({ ...prev, ...lessonUpdate }));
       if (Object.keys(keypointUpdate).length)
         setKeypointTitles((prev) => ({ ...prev, ...keypointUpdate }));
-      if (Object.keys(userUpdate).length || Object.keys(preloadUserNames).length)
+      if (
+        Object.keys(userUpdate).length ||
+        Object.keys(preloadUserNames).length
+      )
         setUserNames((prev) => ({
           ...prev,
           ...preloadUserNames,
@@ -544,7 +603,8 @@ export default function UserProgressList() {
           sum +
           (lesson.keypointsResult ?? []).reduce(
             (kpSum, kp) =>
-              kpSum + (kp.exercisesResult ?? []).filter((ex) => ex.passed).length,
+              kpSum +
+              (kp.exercisesResult ?? []).filter((ex) => ex.passed).length,
             0
           ),
         0
@@ -637,7 +697,9 @@ export default function UserProgressList() {
                   <div className="relative">
                     <Combobox.Input
                       className="w-full rounded-lg border-gray-200 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 px-3 py-2"
-                      displayValue={(user: Partial<IUser>) => getUserLabel(user)}
+                      displayValue={(user: Partial<IUser>) =>
+                        getUserLabel(user)
+                      }
                       placeholder="Tìm người dùng..."
                       onChange={(event) => setUserQuery(event.target.value)}
                     />
@@ -662,7 +724,7 @@ export default function UserProgressList() {
                 </Combobox>
               </div>
               <button
-                onClick={fetchProgress}
+                onClick={() => fetchProgress()}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition"
                 disabled={loading || !selectedCourse}
               >
@@ -763,10 +825,13 @@ export default function UserProgressList() {
                                 Lesson
                               </p>
                               <h4 className="text-lg font-semibold text-slate-900">
-                                {lessonTitles[lesson.lessonId] || lesson.lessonId}
+                                {lessonTitles[lesson.lessonId] ||
+                                  lesson.lessonId}
                               </h4>
                               <div className="flex items-center gap-3 text-sm text-slate-600 mt-1">
-                                <span>Avg: {formatScore(lesson.averageScore)}</span>
+                                <span>
+                                  Avg: {formatScore(lesson.averageScore)}
+                                </span>
                                 <StatusBadge passed={lesson.passed} />
                                 {lesson.submittedAt && (
                                   <span className="text-xs text-slate-500">
@@ -816,7 +881,9 @@ export default function UserProgressList() {
                                         kp.keypointId}
                                     </h5>
                                     <div className="flex items-center gap-3 text-sm text-slate-600 mt-1">
-                                      <span>Avg: {formatScore(kp.averageScore)}</span>
+                                      <span>
+                                        Avg: {formatScore(kp.averageScore)}
+                                      </span>
                                       <StatusBadge passed={kp.passed} />
                                       {kp.submittedAt && (
                                         <span className="text-xs text-slate-500">
@@ -870,14 +937,17 @@ export default function UserProgressList() {
                                             {ex.exerciseId}
                                           </p>
                                           <div className="text-xs text-slate-600 mt-1 space-y-0.5">
-                                            <p>Score: {formatScore(ex.score)}</p>
+                                            <p>
+                                              Score: {formatScore(ex.score)}
+                                            </p>
                                             <p>
                                               Đúng/Sai: {ex.numberOfCorrect}/
                                               {ex.numberOfIncorrect}
                                             </p>
                                             {ex.submittedAt && (
                                               <p className="text-slate-500">
-                                                Nộp: {formatDate(ex.submittedAt)}
+                                                Nộp:{" "}
+                                                {formatDate(ex.submittedAt)}
                                               </p>
                                             )}
                                           </div>
@@ -927,6 +997,24 @@ export default function UserProgressList() {
                   </div>
                 );
               })}
+              {(hasMore || loadingMore) && (
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => fetchProgress(page + 1, true)}
+                    disabled={loadingMore}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-indigo-200 text-indigo-700 hover:bg-indigo-50 transition disabled:opacity-60"
+                  >
+                    {loadingMore ? (
+                      <>
+                        <ArrowPathIcon className="h-5 w-5 animate-spin" />
+                        <span>Đang tải thêm...</span>
+                      </>
+                    ) : (
+                      "Tải thêm kết quả"
+                    )}
+                  </button>
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -934,5 +1022,4 @@ export default function UserProgressList() {
       {renderConfirmModal()}
     </>
   );
-
 }

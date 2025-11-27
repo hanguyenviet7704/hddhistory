@@ -22,7 +22,6 @@ export interface IExerciseRecord {
   scoringCriteria: IScoringCriteria[];
   level: KeypointLevel[];
   maxScore: number;
-  completionTime: number;
   mainQuestion?: number;
   keypointId?: string;
 }
@@ -40,7 +39,6 @@ export interface ExerciseRecordPayload {
   scoringCriteria: IScoringCriteria[];
   level: KeypointLevel[];
   maxScore: number;
-  completionTime: number;
   mainQuestion?: number;
   keypointId?: string;
 }
