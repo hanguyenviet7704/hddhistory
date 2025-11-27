@@ -31,3 +31,11 @@ extension LessonEntityListExtension on List<LessonEntity> {
     return LessonEntity();
   }
 }
+
+extension LessonEntityExtension on LessonEntity {
+  List<KeypointEntity> get sortedKeypoints {
+    List<KeypointEntity> sortedKeypoints = List<KeypointEntity>.from(keypoints);
+    sortedKeypoints.sort((a, b) => a.strengthLevel.index.compareTo(b.strengthLevel.index));
+    return sortedKeypoints;
+  }
+}

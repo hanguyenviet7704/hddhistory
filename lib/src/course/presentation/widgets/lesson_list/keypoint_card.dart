@@ -10,17 +10,6 @@ class KeypointCard extends StatelessWidget {
     this.onTap,
   });
 
-  String get _getStrengthLabel {
-    switch (keypoint.strengthLevel) {
-      case StrengthLevel.weakPoint:
-        return 'Weak point';
-      case StrengthLevel.morePractice:
-        return 'More practice';
-      case StrengthLevel.optionalPractice:
-        return 'Optional Practice';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -58,7 +47,7 @@ class KeypointCard extends StatelessWidget {
                       children: [
                         // Label based on strength level
                         AppText(
-                          _getStrengthLabel,
+                          keypoint.strengthLevel.title(context),
                           style: AppStyle.text12.copyWith(
                             color: AppCustomColor.textTertiary,
                             fontWeight: FontWeight.w500,
