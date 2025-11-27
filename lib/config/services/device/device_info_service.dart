@@ -11,9 +11,10 @@ abstract interface class IDeviceInfoService {
 
 @LazySingleton(as: IDeviceInfoService)
 class DeviceInfoService implements IDeviceInfoService {
+  final ILocalStoreService _localStoreService;
   final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
 
-  DeviceInfoService() {
+  DeviceInfoService(this._localStoreService) {
     initialize();
   }
 
@@ -23,6 +24,12 @@ class DeviceInfoService implements IDeviceInfoService {
   void initialize() async {
     LogDev.info('DeviceInfoService initialized');
     await getAllDeviceInfo();
+    final deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
+    LogDev.one('deviceId: $deviceId');
+    if(!Platform.isIOS) return;
+    if(deviceId.isNotEmpty) return;
+    final fakeDeviceId = const Uuid().v8();
+    await _localStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: fakeDeviceId);
   }
 
   /// Returns the Android SDK version as an integer.
@@ -57,8 +64,7 @@ class DeviceInfoService implements IDeviceInfoService {
         final AndroidDeviceInfo androidInfo = await _deviceInfoPlugin.androidInfo;
         deviceId = androidInfo.id;
       } else if (Platform.isIOS) {
-        final IosDeviceInfo iosInfo = await _deviceInfoPlugin.iosInfo;
-        deviceId = iosInfo.identifierForVendor ?? '';
+        deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
       }
     } catch (e) {
       LogDev.warning('Error getting device info: $e');

@@ -122,7 +122,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     _uploadCubit.uploadFile(
       UploadFileParams(
         file: MultipartFile.fromFileSync(filePath),
-        key: DateTime.now().millisecondsSinceEpoch.toString(),
+        key: filePath.fileNameFromPath,
         prefix: 'audio_',
         folder: 'user_lesson',
       ),

@@ -54,21 +54,21 @@ class LessonProgressBar extends StatelessWidget {
           ),
         ),
 
-        BlocSelector<LessonCubit, LessonState, LearningItemType>(
-          selector: (state) => state.currentLearningItem.type,
-          builder: (context, learningItemType) {
-            if (learningItemType != LearningItemType.roleplay) {
-              return const SizedBox.shrink();
-            }
+        // BlocSelector<LessonCubit, LessonState, LearningItemType>(
+        //   selector: (state) => state.currentLearningItem.type,
+        //   builder: (context, learningItemType) {
+        //     if (learningItemType != LearningItemType.roleplay) {
+        //       return const SizedBox.shrink();
+        //     }
 
-            return Row(
-              children: [
-                20.horizontalSpace,
-                LessonTimeBanner(onDone: () => context.read<ExerciseCubit>().nextQuestion()),
-              ],
-            );
-          },
-        ),
+        //     return Row(
+        //       children: [
+        //         20.horizontalSpace,
+        //         LessonTimeBanner(onDone: () => context.read<ExerciseCubit>().nextQuestion()),
+        //       ],
+        //     );
+        //   },
+        // ),
         20.horizontalSpace,
       ],
     );

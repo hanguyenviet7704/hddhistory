@@ -100,6 +100,9 @@ extension StringDataHelper on String {
     if (!await canLaunchUrl(uri)) return;
     await launchUrl(uri, mode: LaunchMode.externalApplication);
   }
+
+  String get fileExtension => split('.').last;
+  String get fileNameFromPath => split('/').last;
 }
 
 extension StringDataParser on String {
