@@ -1241,14 +1241,14 @@ export default function RoleplayForm({
             speechBubble: { [lang]: "" },
             tag: null,
             keypointId: "",
-          document: [],
-          explanation: { [lang]: "" },
-          options: [] as IExerciseChoiceOption[],
-          level: [KeypointLevel.WEAK_POINT],
-          maxScore: 10,
-          completionTime: 60,
-          mainQuestion: 0,
-        } as IExerciseSingleChoice,
+            document: [],
+            explanation: { [lang]: "" },
+            options: [] as IExerciseChoiceOption[],
+            level: [KeypointLevel.WEAK_POINT],
+            maxScore: 10,
+            completionTime: 60,
+            mainQuestion: 0,
+          } as IExerciseSingleChoice,
         } as ISectionContent;
       default:
         return null;
@@ -2184,11 +2184,34 @@ export default function RoleplayForm({
                                                   )}
                                                 </div>
                                                 {content.exercise.maxScore && (
-                                                  <span className="text-xs font-medium text-gray-600">
-                                                    Max score:{" "}
-                                                    {content.exercise.maxScore}
-                                                  </span>
+                                                  <div>
+                                                    <span className="text-xs font-medium text-gray-600">
+                                                      Max score:{" "}
+                                                      {
+                                                        content.exercise
+                                                          .maxScore
+                                                      }
+                                                    </span>
+                                                    <span className="text-xs font-medium text-gray-600">
+                                                      {"scoringCriteria" in
+                                                        content.exercise &&
+                                                        content.exercise
+                                                          .scoringCriteria && (
+                                                          <span className="text-xs font-mono text-gray-500">
+                                                            {" ("}
+                                                            Criteria:{" "}
+                                                            {
+                                                              content.exercise
+                                                                .scoringCriteria
+                                                                .length
+                                                            }
+                                                            {") "}
+                                                          </span>
+                                                        )}
+                                                    </span>
+                                                  </div>
                                                 )}
+
                                                 {content.exercise
                                                   .completionTime && (
                                                   <span className="text-xs font-medium text-gray-600">
@@ -3386,11 +3409,7 @@ export default function RoleplayForm({
           } else {
             currentOptions[targetIndex] = {
               ...existing,
-              value: updateTranslationValue(
-                existing?.value || {},
-                lang,
-                line
-              ),
+              value: updateTranslationValue(existing?.value || {}, lang, line),
               isCorrect: existing?.isCorrect ?? false,
             };
           }
