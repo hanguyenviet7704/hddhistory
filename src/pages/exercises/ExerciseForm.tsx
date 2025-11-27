@@ -57,6 +57,9 @@ import { LangCode } from "../../types/enum/common.enum";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { IScoringCriteria } from "../../types/interface/learning-item/excercises/record.interface";
 
+// Temporary: keep subQuestions in sync with questions (can toggle off later)
+const SYNC_SUBQUESTIONS_FROM_QUESTIONS = true;
+
 const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
   DocumentType.TITLE,
   DocumentType.CAPTION,
@@ -164,6 +167,12 @@ const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
   url: { [currentLang]: "" },
   thumbnail: "",
 });
+
+const deriveSubQuestionsFromQuestions = (questions: any[]) =>
+  (questions || []).map((q, idx) => ({
+    ...q,
+    mainQuestion: idx + 1,
+  }));
 
 // Helper component to display text with truncation and tooltip
 const TextWithTooltip = ({
@@ -343,6 +352,22 @@ export default function ExerciseForm({
     }
   }, [lang, exercise, currentExercise._id]);
 
+  // Temporary sync: mirror questions into subQuestions with sequential mainQuestion
+  useEffect(() => {
+    if (!SYNC_SUBQUESTIONS_FROM_QUESTIONS) return;
+    const derivedSub = deriveSubQuestionsFromQuestions(
+      currentExercise.questions || []
+    );
+    setCurrentExercise((prev) => {
+      const isSame =
+        prev.subQuestions?.length === derivedSub.length &&
+        JSON.stringify(prev.subQuestions) === JSON.stringify(derivedSub);
+      if (isSame) return prev;
+      return { ...prev, subQuestions: derivedSub };
+    });
+    setNextQuestionIdForSubQuestions(derivedSub.length + 1);
+  }, [currentExercise.questions]);
+
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
     section: "questions" | "subQuestions" | null;
@@ -495,6 +520,10 @@ export default function ExerciseForm({
   const handleSaveExercise = async () => {
     try {
       setSaving(true);
+      const syncedSubQuestions = SYNC_SUBQUESTIONS_FROM_QUESTIONS
+        ? deriveSubQuestionsFromQuestions(currentExercise.questions || [])
+        : currentExercise.subQuestions || [];
+
       const payload: LearningItemPayload = {
         keypointId: currentExercise.keypointId,
         title: (cleanTranslation(currentExercise.title) || "") as string,
@@ -503,9 +532,7 @@ export default function ExerciseForm({
         tag: currentExercise.tag || [],
         isSub: currentExercise.isSub,
         questions: convertQuestionsToPayload(currentExercise.questions || []),
-        subQuestions: convertQuestionsToPayload(
-          currentExercise.subQuestions || []
-        ),
+        subQuestions: convertQuestionsToPayload(syncedSubQuestions),
         index: currentExercise.index,
       };
 
@@ -757,24 +784,33 @@ export default function ExerciseForm({
         }
       }
 
-      setCurrentExercise(updatedExercise);
+      const syncedSubQuestions = SYNC_SUBQUESTIONS_FROM_QUESTIONS
+        ? deriveSubQuestionsFromQuestions(updatedExercise.questions || [])
+        : updatedExercise.subQuestions || [];
+
+      const normalizedExercise = SYNC_SUBQUESTIONS_FROM_QUESTIONS
+        ? { ...updatedExercise, subQuestions: syncedSubQuestions }
+        : updatedExercise;
+
+      setCurrentExercise(normalizedExercise);
+      setNextQuestionIdForSubQuestions(syncedSubQuestions.length + 1);
 
       const payload: LearningItemPayload = {
-        keypointId: updatedExercise.keypointId,
-        title: (cleanTranslation(updatedExercise.title) || "") as string,
+        keypointId: normalizedExercise.keypointId,
+        title: (cleanTranslation(normalizedExercise.title) || "") as string,
         type: LearningItemType.EXERCISE,
-        image: updatedExercise.image,
-        tag: updatedExercise.tag || [],
-        isSub: updatedExercise.isSub,
-        questions: convertQuestionsToPayload(updatedExercise.questions || []),
-        subQuestions: convertQuestionsToPayload(
-          updatedExercise.subQuestions || []
+        image: normalizedExercise.image,
+        tag: normalizedExercise.tag || [],
+        isSub: normalizedExercise.isSub,
+        questions: convertQuestionsToPayload(
+          normalizedExercise.questions || []
         ),
-        index: updatedExercise.index,
+        subQuestions: convertQuestionsToPayload(syncedSubQuestions),
+        index: normalizedExercise.index,
       };
 
-      if (updatedExercise._id) {
-        await learningItemService.update(updatedExercise._id, payload);
+      if (normalizedExercise._id) {
+        await learningItemService.update(normalizedExercise._id, payload);
       } else {
         const res = await learningItemService.create(payload);
         const savedExercise = res.data?.data ?? res.data;
@@ -822,24 +858,32 @@ export default function ExerciseForm({
       }
 
       const updatedExercise = { ...currentExercise, [section]: reassignedList };
-      setCurrentExercise(updatedExercise);
+      const syncedSubQuestions = SYNC_SUBQUESTIONS_FROM_QUESTIONS
+        ? deriveSubQuestionsFromQuestions(updatedExercise.questions || [])
+        : updatedExercise.subQuestions || [];
+      const normalizedExercise = SYNC_SUBQUESTIONS_FROM_QUESTIONS
+        ? { ...updatedExercise, subQuestions: syncedSubQuestions }
+        : updatedExercise;
+
+      setCurrentExercise(normalizedExercise);
+      setNextQuestionIdForSubQuestions(syncedSubQuestions.length + 1);
 
       const payload: LearningItemPayload = {
-        keypointId: updatedExercise.keypointId,
-        title: (cleanTranslation(updatedExercise.title) || "") as string,
+        keypointId: normalizedExercise.keypointId,
+        title: (cleanTranslation(normalizedExercise.title) || "") as string,
         type: LearningItemType.EXERCISE,
-        image: updatedExercise.image,
-        tag: updatedExercise.tag || [],
-        isSub: updatedExercise.isSub,
-        questions: convertQuestionsToPayload(updatedExercise.questions || []),
-        subQuestions: convertQuestionsToPayload(
-          updatedExercise.subQuestions || []
+        image: normalizedExercise.image,
+        tag: normalizedExercise.tag || [],
+        isSub: normalizedExercise.isSub,
+        questions: convertQuestionsToPayload(
+          normalizedExercise.questions || []
         ),
-        index: updatedExercise.index,
+        subQuestions: convertQuestionsToPayload(syncedSubQuestions),
+        index: normalizedExercise.index,
       };
 
-      if (updatedExercise._id) {
-        await learningItemService.update(updatedExercise._id, payload);
+      if (normalizedExercise._id) {
+        await learningItemService.update(normalizedExercise._id, payload);
       }
 
       showSuccess("Question deleted successfully");
