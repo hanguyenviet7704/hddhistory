@@ -33,7 +33,7 @@ class LessonVoiceAIApi {
 
   Future<VoiceScoreModel> sendScoreRecord(Map<String, dynamic> body) async {
     final response = await _dio.post<Map<String, dynamic>>(
-      AppEndpoint.feedbackRoleplay,
+      AppEndpoint.scoreRecord,
       data: body,
       options: Options(
         headers: const {"Content-Type": "application/json"},

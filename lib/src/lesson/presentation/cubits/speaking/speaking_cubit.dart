@@ -25,6 +25,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     emit(SpeakingState.initial());
     _questionScore = 0;
   }
+
   void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
   void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
 
@@ -136,7 +137,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       onSuccess: (result) {
         emit(state.copyWith(status: SpeakingStatus.success));
         getVoiceFeedback(url: result.url);
-        getScoreRecord();
+        getScoreRecord(audioUrl: result.url);
       },
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
@@ -144,7 +145,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
   }
 
-  void getScoreRecord() async {
+  void getScoreRecord({String? audioUrl}) async {
     final criteria = <String, int>{};
     for (final scoringCriteria in state.question.scoringCriteria) {
       criteria[scoringCriteria.criteria.text] = scoringCriteria.maxScore;
@@ -156,14 +157,15 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       theory[keypoint.title.text] = keypoint.description.text;
     }
 
-    // final userAnswer = state.inputMode == SpeakingInputMode.recording ? state.audioFilePath ?? '' : state.textInput;
-    final userAnswer = state.inputMode == SpeakingInputMode.recording ? 'audio' : state.textInput;
+    final isAudioMode = state.inputMode == SpeakingInputMode.recording;
 
     final body = <String, dynamic>{
       'question': state.question.speechBubble.text,
       'criteria': criteria,
       'theory': theory,
-      'user_answer': userAnswer,
+      'user_answer_type': isAudioMode ? 'audio' : 'text',
+      if (!isAudioMode) 'answer_text': state.textInput,
+      if (isAudioMode && audioUrl != null) 'audio_url': audioUrl,
     };
 
     await runUseCase<VoiceScoreEntity>(
