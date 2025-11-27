@@ -19,7 +19,6 @@ export interface IExerciseSingleChoice {
   options: IExerciseChoiceOption[];
   level: KeypointLevel[];
   maxScore: number;
-  completionTime: number;
   mainQuestion?: number;
   keypointId?: string;
 }
@@ -34,7 +33,6 @@ export interface ExerciseSingleChoicePayload {
   options: IExerciseChoiceOption[];
   level: KeypointLevel[];
   maxScore: number;
-  completionTime: number;
   mainQuestion?: number;
   keypointId?: string;
 }

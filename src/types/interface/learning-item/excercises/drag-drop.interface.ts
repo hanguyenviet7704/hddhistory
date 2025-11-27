@@ -30,7 +30,6 @@ export interface IExerciseDragDrop {
   options: IOptions[];
   level: KeypointLevel[];
   maxScore: number;
-  completionTime: number;
   mainQuestion?: number;
   keypointId?: string;
 }
@@ -48,7 +47,6 @@ export interface ExerciseDragDropPayload {
   options: IOptions[];
   level: KeypointLevel[];
   maxScore: number;
-  completionTime: number;
   mainQuestion?: number;
   keypointId?: string;
 }
