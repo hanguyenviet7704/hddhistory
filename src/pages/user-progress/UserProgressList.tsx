@@ -230,6 +230,7 @@ export default function UserProgressList() {
 
   const fetchProgress = async (pageNumber = 1, append = false) => {
     const userId = getUserId(selectedUser) || undefined;
+    const shouldEnsureTitles = !!userId;
     if (!selectedCourse?._id) {
       setProgressList([]);
       setHasMore(false);
@@ -258,7 +259,9 @@ export default function UserProgressList() {
       const list = normalizeProgressList(res);
       setProgressList((prev) => {
         const merged = isAppend ? [...prev, ...list] : list;
-        ensureTitles(merged);
+        if (shouldEnsureTitles) {
+          ensureTitles(merged);
+        }
         return merged;
       });
 
@@ -282,16 +285,19 @@ export default function UserProgressList() {
   };
 
   const ensureTitles = async (listOverride?: IUserProgress[]) => {
+    const selectedUserId = getUserId(selectedUser);
+    if (!selectedUserId) return;
+
     const courseIds = new Set<string>();
     const userIds = new Set<string>();
     const source = listOverride ?? progressList;
+
     source.forEach((p) => {
       if (p.courseId) courseIds.add(p.courseId);
       const uid = getProgressUserId(p);
       if (uid) userIds.add(uid);
     });
     if (selectedCourse?._id) courseIds.add(selectedCourse._id);
-    const selectedUserId = getUserId(selectedUser);
     if (selectedUserId) userIds.add(selectedUserId);
 
     const lessonIds = new Set<string>();
@@ -353,8 +359,6 @@ export default function UserProgressList() {
           Promise.all(
             missingUserIds.map(async (id) => {
               const res = await userService.getById(id);
-              console.log(111, res);
-
               return { id, user: normalizeUserDetail(res) };
             })
           ),
@@ -572,9 +576,11 @@ export default function UserProgressList() {
   }, [selectedCourse?._id, selectedUser]);
 
   useEffect(() => {
-    ensureTitles();
+    if (getUserId(selectedUser)) {
+      ensureTitles();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [progressList, selectedCourse?._id, lang]);
+  }, [progressList, selectedCourse?._id, lang, selectedUser]);
 
   const totals = useMemo(() => {
     return progressList.map((progress) => {
