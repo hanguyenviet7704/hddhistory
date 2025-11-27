@@ -146,13 +146,25 @@ class SpeakingGoodPointsSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          _AnimatedPointsList(
-            points: points,
-            textStyle: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
-            ),
-            indexColor: const Color(0xFF554FF0),
+          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
+            selector: (state) => state.goodPoints,
+            builder: (context, goodPoints) {
+              return AnimateSwitch(
+                child: goodPoints.isEmpty
+                    ? Center(
+                        child: Lottie.asset(key: ValueKey('typing-goodPoints'), AppAsset.lottie.typing, height: 50.h),
+                      )
+                    : AnimatedPointsList(
+                        key: ValueKey('good-points'),
+                        points: goodPoints,
+                        textStyle: AppStyle.text14.copyWith(
+                          color: const Color(0xFF364152),
+                          height: 1.5,
+                        ),
+                        indexColor: const Color(0xFF554FF0),
+                      ),
+              );
+            },
           ),
         ],
       ),
@@ -201,13 +213,25 @@ class SpeakingImprovementSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          _AnimatedPointsList(
-            points: points,
-            textStyle: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
-            ),
-            indexColor: const Color(0xFF41AE8C),
+          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
+            selector: (state) => state.improvementPoints,
+            builder: (context, improvementPoints) {
+              return AnimateSwitch(
+                child: improvementPoints.isEmpty
+                    ? Center(
+                        child: Lottie.asset(key: ValueKey('typing-improvementPoints'), AppAsset.lottie.typing, height: 50.h),
+                      )
+                    : AnimatedPointsList(
+                        key: ValueKey('improvement-points'),
+                        points: improvementPoints,
+                        textStyle: AppStyle.text14.copyWith(
+                          color: const Color(0xFF364152),
+                          height: 1.5,
+                        ),
+                        indexColor: const Color(0xFF41AE8C),
+                      ),
+              );
+            },
           ),
         ],
       ),
@@ -215,12 +239,13 @@ class SpeakingImprovementSection extends StatelessWidget {
   }
 }
 
-class _AnimatedPointsList extends StatelessWidget {
+class AnimatedPointsList extends StatelessWidget {
   final List<String> points;
   final TextStyle textStyle;
   final Color indexColor;
 
-  const _AnimatedPointsList({
+  const AnimatedPointsList({
+    super.key,
     required this.points,
     required this.textStyle,
     required this.indexColor,

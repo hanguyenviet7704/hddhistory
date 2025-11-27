@@ -144,13 +144,14 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     AppLocale localeType = _localeCubit.state;
     String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
     String? audioUrl = state.inputMode == SpeakingInputMode.recording ? url : null;
+    String knowledge = state.question.scoringCriteria.map((e) => e.criteria.text).join(' \n');
     await runUseCase<ResponseBody>(
       usecase: () => _sendVoiceFeedbackStreamUseCase.call(
         VoiceFeedbackRequest(
           inputType: state.inputMode == SpeakingInputMode.recording ? 'audio' : 'text',
           answerText: answerText,
           audioUrl: audioUrl,
-          knowledge: 'Machine Learning (học máy) là một nhánh của trí tuệ nhân tạo (AI), cho phép máy tính tự học từ dữ liệu mà không cần lập trình rõ ràng',
+          knowledge: knowledge,
           originLanguage: localeType.languageAISupport,
           languageFeedback: localeType.languageAISupport,
         ),
@@ -185,11 +186,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
                 if (_feedbackStream.isNotEmpty) {
                   setPoints();
                 }
-                emit(state.copyWith(status: SpeakingStatus.success));
+                // emit(state.copyWith(status: SpeakingStatus.success));
               },
               onError: (err) {
                 LogDev.one("❌ Stream error: $err");
-                emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: err.toString()));
+                // emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: err.toString()));
               },
             );
       },

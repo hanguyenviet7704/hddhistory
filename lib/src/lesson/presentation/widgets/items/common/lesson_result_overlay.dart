@@ -42,8 +42,8 @@ class LessonResultOverlay extends StatefulWidget {
 }
 
 class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTickerProviderStateMixin {
-  static final Duration _panelAnimationDuration = 450.ms;
-  static final Duration _scrimAnimationDuration = 320.ms;
+  static final Duration _panelAnimationDuration = 380.ms;
+  static final Duration _scrimAnimationDuration = 280.ms;
 
   late final AnimationController _panelController;
   late final Animation<double> _fadeAnimation;
@@ -56,17 +56,17 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
     _panelController = AnimationController(vsync: this, duration: _panelAnimationDuration)..forward();
     _fadeAnimation = CurvedAnimation(
       parent: _panelController,
-      curve: const Interval(0, 0.7, curve: Curves.easeOutCubic),
+      curve: const Interval(0, 0.6, curve: Curves.easeOut),
     );
     _slideAnimation =
         Tween<Offset>(
-          begin: const Offset(0, 0.4),
+          begin: const Offset(0, 0.12),
           end: Offset.zero,
         ).animate(
-          CurvedAnimation(parent: _panelController, curve: Curves.easeOutBack),
+          CurvedAnimation(parent: _panelController, curve: Curves.easeOutQuart),
         );
-    _scaleAnimation = Tween<double>(begin: 0.94, end: 1).animate(
-      CurvedAnimation(parent: _panelController, curve: Curves.easeOutBack),
+    _scaleAnimation = Tween<double>(begin: 0.98, end: 1).animate(
+      CurvedAnimation(parent: _panelController, curve: Curves.easeOutQuart),
     );
   }
 
@@ -80,50 +80,34 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
   Widget build(BuildContext context) {
     final explanationVisible = widget.showExplanation && widget.explanation != null;
 
-    final panelContent = AnimatedSize(
-      duration: _panelAnimationDuration,
-      curve: Curves.easeInOutCubic,
-      alignment: Alignment.bottomCenter,
-      child: ClipRRect(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedSwitcher(
+    final panelContent = ClipRRect(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (widget.explanation != null)
+            AnimatedCrossFade(
               duration: _panelAnimationDuration,
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeInCubic,
-              transitionBuilder: (child, animation) {
-                final slideAnimation =
-                    Tween<Offset>(
-                      begin: const Offset(0, 0.08),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeOutCubic,
-                      ),
-                    );
-                return FadeTransition(
-                  opacity: animation,
-                  child: SlideTransition(
-                    position: slideAnimation,
-                    child: child,
-                  ),
+              reverseDuration: _panelAnimationDuration,
+              sizeCurve: Curves.easeOutQuart,
+              firstCurve: Curves.easeOut,
+              secondCurve: Curves.easeOut,
+              crossFadeState: explanationVisible ? CrossFadeState.showFirst : CrossFadeState.showSecond,
+              firstChild: widget.explanation!,
+              secondChild: const SizedBox.shrink(),
+              layoutBuilder: (topChild, topChildKey, bottomChild, bottomChildKey) {
+                return Stack(
+                  clipBehavior: Clip.none,
+                  alignment: Alignment.bottomCenter,
+                  children: [
+                    Positioned(key: bottomChildKey, child: bottomChild),
+                    Positioned(key: topChildKey, child: topChild),
+                  ],
                 );
               },
-              child: explanationVisible
-                  ? KeyedSubtree(
-                      key: const ValueKey('lesson-result-overlay-explanation'),
-                      child: widget.explanation!,
-                    )
-                  : const SizedBox.shrink(
-                      key: ValueKey('lesson-result-overlay-empty'),
-                    ),
             ),
-            widget.summary,
-          ],
-        ),
+          widget.summary,
+        ],
       ),
     );
 
@@ -139,6 +123,7 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
     );
 
     return Stack(
+      alignment: Alignment.bottomCenter,
       children: [
         if (explanationVisible)
           Positioned.fill(
@@ -146,7 +131,7 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
               ignoring: !explanationVisible,
               child: AnimatedOpacity(
                 duration: _scrimAnimationDuration,
-                curve: Curves.easeInOut,
+                curve: Curves.easeOut,
                 opacity: explanationVisible ? 1 : 0,
                 child: GestureDetector(
                   onTap: widget.onBackdropTap,
@@ -156,17 +141,7 @@ class _LessonResultOverlayState extends State<LessonResultOverlay> with SingleTi
               ),
             ),
           ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: SafeArea(
-            top: false,
-            left: false,
-            right: false,
-            child: animatedPanel,
-          ),
-        ),
+        animatedPanel,
       ],
     );
   }

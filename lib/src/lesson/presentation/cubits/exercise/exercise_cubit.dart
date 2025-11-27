@@ -27,6 +27,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
   }
 
   void nextQuestion() {
+    AppDI.injector.get<LessonCubit>().setIsShowResultOverlay(false);
     setQuestionPoint(state.currentQuestion);
 
     if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) {

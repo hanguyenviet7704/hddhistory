@@ -51,7 +51,7 @@ class ExerciseResultSummary extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(20.w),
+      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 35.h + MediaQuery.viewInsetsOf(context).bottom),
       decoration: BoxDecoration(
         color: _resolvedBackgroundColor,
       ),
