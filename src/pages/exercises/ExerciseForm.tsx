@@ -55,12 +55,61 @@ import {
 } from "../../utils/translation";
 import { LangCode } from "../../types/enum/common.enum";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
+import { IScoringCriteria } from "../../types/interface/learning-item/excercises/record.interface";
 
 const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
   DocumentType.TITLE,
   DocumentType.CAPTION,
   DocumentType.TEXT,
 ];
+
+const isValidNumber = (value: unknown): value is number =>
+  typeof value === "number" && !Number.isNaN(value);
+
+const rebalanceRecordScoringCriteria = (
+  criteriaInput?: Partial<IScoringCriteria>[],
+  exerciseMaxScore?: number,
+  lang?: LangCode
+): IScoringCriteria[] => {
+  const sanitized =
+    criteriaInput?.map((item) => ({
+      criteria: (item.criteria ?? { en: "" }) as ITranslation,
+      maxScore: isValidNumber(item.maxScore)
+        ? Math.max(0, Math.round(item.maxScore))
+        : 0,
+    })) || [];
+
+  if (!sanitized.length) return [];
+
+  if (!isValidNumber(exerciseMaxScore)) {
+    return sanitized.map((item) => ({
+      ...item,
+      maxScore: isValidNumber(item.maxScore) ? item.maxScore : 0,
+    }));
+  }
+
+  const lastIndex = sanitized.length - 1;
+  if (lastIndex < 0) return [];
+
+  const result = sanitized.map((item) => ({ ...item }));
+
+  const manualIndices = result
+    .map((_, idx) => idx)
+    .filter((idx) => idx !== lastIndex);
+
+  let manualSum = 0;
+  manualIndices.forEach((idx) => {
+    const val = result[idx].maxScore;
+    const normalized = isValidNumber(val) ? Math.max(0, Math.round(val)) : 0;
+    result[idx].maxScore = normalized;
+    manualSum += normalized;
+  });
+
+  const remaining = Math.max(0, Math.round(exerciseMaxScore) - manualSum);
+  result[lastIndex].maxScore = remaining;
+
+  return result;
+};
 
 const isTextualDocumentType = (type: DocumentType) =>
   TEXTUAL_DOCUMENT_TYPES.includes(type);
@@ -270,9 +319,8 @@ export default function ExerciseForm({
       };
 
       const normalizedQuestions = exercise.questions.map(normalizeDragDropIds);
-      const normalizedSubQuestions = exercise.subQuestions.map(
-        normalizeDragDropIds
-      );
+      const normalizedSubQuestions =
+        exercise.subQuestions.map(normalizeDragDropIds);
 
       setNextOptionId(optionCounter);
       setNextAnswerId(answerCounter);
@@ -1155,6 +1203,18 @@ export default function ExerciseForm({
                                 </div>
                               )}
 
+                            {question.type === ExerciseType.RECORD &&
+                              "scoringCriteria" in question && (
+                                <div>
+                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                    Criteria:
+                                  </span>
+                                  <span>
+                                    {question.scoringCriteria?.length}
+                                  </span>
+                                </div>
+                              )}
+
                             {"level" in question &&
                               (question.level?.length ?? 0) > 0 && (
                                 <div>
@@ -1219,6 +1279,113 @@ export default function ExerciseForm({
 
     const [localNextOptionId, setLocalNextOptionId] = useState(nextOptionId);
     const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
+
+    const getScoringCriteria = () =>
+      Array.isArray(localFormData.scoringCriteria)
+        ? (localFormData.scoringCriteria as Partial<IScoringCriteria>[])
+        : [];
+
+    const addScoringCriteria = () => {
+      const current = getScoringCriteria();
+      handleChange("scoringCriteria", [
+        ...current,
+        { criteria: { [lang]: "" }, maxScore: undefined },
+      ]);
+    };
+
+    const removeScoringCriteria = (index: number) => {
+      const current = getScoringCriteria();
+      const next = current.filter((_, idx) => idx !== index);
+      handleChange("scoringCriteria", next);
+    };
+
+    const updateScoringCriteria = (
+      index: number,
+      field: keyof IScoringCriteria,
+      value: string | ITranslation
+    ) => {
+      const current = getScoringCriteria();
+      if (!current[index]) return;
+
+      const parsedValue =
+        field === "maxScore"
+          ? value === ""
+            ? undefined
+            : Number(value)
+          : field === "criteria" && typeof value === "string"
+          ? updateTranslationValue(current[index].criteria || {}, lang, value)
+          : value;
+
+      const next = current.map((item, idx) =>
+        idx === index ? ({ ...item, [field]: parsedValue } as any) : item
+      );
+
+      if (field === "maxScore" && typeof parsedValue === "number") {
+        const totalValue = 100;
+        const lastIndex = next.length - 1;
+        if (lastIndex >= 0) {
+          const isLast = index === lastIndex;
+          const manualSumExceptLast = next.reduce((sum, item, idx) => {
+            if (idx === lastIndex || idx === index) return sum;
+            const val =
+              typeof item.maxScore === "number" && !Number.isNaN(item.maxScore)
+                ? Math.max(0, Math.round(item.maxScore))
+                : 0;
+            return sum + val;
+          }, 0);
+
+          const maxAllowed = Math.max(0, totalValue - manualSumExceptLast);
+          const adjusted = Math.min(
+            Math.max(0, Math.round(parsedValue)),
+            maxAllowed
+          );
+
+          next[index] = { ...next[index], maxScore: adjusted };
+
+          const manualSumWithCurrent = manualSumExceptLast + adjusted;
+          const remainder = Math.max(0, totalValue - manualSumWithCurrent);
+          if (lastIndex >= 0) {
+            next[lastIndex] = { ...next[lastIndex], maxScore: remainder };
+          }
+        }
+      }
+
+      handleChange("scoringCriteria", next);
+    };
+
+    const handlePasteCriteria = (
+      index: number,
+      e: React.ClipboardEvent<HTMLTextAreaElement>
+    ) => {
+      const pasted = e.clipboardData.getData("text");
+      if (!pasted) return;
+      const lines = pasted
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
+      if (lines.length <= 1) return;
+      e.preventDefault();
+
+      const current = getScoringCriteria();
+      const next = [...current];
+      if (!next[index]) {
+        next[index] = { criteria: { [lang]: "" }, maxScore: undefined };
+      }
+      lines.forEach((line, offset) => {
+        const targetIndex = index + offset;
+        const existing = next[targetIndex];
+        next[targetIndex] = {
+          ...existing,
+          criteria: updateTranslationValue(
+            (existing as any)?.criteria || {},
+            lang,
+            line
+          ),
+          maxScore: existing?.maxScore,
+        } as any;
+      });
+      handleChange("scoringCriteria", next);
+    };
 
     // Update local form data when formData prop changes
     useEffect(() => {
@@ -1452,9 +1619,19 @@ export default function ExerciseForm({
         ? cleanDocumentItems(localFormData.document)
         : [];
 
+      let normalizedScoring = localFormData.scoringCriteria;
+      if (questionType === ExerciseType.RECORD) {
+        normalizedScoring = rebalanceRecordScoringCriteria(
+          localFormData.scoringCriteria,
+          100,
+          lang
+        );
+      }
+
       onSave({
         ...localFormData,
         document: cleanedDocuments,
+        scoringCriteria: normalizedScoring,
       });
     };
 
@@ -1610,11 +1787,7 @@ export default function ExerciseForm({
           } else {
             newOptions[targetIndex] = {
               ...existing,
-              value: updateTranslationValue(
-                existing?.value || {},
-                lang,
-                line
-              ),
+              value: updateTranslationValue(existing?.value || {}, lang, line),
               isCorrect: existing?.isCorrect ?? false,
             };
           }
@@ -2069,6 +2242,98 @@ export default function ExerciseForm({
               className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
               placeholder="Enter max character"
             />
+          </div>
+        )}
+
+        {questionType === ExerciseType.RECORD && (
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-gray-700">
+                Scoring Criteria
+              </span>
+              <button
+                type="button"
+                onClick={addScoringCriteria}
+                className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Criteria
+              </button>
+            </div>
+
+            {getScoringCriteria().length === 0 ? (
+              <p className="text-sm text-gray-500">
+                Chưa có tiêu chí. Thêm mới để chấm điểm.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {getScoringCriteria().map((criteriaItem, index) => (
+                  <div
+                    key={`scoring-${index}`}
+                    className="border rounded-lg p-3 space-y-2"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-semibold text-gray-700">
+                        Criterion {index + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => removeScoringCriteria(index)}
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                      <div className="md:col-span-2">
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Description
+                        </label>
+                        <textarea
+                          value={getCurrentTranslationValue(
+                            criteriaItem.criteria,
+                            lang
+                          )}
+                          onChange={(e) =>
+                            updateScoringCriteria(
+                              index,
+                              "criteria",
+                              e.target.value
+                            )
+                          }
+                          onPaste={(e) => handlePasteCriteria(index, e)}
+                          rows={2}
+                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
+                          placeholder="e.g., Pronunciation clarity"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-medium text-gray-600 mb-1">
+                          Max Score
+                        </label>
+                        <input
+                          type="number"
+                          value={
+                            typeof criteriaItem.maxScore === "number"
+                              ? criteriaItem.maxScore
+                              : ""
+                          }
+                          onChange={(e) =>
+                            updateScoringCriteria(
+                              index,
+                              "maxScore",
+                              e.target.value
+                            )
+                          }
+                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          placeholder="Auto"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

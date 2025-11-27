@@ -78,6 +78,16 @@ const getUserLabel = (user?: Partial<IUser> | null) => {
   return name || email || phone || getUserId(user);
 };
 
+const getProgressUserId = (progress: IUserProgress | any) =>
+  progress.userId ||
+  progress.user_id ||
+  progress.user?.id ||
+  progress.user?._id ||
+  "";
+
+const getProgressUserLabel = (progress: IUserProgress | any) =>
+  getUserLabel(progress.user);
+
 export default function UserProgressList() {
   const lang = useSelector((state: RootState) => state.lang.code);
   const { showError, showSuccess } = useNotification();
@@ -224,7 +234,8 @@ export default function UserProgressList() {
     const source = listOverride ?? progressList;
     source.forEach((p) => {
       if (p.courseId) courseIds.add(p.courseId);
-      if (p.userId) userIds.add(p.userId);
+      const uid = getProgressUserId(p);
+      if (uid) userIds.add(uid);
     });
     if (selectedCourse?._id) courseIds.add(selectedCourse._id);
     const selectedUserId = getUserId(selectedUser);
@@ -258,6 +269,12 @@ export default function UserProgressList() {
       (id) => !keypointTitles[id]
     );
     const missingUserIds = Array.from(userIds).filter((id) => !userNames[id]);
+    const preloadUserNames: Record<string, string> = {};
+    source.forEach((p) => {
+      const uid = getProgressUserId(p);
+      const label = getProgressUserLabel(p);
+      if (uid && label) preloadUserNames[uid] = label;
+    });
 
     try {
       const [coursesRes, lessonsRes, keypointsRes, usersRes] = await Promise.all([
@@ -317,8 +334,12 @@ export default function UserProgressList() {
         setLessonTitles((prev) => ({ ...prev, ...lessonUpdate }));
       if (Object.keys(keypointUpdate).length)
         setKeypointTitles((prev) => ({ ...prev, ...keypointUpdate }));
-      if (Object.keys(userUpdate).length)
-        setUserNames((prev) => ({ ...prev, ...userUpdate }));
+      if (Object.keys(userUpdate).length || Object.keys(preloadUserNames).length)
+        setUserNames((prev) => ({
+          ...prev,
+          ...preloadUserNames,
+          ...userUpdate,
+        }));
     } catch (err) {
       console.error("Failed to fetch titles", err);
     }
