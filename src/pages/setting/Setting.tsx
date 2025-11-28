@@ -6,16 +6,18 @@ import {
   PhotoIcon,
   SparklesIcon,
   PaintBrushIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import UserManagement from "../../components/setting/UserManagement";
 import TagManagement from "../../components/setting/TagManagement";
 import AvatarManagement from "../../components/setting/AvatarManagement";
 import IconManagement from "../../components/setting/IconManagement";
 import RoleplayColorManagement from "../../components/setting/RoleplayColorManagement";
+import QuoteManagement from "../../components/setting/QuoteManagement";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<
-    "users" | "tags" | "avatars" | "icons" | "roleplayColors"
+    "users" | "tags" | "avatars" | "icons" | "roleplayColors" | "quotes"
   >("users");
 
   return (
@@ -93,6 +95,20 @@ const SettingsPage = () => {
             <PaintBrushIcon className="h-4 w-4 mr-2" />
             Roleplay Colors
           </button>
+          <button
+            onClick={() => setActiveTab("quotes")}
+            className={`
+              flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
+              ${
+                activeTab === "quotes"
+                  ? "bg-amber-500 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }
+            `}
+          >
+            <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
+            Quotes
+          </button>
         </div>
 
         {/* Content based on active tab */}
@@ -101,6 +117,7 @@ const SettingsPage = () => {
         {activeTab === "avatars" && <AvatarManagement />}
         {activeTab === "icons" && <IconManagement />}
         {activeTab === "roleplayColors" && <RoleplayColorManagement />}
+        {activeTab === "quotes" && <QuoteManagement />}
       </div>
     </div>
   );
