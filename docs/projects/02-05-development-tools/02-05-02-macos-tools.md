@@ -6,7 +6,7 @@ This document provides detailed information about the fully functional developme
 
 The `tools/macos/` directory contains a comprehensive suite of development tools that are **fully functional and up-to-date** for macOS development environments. These tools automate common development tasks and provide a streamlined workflow.
 
-> **Note**: These tools are macOS-specific. Windows and Linux equivalents are placeholder implementations for future development.
+> **Note**: Command interfaces are shared with the Linux/Windows scripts for Android/localization/Firebase. iOS/IPA/distribution flows remain macOS-only because they require Xcode.
 
 ## Tool Categories
 

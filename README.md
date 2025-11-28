@@ -4,25 +4,34 @@
 
 ## Quick Start
 
-For new developers joining the project, follow these essential setup steps:
+For new developers, use the platform-matched scripts (macOS, Linux, Windows) that share the same interface. Replace `<os>` with `macos`, `linux`, or `windows` (Windows uses `.bat`).
 
-1. **Generate Project Resources**
+0. **Sanity-check tools** (optional but recommended)
    ```bash
-   sh tools/macos/resource/generate_file.sh
+   # macOS/Linux
+   tools/smoke.sh
+   # Windows
+   tools\\windows\\smoke.bat
    ```
 
-2. **Reset and Clean Project**
+1. **Generate project resources** (build_runner)
    ```bash
-   sh tools/macos/build/reset_app.sh
+   sh tools/<os>/resource/generate_file.sh        # .bat on Windows
    ```
 
-3. **Generate Localization Files**
+2. **Reset and clean project**
    ```bash
-   sh tools/macos/localization/generate_localization.sh
+   sh tools/<os>/resource/reset_app.sh            # .bat on Windows
    ```
 
-4. **Run the Application**
-   Use your IDE's pre-configured run configurations (see IDE Configuration section below)
+3. **Sync localization**
+   ```bash
+   tools/<os>/localization/localization.sh pull   # .bat on Windows
+   dart run slang                                 # regenerates lib/config/l10n
+   ```
+
+4. **Run the application**
+   Use the IDE run configurations (see IDE Configuration section below) for your target flavor/mode.
 
 ## Project Overview
 
@@ -114,10 +123,11 @@ Run configurations are available in `.idea/runConfigurations/` for all environme
 ## Important Notes
 
 ### Platform Support for Custom Tools
-- ✅ **macOS**: Fully functional and up-to-date tools
-- ⚠️ **Windows/Linux**: Placeholder scripts for future development
+- ✅ **macOS**: Full toolset (Android + iOS + distribution)
+- ✅ **Linux**: Parity for Android/build/config/localization/Firebase
+- ✅ **Windows**: Parity for Android/build/config/localization/Firebase (PowerShell/BAT)
 
-The project's custom tooling in `tools/` is currently optimized for macOS development. Windows and Linux directories contain placeholder scripts that will be implemented in future versions.
+All platforms share the same commands and flags; only iOS/IPA/distribution flows are macOS-only because they require Xcode. See `tools/README.md` and the platform quick links at the top of that file for usage, smoke tests, and version notes.
 
 ### Build Process
 This project uses `--dart-define-from-file` (NOT `--dart-define`) for environment configuration. All build scripts are configured to load environment variables from files in the `.env/` directory.

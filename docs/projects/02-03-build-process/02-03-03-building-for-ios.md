@@ -7,6 +7,7 @@ This document provides detailed instructions for building iOS applications in Dc
 ### Primary Build Tool
 **File**: `tools/macos/build/build_ios.sh`
 **Purpose**: Generate iOS applications for testing and App Store distribution
+> Runs only on macOS because Xcode is required. Android builds use the same command interface under `tools/<os>/build/` for other platforms.
 
 ### Basic Usage
 ```bash

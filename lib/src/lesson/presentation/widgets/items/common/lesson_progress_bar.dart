@@ -8,12 +8,18 @@ class LessonProgressBar extends StatelessWidget {
   void _onCloseTap(BuildContext context) {
     bool isShowResultOverlay = AppDI.injector.get<LessonCubit>().isShowResultOverlay;
     if (isShowResultOverlay) return;
-    
+
     ClosePopupLesson.show(
       context,
       onQuit: () {
+        LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
         context.back();
-        context.back();
+
+        if (learningItem.type != LearningItemType.roleplay) {
+          context.back();
+        }
+        CourseRoadmapRoute().go(context);
+        context.read<PageCubit>().setCurrentIndex(1);
       },
       onKeepLearning: () {
         context.back();

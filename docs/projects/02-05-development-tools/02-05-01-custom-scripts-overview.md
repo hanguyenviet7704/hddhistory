@@ -4,27 +4,26 @@ This document provides an overview of the custom development tools and scripts a
 
 ## Platform Support Status
 
-### ✅ macOS (Fully Functional)
-The `tools/macos/` directory contains **complete and up-to-date** development tools optimized for macOS development environment (including the new localization pipeline).
+- ✅ **macOS**: Full toolset, including iOS/IPA/distribution (Xcode required)
+- ✅ **Linux**: Same commands/flags for Android build, config, localization, Firebase
+- ✅ **Windows**: Same commands/flags via `.bat`/PowerShell (no iOS)
 
-### ⚠️ Linux (Localization) & Windows (Localization parity; other areas WIP)
-Linux and Windows ship the shared localization pipeline (`tools/<platform>/localization/localization.(sh|bat)`); other Windows tooling remains a placeholder until implemented.
+Scripts stay aligned across platforms; after any change run `tools/smoke.sh` (macOS/Linux) or `tools\\windows\\smoke.bat` (Windows).
 
 ## Tools Directory Structure
 
 ```
-tools/
-├── macos/              # ✅ Fully functional tools
-│   ├── build/          # Build and compilation scripts
-│   ├── config/         # Configuration management
-│   ├── distribution/   # App distribution tools
-│   ├── git/            # Git workflow helpers
-│   ├── key/            # Key and certificate management
-│   ├── localization/   # Internationalization tools (slang + Google Sheets)
-│   └── resource/       # Code generation scripts
-├── linux/              # ⚠️ Localization tooling available; others placeholder
-└── windows/            # ⚠️ Localization tooling (slang) available; others placeholder
+tools/<platform>/
+├── build/          # build_apk, build_appbundle, build_ios/build_ipa (macOS), install_app
+├── config/         # setup_project, flutterfire_config, icon helpers
+├── distribution/   # distribute_android, distribute_ios (macOS), tester/group helpers
+├── git/            # gitflow helpers (where present)
+├── key/            # keystore/cert generation
+├── localization/   # localization.(sh|bat) + shared CLI
+└── resource/       # generate_file, reset_app
 ```
+
+The interface (flags, outputs, expected files) is shared; only iOS/IPA/distribution scripts live in `tools/macos/`.
 
 ## macOS Tools Categories
 
@@ -217,38 +216,10 @@ Scripts output:
 
 ## Cross-Platform Considerations
 
-### Current Limitations
-- **Windows**: Scripts are placeholders, use manual Flutter commands
-- **Linux**: Scripts are placeholders, use manual Flutter commands
-- **macOS**: Fully functional and recommended
-
-### Manual Alternatives for Windows/Linux
-
-#### Building APK
-```bash
-# Replace: sh tools/macos/build/build_apk.sh dev
-flutter build apk --flavor dev --dart-define-from-file=.env/.env.dev -t lib/main_dev.dart --release --obfuscate --split-debug-info=.obfuscation
-```
-
-#### Code Generation
-```bash
-# Replace: sh tools/macos/resource/generate_file.sh
-fvm dart run build_runner build --delete-conflicting-outputs
-```
-
-#### Project Reset
-```bash
-# Replace: sh tools/macos/build/reset_app.sh
-flutter clean
-flutter pub get
-```
-
-### Future Platform Support
-Plans for Windows and Linux tools include:
-- PowerShell scripts for Windows
-- Bash scripts adapted for Linux
-- Cross-platform Python tools for complex operations
-- Consistent API across all platforms
+- **Parity-first**: Commands/flags are kept identical across `macos`, `linux`, and `windows` directories.
+- **macOS-only flows**: iOS build/IPA/distribution scripts run only on macOS because they need Xcode; Android/localization/Firebase scripts run everywhere.
+- **Smoke checks**: Run `tools/smoke.sh` (macOS/Linux) or `tools\\windows\\smoke.bat` after editing any script to verify the interface.
+- **Manual fallback**: When debugging CI or experimenting, you can always use raw `flutter build ... --dart-define-from-file=.env/.env.<flavor>` commands instead of the wrappers.
 
 ## Maintenance and Updates
 
