@@ -10,6 +10,7 @@ abstract class LessonState with _$LessonState {
     @Default(0) int currentLearningItemIndex,
     @Default(0) int currentLessonIndex,
     @Default([]) List<QuestionEntity> subQuestions,
+    @Default(false) bool isShowResultOverlay,
     String? errorMessage,
   }) = _LessonState;
 

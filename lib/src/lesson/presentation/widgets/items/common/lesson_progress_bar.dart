@@ -6,7 +6,7 @@ class LessonProgressBar extends StatelessWidget {
   });
 
   void _onCloseTap(BuildContext context) {
-    bool isShowResultOverlay = AppDI.injector.get<LessonCubit>().isShowResultOverlay;
+    bool isShowResultOverlay = AppDI.injector.get<LessonCubit>().state.isShowResultOverlay;
     if (isShowResultOverlay) return;
 
     ClosePopupLesson.show(

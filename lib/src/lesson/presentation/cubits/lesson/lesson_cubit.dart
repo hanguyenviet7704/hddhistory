@@ -18,10 +18,9 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._theoryCubit,
   ) : super(LessonState.initial());
 
-  bool _isShowResultOverlay = false;
-  bool get isShowResultOverlay => _isShowResultOverlay;
+
   void reset() => emit(LessonState.initial());
-  void setIsShowResultOverlay(bool value) => _isShowResultOverlay = value;
+  void setIsShowResultOverlay(bool value) => emit(state.copyWith(isShowResultOverlay: value));
   
 
   //* Roleplay Page Flow
