@@ -59,7 +59,8 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
     }
 
     final directory = await getApplicationDocumentsDirectory();
-    final path = '${directory.path}/speaking_${DateTime.now().millisecondsSinceEpoch}.m4a';
+    final userId = AppDI.injector.get<UserCubit>().state.user.id;
+    final path = '${directory.path}/speaking_$userId.m4a';
     _currentFilePath = path;
 
     try {

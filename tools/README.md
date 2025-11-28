@@ -4,6 +4,17 @@
 
 This directory contains enhanced build and configuration tools for Flutter projects with **centralized configuration management**. All project-specific values are now stored in the `.info/` directory, making it easy to adapt these tools to new projects.
 
+**Platform quick links:** `tools/macos/README.md` · `tools/linux/README.md` · `tools/windows/README.md`
+
+## Platform Support
+- **macOS 13+ (bash/zsh)**: Android builds, localization, Firebase, **iOS build/export/distribution (Xcode required)**.
+- **Linux (Ubuntu 20.04+/Debian, bash)**: Android builds, localization, Firebase; no iOS.
+- **Windows 10/11 (PowerShell 7+; WSL acceptable)**: Android builds/localization/Firebase; no iOS.
+- Scripts should stay aligned across platforms; only iOS flows are macOS-only by design.
+
+## Version Snapshot (put specifics in `.info/app/build.json`)
+- Record the validated versions you use: Flutter channel/version, Java (17), Android SDK/NDK level, Xcode version (macOS). Update when you bump toolchains so contributors know the tested baseline.
+
 ## 🎯 Key Benefits
 
 - **🔧 Zero Hardcoded Values**: All configuration is centralized in `.info/` directory
@@ -111,6 +122,22 @@ nano .info/app/build.json
 # Configure Firebase
 ./tools/macos/config/flutterfire_config.sh dev
 ```
+
+## Normal Developer Flow (fast path)
+1. **Setup**: Install deps (Flutter + manager, Android SDK + Java 17, Node + Firebase CLI, jq). Run `tools/<os>/config/setup_project.sh [--non-interactive]`.
+2. **Localization**: `tools/<os>/localization/localization.sh pull` → edit YAML/sheet (module = namespace, keys lowerCamelCase) → `push --apply` → `pull` → `slang`.
+3. **Codegen & checks**: `dart run build_runner build --delete-conflicting-outputs`; `dart format lib/ test/`; `flutter analyze`.
+4. **Tests**: `flutter test test/unit/` or full `flutter test`.
+5. **Android builds** (all platforms): `build_apk.sh <dev|stg|prod>` / `build_appbundle.sh <flavor>`; distribute via `distribution/distribute_android.sh`.
+6. **iOS builds** (macOS only): `build_ios.sh <flavor>` → `build_ipa.sh <flavor>` → `distribution/distribute_ios.sh <flavor>`; requires Xcode + signing assets.
+7. **Firebase**: `config/flutterfire_config.sh <flavor>`; symbol upload runs automatically after obfuscated builds, manual fallback `config/firebase_setup.sh <flavor>`.
+
+## Adding or Changing a Tool (checklist)
+- Keep interface parity across platforms; only iOS needs macOS-only scripts.
+- Update the nearest README plus this one if flags/flow change.
+- Run smoke tests: `tools/smoke.sh` (macOS/Linux) or `tools/windows/smoke.bat` (Windows) after edits.
+- Lint scripts when possible: `shellcheck` for `.sh`, `Invoke-ScriptAnalyzer` for PowerShell.
+- Note tested versions/runs in your PR/commit (Flutter, Java, Android SDK, Xcode if macOS).
 
 ## 📱 Available Commands
 
@@ -394,6 +421,9 @@ show_config_summary dev
 ./tools/macos/config/flutterfire_config.sh --help
 ```
 
+## macOS-only iOS Tasks
+`tools/macos/build/build_ios.sh`, `build_ipa.sh`, and `distribution/distribute_ios.sh` require Xcode on macOS. There are no Linux/Windows equivalents; all other flows should remain cross-platform.
+
 ## 🔍 Troubleshooting
 
 ### Common Issues
@@ -431,6 +461,20 @@ get_app_name
 get_android_package_name dev
 get_firebase_project_id
 ```
+
+## Change Policy for Tools
+1. Implement and test on the originating platform first (at minimum run `--help`; for build scripts, a smoke build is better).
+2. Mirror the change to other platforms with the same interface; diverge only where the platform requires (iOS/macOS).
+3. Update the nearest README with new flags/examples/prereqs.
+4. Re-run a quick validation or dry-run and record what was tested before merging.
+5. Lint scripts when available: `shellcheck` for `.sh`, `Invoke-ScriptAnalyzer` for PowerShell.
+
+## macOS-only iOS Tasks
+`tools/macos/build/build_ios.sh`, `build_ipa.sh`, and `distribution/distribute_ios.sh` require Xcode on macOS. There are no Linux/Windows equivalents; all other flows should remain cross-platform.
+
+## Smoke Tests (run before porting changes)
+- Unix: `tools/smoke.sh` runs `--help` on key scripts for the detected platform (macOS/Linux) and iOS helpers on macOS when Xcode is present.
+- Windows: `tools/windows/smoke.bat` calls the main `.bat` helpers. Use WSL + `tools/smoke.sh` for shell scripts if needed.
 
 ## 📚 Advanced Usage
 

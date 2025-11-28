@@ -7,9 +7,7 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: RefreshIndicator(
-        onRefresh: () async {
-          context.read<HomeCubit>().initializeData();
-        },
+        onRefresh: () async => context.read<HomeCubit>().initializeData(),
         child: SingleChildScrollView(
           physics: const AlwaysScrollableScrollPhysics(),
           child: Column(
