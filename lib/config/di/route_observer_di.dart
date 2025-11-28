@@ -9,19 +9,4 @@ abstract class RouteObserverModule {
   @Named(DIKey.shellNavigatorKey)
   @lazySingleton
   GlobalKey<NavigatorState> get shellNavigatorKey => GlobalKey<NavigatorState>();
-  @Named(DIKey.appRouterObserver)
-  @lazySingleton
-  NavigatorObserver get appRouterObserver => AppRouterObserver();
-
-  @Named(DIKey.homeRouterObserver)
-  @lazySingleton
-  NavigatorObserver get homeRouterObserver => HomeRouterObserver();
-
-  @Named(DIKey.courseRouterObserver)
-  @lazySingleton
-  NavigatorObserver get shopRouterObserver => CourseRouterObserver();
-
-  @Named(DIKey.settingRouterObserver)
-  @lazySingleton
-  NavigatorObserver get createPostRouterObserver => SettingRouterObserver();
 }
