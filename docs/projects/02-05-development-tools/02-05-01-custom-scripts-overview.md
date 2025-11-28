@@ -10,6 +10,19 @@ This document provides an overview of the custom development tools and scripts a
 
 Scripts stay aligned across platforms; after any change run `tools/smoke.sh` (macOS/Linux) or `tools\\windows\\smoke.bat` (Windows).
 
+## Quick Command Map
+
+| Command (relative to `tools/<platform>/`) | Platforms | Purpose | Reference |
+| --- | --- | --- | --- |
+| `build/build_apk.(sh|bat)` | macOS, Linux, Windows | Android APK build | [tools/README.md](../../../tools/README.md) |
+| `build/build_appbundle.(sh|bat)` | macOS, Linux, Windows | Android App Bundle build | [tools/README.md](../../../tools/README.md) |
+| `build/build_ios.sh`, `build/build_ipa.sh` | macOS | iOS build / IPA export | [tools/README.md](../../../tools/README.md) |
+| `localization/localization.(sh|bat)` | macOS, Linux, Windows | l10n pull/push/migrate/validate | [docs/localization.md](../../localization.md) |
+| `resource/generate_file.(sh|bat)` | macOS, Linux, Windows | build_runner codegen | [tools/README.md](../../../tools/README.md) |
+| `resource/reset_app.(sh|bat)` | macOS, Linux, Windows | clean + pub get | [tools/README.md](../../../tools/README.md) |
+| `config/flutterfire_config.(sh|bat)` | macOS, Linux, Windows | Firebase app config | [tools/README.md](../../../tools/README.md) |
+| `smoke.sh` / `windows/smoke.bat` | macOS, Linux, Windows | CLI surface sanity check | [tools/README.md](../../../tools/README.md) |
+
 ## Tools Directory Structure
 
 ```

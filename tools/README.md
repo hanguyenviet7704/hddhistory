@@ -127,6 +127,10 @@ nano .info/app/build.json
 6. **iOS builds** (macOS only): `build_ios.sh <flavor>` → `build_ipa.sh <flavor>` → `distribution/distribute_ios.sh <flavor>`; requires Xcode + signing assets.
 7. **Firebase**: `config/flutterfire_config.sh <flavor>`; symbol upload runs automatically after obfuscated builds, manual fallback `config/firebase_setup.sh <flavor>`.
 
+## Tested Versions Snapshot
+- See `.info/app/build.json` → `tested` for the latest recorded environment (OS/Flutter/Dart/Java/Xcode) and smoke status. Update after running `tools/smoke.sh` (macOS/Linux) or `tools\\windows\\smoke.bat`.
+- CI keeps the interface healthy via `.github/workflows/tools-smoke.yml` (macOS/Linux/Windows matrix).
+
 ## 📱 Available Commands
 
 ### Build Commands
