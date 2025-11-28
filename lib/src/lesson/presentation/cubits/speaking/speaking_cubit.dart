@@ -113,6 +113,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   // Submit answer (recording or text)
   Future<void> submitAnswer() async {
     if (state.inputMode == SpeakingInputMode.recording) {
+      emit(state.copyWith(status: SpeakingStatus.success));
       if (state.audioFilePath == null) return;
       emit(state.copyWith(status: SpeakingStatus.loading));
       uploadAudioFile(state.audioFilePath!);
@@ -135,7 +136,6 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
         folder: 'user_lesson',
       ),
       onSuccess: (result) {
-        emit(state.copyWith(status: SpeakingStatus.success));
         getVoiceFeedback(url: result.url);
         getScoreRecord(audioUrl: result.url);
       },
@@ -174,10 +174,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
       },
-      onSuccess: (result) {
-        emit(state.copyWith(status: SpeakingStatus.success));
-        _questionScore = result.score;
-      },
+      onSuccess: (result) => _questionScore = result.score,
     );
   }
 

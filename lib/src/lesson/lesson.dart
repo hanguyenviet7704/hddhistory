@@ -18,6 +18,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:shimmer/shimmer.dart';
 
 //* Data Layer - Models, Datasources, Repositories
 part 'data/datasources/local/lesson_local_data_source.dart';

@@ -15,6 +15,7 @@ import 'package:just_audio/just_audio.dart' as just_audio;
 //* Single project import
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:shimmer/shimmer.dart';
 
 //* Data Layer - Models, Datasources, Repositories
 part 'data/datasources/local/roleplay_local_data_source.dart';

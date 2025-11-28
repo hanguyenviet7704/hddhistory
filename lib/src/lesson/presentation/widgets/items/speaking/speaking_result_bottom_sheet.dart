@@ -151,8 +151,10 @@ class SpeakingGoodPointsSection extends StatelessWidget {
             builder: (context, goodPoints) {
               return AnimateSwitch(
                 child: goodPoints.isEmpty
-                    ? Center(
-                        child: Lottie.asset(key: ValueKey('typing-goodPoints'), AppAsset.lottie.typing, height: 50.h),
+                    ? const _SpeakingPointsSkeleton(
+                        key: ValueKey('skeleton-goodPoints'),
+                        baseColor: Color(0xFFC7C5FA),
+                        highlightColor: Color(0xFFEBEAFD),
                       )
                     : AnimatedPointsList(
                         key: ValueKey('good-points'),
@@ -218,8 +220,10 @@ class SpeakingImprovementSection extends StatelessWidget {
             builder: (context, improvementPoints) {
               return AnimateSwitch(
                 child: improvementPoints.isEmpty
-                    ? Center(
-                        child: Lottie.asset(key: ValueKey('typing-improvementPoints'), AppAsset.lottie.typing, height: 50.h),
+                    ? const _SpeakingPointsSkeleton(
+                        key: ValueKey('skeleton-improvementPoints'),
+                        baseColor: Color(0xFFB3DDCC),
+                        highlightColor: Color(0xFFE6F4EE),
                       )
                     : AnimatedPointsList(
                         key: ValueKey('improvement-points'),
@@ -301,6 +305,56 @@ class AnimatedPointsList extends StatelessWidget {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+}
+
+class _SpeakingPointsSkeleton extends StatelessWidget {
+  final Color baseColor;
+  final Color highlightColor;
+
+  const _SpeakingPointsSkeleton({
+    super.key,
+    required this.baseColor,
+    required this.highlightColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: baseColor.withValues(alpha: 0.6),
+      highlightColor: highlightColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 9.h,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+          ),
+          8.verticalSpace,
+          Container(
+            height: 9.h,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+          ),
+          8.verticalSpace,
+          Container(
+            height: 9.h,
+            width: 137.w,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+          ),
+        ],
       ),
     );
   }

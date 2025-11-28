@@ -70,18 +70,12 @@ class _RoleplayFeedbackSummaryCard extends StatelessWidget {
             ),
           ),
           12.verticalSpace,
-          if (items.isEmpty)
-            AppText(
-              context.text.common.emptyList,
-              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-            )
-          else ...[
-            for (final item in items)
-              Padding(
-                padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8.h),
-                child: _RoleplayFeedbackSummaryRow(label: item),
-              ),
-          ],
+
+          for (final item in items)
+            Padding(
+              padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8.h),
+              child: _RoleplayFeedbackSummaryRow(label: item),
+            ),
         ],
       ),
     );
@@ -95,6 +89,8 @@ class _RoleplayFeedbackSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (label.isEmpty) return _RoleplayFeedbackSummarySkeleton();
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -119,6 +115,51 @@ class _RoleplayFeedbackSummaryRow extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _RoleplayFeedbackSummarySkeleton extends StatelessWidget {
+  const _RoleplayFeedbackSummarySkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppCustomColor.borderDefault.op(0.3),
+      highlightColor: AppCustomColor.backgroundWhite,
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Padding(
+            padding: EdgeInsets.only(bottom: index == 2 ? 0 : 8.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 6.w,
+                  height: 6.w,
+                  margin: EdgeInsets.only(top: 7.h),
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.borderDefault,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                8.horizontalSpace,
+                Expanded(
+                  child: Container(
+                    height: 14.h,
+                    decoration: BoxDecoration(
+                      color: AppCustomColor.borderDefault,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                ),
+                if (index != 1) 40.horizontalSpace,
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
