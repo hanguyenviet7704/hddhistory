@@ -14,4 +14,5 @@ sealed class AuthEvent with _$AuthEvent {
   const factory AuthEvent.verifyOTP(String otp) = _VerifyOTP;
   const factory AuthEvent.changePassword(String oldPassword, String newPassword, String confirmPassword) = _ChangePassword;
   const factory AuthEvent.deleteAccountPermanently(String userId) = _DeleteAccountPermanently;
+  const factory AuthEvent.clearSession() = _ClearSession;
 }

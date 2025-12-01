@@ -15,6 +15,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final ResendOtpUsecase _resendOtpUsecase;
   final DeleteAccountUsecase _deleteAccountUsecase;
   final DeletePermanentUserUsecase _deletePermanentUserUsecase;
+  final RefreshTokenUsecase _refreshTokenUsecase;
 
   final IDeviceInfoService _deviceInfoService;
   final UserCubit _userCubit;
@@ -23,6 +24,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final PageCubit _pageCubit;
   final CourseRoadmapCubit _courseRoadmapCubit;
   final LocaleCubit _localeCubit;
+
+  static Completer<bool>? _refreshCompleter;
 
   AuthBloc(
     this._loginUsecase,
@@ -36,6 +39,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._resendOtpUsecase,
     this._deleteAccountUsecase,
     this._deletePermanentUserUsecase,
+    this._refreshTokenUsecase,
     this._deviceInfoService,
     this._userCubit,
     this._profileCubit,
@@ -50,6 +54,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     on<_Register>(_onRegister);
     on<_Logout>(_onLogout);
     on<_DeleteAccountPermanently>(_onDeletePermanentUser);
+    on<_ClearSession>(_onClearSession);
   }
 
   void _onAuthSuccess(AuthEntity auth) {
@@ -178,5 +183,87 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       },
       onFailure: (error) {},
     );
+  }
+
+  Future<bool> refreshAccessToken() async {
+    final existingCompleter = _refreshCompleter;
+    if (existingCompleter != null) {
+      return existingCompleter.future;
+    }
+
+    final completer = Completer<bool>();
+    _refreshCompleter = completer;
+
+    void complete(bool value) {
+      if (!completer.isCompleted) {
+        completer.complete(value);
+      }
+    }
+
+    try {
+      final refreshToken = AppGlobalValue.refreshToken;
+      final userId = _userCubit.state.user.id;
+      String deviceId = await _deviceInfoService.deviceToken;
+      String deviceName = await _deviceInfoService.deviceName;
+
+      if (refreshToken.isEmpty || userId.isEmpty) {
+        LogDev.warning('[AuthBloc] Token refresh skipped: Missing refresh token or user id');
+        complete(false);
+        return completer.future;
+      }
+
+      LogDev.info('[AuthBloc] Access token expired, attempting to refresh...');
+
+      final result = await _refreshTokenUsecase({
+        "userId": userId,
+        "refreshToken": refreshToken,
+        "device": {
+          "deviceId": deviceId,
+          "deviceName": deviceName,
+        },
+      }).run();
+
+      final refreshed = result.match(
+        (failure) {
+          LogDev.error('[AuthBloc] Token refresh failed: ${failure.displayMessage}');
+          return false;
+        },
+        (auth) {
+          if (auth.token.accessToken.isEmpty) {
+            LogDev.error('[AuthBloc] Token refresh failed: Empty access token returned');
+            return false;
+          }
+
+          AppGlobalValue.accessToken = auth.token.accessToken;
+          _userCubit.setAccessToken(auth.token.accessToken);
+
+          LogDev.info('[AuthBloc] Token refreshed successfully, retrying original request...');
+          return true;
+        },
+      );
+
+      complete(refreshed);
+    } catch (error, stackTrace) {
+      LogDev.error('[AuthBloc] Failed to refresh token: $error\n$stackTrace');
+      complete(false);
+    } finally {
+      _refreshCompleter = null;
+    }
+
+    return completer.future;
+  }
+
+  Future<void> _onClearSession(_ClearSession event, Emitter<AuthState> emit) async {
+    String deviceId = await _deviceInfoService.deviceToken;
+    String deviceName = await _deviceInfoService.deviceName;
+    String languageCode = _localeCubit.state.languageCode;
+    _onResetAuth();
+    _loginAnonymous({
+      "device": {
+        "deviceId": deviceId,
+        "deviceName": deviceName,
+      },
+      "language": languageCode,
+    });
   }
 }
