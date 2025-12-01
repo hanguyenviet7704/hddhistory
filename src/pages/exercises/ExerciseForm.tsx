@@ -138,7 +138,9 @@ const cleanDocumentItems = (documents: IDocument[]) => {
         (isTextualDocumentType(doc.type) &&
           !!cleanedData.content &&
           Object.keys(cleanedData.content).length > 0) ||
-        ((doc.type === DocumentType.IMAGE || doc.type === DocumentType.AUDIO) &&
+        ((doc.type === DocumentType.IMAGE ||
+          doc.type === DocumentType.AUDIO ||
+          doc.type === DocumentType.ANIMATION) &&
           !!cleanedData.url) ||
         (doc.type === DocumentType.VIDEO &&
           (!!cleanedData.url || !!cleanedData.thumbnail));
@@ -1587,6 +1589,7 @@ export default function ExerciseForm({
                 prefix: "",
                 folder: "exercises",
               }}
+              accept="application/json,.json,.lottie"
             />
           </div>
         );
