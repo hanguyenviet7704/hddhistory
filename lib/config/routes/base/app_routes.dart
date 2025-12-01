@@ -16,7 +16,7 @@ mixin RoutePath {
   static const String noAuth = '/no-auth';
 
   //* Monetization
-  static const String premiumPaywall = '/premium-paywall';
+  static const String paywall = '/paywall';
 
   //* Onboard
   static const String onboard = '/onboard';
@@ -80,7 +80,7 @@ mixin RouteNamed {
   static const String noAuth = 'No Auth Page';
 
   //* Monetization
-  static const String premiumPaywall = 'Premium Paywall';
+  static const String paywall = 'Paywall Page';
 
   //* Onboard
   static const String onboard = 'Onboard Page';

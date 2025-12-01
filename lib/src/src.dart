@@ -18,3 +18,4 @@ export 'profile/profile.dart';
 export 'progress/progress.dart';
 export 'roleplay/roleplay.dart';
 export 'setting/setting.dart';
+export 'monetization/monetization.dart';

@@ -53,3 +53,11 @@ class IntroRoute extends GoRouteData with $IntroRoute {
   );
 }
 
+//* Paywall Page
+@TypedGoRoute<PaywallRoute>(path: RoutePath.paywall, name: RouteNamed.paywall)
+class PaywallRoute extends BaseTransitionRouteData with $PaywallRoute {
+  const PaywallRoute();
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const PaywallPage();
+}

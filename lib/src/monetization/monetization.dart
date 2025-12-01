@@ -36,4 +36,4 @@ part 'presentation/cubits/monetization_cubit.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/monetization_state.dart';
 //* Presentation Layer - Pages
-part 'presentation/pages/monetization_page.dart';
+part 'presentation/pages/paywall_page.dart';
