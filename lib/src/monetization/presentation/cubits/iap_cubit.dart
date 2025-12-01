@@ -1,7 +1,7 @@
 part of '../../monetization.dart';
 
 @lazySingleton
-class MonetizationCubit extends Cubit<MonetizationState> with CubitUseCaseHandlerMixin<MonetizationState> {
+class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final IMonetizationRepository _iapRepository;
   final IIapService _iapService;
   final ITrackingService _trackingService;
@@ -11,7 +11,7 @@ class MonetizationCubit extends Cubit<MonetizationState> with CubitUseCaseHandle
   final VerifyIOSUsecase _verifyIosUsecase;
   final VerifyAndroidUsecase _verifyAndroidUsecase;
 
-  MonetizationCubit(
+  IapCubit(
     this._iapRepository,
     this._iapService,
     this._trackingService,
@@ -20,7 +20,7 @@ class MonetizationCubit extends Cubit<MonetizationState> with CubitUseCaseHandle
     this._restoreUsecase,
     this._verifyIosUsecase,
     this._verifyAndroidUsecase,
-  ) : super(MonetizationState.initial());
+  ) : super(IapState.initial());
 
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
 
@@ -92,9 +92,7 @@ class MonetizationCubit extends Cubit<MonetizationState> with CubitUseCaseHandle
           LogDev.warning('Payment failed');
 
           break;
-        case PurchaseStatus.purchased || PurchaseStatus.restored:
-          _iapService.completePurchase(purchaseDetail);
-
+        case PurchaseStatus.purchased:
           if (Platform.isIOS) {
             _verifyIosPurchase(purchaseDetail);
           } else {
@@ -102,6 +100,16 @@ class MonetizationCubit extends Cubit<MonetizationState> with CubitUseCaseHandle
           }
 
           LogDev.warning('Purchase verification done');
+          break;
+
+        case PurchaseStatus.restored:
+          if (Platform.isIOS) {
+            _verifyIosPurchase(purchaseDetail);
+          } else {
+            _verifyAndroidPurchase(purchaseDetail);
+          }
+
+          LogDev.warning('Purchase restored');
           break;
       }
     });
