@@ -1,18 +1,14 @@
-part of '../../blocs.dart';
+part of '../../../monetization.dart';
 
 @lazySingleton
 final class PaywallCubit extends HydratedCubit<PaywallState> with CubitUseCaseHandlerMixin<PaywallState> {
   PaywallCubit() : super(PaywallState.initial());
 
   @override
-  PaywallState fromJson(Map<String, dynamic> json) {
-    return PaywallState.fromJson(json);
-  }
+  PaywallState fromJson(Map<String, dynamic> json) => PaywallState.fromJson(json);
 
   @override
-  Map<String, dynamic> toJson(PaywallState state) {
-    return state.toJson();
-  }
+  Map<String, dynamic> toJson(PaywallState state) => state.toJson();
 
   void reset() => emit(PaywallState.initial());
   void resetPremiumData() {
@@ -27,7 +23,6 @@ final class PaywallCubit extends HydratedCubit<PaywallState> with CubitUseCaseHa
     emit(state.copyWith(remainingEnergy: state.remainingEnergy - 1));
   }
 
-  void init(BuildContext context) {}
 
   void setHasShownFeedbackForUser(String userId, {bool shown = true}) {
     if (userId.isEmpty) return;

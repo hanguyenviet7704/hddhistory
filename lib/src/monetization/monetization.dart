@@ -32,8 +32,10 @@ part 'domain/usecases/verify_ios_usecase.dart';
 //* Parts for generated files
 part 'monetization.freezed.dart';
 part 'monetization.g.dart';
-part 'presentation/cubits/iap_cubit.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/cubits/iap_state.dart';
+part 'presentation/cubits/iap/iap_cubit.dart';
+part 'presentation/cubits/iap/iap_state.dart';
+part 'presentation/cubits/paywall/paywall_cubit.dart';
+part 'presentation/cubits/paywall/paywall_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/paywall_page.dart';

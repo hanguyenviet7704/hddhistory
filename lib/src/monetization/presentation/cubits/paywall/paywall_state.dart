@@ -1,4 +1,4 @@
-part of '../../blocs.dart';
+part of '../../../monetization.dart';
 
 @freezed
 abstract class PaywallState with _$PaywallState {

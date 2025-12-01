@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 @lazySingleton
 class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {

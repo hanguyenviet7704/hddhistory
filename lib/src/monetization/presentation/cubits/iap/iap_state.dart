@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 enum MonetizationStatus { initial, loading, success, failure }
 
