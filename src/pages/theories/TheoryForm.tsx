@@ -859,6 +859,22 @@ export default function TheoryForm({
         );
       }
 
+      if (doc.type === DocumentType.ANIMATION) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Animation URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "theories",
+              }}
+            />
+          </div>
+        );
+      }
+
       return null;
     };
 
@@ -1084,6 +1100,7 @@ export default function TheoryForm({
                     <option value={DocumentType.IMAGE}>Image</option>
                     <option value={DocumentType.VIDEO}>Video</option>
                     <option value={DocumentType.AUDIO}>Audio</option>
+                    <option value={DocumentType.ANIMATION}>Animation</option>
                   </select>
                 </div>
                 {renderDocumentFields(doc, index)}
