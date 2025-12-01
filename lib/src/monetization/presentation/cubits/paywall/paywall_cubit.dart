@@ -23,7 +23,6 @@ final class PaywallCubit extends HydratedCubit<PaywallState> with CubitUseCaseHa
     emit(state.copyWith(remainingEnergy: state.remainingEnergy - 1));
   }
 
-
   void setHasShownFeedbackForUser(String userId, {bool shown = true}) {
     if (userId.isEmpty) return;
     if (shown) {
