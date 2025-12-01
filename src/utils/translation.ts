@@ -10,10 +10,14 @@ export type { ITranslation } from "./translate";
  * 3. Ngôn ngữ đầu tiên có giá trị
  */
 export function getTranslationValue(
-  translation: ITranslation | undefined,
+  translation: ITranslation | string | undefined,
   currentLang: LangCode
 ): string {
   if (!translation) return "";
+
+  if (typeof translation === "string") {
+    return translation;
+  }
 
   // Ưu tiên ngôn ngữ hiện tại
   if (translation[currentLang]) {
@@ -37,10 +41,11 @@ export function getTranslationValue(
  * Dùng cho input field để người dùng có thể xóa hết text
  */
 export function getCurrentTranslationValue(
-  translation: ITranslation | undefined,
+  translation: ITranslation | string | undefined,
   currentLang: LangCode
 ): string {
   if (!translation) return "";
+  if (typeof translation === "string") return translation;
   return translation[currentLang] || "";
 }
 

@@ -33,9 +33,12 @@ export default function CloudflareFileUpload({
   const [error, setError] = useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = useState(initialUrl);
   const [fileType, setFileType] = useState<string>(""); // 👈 thêm state để biết đang xử lý audio hay image
+  const [fileName, setFileName] = useState<string>("");
 
   useEffect(() => {
     setPreviewUrl(initialUrl);
+    setFileType("");
+    setFileName(initialUrl ? initialUrl.split("/").pop() || "" : "");
   }, [initialUrl]);
 
   const handleFileChange = async (
@@ -55,6 +58,7 @@ export default function CloudflareFileUpload({
       if (!newUrl) throw new Error("API did not return a valid URL");
 
       setPreviewUrl(newUrl);
+      setFileName(file.name);
       onUrlChange(newUrl);
     } catch (err: any) {
       console.error("Upload error:", err);
@@ -75,6 +79,17 @@ export default function CloudflareFileUpload({
     fileType.startsWith("audio") ||
     previewUrl.endsWith(".mp3") ||
     previewUrl.endsWith(".wav");
+
+  const isImage =
+    fileType.startsWith("image") ||
+    /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(previewUrl);
+
+  const isAnimation =
+    fileType.includes("json") ||
+    fileType.includes("lottie") ||
+    accept.includes("json") ||
+    accept.includes("lottie") ||
+    /\.(json|lottie)$/i.test(previewUrl);
 
   return (
     <div>
@@ -100,12 +115,44 @@ export default function CloudflareFileUpload({
                 <source src={previewUrl} />
                 Trình duyệt của bạn không hỗ trợ phát audio.
               </audio>
-            ) : (
+            ) : isAnimation ? (
+              <div className="w-full h-full flex flex-col items-center justify-center text-sm text-gray-700">
+                <div className="px-3 py-2 bg-gray-100 border border-dashed border-gray-300 rounded">
+                  <span className="font-semibold">Animation file</span>
+                  <div className="text-xs text-gray-500">
+                    {fileName || previewUrl}
+                  </div>
+                </div>
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-2 text-indigo-600 hover:underline text-xs"
+                >
+                  Open
+                </a>
+              </div>
+            ) : isImage ? (
               <img
                 src={previewUrl}
                 alt="Preview"
                 className="w-full h-full object-cover rounded-lg"
               />
+            ) : (
+              <div className="text-center text-sm text-gray-700 px-3 py-2 bg-gray-100 border border-dashed border-gray-300 rounded">
+                <div className="font-semibold">Uploaded file</div>
+                <div className="text-xs text-gray-500 break-all">
+                  {fileName || previewUrl}
+                </div>
+                <a
+                  href={previewUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="mt-1 inline-block text-indigo-600 hover:underline text-xs"
+                >
+                  Open
+                </a>
+              </div>
             )}
             <button
               type="button"
@@ -124,6 +171,8 @@ export default function CloudflareFileUpload({
             <p className="text-xs text-gray-500">
               {accept.includes("audio")
                 ? "MP3, WAV up to 10MB"
+                : accept.includes("json") || accept.includes("lottie")
+                ? "JSON / Lottie"
                 : "PNG, JPG, GIF up to 10MB"}
             </p>
           </div>
