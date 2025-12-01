@@ -2,17 +2,14 @@ library;
 
 //* Import all default dart libraries here
 import 'dart:async';
-import 'dart:io';
 
 //* Import all dependencies here
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart' hide kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:hydrated_bloc/hydrated_bloc.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
 import 'package:injectable/injectable.dart';
 import 'package:meup/src/auth/auth.dart';
 
@@ -23,8 +20,6 @@ import '../../../../core/constants/constants.dart';
 import '../../../../core/helpers/helpers.dart';
 import '../../../../flavors.dart';
 import '../../data/models/models.dart';
-import '../../domain/repositories/repositories.dart';
-import '../../domain/usecases/usecases.dart';
 
 //* Export all the blocs here
 
@@ -34,9 +29,6 @@ part 'blocs.g.dart';
 //? Connectivity Bloc
 part 'connectivity/connectivity_cubit.dart';
 part 'connectivity/connectivity_state.dart';
-//? In App Bloc
-part 'paywall/iap/iap_cubit.dart';
-part 'paywall/iap/iap_state.dart';
 //? Paywall Bloc
 part 'paywall/paywall/paywall_cubit.dart';
 part 'paywall/paywall/paywall_state.dart';

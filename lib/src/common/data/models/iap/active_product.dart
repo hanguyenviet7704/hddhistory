@@ -5,7 +5,7 @@ abstract class ActiveProduct with _$ActiveProduct {
   const factory ActiveProduct({
     required String id,
     @Default('') String profileId,
-    @Default(IapProduct()) IapProduct subscriptionPlan,
+    // @Default(IapProduct()) IapProduct subscriptionPlan,
     @Default('') String status,
   }) = _ActiveProduct;
 

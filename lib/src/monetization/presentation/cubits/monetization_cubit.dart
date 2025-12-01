@@ -1,8 +1,8 @@
-part of '../../blocs.dart';
+part of '../../monetization.dart';
 
 @lazySingleton
-class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
-  final IIAPRepository _iapRepository;
+class MonetizationCubit extends Cubit<MonetizationState> with CubitUseCaseHandlerMixin<MonetizationState> {
+  final IMonetizationRepository _iapRepository;
   final IIapService _iapService;
   final ITrackingService _trackingService;
   final GetPackagesUsecase _getPackagesUsecase;
@@ -11,7 +11,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
   final VerifyIOSUsecase _verifyIosUsecase;
   final VerifyAndroidUsecase _verifyAndroidUsecase;
 
-  IAPCubit(
+  MonetizationCubit(
     this._iapRepository,
     this._iapService,
     this._trackingService,
@@ -20,7 +20,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
     this._restoreUsecase,
     this._verifyIosUsecase,
     this._verifyAndroidUsecase,
-  ) : super(IAPState.initial());
+  ) : super(MonetizationState.initial());
 
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
 
@@ -39,21 +39,21 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
   }
 
   void loadIapProducts() async {
-    await executeListUseCase(
+    await runUseCase<List<IapProductEntity>>(
       usecase: _getPackagesUsecase.call,
       onSuccess: (products) {
-        if (products.data.isEmpty) return;
-        if (products.data.isEmpty) return;
-        String largestProductPriceId = products.data.reduce((a, b) => a.rawPrice > b.rawPrice ? a : b).id;
-        emit(state.copyWith(iapProducts: products.data, selectedProductId: largestProductPriceId));
+        if (products.isEmpty) return;
+        if (products.isEmpty) return;
+        String largestProductPriceId = products.reduce((a, b) => a.rawPrice > b.rawPrice ? a : b).id;
+        emit(state.copyWith(iapProducts: products, selectedProductId: largestProductPriceId));
       },
-      onFailure: (error) => emit(state.copyWith(error: error.toString())),
+      onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
     );
   }
 
   Future<void> purchaseProduct({PurchaseType type = PurchaseType.subscription}) async {
-    emit(state.copyWith(isLoading: true));
-    await executeUseCase(
+    emit(state.copyWith(status: MonetizationStatus.loading));
+    await runUseCase<IapVerifyEntity>(
       usecase: () => _purchaseUsecase.call(PurchaseParams(productId: state.selectedProductId, type: type)),
       onSuccess: (verify) {},
       onFailure: (error) => _onPurchaseFailure(),
@@ -61,10 +61,10 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
   }
 
   Future<void> restorePurchases() async {
-    await executeUseCase(
-      usecase: () => _restoreUsecase.call(),
-      onSuccess: (verify) => emit(state.copyWith(isLoading: false)),
-      onFailure: (error) => emit(state.copyWith(error: error.toString(), isLoading: false)),
+    await runUseCase<IapVerifyEntity>(
+      usecase: _restoreUsecase.call,
+      onSuccess: (verify) => emit(state.copyWith(status: MonetizationStatus.success)),
+      onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
     );
   }
 
@@ -109,7 +109,7 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
 
   void _verifyIosPurchase(PurchaseDetails purchaseDetail) async {
     final verificationData = await _iapService.refreshIOSVerificationData();
-    executeUseCase(
+    runUseCase<IapVerifyEntity>(
       usecase: () => _verifyIosUsecase.call(
         VerifyIOSParams(
           receiptData: verificationData?.serverVerificationData ?? '',
@@ -118,12 +118,12 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
         ),
       ),
       onSuccess: (verify) => _onPurchaseSuccess(),
-      onFailure: (error) => emit(state.copyWith(error: error.toString(), isLoading: false)),
+      onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
     );
   }
 
   void _verifyAndroidPurchase(PurchaseDetails purchaseDetail) async {
-    executeUseCase(
+    runUseCase<IapVerifyEntity>(
       usecase: () => _verifyAndroidUsecase.call(
         VerifyAndroidParams(
           receiptData: purchaseDetail.verificationData.serverVerificationData,
@@ -131,18 +131,17 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
         ),
       ),
       onSuccess: (verify) => _onPurchaseSuccess(),
-      onFailure: (error) => emit(state.copyWith(error: error.toString(), isLoading: false)),
+      onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
     );
   }
 
   void _onPurchaseSuccess() {
     // AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
     AppConfig.instance.context?.read<PaywallCubit>().fakeInfiniteEnergy();
-    emit(state.copyWith(isLoading: false));
+    emit(state.copyWith(status: MonetizationStatus.success));
     AppConfig.instance.context?.backUntil(RoutePath.home);
-      
-    _trackingService.trackSubscriptionCompleted(state.selectedProductId);
 
+    _trackingService.trackSubscriptionCompleted(state.selectedProductId);
 
     Future.delayed(const Duration(seconds: 1), () async {
       final PaywallCubit paywallCubit = AppConfig.instance.context!.read<PaywallCubit>();
@@ -157,8 +156,8 @@ class IAPCubit extends Cubit<IAPState> with CubitUseCaseHandlerMixin<IAPState> {
   }
 
   void _onPurchaseFailure({String error = ''}) {
-    emit(state.copyWith(isLoading: false));
-    _trackingService.trackPaywallStorePopupDismiss(AppConfig.instance.context!  , state.selectedProductId);
+    emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString()));
+    _trackingService.trackPaywallStorePopupDismiss(AppConfig.instance.context!, state.selectedProductId);
     DMessage.showMessage(message: error.isEmpty ? 'AppConfig.instance.context?.text.monetPaymentFailToast' : error, type: MessageType.error);
   }
 

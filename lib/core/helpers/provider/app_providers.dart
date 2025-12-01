@@ -17,7 +17,6 @@ class AppProviders extends StatelessWidget {
         BlocProvider<UserCubit>(create: (_) => AppDI.injector.get<UserCubit>()),
         // BlocProvider<PreviewLectureCubit>(create: (_) => AppDI.injector.get<PreviewLectureCubit>()),
         BlocProvider<AuthBloc>(create: (_) => AppDI.injector.get<AuthBloc>()),
-        BlocProvider<IAPCubit>(create: (_) => AppDI.injector.get<IAPCubit>()),
         BlocProvider<PaywallCubit>(create: (_) => AppDI.injector.get<PaywallCubit>()),
         BlocProvider<DeeplinkCubit>(create: (_) => AppDI.injector.get<DeeplinkCubit>()),
         BlocProvider<PageCubit>(create: (_) => AppDI.injector.get<PageCubit>()),

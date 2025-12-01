@@ -1,13 +1,13 @@
-part of 'repositories.dart';
+part of '../../monetization.dart';
 
-@LazySingleton(as: IIAPRepository)
-class IAPRepository with RestfulRequestHandlerMixin implements IIAPRepository {
-  final IAPApi _iapApi;
+@LazySingleton(as: IMonetizationRepository)
+class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetizationRepository {
+  final MonetizationApi _monetizationApi;
   final IIapService _iapService;
   late final StreamSubscription<List<PurchaseDetails>> _subscription;
   final StreamController<PurchaseDetails> _purchaseDetailController = StreamController<PurchaseDetails>.broadcast();
 
-  IAPRepository(this._iapApi, this._iapService) {
+  MonetizationRepository(this._monetizationApi, this._iapService) {
     _setupSubscription();
   }
 
@@ -37,8 +37,8 @@ class IAPRepository with RestfulRequestHandlerMixin implements IIAPRepository {
   }
 
   @override
-  TaskEither<AppException, BaseResponseList<IapProduct>> getProducts() {
-    return callApiList(
+  TaskEither<AppException, List<IapProductEntity>> getProducts() {
+    return callApiListWithTransform(
       apiCall: () async {
         // final response = await _iapApi.getPackages();
 
@@ -56,7 +56,7 @@ class IAPRepository with RestfulRequestHandlerMixin implements IIAPRepository {
         final Set<String> productIds = {'artlexis_sub_weekly', 'artlexis_sub_monthly'};
         List<ProductDetails> productDetails = await _iapService.getProducts(productIds: productIds);
         productDetails.sort((a, b) => a.price.compareTo(b.price));
-        List<IapProduct> products = productDetails.toIapProducts();
+        List<IapProductModel> products = productDetails.toIapProducts();
 
         return BaseResponseList(
           data: products,
@@ -64,17 +64,18 @@ class IAPRepository with RestfulRequestHandlerMixin implements IIAPRepository {
           message: 'Success',
         );
       },
+      transform: (data) => data.toEntity(),
     );
   }
 
   @override
-  TaskEither<AppException, BaseResponse<IapVerify>> purchase(PurchaseParams params) {
+  TaskEither<AppException, IapVerifyEntity> purchase(PurchaseParams params) {
     return TaskEither.tryCatch(
       () async {
         bool isSuccess = await _iapService.purchaseProduct(params.productId, params.type);
 
-        if (!isSuccess) return BaseResponse(data: IapVerify(status: 'fail'));
-        return BaseResponse(data: IapVerify(status: 'success'));
+        if (!isSuccess) return IapVerifyModel(status: 'fail').toEntity();
+        return IapVerifyModel(status: 'success').toEntity();
       },
       (error, stackTrace) {
         return AppException.unexpected(error.toString());
@@ -83,11 +84,11 @@ class IAPRepository with RestfulRequestHandlerMixin implements IIAPRepository {
   }
 
   @override
-  TaskEither<AppException, BaseResponse<IapVerify>> restore() {
+  TaskEither<AppException, IapVerifyEntity> restore() {
     return TaskEither.tryCatch(
       () async {
         await _iapService.restorePurchases();
-        return BaseResponse(data: IapVerify(status: 'success'));
+        return IapVerifyModel(status: 'success').toEntity();
       },
       (error, stackTrace) {
         return AppException.unexpected(error.toString());
@@ -96,7 +97,7 @@ class IAPRepository with RestfulRequestHandlerMixin implements IIAPRepository {
   }
 
   @override
-  TaskEither<AppException, BaseResponse<IapVerify>> verifyIOSPurchase(VerifyIOSParams params) {
+  TaskEither<AppException, IapVerifyEntity> verifyIOSPurchase(VerifyIOSParams params) {
     // return callApi(
     //   apiCall: () => _iapApi.verifyIos({
     //     'receiptData': params.receiptData,
@@ -105,24 +106,28 @@ class IAPRepository with RestfulRequestHandlerMixin implements IIAPRepository {
     //     'useLatestReceiptInfo': true,
     //   }),
     // );
-    return callApi(
-      apiCall: () => _iapApi.verifyIosV111({
+    return callApiWithTransform<IapVerifyModel, IapVerifyEntity>(
+      apiCall: () => _monetizationApi.verifyIosV111({
         'transactionId': params.transactionId,
         'receiptData': params.receiptData,
         'useSandbox': params.isSandbox,
       }),
+      transform: (model) => model.toEntity(),
+      defaultValue: IapVerifyEntity(),
     );
     // return Future.value(Right(BaseResponse(data: IapVerify(status: 'success'))));
   }
 
   @override
-  TaskEither<AppException, BaseResponse<IapVerify>> verifyAndroidPurchase(VerifyAndroidParams params) {
-    return callApi(
-      apiCall: () => _iapApi.verifyAndroid({
+  TaskEither<AppException, IapVerifyEntity> verifyAndroidPurchase(VerifyAndroidParams params) {
+    return callApiWithTransform<IapVerifyModel, IapVerifyEntity>(
+      apiCall: () => _monetizationApi.verifyAndroid({
         'productId': params.productId,
         'purchaseToken': params.receiptData,
         'packageName': 'com.eup.meup',
       }),
+      transform: (model) => model.toEntity(),
+      defaultValue: IapVerifyEntity(),
     );
   }
 

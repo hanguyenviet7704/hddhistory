@@ -1,8 +1,8 @@
-part of '../models.dart';
+part of '../../monetization.dart';
 
 @freezed
-abstract class IapProduct with _$IapProduct {
-  const factory IapProduct({
+abstract class IapProductModel with _$IapProductModel {
+  const factory IapProductModel({
     @Default('') String id,
     @Default('') String title,
     @Default('') String description,
@@ -12,19 +12,19 @@ abstract class IapProduct with _$IapProduct {
     @Default('') String currencyCode,
     @Default(false) bool isSubscription,
     @Default('') String planName,
-    @Default(PaymentProvider()) PaymentProvider paymentProvider,
+    @Default(PaymentProviderModel()) PaymentProviderModel paymentProvider,
     @Default('') String externalPlanId,
     @Default('') String durationType,
     @Default(0) int durationValue,
     @Default('') String currency,
     @Default(false) bool isActive,
-    @Default([]) List<Feature> features,
-  }) = _IapProduct;
+    @Default([]) List<FeatureModel> features,
+  }) = _IapProductModel;
 
-  factory IapProduct.fromJson(Map<String, dynamic> json) => _$IapProductFromJson(json);
+  factory IapProductModel.fromJson(Map<String, dynamic> json) => _$IapProductModelFromJson(json);
 }
 
-extension IapProductExtension on IapProduct {
+extension IapProductModelExtension on IapProductModel {
   bool get isSale => id.contains('monthly');
 
   double get originalPrice => rawPrice * saleScale;
@@ -48,8 +48,8 @@ extension IapProductExtension on IapProduct {
     };
   }
 
-  static IapProduct fromProductDetails(ProductDetails productDetails) {
-    return IapProduct(
+  static IapProductModel fromProductDetails(ProductDetails productDetails) {
+    return IapProductModel(
       id: productDetails.id,
       title: productDetails.title,
       price: productDetails.price,
@@ -59,4 +59,23 @@ extension IapProductExtension on IapProduct {
       description: productDetails.description,
     );
   }
+
+  IapProductEntity toEntity() => IapProductEntity(
+    id: id,
+    title: title,
+    description: description,
+    price: price,
+    rawPrice: rawPrice,
+    currencySymbol: currencySymbol,
+    currencyCode: currencyCode,
+    isSubscription: isSubscription,
+    planName: planName,
+    paymentProvider: paymentProvider.toEntity(),
+    externalPlanId: externalPlanId,
+    durationType: durationType,
+    durationValue: durationValue,
+    currency: currency,
+    isActive: isActive,
+    features: features.map((f) => f.toEntity()).toList(),
+  );
 }

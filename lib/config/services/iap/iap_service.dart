@@ -101,7 +101,7 @@ extension ProductDetailsExtension on ProductDetails {
 }
 
 extension ListProductDetailsExtension on List<ProductDetails> {
-  List<IapProduct> toIapProducts() => map((e) => IapProductExtension.fromProductDetails(e)).toList();
+  List<IapProductModel> toIapProducts() => map((e) => IapProductModelExtension.fromProductDetails(e)).toList();
 }
 
 extension PurchaseDetailsExtension on PurchaseDetails {
