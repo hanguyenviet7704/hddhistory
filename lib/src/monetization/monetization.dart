@@ -39,11 +39,3 @@ part 'presentation/cubits/paywall/paywall_cubit.dart';
 part 'presentation/cubits/paywall/paywall_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/paywall_page.dart';
-//* Presentation Layer - Widgets
-part 'presentation/widgets/paywall_header.dart';
-part 'presentation/widgets/paywall_feature_carousel.dart';
-part 'presentation/widgets/paywall_review_carousel.dart';
-part 'presentation/widgets/paywall_package_card.dart';
-part 'presentation/widgets/paywall_package_list.dart';
-part 'presentation/widgets/paywall_cta.dart';
-part 'presentation/widgets/paywall_success_dialog.dart';

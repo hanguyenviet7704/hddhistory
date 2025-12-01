@@ -59,10 +59,5 @@ class PaywallRoute extends BaseTransitionRouteData with $PaywallRoute {
   const PaywallRoute();
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
-    ],
-    child: const PaywallPage(),
-  );
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const PaywallPage();
 }

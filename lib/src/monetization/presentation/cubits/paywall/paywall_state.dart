@@ -12,7 +12,7 @@ abstract class PaywallState with _$PaywallState {
     @Default(false) bool hasShowFeedback,
   }) = _PaywallState;
 
-  factory PaywallState.initial() => PaywallState(remainingEnergy: (F.appFlavor == Flavor.dev || kDebugMode) ? 3636 : 10);
+  factory PaywallState.initial() =>  PaywallState(remainingEnergy: (F.appFlavor == Flavor.dev || kDebugMode) ? 3636 : 10);
 
   factory PaywallState.fromJson(Map<String, dynamic> json) => _$PaywallStateFromJson(json);
 }
