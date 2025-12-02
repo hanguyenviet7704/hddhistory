@@ -144,25 +144,20 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   void _onPurchaseSuccess() {
+    // AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
     emit(state.copyWith(status: MonetizationStatus.success));
+    AppConfig.instance.context?.backUntil(RoutePath.home);
+
     _trackingService.trackSubscriptionCompleted(state.selectedProductId);
 
-    final context = AppConfig.instance.context;
-    bool isPaywallVisible = false;
-
-    if (context != null) {
-      try {
-        context.read<PaywallCubit>();
-        isPaywallVisible = true;
-      } catch (_) {}
-    }
-
-    if (!isPaywallVisible) {
+    Future.delayed(const Duration(seconds: 1), () async {
+      AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       DMessage.showMessage(
-        message: context?.text.monetization.successTitle ?? 'Payment successful',
+        message: 'AppConfig.instance.context?.text.monetPaymentSuccessToast',
         type: MessageType.success,
       );
-    }
+      // await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
+    });
   }
 
   void _onPurchaseFailure({String error = ''}) {

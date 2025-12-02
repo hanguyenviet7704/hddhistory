@@ -28,13 +28,6 @@ part 'domain/usecases/restore_usecase.dart';
 part 'domain/usecases/verify_android_usecase.dart';
 part 'domain/usecases/verify_ios_usecase.dart';
 //* Presentation Layer - Widgets
-part 'presentation/widgets/paywall_banner_carousel.dart';
-part 'presentation/widgets/paywall_benefit_section.dart';
-part 'presentation/widgets/paywall_feedback_section.dart';
-part 'presentation/widgets/paywall_plan_card.dart';
-part 'presentation/widgets/paywall_plan_sheet.dart';
-part 'presentation/widgets/paywall_success_dialog.dart';
-part 'presentation/widgets/paywall_header.dart';
 
 //* Parts for generated files
 part 'monetization.freezed.dart';
