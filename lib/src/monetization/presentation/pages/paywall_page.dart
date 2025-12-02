@@ -42,22 +42,22 @@ class _PaywallPageState extends State<PaywallPage> {
 
     return [
       FeedbackContent(
-        userName: 'Ava',
+        userName: 'Trang',
         title: monetizationTexts.review1Title,
         description: monetizationTexts.review1Body,
         stars: 5,
       ),
       FeedbackContent(
-        userName: 'Minh',
+        userName: 'Chi',
         title: monetizationTexts.review2Title,
         description: monetizationTexts.review2Body,
         stars: 5,
       ),
       FeedbackContent(
-        userName: 'Chen',
+        userName: 'Duy',
         title: monetizationTexts.review3Title,
         description: monetizationTexts.review3Body,
-        stars: 4,
+        stars: 5,
       ),
     ];
   }
@@ -67,14 +67,11 @@ class _PaywallPageState extends State<PaywallPage> {
     final feedbackContents = _buildFeedbackContents();
 
     return Scaffold(
+      backgroundColor: AppCustomColor.backgroundBrand,
       body: SafeArea(
-        child: Column(
-          children: [
-            PaywallPageDecoration(
-              bannerDecorations: bannerDecorations,
-              feedbackContents: feedbackContents,
-            ),
-          ],
+        child: PaywallPageDecoration(
+          bannerDecorations: bannerDecorations,
+          feedbackContents: feedbackContents,
         ),
       ),
     );

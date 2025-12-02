@@ -27,18 +27,72 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
+    return Container(
+      color: AppCustomColor.backgroundBrand,
       child: SingleChildScrollView(
         physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.symmetric(vertical: 16.h),
+        padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            _buildTopBar(),
+            16.verticalSpace,
+            _buildHeroTitle(),
+            12.verticalSpace,
+            _buildSubtitle(),
+            24.verticalSpace,
             _buildBannerCarousel(),
             24.verticalSpace,
             _buildFeedbackSection(),
+            28.verticalSpace,
+            _buildRestorePurchase(),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildTopBar() {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(width: 24.w),
+        _PremiumPill(),
+        GestureDetector(
+          onTap: () {
+            if (Navigator.of(context).canPop()) {
+              Navigator.of(context).pop();
+            }
+          },
+          child: Icon(
+            Icons.close,
+            color: AppCustomColor.textTertiary,
+            size: 24.w,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeroTitle() {
+    return AppText(
+      t.monetization.paywallHeroTitle,
+      textAlign: TextAlign.center,
+      maxLines: 2,
+      style: AppStyle.text32.copyWith(
+        fontWeight: FontWeight.w700,
+        color: AppCustomColor.textBrand,
+        height: 1.25,
+      ),
+    );
+  }
+
+  Widget _buildSubtitle() {
+    return AppText(
+      t.monetization.paywallHeroSubtitle,
+      textAlign: TextAlign.center,
+      style: AppStyle.text14.copyWith(
+        color: AppCustomColor.textBrand.withValues(alpha: 0.4),
       ),
     );
   }
@@ -115,8 +169,8 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             dotWidth: 8.w,
             spacing: 6.w,
             expansionFactor: 3,
-            activeDotColor: AppTheme.primaryColor,
-            dotColor: AppCustomColor.borderSecondary,
+            activeDotColor: AppCustomColor.brandPrimary,
+            dotColor: AppCustomColor.greyC1,
           ),
         ),
       ],
@@ -128,36 +182,31 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          child: AppText(
-            t.monetization.reviewsTitle,
-            style: AppStyle.text18.copyWith(
-              fontWeight: FontWeight.w700,
-              color: AppCustomColor.textPrimary,
-            ),
-          ),
-        ),
-        12.verticalSpace,
-        SizedBox(
-          height: 156.h,
-          child: ListView.separated(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            scrollDirection: Axis.horizontal,
-            physics: const BouncingScrollPhysics(),
-            itemBuilder: (context, index) {
-              return _FeedbackCard(
-                feedback: widget.feedbackContents[index],
-              );
-            },
-            separatorBuilder: (_, _) => 12.horizontalSpace,
-            itemCount: widget.feedbackContents.length,
-          ),
-        ),
-      ],
+    return SizedBox(
+      height: 192.h,
+      child: ListView.separated(
+        padding: EdgeInsets.zero,
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        itemBuilder: (context, index) {
+          return _FeedbackCard(
+            feedback: widget.feedbackContents[index],
+          );
+        },
+        separatorBuilder: (_, __) => 12.horizontalSpace,
+        itemCount: widget.feedbackContents.length,
+      ),
+    );
+  }
+
+  Widget _buildRestorePurchase() {
+    return AppText(
+      t.monetization.restore,
+      textAlign: TextAlign.center,
+      style: AppStyle.text14.copyWith(
+        color: AppCustomColor.textBrand.withValues(alpha: 0.4),
+        fontWeight: FontWeight.w500,
+      ),
     );
   }
 }
@@ -170,11 +219,11 @@ class _FeedbackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 260.w,
-      padding: EdgeInsets.all(16.w),
+      width: 305.w,
+      padding: EdgeInsets.all(20.w),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(16.r),
+        borderRadius: BorderRadius.circular(20.r),
         border: Border.all(color: AppCustomColor.borderSecondary),
         boxShadow: [
           BoxShadow(
@@ -192,8 +241,8 @@ class _FeedbackCard extends StatelessWidget {
               AppText(
                 feedback.userName,
                 style: AppStyle.text14.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: AppCustomColor.textPrimary,
+                  fontWeight: FontWeight.w600,
+                  color: AppCustomColor.textTertiary,
                 ),
               ),
               const Spacer(),
@@ -212,7 +261,7 @@ class _FeedbackCard extends StatelessWidget {
           6.verticalSpace,
           AppText(
             feedback.description,
-            maxLines: 3,
+            maxLines: 4,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
               height: 1.4,
@@ -240,10 +289,37 @@ class _StarRow extends StatelessWidget {
           child: Icon(
             Icons.star_rounded,
             size: 14.w,
-            color: isFilled ? AppCustomColor.brandPrimary50 : AppCustomColor.borderSecondary,
+            color: isFilled ? AppCustomColor.brandPrimary : AppCustomColor.greyC1,
           ),
         );
       }),
+    );
+  }
+}
+
+class _PremiumPill extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      decoration: BoxDecoration(
+        color: AppCustomColor.brandPrimary,
+        borderRadius: BorderRadius.circular(12.r),
+        border: Border.all(color: AppCustomColor.backgroundWhite),
+        boxShadow: [
+          BoxShadow(
+            color: AppCustomColor.borderDefault.withValues(alpha: 0.8),
+            blurRadius: 4,
+          ),
+        ],
+      ),
+      child: AppText(
+        t.monetization.premiumBadge,
+        style: AppStyle.text12.copyWith(
+          fontWeight: FontWeight.w600,
+          color: AppCustomColor.textWhite,
+        ),
+      ),
     );
   }
 }

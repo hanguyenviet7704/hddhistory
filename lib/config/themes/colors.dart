@@ -20,7 +20,7 @@ mixin AppCustomColor {
     Color(0xFF98DC98),
     Color(0xFFECB984),
   ];
-  
+
   static const Color scrimOverlay = Color(0x99364152);
 
   // New colors from Figma design
@@ -37,12 +37,14 @@ mixin AppCustomColor {
   static const Color backgroundSuccess = Color(0xFFEAFFEF);
   static const Color borderDefault = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
+  static const Color greyC1 = Color(0xFFC1C5CD);
   static const Color brandPrimary = Color(0xFF554FF0);
   static const Color brandPrimary50 = Color(0xFFEBEAFD);
   static const Color brandPrimary100 = Color(0xFFD6CAFD);
   static const Color brandPrimary200 = Color(0xFFC7C5FA);
   static const Color brandPrimary300 = Color(0xFF917FF6);
   static const Color backgroundBrand = Color(0xFFEBEAFD);
+  static const Color paywallAqua = Color(0xFF6BBBD8);
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
   static const Color surfaceMuted = Color(0xFFEFF3FA);
