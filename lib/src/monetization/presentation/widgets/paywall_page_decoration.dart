@@ -113,50 +113,13 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             physics: const BouncingScrollPhysics(),
             itemBuilder: (context, index) {
               final bannerPath = widget.bannerDecorations[index].text;
-
-              return Padding(
-                padding: EdgeInsets.only(right: index == widget.bannerDecorations.length - 1 ? 0 : 12.w),
-                child: AnimatedBuilder(
-                  animation: _bannerController,
-                  builder: (context, child) {
-                    double scale = 1;
-                    if (_bannerController.positions.isNotEmpty && _bannerController.hasClients) {
-                      final page = _bannerController.page ?? _bannerController.initialPage.toDouble();
-                      scale = 1 - (page - index).abs() * 0.05;
-                      scale = scale.clamp(0.9, 1.0);
-                    }
-
-                    return Transform.scale(
-                      scale: scale,
-                      child: child,
+              return bannerPath.isNotEmpty
+                  ? Image.asset(
+                      bannerPath,
+                    )
+                  : Container(
+                      color: AppCustomColor.backgroundGray,
                     );
-                  },
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(24.r),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 20,
-                          offset: const Offset(0, 12),
-                        ),
-                      ],
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(24.r),
-                      child: bannerPath.isNotEmpty
-                          ? Image.asset(
-                              bannerPath,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                            )
-                          : Container(
-                              color: AppCustomColor.backgroundGray,
-                            ),
-                    ),
-                  ),
-                ),
-              );
             },
           ),
         ),
