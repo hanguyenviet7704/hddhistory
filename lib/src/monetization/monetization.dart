@@ -38,8 +38,10 @@ part 'presentation/cubits/iap/iap_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/paywall_page.dart';
 //* Presentation Layer - Widgets
-part 'presentation/widgets/paywall_page_decoration.dart';
+part 'presentation/widgets/paywall_all_plan_info_bottom_sheet.dart';
 part 'presentation/widgets/paywall_banner_carousel.dart';
-part 'presentation/widgets/paywall_feedback_list.dart';
-part 'presentation/widgets/paywall_top_bar.dart';
 part 'presentation/widgets/paywall_dots_indicator.dart';
+part 'presentation/widgets/paywall_feedback_list.dart';
+part 'presentation/widgets/paywall_highlight_package_info.dart';
+part 'presentation/widgets/paywall_page_decoration.dart';
+part 'presentation/widgets/paywall_top_bar.dart';

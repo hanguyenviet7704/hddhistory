@@ -1,13 +1,50 @@
 part of '../../monetization.dart';
 
-class PaywallFeedbackList extends StatelessWidget {
-  final List<FeedbackContent> feedbacks;
+class FeedbackContent {
+  final String userName;
+  final String title;
+  final String description;
+  final int stars;
 
-  const PaywallFeedbackList({super.key, required this.feedbacks});
+  FeedbackContent({
+    required this.userName,
+    required this.title,
+    required this.description,
+    required this.stars,
+  });
+}
+
+class PaywallFeedbackList extends StatelessWidget {
+  const PaywallFeedbackList({super.key});
+
+  List<FeedbackContent> get _feedbacks {
+    final monetizationTexts = t.monetization;
+
+    return [
+      FeedbackContent(
+        userName: 'Trang',
+        title: monetizationTexts.review1Title,
+        description: monetizationTexts.review1Body,
+        stars: 5,
+      ),
+      FeedbackContent(
+        userName: 'Chi',
+        title: monetizationTexts.review2Title,
+        description: monetizationTexts.review2Body,
+        stars: 5,
+      ),
+      FeedbackContent(
+        userName: 'Duy',
+        title: monetizationTexts.review3Title,
+        description: monetizationTexts.review3Body,
+        stars: 5,
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    if (feedbacks.isEmpty) return const SizedBox.shrink();
+    if (_feedbacks.isEmpty) return const SizedBox.shrink();
 
     return SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
@@ -15,7 +52,7 @@ class PaywallFeedbackList extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       child: IntrinsicHeight(
         child: Row(
-          children: feedbacks.map((feedback) => _FeedbackCard(feedback: feedback)).toList(),
+          children: _feedbacks.map((feedback) => _FeedbackCard(feedback: feedback)).toList(),
         ),
       ),
     );
