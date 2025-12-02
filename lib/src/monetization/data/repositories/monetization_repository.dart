@@ -74,8 +74,8 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       () async {
         bool isSuccess = await _iapService.purchaseProduct(params.productId, params.type);
 
-        if (!isSuccess) return IapVerifyModel(status: 'fail').toEntity();
-        return IapVerifyModel(status: 'success').toEntity();
+        if (!isSuccess) return IapVerifyModel(status: PurchaseStatus.error).toEntity();
+        return IapVerifyModel(status: PurchaseStatus.purchased).toEntity();
       },
       (error, stackTrace) {
         return AppException.unexpected(error.toString());
@@ -88,7 +88,7 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
     return TaskEither.tryCatch(
       () async {
         await _iapService.restorePurchases();
-        return IapVerifyModel(status: 'success').toEntity();
+        return IapVerifyModel().toEntity();
       },
       (error, stackTrace) {
         return AppException.unexpected(error.toString());
@@ -97,35 +97,9 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   }
 
   @override
-  TaskEither<AppException, IapVerifyEntity> verifyIOSPurchase(VerifyIOSParams params) {
-    // return callApi(
-    //   apiCall: () => _iapApi.verifyIos({
-    //     'receiptData': params.receiptData,
-    //     'useSandbox': params.isSandbox,
-    //     'excludeOldTransactions': false,
-    //     'useLatestReceiptInfo': true,
-    //   }),
-    // );
+  TaskEither<AppException, IapVerifyEntity> verify(VerifyParams params) {
     return callApiWithTransform<IapVerifyModel, IapVerifyEntity>(
-      apiCall: () => _monetizationApi.verifyIosV111({
-        'transactionId': params.transactionId,
-        'receiptData': params.receiptData,
-        'useSandbox': params.isSandbox,
-      }),
-      transform: (model) => model.toEntity(),
-      defaultValue: IapVerifyEntity(),
-    );
-    // return Future.value(Right(BaseResponse(data: IapVerify(status: 'success'))));
-  }
-
-  @override
-  TaskEither<AppException, IapVerifyEntity> verifyAndroidPurchase(VerifyAndroidParams params) {
-    return callApiWithTransform<IapVerifyModel, IapVerifyEntity>(
-      apiCall: () => _monetizationApi.verifyAndroid({
-        'productId': params.productId,
-        'purchaseToken': params.receiptData,
-        'packageName': 'com.eup.meup',
-      }),
+      apiCall: () => _monetizationApi.verify(params.toJson()),
       transform: (model) => model.toEntity(),
       defaultValue: IapVerifyEntity(),
     );

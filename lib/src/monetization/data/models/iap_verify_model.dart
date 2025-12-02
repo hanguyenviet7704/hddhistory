@@ -3,12 +3,17 @@ part of '../../monetization.dart';
 @freezed
 abstract class IapVerifyModel with _$IapVerifyModel {
   const factory IapVerifyModel({
-    @JsonKey(name: 'productId') @Default('') String productId,
-    @JsonKey(name: 'orderId') @Default('') String orderId,
-    @JsonKey(name: 'transactionId') @Default('') String transactionId,
-    @JsonKey(name: 'expiryDate') @Default(null) DateTime? expiryDate,
-    @Default('') String status,
-    @Default('') String message,
+    @Default('') String id,
+    @Default('') String userId,
+    @Default(PaymentPlatform.google) PaymentPlatform platform,
+    @Default('') String storeTransactionId,
+    @Default('') String productId,
+    @Default('') String orderId,
+    @Default(PurchaseStatus.pending) PurchaseStatus status,
+    @Default('') String rawPayload,
+    @Default('') String idempotencyKey,
+    DateTime? purchaseTime,
+    DateTime? expiryTime,
   }) = _IapVerifyModel;
 
   factory IapVerifyModel.fromJson(Map<String, dynamic> json) => _$IapVerifyModelFromJson(json);
@@ -16,11 +21,16 @@ abstract class IapVerifyModel with _$IapVerifyModel {
 
 extension IapVerifyModelExtension on IapVerifyModel {
   IapVerifyEntity toEntity() => IapVerifyEntity(
+    id: id,
+    userId: userId,
+    platform: platform,
+    storeTransactionId: storeTransactionId,
     productId: productId,
     orderId: orderId,
-    transactionId: transactionId,
-    expiryDate: expiryDate,
     status: status,
-    message: message,
+    rawPayload: rawPayload,
+    idempotencyKey: idempotencyKey,
+    purchaseTime: purchaseTime,
+    expiryTime: expiryTime,
   );
 }

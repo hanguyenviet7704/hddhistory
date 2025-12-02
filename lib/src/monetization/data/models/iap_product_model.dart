@@ -4,24 +4,25 @@ part of '../../monetization.dart';
 abstract class IapProductModel with _$IapProductModel {
   const factory IapProductModel({
     @Default('') String id,
+    @Default('') String productId,
+    @Default(PaymentPlatform.google) PaymentPlatform platform,
     @Default('') String title,
     @Default('') String description,
-    @DefaultString() @Default('') String price, // localized (e.g. ฿99.00)
-    @Default(0) double rawPrice, // localized (e.g. ฿99.00)
-    @Default('') String currencySymbol,
+    @DefaultString() @Default('') String price,
+    @Default(0) double rawPrice,
     @Default('') String currencyCode,
-    @Default(false) bool isSubscription,
-    @Default('') String planName,
-    @Default(PaymentProviderModel()) PaymentProviderModel paymentProvider,
-    @Default('') String externalPlanId,
-    @Default('') String durationType,
-    @Default(0) int durationValue,
-    @Default('') String currency,
-    @Default(false) bool isActive,
-    @Default([]) List<FeatureModel> features,
+    @Default('') String currencySymbol,
   }) = _IapProductModel;
 
   factory IapProductModel.fromJson(Map<String, dynamic> json) => _$IapProductModelFromJson(json);
+}
+
+// export enum PaymentPlatform {
+enum PaymentPlatform {
+  @JsonValue('google')
+  google,
+  @JsonValue('apple')
+  apple,
 }
 
 extension IapProductModelExtension on IapProductModel {
@@ -62,20 +63,13 @@ extension IapProductModelExtension on IapProductModel {
 
   IapProductEntity toEntity() => IapProductEntity(
     id: id,
+    productId: productId,
+    platform: platform,
     title: title,
     description: description,
     price: price,
     rawPrice: rawPrice,
-    currencySymbol: currencySymbol,
     currencyCode: currencyCode,
-    isSubscription: isSubscription,
-    planName: planName,
-    paymentProvider: paymentProvider.toEntity(),
-    externalPlanId: externalPlanId,
-    durationType: durationType,
-    durationValue: durationValue,
-    currency: currency,
-    isActive: isActive,
-    features: features.map((f) => f.toEntity()).toList(),
+    currencySymbol: currencySymbol,
   );
 }

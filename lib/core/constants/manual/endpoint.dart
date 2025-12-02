@@ -39,12 +39,9 @@ mixin AppEndpoint {
   static const String usersById = '/api/v1/users/{id}';
 
   //* IAP
-  static const String packages = '/rest/v1/rpc/p_get_package';
-  static const String purchase = '/rest/v1/rpc/p_purchase_package';
-  static const String restore = '/rest/v1/rpc/p_restore_package';
-  static const String verifyIos = '/functions/v1/validate_ios_receipt';
-  static const String verifyIosV111 = '/functions/v1/validate_ios_receipt_v1_1_1';
-  static const String verifyAndroid = '/functions/v1/validate_android_receipt';
+  static const String packages = '/api/v1/payment/products';
+  static const String verify = '/api/v1/payment/purchases/verify';
+
 
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';
@@ -63,7 +60,7 @@ mixin AppEndpoint {
   static const String coursesLessonsById = '/api/v1/courses-lessons/{id}';
   static const String coursesLessonsIndexes = '/api/v1/courses-lessons/indexs';
 
-  //* Courses ss API
+  //* Courses Keypoints API
   static const String coursesKeypoints = '/api/v1/courses-keypoints';
   static const String coursesKeypointsById = '/api/v1/courses-keypoints/{id}';
 

@@ -8,8 +8,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final GetPackagesUsecase _getPackagesUsecase;
   final PurchaseUsecase _purchaseUsecase;
   final RestoreUsecase _restoreUsecase;
-  final VerifyIOSUsecase _verifyIosUsecase;
-  final VerifyAndroidUsecase _verifyAndroidUsecase;
+  final VerifyUsecase _verifyUsecase;
 
   IapCubit(
     this._iapRepository,
@@ -18,8 +17,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     this._getPackagesUsecase,
     this._purchaseUsecase,
     this._restoreUsecase,
-    this._verifyIosUsecase,
-    this._verifyAndroidUsecase,
+    this._verifyUsecase,
   ) : super(IapState.initial());
 
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
@@ -93,51 +91,41 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
           break;
         case PurchaseStatus.purchased:
-          if (Platform.isIOS) {
-            _verifyIosPurchase(purchaseDetail);
-          } else {
-            _verifyAndroidPurchase(purchaseDetail);
-          }
-
+          _verifyPurchase(purchaseDetail);
           LogDev.warning('Purchase verification done');
           break;
 
         case PurchaseStatus.restored:
-          if (Platform.isIOS) {
-            _verifyIosPurchase(purchaseDetail);
-          } else {
-            _verifyAndroidPurchase(purchaseDetail);
-          }
-
+          _verifyPurchase(purchaseDetail);
           LogDev.warning('Purchase restored');
           break;
       }
     });
   }
 
-  void _verifyIosPurchase(PurchaseDetails purchaseDetail) async {
-    final verificationData = await _iapService.refreshIOSVerificationData();
-    runUseCase<IapVerifyEntity>(
-      usecase: () => _verifyIosUsecase.call(
-        VerifyIOSParams(
-          receiptData: verificationData?.serverVerificationData ?? '',
-          transactionId: purchaseDetail.purchaseID ?? '',
-          isSandbox: kDebugMode,
-        ),
-      ),
-      onSuccess: (verify) => _onPurchaseSuccess(),
-      onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
-    );
-  }
+  void _verifyPurchase(PurchaseDetails purchaseDetail) async {
+    late VerifyParams params;
 
-  void _verifyAndroidPurchase(PurchaseDetails purchaseDetail) async {
+    if (Platform.isIOS) {
+      final verificationData = await _iapService.refreshIOSVerificationData();
+      params = VerifyParams(
+        platform: PaymentPlatform.apple,
+        purchaseToken: verificationData?.serverVerificationData ?? '',
+        transactionId: purchaseDetail.purchaseID ?? '',
+        productId: purchaseDetail.productID,
+        isSandbox: kDebugMode,
+      );
+    } else {
+      params = VerifyParams(
+        platform: PaymentPlatform.google,
+        purchaseToken: purchaseDetail.verificationData.serverVerificationData,
+        productId: purchaseDetail.productID,
+        packageName: 'com.eup.meup',
+      );
+    }
+
     runUseCase<IapVerifyEntity>(
-      usecase: () => _verifyAndroidUsecase.call(
-        VerifyAndroidParams(
-          receiptData: purchaseDetail.verificationData.serverVerificationData,
-          productId: purchaseDetail.productID,
-        ),
-      ),
+      usecase: () => _verifyUsecase.call(params),
       onSuccess: (verify) => _onPurchaseSuccess(),
       onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
     );
