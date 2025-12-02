@@ -1,7 +1,7 @@
 part of '../../monetization.dart';
 
-class PaywallPackageInfo extends StatelessWidget {
-  const PaywallPackageInfo({super.key});
+class PaywallHighlightPackageInfo extends StatelessWidget {
+  const PaywallHighlightPackageInfo({super.key});
 
   @override
   Widget build(BuildContext context) {

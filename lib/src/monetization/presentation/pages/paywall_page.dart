@@ -13,7 +13,7 @@ class _PaywallPageState extends State<PaywallPage> {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundBrand,
       body: PaywallPageDecoration(),
-      // bottomNavigationBar: PaywallPackageInfo(),
+      bottomNavigationBar: PaywallHighlightPackageInfo(),
     );
   }
 }

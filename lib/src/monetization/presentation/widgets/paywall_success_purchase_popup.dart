@@ -1,7 +1,7 @@
 part of '../../monetization.dart';
 
-class PaywallAllPlanInfoBottomSheet extends StatelessWidget {
-  const PaywallAllPlanInfoBottomSheet({super.key});
+class PaywallSuccessPurchasePopup extends StatelessWidget {
+  const PaywallSuccessPurchasePopup({super.key});
 
   @override
   Widget build(BuildContext context) {
