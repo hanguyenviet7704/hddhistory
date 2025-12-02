@@ -261,7 +261,7 @@ class _HighlightCard extends StatelessWidget {
               ),
           ],
         ),
-        16.verticalSpace,
+        24.verticalSpace,
         AppButton.primary(
           onPressed: onPurchase,
           fullWidthBtn: true,
@@ -272,7 +272,7 @@ class _HighlightCard extends StatelessWidget {
             style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textWhite),
           ),
         ),
-        12.verticalSpace,
+        16.verticalSpace,
         GestureDetector(
           onTap: onSeeAllPlans,
           child: AppText(
@@ -284,6 +284,7 @@ class _HighlightCard extends StatelessWidget {
             ),
           ),
         ),
+        12.verticalSpace,
       ],
     );
   }
@@ -331,7 +332,7 @@ class _Badge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
       decoration: BoxDecoration(
         color: background,
         borderRadius: BorderRadius.circular(12.r),
@@ -339,7 +340,7 @@ class _Badge extends StatelessWidget {
       ),
       child: AppText(
         label,
-        style: AppStyle.text12.copyWith(fontWeight: FontWeight.w700, color: textColor),
+        style: AppStyle.text10.copyWith(fontWeight: FontWeight.w700, color: textColor),
       ),
     );
   }
