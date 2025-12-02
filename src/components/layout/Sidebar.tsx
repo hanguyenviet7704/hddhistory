@@ -13,6 +13,7 @@ import {
   Cog6ToothIcon,
   PuzzlePieceIcon,
   UsersIcon,
+  CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -33,6 +34,7 @@ const menuItems = [
   { name: "Roleplay", icon: UsersIcon, path: "/roleplay" },
   { name: "Onboarding", icon: SparklesIcon, path: "/onboarding" },
   { name: "Progress", icon: ChartBarIcon, path: "/progress" },
+  { name: "Payment", icon: CreditCardIcon, path: "/payment" },
 ];
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
