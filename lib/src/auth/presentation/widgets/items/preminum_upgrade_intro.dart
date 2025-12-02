@@ -6,14 +6,14 @@ class PremiumUpgradeIntro extends StatelessWidget {
   void openPremiumPaywall(BuildContext context) async {
     AppService.instance.appTrackingServiceNew.trackProfileUpgradeClick();
     context.back();
-    context.read<PaywallCubit>().setPaywallSource('profile');
+    // context.read<PaywallCubit>().setPaywallSource('profile');
     AppService.instance.appTrackingServiceNew.trackPaywallScrView(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return BlocSelector<PaywallCubit, PaywallState, int>(
-      selector: (state) => state.remainingEnergy,
+      selector: (state) => 10,
       builder: (context, state) {
         if (state > 100000) {
           return SizedBox.shrink();
