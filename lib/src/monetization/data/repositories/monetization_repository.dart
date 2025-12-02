@@ -53,7 +53,7 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
 
         // return response;
 
-        final Set<String> productIds = {'artlexis_sub_weekly', 'artlexis_sub_monthly'};
+        final Set<String> productIds = {'meup_sub_3m', 'meup_sub_1y', 'meup_iap_lifetime'};
         List<ProductDetails> productDetails = await _iapService.getProducts(productIds: productIds);
         productDetails.sort((a, b) => a.price.compareTo(b.price));
         List<IapProductModel> products = productDetails.toIapProducts();

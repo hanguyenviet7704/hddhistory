@@ -13,11 +13,7 @@ class PaywallPageDecoration extends StatelessWidget {
         children: [
           36.verticalSpace,
           PaywallTopBar(
-            onClose: () {
-              if (Navigator.of(context).canPop()) {
-                Navigator.of(context).pop();
-              }
-            },
+            onClose: () => context.back(),
           ),
           16.verticalSpace,
           AppText(
