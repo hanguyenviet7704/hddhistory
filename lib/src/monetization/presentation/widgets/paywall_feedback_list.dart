@@ -9,15 +9,14 @@ class PaywallFeedbackList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (feedbacks.isEmpty) return const SizedBox.shrink();
 
-    return SizedBox(
-      height: 192.h,
-      child: ListView.separated(
-        padding: EdgeInsets.zero,
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        itemBuilder: (context, index) => _FeedbackCard(feedback: feedbacks[index]),
-        separatorBuilder: (_, _) => 12.horizontalSpace,
-        itemCount: feedbacks.length,
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.zero,
+      scrollDirection: Axis.horizontal,
+      child: IntrinsicHeight(
+        child: Row(
+          children: feedbacks.map((feedback) => _FeedbackCard(feedback: feedback)).toList(),
+        ),
       ),
     );
   }
@@ -33,6 +32,7 @@ class _FeedbackCard extends StatelessWidget {
     return Container(
       width: 305.w,
       padding: EdgeInsets.all(20.w),
+      margin: EdgeInsets.only(right: 12.w),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(20.r),
@@ -73,7 +73,7 @@ class _FeedbackCard extends StatelessWidget {
           6.verticalSpace,
           AppText(
             feedback.description,
-            maxLines: 4,
+            maxLines: 6,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
               height: 1.4,
@@ -99,7 +99,7 @@ class _StarRow extends StatelessWidget {
         return Padding(
           padding: EdgeInsets.only(left: index == 0 ? 0 : 4.w),
           child: Icon(
-            Icons.star_rounded,
+            FontAwesomeIcons.solidStar,
             size: 14.w,
             color: isFilled ? AppCustomColor.brandPrimary : AppCustomColor.greyC1,
           ),
