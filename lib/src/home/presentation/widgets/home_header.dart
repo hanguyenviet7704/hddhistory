@@ -19,7 +19,7 @@ class HomeHeaderWidget extends StatelessWidget {
               return AppText(
                 context.text.home.homeGreetingTitle(username: username),
                 style: AppStyle.text12.copyWith(
-                  color: AppCustomColor.grey69,
+                  color: AppCustomColor.textTertiary,
                 ),
               );
             },

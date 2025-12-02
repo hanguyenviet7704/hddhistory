@@ -27,7 +27,7 @@ class HomePage extends StatelessWidget {
                       AppText(
                         context.text.home.continueLearning,
                         margin: EdgeInsets.symmetric(horizontal: 20.w),
-                        style: AppStyle.textBold20.copyWith(color: AppCustomColor.black36),
+                        style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
                       ),
                       12.verticalSpace,
                       // Course cards horizontal scroll
@@ -94,7 +94,7 @@ class HomePage extends StatelessWidget {
                     padding: EdgeInsets.all(20.w),
                     child: Center(
                       child: CircularProgressIndicator(
-                        color: AppCustomColor.blue2F,
+                        color: AppCustomColor.brandPrimary,
                       ),
                     ),
                   );

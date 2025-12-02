@@ -35,7 +35,7 @@ class ErrorLayout extends StatelessWidget {
               onPressed: onTryAgain ?? () => HomeRoute().go(context),
               customChild: AppText(buttonText, style: AppStyle.text20),
               size: Size(186.w, 60.h),
-              backgroundColor: AppCustomColor.greyEE,
+              backgroundColor: AppCustomColor.brandPrimary50,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ],

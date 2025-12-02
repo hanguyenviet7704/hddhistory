@@ -40,8 +40,8 @@ void showDYesNoDialog({
         ],
     actions: [
       DButton(
-        customChild: AppText(yesText, style: AppStyle.textBold20.copyWith(color: AppCustomColor.grey69)),
-        backgroundColor: AppCustomColor.greyEE,
+        customChild: AppText(yesText, style: AppStyle.textBold20.copyWith(color: AppCustomColor.textWhite)),
+        backgroundColor: AppCustomColor.brandPrimary,
         style: AppStyle.text20,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
         size: Size(262.w, 60.h),

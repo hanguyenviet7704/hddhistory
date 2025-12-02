@@ -77,7 +77,7 @@ class _LessonLoadingOverlay extends StatelessWidget {
           gradient: LinearGradient(
             colors: [
               AppCustomColor.brandPrimary,
-              AppCustomColor.blue2F,
+              AppCustomColor.brandPrimary50,
             ],
           ),
         ),

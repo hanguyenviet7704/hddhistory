@@ -117,7 +117,7 @@ class _SettingProfileAvatar extends StatelessWidget {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppCustomColor.green1B,
+        color: AppCustomColor.brandPrimary,
       ),
       alignment: Alignment.center,
       child: Text(

@@ -76,7 +76,7 @@ class CourseCard extends StatelessWidget {
           width: 60.w,
           height: 6.h,
           decoration: BoxDecoration(
-            color: AppCustomColor.greyE3,
+            color: AppCustomColor.backgroundWhite,
             borderRadius: BorderRadius.circular(18.r),
           ),
           child: FractionallySizedBox(
@@ -84,7 +84,7 @@ class CourseCard extends StatelessWidget {
             widthFactor: progress,
             child: Container(
               decoration: BoxDecoration(
-                color: AppCustomColor.black0D,
+                color: AppCustomColor.textPrimary,
                 borderRadius: BorderRadius.circular(18.r),
               ),
             ),

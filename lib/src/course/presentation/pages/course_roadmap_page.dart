@@ -14,7 +14,7 @@ class CourseRoadmapPage extends StatelessWidget {
           if (isLoading) {
             return const Center(
               child: CircularProgressIndicator(
-                color: AppCustomColor.blue2F,
+                color: AppCustomColor.brandPrimary,
               ),
             );
           }

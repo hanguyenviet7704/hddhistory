@@ -37,10 +37,46 @@ class _PaywallPageState extends State<PaywallPage> {
     ),
   ];
 
-  List<FeedbackContent> feedbackContents = [];
+  List<FeedbackContent> _buildFeedbackContents() {
+    final monetizationTexts = t.monetization;
+
+    return [
+      FeedbackContent(
+        userName: 'Ava',
+        title: monetizationTexts.review1Title,
+        description: monetizationTexts.review1Body,
+        stars: 5,
+      ),
+      FeedbackContent(
+        userName: 'Minh',
+        title: monetizationTexts.review2Title,
+        description: monetizationTexts.review2Body,
+        stars: 5,
+      ),
+      FeedbackContent(
+        userName: 'Chen',
+        title: monetizationTexts.review3Title,
+        description: monetizationTexts.review3Body,
+        stars: 4,
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    final feedbackContents = _buildFeedbackContents();
+
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            PaywallPageDecoration(
+              bannerDecorations: bannerDecorations,
+              feedbackContents: feedbackContents,
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

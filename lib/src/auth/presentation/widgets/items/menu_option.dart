@@ -20,11 +20,11 @@ class MenuOption extends StatelessWidget {
             12.horizontalSpace,
             AppText(
               title,
-              style: AppStyle.text20.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.black36),
+              style: AppStyle.text20.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textPrimary),
             ),
             const Spacer(),
             if (rightWidget != null) rightWidget!,
-            Icon(Icons.chevron_right, size: 24.r, color: AppCustomColor.grey9A),
+            Icon(Icons.chevron_right, size: 24.r, color: AppCustomColor.textTertiary),
           ],
         ),
       ),
@@ -64,7 +64,7 @@ class AboutMenu extends StatelessWidget {
         borderRadius: BorderRadius.circular(20.r),
         boxShadow: [
           BoxShadow(
-            color: AppCustomColor.grey69.withValues(alpha: 0.2),
+            color: AppCustomColor.textTertiary.withValues(alpha: 0.2),
             blurRadius: 24.r,
             offset: const Offset(0, 4),
           ),
@@ -96,13 +96,13 @@ class AboutMenu extends StatelessWidget {
                 // 12.horizontalSpace,
                 AppText(
                   context.text.auth.aboutTitle,
-                  style: AppStyle.textBold24.copyWith(color: AppCustomColor.black36),
+                  style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
                 ),
               ],
             ),
           ),
           12.verticalSpace,
-          Divider(color: AppCustomColor.greyE3, height: 1.h),
+          Divider(color: AppCustomColor.borderSecondary, height: 1.h),
           12.verticalSpace,
           // Menu options
           Column(
@@ -151,7 +151,7 @@ class AboutMenuOption extends StatelessWidget {
           title,
           style: AppStyle.text18.copyWith(
             fontWeight: FontWeight.w600,
-            color: AppCustomColor.black36,
+            color: AppCustomColor.textPrimary,
           ),
         ),
       ),

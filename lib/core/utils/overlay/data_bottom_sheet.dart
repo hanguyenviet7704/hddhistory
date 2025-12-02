@@ -18,7 +18,7 @@ void showDataBottomSheet({
     height: 56.h,
     padding: contentPadding ?? EdgeInsets.symmetric(horizontal: 16.w),
     decoration: BoxDecoration(
-      color: colorTitle ?? AppCustomColor.greyF5,
+      color: colorTitle ?? AppCustomColor.backgroundWhite,
       borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
       gradient: gradient,
     ),
