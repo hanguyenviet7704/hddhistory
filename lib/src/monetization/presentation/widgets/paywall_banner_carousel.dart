@@ -29,17 +29,14 @@ class _PaywallBannerCarouselState extends State<PaywallBannerCarousel> {
   Widget build(BuildContext context) {
     if (widget.banners.isEmpty) return const SizedBox.shrink();
 
-    final double screenWidth = MediaQuery.sizeOf(context).width - (20.w * 2);
-    final double bannerHeight = screenWidth * (294 / 335); // maintain Figma aspect
-
     return Column(
       children: [
         SizedBox(
-          height: bannerHeight,
+          height: 414.h,
           child: NotificationListener<ScrollNotification>(
             onNotification: (notification) {
               if (notification.metrics.axis != Axis.horizontal) return false;
-              final double extent = screenWidth;
+              final double extent = 1.sw - (20.w * 2);
               if (extent == 0) return false;
               final int index = (notification.metrics.pixels / extent).round().clamp(0, widget.banners.length - 1);
               if (index != _current) {
@@ -51,8 +48,9 @@ class _PaywallBannerCarouselState extends State<PaywallBannerCarousel> {
               controller: _controller,
               padding: EdgeInsets.zero,
               itemSnapping: true,
-              itemExtent: screenWidth,
-              elevation: 8,
+              itemExtent: 1.sw - (20.w * 2),
+              elevation: 0,
+              backgroundColor: Colors.transparent,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24.r)),
               children: widget.banners.map((banner) {
                 final path = banner.text;
