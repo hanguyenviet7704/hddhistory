@@ -30,6 +30,7 @@ import SkillsetList from "../pages/skillsets/skillsetList";
 import RoleplayList from "../pages/roleplays/RoleplayList";
 import RoleplayDetail from "../pages/roleplays/RoleplayDetail";
 import RoleplayCreate from "../pages/roleplays/RoleplayCreate";
+import PaymentDashboard from "../pages/payments/PaymentDashboard";
 
 export default function AppRouter() {
   return (
@@ -82,6 +83,8 @@ export default function AppRouter() {
               <Route path="progress" element={<UserProgressList />} />
 
               <Route path="settings" element={<SettingsPage />} />
+
+              <Route path="payment" element={<PaymentDashboard />} />
             </Route>
           </Route>
         </Routes>

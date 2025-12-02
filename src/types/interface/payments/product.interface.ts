@@ -1,0 +1,41 @@
+import {
+  PaymentCurrency,
+  PaymentPlatform,
+  ProductType,
+} from "../../enum/payment.enum";
+import { BaseQuery } from "../common.interface";
+
+export interface IProduct {
+  id: string;
+  platform: PaymentPlatform;
+  productId: string;
+  type: ProductType;
+  title: string;
+  description?: string;
+  currency: PaymentCurrency;
+  price?: number;
+  salePrice?: number;
+  isActive: boolean;
+}
+
+export class ProductListQuery extends BaseQuery {
+  platform?: PaymentPlatform;
+  type?: ProductType;
+  isActive?: boolean;
+
+  constructor(init?: Partial<ProductListQuery>) {
+    super(init);
+    Object.assign(this, init);
+  }
+
+  override toQueryParams(): string {
+    const params = new URLSearchParams(super.toQueryParams());
+    if (this.platform) params.set("platform", this.platform);
+    if (this.type) params.set("type", this.type);
+    if (typeof this.isActive === "boolean") {
+      params.set("isActive", String(this.isActive));
+    }
+
+    return params.toString();
+  }
+}
