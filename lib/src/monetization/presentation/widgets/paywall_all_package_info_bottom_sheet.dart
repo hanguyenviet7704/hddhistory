@@ -9,7 +9,11 @@ class PaywallAllPackageInfoBottomSheet extends StatelessWidget {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: AppCustomColor.bottomSheetScrim,
-      builder: (_) => const PaywallAllPackageInfoBottomSheet(),
+      routeSettings: const RouteSettings(name: RouteNamed.paywallAllPackageInfoBottomSheet),
+      builder: (_) => BlocProvider.value(
+        value: context.read<IapCubit>(),
+        child: const PaywallAllPackageInfoBottomSheet(),
+      ),
     );
   }
 
@@ -24,31 +28,36 @@ class PaywallAllPackageInfoBottomSheet extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             color: AppCustomColor.backgroundWhite,
-            borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
+            borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 24,
+                offset: const Offset(0, -4),
+              ),
+            ],
           ),
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-            child: BlocBuilder<IapCubit, IapState>(
-              builder: (context, state) {
-                final cubit = context.read<IapCubit>();
-                final isLoading = state.status == MonetizationStatus.loading && state.iapProducts.isEmpty;
+          child: SafeArea(
+            top: false,
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 12.h),
+              child: BlocBuilder<IapCubit, IapState>(
+                builder: (context, state) {
+                  final cubit = context.read<IapCubit>();
+                  final isLoading = state.status == MonetizationStatus.loading && state.iapProducts.isEmpty;
 
-                if (isLoading) {
-                  return _BottomSheetLoading(controller: controller);
-                }
+                  if (isLoading) return _BottomSheetLoading(controller: controller);
+                  if (state.iapProducts.isEmpty) return _BottomSheetEmpty(onRetry: cubit.loadIapProducts);
 
-                if (state.iapProducts.isEmpty) {
-                  return _BottomSheetEmpty(onRetry: cubit.loadIapProducts);
-                }
-
-                return _BottomSheetContent(
-                  controller: controller,
-                  products: state.iapProducts,
-                  selectedId: state.selectedProductId,
-                  onSelect: cubit.setSelectedProductId,
-                  onPurchase: cubit.purchaseProduct,
-                );
-              },
+                  return _BottomSheetContent(
+                    controller: controller,
+                    products: state.iapProducts,
+                    selectedId: state.selectedProductId,
+                    onSelect: cubit.setSelectedProductId,
+                    onPurchase: cubit.purchaseProduct,
+                  );
+                },
+              ),
             ),
           ),
         );
@@ -136,202 +145,66 @@ class _BottomSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bestDealId = _bestDealProductId(products);
+
     return Column(
       children: [
         _SheetHandle(),
         12.verticalSpace,
-        AppText(
-          t.monetization.seeAllPlans,
-          style: AppStyle.text16.copyWith(fontWeight: FontWeight.w800, color: AppCustomColor.textPrimary),
+        Row(
+          children: [
+            const Spacer(),
+            AppText(
+              t.monetization.selectPlan,
+              style: AppStyle.text16.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textTertiary),
+            ),
+            const Spacer(),
+            GestureDetector(
+              onTap: () => Navigator.of(context).maybePop(),
+              child: Icon(Icons.keyboard_double_arrow_down_rounded, color: AppCustomColor.textTertiary, size: 24.w),
+            ),
+          ],
         ),
-        8.verticalSpace,
+        12.verticalSpace,
         Expanded(
           child: ListView.separated(
             controller: controller,
-            padding: EdgeInsets.only(top: 12.h, bottom: 12.h),
+            padding: EdgeInsets.only(top: 4.h, bottom: 12.h),
             itemCount: products.length,
             separatorBuilder: (_, _) => 12.verticalSpace,
             itemBuilder: (context, index) {
               final product = products[index];
               final selected = product.id == selectedId || (selectedId.isEmpty && index == 0);
-              return _PackageTile(
+              final bestDeal = product.id == bestDealId;
+              return PaywallPlanOption(
                 product: product,
                 selected: selected,
+                bestDeal: bestDeal,
                 onTap: () => onSelect(product.id),
               );
             },
           ),
         ),
-        AppButton.primary(
-          onPressed: () {
-            Navigator.of(context).maybePop();
-            onPurchase();
-          },
-          fullWidthBtn: true,
-          child: t.monetization.payNowCta,
+        12.verticalSpace,
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 4.w),
+          child: AppButton.primary(
+            onPressed: () {
+              Navigator.of(context).maybePop();
+              onPurchase();
+            },
+            fullWidthBtn: true,
+            child: t.monetization.payNowCta,
+          ),
         ),
-        8.verticalSpace,
-        AppButton.secondary(
-          onPressed: Navigator.of(context).pop,
-          fullWidthBtn: true,
-          child: t.monetization.seeLessPlans,
-        ),
-        8.verticalSpace,
+        12.verticalSpace,
       ],
     );
   }
-}
 
-class _PackageTile extends StatelessWidget {
-  final IapProductEntity product;
-  final bool selected;
-  final VoidCallback onTap;
-
-  const _PackageTile({required this.product, required this.selected, required this.onTap});
-
-  @override
-  Widget build(BuildContext context) {
-    return InkWell(
-      borderRadius: BorderRadius.circular(16.r),
-      onTap: onTap,
-      child: Container(
-        padding: EdgeInsets.all(14.w),
-        decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary, width: selected ? 2 : 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                _SelectionDot(selected: selected),
-                10.horizontalSpace,
-                Expanded(
-                  child: AppText(
-                    product.title.isNotEmpty ? product.title : t.monetization.paywallTitle,
-                    maxLines: 2,
-                    style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
-                  ),
-                ),
-                if (product.hasDiscount)
-                  _SheetBadge(
-                    label: t.monetization.saleBadge(percent: product.salePercent),
-                    background: AppCustomColor.brandPrimary50,
-                    textColor: AppCustomColor.brandPrimary,
-                    borderColor: AppCustomColor.brandPrimary,
-                  ),
-              ],
-            ),
-            10.verticalSpace,
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              children: [
-                AppText(
-                  product.price,
-                  style: AppStyle.text20.copyWith(fontWeight: FontWeight.w800, color: AppCustomColor.textPrimary),
-                ),
-                8.horizontalSpace,
-                AppText(
-                  _periodLabel(product),
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-                ),
-                const Spacer(),
-                if (product.hasDiscount)
-                  AppText(
-                    product.originalPriceString,
-                    style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary, decoration: TextDecoration.lineThrough),
-                  ),
-              ],
-            ),
-            10.verticalSpace,
-            Row(
-              children: [
-                Icon(Icons.check_circle, color: AppCustomColor.successGreen, size: 18.w),
-                6.horizontalSpace,
-                Expanded(
-                  child: AppText(
-                    t.monetization.benefit1Desc,
-                    maxLines: 2,
-                    style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.4),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  String _periodLabel(IapProductEntity product) {
-    final id = product.id.toLowerCase();
-
-    if (id.contains('week')) return t.monetization.pricePerWeek;
-    if (id.contains('day')) return t.monetization.pricePerDay;
-
-    return t.monetization.pricePerMonth;
-  }
-}
-
-class _SheetBadge extends StatelessWidget {
-  final String label;
-  final Color background;
-  final Color textColor;
-  final Color? borderColor;
-
-  const _SheetBadge({required this.label, required this.background, required this.textColor, this.borderColor});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: background,
-        borderRadius: BorderRadius.circular(12.r),
-        border: borderColor != null ? Border.all(color: borderColor!) : null,
-      ),
-      child: AppText(
-        label,
-        style: AppStyle.text12.copyWith(fontWeight: FontWeight.w700, color: textColor),
-      ),
-    );
-  }
-}
-
-class _SelectionDot extends StatelessWidget {
-  final bool selected;
-
-  const _SelectionDot({required this.selected});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 22.w,
-      width: 22.w,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        border: Border.all(color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary, width: 2),
-      ),
-      alignment: Alignment.center,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 180),
-        height: selected ? 10.w : 0,
-        width: selected ? 10.w : 0,
-        decoration: const BoxDecoration(
-          color: AppCustomColor.brandPrimary,
-          shape: BoxShape.circle,
-        ),
-      ),
-    );
+  String _bestDealProductId(List<IapProductEntity> products) {
+    if (products.isEmpty) return '';
+    return products.reduce((a, b) => a.perPeriodValue <= b.perPeriodValue ? a : b).id;
   }
 }
 

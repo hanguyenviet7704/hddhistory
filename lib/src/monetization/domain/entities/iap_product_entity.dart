@@ -18,7 +18,7 @@ abstract class IapProductEntity with _$IapProductEntity {
 }
 
 
-extension ProductSaleExtension on IapProductEntity {
+extension IapProductEntityX on IapProductEntity {
   bool get hasDiscount => rawPrice > 0 && rawPrice * saleScale > rawPrice + 0.01;
 
   double get saleScale => 2;
@@ -32,4 +32,44 @@ extension ProductSaleExtension on IapProductEntity {
     }
     return original.currency;
   }
+
+  String get planLabel {
+    final idLower = id.toLowerCase();
+
+    if (idLower.contains('year') || idLower.contains('annual')) return 'ANNUAL';
+    if (idLower.contains('quarter')) return 'QUARTERLY';
+    if (idLower.contains('month')) return 'MONTHLY';
+    if (idLower.contains('week')) return 'WEEKLY';
+    if (idLower.contains('life')) return 'LIFETIME';
+
+    return t.monetization.premiumBadge.toUpperCase();
+  }
+
+  String get periodLabel {
+    final idLower = id.toLowerCase();
+
+    if (idLower.contains('week')) return t.monetization.pricePerWeek;
+    if (idLower.contains('day')) return t.monetization.pricePerDay;
+
+    return t.monetization.pricePerMonth;
+  }
+
+  double get _perPeriodValue {
+    final idLower = id.toLowerCase();
+
+    if (idLower.contains('year') || idLower.contains('annual')) return rawPrice / 12;
+    if (idLower.contains('quarter')) return rawPrice / 3;
+    if (idLower.contains('week')) return rawPrice / 4;
+    if (idLower.contains('day')) return rawPrice / 30;
+
+    return rawPrice;
+  }
+
+  String get pricePerPeriodString {
+    if (rawPrice <= 0) return price.isNotEmpty ? price : '--';
+    final value = _perPeriodValue;
+    return currencySymbol.isNotEmpty ? '$currencySymbol${value.currency}' : value.currency;
+  }
+
+  double get perPeriodValue => _perPeriodValue;
 }

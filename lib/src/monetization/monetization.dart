@@ -41,5 +41,6 @@ part 'presentation/widgets/paywall_dots_indicator.dart';
 part 'presentation/widgets/paywall_feedback_list.dart';
 part 'presentation/widgets/paywall_highlight_package_info.dart';
 part 'presentation/widgets/paywall_page_decoration.dart';
+part 'presentation/widgets/paywall_plan_option.dart';
 part 'presentation/widgets/paywall_success_purchase_popup.dart';
 part 'presentation/widgets/paywall_top_bar.dart';

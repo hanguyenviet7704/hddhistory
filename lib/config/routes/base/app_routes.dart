@@ -17,6 +17,7 @@ mixin RoutePath {
 
   //* Monetization
   static const String paywall = '/paywall';
+  static const String paywallAllPackageInfoBottomSheet = '/paywall-all-package-info-bottom-sheet';
 
   //* Onboard
   static const String onboard = '/onboard';
@@ -81,6 +82,7 @@ mixin RouteNamed {
 
   //* Monetization
   static const String paywall = 'Paywall Page';
+  static const String paywallAllPackageInfoBottomSheet = 'Paywall All Package Info Bottom Sheet';
 
   //* Onboard
   static const String onboard = 'Onboard Page';
