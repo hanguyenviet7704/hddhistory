@@ -1,5 +1,6 @@
 part of '../../../monetization.dart';
 
+@lazySingleton
 class PaywallCubit extends Cubit<PaywallState> {
   PaywallCubit() : super(PaywallState.initial());
 
