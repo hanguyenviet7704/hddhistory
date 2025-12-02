@@ -16,3 +16,20 @@ abstract class IapProductEntity with _$IapProductEntity {
 
   factory IapProductEntity.fromJson(Map<String, dynamic> json) => _$IapProductEntityFromJson(json);
 }
+
+
+extension ProductSaleExtension on IapProductEntity {
+  bool get hasDiscount => rawPrice > 0 && rawPrice * saleScale > rawPrice + 0.01;
+
+  double get saleScale => 2;
+
+  int get salePercent => ((1 / saleScale) * 100).round();
+
+  String get originalPriceString {
+    final original = rawPrice * saleScale;
+    if (currencySymbol.isNotEmpty) {
+      return '$currencySymbol${original.currency}';
+    }
+    return original.currency;
+  }
+}

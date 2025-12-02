@@ -43,12 +43,16 @@ class PaywallPageDecoration extends StatelessWidget {
           24.verticalSpace,
           PaywallFeedbackList(),
           28.verticalSpace,
-          AppText(
-            t.monetization.restore,
-            textAlign: TextAlign.center,
-            style: AppStyle.text14.copyWith(
-              color: AppCustomColor.textBrand.withValues(alpha: 0.4),
-              fontWeight: FontWeight.w500,
+          GestureDetector(
+            onTap: () => context.read<IapCubit>().restorePurchases(),
+            child: AppText(
+              t.monetization.restore,
+              textAlign: TextAlign.center,
+              style: AppStyle.text14.copyWith(
+                color: AppCustomColor.textBrand.withValues(alpha: 0.6),
+                fontWeight: FontWeight.w600,
+                decoration: TextDecoration.underline,
+              ),
             ),
           ),
           24.verticalSpace,
