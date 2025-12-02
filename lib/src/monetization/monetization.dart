@@ -39,3 +39,7 @@ part 'presentation/cubits/iap/iap_state.dart';
 part 'presentation/pages/paywall_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/paywall_page_decoration.dart';
+part 'presentation/widgets/paywall_banner_carousel.dart';
+part 'presentation/widgets/paywall_feedback_list.dart';
+part 'presentation/widgets/paywall_top_bar.dart';
+part 'presentation/widgets/paywall_dots_indicator.dart';
