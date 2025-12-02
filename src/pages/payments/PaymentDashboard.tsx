@@ -4,30 +4,69 @@ import {
   CheckCircleIcon,
   CreditCardIcon,
   ExclamationTriangleIcon,
+  ClockIcon,
   PlusIcon,
+  ReceiptRefundIcon,
   QueueListIcon,
   ShoppingBagIcon,
+  ShieldCheckIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { productService } from "../../services/payments/productService";
+import { purchaseService } from "../../services/payments/purchaseService";
+import { subscriptionService } from "../../services/payments/subscriptionService";
 import {
   IProduct,
   ProductListQuery,
 } from "../../types/interface/payments/product.interface";
 import {
+  IPurchase,
+  PurchaseListQuery,
+} from "../../types/interface/payments/purchase.interface";
+import {
+  ISubscription,
+  SubscriptionListQuery,
+} from "../../types/interface/payments/subscription.interface";
+import {
   PaymentCurrency,
   PaymentPlatform,
+  PurchaseStatus,
   ProductType,
+  SubscriptionStatus,
 } from "../../types/enum/payment.enum";
 import ProductModal from "../../components/payments/ProductModal";
 
 type ProductRecord = IProduct & { _id?: string };
+type PurchaseRecord = IPurchase & { _id?: string };
+type SubscriptionRecord = ISubscription & { _id?: string };
 type TabKey = "products" | "purchases" | "subscriptions";
 
 const getProductId = (product: ProductRecord) =>
   product.id || product._id || "";
+const getPurchaseId = (purchase: PurchaseRecord) =>
+  purchase.id || purchase._id || "";
+const getSubscriptionId = (subscription: SubscriptionRecord) =>
+  subscription.id || subscription._id || "";
 
 const normalizeProducts = (payload: any): ProductRecord[] => {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.items)) return payload.items;
+  if (Array.isArray(payload.data?.items)) return payload.data.items;
+  if (Array.isArray(payload.data)) return payload.data;
+  return [];
+};
+
+const normalizePurchases = (payload: any): PurchaseRecord[] => {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.items)) return payload.items;
+  if (Array.isArray(payload.data?.items)) return payload.data.items;
+  if (Array.isArray(payload.data)) return payload.data;
+  return [];
+};
+
+const normalizeSubscriptions = (payload: any): SubscriptionRecord[] => {
   if (!payload) return [];
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.items)) return payload.items;
@@ -56,6 +95,48 @@ const priceLabel = (value?: number, currency?: PaymentCurrency) => {
   return `${currency || ""} ${formatter.format(value)}`;
 };
 
+const purchaseStatusLabel: Record<PurchaseStatus, string> = {
+  [PurchaseStatus.PENDING]: "Pending",
+  [PurchaseStatus.PAID]: "Paid",
+  [PurchaseStatus.FAILED]: "Failed",
+  [PurchaseStatus.CANCELED]: "Canceled",
+  [PurchaseStatus.REFUNDED]: "Refunded",
+};
+
+const purchaseStatusTone: Record<PurchaseStatus, string> = {
+  [PurchaseStatus.PENDING]: "bg-amber-50 text-amber-700 border-amber-100",
+  [PurchaseStatus.PAID]: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  [PurchaseStatus.FAILED]: "bg-red-50 text-red-700 border-red-200",
+  [PurchaseStatus.CANCELED]: "bg-slate-100 text-slate-700 border-slate-200",
+  [PurchaseStatus.REFUNDED]: "bg-purple-50 text-purple-700 border-purple-100",
+};
+
+const subscriptionStatusLabel: Record<SubscriptionStatus, string> = {
+  [SubscriptionStatus.ACTIVE]: "Active",
+  [SubscriptionStatus.EXPIRED]: "Expired",
+  [SubscriptionStatus.GRACE]: "Grace",
+  [SubscriptionStatus.ON_HOLD]: "On hold",
+  [SubscriptionStatus.CANCELED]: "Canceled",
+};
+
+const subscriptionStatusTone: Record<SubscriptionStatus, string> = {
+  [SubscriptionStatus.ACTIVE]:
+    "bg-emerald-50 text-emerald-700 border-emerald-100",
+  [SubscriptionStatus.EXPIRED]:
+    "bg-slate-100 text-slate-700 border-slate-200",
+  [SubscriptionStatus.GRACE]: "bg-amber-50 text-amber-700 border-amber-100",
+  [SubscriptionStatus.ON_HOLD]: "bg-orange-50 text-orange-700 border-orange-100",
+  [SubscriptionStatus.CANCELED]:
+    "bg-red-50 text-red-700 border-red-200",
+};
+
+const formatDateTime = (value?: string | Date) => {
+  if (!value) return "-";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("vi-VN", { hour12: false });
+};
+
 const StatCard: React.FC<{
   label: string;
   value: string | number;
@@ -76,26 +157,6 @@ const StatCard: React.FC<{
     <div className="space-y-1">
       <p className="text-xs uppercase tracking-wide text-slate-500">{label}</p>
       <p className="text-xl font-semibold text-slate-900">{value}</p>
-    </div>
-  </div>
-);
-
-const ComingSoon: React.FC<{
-  title: string;
-  description: string;
-  icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
-}> = ({ title, description, icon: Icon }) => (
-  <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-10 text-center space-y-4 shadow-sm">
-    <div className="mx-auto h-14 w-14 rounded-full bg-slate-100 text-teal-600 flex items-center justify-center">
-      <Icon className="h-7 w-7" />
-    </div>
-    <div className="space-y-2">
-      <p className="text-lg font-semibold text-slate-900">{title}</p>
-      <p className="text-sm text-slate-600 max-w-xl mx-auto">{description}</p>
-    </div>
-    <div className="inline-flex items-center gap-2 rounded-full bg-teal-50 px-3 py-1 text-sm text-teal-700 border border-teal-100">
-      <SparklesIcon className="h-4 w-4" />
-      Coming soon
     </div>
   </div>
 );
@@ -538,6 +599,550 @@ const ProductSection: React.FC = () => {
   );
 };
 
+const PurchaseSection: React.FC = () => {
+  const [purchases, setPurchases] = useState<PurchaseRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [platformFilter, setPlatformFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+
+  const fetchPurchases = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const query = new PurchaseListQuery({
+        search: search.trim(),
+        take: 50,
+      });
+      if (platformFilter) query.platform = platformFilter as PaymentPlatform;
+      if (statusFilter) query.status = statusFilter as PurchaseStatus;
+
+      const res = await purchaseService.getList(query);
+      const normalized = normalizePurchases(res);
+      setPurchases(normalized);
+    } catch (err: any) {
+      console.error("Failed to fetch purchases", err);
+      setError(
+        err?.response?.data?.message ||
+          "Không thể tải danh sách giao dịch đã ghi nhận"
+      );
+      setPurchases([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [platformFilter, search, statusFilter]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      fetchPurchases();
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [fetchPurchases]);
+
+  const stats = useMemo(() => {
+    const total = purchases.length;
+    const paid = purchases.filter((p) => p.status === PurchaseStatus.PAID)
+      .length;
+    const refunded = purchases.filter(
+      (p) => p.status === PurchaseStatus.REFUNDED
+    ).length;
+    const failed = purchases.filter(
+      (p) =>
+        p.status === PurchaseStatus.FAILED ||
+        p.status === PurchaseStatus.CANCELED
+    ).length;
+    return { total, paid, refunded, failed };
+  }, [purchases]);
+
+  const filteredPurchases = useMemo(() => purchases, [purchases]);
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          label="Tổng giao dịch"
+          value={stats.total}
+          icon={QueueListIcon}
+          accent="from-slate-500 to-slate-700"
+        />
+        <StatCard
+          label="Đã thanh toán"
+          value={stats.paid}
+          icon={CheckCircleIcon}
+          accent="from-emerald-500 to-teal-500"
+        />
+        <StatCard
+          label="Hoàn tiền"
+          value={stats.refunded}
+          icon={ReceiptRefundIcon}
+          accent="from-purple-500 to-indigo-500"
+        />
+        <StatCard
+          label="Lỗi/Hủy"
+          value={stats.failed}
+          icon={ExclamationTriangleIcon}
+          accent="from-amber-500 to-orange-500"
+        />
+      </div>
+
+      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-slate-100">
+          <div className="flex flex-wrap gap-3">
+            <div className="relative">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Tìm theo userId, productId hoặc transactionId..."
+                className="pl-10 pr-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-slate-50/50"
+              />
+              <svg
+                className="h-5 w-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+
+            <select
+              value={platformFilter}
+              onChange={(e) => setPlatformFilter(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="">Tất cả platform</option>
+              <option value={PaymentPlatform.APPLE}>Apple</option>
+              <option value={PaymentPlatform.GOOGLE}>Google</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="">Trạng thái</option>
+              <option value={PurchaseStatus.PENDING}>Pending</option>
+              <option value={PurchaseStatus.PAID}>Paid</option>
+              <option value={PurchaseStatus.FAILED}>Failed</option>
+              <option value={PurchaseStatus.CANCELED}>Canceled</option>
+              <option value={PurchaseStatus.REFUNDED}>Refunded</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => fetchPurchases()}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
+          >
+            <ArrowPathIcon className="h-5 w-5" />
+            Làm mới
+          </button>
+        </div>
+
+        {error && (
+          <div className="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 flex items-center gap-2">
+            <ExclamationTriangleIcon className="h-5 w-5" />
+            {error}
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  User
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Product
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Platform
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Purchase
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Hết hạn
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Mã giao dịch
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-10">
+                    <div className="flex flex-col items-center justify-center text-slate-500 gap-3">
+                      <span className="h-8 w-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                      Đang tải giao dịch...
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredPurchases.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-10">
+                    <div className="flex flex-col items-center justify-center text-slate-500 gap-2">
+                      <ClockIcon className="h-10 w-10 text-slate-300" />
+                      <p className="font-medium text-slate-700">
+                        Chưa có giao dịch
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        Khi user thanh toán, thông tin sẽ hiển thị tại đây.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredPurchases.map((purchase) => {
+                  const id = getPurchaseId(purchase);
+                  return (
+                    <tr key={id} className="hover:bg-slate-50/70">
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
+                            {purchase.userId}
+                          </code>
+                          {purchase.idempotencyKey && (
+                            <p className="text-[11px] text-slate-400">
+                              {purchase.idempotencyKey}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
+                            {purchase.productId}
+                          </code>
+                          {purchase.orderId && (
+                            <p className="text-[11px] text-slate-500">
+                              Order: {purchase.orderId}
+                            </p>
+                          )}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
+                          <SparklesIcon className="h-4 w-4 text-amber-500" />
+                          {platformLabels[purchase.platform]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${purchaseStatusTone[purchase.status]}`}
+                        >
+                          {purchaseStatusLabel[purchase.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-700">
+                        {formatDateTime(purchase.purchaseTime)}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-700">
+                        {formatDateTime(purchase.expiryTime)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700 block">
+                            {purchase.storeTransactionId}
+                          </code>
+                          <p className="text-[11px] text-slate-500">
+                            {id}
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const SubscriptionSection: React.FC = () => {
+  const [subscriptions, setSubscriptions] = useState<SubscriptionRecord[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [platformFilter, setPlatformFilter] = useState<string>("");
+  const [statusFilter, setStatusFilter] = useState<string>("");
+
+  const fetchSubscriptions = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const query = new SubscriptionListQuery({
+        search: search.trim(),
+        take: 50,
+      });
+      if (platformFilter) query.platform = platformFilter as PaymentPlatform;
+      if (statusFilter) query.status = statusFilter as SubscriptionStatus;
+
+      const res = await subscriptionService.getList(query);
+      const normalized = normalizeSubscriptions(res);
+      setSubscriptions(normalized);
+    } catch (err: any) {
+      console.error("Failed to fetch subscriptions", err);
+      setError(
+        err?.response?.data?.message ||
+          "Không thể tải danh sách subscription/premium"
+      );
+      setSubscriptions([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [platformFilter, search, statusFilter]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
+      fetchSubscriptions();
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [fetchSubscriptions]);
+
+  const stats = useMemo(() => {
+    const total = subscriptions.length;
+    const active = subscriptions.filter(
+      (s) => s.status === SubscriptionStatus.ACTIVE
+    ).length;
+    const trials = subscriptions.filter((s) => s.isTrial).length;
+    const autoRenew = subscriptions.filter((s) => s.autoRenewing).length;
+    return { total, active, trials, autoRenew };
+  }, [subscriptions]);
+
+  const filteredSubscriptions = useMemo(() => subscriptions, [subscriptions]);
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <StatCard
+          label="Tổng subscription"
+          value={stats.total}
+          icon={QueueListIcon}
+          accent="from-slate-500 to-slate-700"
+        />
+        <StatCard
+          label="Đang active"
+          value={stats.active}
+          icon={ShieldCheckIcon}
+          accent="from-emerald-500 to-teal-500"
+        />
+        <StatCard
+          label="Đang trial"
+          value={stats.trials}
+          icon={SparklesIcon}
+          accent="from-amber-500 to-orange-500"
+        />
+        <StatCard
+          label="Auto-renew"
+          value={stats.autoRenew}
+          icon={CreditCardIcon}
+          accent="from-indigo-500 to-purple-500"
+        />
+      </div>
+
+      <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-slate-100">
+          <div className="flex flex-wrap gap-3">
+            <div className="relative">
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Tìm theo userId, productId hoặc anchorId..."
+                className="pl-10 pr-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-slate-50/50"
+              />
+              <svg
+                className="h-5 w-5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                />
+              </svg>
+            </div>
+
+            <select
+              value={platformFilter}
+              onChange={(e) => setPlatformFilter(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="">Tất cả platform</option>
+              <option value={PaymentPlatform.APPLE}>Apple</option>
+              <option value={PaymentPlatform.GOOGLE}>Google</option>
+            </select>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+            >
+              <option value="">Trạng thái</option>
+              <option value={SubscriptionStatus.ACTIVE}>Active</option>
+              <option value={SubscriptionStatus.GRACE}>Grace</option>
+              <option value={SubscriptionStatus.ON_HOLD}>On hold</option>
+              <option value={SubscriptionStatus.CANCELED}>Canceled</option>
+              <option value={SubscriptionStatus.EXPIRED}>Expired</option>
+            </select>
+          </div>
+
+          <button
+            onClick={() => fetchSubscriptions()}
+            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
+          >
+            <ArrowPathIcon className="h-5 w-5" />
+            Làm mới
+          </button>
+        </div>
+
+        {error && (
+          <div className="mx-4 mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 flex items-center gap-2">
+            <ExclamationTriangleIcon className="h-5 w-5" />
+            {error}
+          </div>
+        )}
+
+        <div className="overflow-x-auto">
+          <table className="min-w-full divide-y divide-slate-100">
+            <thead className="bg-slate-50">
+              <tr>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  User
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Product
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Platform
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Status
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Auto-renew
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Chu kỳ
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Lần sync
+                </th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {loading ? (
+                <tr>
+                  <td colSpan={7} className="py-10">
+                    <div className="flex flex-col items-center justify-center text-slate-500 gap-3">
+                      <span className="h-8 w-8 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
+                      Đang tải subscription...
+                    </div>
+                  </td>
+                </tr>
+              ) : filteredSubscriptions.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="py-10">
+                    <div className="flex flex-col items-center justify-center text-slate-500 gap-2">
+                      <ShieldCheckIcon className="h-10 w-10 text-slate-300" />
+                      <p className="font-medium text-slate-700">
+                        Chưa có subscription
+                      </p>
+                      <p className="text-sm text-slate-500">
+                        Khi user có premium, trạng thái sẽ hiển thị tại đây.
+                      </p>
+                    </div>
+                  </td>
+                </tr>
+              ) : (
+                filteredSubscriptions.map((sub) => {
+                  const id = getSubscriptionId(sub);
+                  return (
+                    <tr key={id} className="hover:bg-slate-50/70">
+                      <td className="px-4 py-3">
+                        <div className="space-y-1">
+                          <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
+                            {sub.userId}
+                          </code>
+                          <p className="text-[11px] text-slate-500">
+                            Anchor: {sub.anchorId}
+                          </p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3">
+                        <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
+                          {sub.productId}
+                        </code>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
+                          <SparklesIcon className="h-4 w-4 text-amber-500" />
+                          {platformLabels[sub.platform]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${subscriptionStatusTone[sub.status]}`}
+                        >
+                          {subscriptionStatusLabel[sub.status]}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${
+                            sub.autoRenewing
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                              : "bg-slate-100 text-slate-600 border-slate-200"
+                          }`}
+                        >
+                          {sub.autoRenewing ? "Bật" : "Tắt"}
+                        </span>
+                        {sub.isTrial && (
+                          <p className="text-[11px] text-amber-600 mt-1">
+                            Trial
+                          </p>
+                        )}
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-700">
+                        <div className="space-y-0.5">
+                          <p>Bắt đầu: {formatDateTime(sub.currentPeriodStart)}</p>
+                          <p>Kết thúc: {formatDateTime(sub.currentPeriodEnd)}</p>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3 text-sm text-slate-700">
+                        <div className="space-y-0.5">
+                          <p>Event: {formatDateTime(sub.lastEventAt)}</p>
+                          <p>Verify: {formatDateTime(sub.lastVerifiedAt)}</p>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const PaymentDashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState<TabKey>("products");
 
@@ -550,33 +1155,33 @@ const PaymentDashboard: React.FC = () => {
     {
       key: "purchases",
       label: "Purchases",
-      description: "Lịch sử giao dịch in-app (sẽ bổ sung).",
+      description: "Lịch sử giao dịch in-app đã ghi nhận.",
     },
     {
       key: "subscriptions",
       label: "Subscriptions",
-      description: "Theo dõi gia hạn và chu kỳ (sẽ bổ sung).",
+      description: "Theo dõi gia hạn và chu kỳ premium.",
     },
   ];
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="rounded-3xl bg-gradient-to-r from-teal-700 via-emerald-600 to-teal-500 text-white shadow-xl p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="rounded-3xl bg-gradient-to-r from-teal-700 via-emerald-600 to-teal-500 text-white shadow-xl p-4 md:p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3 md:gap-4">
           <div className="space-y-1">
-            <p className="text-sm uppercase tracking-wide text-white/80">
+            <p className="text-xs uppercase tracking-wide text-white/80">
               Payment Control
             </p>
-            <h1 className="text-2xl font-semibold">
+            <h1 className="text-xl md:text-2xl font-semibold">
               Thanh toán & Monetization
             </h1>
-            <p className="text-white/80 text-sm max-w-2xl">
+            <p className="text-white/80 text-xs md:text-sm max-w-2xl">
               Truy cập nhanh đến quản lý sản phẩm, purchase và subscription để
               kiểm soát dòng tiền của ứng dụng.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="px-3 py-2 rounded-xl bg-white/15 backdrop-blur text-sm">
+            <div className="px-3 py-1.5 rounded-xl bg-white/15 backdrop-blur text-xs md:text-sm">
               <span className="font-semibold">Payment</span> workspace
             </div>
           </div>
@@ -627,17 +1232,9 @@ const PaymentDashboard: React.FC = () => {
         {activeTab === "products" ? (
           <ProductSection />
         ) : activeTab === "purchases" ? (
-          <ComingSoon
-            title="Purchases dashboard"
-            description="Sẽ hiển thị lịch sử giao dịch, trạng thái thanh toán và chi tiết hóa đơn."
-            icon={ShoppingBagIcon}
-          />
+          <PurchaseSection />
         ) : (
-          <ComingSoon
-            title="Subscription tracker"
-            description="Sẽ quản lý chu kỳ, trial và trạng thái auto-renew cho từng user."
-            icon={SparklesIcon}
-          />
+          <SubscriptionSection />
         )}
       </div>
     </div>
