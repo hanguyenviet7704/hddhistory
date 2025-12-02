@@ -5,8 +5,20 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      minimum: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
+    return Container(
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      decoration: BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 24,
+            offset: const Offset(0, -4),
+          ),
+        ],
+        border: const Border(top: BorderSide(color: AppCustomColor.borderDefault)),
+      ),
       child: BlocBuilder<IapCubit, IapState>(
         builder: (context, state) {
           final cubit = context.read<IapCubit>();
@@ -136,105 +148,154 @@ class _HighlightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final benefits = [
-      t.monetization.benefit1Title,
-      t.monetization.benefit2Title,
-      t.monetization.benefit3Title,
-    ];
+    final perPeriodPrice = _pricePerPeriod(product);
+    final periodLabel = _periodLabel(product);
+    final planLabel = _planLabel(product);
 
-    return Container(
-      decoration: _cardDecoration,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            children: [
-              _Badge(
-                label: t.monetization.mostPopularBadge,
-                background: AppCustomColor.brandPrimary,
-                textColor: AppCustomColor.textWhite,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Stack(
+          clipBehavior: Clip.none,
+          children: [
+            Container(
+              decoration: BoxDecoration(
+                color: AppCustomColor.backgroundWhite,
+                borderRadius: BorderRadius.circular(16.r),
+                border: Border.all(color: AppCustomColor.brandPrimary, width: 2),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.06),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-              if (product.hasDiscount) ...[
-                8.horizontalSpace,
-                _Badge(
-                  label: t.monetization.saleBadge(percent: product.salePercent),
-                  background: AppCustomColor.brandPrimary50,
-                  textColor: AppCustomColor.brandPrimary,
-                  borderColor: AppCustomColor.brandPrimary,
-                ),
-              ],
-            ],
-          ),
-          12.verticalSpace,
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              AppText(
-                product.price,
-                style: AppStyle.text24.copyWith(fontWeight: FontWeight.w800, color: AppCustomColor.textPrimary),
-              ),
-              8.horizontalSpace,
-              AppText(
-                _periodLabel(product),
-                style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-              ),
-              const Spacer(),
-              if (product.hasDiscount)
-                AppText(
-                  product.originalPriceString,
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary, decoration: TextDecoration.lineThrough),
-                ),
-            ],
-          ),
-          12.verticalSpace,
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: benefits
-                .map(
-                  (benefit) => Padding(
-                    padding: EdgeInsets.only(bottom: benefit == benefits.last ? 0 : 8.h),
-                    child: Row(
+              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Icon(Icons.check_circle, color: AppCustomColor.successGreen, size: 18.w),
-                        8.horizontalSpace,
-                        Expanded(
-                          child: AppText(
-                            benefit,
-                            maxLines: 2,
-                            style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.4),
-                          ),
+                        Row(
+                          children: [
+                            AppText(
+                              planLabel,
+                              style: AppStyle.text12.copyWith(
+                                fontWeight: FontWeight.w700,
+                                color: AppCustomColor.textSecondary,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                            if (product.hasDiscount) ...[
+                              8.horizontalSpace,
+                              _Badge(
+                                label: '-${product.salePercent}%',
+                                background: AppCustomColor.brandPrimary100,
+                                textColor: AppCustomColor.brandPrimary,
+                              ),
+                            ],
+                          ],
+                        ),
+                        8.verticalSpace,
+                        Row(
+                          children: [
+                            AppText(
+                              perPeriodPrice,
+                              style: AppStyle.text14.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppCustomColor.textSecondary,
+                              ),
+                            ),
+                            4.horizontalSpace,
+                            AppText(
+                              '/$periodLabel',
+                              style: AppStyle.text10.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: AppCustomColor.textTertiary,
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
                   ),
-                )
-                .toList(),
-          ),
-          14.verticalSpace,
-          AppButton.primary(
-            onPressed: onPurchase,
-            fullWidthBtn: true,
-            child: t.monetization.payNowCta,
-          ),
-          10.verticalSpace,
-          Center(
-            child: GestureDetector(
-              onTap: onSeeAllPlans,
-              child: AppText(
-                t.monetization.seeAllPlans,
-                style: AppStyle.text14.copyWith(
-                  color: AppCustomColor.brandPrimary,
-                  fontWeight: FontWeight.w700,
-                  decoration: TextDecoration.underline,
-                ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.end,
+                    children: [
+                      AppText(
+                        product.price,
+                        style: AppStyle.text16.copyWith(
+                          fontWeight: FontWeight.w700,
+                          color: AppCustomColor.textSecondary,
+                        ),
+                      ),
+                      if (product.hasDiscount) ...[
+                        4.verticalSpace,
+                        AppText(
+                          product.originalPriceString,
+                          style: AppStyle.text14.copyWith(
+                            color: AppCustomColor.textTertiary,
+                            fontWeight: FontWeight.w600,
+                            decoration: TextDecoration.lineThrough,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ],
               ),
             ),
+            if (product.hasDiscount)
+              Positioned(
+                top: -10.h,
+                right: 14.w,
+                child: _Badge(
+                  label: t.monetization.mostPopularBadge.toUpperCase(),
+                  background: AppCustomColor.paywallBestDeal,
+                  textColor: AppCustomColor.textPrimary,
+                  borderColor: AppCustomColor.paywallBestDeal,
+                ),
+              ),
+          ],
+        ),
+        16.verticalSpace,
+        AppButton.primary(
+          onPressed: onPurchase,
+          fullWidthBtn: true,
+          child: AppText(
+            t.monetization.payNowCta,
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textWhite),
           ),
-        ],
-      ),
+        ),
+        12.verticalSpace,
+        GestureDetector(
+          onTap: onSeeAllPlans,
+          child: AppText(
+            t.monetization.seeAllPlans,
+            textAlign: TextAlign.center,
+            style: AppStyle.text14.copyWith(
+              color: AppCustomColor.brandPrimary,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ),
+      ],
     );
+  }
+
+  String _planLabel(IapProductEntity product) {
+    final id = product.id.toLowerCase();
+
+    if (id.contains('year') || id.contains('annual')) return 'ANNUAL';
+    if (id.contains('month')) return 'MONTHLY';
+    if (id.contains('week')) return 'WEEKLY';
+
+    return t.monetization.premiumBadge.toUpperCase();
   }
 
   String _periodLabel(IapProductEntity product) {
@@ -244,6 +305,18 @@ class _HighlightCard extends StatelessWidget {
     if (id.contains('day')) return t.monetization.pricePerDay;
 
     return t.monetization.pricePerMonth;
+  }
+
+  String _pricePerPeriod(IapProductEntity product) {
+    if (product.rawPrice <= 0) return product.price.isNotEmpty ? product.price : '--';
+
+    final id = product.id.toLowerCase();
+    double value = product.rawPrice;
+    if (id.contains('year') || id.contains('annual')) {
+      value = product.rawPrice / 12;
+    }
+
+    return product.currencySymbol.isNotEmpty ? '${product.currencySymbol}${value.currency}' : value.currency;
   }
 }
 

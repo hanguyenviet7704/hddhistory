@@ -45,6 +45,7 @@ mixin AppCustomColor {
   static const Color brandPrimary300 = Color(0xFF917FF6);
   static const Color backgroundBrand = Color(0xFFEBEAFD);
   static const Color paywallAqua = Color(0xFF6BBBD8);
+  static const Color paywallBestDeal = Color(0xFFF9D31A);
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
   static const Color surfaceMuted = Color(0xFFEFF3FA);

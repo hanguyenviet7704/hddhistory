@@ -32,8 +32,12 @@ class _PaywallPageState extends State<PaywallPage> {
       },
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundBrand,
-        body: const PaywallPageDecoration(),
-        bottomNavigationBar: const PaywallHighlightPackageInfo(),
+        body: Column(
+          children: [
+            const PaywallPageDecoration(),
+            const PaywallHighlightPackageInfo()
+          ],
+        ),
       ),
     );
   }
