@@ -4,14 +4,12 @@ part of '../../monetization.dart';
 class PaywallPlanOption extends StatelessWidget {
   final IapProductEntity product;
   final bool selected;
-  final bool bestDeal;
   final VoidCallback? onTap;
 
   const PaywallPlanOption({
     super.key,
     required this.product,
     this.selected = false,
-    this.bestDeal = false,
     this.onTap,
   });
 
@@ -52,7 +50,7 @@ class PaywallPlanOption extends StatelessWidget {
                       Row(
                         children: [
                           AppText(
-                            product.planLabel,
+                            product.title.toUpperCase(),
                             style: AppStyle.text12.copyWith(
                               fontWeight: FontWeight.w700,
                               color: AppCustomColor.textSecondary,
@@ -105,7 +103,7 @@ class PaywallPlanOption extends StatelessWidget {
             ),
           ),
         ),
-        if (bestDeal)
+        if (product.bestDeal)
           Positioned(
             right: 14.w,
             top: -8.h,

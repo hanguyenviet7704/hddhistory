@@ -145,8 +145,6 @@ class _BottomSheetContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bestDealId = _bestDealProductId(products);
-
     return Column(
       children: [
         _SheetHandle(),
@@ -175,11 +173,9 @@ class _BottomSheetContent extends StatelessWidget {
             itemBuilder: (context, index) {
               final product = products[index];
               final selected = product.id == selectedId || (selectedId.isEmpty && index == 0);
-              final bestDeal = product.id == bestDealId;
               return PaywallPlanOption(
                 product: product,
                 selected: selected,
-                bestDeal: bestDeal,
                 onTap: () => onSelect(product.id),
               );
             },
@@ -200,11 +196,6 @@ class _BottomSheetContent extends StatelessWidget {
         12.verticalSpace,
       ],
     );
-  }
-
-  String _bestDealProductId(List<IapProductEntity> products) {
-    if (products.isEmpty) return '';
-    return products.reduce((a, b) => a.perPeriodValue <= b.perPeriodValue ? a : b).id;
   }
 }
 

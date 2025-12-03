@@ -44,8 +44,10 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
 
         final Set<String> productIds = response.data?.items.map((e) => e.productId).toSet() ?? {};
         List<ProductDetails> productDetails = await _iapService.getProducts(productIds: productIds);
-        productDetails.sort((a, b) => a.price.compareTo(b.price));
-        List<IapProductModel> products = productDetails.toIapProducts();
+        List<IapProductModel> storeProducts = productDetails.toIapProducts();
+        List<IapProductModel> remoteProducts = response.data?.items ?? [];
+        List<IapProductModel> products = remoteProducts.mapStoreData(storeProducts);
+        
 
         return BaseResponseList(
           data: products,

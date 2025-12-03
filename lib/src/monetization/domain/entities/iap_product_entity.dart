@@ -12,6 +12,7 @@ abstract class IapProductEntity with _$IapProductEntity {
     @Default(0) double rawPrice,
     @Default('') String currencyCode,
     @Default('') String currencySymbol,
+    @Default(false) bool bestDeal,
   }) = _IapProductEntity;
 
   factory IapProductEntity.fromJson(Map<String, dynamic> json) => _$IapProductEntityFromJson(json);
@@ -31,18 +32,6 @@ extension IapProductEntityX on IapProductEntity {
       return '$currencySymbol${original.currency}';
     }
     return original.currency;
-  }
-
-  String get planLabel {
-    final idLower = id.toLowerCase();
-
-    if (idLower.contains('year') || idLower.contains('annual')) return 'ANNUAL';
-    if (idLower.contains('quarter')) return 'QUARTERLY';
-    if (idLower.contains('month')) return 'MONTHLY';
-    if (idLower.contains('week')) return 'WEEKLY';
-    if (idLower.contains('life')) return 'LIFETIME';
-
-    return t.monetization.premiumBadge.toUpperCase();
   }
 
   String get periodLabel {

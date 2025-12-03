@@ -154,7 +154,6 @@ class _HighlightCard extends StatelessWidget {
         PaywallPlanOption(
           product: product,
           selected: true,
-          bestDeal: product.hasDiscount,
         ),
         24.verticalSpace,
         AppButton.primary(
