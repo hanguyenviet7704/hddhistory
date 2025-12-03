@@ -21,9 +21,9 @@ class PaywallAllPackageInfoBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.72,
-      minChildSize: 0.5,
-      maxChildSize: 0.9,
+      initialChildSize: 0.65,
+      minChildSize: 0.65,
+      maxChildSize: 0.65,
       builder: (context, controller) {
         return Container(
           decoration: BoxDecoration(
@@ -79,8 +79,6 @@ class _BottomSheetLoading extends StatelessWidget {
         SliverToBoxAdapter(
           child: Column(
             children: [
-              _SheetHandle(),
-              16.verticalSpace,
               AppText(
                 t.monetization.loadingPlans,
                 style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
@@ -104,8 +102,6 @@ class _BottomSheetEmpty extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _SheetHandle(),
-        16.verticalSpace,
         AppText(
           t.monetization.emptyProductsTitle,
           style: AppStyle.text18.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
@@ -118,10 +114,32 @@ class _BottomSheetEmpty extends StatelessWidget {
           style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
         ),
         20.verticalSpace,
-        AppButton.primary(
-          child: t.monetization.retry,
-          onPressed: onRetry,
-          fullWidthBtn: true,
+        Container(
+          width: double.infinity,
+          height: 54.h,
+          decoration: BoxDecoration(
+            color: const Color(0xFF554FF0),
+            borderRadius: BorderRadius.circular(1000.r),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onRetry,
+              borderRadius: BorderRadius.circular(1000.r),
+              child: Center(
+                child: AppText(
+                  t.monetization.payNowCta,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: AppStyle.text16.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ),
+          ),
         ),
       ],
     );
@@ -147,8 +165,6 @@ class _BottomSheetContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        _SheetHandle(),
-        12.verticalSpace,
         Row(
           children: [
             const Spacer(),
@@ -168,6 +184,7 @@ class _BottomSheetContent extends StatelessWidget {
           child: ListView.separated(
             controller: controller,
             padding: EdgeInsets.only(top: 4.h, bottom: 12.h),
+            physics: const AlwaysScrollableScrollPhysics(),
             itemCount: products.length,
             separatorBuilder: (_, _) => 12.verticalSpace,
             itemBuilder: (context, index) {
@@ -182,35 +199,38 @@ class _BottomSheetContent extends StatelessWidget {
           ),
         ),
         12.verticalSpace,
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 4.w),
-          child: AppButton.primary(
-            onPressed: () {
-              Navigator.of(context).maybePop();
-              onPurchase();
-            },
-            fullWidthBtn: true,
-            child: t.monetization.payNowCta,
+        Container(
+          width: double.infinity,
+          height: 54.h,
+          decoration: BoxDecoration(
+            color: const Color(0xFF554FF0),
+            borderRadius: BorderRadius.circular(1000.r),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: () {
+                Navigator.of(context).maybePop();
+                onPurchase();
+              },
+              borderRadius: BorderRadius.circular(1000.r),
+              child: Center(
+                child: AppText(
+                  t.monetization.payNowCta,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: AppStyle.text16.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
         12.verticalSpace,
       ],
-    );
-  }
-}
-
-class _SheetHandle extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Container(
-        width: 44.w,
-        height: 4.h,
-        decoration: BoxDecoration(
-          color: AppCustomColor.borderSecondary,
-          borderRadius: BorderRadius.circular(100.r),
-        ),
-      ),
     );
   }
 }

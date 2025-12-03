@@ -145,14 +145,31 @@ class _HighlightCard extends StatelessWidget {
           selected: true,
         ),
         24.verticalSpace,
-        AppButton.primary(
-          onPressed: onPurchase,
-          fullWidthBtn: true,
-          child: AppText(
-            t.monetization.payNowCta,
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textWhite),
+        Container(
+          width: double.infinity,
+          height: 54.h,
+          decoration: BoxDecoration(
+            color: const Color(0xFF554FF0),
+            borderRadius: BorderRadius.circular(1000.r),
+          ),
+          child: Material(
+            color: Colors.transparent,
+            child: InkWell(
+              onTap: onPurchase,
+              borderRadius: BorderRadius.circular(1000.r),
+              child: Center(
+                child: AppText(
+                  t.monetization.payNowCta,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: AppStyle.text16.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                    height: 1.5,
+                  ),
+                ),
+              ),
+            ),
           ),
         ),
         16.verticalSpace,

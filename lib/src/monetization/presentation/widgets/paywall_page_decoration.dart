@@ -20,9 +20,8 @@ class PaywallPageDecoration extends StatelessWidget {
             AppText(
               t.monetization.paywallHeroTitle,
               textAlign: TextAlign.center,
-              maxLines: 2,
-              style: AppStyle.text32.copyWith(
-                fontWeight: FontWeight.w700,
+              maxLines: 3,
+              style: AppStyle.textBold28.copyWith(
                 color: AppCustomColor.textBrand,
                 height: 1.25,
               ),

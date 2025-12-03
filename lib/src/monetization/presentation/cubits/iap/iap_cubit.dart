@@ -107,12 +107,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     late VerifyParams params;
 
     if (Platform.isIOS) {
-      final verificationData = await _iapService.refreshIOSVerificationData();
+      // final verificationData = await _iapService.refreshIOSVerificationData();
       params = VerifyParams(
         platform: PaymentPlatform.apple,
         productId: purchaseDetail.productID,
         packageName: 'com.eup.meup',
-        storeTransactionId: verificationData?.serverVerificationData ?? '',
+        // storeTransactionId: verificationData?.serverVerificationData ?? '',
+        storeTransactionId: purchaseDetail.purchaseID ?? '',
       );
     } else {
       final verificationData = purchaseDetail.verificationData;
@@ -141,7 +142,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     Future.delayed(const Duration(seconds: 1), () async {
       AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       DMessage.showMessage(
-        message: 'AppConfig.instance.context?.text.monetPaymentSuccessToast',
+        message: AppConfig.instance.context?.text.monetization.paymentSuccessToast ?? '',
         type: MessageType.success,
       );
       // await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
@@ -151,7 +152,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   void _onPurchaseFailure({String error = ''}) {
     emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString()));
     _trackingService.trackPaywallStorePopupDismiss(AppConfig.instance.context!, state.selectedProductId);
-    DMessage.showMessage(message: error.isEmpty ? 'AppConfig.instance.context?.text.monetPaymentFailToast' : error, type: MessageType.error);
+    DMessage.showMessage(
+      message: error.isEmpty ? AppConfig.instance.context?.text.monetization.paymentFailToast ?? '' : error,
+      type: MessageType.error,
+    );
   }
 
   @override
