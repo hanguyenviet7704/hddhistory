@@ -3,28 +3,28 @@ part of '../../monetization.dart';
 class VerifyParams {
   final PaymentPlatform platform;
   final String productId;
-  final String purchaseToken;
-  final String transactionId;
   final String packageName;
-  final bool isSandbox;
+  final String storeTransactionId;
+  final String subscriptionId;
+  final String originalTransactionId;
 
   VerifyParams({
     required this.platform,
     this.productId = '',
-    this.purchaseToken = '',
-    this.transactionId = '',
     this.packageName = '',
-    this.isSandbox = false,
+    this.storeTransactionId = '',
+    this.subscriptionId = '',
+    this.originalTransactionId = '',
   });
 
   Map<String, dynamic> toJson() {
     return {
       'platform': platform == PaymentPlatform.apple ? 'apple' : 'google',
       'productId': productId,
-      'purchaseToken': purchaseToken,
-      'transactionId': transactionId,
       'packageName': packageName,
-      'isSandbox': isSandbox,
+      'storeTransactionId': storeTransactionId,
+      'subscriptionId': subscriptionId,
+      'originalTransactionId': originalTransactionId,
     };
   }
 }

@@ -19,4 +19,5 @@ abstract class IapState with _$IapState {
 
 extension IapStateX on IapState {
   IapProductEntity get bestDealProduct => iapProducts.firstWhere((element) => element.bestDeal);
+  IapProductEntity get selectedProduct => iapProducts.firstWhere((element) => element.id == selectedProductId);
 }

@@ -52,7 +52,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   Future<void> purchaseProduct({PurchaseType type = PurchaseType.subscription}) async {
     emit(state.copyWith(status: MonetizationStatus.loading));
     await runUseCase<IapVerifyEntity>(
-      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: state.selectedProductId, type: type)),
+      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: state.selectedProduct.productId, type: type)),
       onSuccess: (verify) {},
       onFailure: (error) => _onPurchaseFailure(),
     );
@@ -110,17 +110,21 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       final verificationData = await _iapService.refreshIOSVerificationData();
       params = VerifyParams(
         platform: PaymentPlatform.apple,
-        purchaseToken: verificationData?.serverVerificationData ?? '',
-        transactionId: purchaseDetail.purchaseID ?? '',
-        productId: purchaseDetail.productID,
-        isSandbox: kDebugMode,
-      );
-    } else {
-      params = VerifyParams(
-        platform: PaymentPlatform.google,
-        purchaseToken: purchaseDetail.verificationData.serverVerificationData,
         productId: purchaseDetail.productID,
         packageName: 'com.eup.meup',
+        storeTransactionId: verificationData?.serverVerificationData ?? '',
+        originalTransactionId: verificationData?.localVerificationData ?? '',
+        subscriptionId: purchaseDetail.productID,
+      );
+    } else {
+      final verificationData = purchaseDetail.verificationData;
+      params = VerifyParams(
+        platform: PaymentPlatform.google,
+        productId: purchaseDetail.productID,
+        packageName: 'com.eup.meup',
+        storeTransactionId: verificationData.serverVerificationData,
+        originalTransactionId: verificationData.localVerificationData,
+        subscriptionId: purchaseDetail.productID,
       );
     }
 
