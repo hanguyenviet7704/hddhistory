@@ -16,3 +16,7 @@ abstract class IapState with _$IapState {
 
   factory IapState.fromJson(Map<String, dynamic> json) => _$IapStateFromJson(json);
 }
+
+extension IapStateX on IapState {
+  IapProductEntity get bestDealProduct => iapProducts.firstWhere((element) => element.bestDeal);
+}

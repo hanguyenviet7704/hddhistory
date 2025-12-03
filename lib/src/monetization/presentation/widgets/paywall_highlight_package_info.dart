@@ -32,25 +32,14 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
             return _HighlightEmpty(onRetry: cubit.loadIapProducts);
           }
 
-          final IapProductEntity selectedProduct = _getSelectedProduct(state);
-
           return _HighlightCard(
-            product: selectedProduct,
+            product: state.bestDealProduct,
             onPurchase: () => cubit.purchaseProduct(),
             onSeeAllPlans: () => PaywallAllPackageInfoBottomSheet.show(context),
           );
         },
       ),
     );
-  }
-
-  IapProductEntity _getSelectedProduct(IapState state) {
-    if (state.iapProducts.isEmpty) return const IapProductEntity();
-
-    final selected = state.iapProducts.where((item) => item.id == state.selectedProductId);
-    if (selected.isNotEmpty) return selected.first;
-
-    return state.iapProducts.first;
   }
 }
 

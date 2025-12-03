@@ -41,7 +41,7 @@ class PaywallPlanOption extends StatelessWidget {
                   : null,
             ),
             child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 Expanded(
                   child: Column(
@@ -51,8 +51,7 @@ class PaywallPlanOption extends StatelessWidget {
                         children: [
                           AppText(
                             product.title.toUpperCase(),
-                            style: AppStyle.text12.copyWith(
-                              fontWeight: FontWeight.w700,
+                            style: AppStyle.textBold12.copyWith(
                               color: AppCustomColor.textSecondary,
                             ),
                           ),
@@ -62,20 +61,22 @@ class PaywallPlanOption extends StatelessWidget {
                           ],
                         ],
                       ),
-                      8.verticalSpace,
-                      Row(
-                        children: [
-                          AppText(
-                            product.pricePerPeriodString,
-                            style: AppStyle.text14.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textSecondary),
-                          ),
-                          4.horizontalSpace,
-                          AppText(
-                            '/${product.periodLabel}',
-                            style: AppStyle.text10.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textTertiary),
-                          ),
-                        ],
-                      ),
+                      if (product.bestDeal) ...[
+                        8.verticalSpace,
+                        Row(
+                          children: [
+                            AppText(
+                              product.pricePerPeriodString,
+                              style: AppStyle.text14.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textSecondary),
+                            ),
+                            4.horizontalSpace,
+                            AppText(
+                              '/${product.periodLabel}',
+                              style: AppStyle.text10.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textTertiary),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -129,7 +130,7 @@ class _DiscountPill extends StatelessWidget {
       ),
       child: AppText(
         label,
-        style: AppStyle.text10.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.brandPrimary),
+        style: AppStyle.textBold10.copyWith(color: AppCustomColor.brandPrimary900),
       ),
     );
   }
