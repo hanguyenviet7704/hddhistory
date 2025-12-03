@@ -19,7 +19,7 @@ class _PaywallPageState extends State<PaywallPage> {
 
   @override
   void dispose() {
-    context.read<IapCubit>().disposeStreamSubscription();
+    AppDI.injector.get<IapCubit>().disposeStreamSubscription();
     super.dispose();
   }
 
