@@ -17,12 +17,16 @@ abstract class IapProductModel with _$IapProductModel {
   factory IapProductModel.fromJson(Map<String, dynamic> json) => _$IapProductModelFromJson(json);
 }
 
-// export enum PaymentPlatform {
 enum PaymentPlatform {
   @JsonValue('google')
   google,
   @JsonValue('apple')
-  apple,
+  apple;
+
+  static PaymentPlatform get fromDevicePlatform {
+    if (Platform.isIOS) return apple;
+    return google;
+  }
 }
 
 extension IapProductModelExtension on IapProductModel {

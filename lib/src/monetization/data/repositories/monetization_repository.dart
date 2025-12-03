@@ -37,23 +37,12 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   }
 
   @override
-  TaskEither<AppException, List<IapProductEntity>> getProducts() {
+  TaskEither<AppException, List<IapProductEntity>> getProducts(GetPackagesParams params) {
     return callApiListWithTransform(
       apiCall: () async {
-        // final response = await _iapApi.getPackages();
+        final response = await _monetizationApi.getPackages(PageBreakRequest<GetPackagesParams>(page: 1, limit: 10, filter: params));
 
-        // Get products from IAP service
-        // await _iapService.getProducts(
-        //   productIds: Set.from(response.data.map((e) => e.productId)),
-        //   // productIds: {
-        //   //   'com.example.app.subscription',
-        //   //   'com.example.app.non_consumable',
-        //   // },
-        // );
-
-        // return response;
-
-        final Set<String> productIds = {'meup_sub_3m', 'meup_sub_1y', 'meup_iap_lifetime'};
+        final Set<String> productIds = response.data?.items.map((e) => e.productId).toSet() ?? {};
         List<ProductDetails> productDetails = await _iapService.getProducts(productIds: productIds);
         productDetails.sort((a, b) => a.price.compareTo(b.price));
         List<IapProductModel> products = productDetails.toIapProducts();

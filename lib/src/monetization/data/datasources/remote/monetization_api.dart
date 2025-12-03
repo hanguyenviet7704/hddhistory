@@ -6,8 +6,8 @@ abstract class MonetizationApi {
   @factoryMethod
   factory MonetizationApi(@Named(DIKey.appDio) Dio dio) = _MonetizationApi;
 
-  @POST(AppEndpoint.packages)
-  Future<BaseResponse<BasePageBreak<IapProductModel>>> getPackages();
+  @GET(AppEndpoint.packages)
+  Future<BaseResponse<BasePageBreak<IapProductModel>>> getPackages(@Queries() PageBreakRequest params);
 
   @POST(AppEndpoint.verify)
   Future<BaseResponse<IapVerifyModel>> verify(@Body() Map<String, dynamic> params);
