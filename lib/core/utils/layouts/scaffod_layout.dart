@@ -41,16 +41,18 @@ class ScaffoldLayout extends StatelessWidget {
         );
       },
     );
-
-    bottomNavigationBar = SizedBox(height: 56.h + MediaQuery.viewPaddingOf(context).bottom, child: bottomNavigationBar);
+    final bottomInset = MediaQuery.paddingOf(context).bottom;
 
     return Column(
       children: [
         Expanded(child: navigationShell),
-        MediaQuery.removePadding(
-          context: context,
-          removeBottom: true,
-          child: bottomNavigationBar,
+        SizedBox(
+          height: 56.h + bottomInset.h,
+          child: MediaQuery.removePadding(
+            context: context,
+            removeBottom: true,
+            child: bottomNavigationBar,
+          ),
         ),
       ],
     );

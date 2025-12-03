@@ -5,16 +5,12 @@ class VerifyParams {
   final String productId;
   final String packageName;
   final String storeTransactionId;
-  final String subscriptionId;
-  final String originalTransactionId;
 
   VerifyParams({
     required this.platform,
     this.productId = '',
     this.packageName = '',
     this.storeTransactionId = '',
-    this.subscriptionId = '',
-    this.originalTransactionId = '',
   });
 
   Map<String, dynamic> toJson() {
@@ -23,8 +19,6 @@ class VerifyParams {
       'productId': productId,
       'packageName': packageName,
       'storeTransactionId': storeTransactionId,
-      'subscriptionId': subscriptionId,
-      'originalTransactionId': originalTransactionId,
     };
   }
 }

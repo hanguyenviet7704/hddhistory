@@ -113,8 +113,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         productId: purchaseDetail.productID,
         packageName: 'com.eup.meup',
         storeTransactionId: verificationData?.serverVerificationData ?? '',
-        originalTransactionId: verificationData?.localVerificationData ?? '',
-        subscriptionId: purchaseDetail.productID,
       );
     } else {
       final verificationData = purchaseDetail.verificationData;
@@ -123,8 +121,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         productId: purchaseDetail.productID,
         packageName: 'com.eup.meup',
         storeTransactionId: verificationData.serverVerificationData,
-        originalTransactionId: verificationData.localVerificationData,
-        subscriptionId: purchaseDetail.productID,
       );
     }
 
