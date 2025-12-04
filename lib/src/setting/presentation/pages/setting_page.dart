@@ -17,32 +17,32 @@ class SettingPage extends StatelessWidget {
             children: [
               SettingProfileCard(),
               24.verticalSpace,
-              SettingSectionCard(
-                title: context.text.setting.settingSectionHeaderGeneral,
-                children: [
-                  if (kDebugMode)
-                    SettingOptionTile(
-                      iconAsset: AppAsset.svg.app.icBell,
-                      title: context.text.setting.settingRowNoti,
-                      trailingText: '05:05',
-                    ),
-
-                  SettingOptionTile(
-                    iconAsset: AppAsset.svg.app.icGlobe,
-                    title: context.text.setting.settingRowLanguage,
-                    trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
-                    onTap: () => const ChangeLanguageRoute().go(context),
-                  ),
-                  SettingOptionTile(
-                    iconAsset: AppAsset.svg.app.icCreditCard,
-                    title: context.text.setting.settingRowUpgradePremium,
-                    onTap: () => const PaywallRoute().push(context),
-                  ),
-                  SettingOptionTile(
-                    iconAsset: AppAsset.svg.app.icSet,
-                    title: context.text.setting.settingRowRestorePurchase,
-                  ),
-                ],
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  return SettingSectionCard(
+                    title: context.text.setting.settingSectionHeaderGeneral,
+                    children: [
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icGlobe,
+                        title: context.text.setting.settingRowLanguage,
+                        trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
+                        onTap: () => const ChangeLanguageRoute().go(context),
+                      ),
+                      if (user.iapSubscriptions.isEmpty) ...[
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icCreditCard,
+                          title: context.text.setting.settingRowUpgradePremium,
+                          onTap: () => const PaywallRoute().push(context),
+                        ),
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icSet,
+                          title: context.text.setting.settingRowRestorePurchase,
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
               24.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(

@@ -82,27 +82,37 @@ class _ProfileViewState extends State<_ProfileView> {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
-        child: BlocListener<ProfileCubit, ProfileState>(
-          listenWhen: (previous, current) => previous.status != current.status || previous.user != current.user,
-          listener: (context, state) {
-            if (state.status == ProfileStatus.loading) {
-              EasyLoading.show();
-            } else {
-              EasyLoading.dismiss();
-            }
+        child: MultiBlocListener(
+          listeners: [
+            BlocListener<ProfileCubit, ProfileState>(
+              listenWhen: (previous, current) => previous.status != current.status || previous.user != current.user,
+              listener: (context, state) {
+                if (state.status == ProfileStatus.loading) {
+                  EasyLoading.show();
+                } else {
+                  EasyLoading.dismiss();
+                }
 
-            if (state.status == ProfileStatus.success) {
-              _nameController.text = state.user.name;
-              if (_isEditingNotifier.value) _isEditingNotifier.value = false;
-            }
+                if (state.status == ProfileStatus.success) {
+                  _nameController.text = state.user.name;
+                  if (_isEditingNotifier.value) _isEditingNotifier.value = false;
+                }
 
-            if (state.status == ProfileStatus.failure) {
-              DMessage.showMessage(
-                type: MessageType.error,
-                message: state.errorMessage ?? 'Something went wrong',
-              );
-            }
-          },
+                if (state.status == ProfileStatus.failure) {
+                  DMessage.showMessage(
+                    type: MessageType.error,
+                    message: state.errorMessage ?? 'Something went wrong',
+                  );
+                }
+              },
+            ),
+            BlocListener<IapCubit, IapState>(
+              listenWhen: (previous, current) => previous.status != current.status && current.status == MonetizationStatus.purchaseSuccess,
+              listener: (context, state) {
+                PaywallSuccessPurchasePopup.show(context);
+              },
+            ),
+          ],
           child: ValueListenableBuilder<bool>(
             valueListenable: _isEditingNotifier,
             builder: (context, isEditing, _) {

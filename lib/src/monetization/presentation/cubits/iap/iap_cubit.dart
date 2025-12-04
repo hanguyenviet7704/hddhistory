@@ -133,13 +133,12 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   void _onPurchaseSuccess(PurchaseDetails purchaseDetail) {
     // AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
     _iapService.completePurchase(purchaseDetail);
-
-    emit(state.copyWith(status: MonetizationStatus.success));
+    AppDI.injector.get<ProfileCubit>().loadUser();
     AppConfig.instance.context?.back();
-
     _trackingService.trackSubscriptionCompleted(state.selectedProductId);
 
     Future.delayed(const Duration(seconds: 1), () async {
+      emit(state.copyWith(status: MonetizationStatus.purchaseSuccess));
       AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       DMessage.showMessage(
         message: AppConfig.instance.context?.text.monetization.paymentSuccessToast ?? '',

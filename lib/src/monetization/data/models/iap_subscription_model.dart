@@ -8,7 +8,7 @@ abstract class IapSubscriptionModel with _$IapSubscriptionModel {
     @Default(PaymentPlatform.google) PaymentPlatform platform,
     @Default('') String productId,
     @Default('') String anchorId,
-    @Default(IapPurchaseStatus.pending) IapPurchaseStatus status,
+    @Default(SubscriptionStatus.active) SubscriptionStatus status,
     @Default(false) bool autoRenewing,
     @Default(false) bool isTrial,
     DateTime? currentPeriodStart,
@@ -18,6 +18,19 @@ abstract class IapSubscriptionModel with _$IapSubscriptionModel {
   }) = _IapSubscriptionModel;
 
   factory IapSubscriptionModel.fromJson(Map<String, dynamic> json) => _$IapSubscriptionModelFromJson(json);
+}
+
+enum SubscriptionStatus {
+  @JsonValue('active')
+  active,
+  @JsonValue('expired')
+  expired,
+  @JsonValue('grace') // gia hạn trễ, vẫn còn premium
+  grace,
+  @JsonValue('on_hold') // payment fail quá nhiều lần, permission bị tạm khóa
+  onHold,
+  @JsonValue('canceled') // user đã tắt auto-renew, nhưng vẫn còn dùng đến cuối kỳ
+  canceled,
 }
 
 extension IapSubscriptionModelExtension on IapSubscriptionModel {
