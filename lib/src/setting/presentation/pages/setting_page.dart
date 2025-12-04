@@ -17,6 +17,10 @@ class SettingPage extends StatelessWidget {
             children: [
               SettingProfileCard(),
               24.verticalSpace,
+              SettingPreminumCard(
+                onUpgrade: () => const PaywallRoute().push(context),
+              ),
+              24.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                 selector: (state) => state.user,
                 builder: (context, user) {
