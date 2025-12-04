@@ -70,10 +70,12 @@ class PaywallPlanOption extends StatelessWidget {
                               style: AppStyle.text14.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textSecondary),
                             ),
                             4.horizontalSpace,
+                            if (product.periodLabel.isNotEmpty) ...[
                             AppText(
                               '/${product.periodLabel}',
-                              style: AppStyle.text10.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textTertiary),
-                            ),
+                                style: AppStyle.text10.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textTertiary),
+                              ),
+                            ],
                           ],
                         ),
                       ],

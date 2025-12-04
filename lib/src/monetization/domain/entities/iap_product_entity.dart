@@ -19,7 +19,6 @@ abstract class IapProductEntity with _$IapProductEntity {
   factory IapProductEntity.fromJson(Map<String, dynamic> json) => _$IapProductEntityFromJson(json);
 }
 
-
 extension IapProductEntityX on IapProductEntity {
   bool get hasDiscount => rawPrice > 0 && rawPrice * saleScale > rawPrice + 0.01;
 
@@ -36,10 +35,11 @@ extension IapProductEntityX on IapProductEntity {
   }
 
   String get periodLabel {
-    final idLower = id.toLowerCase();
-
-    if (idLower.contains('week')) return t.monetization.pricePerWeek;
-    if (idLower.contains('day')) return t.monetization.pricePerDay;
+    if (productId.contains('1y') || productId.toLowerCase().contains('year')) return t.monetization.pricePerYear;
+    if (productId.contains('3m') || productId.toLowerCase().contains('quarter')) return t.monetization.pricePerQuarter;
+    if (productId.toLowerCase().contains('life')) return t.monetization.pricePerLifetime;
+    if (productId.contains('week')) return t.monetization.pricePerWeek;
+    if (productId.contains('day')) return t.monetization.pricePerDay;
 
     return t.monetization.pricePerMonth;
   }

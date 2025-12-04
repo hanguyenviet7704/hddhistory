@@ -61,6 +61,9 @@ class ScaffoldLayout extends StatelessWidget {
             child: MediaQuery.removePadding(
               context: context,
               removeBottom: true,
+              removeLeft: true,
+              removeRight: true,
+              removeTop: true,
               child: bottomNavigationBar,
             ),
           ),

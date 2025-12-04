@@ -50,7 +50,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   Future<void> purchaseProduct({bool isHighlight = false}) async {
-    String productId = isHighlight ? state.bestDealProduct.id : state.selectedProduct.id;
+    String productId = isHighlight ? state.bestDealProduct.productId : state.selectedProduct.productId;
     emit(state.copyWith(status: MonetizationStatus.loading));
     await runUseCase<IapVerifyEntity>(
       usecase: () => _purchaseUsecase.call(PurchaseParams(productId: productId, type: state.selectedProduct.type)),
@@ -133,9 +133,9 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   void _onPurchaseSuccess(PurchaseDetails purchaseDetail) {
     // AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
     _iapService.completePurchase(purchaseDetail);
-    
+
     emit(state.copyWith(status: MonetizationStatus.success));
-    AppConfig.instance.context?.backUntil(RoutePath.home);
+    AppConfig.instance.context?.back();
 
     _trackingService.trackSubscriptionCompleted(state.selectedProductId);
 
