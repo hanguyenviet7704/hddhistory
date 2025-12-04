@@ -8,7 +8,7 @@ abstract class IapSubscriptionModel with _$IapSubscriptionModel {
     @Default(PaymentPlatform.google) PaymentPlatform platform,
     @Default('') String productId,
     @Default('') String anchorId,
-    @Default(PurchaseStatus.pending) PurchaseStatus status,
+    @Default(IapPurchaseStatus.pending) IapPurchaseStatus status,
     @Default(false) bool autoRenewing,
     @Default(false) bool isTrial,
     DateTime? currentPeriodStart,

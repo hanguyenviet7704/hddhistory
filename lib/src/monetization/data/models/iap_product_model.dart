@@ -23,8 +23,7 @@ enum PaymentPlatform {
   @JsonValue('google')
   google,
   @JsonValue('apple')
-  apple
-  ;
+  apple;
 
   static PaymentPlatform get fromDevicePlatform {
     if (Platform.isIOS) return apple;

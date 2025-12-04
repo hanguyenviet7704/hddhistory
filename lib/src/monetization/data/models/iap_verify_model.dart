@@ -9,7 +9,7 @@ abstract class IapVerifyModel with _$IapVerifyModel {
     @Default('') String storeTransactionId,
     @Default('') String productId,
     @Default('') String orderId,
-    @Default(PurchaseStatus.pending) PurchaseStatus status,
+    @Default(IapPurchaseStatus.pending) IapPurchaseStatus status,
     @Default('') String rawPayload,
     @Default('') String idempotencyKey,
     DateTime? purchaseTime,
@@ -17,6 +17,14 @@ abstract class IapVerifyModel with _$IapVerifyModel {
   }) = _IapVerifyModel;
 
   factory IapVerifyModel.fromJson(Map<String, dynamic> json) => _$IapVerifyModelFromJson(json);
+}
+
+enum IapPurchaseStatus {
+  pending,
+  paid,
+  failed,
+  canceled,
+  refunded,
 }
 
 extension IapVerifyModelExtension on IapVerifyModel {

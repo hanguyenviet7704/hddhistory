@@ -9,7 +9,7 @@ abstract class IapVerifyEntity with _$IapVerifyEntity {
     @Default('') String storeTransactionId,
     @Default('') String productId,
     @Default('') String orderId,
-    @Default(PurchaseStatus.pending) PurchaseStatus status,
+    @Default(IapPurchaseStatus.pending) IapPurchaseStatus status,
     @Default('') String rawPayload,
     @Default('') String idempotencyKey,
     DateTime? purchaseTime,

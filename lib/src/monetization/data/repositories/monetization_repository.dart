@@ -65,8 +65,8 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       () async {
         bool isSuccess = await _iapService.purchaseProduct(params.productId, params.type);
 
-        if (!isSuccess) return IapVerifyModel(status: PurchaseStatus.error).toEntity();
-        return IapVerifyModel(status: PurchaseStatus.purchased).toEntity();
+        if (!isSuccess) return IapVerifyModel(status: IapPurchaseStatus.failed).toEntity();
+        return IapVerifyModel(status: IapPurchaseStatus.paid).toEntity();
       },
       (error, stackTrace) {
         return AppException.unexpected(error.toString());

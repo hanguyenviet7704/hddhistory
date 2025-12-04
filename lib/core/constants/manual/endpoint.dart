@@ -41,6 +41,7 @@ mixin AppEndpoint {
   //* IAP
   static const String packages = '/api/v1/payment/products';
   static const String verify = '/api/v1/payment/purchases/verify';
+  static const String userIapSubscriptions = '/api/v1/payment/subscriptions/users/{userId}/active-premium';
 
 
   //* Onboardings API
