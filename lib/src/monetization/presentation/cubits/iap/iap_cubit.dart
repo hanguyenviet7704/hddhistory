@@ -78,13 +78,11 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
           break;
         case PurchaseStatus.canceled:
-          _iapService.completePurchase(purchaseDetail);
           _onPurchaseFailure();
           LogDev.warning('Payment is canceled');
 
           break;
         case PurchaseStatus.error:
-          _iapService.completePurchase(purchaseDetail);
           _onPurchaseFailure();
           _trackingService.trackSubscriptionFailed(state.selectedProductId);
           LogDev.warning('Payment failed');
@@ -127,13 +125,15 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
     runUseCase<IapVerifyEntity>(
       usecase: () => _verifyUsecase.call(params),
-      onSuccess: (verify) => _onPurchaseSuccess(),
+      onSuccess: (verify) => _onPurchaseSuccess(purchaseDetail),
       onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
     );
   }
 
-  void _onPurchaseSuccess() {
+  void _onPurchaseSuccess(PurchaseDetails purchaseDetail) {
     // AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
+    _iapService.completePurchase(purchaseDetail);
+    
     emit(state.copyWith(status: MonetizationStatus.success));
     AppConfig.instance.context?.backUntil(RoutePath.home);
 
