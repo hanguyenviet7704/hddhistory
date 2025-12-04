@@ -34,7 +34,7 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
 
           return _HighlightCard(
             product: state.bestDealProduct,
-            onPurchase: () => cubit.purchaseProduct(),
+            onPurchase: () => cubit.purchaseProduct(isHighlight: true),
             onSeeAllPlans: () => PaywallAllPackageInfoBottomSheet.show(context),
           );
         },

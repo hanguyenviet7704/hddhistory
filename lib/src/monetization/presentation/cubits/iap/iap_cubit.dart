@@ -49,10 +49,11 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     );
   }
 
-  Future<void> purchaseProduct() async {
+  Future<void> purchaseProduct({bool isHighlight = false}) async {
+    String productId = isHighlight ? state.bestDealProduct.id : state.selectedProduct.id;
     emit(state.copyWith(status: MonetizationStatus.loading));
     await runUseCase<IapVerifyEntity>(
-      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: state.selectedProduct.productId, type: state.selectedProduct.type)),
+      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: productId, type: state.selectedProduct.type)),
       onSuccess: (verify) {},
       onFailure: (error) => _onPurchaseFailure(),
     );
@@ -110,7 +111,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         platform: PaymentPlatform.apple,
         productId: purchaseDetail.productID,
         packageName: 'com.eup.meup',
-        // storeTransactionId: verificationData?.serverVerificationData ?? '',
         storeTransactionId: purchaseDetail.purchaseID ?? '',
       );
     } else {

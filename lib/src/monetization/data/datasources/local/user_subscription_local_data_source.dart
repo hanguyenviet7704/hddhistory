@@ -31,11 +31,17 @@ class UserSubscriptionLocalDataSourceImpl implements UserSubscriptionLocalDataSo
     try {
       final cacheKey = '${_cacheKeyPrefix}_$userId';
       await _localStoreService.setMap(key: cacheKey, value: model.toJson());
-    } catch (e) {}
+    } catch (e) {
+      LogDev.error('Error caching user subscription: $e');
+    }
   }
 
   @override
   Future<void> clearCache() async {
-    try {} catch (e) {}
+    try {
+      await _localStoreService.remove(key: _cacheKeyPrefix);
+    } catch (e) {
+      LogDev.error('Error clearing user subscription cache: $e');
+    }
   }
 }

@@ -4,10 +4,12 @@ part of '../../../profile.dart';
 class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerMixin<ProfileState> {
   final GetUserUseCase _getUseCase;
   final UpdateUserUseCase _updateUseCase;
+  final GetUserIapSubscriptionsUseCase _getUserIapSubscriptionsUseCase;
 
   ProfileCubit(
     this._getUseCase,
     this._updateUseCase,
+    this._getUserIapSubscriptionsUseCase,
   ) : super(ProfileState.initial());
 
   @override
@@ -29,6 +31,20 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ProfileStatus.success, user: item));
+        loadUserIapSubscriptions();
+      },
+    );
+  }
+
+  void loadUserIapSubscriptions() async {
+    await runUseCase<IapSubscriptionEntity>(
+      usecase: () => _getUserIapSubscriptionsUseCase(state.user.id),
+      onSuccess: (items) {
+        UserEntity user = state.user.copyWith(iapSubscriptions: [items]);
+        emit(state.copyWith(user: user));
+      },
+      onFailure: (error) {
+        emit(state.copyWith(status: ProfileStatus.failure, errorMessage: error));
       },
     );
   }

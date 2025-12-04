@@ -3,8 +3,15 @@ part of '../../home.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+  void _loadIapProducts(BuildContext context) {
+    List<IapProductEntity> iapProducts = context.read<IapCubit>().state.iapProducts;
+    if (iapProducts.isNotEmpty) return;
+    context.read<IapCubit>().loadIapProducts();
+  }
+
   @override
   Widget build(BuildContext context) {
+    _loadIapProducts(context);
     return Scaffold(
       body: SafeBody(
         child: RefreshIndicator(
