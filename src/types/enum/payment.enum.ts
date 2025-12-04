@@ -9,9 +9,10 @@ export enum PaymentCurrency {
 }
 
 export enum ProductType {
-  SUBSCRIPTION = "subscription",
-  IN_APP = "in_app",
-  NON_RENEWABLE = "non_renewable",
+  SUBSCRIPTION_NON_RENEW = "subscription_non_renew",
+  SUBSCRIPTION_AUTO_RENEW = "subscription_auto_renew",
+  NON_CONSUMABLE = "non_consumable",
+  CONSUMABLE = "consumable",
 }
 
 export enum PurchaseStatus {

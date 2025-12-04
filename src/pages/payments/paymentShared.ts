@@ -12,9 +12,10 @@ export const platformLabels: Record<PaymentPlatform, string> = {
 };
 
 export const typeLabels: Record<ProductType, string> = {
-  [ProductType.IN_APP]: "In-App",
-  [ProductType.SUBSCRIPTION]: "Subscription",
-  [ProductType.NON_RENEWABLE]: "Non-renewable",
+  [ProductType.SUBSCRIPTION_AUTO_RENEW]: "Subscription (Auto-renew)",
+  [ProductType.SUBSCRIPTION_NON_RENEW]: "Subscription (Non-renew)",
+  [ProductType.NON_CONSUMABLE]: "Non-consumable",
+  [ProductType.CONSUMABLE]: "Consumable",
 };
 
 export const purchaseStatusLabel: Record<PurchaseStatus, string> = {

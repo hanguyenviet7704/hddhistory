@@ -52,7 +52,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
   const [platform, setPlatform] = useState<PaymentPlatform>(
     PaymentPlatform.APPLE
   );
-  const [type, setType] = useState<ProductType>(ProductType.IN_APP);
+  const [type, setType] = useState<ProductType>(
+    ProductType.SUBSCRIPTION_AUTO_RENEW
+  );
   const [currency, setCurrency] = useState<PaymentCurrency>(
     PaymentCurrency.USD
   );
@@ -70,7 +72,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setProductId(initial.productId || "");
       setDescription(initial.description || "");
       setPlatform(initial.platform || PaymentPlatform.APPLE);
-      setType(initial.type || ProductType.IN_APP);
+      setType(initial.type || ProductType.SUBSCRIPTION_AUTO_RENEW);
       setCurrency(initial.currency || PaymentCurrency.USD);
       const initialRaw = normalizeNumberInput(
         initial.rawPrice ?? initial.price
@@ -88,7 +90,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setProductId("");
       setDescription("");
       setPlatform(PaymentPlatform.APPLE);
-      setType(ProductType.IN_APP);
+      setType(ProductType.SUBSCRIPTION_AUTO_RENEW);
       setCurrency(PaymentCurrency.USD);
       setRawPrice("");
       setSalePrice("");
@@ -195,9 +197,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 onChange={(e) => setType(e.target.value as ProductType)}
                 className="rounded-lg border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               >
-                <option value={ProductType.IN_APP}>In-App</option>
-                <option value={ProductType.SUBSCRIPTION}>Subscription</option>
-                <option value={ProductType.NON_RENEWABLE}>Non-renewable</option>
+                <option value={ProductType.SUBSCRIPTION_AUTO_RENEW}>
+                  Subscription (Auto-renew)
+                </option>
+                <option value={ProductType.SUBSCRIPTION_NON_RENEW}>
+                  Subscription (Non-renew)
+                </option>
+                <option value={ProductType.NON_CONSUMABLE}>Non-consumable</option>
+                <option value={ProductType.CONSUMABLE}>Consumable</option>
               </select>
             </label>
 

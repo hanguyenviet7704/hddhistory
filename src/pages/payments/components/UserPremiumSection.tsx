@@ -59,6 +59,13 @@ const normalizeUsers = (payload: any): UserRecord[] => {
 const getUserId = (user?: UserRecord | null) =>
   user?.id || user?._id || user?.userId || "";
 
+const getUserLabel = (user: UserRecord) => {
+  const id = getUserId(user);
+  return `${user.name || user.email || id}${
+    user.email ? ` (${user.email})` : ""
+  }`;
+};
+
 const UserPremiumSection: React.FC = () => {
   const [userSearch, setUserSearch] = useState("");
   const [userOptions, setUserOptions] = useState<UserRecord[]>([]);
@@ -92,7 +99,6 @@ const UserPremiumSection: React.FC = () => {
       setLoading(false);
     }
   }, []);
-  console.log(111, premium);
 
   const fetchUsers = useCallback(async () => {
     setLoadingUsers(true);
@@ -178,9 +184,7 @@ const UserPremiumSection: React.FC = () => {
                 setError(null);
                 setShowSuggestions(e.target.value.trim().length > 0);
               }}
-              onFocus={() =>
-                setShowSuggestions(userSearch.trim().length > 0)
-              }
+              onFocus={() => setShowSuggestions(userSearch.trim().length > 0)}
               placeholder="Tìm user theo tên/email..."
               className="w-full pl-10 pr-3 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-slate-50/50"
             />
@@ -199,20 +203,19 @@ const UserPremiumSection: React.FC = () => {
                 ) : (
                   userOptions.map((user) => {
                     const id = getUserId(user);
-                    const label = `${user.name || user.email || id}${
-                      user.email ? ` (${user.email})` : ""
-                    }`;
-                    return (
-                      <button
-                        key={id}
-                        onClick={() => {
-                          setUserId(id);
-                          setError(null);
-                          setShowSuggestions(false);
-                        }}
-                        className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 ${
-                          userId === id
-                            ? "bg-teal-50 text-teal-800"
+                const label = getUserLabel(user);
+                return (
+                  <button
+                    key={id}
+                    onClick={() => {
+                      setUserId(id);
+                      setError(null);
+                      setUserSearch(label);
+                      setShowSuggestions(false);
+                    }}
+                    className={`w-full text-left px-3 py-2 text-sm hover:bg-teal-50 ${
+                      userId === id
+                        ? "bg-teal-50 text-teal-800"
                             : "text-slate-800"
                         }`}
                       >

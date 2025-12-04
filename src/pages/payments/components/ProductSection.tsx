@@ -106,8 +106,10 @@ const ProductSection: React.FC = () => {
     const android = products.filter(
       (p) => p.platform === PaymentPlatform.GOOGLE
     ).length;
-    const subs = products.filter(
-      (p) => p.type === ProductType.SUBSCRIPTION
+    const subs = products.filter((p) =>
+      [ProductType.SUBSCRIPTION_AUTO_RENEW, ProductType.SUBSCRIPTION_NON_RENEW].includes(
+        p.type
+      )
     ).length;
     return { total, active, ios, android, subs };
   }, [products]);
@@ -193,9 +195,26 @@ const ProductSection: React.FC = () => {
 
   const filteredProducts = useMemo(
     () =>
-      [...products].sort(
-        (a, b) => Number(b.bestDeal ?? false) - Number(a.bestDeal ?? false)
-      ),
+      [...products].sort((a, b) => {
+        // Best deal lên đầu, sau đó subs auto-renew, subs non-renew, còn lại
+        const bestDealScore = Number(b.bestDeal ?? false) - Number(a.bestDeal ?? false);
+        if (bestDealScore !== 0) return bestDealScore;
+
+        const typePriority = (type: ProductType) => {
+          switch (type) {
+            case ProductType.SUBSCRIPTION_AUTO_RENEW:
+              return 3;
+            case ProductType.SUBSCRIPTION_NON_RENEW:
+              return 2;
+            case ProductType.NON_CONSUMABLE:
+              return 1;
+            case ProductType.CONSUMABLE:
+            default:
+              return 0;
+          }
+        };
+        return typePriority(b.type) - typePriority(a.type);
+      }),
     [products]
   );
 
@@ -274,9 +293,14 @@ const ProductSection: React.FC = () => {
               className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
             >
               <option value="">Tất cả loại</option>
-              <option value={ProductType.IN_APP}>In-App</option>
-              <option value={ProductType.SUBSCRIPTION}>Subscription</option>
-              <option value={ProductType.NON_RENEWABLE}>Non-renewable</option>
+              <option value={ProductType.SUBSCRIPTION_AUTO_RENEW}>
+                Subscription (Auto-renew)
+              </option>
+              <option value={ProductType.SUBSCRIPTION_NON_RENEW}>
+                Subscription (Non-renew)
+              </option>
+              <option value={ProductType.NON_CONSUMABLE}>Non-consumable</option>
+              <option value={ProductType.CONSUMABLE}>Consumable</option>
             </select>
 
             <select
@@ -410,11 +434,11 @@ const ProductSection: React.FC = () => {
                           {product.productId}
                         </code>
                       </td>
-                      <td className="px-4 py-3">
+                  <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
                           {typeLabels[product.type]}
                         </span>
-                      </td>
+                  </td>
                       <td className="px-4 py-3">
                         {hasSale ? (
                           <div className="space-y-0.5">
