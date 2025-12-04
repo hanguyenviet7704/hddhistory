@@ -17,8 +17,15 @@ class SettingPage extends StatelessWidget {
             children: [
               SettingProfileCard(),
               24.verticalSpace,
-              SettingPreminumCard(
-                onUpgrade: () => const PaywallRoute().push(context),
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  if (user.iapSubscriptions.isNotEmpty) return SizedBox.shrink();
+
+                  return SettingPreminumCard(
+                    onUpgrade: () => const PaywallRoute().push(context),
+                  );
+                },
               ),
               24.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
@@ -33,12 +40,12 @@ class SettingPage extends StatelessWidget {
                         trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
                         onTap: () => const ChangeLanguageRoute().go(context),
                       ),
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icCreditCard,
+                        title: context.text.setting.settingRowUpgradePremium,
+                        onTap: () => const PaywallRoute().push(context),
+                      ),
                       if (user.iapSubscriptions.isEmpty) ...[
-                        SettingOptionTile(
-                          iconAsset: AppAsset.svg.app.icCreditCard,
-                          title: context.text.setting.settingRowUpgradePremium,
-                          onTap: () => const PaywallRoute().push(context),
-                        ),
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icSet,
                           title: context.text.setting.settingRowRestorePurchase,

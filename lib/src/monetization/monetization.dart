@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:intl/intl.dart';
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -39,6 +40,7 @@ part 'presentation/cubits/iap/iap_cubit.dart';
 part 'presentation/cubits/iap/iap_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/paywall_page.dart';
+part 'presentation/pages/user_subcription_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/paywall_all_package_info_bottom_sheet.dart';
 part 'presentation/widgets/paywall_banner_carousel.dart';
@@ -49,3 +51,6 @@ part 'presentation/widgets/paywall_page_decoration.dart';
 part 'presentation/widgets/paywall_plan_option.dart';
 part 'presentation/widgets/paywall_success_purchase_popup.dart';
 part 'presentation/widgets/paywall_top_bar.dart';
+part 'presentation/widgets/user_subscription_active_card.dart';
+part 'presentation/widgets/user_subscription_empty_state.dart';
+part 'presentation/widgets/user_subscription_header.dart';

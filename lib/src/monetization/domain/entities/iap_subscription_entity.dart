@@ -19,3 +19,10 @@ abstract class IapSubscriptionEntity with _$IapSubscriptionEntity {
 
   factory IapSubscriptionEntity.fromJson(Map<String, dynamic> json) => _$IapSubscriptionEntityFromJson(json);
 }
+
+extension IapSubscriptionEntityX on IapSubscriptionEntity {
+  IapProductEntity get product {
+    List<IapProductEntity> products = AppDI.injector.get<IapCubit>().state.iapProducts;
+    return products.firstWhere((element) => element.productId == productId);
+  }
+}
