@@ -2,7 +2,7 @@ part of '../../monetization.dart';
 
 class PurchaseParams {
   final String productId;
-  final PurchaseType type;
+  final ProductType type;
 
   PurchaseParams({required this.productId, required this.type});
 }

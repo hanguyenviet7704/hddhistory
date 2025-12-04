@@ -6,6 +6,7 @@ abstract class IapProductEntity with _$IapProductEntity {
     @Default('') String id,
     @Default('') String productId,
     @Default(PaymentPlatform.google) PaymentPlatform platform,
+    @Default(ProductType.subscriptionAutoRenew) ProductType type,
     @Default('') String title,
     @Default('') String description,
     @Default('') String price,

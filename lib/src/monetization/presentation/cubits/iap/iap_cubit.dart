@@ -49,10 +49,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     );
   }
 
-  Future<void> purchaseProduct({PurchaseType type = PurchaseType.subscription}) async {
+  Future<void> purchaseProduct() async {
     emit(state.copyWith(status: MonetizationStatus.loading));
     await runUseCase<IapVerifyEntity>(
-      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: state.selectedProduct.productId, type: type)),
+      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: state.selectedProduct.productId, type: state.selectedProduct.type)),
       onSuccess: (verify) {},
       onFailure: (error) => _onPurchaseFailure(),
     );

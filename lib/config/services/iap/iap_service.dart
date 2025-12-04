@@ -1,6 +1,15 @@
 part of '../services.dart';
 
-enum PurchaseType { consumable, nonConsumable, subscription }
+enum ProductType {
+  @JsonValue('consumable')
+  consumable,
+  @JsonValue('non_consumable')
+  nonConsumable,
+  @JsonValue('subscription_auto_renew')
+  subscriptionAutoRenew,
+  @JsonValue('subscription_non_renew')
+  subscriptionNonRenew,
+}
 
 @LazySingleton(as: IIapService)
 class IAPService implements IIapService {
@@ -43,14 +52,15 @@ class IAPService implements IIapService {
   }
 
   @override
-  Future<bool> purchaseProduct(String productId, PurchaseType type) async {
+  Future<bool> purchaseProduct(String productId, ProductType type) async {
     final product = _products.firstWhere((element) => element.id == productId);
     final purchaseParam = PurchaseParam(productDetails: product);
 
     return switch (type) {
-      PurchaseType.consumable => await _inAppPurchase.buyConsumable(purchaseParam: purchaseParam),
-      PurchaseType.nonConsumable => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
-      PurchaseType.subscription => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
+      ProductType.consumable => await _inAppPurchase.buyConsumable(purchaseParam: purchaseParam, autoConsume: true),
+      ProductType.nonConsumable => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
+      ProductType.subscriptionAutoRenew => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
+      ProductType.subscriptionNonRenew => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
     };
   }
 
