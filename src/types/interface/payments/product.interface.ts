@@ -13,9 +13,11 @@ export interface IProduct {
   title: string;
   description?: string;
   currency: PaymentCurrency;
-  price?: number;
+  rawPrice?: number;
+  price?: string;
   salePrice?: number;
   isActive: boolean;
+  bestDeal: boolean;
 }
 
 export class ProductListQuery extends BaseQuery {

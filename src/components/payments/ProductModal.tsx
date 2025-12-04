@@ -27,6 +27,17 @@ const numberOrUndefined = (value: string) => {
   return Number.isFinite(parsed) ? parsed : undefined;
 };
 
+const normalizeNumberInput = (value?: unknown) => {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "number" && Number.isFinite(value)) return String(value);
+  if (typeof value === "string") {
+    const cleaned = value.replace(/[^0-9.,-]/g, "").replace(",", ".");
+    const parsed = Number(cleaned);
+    if (Number.isFinite(parsed)) return String(parsed);
+  }
+  return "";
+};
+
 const ProductModal: React.FC<ProductModalProps> = ({
   isOpen,
   initial = null,
@@ -45,9 +56,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
   const [currency, setCurrency] = useState<PaymentCurrency>(
     PaymentCurrency.USD
   );
-  const [price, setPrice] = useState("");
+  const [rawPrice, setRawPrice] = useState("");
   const [salePrice, setSalePrice] = useState("");
   const [isActive, setIsActive] = useState(true);
+  const [bestDeal, setBestDeal] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -60,17 +72,17 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setPlatform(initial.platform || PaymentPlatform.APPLE);
       setType(initial.type || ProductType.IN_APP);
       setCurrency(initial.currency || PaymentCurrency.USD);
-      setPrice(
-        initial.price !== undefined && initial.price !== null
-          ? String(initial.price)
-          : ""
+      const initialRaw = normalizeNumberInput(
+        initial.rawPrice ?? initial.price
       );
+      setRawPrice(initialRaw);
       setSalePrice(
         initial.salePrice !== undefined && initial.salePrice !== null
           ? String(initial.salePrice)
           : ""
       );
       setIsActive(initial.isActive ?? true);
+      setBestDeal(Boolean(initial.bestDeal));
     } else {
       setTitle("");
       setProductId("");
@@ -78,9 +90,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setPlatform(PaymentPlatform.APPLE);
       setType(ProductType.IN_APP);
       setCurrency(PaymentCurrency.USD);
-      setPrice("");
+      setRawPrice("");
       setSalePrice("");
       setIsActive(true);
+      setBestDeal(false);
     }
     setFormError(null);
   }, [initial, isOpen]);
@@ -102,9 +115,10 @@ const ProductModal: React.FC<ProductModalProps> = ({
       platform,
       type,
       currency,
-      price: numberOrUndefined(price),
+      rawPrice: numberOrUndefined(rawPrice),
       salePrice: numberOrUndefined(salePrice),
       isActive,
+      bestDeal,
     };
 
     await onSubmit(payload, getProductId(initial));
@@ -204,13 +218,13 @@ const ProductModal: React.FC<ProductModalProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <label className="flex flex-col gap-1 text-sm text-slate-700">
-              <span className="font-medium">Price</span>
+              <span className="font-medium">Raw price</span>
               <input
                 type="number"
                 min="0"
                 step="0.01"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                value={rawPrice}
+                onChange={(e) => setRawPrice(e.target.value)}
                 placeholder="9.99"
                 className="rounded-lg border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               />
@@ -241,16 +255,27 @@ const ProductModal: React.FC<ProductModalProps> = ({
             />
           </label>
 
-          <div className="flex items-center justify-between pt-2">
-            <label className="flex items-center gap-2 text-sm text-slate-700">
-              <input
-                type="checkbox"
-                checked={isActive}
-                onChange={(e) => setIsActive(e.target.checked)}
-                className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
-              />
-              <span>Kích hoạt sản phẩm</span>
-            </label>
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 pt-2">
+            <div className="flex flex-wrap items-center gap-4">
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={isActive}
+                  onChange={(e) => setIsActive(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-teal-600 focus:ring-teal-500"
+                />
+                <span>Kích hoạt sản phẩm</span>
+              </label>
+              <label className="flex items-center gap-2 text-sm text-slate-700">
+                <input
+                  type="checkbox"
+                  checked={bestDeal}
+                  onChange={(e) => setBestDeal(e.target.checked)}
+                  className="h-4 w-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span>Đánh dấu Best deal</span>
+              </label>
+            </div>
 
             <div className="flex items-center gap-3">
               <button

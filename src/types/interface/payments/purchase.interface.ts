@@ -1,4 +1,8 @@
-import { PaymentPlatform, PurchaseStatus } from "../../enum/payment.enum";
+import {
+  PaymentCurrency,
+  PaymentPlatform,
+  PurchaseStatus,
+} from "../../enum/payment.enum";
 import { BaseQuery } from "../common.interface";
 
 export interface IPurchase {
@@ -8,10 +12,14 @@ export interface IPurchase {
   storeTransactionId: string;
   productId: string;
   orderId?: string;
+  currency?: PaymentCurrency;
+  rawPrice?: number;
+  price?: string;
   status: PurchaseStatus;
   purchaseTime?: Date;
   expiryTime?: Date;
   rawPayload?: string;
+  failureReason?: string;
   idempotencyKey?: string;
 }
 
