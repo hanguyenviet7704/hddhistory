@@ -10,7 +10,6 @@ class CourseRoadmapPage extends StatelessWidget {
       body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
         selector: (state) => state.status == CourseRoadmapStatus.loading && state.roadmap.levels.isEmpty,
         builder: (context, isLoading) {
-
           if (isLoading) {
             return const Center(
               child: CircularProgressIndicator(
@@ -18,11 +17,13 @@ class CourseRoadmapPage extends StatelessWidget {
               ),
             );
           }
-          return Column(
-            children: [
-              TopProgressBar(),
-              CourseRoadmapContent(),
-            ],
+          return SafeBody(
+            child: Column(
+              children: [
+                TopProgressBar(),
+                CourseRoadmapContent(),
+              ],
+            ),
           );
         },
       ),

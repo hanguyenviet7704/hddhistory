@@ -10,7 +10,7 @@ class SettingPage extends StatelessWidget {
       body: CupertinoScaffold(
         topRadius: const Radius.circular(24),
         transitionBackgroundColor: AppCustomColor.backgroundWhite,
-        body: SafeArea(
+        body: SafeBody(
           child: ListView(
             padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
             physics: const BouncingScrollPhysics(),

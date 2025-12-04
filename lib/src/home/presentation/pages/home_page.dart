@@ -6,104 +6,106 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: RefreshIndicator(
-        onRefresh: () async => context.read<HomeCubit>().initializeData(isInit: true),
-        child: SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header
-              const HomeHeaderWidget(),
+      body: SafeBody(
+        child: RefreshIndicator(
+          onRefresh: () async => context.read<HomeCubit>().initializeData(isInit: true),
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Header
+                const HomeHeaderWidget(),
 
-              // Courses section
-              BlocBuilder<ProgressCubit, ProgressState>(
-                builder: (context, state) {
-                  if (state.myCourses.isEmpty) return const SizedBox.shrink();
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      4.verticalSpace,
-                      AppText(
-                        context.text.home.continueLearning,
-                        margin: EdgeInsets.symmetric(horizontal: 20.w),
-                        style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+                // Courses section
+                BlocBuilder<ProgressCubit, ProgressState>(
+                  builder: (context, state) {
+                    if (state.myCourses.isEmpty) return const SizedBox.shrink();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        4.verticalSpace,
+                        AppText(
+                          context.text.home.continueLearning,
+                          margin: EdgeInsets.symmetric(horizontal: 20.w),
+                          style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+                        ),
+                        12.verticalSpace,
+                        // Course cards horizontal scroll
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: 20.w),
+                          child: Row(
+                            children: state.myCourses
+                                .map(
+                                  (course) => CourseCardWidget(
+                                    course: course.withSkillset,
+                                  ),
+                                )
+                                .toList(),
+                          ),
+                        ),
+                        20.verticalSpace,
+                      ],
+                    );
+                  },
+                ),
+
+                // Skillsets section
+                SectionHeaderWidget(
+                  title: context.text.home.homeAllCourseButton,
+                  actionText: context.text.home.homeCourseButton,
+                  onActionTap: () => CourseRoute().push(context),
+                ),
+                16.verticalSpace,
+
+                // Skillsets grid
+                BlocSelector<HomeCubit, HomeState, List<SkillsetEntity>>(
+                  selector: (state) => state.skillsets,
+                  builder: (context, skillsets) {
+                    return GridView.builder(
+                      padding: EdgeInsets.symmetric(horizontal: 20.w),
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: 2,
+                        crossAxisSpacing: 12.w,
+                        mainAxisSpacing: 12.h,
+                        childAspectRatio: 161.w / 234.h,
                       ),
-                      12.verticalSpace,
-                      // Course cards horizontal scroll
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: EdgeInsets.symmetric(horizontal: 20.w),
-                        child: Row(
-                          children: state.myCourses
-                              .map(
-                                (course) => CourseCardWidget(
-                                  course: course.withSkillset,
-                                ),
-                              )
-                              .toList(),
+                      itemCount: skillsets.length,
+                      itemBuilder: (context, index) {
+                        final skillset = skillsets[index];
+                        return SkillsetCardWidget(
+                          skillset: skillset,
+                          onTap: () => CourseRoute(selectedTabIndex: index).push(context),
+                        );
+                      },
+                    );
+                  },
+                ),
+
+                // Loading indicator for skillsets
+                BlocSelector<HomeCubit, HomeState, bool>(
+                  selector: (state) => state.status == HomeStatus.loading,
+                  builder: (context, isLoading) {
+                    if (!isLoading) return const SizedBox.shrink();
+
+                    return Padding(
+                      padding: EdgeInsets.all(20.w),
+                      child: Center(
+                        child: CircularProgressIndicator(
+                          color: AppCustomColor.brandPrimary,
                         ),
                       ),
-                      20.verticalSpace,
-                    ],
-                  );
-                },
-              ),
+                    );
+                  },
+                ),
 
-              // Skillsets section
-              SectionHeaderWidget(
-                title: context.text.home.homeAllCourseButton,
-                actionText: context.text.home.homeCourseButton,
-                onActionTap: () => CourseRoute().push(context),
-              ),
-              16.verticalSpace,
-
-              // Skillsets grid
-              BlocSelector<HomeCubit, HomeState, List<SkillsetEntity>>(
-                selector: (state) => state.skillsets,
-                builder: (context, skillsets) {
-                  return GridView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12.w,
-                      mainAxisSpacing: 12.h,
-                      childAspectRatio: 161.w / 234.h,
-                    ),
-                    itemCount: skillsets.length,
-                    itemBuilder: (context, index) {
-                      final skillset = skillsets[index];
-                      return SkillsetCardWidget(
-                        skillset: skillset,
-                        onTap: () => CourseRoute(selectedTabIndex: index).push(context),
-                      );
-                    },
-                  );
-                },
-              ),
-
-              // Loading indicator for skillsets
-              BlocSelector<HomeCubit, HomeState, bool>(
-                selector: (state) => state.status == HomeStatus.loading,
-                builder: (context, isLoading) {
-                  if (!isLoading) return const SizedBox.shrink();
-
-                  return Padding(
-                    padding: EdgeInsets.all(20.w),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppCustomColor.brandPrimary,
-                      ),
-                    ),
-                  );
-                },
-              ),
-
-              // Bottom padding
-              20.verticalSpace,
-            ],
+                // Bottom padding
+                20.verticalSpace,
+              ],
+            ),
           ),
         ),
       ),

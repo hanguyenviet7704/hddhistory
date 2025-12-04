@@ -16,6 +16,7 @@ class _SplashPageState extends State<SplashPage> {
     _setTrackingUser();
     _onboardingUser();
     _checkForUpdate();
+    _loadIapProducts();
     super.initState();
   }
 
@@ -144,6 +145,10 @@ class _SplashPageState extends State<SplashPage> {
         onUpdatePressed: _handleUpdatePressed,
       ),
     );
+  }
+
+  void _loadIapProducts() {
+    AppDI.injector.get<IapCubit>().loadIapProducts();
   }
 
   @override
