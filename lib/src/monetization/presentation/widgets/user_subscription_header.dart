@@ -7,40 +7,42 @@ class UserSubscriptionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Material(
-          color: Colors.white,
-          shape: const CircleBorder(),
-          elevation: 1,
-          child: InkWell(
-            customBorder: const CircleBorder(),
-            onTap: onBack,
-            child: Padding(
-              padding: EdgeInsets.all(10.w),
-              child: Icon(Icons.arrow_back, size: 20.w, color: AppCustomColor.iconPrimary),
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 16.h),
+      decoration: const BoxDecoration(
+        color: AppCustomColor.backgroundWhite,
+        border: Border(
+          bottom: BorderSide(color: AppCustomColor.borderDefault),
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onBack,
+              child: Padding(
+                padding: EdgeInsets.only(right: 8.w),
+                child: Icon(
+                  Icons.arrow_back_ios_new,
+                  size: 18.w,
+                  color: AppCustomColor.textTertiary,
+                ),
+              ),
             ),
           ),
-        ),
-        12.horizontalSpace,
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                t.monetization.manageTitle,
-                style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary, height: 1.2),
-              ),
-              4.verticalSpace,
-              AppText(
-                t.monetization.manageSubtitle,
-                maxLines: 2,
-                style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-              ),
-            ],
+          AppText(
+            t.monetization.subscriptionTitle,
+            style: AppStyle.text16.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppCustomColor.textTertiary,
+              height: 1.5,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

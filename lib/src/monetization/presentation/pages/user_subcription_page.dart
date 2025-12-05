@@ -11,54 +11,94 @@ class _UserSubcriptionPageState extends State<UserSubcriptionPage> {
   @override
   void initState() {
     super.initState();
-    // Ensure subscription info is fresh.
-    final profileCubit = context.read<ProfileCubit>();
-    profileCubit.loadUserIapSubscriptions();
+    context.read<ProfileCubit>().loadUserIapSubscriptions();
   }
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.sizeOf(context).height;
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundGray,
-      body: SafeBody(
-        child: Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              UserSubscriptionHeader(onBack: context.back),
-              20.verticalSpace,
-              Expanded(
-                child: BlocBuilder<ProfileCubit, ProfileState>(
-                  builder: (context, state) {
-                    final subscriptions = state.user.iapSubscriptions;
-                    if (subscriptions.isEmpty) {
-                      return UserSubscriptionEmptyState(
-                        onUpgrade: () => const PaywallRoute().push(context),
-                      );
-                    }
+      backgroundColor: Colors.transparent,
+      body: Stack(
+        children: [
+          Positioned.fill(child: Container(color: AppCustomColor.bottomSheetScrim)),
+          Align(
+            alignment: Alignment.topCenter,
+            child: Container(
+              margin: EdgeInsets.only(top: 32.h),
+              height: screenHeight - 32.h,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: AppCustomColor.backgroundWhite,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+              ),
+              child: SafeArea(
+                left: false,
+                right: false,
+                child: Padding(
+                  padding: EdgeInsets.only(left: 20.w, right: 20.w, top: 12.h, bottom: 20.h),
+                  child: BlocBuilder<ProfileCubit, ProfileState>(
+                    builder: (context, state) {
+                      final hasSubscription = state.user.iapSubscriptions.isNotEmpty;
+                      final subscription = hasSubscription ? state.user.iapSubscriptions.first : null;
 
-                    final subscription = subscriptions.first;
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        UserSubscriptionActiveCard(subscription: subscription),
-                        const Spacer(),
-                        AppButton.primary(
-                          fullWidthBtn: true,
-                          height: 56.h,
-                          child: t.monetization.manageChangeCta,
-                          onPressed: () => const PaywallRoute().push(context),
-                        ),
-                      ],
-                    );
-                  },
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          UserSubscriptionHeader(onBack: context.back),
+                          12.verticalSpace,
+                          _CurrentPlanRow(
+                            actionLabel: hasSubscription ? t.monetization.manageChangeCta : t.monetization.manageUpgradeCta,
+                            onAction: () => const PaywallRoute().push(context),
+                          ),
+                          12.verticalSpace,
+                          hasSubscription ? UserSubscriptionActiveCard(subscription: subscription!) : const UserSubscriptionEmptyState(),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
-            ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CurrentPlanRow extends StatelessWidget {
+  const _CurrentPlanRow({required this.actionLabel, required this.onAction});
+
+  final String actionLabel;
+  final VoidCallback onAction;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        AppText(
+          t.monetization.manageCurrentPlan,
+          style: AppStyle.text14.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppCustomColor.textSecondary,
+            height: 1.75,
           ),
         ),
-      ),
+        const Spacer(),
+        GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: onAction,
+          child: AppText(
+            actionLabel,
+            style: AppStyle.text16.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppCustomColor.brandPrimary,
+              height: 1.5,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

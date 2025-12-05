@@ -43,7 +43,7 @@ class SettingPage extends StatelessWidget {
                       SettingOptionTile(
                         iconAsset: AppAsset.svg.app.icCreditCard,
                         title: context.text.setting.settingRowUpgradePremium,
-                        onTap: () => const PaywallRoute().push(context),
+                        onTap: () => const ManageSubscriptionRoute().push(context),
                       ),
                       if (user.iapSubscriptions.isEmpty) ...[
                         SettingOptionTile(

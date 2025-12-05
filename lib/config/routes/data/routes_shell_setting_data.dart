@@ -65,3 +65,18 @@ class ChangeLanguageRoute extends GoRouteData with $ChangeLanguageRoute {
     );
   }
 }
+
+class ManageSubscriptionRoute extends BaseTransitionRouteData with $ManageSubscriptionRoute {
+  const ManageSubscriptionRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+    ],
+    child: const UserSubcriptionPage(),
+  );
+}
