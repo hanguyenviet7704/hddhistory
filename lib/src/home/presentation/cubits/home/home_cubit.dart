@@ -19,6 +19,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     await Future.wait<void>([
       loadAllSkillsets(isInit: true),
       AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
+      AppDI.injector.get<ProfileCubit>().loadUser(),
     ]);
   }
 

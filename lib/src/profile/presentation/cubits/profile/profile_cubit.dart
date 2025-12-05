@@ -21,7 +21,7 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   void reset() => emit(ProfileState.initial());
   void setUser(UserEntity user) => emit(state.copyWith(user: user));
 
-  void loadUser() async {
+  Future<void> loadUser({bool isInit = false}) async {
     if (state.user.id.isEmpty) return;
     await runUseCase<UserEntity>(
       usecase: () => _getUseCase(state.user.id),
@@ -40,6 +40,11 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
     await runUseCase<IapSubscriptionEntity>(
       usecase: () => _getUserIapSubscriptionsUseCase(state.user.id),
       onSuccess: (items) {
+        if (items.id.isEmpty) {
+          UserEntity user = state.user.copyWith(iapSubscriptions: []);
+          emit(state.copyWith(user: user));
+          return;
+        }
         UserEntity user = state.user.copyWith(iapSubscriptions: [items]);
         emit(state.copyWith(user: user));
       },

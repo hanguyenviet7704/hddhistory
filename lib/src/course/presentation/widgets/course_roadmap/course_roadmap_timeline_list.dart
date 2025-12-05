@@ -73,6 +73,7 @@ class CourseRoadmapTimeline extends StatelessWidget {
                 top: 8.h,
               ),
               child: LessonCard(
+                premiumLesson: lessons.isPremiumLessonAt(index),
                 lesson: lesson,
                 lessonRolePlay: lessons.lessonRolePlay(lesson.id),
               ),
