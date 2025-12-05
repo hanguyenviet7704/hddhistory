@@ -107,7 +107,7 @@ class RegisterPage extends StatelessWidget {
                           ],
 
                           // Google button
-                          GoogleLoginButton(
+                          GoogleLoginButton(     
                             onPressed: () {
                               context.read<AuthBloc>().add(const AuthEvent.loginSSOGoogle());
                             },

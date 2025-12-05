@@ -18,6 +18,7 @@ class SettingRoute extends BaseTransitionRouteData with $SettingRoute {
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
     ],
     child: const SettingPage(),
   );

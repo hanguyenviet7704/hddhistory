@@ -91,6 +91,7 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
     providers: [
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
     ],
     child: const RegisterPage(),
   );

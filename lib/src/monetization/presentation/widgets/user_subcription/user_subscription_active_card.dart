@@ -9,7 +9,12 @@ class UserSubscriptionActiveCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = t.monetization;
     final planName = _planName(subscription.productId, text);
-    final nextBilling = _formatDate(subscription.currentPeriodEnd, context, text);
+    final nextBilling = _nextBillingText(
+      productId: subscription.productId,
+      date: subscription.currentPeriodEnd,
+      context: context,
+      text: text,
+    );
 
     return Container(
       width: double.infinity,
@@ -60,11 +65,20 @@ class UserSubscriptionActiveCard extends StatelessWidget {
     if (id.contains('year')) return text.managePlanYearly;
     if (id.contains('month')) return text.managePlanMonthly;
     if (id.contains('week')) return text.managePlanWeekly;
+    if (id.contains('life')) return text.managePlanLifetime;
     return text.manageDefaultPlan;
   }
 
-  String _formatDate(DateTime? date, BuildContext context, TranslationsMonetizationEn text) {
+  String _nextBillingText({
+    required String productId,
+    required DateTime? date,
+    required BuildContext context,
+    required TranslationsMonetizationEn text,
+  }) {
+    final id = productId.toLowerCase();
+    if (id.contains('life')) return text.manageNoNextBilling;
     if (date == null) return text.manageNextBillingUnknown;
+
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatted = DateFormat.yMMMMd(locale).format(date.toLocal());
     return text.manageNextBillingOn(date: formatted);

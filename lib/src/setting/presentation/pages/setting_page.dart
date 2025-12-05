@@ -49,6 +49,7 @@ class SettingPage extends StatelessWidget {
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icSet,
                           title: context.text.setting.settingRowRestorePurchase,
+                          onTap: () => context.read<IapCubit>().restorePurchases(),
                         ),
                       ],
                     ],
