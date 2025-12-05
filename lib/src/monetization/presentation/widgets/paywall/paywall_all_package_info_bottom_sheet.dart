@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 class PaywallAllPackageInfoBottomSheet extends StatelessWidget {
   const PaywallAllPackageInfoBottomSheet({super.key});

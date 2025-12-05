@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 class UserSubscriptionEmptyState extends StatelessWidget {
   const UserSubscriptionEmptyState({super.key});

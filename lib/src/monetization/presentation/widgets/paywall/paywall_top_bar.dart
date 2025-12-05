@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 class PaywallTopBar extends StatelessWidget {
   final VoidCallback? onClose;

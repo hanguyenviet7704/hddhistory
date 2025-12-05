@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 /// Reusable plan option tile used across paywall highlight and bottom sheet.
 class PaywallPlanOption extends StatelessWidget {

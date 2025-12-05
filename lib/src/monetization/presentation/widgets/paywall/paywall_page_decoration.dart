@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 class PaywallPageDecoration extends StatelessWidget {
   const PaywallPageDecoration({super.key});

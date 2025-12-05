@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 class UserSubscriptionHeader extends StatelessWidget {
   const UserSubscriptionHeader({super.key, required this.onBack});

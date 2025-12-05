@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 class _DotsIndicator extends StatelessWidget {
   final int count;

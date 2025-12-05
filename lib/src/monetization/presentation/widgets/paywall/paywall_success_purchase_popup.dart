@@ -1,4 +1,4 @@
-part of '../../monetization.dart';
+part of '../../../monetization.dart';
 
 class PaywallSuccessPurchasePopup extends StatelessWidget {
   const PaywallSuccessPurchasePopup({super.key});
