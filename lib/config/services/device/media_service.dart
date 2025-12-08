@@ -1,7 +1,25 @@
 part of '../services.dart';
 
-mixin StorageService {
-  static Future<void> saveImageToGallery(Uint8List imageBytes) async {
+abstract interface class IMediaService {
+  Future<void> saveImageToGallery(Uint8List imageBytes);
+  Future<Uint8List?> captureWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio});
+  Future<Uint8List?> captureWidgetWithScreenshot(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio});
+  Future<Uint8List?> captureWidgetWithRepaintBoundary(GlobalKey globalKey, {double? pixelRatio});
+  Future<void> captureAndSaveWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio});
+  Future<void> shareWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio, String fileName = 'share_image.png'});
+  Future<void> shareImageBytes(Uint8List imageBytes, {String? shareText, String fileName = 'shared_image.png', Rect? sharePositionOrigin});
+  Future<void> captureAndShareWithScreenshot(ScreenshotController controller, {String? shareText, String fileName = 'shared_widget.png', Duration delay = const Duration(milliseconds: 100), double? pixelRatio, Rect? sharePositionOrigin});
+  Future<void> captureAndShareWithRepaintBoundary(GlobalKey globalKey, {String? shareText, String fileName = 'shared_widget.png', double? pixelRatio, Rect? sharePositionOrigin});
+  Rect? getSharePositionOrigin(BuildContext context);
+  Future<void> saveVideoToGallery(String videoPath);
+  Future<void> shareVideo({required String videoPath, String fileName = 'share_video.mp4'});
+  Future<void> saveVideoFromNetwork(String url, {void Function(int received, int total)? onProgress, void Function(String message)? onError, void Function()? onSuccess});
+}
+
+@LazySingleton(as: IMediaService)
+class MediaService implements IMediaService {
+  @override
+  Future<void> saveImageToGallery(Uint8List imageBytes) async {
     try {
       // Save to temporary file first
       final tempDir = await getTemporaryDirectory();
@@ -20,7 +38,8 @@ mixin StorageService {
     }
   }
 
-  static Future<Uint8List?> captureWidget(
+  @override
+  Future<Uint8List?> captureWidget(
     ScreenshotController controller, {
     Duration delay = const Duration(milliseconds: 10),
     double? pixelRatio,
@@ -36,7 +55,8 @@ mixin StorageService {
   }
 
   /// Enhanced capture widget using the screenshot package with better defaults
-  static Future<Uint8List?> captureWidgetWithScreenshot(
+  @override
+  Future<Uint8List?> captureWidgetWithScreenshot(
     ScreenshotController controller, {
     Duration delay = const Duration(milliseconds: 100),
     double? pixelRatio,
@@ -52,7 +72,8 @@ mixin StorageService {
   }
 
   /// Capture a widget using Flutter's built-in RepaintBoundary
-  static Future<Uint8List?> captureWidgetWithRepaintBoundary(
+  @override
+  Future<Uint8List?> captureWidgetWithRepaintBoundary(
     GlobalKey globalKey, {
     double? pixelRatio,
   }) async {
@@ -70,7 +91,8 @@ mixin StorageService {
     }
   }
 
-  static Future<void> captureAndSaveWidget(
+  @override
+  Future<void> captureAndSaveWidget(
     ScreenshotController controller, {
     Duration delay = const Duration(milliseconds: 10),
     double? pixelRatio,
@@ -92,7 +114,8 @@ mixin StorageService {
     }
   }
 
-  static Future<void> shareWidget(
+  @override
+  Future<void> shareWidget(
     ScreenshotController controller, {
     Duration delay = const Duration(milliseconds: 10),
     double? pixelRatio,
@@ -127,7 +150,8 @@ mixin StorageService {
   }
 
   /// Share captured image bytes directly
-  static Future<void> shareImageBytes(
+  @override
+  Future<void> shareImageBytes(
     Uint8List imageBytes, {
     String? shareText,
     String fileName = 'shared_image.png',
@@ -153,7 +177,8 @@ mixin StorageService {
   }
 
   /// Capture and share widget using screenshot package
-  static Future<void> captureAndShareWithScreenshot(
+  @override
+  Future<void> captureAndShareWithScreenshot(
     ScreenshotController controller, {
     String? shareText,
     String fileName = 'shared_widget.png',
@@ -180,7 +205,8 @@ mixin StorageService {
   }
 
   /// Capture and share widget using RepaintBoundary
-  static Future<void> captureAndShareWithRepaintBoundary(
+  @override
+  Future<void> captureAndShareWithRepaintBoundary(
     GlobalKey globalKey, {
     String? shareText,
     String fileName = 'shared_widget.png',
@@ -212,7 +238,8 @@ mixin StorageService {
   }
 
   /// Get share position origin for iOS compatibility
-  static Rect? getSharePositionOrigin(BuildContext context) {
+  @override
+  Rect? getSharePositionOrigin(BuildContext context) {
     try {
       final RenderBox? box = context.findRenderObject() as RenderBox?;
       if (box != null) {
@@ -225,7 +252,8 @@ mixin StorageService {
     }
   }
 
-  static Future<void> saveVideoToGallery(String videoPath) async {
+  @override
+  Future<void> saveVideoToGallery(String videoPath) async {
     try {
       // Check and request permissions if needed
       if (!await Gal.hasAccess()) {
@@ -239,7 +267,8 @@ mixin StorageService {
     }
   }
 
-  static Future<void> shareVideo({
+  @override
+  Future<void> shareVideo({
     required String videoPath,
     String fileName = 'share_video.mp4',
   }) async {
@@ -256,7 +285,8 @@ mixin StorageService {
     }
   }
 
-  static Future<void> saveVideoFromNetwork(
+  @override
+  Future<void> saveVideoFromNetwork(
     String url, {
     void Function(int received, int total)? onProgress,
     void Function(String message)? onError,

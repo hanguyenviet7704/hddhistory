@@ -1,7 +1,19 @@
 part of '../services.dart';
 
-@lazySingleton
-class PackageInfoService {
+abstract interface class IPackageInfoService {
+  Future<void> initialize();
+  PackageInfo get packageInfo;
+  String get appName;
+  String get packageName;
+  String get version;
+  String get buildNumber;
+  String get fullVersion;
+  bool isVersionLowerThan(String targetVersion);
+  Map<String, dynamic> toMap();
+}
+
+@LazySingleton(as: IPackageInfoService)
+class PackageInfoService implements IPackageInfoService {
   PackageInfo? _packageInfo;
   PackageInfoService();
 

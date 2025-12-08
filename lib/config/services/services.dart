@@ -96,7 +96,7 @@ part 'device/device_info_service.dart';
 part 'device/hydrated_service.dart';
 part 'device/local_store_service.dart';
 part 'device/package_info_service.dart';
-part 'device/storage_service.dart';
+part 'device/media_service.dart';
 part 'file/file_service.dart';
 part 'graphql/app_graphql_interceptor.dart';
 part 'graphql/custom_header_interceptor.dart';

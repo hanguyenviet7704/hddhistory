@@ -10,6 +10,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final RestoreUsecase _restoreUsecase;
   final VerifyUsecase _verifyUsecase;
 
+  final IPackageInfoService _packageInfoService;
+
   IapCubit(
     this._iapRepository,
     this._iapService,
@@ -18,6 +20,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     this._purchaseUsecase,
     this._restoreUsecase,
     this._verifyUsecase,
+    this._packageInfoService,
   ) : super(IapState.initial());
 
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
@@ -159,7 +162,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       params = VerifyParams(
         platform: PaymentPlatform.apple,
         productId: purchaseDetail.productID,
-        packageName: 'com.eup.meup',
+        packageName: _packageInfoService.packageName,
         storeTransactionId: transactionId,
       );
     } else {
@@ -167,7 +170,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       params = VerifyParams(
         platform: PaymentPlatform.google,
         productId: purchaseDetail.productID,
-        packageName: 'com.eup.meup',
+        packageName: _packageInfoService.packageName,
         storeTransactionId: verificationData.serverVerificationData,
       );
     }

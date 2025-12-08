@@ -43,7 +43,7 @@ class AppService {
 
   IDeviceInfoService get deviceInfoService => AppDI.injector.get<IDeviceInfoService>();
 
-  PackageInfoService get packageInfoService => AppDI.injector.get<PackageInfoService>();
+  IPackageInfoService get packageInfoService => AppDI.injector.get<IPackageInfoService>();
 
   FirebaseRemoteConfigService get firebaseRemoteConfigService => AppDI.injector.get<FirebaseRemoteConfigService>();
 

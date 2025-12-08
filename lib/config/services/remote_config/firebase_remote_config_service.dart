@@ -4,7 +4,7 @@ part of '../services.dart';
 class FirebaseRemoteConfigService {
   late final FirebaseRemoteConfig _remoteConfig;
 
-  final PackageInfoService _packageInfoService;
+  final IPackageInfoService _packageInfoService;
 
   FirebaseRemoteConfigService(this._packageInfoService) {
     _remoteConfig = FirebaseRemoteConfig.instance;
