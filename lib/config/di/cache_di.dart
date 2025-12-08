@@ -48,19 +48,4 @@ abstract class CacheModule {
       fileService: HttpFileService(),
     ),
   );
-
-  /// Cache service that provides comprehensive caching capabilities
-  @Named(DIKey.cacheService)
-  @lazySingleton
-  CacheService cacheService(
-    @Named(DIKey.defaultCacheManager) CacheManager defaultCacheManager,
-    @Named(DIKey.imageCacheManager) CacheManager imageCacheManager,
-    @Named(DIKey.videoCacheManager) CacheManager videoCacheManager,
-    @Named(DIKey.fileCacheManager) CacheManager fileCacheManager,
-  ) => CacheService(
-    defaultCacheManager: defaultCacheManager,
-    imageCacheManager: imageCacheManager,
-    videoCacheManager: videoCacheManager,
-    fileCacheManager: fileCacheManager,
-  );
 }

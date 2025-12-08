@@ -137,6 +137,8 @@ class _HighlightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bottomPadding = MediaQuery.of(context).padding.bottom;
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -147,7 +149,7 @@ class _HighlightCard extends StatelessWidget {
         24.verticalSpace,
         Container(
           width: double.infinity,
-          height: 54.h,
+          height: 48.h,
           decoration: BoxDecoration(
             color: const Color(0xFF554FF0),
             borderRadius: BorderRadius.circular(1000.r),
@@ -163,7 +165,7 @@ class _HighlightCard extends StatelessWidget {
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   style: AppStyle.text16.copyWith(
-                    fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w700,
                     color: Colors.white,
                     height: 1.5,
                   ),
@@ -185,7 +187,68 @@ class _HighlightCard extends StatelessWidget {
           ),
         ),
         12.verticalSpace,
+        const _PaywallLegalLinks(),
+        SizedBox(height: bottomPadding + 8.h),
       ],
+    );
+  }
+}
+
+class _PaywallLegalLinks extends StatelessWidget {
+  const _PaywallLegalLinks();
+
+  static const _termsUrl = 'https://meup.training/terms-and-conditions.html';
+  static const _privacyUrl = 'https://meup.training/privacy-policy.html';
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        children: [
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _LegalLink(label: t.auth.termsOfUse, url: _termsUrl),
+            ),
+          ),
+          Container(
+            margin: EdgeInsets.symmetric(horizontal: 12.w),
+            height: 12.h,
+            width: 1.w,
+            color: AppCustomColor.textQuaternary,
+          ),
+          Expanded(
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: _LegalLink(label: t.auth.privacyPolicy, url: _privacyUrl),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LegalLink extends StatelessWidget {
+  final String label;
+  final String url;
+
+  const _LegalLink({required this.label, required this.url});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: () => url.launchURL(),
+      child: AppText(
+        label,
+        style: AppStyle.text12.copyWith(
+          fontWeight: FontWeight.w600,
+          color: AppCustomColor.textQuaternary,
+          height: 1.75,
+        ),
+      ),
     );
   }
 }

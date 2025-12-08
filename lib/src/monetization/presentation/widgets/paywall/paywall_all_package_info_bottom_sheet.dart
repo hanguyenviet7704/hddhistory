@@ -201,7 +201,7 @@ class _BottomSheetContent extends StatelessWidget {
         12.verticalSpace,
         Container(
           width: double.infinity,
-          height: 54.h,
+          height: 48.h,
           decoration: BoxDecoration(
             color: const Color(0xFF554FF0),
             borderRadius: BorderRadius.circular(1000.r),

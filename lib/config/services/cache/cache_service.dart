@@ -19,6 +19,7 @@ abstract interface class ICacheService {
   Stream<FileResponse> getCachedFileStream(String fileUrl, {bool withProgress = false});
 }
 
+@Named(DIKey.cacheService)
 @LazySingleton(as: ICacheService)
 class CacheService implements ICacheService {
   final CacheManager defaultCacheManager;

@@ -1,7 +1,18 @@
 part of '../services.dart';
 
-@lazySingleton
-class FirebaseRemoteConfigService {
+abstract interface class IFirebaseRemoteConfigService {
+  String get latestAndroidVersion;
+  String get latestIosVersion;
+  bool get forceUserUpdate;
+  String get socialDiscordLink;
+  AppFunctionModel get appFunctionModel;
+  Future<void> initialize();
+  List<String> getCurriculums();
+  Future<bool> shouldForceUpdate();
+}
+
+@LazySingleton(as: IFirebaseRemoteConfigService)
+class FirebaseRemoteConfigService implements IFirebaseRemoteConfigService {
   late final FirebaseRemoteConfig _remoteConfig;
 
   final IPackageInfoService _packageInfoService;
@@ -10,6 +21,7 @@ class FirebaseRemoteConfigService {
     _remoteConfig = FirebaseRemoteConfig.instance;
   }
 
+  @override
   Future<void> initialize() async {
     try {
       // Set default values
@@ -34,14 +46,19 @@ class FirebaseRemoteConfigService {
     }
   }
 
+  @override
   String get latestAndroidVersion => _remoteConfig.getString(RemoteConfigKey.latestAndroidVersion);
 
+  @override
   String get latestIosVersion => _remoteConfig.getString(RemoteConfigKey.latestIosVersion);
 
+  @override
   bool get forceUserUpdate => _remoteConfig.getBool(RemoteConfigKey.forceUserUpdate);
 
+  @override
   String get socialDiscordLink => _remoteConfig.getString(RemoteConfigKey.socialDiscordLink);
 
+  @override
   AppFunctionModel get appFunctionModel {
     try {
       final jsonString = _remoteConfig.getString(RemoteConfigKey.appFunction);
@@ -56,6 +73,7 @@ class FirebaseRemoteConfigService {
     }
   }
 
+  @override
   List<String> getCurriculums() {
     final raw = _remoteConfig.getString(RemoteConfigKey.curriculum);
     try {
@@ -70,6 +88,7 @@ class FirebaseRemoteConfigService {
     }
   }
 
+  @override
   Future<bool> shouldForceUpdate() async {
     try {
       if (!forceUserUpdate) {
