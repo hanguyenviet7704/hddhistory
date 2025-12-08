@@ -24,7 +24,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final Set<String> _processedTransactionIds = {};
   Timer? _restoreTimeout;
   bool _restoreAwaiting = false;
-  static const String _processedTxStorageKey = 'IAP_PROCESSED_TX_IDS';
 
   void setSelectedProductId(String productId) {
     emit(state.copyWith(selectedProductId: productId));
@@ -190,7 +189,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   void _onPurchaseSuccess(PurchaseDetails purchaseDetail, {bool isRestore = false}) {
     _restoreAwaiting = false;
     _restoreTimeout?.cancel();
-    // AppConfig.instance.context?.read<UserCubit>().getMyProfiles();
     _finishTransaction(purchaseDetail);
     AppDI.injector.get<ProfileCubit>().loadUser();
     AppConfig.instance.context?.back();
@@ -246,22 +244,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   Future<void> _loadProcessedTransactions() async {
-    try {
-      final data = await AppService.instance.localStoreService.getMap(key: _processedTxStorageKey);
-      final ids = (data['ids'] as List?)?.map((e) => e.toString()).toList() ?? [];
-      _processedTransactionIds.addAll(ids);
-    } catch (e) {
-      LogDev.warning('Failed to load processed transactions: $e');
-    }
+    final ids = await _iapRepository.loadProcessedTransactionIds();
+    _processedTransactionIds.addAll(ids.take(100));
   }
 
   Future<void> _persistProcessedTransactions() async {
-    try {
-      final ids = _processedTransactionIds.take(100).toList();
-      await AppService.instance.localStoreService.setMap(key: _processedTxStorageKey, value: {'ids': ids});
-    } catch (e) {
-      LogDev.warning('Failed to persist processed transactions: $e');
-    }
+    final ids = _processedTransactionIds.take(100).toList();
+    await _iapRepository.cacheProcessedTransactionIds(ids);
   }
 
   @override

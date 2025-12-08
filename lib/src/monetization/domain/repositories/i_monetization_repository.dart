@@ -6,5 +6,7 @@ abstract class IMonetizationRepository {
   TaskEither<AppException, IapVerifyEntity> purchase(PurchaseParams params);
   TaskEither<AppException, IapVerifyEntity> restore();
   TaskEither<AppException, IapVerifyEntity> verify(VerifyParams params);
+  Future<List<String>> loadProcessedTransactionIds();
+  Future<void> cacheProcessedTransactionIds(List<String> ids);
   void dispose();
 }
