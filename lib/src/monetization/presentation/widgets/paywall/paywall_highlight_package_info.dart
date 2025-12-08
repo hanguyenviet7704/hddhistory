@@ -197,8 +197,8 @@ class _HighlightCard extends StatelessWidget {
 class _PaywallLegalLinks extends StatelessWidget {
   const _PaywallLegalLinks();
 
-  static const _termsUrl = 'https://meup.training/terms-and-conditions.html';
-  static const _privacyUrl = 'https://meup.training/privacy-policy.html';
+  String get _termsUrl => 'https://meup.training/terms-and-conditions.html';
+  String get _privacyUrl => 'https://meup.training/privacy-policy.html';
 
   @override
   Widget build(BuildContext context) {
