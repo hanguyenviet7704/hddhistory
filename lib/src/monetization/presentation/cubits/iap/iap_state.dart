@@ -18,6 +18,17 @@ abstract class IapState with _$IapState {
 }
 
 extension IapStateX on IapState {
-  IapProductEntity get bestDealProduct => iapProducts.firstWhere((element) => element.bestDeal);
-  IapProductEntity get selectedProduct => iapProducts.firstWhere((element) => element.id == selectedProductId);
+  IapProductEntity get bestDealProduct {
+    for (final item in iapProducts) {
+      if (item.bestDeal) return item;
+    }
+    return iapProducts.first;
+  }
+
+  IapProductEntity get selectedProduct {
+    for (final item in iapProducts) {
+      if (item.id == selectedProductId) return item;
+    }
+    return iapProducts.first;
+  }
 }

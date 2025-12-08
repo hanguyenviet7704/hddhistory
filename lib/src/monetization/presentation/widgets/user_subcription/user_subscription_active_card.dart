@@ -9,6 +9,7 @@ class UserSubscriptionActiveCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final text = t.monetization;
     final planName = _planName(subscription.productId, text);
+    final statusLabel = _statusLabel(subscription.status, text);
     final nextBilling = _nextBillingText(
       productId: subscription.productId,
       date: subscription.currentPeriodEnd,
@@ -41,6 +42,17 @@ class UserSubscriptionActiveCard extends StatelessWidget {
             style: AppStyle.text16.copyWith(
               fontWeight: FontWeight.w700,
               color: AppCustomColor.textSecondary,
+              height: 1.5,
+            ),
+          ),
+          6.verticalSpace,
+          AppText(
+            statusLabel,
+            maxLines: 1,
+            textAlign: TextAlign.center,
+            style: AppStyle.text12.copyWith(
+              fontWeight: FontWeight.w600,
+              color: AppCustomColor.brandPrimary,
               height: 1.5,
             ),
           ),
@@ -82,5 +94,20 @@ class UserSubscriptionActiveCard extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatted = DateFormat.yMMMMd(locale).format(date.toLocal());
     return text.manageNextBillingOn(date: formatted);
+  }
+
+  String _statusLabel(SubscriptionStatus status, TranslationsMonetizationEn text) {
+    switch (status) {
+      case SubscriptionStatus.active:
+        return text.manageStatusActive;
+      case SubscriptionStatus.grace:
+        return text.manageStatusGrace;
+      case SubscriptionStatus.onHold:
+        return text.manageStatusOnHold;
+      case SubscriptionStatus.canceled:
+        return text.manageStatusCanceled;
+      case SubscriptionStatus.expired:
+        return text.manageStatusExpired;
+    }
   }
 }

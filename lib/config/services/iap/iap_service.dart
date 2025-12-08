@@ -46,6 +46,19 @@ class IAPService implements IIapService {
       if (!_available) return;
 
       final ProductDetailsResponse response = await _inAppPurchase.queryProductDetails(productIds);
+
+      if (response.error != null) {
+        throw InAppPurchaseException(
+          source: response.error?.source ?? 'unknown',
+          code: response.error!.code,
+          message: response.error!.message,
+        );
+      }
+
+      if (response.notFoundIDs.isNotEmpty) {
+        LogDev.warning('IAP products not found: ${response.notFoundIDs.join(', ')}');
+      }
+
       _products.addAll(response.productDetails);
     });
     return _products;
@@ -53,7 +66,10 @@ class IAPService implements IIapService {
 
   @override
   Future<bool> purchaseProduct(String productId, ProductType type) async {
-    final product = _products.firstWhere((element) => element.id == productId);
+    final product = _products.firstWhere(
+      (element) => element.id == productId,
+      orElse: () => throw InAppPurchaseException(source: 'client', code: 'product_not_loaded', message: 'Product $productId not loaded'),
+    );
     final purchaseParam = PurchaseParam(productDetails: product);
 
     return switch (type) {
@@ -77,7 +93,7 @@ class IAPService implements IIapService {
   @override
   Future<void> completePurchase(PurchaseDetails purchaseDetails) async {
     _safeCall(() async {
-      if (!purchaseDetails.pendingCompletePurchase) return;
+      // if (!purchaseDetails.pendingCompletePurchase) return;
       await _inAppPurchase.completePurchase(purchaseDetails);
     });
   }

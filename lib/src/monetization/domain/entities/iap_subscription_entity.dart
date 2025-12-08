@@ -23,6 +23,9 @@ abstract class IapSubscriptionEntity with _$IapSubscriptionEntity {
 extension IapSubscriptionEntityX on IapSubscriptionEntity {
   IapProductEntity get product {
     List<IapProductEntity> products = AppDI.injector.get<IapCubit>().state.iapProducts;
-    return products.firstWhere((element) => element.productId == productId);
+    for (final item in products) {
+      if (item.productId == productId) return item;
+    }
+    return const IapProductEntity();
   }
 }
