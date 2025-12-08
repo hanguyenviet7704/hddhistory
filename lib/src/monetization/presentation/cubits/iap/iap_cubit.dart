@@ -54,7 +54,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   Future<void> purchaseProduct({bool isHighlight = false}) async {
     if (state.iapProducts.isEmpty) {
-      _onPurchaseFailure(error: 'No products available');
+      _onPurchaseFailure(error: AppConfig.instance.context?.text.monetization.emptyProductsDesc ?? '');
       return;
     }
     String productId = isHighlight ? state.bestDealProduct.productId : state.selectedProduct.productId;
@@ -113,7 +113,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
           LogDev.warning('Payment is pending');
           break;
         case PurchaseStatus.canceled:
-          _onPurchaseFailure(error: '');
+          _onPurchaseFailure();
           _markHandled(transactionId);
           _restoreAwaiting = false;
           _restoreTimeout?.cancel();
@@ -122,7 +122,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
           break;
         case PurchaseStatus.error:
-          _onPurchaseFailure(error: purchaseDetail.error?.message ?? '');
+          _onPurchaseFailure();
           _markHandled(transactionId);
           _restoreAwaiting = false;
           _restoreTimeout?.cancel();
@@ -180,7 +180,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       },
       onFailure: (error) {
         _markHandled(transactionId);
-        _onPurchaseFailure(error: error.toString());
+        _onPurchaseFailure(error: AppConfig.instance.context?.text.monetization.verificationFailToast ?? '');
         _finishTransaction(purchaseDetail);
       },
     );
