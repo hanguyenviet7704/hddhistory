@@ -45,7 +45,7 @@ class AppService {
 
   IPackageInfoService get packageInfoService => AppDI.injector.get<IPackageInfoService>();
 
-  FirebaseRemoteConfigService get firebaseRemoteConfigService => AppDI.injector.get<FirebaseRemoteConfigService>();
+  IFirebaseRemoteConfigService get firebaseRemoteConfigService => AppDI.injector.get<IFirebaseRemoteConfigService>();
 
   AppEventService get appEventService => AppEventService.instance;
 

@@ -38,13 +38,13 @@
   "distribution": {
     "testers": {
       "dev": [
-        "artlexis_test@eupgroup.net"
+        "meup_test@eupgroup.net"
       ],
       "stg": [
-        "artlexis_test@eupgroup.net"
+        "meup_test@eupgroup.net"
       ],
       "prod": [
-        "artlexis_test@eupgroup.net"
+        "meup_test@eupgroup.net"
       ]
     },
     "groups": {

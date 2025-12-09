@@ -45,6 +45,12 @@ class PremiumPill extends StatelessWidget {
       ),
       child: AppText(
         t.monetization.premiumBadge,
+        onTap: !kDebugMode
+            ? null
+            : () {
+                AppDI.injector.get<UserSubscriptionLocalDataSource>().cacheProcessedTransactionIds([]);
+                LogDev.one('Processed transaction ids cleared');
+              },
         style: AppStyle.text12.copyWith(
           fontWeight: FontWeight.w600,
           color: AppCustomColor.textWhite,

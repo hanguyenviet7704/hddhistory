@@ -26,7 +26,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
   final Set<String> _processedTransactionIds = {};
   Timer? _restoreTimeout;
-  bool _restoreAwaiting = false;
 
   void setSelectedProductId(String productId) {
     emit(state.copyWith(selectedProductId: productId));
@@ -60,8 +59,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       _onPurchaseFailure(error: AppConfig.instance.context?.text.monetization.emptyProductsDesc ?? '');
       return;
     }
+
+    if (state.status == MonetizationStatus.purchasing) return;
     String productId = isHighlight ? state.bestDealProduct.productId : state.selectedProduct.productId;
-    emit(state.copyWith(status: MonetizationStatus.loading));
+    emit(state.copyWith(status: MonetizationStatus.purchasing));
     await runUseCase<IapVerifyEntity>(
       usecase: () => _purchaseUsecase.call(PurchaseParams(productId: productId, type: state.selectedProduct.type)),
       onSuccess: (verify) {},
@@ -70,16 +71,17 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   Future<void> restorePurchases() async {
-    _restoreAwaiting = true;
+    if (state.status == MonetizationStatus.restoring) return;
+    emit(state.copyWith(status: MonetizationStatus.restoring));
+    
     _restoreTimeout?.cancel();
     DMessage.showMessage(
       message: AppConfig.instance.context?.text.monetization.restoreProcessingToast ?? '',
       type: MessageType.info,
     );
 
-    _restoreTimeout = Timer(const Duration(seconds: 8), () {
-      if (!_restoreAwaiting) return;
-      _restoreAwaiting = false;
+    _restoreTimeout = Timer(const Duration(seconds: 6), () {
+      if (state.status != MonetizationStatus.restoring) return;
       emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: 'restore_timeout'));
       DMessage.showMessage(
         message: AppConfig.instance.context?.text.monetization.restoreNotFoundToast ?? '',
@@ -93,7 +95,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         // Actual restored purchases will come through the purchase stream; keep awaiting until then.
       },
       onFailure: (error) {
-        _restoreAwaiting = false;
         _restoreTimeout?.cancel();
         emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString()));
         DMessage.showMessage(
@@ -118,7 +119,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         case PurchaseStatus.canceled:
           _onPurchaseFailure();
           _markHandled(transactionId);
-          _restoreAwaiting = false;
           _restoreTimeout?.cancel();
           await _finishTransaction(purchaseDetail);
           LogDev.warning('Payment is canceled');
@@ -127,7 +127,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         case PurchaseStatus.error:
           _onPurchaseFailure();
           _markHandled(transactionId);
-          _restoreAwaiting = false;
           _restoreTimeout?.cancel();
           await _finishTransaction(purchaseDetail);
           _trackingService.trackSubscriptionFailed(state.selectedProductId);
@@ -190,7 +189,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   void _onPurchaseSuccess(PurchaseDetails purchaseDetail, {bool isRestore = false}) {
-    _restoreAwaiting = false;
     _restoreTimeout?.cancel();
     _finishTransaction(purchaseDetail);
     AppDI.injector.get<ProfileCubit>().loadUser();
@@ -220,7 +218,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   void _onPurchasePending() {
-    emit(state.copyWith(status: MonetizationStatus.loading));
+    emit(state.copyWith(status: MonetizationStatus.initial));
     DMessage.showMessage(
       message: AppConfig.instance.context?.text.monetization.paymentPendingToast ?? '',
       type: MessageType.info,
