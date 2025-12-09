@@ -4,13 +4,11 @@ part of '../../monetization.dart';
 class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetizationRepository {
   final MonetizationApi _monetizationApi;
   final IIapService _iapService;
-  final ILocalStoreService _localStoreService = AppService.instance.localStoreService;
+  final UserSubscriptionLocalDataSource _userSubscriptionLocalDataSource;
   late final StreamSubscription<List<PurchaseDetails>> _subscription;
   final StreamController<PurchaseDetails> _purchaseDetailController = StreamController<PurchaseDetails>.broadcast();
 
-  static const String _processedTxStorageKey = 'IAP_PROCESSED_TX_IDS';
-
-  MonetizationRepository(this._monetizationApi, this._iapService) {
+  MonetizationRepository(this._monetizationApi, this._iapService, this._userSubscriptionLocalDataSource) {
     _setupSubscription();
   }
 
@@ -102,9 +100,8 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   @override
   Future<List<String>> loadProcessedTransactionIds() async {
     try {
-      final data = await _localStoreService.getMap(key: _processedTxStorageKey);
-      final ids = (data['ids'] as List?)?.map((e) => e.toString()).toList() ?? [];
-      return ids;
+      final data = await _userSubscriptionLocalDataSource.getProcessedTransactionIds();
+      return data;
     } catch (e) {
       LogDev.warning('Failed to load processed transaction ids: $e');
       return [];
@@ -114,7 +111,7 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   @override
   Future<void> cacheProcessedTransactionIds(List<String> ids) async {
     try {
-      await _localStoreService.setMap(key: _processedTxStorageKey, value: {'ids': ids});
+      await _userSubscriptionLocalDataSource.cacheProcessedTransactionIds(ids);
     } catch (e) {
       LogDev.warning('Failed to cache processed transaction ids: $e');
     }
