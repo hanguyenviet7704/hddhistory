@@ -53,7 +53,7 @@ if %errorlevel% neq 0 (
     exit /b 1
 )
 
-set "VENV_DIR=%PROJECT_ROOT%\.venv_localization"
+set "VENV_DIR=%PROJECT_ROOT%\.venv"
 if not exist "%VENV_DIR%" (
     call "%LCOMMON%" :log_warning "Creating virtual environment at %VENV_DIR%"
     python -m venv "%VENV_DIR%"

@@ -73,7 +73,7 @@ node_modules/
 .crashlytics/
 
 # Localization
-.venv_localization/
+.venv/
 .venv/
 
 # Git PR content
