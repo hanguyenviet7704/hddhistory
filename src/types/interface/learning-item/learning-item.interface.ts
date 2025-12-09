@@ -17,7 +17,7 @@ import {
   ExerciseSingleChoicePayload,
   IExerciseSingleChoice,
 } from "./excercises/single-choice.interface";
-import { ISection, ISectionPayload } from "./roleplays/section.interface";
+import { IRoleplay, IRoleplayPayload } from "./roleplays/roleplay.interface";
 import {
   ITheoryDocument,
   TheoryDocumentPayload,
@@ -55,7 +55,7 @@ export interface ILearningItem {
   subQuestions: ExerciseInput[];
   isSub: boolean;
   documents: ITheoryDocument[];
-  sections?: ISection[];
+  roleplay?: IRoleplay;
   index: number;
 }
 
@@ -70,7 +70,7 @@ export interface LearningItemPayload {
   subQuestions?: ExerciseInputPayload[];
   isSub: boolean;
   documents?: TheoryDocumentPayload[];
-  sections?: ISectionPayload[];
+  roleplay?: IRoleplayPayload;
   index: number;
 }
 

@@ -12,7 +12,6 @@ export interface IExerciseChoiceOption {
 export interface IExerciseSingleChoice {
   id: number;
   type: ExerciseType;
-  speechBubble: ITranslation;
   tag: ITag | null;
   document: IDocument[];
   explanation: ITranslation;
@@ -26,7 +25,6 @@ export interface IExerciseSingleChoice {
 export interface ExerciseSingleChoicePayload {
   id: number;
   type: ExerciseType;
-  speechBubble: ITranslation;
   tagId: string;
   document: IDocument[];
   explanation: ITranslation;

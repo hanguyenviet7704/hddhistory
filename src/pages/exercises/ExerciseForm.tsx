@@ -431,17 +431,11 @@ export default function ExerciseForm({
       const tagId = question.tag?._id || "";
 
       // Clean ITranslation fields
-      const { tag, ...questionWithoutTag } = question;
+      const { tag, speechBubble, ...questionWithoutTag } = question;
       const convertedQuestion: any = {
         ...questionWithoutTag,
         tagId,
       };
-
-      // Only add fields that have non-empty translations
-      const cleanedSpeechBubble = cleanTranslation(question.speechBubble);
-      if (cleanedSpeechBubble) {
-        convertedQuestion.speechBubble = cleanedSpeechBubble;
-      }
 
       const cleanedExplanation = cleanTranslation(question.explanation);
       if (cleanedExplanation) {
@@ -639,7 +633,6 @@ export default function ExerciseForm({
         return {
           id,
           type,
-          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [],
           explanation: { [currentLang]: "" },
@@ -653,7 +646,6 @@ export default function ExerciseForm({
         return {
           id,
           type,
-          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [],
           explanation: { [currentLang]: "" },
@@ -667,7 +659,6 @@ export default function ExerciseForm({
         return {
           id,
           type,
-          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [],
           explanation: { [currentLang]: "" },
@@ -684,7 +675,6 @@ export default function ExerciseForm({
         return {
           id,
           type,
-          speechBubble: { [currentLang]: "" },
           tag: null,
           document: [],
           explanation: { [currentLang]: "" },
@@ -948,18 +938,6 @@ export default function ExerciseForm({
                           </div>
 
                           <div className="text-sm text-gray-600 space-y-1">
-                            {question.speechBubble && (
-                              <div className="flex items-start">
-                                <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
-                                  Speech Bubble:
-                                </span>
-                                <TextWithTooltip
-                                  text={question.speechBubble}
-                                  lang={lang}
-                                />
-                              </div>
-                            )}
-
                             {question.tag && (
                               <div className="flex items-start">
                                 <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
@@ -969,7 +947,8 @@ export default function ExerciseForm({
                               </div>
                             )}
 
-                            {question.speechBubble && (
+                            {question.mainQuestion !== undefined &&
+                              question.mainQuestion !== null && (
                               <div className="flex items-start">
                                 <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
                                   Main question:
@@ -1870,28 +1849,6 @@ export default function ExerciseForm({
     return (
       <div className="space-y-4">
         {/* Common fields */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Speech Bubble
-          </label>
-          <input
-            type="text"
-            value={getCurrentTranslationValue(localFormData.speechBubble, lang)}
-            onChange={(e) =>
-              handleChange(
-                "speechBubble",
-                updateTranslationValue(
-                  localFormData.speechBubble || {},
-                  lang,
-                  e.target.value
-                )
-              )
-            }
-            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="Enter speech bubble text"
-          />
-        </div>
-
         {/* Tag selection using Combobox */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">

@@ -1,26 +1,26 @@
 import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import RoleplayForm from "./RoleplayForm";
-import { ILearningItem } from "../../types/interface/learning-item/learning-item.interface";
-import { learningItemService } from "../../services/learningItemService";
+import { ILesson } from "../../types/interface/lesson.interface";
+import { lessonService } from "../../services/lessonService";
 
 export default function RoleplayDetail() {
-  const { roleplayId } = useParams<{ roleplayId: string }>();
-  const [roleplay, setRoleplay] = useState<ILearningItem | null>(null);
+  const { lessonId } = useParams<{ lessonId: string }>();
+  const [roleplayLesson, setRoleplayLesson] = useState<ILesson | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!roleplayId) return;
+    if (!lessonId) return;
 
     setLoading(true);
-    learningItemService
-      .getById(roleplayId)
+    lessonService
+      .getById(lessonId)
       .then((res) => {
-        setRoleplay(res.data?.data ?? res.data);
+        setRoleplayLesson(res.data?.data ?? res.data);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [roleplayId]);
+  }, [lessonId]);
 
   if (loading) {
     return (
@@ -30,20 +30,20 @@ export default function RoleplayDetail() {
     );
   }
 
-  if (!roleplay) {
+  if (!roleplayLesson) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6 flex items-center justify-center">
         <div className="text-center">
           <h2 className="text-2xl font-bold text-gray-800 mb-2">
-            Roleplay not found
+            Roleplay lesson not found
           </h2>
           <p className="text-gray-600">
-            The roleplay you're looking for doesn't exist.
+            The roleplay lesson you're looking for doesn't exist.
           </p>
         </div>
       </div>
     );
   }
 
-  return <RoleplayForm roleplay={roleplay} />;
+  return <RoleplayForm roleplayLesson={roleplayLesson} />;
 }
