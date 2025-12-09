@@ -1016,59 +1016,62 @@ export default function RoleplayFromDetail({
   }, [currentRoleplay.keypointId]);
 
   // Save entire roleplay (create or update)
-  const handleSaveRoleplay = useCallback(async () => {
-    try {
-      setSaving(true);
-      const payload = buildLearningItemPayload(currentRoleplay, externalTitle);
+  const handleSaveRoleplay = useCallback(
+    async (options?: { suppressToast?: boolean }) => {
+      try {
+        setSaving(true);
+        const payload = buildLearningItemPayload(currentRoleplay, externalTitle);
 
-      let res;
-      if (currentRoleplay._id) {
-        res = await learningItemService.update(currentRoleplay._id, payload);
-      } else {
-        res = await learningItemService.create(payload);
-      }
+        let res;
+        if (currentRoleplay._id) {
+          res = await learningItemService.update(currentRoleplay._id, payload);
+        } else {
+          res = await learningItemService.create(payload);
+        }
 
-      const savedRoleplay = res.data?.data ?? res.data;
-      const apiContents = savedRoleplay.roleplay?.contents || [];
-      const apiMissions = savedRoleplay.roleplay?.missions || [];
-      const mergedContents =
-        (currentRoleplay.roleplay?.contents &&
-          currentRoleplay.roleplay.contents.length > 0 &&
-          currentRoleplay.roleplay.contents) ||
-        apiContents ||
-        [];
-      const mergedMissions =
-        (currentRoleplay.roleplay?.missions &&
-          currentRoleplay.roleplay.missions.length > 0 &&
-          currentRoleplay.roleplay.missions) ||
-        apiMissions ||
-        [];
-      const mergedRoleplay = {
-        ...savedRoleplay,
-        roleplay: {
-          ...createEmptyRoleplayData(),
-          ...(savedRoleplay.roleplay || {}),
-          contents: mergedContents,
-          missions: mergedMissions,
-          colorTemplateId:
-            savedRoleplay.roleplay?.colorTemplateId ||
-            currentRoleplay.roleplay?.colorTemplateId ||
-            "",
-          image:
-            savedRoleplay.roleplay?.image ||
-            currentRoleplay.roleplay?.image ||
-            savedRoleplay.image ||
-            "",
-        },
-      };
-      setCurrentRoleplay(mergedRoleplay as ILearningItem);
-      onSave?.(mergedRoleplay as ILearningItem);
-      await new Promise((resolve) => setTimeout(resolve, 500));
+        const savedRoleplay = res.data?.data ?? res.data;
+        const apiContents = savedRoleplay.roleplay?.contents || [];
+        const apiMissions = savedRoleplay.roleplay?.missions || [];
+        const mergedContents =
+          (currentRoleplay.roleplay?.contents &&
+            currentRoleplay.roleplay.contents.length > 0 &&
+            currentRoleplay.roleplay.contents) ||
+          apiContents ||
+          [];
+        const mergedMissions =
+          (currentRoleplay.roleplay?.missions &&
+            currentRoleplay.roleplay.missions.length > 0 &&
+            currentRoleplay.roleplay.missions) ||
+          apiMissions ||
+          [];
+        const mergedRoleplay = {
+          ...savedRoleplay,
+          roleplay: {
+            ...createEmptyRoleplayData(),
+            ...(savedRoleplay.roleplay || {}),
+            contents: mergedContents,
+            missions: mergedMissions,
+            colorTemplateId:
+              savedRoleplay.roleplay?.colorTemplateId ||
+              currentRoleplay.roleplay?.colorTemplateId ||
+              "",
+            image:
+              savedRoleplay.roleplay?.image ||
+              currentRoleplay.roleplay?.image ||
+              savedRoleplay.image ||
+              "",
+          },
+        };
+        setCurrentRoleplay(mergedRoleplay as ILearningItem);
+        onSave?.(mergedRoleplay as ILearningItem);
+        await new Promise((resolve) => setTimeout(resolve, 500));
 
-      isEditMode
-        ? showSuccess("Saved roleplay successfully")
-        : showSuccess("Create roleplay successfully");
-      return mergedRoleplay as ILearningItem;
+        if (!options?.suppressToast) {
+          isEditMode
+            ? showSuccess("Saved roleplay successfully")
+            : showSuccess("Create roleplay successfully");
+        }
+        return mergedRoleplay as ILearningItem;
     } catch (err) {
       console.error("handleSaveRoleplay", err);
       showError(
@@ -1078,18 +1081,21 @@ export default function RoleplayFromDetail({
     } finally {
       setSaving(false);
     }
-  }, [
-    currentRoleplay,
-    externalTitle,
-    isEditMode,
-    onSave,
-    showError,
-    showSuccess,
-  ]);
+  },
+    [
+      currentRoleplay,
+      embedded,
+      externalTitle,
+      isEditMode,
+      onSave,
+      showError,
+      showSuccess,
+    ]
+  );
 
   useEffect(() => {
     if (!saveRef) return;
-    saveRef.current = handleSaveRoleplay;
+    saveRef.current = () => handleSaveRoleplay({ suppressToast: embedded });
     return () => {
       saveRef.current = null;
     };
@@ -1566,7 +1572,7 @@ export default function RoleplayFromDetail({
               <h3 className="text-lg font-semibold text-gray-800">Missions</h3>
               <button
                 type="button"
-                onClick={handleSaveRoleplay}
+                onClick={() => handleSaveRoleplay()}
                 className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-600 text-white rounded-md shadow hover:bg-blue-700 transition text-sm"
                 disabled={saving}
               >
@@ -3857,7 +3863,7 @@ export default function RoleplayFromDetail({
                     </button>
                   )}
                   <button
-                    onClick={handleSaveRoleplay}
+                    onClick={() => handleSaveRoleplay()}
                     disabled={saving}
                     className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
                       saving
