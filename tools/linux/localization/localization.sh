@@ -110,7 +110,7 @@ if ! command -v python3 >/dev/null 2>&1; then
     exit 1
 fi
 
-VENV_DIR="$PROJECT_ROOT/.venv_localization"
+VENV_DIR="$PROJECT_ROOT/.venv"
 if [[ ! -d "$VENV_DIR" ]]; then
     log_warning "Creating virtual environment at $VENV_DIR"
     python3 -m venv "$VENV_DIR"

@@ -27,7 +27,7 @@ Modular localization now uses `slang` with namespace files and a secure Google S
 - Language columns: `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)` (names are configurable via `.info/app/localization.json`). ICU is allowed; placeholders should match `Params`; non-ICU placeholders use `${name}`. Missing translations are auto-filled from the default language with a prefix of the missing locale code (e.g., `(ZH) <default>`).
 
 ## CLI (Linux/macOS/Windows)
-Wrappers live under `tools/<platform>/localization/`, run inside `.venv_localization`, install deps from `requirements.txt`, and use `.info/app/localization.json`.
+Wrappers live under `tools/<platform>/localization/`, run inside `.venv`, install deps from `requirements.txt`, and use `.info/app/localization.json`.
 
 - Linux/macOS: `tools/linux/localization/localization.sh ...` or `tools/macos/localization/localization.sh ...`
 - Windows: `tools/windows/localization/localization.bat ...`

@@ -365,7 +365,7 @@ export PATH="$PATH:/path/to/flutter/bin"
 #### Python Environment Issues
 ```bash
 # Reset Python environment
-rm -rf .venv_localization
+rm -rf .venv
 sh tools/macos/localization/generate_localization.sh
 ```
 

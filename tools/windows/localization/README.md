@@ -36,7 +36,7 @@ tools\windows\localization\localization.bat slang
 - Sheet structure: first tab is `README` (instructions only). Each module gets its own tab named after the module; columns: `Key`, `Type`, `Context`, `Params`, `Description`, `Status`, `Tags`, `UpdatedAt`, `English (EN)`, `Vietnamese (VI)`, `Chinese (ZH)`. Module name is the namespace—do **not** prefix keys with the module.
 - Missing translation rule: when a locale cell is empty, push fills it with `(LANGCODE) <default text>` so gaps are obvious.
 - Service account for push: `LOCALIZATION_SA_PATH` (file) or `LOCALIZATION_SA_JSON` (raw). Defaults come from `.info/app/localization.json`; `GOOGLE_APPLICATION_CREDENTIALS` is a fallback.
-- Dependencies install into `.venv_localization` from `requirements.txt`. Template CSV: `.info/templates/sample_localization.csv`.
+- Dependencies install into `.venv` from `requirements.txt`. Template CSV: `.info/templates/sample_localization.csv`.
 
 ## Outputs
 - YAML per module/locale: `assets/i18n/<locale>/<module>.yaml` (consumed by slang).

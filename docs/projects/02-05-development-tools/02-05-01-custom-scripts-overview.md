@@ -77,7 +77,7 @@ The interface (flags, outputs, expected files) is shared; only iOS/IPA/distribut
 
 #### Features:
 - Google Sheets integration with per-module tabs
-- Automatic Python virtual environment setup (`.venv_localization`)
+- Automatic Python virtual environment setup (`.venv`)
 - Migration from legacy sheet/ARB, zh fallback to en
 - Slang-ready YAML generation and sheet push with dry-run
 
