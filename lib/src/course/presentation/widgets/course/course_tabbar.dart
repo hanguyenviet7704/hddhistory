@@ -4,9 +4,9 @@ class CourseTabBar extends StatelessWidget {
   final TabController tabController;
   const CourseTabBar({super.key, required this.tabController});
 
-  List<String> _buildTabList(List<SkillsetEntity> skillsets) {
+  List<String> _buildTabList(BuildContext context, List<SkillsetEntity> skillsets) {
     return [
-      'My course',
+      context.text.allcourse.allcourseMyCourse,
       ...skillsets.map((skillset) => skillset.title.text),
     ];
   }
@@ -19,7 +19,7 @@ class CourseTabBar extends StatelessWidget {
         return BlocBuilder<CourseCubit, CourseState>(
           builder: (context, courseState) {
             final selectedIndex = courseState.selectedTabIndex;
-            final tabList = _buildTabList(skillsets);
+            final tabList = _buildTabList(context, skillsets);
 
             return Container(
               padding: EdgeInsets.symmetric(horizontal: 20.w),

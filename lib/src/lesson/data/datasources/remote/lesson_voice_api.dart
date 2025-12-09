@@ -11,10 +11,10 @@ abstract class LessonVoiceApi {
 }
 
 @lazySingleton
-class LessonVoiceStreamApi {
+class LessonVoiceAIApi {
   final Dio _dio;
 
-  LessonVoiceStreamApi(@Named(DIKey.aiDio) this._dio);
+  LessonVoiceAIApi(@Named(DIKey.aiDio) this._dio);
 
   Future<ResponseBody> sendVoiceFeedbackStream(Map<String, dynamic> body) async {
     final response = await _dio.post<ResponseBody>(
@@ -29,5 +29,17 @@ class LessonVoiceStreamApi {
       ),
     );
     return response.data!;
+  }
+
+  Future<VoiceScoreModel> sendScoreRecord(Map<String, dynamic> body) async {
+    final response = await _dio.post<Map<String, dynamic>>(
+      AppEndpoint.scoreRecord,
+      data: body,
+      options: Options(
+        headers: const {"Content-Type": "application/json"},
+        responseType: ResponseType.json,
+      ),
+    );
+    return VoiceScoreModel.fromJson(response.data ?? {});
   }
 }

@@ -81,14 +81,14 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                 color: Colors.transparent,
                 child: InkWell(
                   onTap: () {
-                    DataCollectRoute().go(context);
-                  },
+                  DataCollectRoute().go(context);
+                },
                   borderRadius: BorderRadius.circular(1000.r),
                   child: Center(
-                    child: AppText(
-                      context.text.onboarding.onboardingSkipGreetingButton,
+                child: AppText(
+                  context.text.onboarding.onboardingSkipGreetingButton,
                       style: AppStyle.text16.copyWith(
-                        fontWeight: FontWeight.w600,
+                    fontWeight: FontWeight.w600,
                         color: Colors.white,
                         height: 1.5,
                       ),

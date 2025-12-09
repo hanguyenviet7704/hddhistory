@@ -24,6 +24,7 @@ part of 'di.dart';
     'lib/src/progress',
     'lib/src/roleplay',
     'lib/src/setting',
+    'lib/src/monetization',
   ],
   initializerName: 'init',
   preferRelativeImports: true,

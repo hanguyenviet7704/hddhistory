@@ -13,8 +13,8 @@ class SplashContentCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         gradient: LinearGradient(
           colors: [
-            AppCustomColor.yellowFDF0,
-            AppCustomColor.yellowFDE1,
+            AppCustomColor.brandPrimary50,
+            AppCustomColor.brandPrimary,
           ],
         ),
       ),
@@ -47,7 +47,7 @@ class SplashContentCard extends StatelessWidget {
                 width: double.infinity,
                 height: 12.h,
                 decoration: BoxDecoration(
-                  color: AppCustomColor.blue23,
+                  color: AppCustomColor.brandPrimary,
                   borderRadius: BorderRadius.circular(6.r),
                 ),
               ).animate().scaleX(

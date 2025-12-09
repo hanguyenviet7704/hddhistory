@@ -5,7 +5,7 @@ class LessonListPage extends StatelessWidget {
 
   void _showTutorial(BuildContext context) {
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      Future.delayed(const Duration(seconds: 2), () {
+      Future.delayed(const Duration(seconds: 1), () {
         if (!context.mounted) return;
         bool isFirstTimeUserAccessLessonList = context.read<UserCubit>().state.isFirstTimeUserAccessLessonList;
         if (!isFirstTimeUserAccessLessonList) return;
@@ -43,7 +43,7 @@ class LessonListPage extends StatelessWidget {
                       ),
                       SizedBox(height: 16.h),
                       AppText(
-                        'An error occurred',
+                        context.text.allcourse.errorOccurred,
                         style: AppStyle.text16.copyWith(
                           color: AppCustomColor.textSecondary,
                         ),
@@ -64,7 +64,7 @@ class LessonListPage extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.all(20.w),
                   child: AppText(
-                    'No lesson data available',
+                    context.text.allcourse.noLessonData,
                     style: AppStyle.text16.copyWith(
                       color: AppCustomColor.textSecondary,
                     ),
@@ -102,7 +102,7 @@ class LessonListPage extends StatelessWidget {
                         padding: EdgeInsets.symmetric(vertical: 32.w),
                         child: Center(
                           child: AppText(
-                            'No key points available',
+                            context.text.allcourse.noKeypointsAvailable,
                             style: AppStyle.text14.copyWith(
                               color: AppCustomColor.textTertiary,
                             ),
@@ -116,12 +116,15 @@ class LessonListPage extends StatelessWidget {
                         itemCount: lesson.keypoints.length,
                         separatorBuilder: (context, index) => 16.verticalSpace,
                         itemBuilder: (context, index) {
-                          final keypoint = lesson.keypoints[index];
+                          final keypoint = lesson.sortedKeypoints[index];
 
                           return KeypointCard(
                             keypoint: keypoint,
                             onTap: () {
-                              context.read<LessonCubit>().loadAllLearningItems(keypointId: keypoint.id, isInit: true);
+                              context.read<LessonCubit>()
+                                ..reset()
+                                ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
+                              context.read<CourseLessonCubit>().setCurrentKeypointId(keypoint.id);
                               LessonRoute().go(context);
                             },
                           );

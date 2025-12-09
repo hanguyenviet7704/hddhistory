@@ -38,8 +38,10 @@ The DCore project uses a multi-tiered distribution approach supporting different
 
 #### APK Distribution Script
 ```bash
-# Build and distribute APK
-sh tools/macos/build/build_apk.sh [dev|stg|prod]
+# Build and distribute APK (match platform)
+sh tools/macos/build/build_apk.sh [flavor]      # macOS
+sh tools/linux/build/build_apk.sh [flavor]      # Linux
+tools\\windows\\build\\build_apk.bat [flavor]   # Windows
 
 # Output location
 build/app/outputs/flutter-apk/
@@ -50,8 +52,10 @@ build/app/outputs/flutter-apk/
 
 #### App Bundle Distribution Script
 ```bash
-# Build App Bundle for Play Store
-sh tools/macos/build/build_appbundle.sh [dev|stg|prod]
+# Build App Bundle for Play Store (match platform)
+sh tools/macos/build/build_appbundle.sh [flavor]
+sh tools/linux/build/build_appbundle.sh [flavor]
+tools\\windows\\build\\build_appbundle.bat [flavor]
 
 # Output location
 build/app/outputs/bundle/
@@ -84,7 +88,8 @@ sh tools/macos/distribution/upload_appstore.sh [dev|stg|prod]
 #### Process
 ```bash
 # 1. Build development version
-sh tools/macos/build/build_apk.sh dev
+sh tools/macos/build/build_apk.sh dev   # or tools/linux/... on Linux
+tools\\windows\\build\\build_apk.bat dev   # Windows
 
 # 2. Distribute via internal channels
 # - Email/Slack sharing
@@ -112,7 +117,8 @@ adb install build/app/outputs/flutter-apk/app-dev-release.apk
 #### Process
 ```bash
 # 1. Build staging version
-sh tools/macos/build/build_appbundle.sh stg
+sh tools/macos/build/build_appbundle.sh stg   # or tools/linux/... on Linux
+tools\\windows\\build\\build_appbundle.bat stg   # Windows
 
 # 2. Upload to internal testing tracks
 # Google Play Console - Internal Testing
@@ -140,7 +146,8 @@ sh tools/macos/build/build_appbundle.sh stg
 #### Google Play Store Process
 ```bash
 # 1. Build production App Bundle
-sh tools/macos/build/build_appbundle.sh prod
+sh tools/macos/build/build_appbundle.sh prod   # or tools/linux/... on Linux
+tools\\windows\\build\\build_appbundle.bat prod   # Windows
 
 # 2. Upload to Google Play Console
 # Manual upload or API-based upload
@@ -282,8 +289,8 @@ jobs:
 
       - name: 📱 Build Development APK
         run: |
-          chmod +x tools/macos/build/build_apk.sh
-          ./tools/macos/build/build_apk.sh dev
+          chmod +x tools/linux/build/build_apk.sh
+          ./tools/linux/build/build_apk.sh dev
 
       - name: 📤 Upload Development APK
         uses: actions/upload-artifact@v4
@@ -339,8 +346,8 @@ jobs:
 
       - name: 📱 Build Staging App Bundle
         run: |
-          chmod +x tools/macos/build/build_appbundle.sh
-          ./tools/macos/build/build_appbundle.sh stg
+          chmod +x tools/linux/build/build_appbundle.sh
+          ./tools/linux/build/build_appbundle.sh stg
 
       - name: 🚀 Deploy to Internal Testing
         uses: r0adkll/upload-google-play@v1
@@ -397,8 +404,8 @@ jobs:
 
       - name: 📱 Build Production App Bundle
         run: |
-          chmod +x tools/macos/build/build_appbundle.sh
-          ./tools/macos/build/build_appbundle.sh prod
+          chmod +x tools/linux/build/build_appbundle.sh
+          ./tools/linux/build/build_appbundle.sh prod
 
       - name: 🚀 Deploy to Play Store (10% Rollout)
         uses: r0adkll/upload-google-play@v1
@@ -603,7 +610,7 @@ build_apk:
   stage: build
   image: cirrusci/flutter:$FLUTTER_VERSION
   script:
-    - sh tools/macos/build/build_apk.sh dev
+    - sh tools/linux/build/build_apk.sh dev
   artifacts:
     paths:
       - build/app/outputs/flutter-apk/
@@ -614,7 +621,7 @@ build_apk:
 distribute_staging:
   stage: distribute
   script:
-    - sh tools/macos/build/build_appbundle.sh stg
+    - sh tools/linux/build/build_appbundle.sh stg
     # Upload to internal testing
   only:
     - staging
@@ -622,7 +629,7 @@ distribute_staging:
 distribute_production:
   stage: distribute
   script:
-    - sh tools/macos/build/build_appbundle.sh prod
+    - sh tools/linux/build/build_appbundle.sh prod
     # Upload to production
   only:
     - main
@@ -1184,7 +1191,7 @@ xcrun altool --upload-app \
 #### Build Script Issues
 ```bash
 # Debug build script
-bash -x tools/macos/build/build_appbundle.sh prod
+bash -x tools/linux/build/build_appbundle.sh prod   # or tools/macos/... on macOS
 
 # Check environment files
 cat .env/.env.prod

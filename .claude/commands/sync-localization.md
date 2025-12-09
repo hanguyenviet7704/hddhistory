@@ -12,15 +12,18 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
 - `path`: Dart file or folder to scan.
 - Optional: `module` (sheet tab). If omitted, derive from feature folder name; fallback `common`.
 
+**Common-first rule:** Generic/shared UI copy (e.g., “Next”, “Back”, “Yes”, “No”, “Skip”, “Continue”, “Done”, “OK”, “Cancel”) belongs in `assets/i18n/<lang>/common.yaml`. Reuse existing `common` keys before creating anything new in a feature tab.
+
 ## Flow
 1. **Ask upfront**
    - Confirm `path`.
-   - Confirm `module` tab (common, auth, home, exercise, allcourse, courseroadmap, keypoint, lesson, onboarding, roleplay, setting).
+   - Confirm `module` tab (common, auth, home, exercise, allcourse, courseroadmap, keypoint, lesson, onboarding, roleplay, setting). Default to `common` for generic labels/buttons.
    - Ask permission to auto-create keys (default yes).
 
 2. **Sync latest data**
-   - `LOCALIZATION_SA_PATH=.info/key/multilang_key.json tools/<os>/localization/localization.sh pull`
-     (linux/macos paths; windows uses `tools/windows/localization/localization.bat`).
+   - `LOCALIZATION_SA_PATH=.info/key/multilang_key.json tools/<os>/localization/localization.sh pull --sheet-gids "<gid>"`
+     - Use the module gid from `.info/app/localization.json` (active.tabs[].gid). Omit `--sheet-gids` for a full pull.
+     - linux/macos use `tools/<os>/localization/localization.sh`; windows uses `tools/windows/localization/localization.bat`.
 
 3. **Detect raw strings**
    - `rg --glob '*.dart' --no-heading --color never -n "\"[^\"]{2,}\"" {path} | rg -v "context\\.text|AppLocale|\\.tr\\(|l10n|Slang"`
@@ -28,23 +31,32 @@ Description: Find raw strings in a Dart file/folder, add them to the localizatio
 
 4. **Propose keys**
    - Key style (no module prefix): concise lowerCamelCase that describes the string itself, e.g., `welcomeTitle`, `skipButton`, `emailPlaceholder`. Do **not** prepend the module name.
+   - Check `assets/i18n/en/common.yaml` for an existing generic string before adding a new key. If it exists, reuse that key and adjust Dart references to point to `common`.
    - If the target YAML still uses prefixed keys, migrate them while you are there: rename keys in all locale YAML files and update Dart references in the scanned `path` to drop the module prefix.
    - Default text: English source string.
    - Other locales: okay to leave empty; tool will prefix `(VI)` / `(ZH)` with default text on push.
 
 5. **Write + push**
-   - Add entries to `assets/i18n/en/<module>.yaml` (mirror files for other locales if needed).
-   - Keep placeholders as `${param}`; remove stray extra `$`.
-   - Run `tools/<os>/localization/localization.sh push --apply`.
+    - Add entries to `assets/i18n/en/<module>.yaml` (mirror files for other locales if needed).
+    - Keep placeholders as `${param}`; remove stray extra `$`. For plurals/select, keep YAML map form, include zero/explicit counts when relevant, e.g.:
+      ```yaml
+      itemCount(param=count):
+        zero: No items
+        one: ${count} item
+        other: ${count} items
+      ```
+   - Run `tools/<os>/localization/localization.sh push --apply [--sheet-gids "<gid>"]` (push reads YAML and refreshes `records.json`).
    - If you created/renamed tabs, run `tools/<os>/localization/localization.sh cache-gids --ensure-readme` to refresh the gid cache and ensure the README tab exists.
 
 6. **Regenerate + verify**
-   - `tools/<os>/localization/localization.sh pull`
+   - `tools/<os>/localization/localization.sh pull [--sheet-gids "<gid>"]`
    - `tools/<os>/localization/localization.sh slang` (respects flutter/fvm/puro)
    - Re-scan to confirm no raw strings remain; run `flutter analyze` if time permits.
+   - End with a `pull` (scoped if used) to ensure sheet ↔ local round-trip is clean.
 
 ## Notes
 - First sheet tab is `README` (instructions only); module tabs hold data. GID cache is stored in `.info/app/localization.json` and refreshed by the tools.
+- Partial pulls (`--sheet-gids`) merge into the dataset and only rewrite YAML for targeted modules; full pulls clean/rebuild all locale YAMLs.
 
 ## Output
 - Summary of new keys added (with file refs).

@@ -29,6 +29,12 @@ enum StrengthLevel {
     morePractice => '51-84',
     optionalPractice => '85-100',
   };
+
+  String title(BuildContext context) => switch (this) {
+    weakPoint => context.text.keypoint.keypointWeakpointTitle,
+    morePractice => context.text.keypoint.keypointImprovementTitle,
+    optionalPractice => context.text.keypoint.keypointSkipOptionPracticeType,
+  };
 }
 
 extension KeypointModelExtension on KeypointModel {

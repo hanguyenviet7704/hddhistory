@@ -17,16 +17,16 @@ class StartJourneyButton extends StatelessWidget {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            AppDI.injector.get<HomeCubit>().initializeData();
-            AppDI.injector.get<UserCubit>().setIsFirstTime(false);
-            RegisterRoute().go(context);
-          },
+          AppDI.injector.get<HomeCubit>().initializeData();
+          AppDI.injector.get<UserCubit>().setIsFirstTime(false);
+          RegisterRoute().go(context);
+        },
           borderRadius: BorderRadius.circular(1000.r),
           child: Center(
-            child: AppText(
-              context.text.onboarding.onboardingStartJourneyButton,
+        child: AppText(
+          context.text.onboarding.onboardingStartJourneyButton,
               style: AppStyle.text16.copyWith(
-                fontWeight: FontWeight.w600,
+            fontWeight: FontWeight.w600,
                 color: Colors.white,
                 height: 1.5,
               ),

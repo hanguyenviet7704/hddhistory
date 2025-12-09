@@ -2,17 +2,36 @@ part of '../services.dart';
 
 /// Cache service that provides comprehensive caching capabilities
 /// for images, videos, files and other content using flutter_cache_manager
-class CacheService {
+
+abstract interface class ICacheService {
+  Future<void> initialize();
+  Future<void> preloadEssentialAssets();
+  Future<void> preloadImages(List<String> imageUrls);
+  Future<void> preloadVideos(List<String> videoUrls);
+  Future<void> preloadFiles(List<String> fileUrls);
+  Future<void> clearAllCache();
+  Future<String> getCacheStatus();
+  Future<File> getCachedImage(String imageUrl);
+  Stream<FileResponse> getCachedImageStream(String imageUrl, {bool withProgress = false});
+  Future<File> getCachedVideo(String videoUrl);
+  Stream<FileResponse> getCachedVideoStream(String videoUrl, {bool withProgress = false});
+  Future<File> getCachedFile(String fileUrl);
+  Stream<FileResponse> getCachedFileStream(String fileUrl, {bool withProgress = false});
+}
+
+@Named(DIKey.cacheService)
+@LazySingleton(as: ICacheService)
+class CacheService implements ICacheService {
   final CacheManager defaultCacheManager;
   final CacheManager imageCacheManager;
   final CacheManager videoCacheManager;
   final CacheManager fileCacheManager;
 
   CacheService({
-    required this.defaultCacheManager,
-    required this.imageCacheManager,
-    required this.videoCacheManager,
-    required this.fileCacheManager,
+    @Named(DIKey.defaultCacheManager) required this.defaultCacheManager,
+    @Named(DIKey.imageCacheManager) required this.imageCacheManager,
+    @Named(DIKey.videoCacheManager) required this.videoCacheManager,
+    @Named(DIKey.fileCacheManager) required this.fileCacheManager,
   });
 
   /// Initialize cache service and preload essential assets

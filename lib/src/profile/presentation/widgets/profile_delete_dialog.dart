@@ -50,6 +50,7 @@ class _DialogBody extends StatelessWidget {
               AppText(
                 context.text.setting.settingProfileDestructiveWarnTitle,
                 textAlign: TextAlign.center,
+                enableFitScaleDown: true,
                 style: AppStyle.text20.copyWith(
                   color: AppCustomColor.textPrimary,
                   height: 1.5,
@@ -59,6 +60,7 @@ class _DialogBody extends StatelessWidget {
               8.verticalSpace,
               AppText(
                 context.text.setting.settingProfileDestructiveWarnMessage,
+                maxLines: 3,
                 textAlign: TextAlign.center,
                 style: AppStyle.text14.copyWith(
                   color: AppCustomColor.textSecondary,

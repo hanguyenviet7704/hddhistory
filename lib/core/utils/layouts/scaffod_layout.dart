@@ -38,26 +38,37 @@ class ScaffoldLayout extends StatelessWidget {
           selectedLabelStyle: AppStyle.textBold12.copyWith(color: AppCustomColor.textPrimary),
           selectedItemColor: AppCustomColor.textPrimary,
           unselectedLabelStyle: AppStyle.textBold10.copyWith(fontWeight: FontWeight.w600),
+          backgroundColor: Colors.transparent,
+          elevation: 0,
         );
       },
     );
 
-    if (Platform.isIOS) {
-      bottomNavigationBar = SizedBox(height: 72.h, child: bottomNavigationBar);
-    }
-
-    return SafeArea(
-      bottom: !Platform.isIOS,
-      child: Column(
-        children: [
-          Expanded(child: navigationShell),
-          MediaQuery.removePadding(
-            context: context,
-            removeBottom: true,
-            child: bottomNavigationBar,
+    return Column(
+      children: [
+        Expanded(child: navigationShell),
+        Container(
+          decoration: BoxDecoration(
+            color: AppColorLight.surface,
+            border: Border(
+              top: BorderSide(color: AppCustomColor.borderDefault, width: 1.w),
+            ),
           ),
-        ],
-      ),
+          child: SafeArea(
+            top: false,
+            left: false,
+            right: false,
+            child: MediaQuery.removePadding(
+              context: context,
+              removeBottom: true,
+              removeLeft: true,
+              removeRight: true,
+              removeTop: true,
+              child: bottomNavigationBar,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

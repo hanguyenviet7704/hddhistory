@@ -3,11 +3,22 @@ part of '../services.dart';
 @LazySingleton(as: Interceptor)
 @Named(DIKey.appInterceptor)
 class AppInterceptor extends BaseInterceptor {
-  AppInterceptor() : super(prefix: '[App]');
+  final UserCubit _userCubit;
+  final LocaleCubit _localeCubit;
+  final PageCubit _pageCubit;
+
+  AppInterceptor(
+    this._userCubit,
+    this._localeCubit,
+    this._pageCubit,
+  ) : super(prefix: '[App]');
 
   static const String _retryCountKey = 'retry_count';
   static const int _maxRetryAttempts = 1;
-  static Completer<bool>? _refreshCompleter;
+
+  AuthBloc get _authBloc => AppDI.injector.get<AuthBloc>();
+
+  String get _currentLanguage => _localeCubit.state.localeData.languageCode;
 
   @override
   void onRequest(RequestOptions options, RequestInterceptorHandler handler) {
@@ -20,11 +31,7 @@ class AppInterceptor extends BaseInterceptor {
     if (!hasAuthorizationHeader && AppGlobalValue.accessToken.isNotEmpty) {
       options.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
     }
-    options.headers['lang'] = _getCurrentLanguage();
-  }
-
-  String _getCurrentLanguage() {
-    return AppConfig.instance.context!.read<LocaleCubit>().state.localeData.languageCode;
+    options.headers['lang'] = _currentLanguage;
   }
 
   @override
@@ -36,18 +43,14 @@ class AppInterceptor extends BaseInterceptor {
   @override
   Future<void> onError(DioException err, ErrorInterceptorHandler handler) async {
     final handledUnauthorized = await _tryHandleUnauthorized(err, handler);
-    if (handledUnauthorized) {
-      return;
-    }
+    if (handledUnauthorized) return;
 
     _handleErrorResponses(err);
     await super.onError(err, handler);
   }
 
   Future<bool> _tryHandleUnauthorized(DioException err, ErrorInterceptorHandler handler) async {
-    if (err.response?.statusCode != HttpStatus.unauthorized) {
-      return false;
-    }
+    if (err.response?.statusCode != HttpStatus.unauthorized) return false;
 
     _logUnauthorizedError(err);
 
@@ -68,7 +71,7 @@ class AppInterceptor extends BaseInterceptor {
       return true;
     }
 
-    final refreshed = await _refreshAccessToken();
+    final refreshed = await _authBloc.refreshAccessToken();
     if (!refreshed || AppGlobalValue.accessToken.isEmpty) {
       _handleUnauthorized();
       handler.reject(err);
@@ -98,78 +101,6 @@ class AppInterceptor extends BaseInterceptor {
     return dio.fetch(requestOptions);
   }
 
-  Future<bool> _refreshAccessToken() async {
-    final existingCompleter = _refreshCompleter;
-    if (existingCompleter != null) {
-      return existingCompleter.future;
-    }
-
-    final completer = Completer<bool>();
-    _refreshCompleter = completer;
-
-    void complete(bool value) {
-      if (!completer.isCompleted) {
-        completer.complete(value);
-      }
-    }
-
-    try {
-      final refreshToken = AppGlobalValue.refreshToken;
-      final userCubit = AppDI.injector.get<UserCubit>();
-      final deviceInfoService = AppDI.injector.get<IDeviceInfoService>();
-      final userId = userCubit.state.user.id;
-      String deviceId = await deviceInfoService.deviceToken;
-      String deviceName = await deviceInfoService.deviceName;
-
-      if (refreshToken.isEmpty || userId.isEmpty) {
-        LogDev.warning('$prefix Token refresh skipped: Missing refresh token or user id');
-        complete(false);
-        return completer.future;
-      }
-
-      LogDev.info('$prefix Access token expired, attempting to refresh...');
-      final refreshTokenUsecase = AppDI.injector.get<RefreshTokenUsecase>();
-
-      final result = await refreshTokenUsecase({
-        "userId": userId,
-        "refreshToken": refreshToken,
-        "device": {
-          "deviceId": deviceId,
-          "deviceName": deviceName,
-        },
-      }).run();
-
-      final refreshed = result.match(
-        (failure) {
-          LogDev.error('$prefix Token refresh failed: ${failure.displayMessage}');
-          return false;
-        },
-        (auth) {
-          if (auth.token.accessToken.isEmpty) {
-            LogDev.error('$prefix Token refresh failed: Empty access token returned');
-            return false;
-          }
-
-          AppGlobalValue.accessToken = auth.token.accessToken;
-          // AppGlobalValue.refreshToken = auth.token.refreshToken;
-          userCubit.setAccessToken(auth.token.accessToken);
-
-          LogDev.info('$prefix Token refreshed successfully, retrying original request...');
-          return true;
-        },
-      );
-
-      complete(refreshed);
-    } catch (error, stackTrace) {
-      LogDev.error('$prefix Failed to refresh token: $error\n$stackTrace');
-      complete(false);
-    } finally {
-      _refreshCompleter = null;
-    }
-
-    return completer.future;
-  }
-
   void _handleResponseStatus(int? statusCode) {
     switch (statusCode) {
       case HttpStatus.gone:
@@ -194,16 +125,15 @@ class AppInterceptor extends BaseInterceptor {
       return;
     }
 
-    final currentRouteName = context.read<PageCubit>().state.currentRouteName;
+    final currentRouteName = _pageCubit.state.currentRouteName;
     if (currentRouteName == RoutePath.login) {
       return;
     }
 
-    LoginRoute().push(context);
-    AppGlobalValue.accessToken = '';
-    AppGlobalValue.refreshToken = '';
     AppService.instance.resetDI();
-    context.read<UserCubit>().clearData();
+    _userCubit.clearData();
+    _authBloc.add(AuthEvent.clearSession());
+    RegisterRoute().go(context);
 
     DMessage.showMessage(
       type: MessageType.error,

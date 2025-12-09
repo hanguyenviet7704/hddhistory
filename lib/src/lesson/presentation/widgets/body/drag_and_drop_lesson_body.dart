@@ -9,6 +9,7 @@ class DragAndDropLessonBody extends StatelessWidget {
   });
 
   void _showResultOverlay(BuildContext context, ResultType type) {
+    context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
       builder: (_) => BlocProvider.value(
@@ -107,7 +108,7 @@ class DragAndDropLessonBody extends StatelessWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<DragAndDropCubit>().checkAnswer() : null,
-          text: 'Check',
+          text: context.text.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

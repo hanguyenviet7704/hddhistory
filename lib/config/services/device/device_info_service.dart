@@ -11,9 +11,10 @@ abstract interface class IDeviceInfoService {
 
 @LazySingleton(as: IDeviceInfoService)
 class DeviceInfoService implements IDeviceInfoService {
+  final ILocalStoreService _localStoreService;
   final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
 
-  DeviceInfoService() {
+  DeviceInfoService(this._localStoreService) {
     initialize();
   }
 
@@ -23,6 +24,12 @@ class DeviceInfoService implements IDeviceInfoService {
   void initialize() async {
     LogDev.info('DeviceInfoService initialized');
     await getAllDeviceInfo();
+    final deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
+    LogDev.one('deviceId: $deviceId');
+    if(!Platform.isIOS) return;
+    if(deviceId.isNotEmpty) return;
+    final fakeDeviceId = const Uuid().v8();
+    await _localStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: fakeDeviceId);
   }
 
   /// Returns the Android SDK version as an integer.
@@ -51,31 +58,20 @@ class DeviceInfoService implements IDeviceInfoService {
 
   @override
   Future<String> get deviceToken async {
-    // String deviceIdFromLocalStore = await LocalStoreService.instance.getString(key: LocalStoreKey.deviceTokenUID);
-    String deviceIdFromLocalStore = '';
-    if (deviceIdFromLocalStore.isNotEmpty) {
-      return deviceIdFromLocalStore;
-    }
-
     String deviceId = '';
     try {
       if (Platform.isAndroid) {
         final AndroidDeviceInfo androidInfo = await _deviceInfoPlugin.androidInfo;
-        deviceId = androidInfo.id; // This is a unique ID on Android
+        deviceId = androidInfo.id;
       } else if (Platform.isIOS) {
-        final IosDeviceInfo iosInfo = await _deviceInfoPlugin.iosInfo;
-        deviceId = iosInfo.identifierForVendor ?? ''; // Unique ID on iOS
+        deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
       }
     } catch (e) {
       LogDev.warning('Error getting device info: $e');
     }
 
-    // If we couldn't get a device ID, generate a UUID
     if (deviceId.isEmpty) {
-      deviceId = const Uuid().v8();
-      // await LocalStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: deviceId);
-      // You might want to store this generated UUID persistently
-      // so it remains consistent across app launches
+      deviceId = const Uuid().v4();
     }
 
     return deviceId;

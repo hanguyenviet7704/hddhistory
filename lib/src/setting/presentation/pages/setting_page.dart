@@ -10,40 +10,51 @@ class SettingPage extends StatelessWidget {
       body: CupertinoScaffold(
         topRadius: const Radius.circular(24),
         transitionBackgroundColor: AppCustomColor.backgroundWhite,
-        body: SafeArea(
+        body: SafeBody(
           child: ListView(
             padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
             physics: const BouncingScrollPhysics(),
             children: [
               SettingProfileCard(),
               24.verticalSpace,
-              SettingSectionCard(
-                title: context.text.setting.settingSectionHeaderGeneral,
-                children: [
-                  if (kDebugMode)
-                    SettingOptionTile(
-                      iconAsset: AppAsset.svg.app.icBell,
-                      title: context.text.setting.settingRowNoti,
-                      trailingText: '05:05',
-                    ),
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  if (user.iapSubscriptions.isNotEmpty) return SizedBox.shrink();
 
-                  SettingOptionTile(
-                    iconAsset: AppAsset.svg.app.icGlobe,
-                    title: context.text.setting.settingRowLanguage,
-                    trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
-                    onTap: () => const ChangeLanguageRoute().go(context),
-                  ),
-                  if (kDebugMode)
-                    SettingOptionTile(
-                      iconAsset: AppAsset.svg.app.icCreditCard,
-                      title: context.text.setting.settingRowUpgradePremium,
-                    ),
-                  if (kDebugMode)
-                    SettingOptionTile(
-                      iconAsset: AppAsset.svg.app.icSet,
-                      title: context.text.setting.settingRowRestorePurchase,
-                    ),
-                ],
+                  return SettingPreminumCard(
+                    onUpgrade: () => const PaywallRoute().push(context),
+                  );
+                },
+              ),
+              24.verticalSpace,
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  return SettingSectionCard(
+                    title: context.text.setting.settingSectionHeaderGeneral,
+                    children: [
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icGlobe,
+                        title: context.text.setting.settingRowLanguage,
+                        trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
+                        onTap: () => const ChangeLanguageRoute().go(context),
+                      ),
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icCreditCard,
+                        title: context.text.setting.settingRowUpgradePremium,
+                        onTap: () => const ManageSubscriptionRoute().go(context),
+                      ),
+                      if (user.iapSubscriptions.isEmpty) ...[
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icSet,
+                          title: context.text.setting.settingRowRestorePurchase,
+                          onTap: () => context.read<IapCubit>().restorePurchases(),
+                        ),
+                      ],
+                    ],
+                  );
+                },
               ),
               24.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
@@ -52,11 +63,11 @@ class SettingPage extends StatelessWidget {
                   return SettingSectionCard(
                     title: context.text.setting.settingSectionHeaderAbout,
                     children: [
-                      if (kDebugMode)
-                        SettingOptionTile(
-                          iconAsset: AppAsset.svg.app.icShieldPlus,
-                          title: context.text.setting.settingAboutSectionTerm,
-                        ),
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icShieldPlus,
+                        title: context.text.setting.settingAboutSectionTerm,
+                        onTap: 'https://meup.training/terms-and-conditions.html'.launchURL,
+                      ),
                       if (!user.anonymous)
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icLogOut,

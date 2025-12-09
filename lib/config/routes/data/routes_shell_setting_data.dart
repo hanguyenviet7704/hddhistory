@@ -18,6 +18,7 @@ class SettingRoute extends BaseTransitionRouteData with $SettingRoute {
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
     ],
     child: const SettingPage(),
   );
@@ -64,4 +65,19 @@ class ChangeLanguageRoute extends GoRouteData with $ChangeLanguageRoute {
       builder: (_) => const ChangeLanguagePage(),
     );
   }
+}
+
+class ManageSubscriptionRoute extends BaseTransitionRouteData with $ManageSubscriptionRoute {
+  const ManageSubscriptionRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+    ],
+    child: const UserSubcriptionPage(),
+  );
 }

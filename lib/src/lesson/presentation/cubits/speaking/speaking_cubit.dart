@@ -3,11 +3,13 @@ part of '../../../lesson.dart';
 @lazySingleton
 class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<SpeakingState> {
   final SendVoiceFeedbackStreamUseCase _sendVoiceFeedbackStreamUseCase;
+  final SendScoreRecordUseCase _sendScoreRecordUseCase;
   final UploadCubit _uploadCubit;
   final LocaleCubit _localeCubit;
 
   SpeakingCubit(
     this._sendVoiceFeedbackStreamUseCase,
+    this._sendScoreRecordUseCase,
     this._uploadCubit,
     this._localeCubit,
   ) : super(SpeakingState.initial());
@@ -16,9 +18,14 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   Stream<Uint8List> get voiceFeedbackStream => _voiceFeedbackStream;
   StreamSubscription<String>? _streamSubscription;
   String _feedbackStream = '';
+  double _questionScore = 0;
 
   // Reset to initial state
-  void reset() => emit(SpeakingState.initial());
+  void reset() {
+    emit(SpeakingState.initial());
+    _questionScore = 0;
+  }
+
   void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
   void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
 
@@ -40,8 +47,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
   }
 
-  void startRecordingSession() {
+  Future<void> startRecordingSession() async {
     if (state.recordingState != SpeakingRecordingState.idle) return;
+
+    final hasPermission = await _ensureMicrophonePermission();
+    if (!hasPermission) return;
 
     final initialDuration = state.question.maxDuration > 0 ? Duration(seconds: state.question.maxDuration) : Duration.zero;
 
@@ -62,10 +72,48 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   void finishRecordingSession(String path) => emit(state.copyWith(recordingState: SpeakingRecordingState.stopped, audioFilePath: path));
   void cancelRecordingSession() => emit(state.copyWith(recordingState: SpeakingRecordingState.idle, audioFilePath: null, recordingDuration: Duration.zero));
   void updateMicrophonePermission(PermissionStatus status) => emit(state.copyWith(microphonePermission: status));
+  Future<bool> _ensureMicrophonePermission() async {
+    var status = await Permission.microphone.status;
+
+    // If already decided (granted or permanently denied), update state and short-circuit
+    if (status.isGranted) {
+      updateMicrophonePermission(status);
+      return true;
+    }
+
+    if (status.isPermanentlyDenied || status.isRestricted) {
+      updateMicrophonePermission(status);
+      setErrorMessage(_permissionMessage(status));
+      return false;
+    }
+
+    // Request runtime permission
+    status = await Permission.microphone.request();
+    updateMicrophonePermission(status);
+
+    if (status.isGranted) {
+      setErrorMessage(null);
+      return true;
+    }
+
+    setErrorMessage(_permissionMessage(status));
+    return false;
+  }
+
+  String _permissionMessage(PermissionStatus status) {
+    if (status.isPermanentlyDenied) {
+      return 'Microphone permission is permanently denied. Please enable it in app settings.';
+    }
+    if (status.isRestricted) {
+      return 'Microphone access is restricted on this device.';
+    }
+    return 'Microphone permission is required to record audio.';
+  }
 
   // Submit answer (recording or text)
   Future<void> submitAnswer() async {
     if (state.inputMode == SpeakingInputMode.recording) {
+      emit(state.copyWith(status: SpeakingStatus.success));
       if (state.audioFilePath == null) return;
       emit(state.copyWith(status: SpeakingStatus.loading));
       uploadAudioFile(state.audioFilePath!);
@@ -74,7 +122,8 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
     if (state.textInput.isEmpty) return;
     emit(state.copyWith(status: SpeakingStatus.success));
-    sendVoiceFeedback();
+    getVoiceFeedback();
+    getScoreRecord();
     emit(state.copyWith(status: SpeakingStatus.loading));
   }
 
@@ -82,13 +131,13 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     _uploadCubit.uploadFile(
       UploadFileParams(
         file: MultipartFile.fromFileSync(filePath),
-        key: DateTime.now().millisecondsSinceEpoch.toString(),
+        key: filePath.fileNameFromPath,
         prefix: 'audio_',
         folder: 'user_lesson',
       ),
       onSuccess: (result) {
-        emit(state.copyWith(status: SpeakingStatus.success));
-        sendVoiceFeedback(url: result.url);
+        getVoiceFeedback(url: result.url);
+        getScoreRecord(audioUrl: result.url);
       },
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
@@ -96,7 +145,40 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
   }
 
-  void sendVoiceFeedback({String? url}) async {
+  void getScoreRecord({String? audioUrl}) async {
+    final criteria = <String, int>{};
+    for (final scoringCriteria in state.question.scoringCriteria) {
+      criteria[scoringCriteria.criteria.text] = scoringCriteria.maxScore;
+    }
+
+    final theory = <String, String>{};
+    final keypoint = state.question.keypoint;
+    if (keypoint.title.text.isNotEmpty) {
+      theory[keypoint.title.text] = keypoint.description.text;
+    }
+
+    final isAudioMode = state.inputMode == SpeakingInputMode.recording;
+
+    final body = <String, dynamic>{
+      'question': state.question.speechBubble.text,
+      'criteria': criteria,
+      'theory': theory,
+      'user_answer_type': isAudioMode ? 'audio' : 'text',
+      if (!isAudioMode) 'answer_text': state.textInput,
+      if (isAudioMode && audioUrl != null) 'audio_url': audioUrl,
+    };
+
+    await runUseCase<VoiceScoreEntity>(
+      usecase: () => _sendScoreRecordUseCase(body),
+      buildLoadingState: () => state.copyWith(status: SpeakingStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
+      },
+      onSuccess: (result) => _questionScore = result.score,
+    );
+  }
+
+  void getVoiceFeedback({String? url}) async {
     await _streamSubscription?.cancel();
     _feedbackStream = '';
     emit(state.copyWith(goodPoints: const [], improvementPoints: const []));
@@ -104,13 +186,14 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     AppLocale localeType = _localeCubit.state;
     String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
     String? audioUrl = state.inputMode == SpeakingInputMode.recording ? url : null;
+    String knowledge = state.question.scoringCriteria.map((e) => e.criteria.text).join(' \n');
     await runUseCase<ResponseBody>(
       usecase: () => _sendVoiceFeedbackStreamUseCase.call(
         VoiceFeedbackRequest(
           inputType: state.inputMode == SpeakingInputMode.recording ? 'audio' : 'text',
           answerText: answerText,
           audioUrl: audioUrl,
-          knowledge: 'Machine Learning (học máy) là một nhánh của trí tuệ nhân tạo (AI), cho phép máy tính tự học từ dữ liệu mà không cần lập trình rõ ràng',
+          knowledge: knowledge,
           originLanguage: localeType.languageAISupport,
           languageFeedback: localeType.languageAISupport,
         ),
@@ -145,11 +228,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
                 if (_feedbackStream.isNotEmpty) {
                   setPoints();
                 }
-                emit(state.copyWith(status: SpeakingStatus.success));
+                // emit(state.copyWith(status: SpeakingStatus.success));
               },
               onError: (err) {
                 LogDev.one("❌ Stream error: $err");
-                emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: err.toString()));
+                // emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: err.toString()));
               },
             );
       },
@@ -216,9 +299,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   // Toggle explanation visibility
   void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
 
-  int pointCalculation() {
-    return 100;
-  }
+  int pointCalculation() => _questionScore.toInt();
 
   @override
   Future<void> close() async {

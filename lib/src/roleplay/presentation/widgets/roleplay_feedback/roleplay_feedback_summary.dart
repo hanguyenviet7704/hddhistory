@@ -5,16 +5,12 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoleplayPointCubit, RoleplayPointState, List<KeypointEntity>>(
-      selector: (state) => state.points,
-      builder: (context, points) {
-        if (points.isEmpty) return const SizedBox.shrink();
-
-        final List<KeypointEntity> sorted = List<KeypointEntity>.from(points)..sort((a, b) => b.point.compareTo(a.point));
-        final strengths = sorted.take(3).toList();
-        final usedIds = strengths.map((point) => point.id).toSet();
-        final weaknesses = sorted.reversed.where((point) => !usedIds.contains(point.id)).take(3).toList();
-
+    return BlocSelector<RoleplayCubit, RoleplayState, RoleplayFeedbackEntity>(
+      selector: (state) => state.feedback,
+      builder: (context, feedback) {
+        final strengths = feedback.strongestAreas.split('\n');
+        final weaknesses = feedback.whereToImproveNext.split('\n');
+        if (strengths.isEmpty || weaknesses.isEmpty) return const SizedBox.shrink();
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -32,6 +28,7 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
               title: context.text.roleplay.rolePlayResultFeedbackWeakness,
               items: weaknesses,
             ),
+            32.verticalSpace,
           ],
         );
       },
@@ -41,7 +38,7 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
 
 class _RoleplayFeedbackSummaryCard extends StatelessWidget {
   final String title;
-  final List<KeypointEntity> items;
+  final List<String> items;
 
   const _RoleplayFeedbackSummaryCard({required this.title, required this.items});
 
@@ -73,18 +70,12 @@ class _RoleplayFeedbackSummaryCard extends StatelessWidget {
             ),
           ),
           12.verticalSpace,
-          if (items.isEmpty)
-            AppText(
-              context.text.common.emptyList,
-              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-            )
-          else ...[
-            for (final item in items)
-              Padding(
-                padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8.h),
-                child: _RoleplayFeedbackSummaryRow(label: item.title.text),
-              ),
-          ],
+
+          for (final item in items)
+            Padding(
+              padding: EdgeInsets.only(bottom: item == items.last ? 0 : 8.h),
+              child: _RoleplayFeedbackSummaryRow(label: item),
+            ),
         ],
       ),
     );
@@ -98,28 +89,77 @@ class _RoleplayFeedbackSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (label.isEmpty) return _RoleplayFeedbackSummarySkeleton();
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
           width: 6.w,
           height: 6.w,
+          margin: EdgeInsets.only(top: 10.h),
           decoration: BoxDecoration(
             color: AppCustomColor.textBrand.op(0.16),
-            borderRadius: BorderRadius.circular(30.r),
+            shape: BoxShape.circle,
           ),
         ),
         8.horizontalSpace,
         Expanded(
           child: AppText(
-            label.isNotEmpty ? label : context.text.roleplay.rolePlayResultSkillset,
+            label.replaceAll('- ', ''),
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
               height: 1.7,
             ),
-            maxLines: 2,
+            maxLines: 10,
           ),
         ),
       ],
+    );
+  }
+}
+
+class _RoleplayFeedbackSummarySkeleton extends StatelessWidget {
+  const _RoleplayFeedbackSummarySkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: AppCustomColor.borderDefault.op(0.3),
+      highlightColor: AppCustomColor.backgroundWhite,
+      child: Column(
+        children: List.generate(
+          3,
+          (index) => Padding(
+            padding: EdgeInsets.only(bottom: index == 2 ? 0 : 8.h),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  width: 6.w,
+                  height: 6.w,
+                  margin: EdgeInsets.only(top: 7.h),
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.borderDefault,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                8.horizontalSpace,
+                Expanded(
+                  child: Container(
+                    height: 14.h,
+                    decoration: BoxDecoration(
+                      color: AppCustomColor.borderDefault,
+                      borderRadius: BorderRadius.circular(4.r),
+                    ),
+                  ),
+                ),
+                if (index != 1) 40.horizontalSpace,
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

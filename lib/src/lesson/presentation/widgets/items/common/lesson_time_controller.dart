@@ -288,22 +288,6 @@ class LessonTimeBanner extends StatefulWidget {
 
 class _LessonTimeBannerState extends State<LessonTimeBanner> {
   LessonTimeController? _controller;
-  int? _questionId;
-  int? _completionTime;
-
-  @override
-  void initState() {
-    super.initState();
-    _bootstrap();
-  }
-
-  void _bootstrap() {
-    final LessonCubit cubit = context.read<LessonCubit>();
-    _replaceController(
-      cubit.state.currentLessonQuestion,
-      shouldSetState: false,
-    );
-  }
 
   @override
   void dispose() {
@@ -311,9 +295,9 @@ class _LessonTimeBannerState extends State<LessonTimeBanner> {
     super.dispose();
   }
 
-  bool _hasQuestionChanged(LessonState previous, LessonState current) {
-    final QuestionEntity prevQuestion = previous.currentLessonQuestion;
-    final QuestionEntity currQuestion = current.currentLessonQuestion;
+  bool _hasQuestionChanged(ExerciseState previous, ExerciseState current) {
+    final QuestionEntity prevQuestion = previous.currentQuestion;
+    final QuestionEntity currQuestion = current.currentQuestion;
     return prevQuestion.id != currQuestion.id || prevQuestion.completionTime != currQuestion.completionTime;
   }
 
@@ -331,39 +315,27 @@ class _LessonTimeBannerState extends State<LessonTimeBanner> {
     return controller;
   }
 
-  void _replaceController(
-    QuestionEntity question, {
-    bool shouldSetState = true,
-  }) {
-    if (_questionId == question.id && _completionTime == question.completionTime) return;
-
-    final LessonTimeController? newController = _buildController(question);
-
-    void update() {
-      _controller?.dispose();
-      _controller = newController;
-      _questionId = question.id;
-      _completionTime = question.completionTime;
-    }
-
-    if (shouldSetState) {
-      setState(update);
-    } else {
-      update();
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    return BlocListener<LessonCubit, LessonState>(
-      listenWhen: _hasQuestionChanged,
-      listener: (context, state) {
-        _replaceController(state.currentLessonQuestion);
+    return BlocBuilder<ExerciseCubit, ExerciseState>(
+      buildWhen: _hasQuestionChanged,
+      builder: (context, state) {
+        // Replace controller when question changes so countdown restarts.
+        _controller?.dispose();
+        _controller = _buildController(state.currentQuestion);
+
+        if (_controller == null) return const SizedBox.shrink();
+
+        final String key = '${state.currentLearningItem.id}-${state.currentQuestion.id}-${state.currentQuestion.completionTime}';
+
+        return AnimatedSwitcher(
+          duration: const Duration(milliseconds: 200),
+          child: LessonTimeWidget(
+            key: ValueKey(key),
+            controller: _controller!,
+          ),
+        );
       },
-      child: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: _controller == null ? const SizedBox.shrink() : LessonTimeWidget(controller: _controller!),
-      ),
     );
   }
 }

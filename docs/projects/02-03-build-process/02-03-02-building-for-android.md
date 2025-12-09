@@ -4,28 +4,25 @@ This document provides detailed instructions for building Android applications i
 
 ## Build Scripts for Android
 
-The project provides two main Android build scripts:
+Use the platform-matched scripts (interface is the same):
 
 ### APK Build Script
-**File**: `tools/macos/build/build_apk.sh`
+**File**: `tools/<os>/build/build_apk.(sh|bat)` (`macos` / `linux` / `windows`)
 **Purpose**: Generate Android APK files for testing and distribution
 
 ### App Bundle Build Script  
-**File**: `tools/macos/build/build_appbundle.sh`
+**File**: `tools/<os>/build/build_appbundle.(sh|bat)`
 **Purpose**: Generate Android App Bundles for Google Play Store distribution
 
 ## Building APKs
 
 ### Basic Usage
 ```bash
-# Build development APK
-sh tools/macos/build/build_apk.sh dev
+# macOS / Linux
+sh tools/macos/build/build_apk.sh dev   # or tools/linux/... for Linux
 
-# Build staging APK
-sh tools/macos/build/build_apk.sh stg
-
-# Build production APK
-sh tools/macos/build/build_apk.sh prod
+# Windows
+tools\\windows\\build\\build_apk.bat dev
 ```
 
 ### Advanced Options
@@ -80,14 +77,11 @@ build/app/outputs/flutter-apk/
 
 ### Basic Usage
 ```bash
-# Build development App Bundle
-sh tools/macos/build/build_appbundle.sh dev
+# macOS / Linux
+sh tools/macos/build/build_appbundle.sh dev   # or tools/linux/... for Linux
 
-# Build staging App Bundle
-sh tools/macos/build/build_appbundle.sh stg
-
-# Build production App Bundle
-sh tools/macos/build/build_appbundle.sh prod
+# Windows
+tools\\windows\\build\\build_appbundle.bat dev
 ```
 
 ### App Bundle Benefits
@@ -122,7 +116,7 @@ build/app/outputs/bundle/
 
 ## Manual Build Commands
 
-If you need to build without scripts (e.g., on Windows/Linux):
+If you prefer raw Flutter commands (for debugging CI or investigating build issues):
 
 ### APK Build
 ```bash

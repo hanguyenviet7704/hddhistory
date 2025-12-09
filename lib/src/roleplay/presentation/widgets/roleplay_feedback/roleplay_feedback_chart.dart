@@ -27,13 +27,16 @@ class _RoleplayRadarChart extends StatelessWidget {
 
   final List<KeypointEntity> points;
   static const int _tickCount = 5;
+  static const double _maxChartValue = 100;
 
   @override
   Widget build(BuildContext context) {
+    final chartEntries = points.map((point) => RadarEntry(value: _clampPoint(point.point.toDouble()))).toList();
+
     final chartData = RadarChartData(
       dataSets: [
         RadarDataSet(
-          dataEntries: points.map((point) => RadarEntry(value: point.point.toDouble())).toList(),
+          dataEntries: chartEntries,
           fillGradient: LinearGradient(
             colors: [
               AppCustomColor.brandPrimary.op(0.18),
@@ -46,6 +49,8 @@ class _RoleplayRadarChart extends StatelessWidget {
           borderWidth: 2.w,
           entryRadius: 0,
         ),
+        _buildInvisibleBoundaryDataSet(_maxChartValue),
+        _buildInvisibleBoundaryDataSet(0),
       ],
       radarShape: RadarShape.polygon,
       radarBorderData: BorderSide(color: AppCustomColor.roleplayFeedbackRadarGrid, width: 1.5),
@@ -59,6 +64,7 @@ class _RoleplayRadarChart extends StatelessWidget {
       radarTouchData: RadarTouchData(enabled: true),
       titlePositionPercentageOffset: 0.2,
       borderData: FlBorderData(show: false),
+      isMinValueAtCenter: true,
     );
 
     return LayoutBuilder(
@@ -79,16 +85,12 @@ class _RoleplayRadarChart extends StatelessWidget {
   List<Widget> _buildColorDots(Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = math.min(center.dx, center.dy) * 0.8;
-    final List<double> values = points.map((point) => point.point.toDouble()).toList();
-    final double maxValue = values.reduce(math.max);
-    final double minValue = values.reduce(math.min);
-    final double tickSpace = _getTickSpace(maxValue, minValue);
-    final double centerValue = maxValue == minValue ? 0 : minValue - tickSpace;
-    final double denominator = (maxValue - centerValue).abs() < 0.0001 ? 0.001 : maxValue - centerValue;
+    final List<double> values = points.map((point) => _clampPoint(point.point.toDouble())).toList();
+    final double denominator = _maxChartValue;
     final double angleStep = (2 * math.pi) / points.length;
 
     return List<Widget>.generate(points.length, (index) {
-      final double scaledPoint = radius * ((values[index] - centerValue) / denominator);
+      final double scaledPoint = radius * (values[index] / denominator);
       final double angle = angleStep * index - math.pi / 2;
       final double dx = center.dx + scaledPoint * math.cos(angle);
       final double dy = center.dy + scaledPoint * math.sin(angle);
@@ -117,12 +119,20 @@ class _RoleplayRadarChart extends StatelessWidget {
     });
   }
 
-  double _getTickSpace(double maxValue, double minValue) {
-    if ((maxValue - minValue).abs() < 0.0001) {
-      return (maxValue - 0) / (_tickCount + 1);
-    }
-    return (maxValue - minValue) / _tickCount;
+  RadarDataSet _buildInvisibleBoundaryDataSet(double value) {
+    return RadarDataSet(
+      dataEntries: List<RadarEntry>.generate(
+        points.length,
+        (_) => RadarEntry(value: value),
+      ),
+      fillColor: Colors.transparent,
+      borderColor: Colors.transparent,
+      borderWidth: 0,
+      entryRadius: 0,
+    );
   }
+
+  double _clampPoint(double value) => value.clamp(0, _maxChartValue).toDouble();
 }
 
 class _RoleplayChartPlaceholder extends StatelessWidget {

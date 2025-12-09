@@ -38,16 +38,16 @@ class SkillsetCardWidget extends StatelessWidget {
                   AppText(
                     skillset.title.text,
                     style: AppStyle.textBold14.copyWith(
-                      color: AppCustomColor.black36,
+                      color: AppCustomColor.textPrimary,
                     ),
                     maxLines: 2,
                   ),
                   4.verticalSpace,
                   // Course count
                   AppText(
-                    '${skillset.courses.length} courses',
+                    context.text.home.coursesCount(count: skillset.courses.length),
                     style: AppStyle.text12.copyWith(
-                      color: AppCustomColor.grey69,
+                      color: AppCustomColor.textTertiary,
                     ),
                     maxLines: 1,
                   ),
@@ -66,7 +66,7 @@ class SkillsetCardWidget extends StatelessWidget {
                     )
                   : Icon(
                       Icons.category,
-                      color: AppCustomColor.grey9A,
+                      color: AppCustomColor.textTertiary,
                       size: 40.w,
                     ),
             ),

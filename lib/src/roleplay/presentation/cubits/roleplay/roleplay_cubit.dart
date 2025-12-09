@@ -3,9 +3,11 @@ part of '../../../roleplay.dart';
 @lazySingleton
 class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<RoleplayState> {
   final GetRoleplayLearningItemUseCase _getLearningItemUseCase;
+  final SendFeedbackRoleplayUseCase _sendFeedbackRoleplayUseCase;
 
   RoleplayCubit(
     this._getLearningItemUseCase,
+    this._sendFeedbackRoleplayUseCase,
   ) : super(RoleplayState.initial());
 
   LessonEntity lesson = LessonEntity();
@@ -23,6 +25,26 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     AppDI.injector.get<LessonCubit>().setLearningItemFromRoleplay(learningItem);
   }
 
+  void goToNextSection() {
+    final nextIndex = state.currentSectionIndex + 1;
+    if (nextIndex >= state.currentLearningItem.sections.length) {
+      AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
+      _sendFeedback();
+      RoleplayCompleteRoute().go(AppConfig.instance.context!);
+      return;
+    }
+    emit(state.copyWith(currentSectionIndex: nextIndex, isCurrentSectionRevealed: false));
+    if (state.currentSection.contents.last.type == RoleplaySectionType.exercise) {
+      setLearningItemToLessonCubit();
+      LessonRoute().push(AppConfig.instance.context!);
+    }
+  }
+
+  void setCurrentSectionRevealed(bool isRevealed) {
+    if (state.isCurrentSectionRevealed == isRevealed) return;
+    emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
+  }
+
   void loadLearningItem(String id, {BaseMultiLanguage? estimateCompleTime}) async {
     await runUseCase<LearningItemEntity>(
       usecase: () => _getLearningItemUseCase(id),
@@ -37,22 +59,34 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     );
   }
 
-  void goToNextSection() {
-    final nextIndex = state.currentSectionIndex + 1;
-    if (nextIndex >= state.currentLearningItem.sections.length) {
-      AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
-      RoleplayFeedbackRoute().go(AppConfig.instance.context!);
-      return;
-    }
-    emit(state.copyWith(currentSectionIndex: nextIndex, isCurrentSectionRevealed: false));
-    if (state.currentSection.contents.last.type == RoleplaySectionType.exercise) {
-      setLearningItemToLessonCubit();
-      LessonRoute().push(AppConfig.instance.context!);
-    }
-  }
+  void _sendFeedback() async {
+    final points = AppDI.injector.get<RoleplayPointCubit>().state.points;
+    final languageCode = AppDI.injector.get<LocaleCubit>().state.languageCode;
 
-  void setCurrentSectionRevealed(bool isRevealed) {
-    if (state.isCurrentSectionRevealed == isRevealed) return;
-    emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
+    final theory = <String, String>{};
+    final keypointScore = <String, int>{};
+
+    for (final keypoint in points) {
+      final title = keypoint.title.text;
+      theory[title] = keypoint.description.text;
+      keypointScore[title] = keypoint.point;
+    }
+
+    final body = <String, dynamic>{
+      'theory': theory,
+      'keypoint_score': keypointScore,
+      'language_feedback': languageCode,
+    };
+
+    await runUseCase<RoleplayFeedbackEntity>(
+      usecase: () => _sendFeedbackRoleplayUseCase(body),
+      buildLoadingState: () => state.copyWith(status: RoleplayStatus.loading),
+      onFailure: (error) {
+        emit(state.copyWith(status: RoleplayStatus.failure, errorMessage: error));
+      },
+      onSuccess: (feedback) {
+        emit(state.copyWith(status: RoleplayStatus.success, feedback: feedback));
+      },
+    );
   }
 }

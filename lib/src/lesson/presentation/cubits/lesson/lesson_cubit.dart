@@ -18,6 +18,11 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._theoryCubit,
   ) : super(LessonState.initial());
 
+
+  void reset() => emit(LessonState.initial());
+  void setIsShowResultOverlay(bool value) => emit(state.copyWith(isShowResultOverlay: value));
+  
+
   //* Roleplay Page Flow
   void setLearningItemFromRoleplay(LearningItemEntity learningItem) {
     emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem]), currentLearningItemIndex: 0));
@@ -128,12 +133,15 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     // Prevent loading if already on last page (unless it's init)
     if (!isInit && state.pageData.isLastPage) return;
 
-    PageBreakRequest<LearningItemFilter> pageRequest;
-    pageRequest = isInit
-        ? PageBreakRequest<LearningItemFilter>(filter: LearningItemFilter(keypointId: keypointId))
+    LearningItemFilter filter = LearningItemFilter(keypointId: keypointId);
+
+    PageBreakRequest<LearningItemFilter> pageRequest = isInit
+        ? PageBreakRequest<LearningItemFilter>(filter: filter, orderBy: 'index', order: PageBreakOrder.asc)
         : PageBreakRequest<LearningItemFilter>(
             page: state.pageData.nextPage,
-            filter: LearningItemFilter(keypointId: keypointId),
+            filter: filter,
+            orderBy: 'index',
+            order: PageBreakOrder.asc,
           );
 
     await runUseCasePageBreak<LearningItemEntity>(
@@ -164,7 +172,7 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   void loadLearningItem(String id, {void Function(LearningItemEntity)? onSuccess}) async {
     await runUseCase<LearningItemEntity>(
       usecase: () => _getLearningItemUseCase(id),
-      buildLoadingState: () => state.copyWith(status: LessonStatus.loading),
+      // buildLoadingState: () => state.copyWith(status: LessonStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: LessonStatus.failure, errorMessage: error));
       },

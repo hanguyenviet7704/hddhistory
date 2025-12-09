@@ -6,6 +6,7 @@ class ErrorContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.select((SpeakingCubit cubit) => cubit.state);
+    final permission = state.microphonePermission;
     return Container(
       width: double.infinity,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
@@ -32,6 +33,25 @@ class ErrorContainer extends StatelessWidget {
             ),
             textAlign: TextAlign.center,
           ),
+          if (permission != null && !permission.isPermanentlyDenied && !permission.isRestricted) ...[
+            12.verticalSpace,
+            GestureDetector(
+              onTap: () => unawaited(context.read<SpeakingCubit>().startRecordingSession()),
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF554FF0),
+                  borderRadius: BorderRadius.circular(8.r),
+                ),
+                child: Text(
+                  'Try again',
+                  style: AppStyle.textBold14.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ],
           if (state.microphonePermission?.isPermanentlyDenied == true) ...[
             12.verticalSpace,
             GestureDetector(

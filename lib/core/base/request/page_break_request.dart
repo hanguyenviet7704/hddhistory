@@ -10,7 +10,7 @@ abstract class PageBreakRequest<T extends JsonRequestConvertible> with _$PageBre
     @Default(1) int page,
     @JsonKey(name: 'take') @Default(10) int limit,
     @JsonKey(name: 'orderBy') @Default('createdAt') String orderBy,
-    @JsonKey(name: 'order') @Default(PageBreakOrder.asc) PageBreakOrder order,
+    @JsonKey(name: 'order') @Default(PageBreakOrder.desc) PageBreakOrder order,
     @JsonKey(name: 'search') String? search,
     T? filter,
   }) = _PageBreakRequest<T>;
@@ -24,7 +24,7 @@ abstract class PageBreakRequest<T extends JsonRequestConvertible> with _$PageBre
     final page = json['page'] as int? ?? 1;
     final limit = json['take'] as int? ?? 10;
     final orderBy = json['orderBy'] as String? ?? 'createdAt';
-    final orderValue = json['order'] as String? ?? 'asc';
+    final orderValue = json['order'] as String? ?? 'desc';
     final order = orderValue == 'desc' ? PageBreakOrder.desc : PageBreakOrder.asc;
     final search = json['search'] as String?;
 

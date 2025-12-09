@@ -75,13 +75,13 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                   items: [
                     _PracticeLevelItem(
                       level: StrengthLevel.weakPoint,
-                      title: context.text.keypoint.keypointWeakpointTitle,
+                      title: StrengthLevel.weakPoint.title(context),
                       description: context.text.keypoint.keypointWeakpointMessage,
                       showPoint: showPoint,
                     ),
                     _PracticeLevelItem(
                       level: StrengthLevel.morePractice,
-                      title: context.text.keypoint.keypointImprovementTitle,
+                      title: StrengthLevel.morePractice.title(context),
                       description: context.text.keypoint.keypointImprovementMessage,
                       showPoint: showPoint,
                     ),
@@ -99,7 +99,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                   items: [
                     _PracticeLevelItem(
                       level: StrengthLevel.optionalPractice,
-                      title: context.text.keypoint.keypointSkipOptionPracticeType,
+                      title: StrengthLevel.optionalPractice.title(context),
                       description: context.text.keypoint.keypointSkipOptionPracticeTypeStatus,
                       showPoint: showPoint,
                     ),

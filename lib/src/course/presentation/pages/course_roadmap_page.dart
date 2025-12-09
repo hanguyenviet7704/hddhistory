@@ -7,11 +7,25 @@ class CourseRoadmapPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
-      body: Column(
-        children: [
-          TopProgressBar(),
-          CourseRoadmapContent(),
-        ],
+      body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
+        selector: (state) => state.status == CourseRoadmapStatus.loading && state.roadmap.levels.isEmpty,
+        builder: (context, isLoading) {
+          if (isLoading) {
+            return const Center(
+              child: CircularProgressIndicator(
+                color: AppCustomColor.brandPrimary,
+              ),
+            );
+          }
+          return SafeBody(
+            child: Column(
+              children: [
+                TopProgressBar(),
+                CourseRoadmapContent(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

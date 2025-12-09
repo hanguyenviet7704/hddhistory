@@ -135,7 +135,7 @@ class SubActionItem extends StatelessWidget {
         decoration: BoxDecoration(
           shape: BoxShape.circle,
           color: AppColorLight.surface,
-          border: Border.all(color: AppCustomColor.orage4DF5),
+          border: Border.all(color: AppCustomColor.brandPrimary),
         ),
         child: icon,
       ),

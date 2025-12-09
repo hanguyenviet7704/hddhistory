@@ -32,18 +32,20 @@ Each environment corresponds to a Flutter flavor:
 | Production | `prod` | `lib/main_prod.dart` | `.env/.env.prod` |
 
 ### Build Script Integration
-Custom build scripts in `tools/macos/build/` automate the entire build process:
+Custom build scripts in `tools/<os>/build/` (replace `<os>` with `macos`, `linux`, or `windows`) automate Android builds; iOS/IPA lives in `tools/macos/build/` only.
 
 ```bash
 # Build Android APK
-sh tools/macos/build/build_apk.sh [dev|stg|prod]
+sh tools/<os>/build/build_apk.sh [dev|stg|prod]
 
 # Build Android App Bundle
-sh tools/macos/build/build_appbundle.sh [dev|stg|prod]
+sh tools/<os>/build/build_appbundle.sh [dev|stg|prod]
 
-# Build iOS App
+# Build iOS App (macOS only)
 sh tools/macos/build/build_ios.sh [dev|stg|prod]
 ```
+
+Run `tools/smoke.sh` (or `tools\\windows\\smoke.bat`) after editing scripts to ensure the CLI surface still works.
 
 ## Build Process Flow
 

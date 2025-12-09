@@ -37,8 +37,8 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
 
   /// Check if the current order matches the correct answer
   void checkAnswer() {
-    final currentOrder = state.currentItems.map((item) => item.id).toList();
-    final correctOrder = state.question.answer.map((answer) => answer.id).toList();
+    final List<String> currentOrder = state.currentItems.map((item) => item.text.text).toList();
+    final List<String> correctOrder = state.question.answer.map((answer) => answer.correctAnswer.text).toList();
 
     // Compare the two lists
     final isCorrect = _listsEqual(currentOrder, correctOrder);

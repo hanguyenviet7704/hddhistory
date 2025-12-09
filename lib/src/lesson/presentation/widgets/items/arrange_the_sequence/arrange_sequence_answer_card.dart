@@ -61,7 +61,7 @@ class ArrangeSequenceAnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconColor = AppCustomColor.greyCD.withValues(alpha: dragEnabled ? 1 : 0.6);
+    final iconColor = AppCustomColor.textTertiary.withValues(alpha: dragEnabled ? 1 : 0.6);
 
     return Material(
       color: Colors.transparent,

@@ -5,9 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
-import 'package:in_app_purchase/in_app_purchase.dart';
-//* Import all local files here
-import 'package:meup/core/helpers/helpers.dart';
 import 'package:meup/src/auth/auth.dart';
 
 //* Import all dependencies here
@@ -17,10 +14,6 @@ import '../datasources/graphql/graphql.dart';
 
 //* Import all models here
 part 'iap/active_product.dart';
-part 'iap/feature.dart';
-part 'iap/iap_product.dart';
-part 'iap/iap_verify.dart';
-part 'iap/payment_provider.dart';
 part 'info/app_intro.dart';
 part 'info/contact.dart';
 part 'models.freezed.dart';

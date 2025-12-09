@@ -30,4 +30,34 @@ extension LessonEntityListExtension on List<LessonEntity> {
     }
     return LessonEntity();
   }
+
+  // Premium Lesson starts from the second roleplay lesson in the list
+  // Returns the index of the second roleplay (first premium lesson), or -1 if none
+  int get premiumLessonIndex {
+    int roleplayCount = 0;
+    for (int i = 0; i < length; i++) {
+      if (elementAt(i).type == LessonType.roleplay) {
+        roleplayCount++;
+        if (roleplayCount == 2) {
+          return i;
+        }
+      }
+    }
+    return -1;
+  }
+
+  // Check if a lesson at the given index is a premium lesson
+  bool isPremiumLessonAt(int lessonIndex) {
+    int premiumIndex = premiumLessonIndex;
+    if (premiumIndex == -1) return false;
+    return lessonIndex >= premiumIndex;
+  }
+}
+
+extension LessonEntityExtension on LessonEntity {
+  List<KeypointEntity> get sortedKeypoints {
+    List<KeypointEntity> sortedKeypoints = List<KeypointEntity>.from(keypoints);
+    sortedKeypoints.sort((a, b) => a.strengthLevel.index.compareTo(b.strengthLevel.index));
+    return sortedKeypoints;
+  }
 }

@@ -5,22 +5,35 @@ class LessonProgressBar extends StatelessWidget {
     super.key,
   });
 
+  void _onCloseTap(BuildContext context) {
+    bool isShowResultOverlay = AppDI.injector.get<LessonCubit>().state.isShowResultOverlay;
+    if (isShowResultOverlay) return;
+
+    ClosePopupLesson.show(
+      context,
+      onQuit: () {
+        LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+        context.back();
+
+        if (learningItem.type != LearningItemType.roleplay) {
+          context.back();
+        }
+        CourseRoadmapRoute().go(context);
+        context.read<PageCubit>().setCurrentIndex(1);
+      },
+      onKeepLearning: () {
+        context.back();
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
         20.horizontalSpace,
         InkWell(
-          onTap: () => ClosePopupLesson.show(
-            context,
-            onQuit: () {
-              context.back();
-              context.back();
-            },
-            onKeepLearning: () {
-              context.back();
-            },
-          ),
+          onTap: () => _onCloseTap(context),
           child: Icon(
             Icons.close_rounded,
             color: const Color(0xFF0D121C), // Brand/Brand/Primary/300
@@ -47,21 +60,21 @@ class LessonProgressBar extends StatelessWidget {
           ),
         ),
 
-        BlocSelector<LessonCubit, LessonState, LearningItemType>(
-          selector: (state) => state.currentLearningItem.type,
-          builder: (context, learningItemType) {
-            if (learningItemType != LearningItemType.roleplay) {
-              return const SizedBox.shrink();
-            }
-            
-            return Row(
-              children: [
-                20.horizontalSpace,
-                LessonTimeBanner(onDone: () => context.read<ExerciseCubit>().nextQuestion()),
-              ],
-            );
-          },
-        ),
+        // BlocSelector<LessonCubit, LessonState, LearningItemType>(
+        //   selector: (state) => state.currentLearningItem.type,
+        //   builder: (context, learningItemType) {
+        //     if (learningItemType != LearningItemType.roleplay) {
+        //       return const SizedBox.shrink();
+        //     }
+
+        //     return Row(
+        //       children: [
+        //         20.horizontalSpace,
+        //         LessonTimeBanner(onDone: () => context.read<ExerciseCubit>().nextQuestion()),
+        //       ],
+        //     );
+        //   },
+        // ),
         20.horizontalSpace,
       ],
     );

@@ -21,7 +21,7 @@ class ChooseLanguagePage extends StatelessWidget {
               AppText(
                 'Select language',
                 style: AppStyle.textBold20.copyWith(
-                  color: AppCustomColor.black36,
+                  color: AppCustomColor.textPrimary,
                 ),
                 textAlign: TextAlign.center,
               ),
@@ -86,7 +86,7 @@ class _LanguageOption extends StatelessWidget {
           color: isSelected ? Colors.white : Colors.white,
           borderRadius: BorderRadius.circular(12.r),
           border: Border.all(
-            color: isSelected ? AppCustomColor.blue55 : AppCustomColor.greyE3,
+            color: isSelected ? AppCustomColor.brandPrimary50 : AppCustomColor.borderSecondary,
             width: 2,
           ),
         ),
@@ -107,7 +107,7 @@ class _LanguageOption extends StatelessWidget {
             AppText(
               languageName,
               style: AppStyle.textBold16.copyWith(
-                color: isSelected ? AppCustomColor.black0D : AppCustomColor.grey69,
+                color: isSelected ? AppCustomColor.textPrimary : AppCustomColor.textTertiary,
               ),
               textAlign: TextAlign.center,
             ),

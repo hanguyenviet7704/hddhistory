@@ -1,6 +1,15 @@
 part of '../services.dart';
 
-enum PurchaseType { consumable, nonConsumable, subscription }
+enum ProductType {
+  @JsonValue('consumable')
+  consumable,
+  @JsonValue('non_consumable')
+  nonConsumable,
+  @JsonValue('subscription_auto_renew')
+  subscriptionAutoRenew,
+  @JsonValue('subscription_non_renew')
+  subscriptionNonRenew,
+}
 
 @LazySingleton(as: IIapService)
 class IAPService implements IIapService {
@@ -37,20 +46,37 @@ class IAPService implements IIapService {
       if (!_available) return;
 
       final ProductDetailsResponse response = await _inAppPurchase.queryProductDetails(productIds);
+
+      if (response.error != null) {
+        throw InAppPurchaseException(
+          source: response.error?.source ?? 'unknown',
+          code: response.error!.code,
+          message: response.error!.message,
+        );
+      }
+
+      if (response.notFoundIDs.isNotEmpty) {
+        LogDev.warning('IAP products not found: ${response.notFoundIDs.join(', ')}');
+      }
+
       _products.addAll(response.productDetails);
     });
     return _products;
   }
 
   @override
-  Future<bool> purchaseProduct(String productId, PurchaseType type) async {
-    final product = _products.firstWhere((element) => element.id == productId);
+  Future<bool> purchaseProduct(String productId, ProductType type) async {
+    final product = _products.firstWhere(
+      (element) => element.id == productId,
+      orElse: () => throw InAppPurchaseException(source: 'client', code: 'product_not_loaded', message: 'Product $productId not loaded'),
+    );
     final purchaseParam = PurchaseParam(productDetails: product);
 
     return switch (type) {
-      PurchaseType.consumable => await _inAppPurchase.buyConsumable(purchaseParam: purchaseParam),
-      PurchaseType.nonConsumable => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
-      PurchaseType.subscription => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
+      ProductType.consumable => await _inAppPurchase.buyConsumable(purchaseParam: purchaseParam, autoConsume: true),
+      ProductType.nonConsumable => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
+      ProductType.subscriptionAutoRenew => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
+      ProductType.subscriptionNonRenew => await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam),
     };
   }
 
@@ -67,7 +93,7 @@ class IAPService implements IIapService {
   @override
   Future<void> completePurchase(PurchaseDetails purchaseDetails) async {
     _safeCall(() async {
-      if (!purchaseDetails.pendingCompletePurchase) return;
+      // if (!purchaseDetails.pendingCompletePurchase) return;
       await _inAppPurchase.completePurchase(purchaseDetails);
     });
   }
@@ -101,7 +127,7 @@ extension ProductDetailsExtension on ProductDetails {
 }
 
 extension ListProductDetailsExtension on List<ProductDetails> {
-  List<IapProduct> toIapProducts() => map((e) => IapProductExtension.fromProductDetails(e)).toList();
+  List<IapProductModel> toIapProducts() => map((e) => IapProductModelExtension.fromProductDetails(e)).toList();
 }
 
 extension PurchaseDetailsExtension on PurchaseDetails {

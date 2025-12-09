@@ -121,10 +121,11 @@ exit /b 1
 echo Usage: localization.bat [pull^|migrate^|push^|validate^|slang^|cache-gids] [options]
 echo.
 echo Commands:
-echo   pull                      Fetch active sheet -^> YAML + records.json
+echo   pull [--sheet-gids "1 2"] Fetch active sheet -^> YAML + records.json (optionally restrict gids)
 echo   migrate [--source sheet^|arb] [--apply]
 echo                             Import legacy sheet/ARB -^> YAML (optionally push)
-echo   push [--apply]            Push records.json to active sheet (dry-run by default)
+echo   push [--apply] [--sheet-gids "1 2"]
+echo                             Push records.json^/YAML to active sheet (dry-run by default; optional gids)
 echo   validate                  Validate local records.json
 echo   slang                     Run slang generator (flutter pub run slang)
 echo   cache-gids [--ensure-readme]
@@ -132,8 +133,10 @@ echo                             Refresh tab gid cache into .info/app/localizati
 echo.
 echo Examples:
 echo   localization.bat pull
+echo   localization.bat pull --sheet-gids "324747030"
 echo   localization.bat migrate --source sheet --apply
 echo   localization.bat push --apply
+echo   localization.bat push --sheet-gids "1167029718 324747030" --apply
 echo   localization.bat validate
 echo   localization.bat slang
 exit /b 0

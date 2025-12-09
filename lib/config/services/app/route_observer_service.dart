@@ -4,9 +4,10 @@ extension on Route<dynamic> {
   String get str => 'route(${settings.name}: ${settings.arguments})';
 }
 
-abstract class BaseRouterObserver extends NavigatorObserver {
+class BaseRouterObserver extends NavigatorObserver {
   final String observerName;
-  BaseRouterObserver(this.observerName);
+  final PageCubit _pageCubit;
+  BaseRouterObserver(this.observerName, this._pageCubit);
 
   @override
   void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
@@ -53,44 +54,60 @@ abstract class BaseRouterObserver extends NavigatorObserver {
 
   // Override this to handle route changes
   void onRouteChanged(Route<dynamic>? route) {
-    AppConfig.instance.context?.read<PageCubit>().setCurrentRouteName(route?.settings.name ?? '');
+    _pageCubit.setCurrentRouteName(route?.settings.name ?? '');
   }
 
   void onPopRoute(Route<dynamic>? route) {
-    AppConfig.instance.context?.read<PageCubit>().removeNavigationHistory(route?.settings.name ?? '');
+    _pageCubit.removeNavigationHistory(route?.settings.name ?? '');
   }
 
   void onClearRoute() {
-    AppConfig.instance.context?.read<PageCubit>().clearNavigationHistory();
+    _pageCubit.clearNavigationHistory();
   }
 
   void onPushRoute(Route<dynamic> route) {
-    AppConfig.instance.context?.read<PageCubit>().addNavigationHistory(route.settings.name ?? '');
+    _pageCubit.addNavigationHistory(route.settings.name ?? '');
     AppService.instance.appTrackingService.trackScreenView(route.settings.name ?? '');
   }
 
   void onReplaceRoute(Route<dynamic>? newRoute, Route<dynamic>? oldRoute) {
-    AppConfig.instance.context?.read<PageCubit>().replaceNavigationHistory(newRoute?.settings.name ?? '', oldRoute?.settings.name ?? '');
+    _pageCubit.replaceNavigationHistory(newRoute?.settings.name ?? '', oldRoute?.settings.name ?? '');
     AppService.instance.appTrackingService.trackScreenView(newRoute?.settings.name ?? '');
   }
 
   void onRemoveRoute(Route<dynamic>? route) {
-    AppConfig.instance.context?.read<PageCubit>().removeNavigationHistory(route?.settings.name ?? '');
+    _pageCubit.removeNavigationHistory(route?.settings.name ?? '');
   }
 }
 
+@LazySingleton(as: NavigatorObserver)
+@Named(DIKey.appRouterObserver)
 class AppRouterObserver extends BaseRouterObserver {
-  AppRouterObserver() : super('AppRouterObserver');
+  AppRouterObserver(
+    PageCubit pageCubit,
+  ) : super('AppRouterObserver', pageCubit);
 }
 
+@LazySingleton(as: NavigatorObserver)
+@Named(DIKey.homeRouterObserver)
 class HomeRouterObserver extends BaseRouterObserver {
-  HomeRouterObserver() : super('HomeRouterObserver');
+  HomeRouterObserver(
+    PageCubit pageCubit,
+  ) : super('HomeRouterObserver', pageCubit);
 }
 
+@LazySingleton(as: NavigatorObserver)
+@Named(DIKey.courseRouterObserver)
 class CourseRouterObserver extends BaseRouterObserver {
-  CourseRouterObserver() : super('CourseRouterObserver');
+  CourseRouterObserver(
+    PageCubit pageCubit,
+  ) : super('CourseRouterObserver', pageCubit);
 }
 
+@LazySingleton(as: NavigatorObserver)
+@Named(DIKey.settingRouterObserver)
 class SettingRouterObserver extends BaseRouterObserver {
-  SettingRouterObserver() : super('SettingRouterObserver');
+  SettingRouterObserver(
+    PageCubit pageCubit,
+  ) : super('SettingRouterObserver', pageCubit);
 }

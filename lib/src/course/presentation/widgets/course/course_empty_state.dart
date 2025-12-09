@@ -7,7 +7,7 @@ class CourseEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: AppText(
-        'No courses available',
+        context.text.allcourse.emptyState,
         style: AppStyle.text14.copyWith(
           color: AppCustomColor.textTertiary,
         ),

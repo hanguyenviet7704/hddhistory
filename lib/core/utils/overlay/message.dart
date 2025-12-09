@@ -25,21 +25,21 @@ class OverlayMessage extends StatelessWidget {
     this.message = '',
     this.messageWidget,
     this.type = MessageType.danger,
-    this.duration = const Duration(seconds: 3),
+    this.duration = const Duration(seconds: 2),
     this.action,
-    this.margin = const EdgeInsets.symmetric(horizontal: 20, vertical: 40),
-    this.padding = const EdgeInsets.symmetric(horizontal: 24, vertical: 15),
-    this.elevation = 1.5,
+    this.margin = const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+    this.padding = const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+    this.elevation = 1.25,
     this.dismissDirection,
     this.onVisible,
     this.onTap,
     this.shape = const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(12))),
-    this.showCloseIcon = true,
+    this.showCloseIcon = false,
     this.closeIconColor,
     this.width,
     this.messageAlignment = Alignment.topCenter,
-    this.leadingSpace = 10,
-    this.trailingSpace = 14,
+    this.leadingSpace = 8,
+    this.trailingSpace = 10,
   }) : assert(message.isNotEmpty || messageWidget != null, 'Message or messageWidget must not be null or empty');
 
   /// Get slide direction based on message alignment
@@ -78,9 +78,9 @@ class OverlayMessage extends StatelessWidget {
                 borderRadius: (shape as RoundedRectangleBorder).borderRadius,
                 boxShadow: [
                   BoxShadow(
-                    color: type.color.op(0.3),
-                    blurRadius: elevation * 2,
-                    offset: const Offset(0, 1),
+                    color: type.color.op(0.18),
+                    blurRadius: elevation * 4,
+                    offset: const Offset(0, 2),
                   ),
                 ],
               ),
@@ -93,13 +93,13 @@ class OverlayMessage extends StatelessWidget {
                           SvgPicture.asset(
                             type.svgIcon,
                             colorFilter: ColorFilter.mode(type.color, BlendMode.srcIn),
-                            width: 21.5.w,
-                            height: 21.5.w,
+                            width: 18.w,
+                            height: 18.w,
                           ),
                           leadingSpace.horizontalSpace,
                           AppText(
                             message,
-                            style: AppStyle.text18.copyWith(color: type.color),
+                            style: AppStyle.text12.copyWith(color: type.color, height: 1.4),
                             textAlign: TextAlign.left,
                             maxLines: 2,
                             expandedType: ExpandedType.flex,
@@ -122,23 +122,23 @@ class OverlayMessage extends StatelessWidget {
         .slideY(
           begin: _getSlideBegin().dy,
           end: 0,
-          duration: 600.ms,
-          curve: Curves.easeInOutCirc,
+          duration: 450.ms,
+          curve: Curves.easeOutCubic,
         )
         .fadeIn(
-          duration: 600.ms,
-          curve: Curves.easeInOutCirc,
+          duration: 450.ms,
+          curve: Curves.easeOutCubic,
         )
         .then(delay: duration)
         .slideY(
           begin: 0,
           end: _getSlideBegin().dy,
-          duration: 600.ms,
-          curve: Curves.easeInOutCirc,
+          duration: 350.ms,
+          curve: Curves.easeInCubic,
         )
         .fadeOut(
-          duration: 600.ms,
-          curve: Curves.easeInOutCirc,
+          duration: 350.ms,
+          curve: Curves.easeInCubic,
         )
         .callback(callback: (_) => DOverlay.removeOverlay());
   }

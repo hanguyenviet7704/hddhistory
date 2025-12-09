@@ -11,6 +11,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     // _requestTrackingPermission();
+    _initPurchaseListener();
     _configAppLocalization();
     _getAppData();
     _setTrackingUser();
@@ -22,6 +23,11 @@ class _SplashPageState extends State<SplashPage> {
   // void _requestTrackingPermission() {
   //   AppService.instance.appEventService.requestTrackingPermission();
   // }
+
+  void _initPurchaseListener() {
+    // Ensure the global purchase listener is attached as early as possible and only once per app session.
+    AppDI.injector.get<IapCubit>().init();
+  }
 
   Future<void> _configAppLocalization() async {
     bool isFirstTimeUserAccessApp = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
@@ -145,7 +151,7 @@ class _SplashPageState extends State<SplashPage> {
       ),
     );
   }
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(

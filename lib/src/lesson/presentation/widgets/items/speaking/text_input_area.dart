@@ -56,7 +56,7 @@ class _TextInputAreaState extends State<TextInputArea> {
               maxLength: context.read<SpeakingCubit>().state.question.maxCharacter,
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: 'Type your answer...',
+                hintText: context.text.lesson.typeYourAnswerHint,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
                 counterText: '',
@@ -77,7 +77,10 @@ class _TextInputAreaState extends State<TextInputArea> {
                 buildWhen: (previous, current) => previous.currentChars != current.currentChars || previous.maxChars != current.maxChars,
                 builder: (context, state) {
                   return AppText(
-                    '${state.currentChars}/${state.maxChars} chars',
+                    context.text.lesson.charCounter(
+                      currentChars: state.currentChars.toString(),
+                      maxChars: state.maxChars.toString(),
+                    ),
                     style: AppStyle.text12.copyWith(
                       color: const Color(0xFFAAB8CD),
                     ),
@@ -92,6 +95,7 @@ class _TextInputAreaState extends State<TextInputArea> {
                     onTap: () {
                       if (currentChars <= 0) return;
                       context.read<SpeakingCubit>().submitAnswer();
+                      FocusScope.of(context).unfocus();
                     },
                     child: Container(
                       width: 32.w,

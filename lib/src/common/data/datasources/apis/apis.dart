@@ -15,4 +15,3 @@ import '../../models/models.dart';
 //* Import all api file here
 part 'apis.g.dart';
 part 'config_api.dart';
-part 'iap_api.dart';

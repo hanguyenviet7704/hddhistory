@@ -47,7 +47,8 @@ part of '../routes.dart';
           routes: [
             TypedGoRoute<ProfileRoute>(path: RoutePath.profile, name: RouteNamed.profile),
             TypedGoRoute<NotificationRoute>(path: RoutePath.notification, name: RouteNamed.notification),
-            TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage),
+            TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage), 
+            TypedGoRoute<ManageSubscriptionRoute>(path: RoutePath.manageSubscription, name: RouteNamed.manageSubscription),
           ],
         ),
       ],

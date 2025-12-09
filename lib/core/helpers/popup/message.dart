@@ -6,7 +6,8 @@ enum MessageType {
   info,
   danger,
   error,
-  success;
+  success
+  ;
 
   Color get color {
     return switch (this) {
@@ -109,7 +110,7 @@ mixin DDialog {
     String acceptText = '',
     bool scrollable = false,
     bool enableTopBackButton = false,
-    double elevation = 100,
+    double elevation = 24,
     VoidCallback? onBack,
   }) {
     assert(body.isNotEmpty || message.isNotEmpty, 'body or message must not be empty');
@@ -123,24 +124,24 @@ mixin DDialog {
       context: AppConfig.instance.context!,
       builder: (context) {
         return AlertDialog(
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
           backgroundColor: Colors.white,
           elevation: elevation,
           alignment: messageAlignment,
           scrollable: scrollable,
-          actionsPadding: actionsPadding ?? const EdgeInsets.fromLTRB(0, 15, 0, 0),
-          contentPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-          titlePadding: const EdgeInsets.fromLTRB(10, 15, 10, 10),
+          actionsPadding: actionsPadding ?? const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          titlePadding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
           // buttonPadding: const EdgeInsets.all(10),
           surfaceTintColor: AppTheme.surface,
-          insetPadding: insetPadding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          insetPadding: insetPadding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           actionsAlignment: actionsAlignment,
           title: Flex(
             direction: Axis.horizontal,
             mainAxisAlignment: enableTopBackButton ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
             children: [
               if (enableTopBackButton) const SizedBox(width: 48),
-              AppText(title, style: AppStyle.textBold20),
+              AppText(title, style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700)),
               if (enableTopBackButton)
                 IconButton(
                   style: IconButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero),
@@ -151,7 +152,16 @@ mixin DDialog {
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: message.isNotEmpty ? [AppText(message)] : body,
+            children: message.isNotEmpty
+                ? [
+                    AppText(
+                      message,
+                      textAlign: TextAlign.center,
+                      maxLines: 4,
+                      style: AppStyle.text14.copyWith(height: 1.4, color: AppCustomColor.textSecondary),
+                    ),
+                  ]
+                : body,
           ),
           actions: [
             DButton(
@@ -174,7 +184,7 @@ mixin DDialog {
     AlignmentGeometry messageAlignment = Alignment.center,
     bool scrollable = false,
     bool enableTopBackButton = false,
-    double elevation = 100,
+    double elevation = 24,
     String title = '',
     String message = '',
     String acceptText = '',
@@ -195,24 +205,24 @@ mixin DDialog {
       context: AppConfig.instance.context!,
       builder: (context) {
         return AlertDialog(
-          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(15.0))),
+          shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(14.0))),
           backgroundColor: Colors.white,
           elevation: elevation,
           alignment: messageAlignment,
           scrollable: scrollable,
-          actionsPadding: actionsPadding ?? const EdgeInsets.fromLTRB(0, 15, 0, 0),
-          contentPadding: const EdgeInsets.fromLTRB(15, 0, 15, 0),
-          titlePadding: const EdgeInsets.fromLTRB(10, 15, 10, 10),
+          actionsPadding: actionsPadding ?? const EdgeInsets.fromLTRB(12, 12, 12, 16),
+          contentPadding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+          titlePadding: const EdgeInsets.fromLTRB(14, 14, 14, 8),
           // buttonPadding: const EdgeInsets.all(10),
           surfaceTintColor: AppTheme.surface,
-          insetPadding: insetPadding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+          insetPadding: insetPadding ?? const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           actionsAlignment: actionsAlignment,
           title: Flex(
             direction: Axis.horizontal,
             mainAxisAlignment: enableTopBackButton ? MainAxisAlignment.spaceBetween : MainAxisAlignment.center,
             children: [
               if (enableTopBackButton) const SizedBox(width: 48),
-              AppText(title, style: AppStyle.textBold20),
+              AppText(title, style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700)),
               if (enableTopBackButton)
                 IconButton(
                   style: IconButton.styleFrom(minimumSize: Size.zero, padding: EdgeInsets.zero),
@@ -223,7 +233,16 @@ mixin DDialog {
           ),
           content: Column(
             mainAxisSize: MainAxisSize.min,
-            children: message.isNotEmpty ? [AppText(message)] : body,
+            children: message.isNotEmpty
+                ? [
+                    AppText(
+                      message,
+                      textAlign: TextAlign.center,
+                      maxLines: 4,
+                      style: AppStyle.text14.copyWith(height: 1.4, color: AppCustomColor.textSecondary),
+                    ),
+                  ]
+                : body,
           ),
           actions: [
             Row(
@@ -338,7 +357,10 @@ mixin DMessage {
   }) {
     ScaffoldMessenger.of(AppConfig.instance.context!).showSnackBar(
       SnackBar(
-        content: InkWell(onTap: onTap, child: messageWidget ?? AppText(message, style: AppStyle.text14.copyWith(color: type.color))),
+        content: InkWell(
+          onTap: onTap,
+          child: messageWidget ?? AppText(message, style: AppStyle.text14.copyWith(color: type.color)),
+        ),
         backgroundColor: type.backgroundColor,
         duration: duration,
         action: action,
@@ -348,7 +370,12 @@ mixin DMessage {
         padding: padding ?? EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
         elevation: elevation,
         onVisible: onVisible ?? () {},
-        shape: shape ?? RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: type.borderColor, width: 1)),
+        shape:
+            shape ??
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: type.borderColor, width: 1),
+            ),
         showCloseIcon: showCloseIcon,
         closeIconColor: closeIconColor,
         width: width,
@@ -459,7 +486,10 @@ extension DMessageHelper on BuildContext {
   }) {
     ScaffoldMessenger.of(this).showSnackBar(
       SnackBar(
-        content: InkWell(onTap: onTap, child: messageWidget ?? AppText(message, style: AppStyle.text14.copyWith(color: type.color))),
+        content: InkWell(
+          onTap: onTap,
+          child: messageWidget ?? AppText(message, style: AppStyle.text14.copyWith(color: type.color)),
+        ),
         backgroundColor: type.backgroundColor,
         duration: duration,
         action: action,
@@ -469,7 +499,12 @@ extension DMessageHelper on BuildContext {
         padding: padding ?? EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),
         elevation: elevation,
         onVisible: onVisible ?? () {},
-        shape: shape ?? RoundedRectangleBorder(borderRadius: BorderRadius.circular(10), side: BorderSide(color: type.borderColor, width: 1)),
+        shape:
+            shape ??
+            RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+              side: BorderSide(color: type.borderColor, width: 1),
+            ),
         showCloseIcon: showCloseIcon,
         closeIconColor: closeIconColor,
         width: width,

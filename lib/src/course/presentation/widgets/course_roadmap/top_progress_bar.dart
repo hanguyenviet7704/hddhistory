@@ -15,7 +15,7 @@ class TopProgressBar extends StatelessWidget {
           height: 40.h,
           padding: EdgeInsets.symmetric(horizontal: 20.w),
           decoration: BoxDecoration(
-            color: AppCustomColor.greyE3,
+            color: AppCustomColor.backgroundWhite,
             borderRadius: BorderRadius.circular(120.r),
           ),
           child: Row(

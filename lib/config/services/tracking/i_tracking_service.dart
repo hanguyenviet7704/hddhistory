@@ -36,6 +36,4 @@ abstract interface class ITrackingService {
   Future<void> feedback3RatingTypeClick(BuildContext context, String ratingType);
   Future<void> feedback3TextClick();
   Future<void> feedback3ExitClick();
-
-  
 }

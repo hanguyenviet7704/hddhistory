@@ -5,13 +5,13 @@ class LessonPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<LessonCubit, LessonState, LearningItemType>(
-      selector: (state) => state.currentLearningItem.type,
-      builder: (context, learningType) {
+    return BlocSelector<LessonCubit, LessonState, ({LearningItemType type, LessonStatus status, bool hasItems})>(
+      selector: (state) => (type: state.currentLearningItem.type, status: state.status, hasItems: state.pageData.items.isNotEmpty),
+      builder: (context, selected) {
         Widget lessonBody = const SizedBox.shrink();
         Widget bottomButton = const SizedBox.shrink();
 
-        switch (learningType) {
+        switch (selected.type) {
           case LearningItemType.exercise || LearningItemType.roleplay:
             final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
             lessonBody = _buildExerciseLessonBody(question.type);
@@ -26,6 +26,7 @@ class LessonPage extends StatelessWidget {
         return LessonLayout(
           body: lessonBody,
           bottom: bottomButton,
+          isLoading: selected.status == LessonStatus.loading,
         );
       },
     );

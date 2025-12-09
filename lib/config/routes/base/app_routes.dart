@@ -16,7 +16,8 @@ mixin RoutePath {
   static const String noAuth = '/no-auth';
 
   //* Monetization
-  static const String premiumPaywall = '/premium-paywall';
+  static const String paywall = '/paywall';
+  static const String paywallAllPackageInfoBottomSheet = '/paywall-all-package-info-bottom-sheet';
 
   //* Onboard
   static const String onboard = '/onboard';
@@ -61,6 +62,7 @@ mixin RoutePath {
   static const String profile = 'profile';
   static const String notification = 'notification';
   static const String changeLanguage = 'change-language';
+  static const String manageSubscription = 'manage-subscription';
   static const String profileDeleteDialog = 'profile-delete-dialog';
 }
 
@@ -80,7 +82,8 @@ mixin RouteNamed {
   static const String noAuth = 'No Auth Page';
 
   //* Monetization
-  static const String premiumPaywall = 'Premium Paywall';
+  static const String paywall = 'Paywall Page';
+  static const String paywallAllPackageInfoBottomSheet = 'Paywall All Package Info Bottom Sheet';
 
   //* Onboard
   static const String onboard = 'Onboard Page';
@@ -124,5 +127,6 @@ mixin RouteNamed {
   static const String profile = 'Profile';
   static const String notification = 'Notification';    
   static const String changeLanguage = 'Change Language';
+  static const String manageSubscription = 'Manage Subscription';
   static const String profileDeleteDialog = 'Profile Delete Dialog';
 }

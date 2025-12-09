@@ -31,9 +31,9 @@ mixin TrackingParams {
   }
 
   static Map<String, dynamic> withPaywallSource(BuildContext context) {
-    String source = context.read<PaywallCubit>().state.paywallSource;
+    // String source = context.read<PaywallCubit>().state.paywallSource;
     return {
-      'paywall_source': source,
+      'paywall_source': 'paywall',
     };
   }
 
@@ -52,9 +52,9 @@ mixin TrackingParams {
   }
 
   static Map<String, dynamic> trackingUserState(BuildContext context) {
-    String isPremium = context.read<PaywallCubit>().state.isPremiumUser ? 'premium' : 'non_premium';
+    // String isPremium = context.read<PaywallCubit>().state.isPremiumUser ? 'premium' : 'non_premium';
     return {
-      'user_state': isPremium,
+      'user_state': 'non_premium',
     };
   }
 }

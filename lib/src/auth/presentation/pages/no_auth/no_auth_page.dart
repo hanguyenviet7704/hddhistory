@@ -52,7 +52,7 @@ class _NoAuthPageState extends State<NoAuthPage> {
                   onPressed: () => DNavigator.replaceNamed(RouteNamed.login),
                   text: 'context.text.continueText',
                   backgroundColor: AppColorLight.surface,
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.orangeF4, fontWeight: FontWeight.w600),
+                  style: AppStyle.text14.copyWith(color: AppCustomColor.textWhite, fontWeight: FontWeight.w600),
                 ),
               ],
             ),

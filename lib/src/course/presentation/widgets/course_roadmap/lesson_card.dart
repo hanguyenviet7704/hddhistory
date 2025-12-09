@@ -3,11 +3,13 @@ part of '../../../course.dart';
 class LessonCard extends StatelessWidget {
   final LessonEntity lesson;
   final LessonEntity lessonRolePlay;
+  final bool premiumLesson;
 
   const LessonCard({
     super.key,
     required this.lesson,
     required this.lessonRolePlay,
+    required this.premiumLesson,
   });
 
   Color get _backgroundColor {
@@ -44,6 +46,12 @@ class LessonCard extends StatelessWidget {
   void _onTap(BuildContext context) {
     if (lesson.progess == ProcessEnum.notStarted) return;
 
+    bool isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
+    if (premiumLesson && !isUserPremium) {
+      PaywallRoute().push(context);
+      return;
+    }
+
     switch (lesson.type) {
       case LessonType.lesson:
         context.read<ProgressCubit>().loadUserProgressLesson(lessonId: lessonRolePlay.id);
@@ -55,7 +63,7 @@ class LessonCard extends StatelessWidget {
 
       case LessonType.roleplay:
         if (lesson.progess == ProcessEnum.done && !kDebugMode) return;
-        
+
         AppDI.injector.get<RoleplayCubit>()
           ..reset()
           ..setLessonId(lesson)

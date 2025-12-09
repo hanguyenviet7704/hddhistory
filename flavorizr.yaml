@@ -4,15 +4,15 @@ ide: idea
 
 instructions:
   # assets
-  - assets:download
-  - assets:extract
+  # - assets:download
+  # - assets:extract
 
   # android
-  - android:flavorizrGradle
-  - android:buildGradle
-  - android:androidManifest
-  - android:dummyAssets
-  - android:icons
+  # - android:flavorizrGradle
+  # - android:buildGradle
+  # - android:androidManifest
+  # - android:dummyAssets
+  # - android:icons
 
   # huawei
   # - huawei:agconnect
@@ -25,20 +25,20 @@ instructions:
   # - flutter:targets
 
   # ios
-  - ios:podfile
+  # - ios:podfile
   - ios:xcconfig
-  - ios:buildTargets
-  - ios:schema
-  - ios:dummyAssets
-  - ios:icons
+  # - ios:buildTargets
+  # - ios:schema
+  # - ios:dummyAssets
+  # - ios:icons
   - ios:plist
-  - ios:launchScreen
+  # - ios:launchScreen
 
   # google
-  - google:firebase
+  # - google:firebase
 
   # assets
-  - assets:clean
+  # - assets:clean
 
   # ide
   # - ide:config
@@ -94,6 +94,10 @@ flavors:
       variables:
         API_BASE_URL:
           value: "https://dev.api.com"
+        GID_CLIENT_ID:
+          value: "116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a.apps.googleusercontent.com"
+        REVERSED_CLIENT_ID:
+          value: "com.googleusercontent.apps.116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a"
 
   stg:
     app:
@@ -133,6 +137,10 @@ flavors:
       variables:
         API_BASE_URL:
           value: "https://stg.api.com"
+        GID_CLIENT_ID:
+          value: "116378588635-sv2pe9vmjarvp1srff7bc8v34bt37di4.apps.googleusercontent.com"
+        REVERSED_CLIENT_ID:
+          value: "com.googleusercontent.apps.116378588635-sv2pe9vmjarvp1srff7bc8v34bt37di4"
 
   prod:
     app:
@@ -172,3 +180,7 @@ flavors:
       variables:
         API_BASE_URL:
           value: "https://prod.api.com"
+        GID_CLIENT_ID:
+          value: "116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc.apps.googleusercontent.com"
+        REVERSED_CLIENT_ID:
+          value: "com.googleusercontent.apps.116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc"

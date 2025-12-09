@@ -23,7 +23,7 @@ class RoleplayLeadingTextCard extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
           margin: EdgeInsets.symmetric(horizontal: 20.w),
           decoration: BoxDecoration(
-            color: backgroundColor.op(0.4),
+            color: backgroundColor,
             borderRadius: BorderRadius.circular(20.r),
           ),
           child: Column(

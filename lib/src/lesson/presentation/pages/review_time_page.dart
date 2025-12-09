@@ -70,7 +70,7 @@ class ReviewTimePage extends StatelessWidget {
                 child: Container(
                   height: 54.h,
                   decoration: BoxDecoration(
-                    color: AppCustomColor.blue55,
+                    color: AppCustomColor.brandPrimary,
                     borderRadius: BorderRadius.circular(1000.r),
                   ),
                   child: Center(

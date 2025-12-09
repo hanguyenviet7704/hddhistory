@@ -18,6 +18,7 @@ import 'package:percent_indicator/percent_indicator.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 import 'package:retrofit/retrofit.dart';
+import 'package:shimmer/shimmer.dart';
 
 //* Data Layer - Models, Datasources, Repositories
 part 'data/datasources/local/lesson_local_data_source.dart';
@@ -33,6 +34,7 @@ part 'data/models/question_model.dart';
 part 'data/models/scoring_criteria_model.dart';
 part 'data/models/tag_model.dart';
 part 'data/models/voice_feedback_model.dart';
+part 'data/models/voice_score_model.dart';
 part 'data/repositories/lesson_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/answer_entity.dart';
@@ -46,17 +48,17 @@ part 'domain/entities/question_entity.dart';
 part 'domain/entities/scoring_criteria_entity.dart';
 part 'domain/entities/tag_entity.dart';
 part 'domain/entities/voice_feedback_entity.dart';
+part 'domain/entities/voice_score_entity.dart';
 part 'domain/repositories/i_lesson_repository.dart';
 part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
+part 'domain/usecases/send_score_record_usecase.dart';
 part 'domain/usecases/send_voice_feedback_stream_usecase.dart';
 part 'domain/usecases/send_voice_feedback_usecase.dart';
-
 //* Parts for generated files
 part 'lesson.freezed.dart';
 part 'lesson.g.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/blocs/lesson_voice_state.dart';
 part 'presentation/cubits/arrange_the_sequence/arrange_the_sequence_cubit.dart';
 part 'presentation/cubits/arrange_the_sequence/arrange_the_sequence_state.dart';
 part 'presentation/cubits/choice/choice_cubit.dart';
@@ -69,7 +71,6 @@ part 'presentation/cubits/exercise/exercise_cubit.dart';
 part 'presentation/cubits/exercise/exercise_state.dart';
 part 'presentation/cubits/lesson/lesson_cubit.dart';
 part 'presentation/cubits/lesson/lesson_state.dart';
-part 'presentation/cubits/lesson_voice_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_state.dart';
 part 'presentation/cubits/speaking/speaking_cubit.dart';
@@ -100,9 +101,6 @@ part 'presentation/widgets/items/common/audio_player_widget.dart';
 part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/close_popup_lesson.dart';
 part 'presentation/widgets/items/common/document_content_widget.dart';
-part 'presentation/widgets/items/common/lesson_completion_header.dart';
-part 'presentation/widgets/items/common/lesson_completion_primary_button.dart';
-part 'presentation/widgets/items/common/lesson_completion_progress_bar.dart';
 part 'presentation/widgets/items/common/document_item.dart';
 part 'presentation/widgets/items/common/document_media_widget.dart';
 part 'presentation/widgets/items/common/document_video_widget.dart';
@@ -111,6 +109,9 @@ part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
 part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/exercise_result_summary.dart';
 part 'presentation/widgets/items/common/lesson_badge.dart';
+part 'presentation/widgets/items/common/lesson_completion_header.dart';
+part 'presentation/widgets/items/common/lesson_completion_primary_button.dart';
+part 'presentation/widgets/items/common/lesson_completion_progress_bar.dart';
 part 'presentation/widgets/items/common/lesson_progress_bar.dart';
 part 'presentation/widgets/items/common/lesson_result_overlay.dart';
 part 'presentation/widgets/items/common/lesson_time_controller.dart';

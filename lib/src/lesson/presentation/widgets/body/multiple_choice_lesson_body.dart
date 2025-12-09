@@ -9,6 +9,7 @@ class MultipleChoiceLessonBody extends StatelessWidget {
   });
 
   void _showResultOverlay(BuildContext context, ResultType type) {
+    context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
       builder: (_) => BlocProvider.value(
@@ -99,7 +100,7 @@ class MultipleChoiceLessonBody extends StatelessWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
-          text: 'Check',
+          text: context.text.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

@@ -146,13 +146,27 @@ class SpeakingGoodPointsSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          _AnimatedPointsList(
-            points: points,
-            textStyle: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
-            ),
-            indexColor: const Color(0xFF554FF0),
+          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
+            selector: (state) => state.goodPoints,
+            builder: (context, goodPoints) {
+              return AnimateSwitch(
+                child: goodPoints.isEmpty
+                    ? const _SpeakingPointsSkeleton(
+                        key: ValueKey('skeleton-goodPoints'),
+                        baseColor: Color(0xFFC7C5FA),
+                        highlightColor: Color(0xFFEBEAFD),
+                      )
+                    : AnimatedPointsList(
+                        key: ValueKey('good-points'),
+                        points: goodPoints,
+                        textStyle: AppStyle.text14.copyWith(
+                          color: const Color(0xFF364152),
+                          height: 1.5,
+                        ),
+                        indexColor: const Color(0xFF554FF0),
+                      ),
+              );
+            },
           ),
         ],
       ),
@@ -201,13 +215,27 @@ class SpeakingImprovementSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          _AnimatedPointsList(
-            points: points,
-            textStyle: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
-            ),
-            indexColor: const Color(0xFF41AE8C),
+          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
+            selector: (state) => state.improvementPoints,
+            builder: (context, improvementPoints) {
+              return AnimateSwitch(
+                child: improvementPoints.isEmpty
+                    ? const _SpeakingPointsSkeleton(
+                        key: ValueKey('skeleton-improvementPoints'),
+                        baseColor: Color(0xFFB3DDCC),
+                        highlightColor: Color(0xFFE6F4EE),
+                      )
+                    : AnimatedPointsList(
+                        key: ValueKey('improvement-points'),
+                        points: improvementPoints,
+                        textStyle: AppStyle.text14.copyWith(
+                          color: const Color(0xFF364152),
+                          height: 1.5,
+                        ),
+                        indexColor: const Color(0xFF41AE8C),
+                      ),
+              );
+            },
           ),
         ],
       ),
@@ -215,12 +243,13 @@ class SpeakingImprovementSection extends StatelessWidget {
   }
 }
 
-class _AnimatedPointsList extends StatelessWidget {
+class AnimatedPointsList extends StatelessWidget {
   final List<String> points;
   final TextStyle textStyle;
   final Color indexColor;
 
-  const _AnimatedPointsList({
+  const AnimatedPointsList({
+    super.key,
     required this.points,
     required this.textStyle,
     required this.indexColor,
@@ -276,6 +305,56 @@ class _AnimatedPointsList extends StatelessWidget {
             ),
           );
         }).toList(),
+      ),
+    );
+  }
+}
+
+class _SpeakingPointsSkeleton extends StatelessWidget {
+  final Color baseColor;
+  final Color highlightColor;
+
+  const _SpeakingPointsSkeleton({
+    super.key,
+    required this.baseColor,
+    required this.highlightColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Shimmer.fromColors(
+      baseColor: baseColor.withValues(alpha: 0.6),
+      highlightColor: highlightColor,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 9.h,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+          ),
+          8.verticalSpace,
+          Container(
+            height: 9.h,
+            width: double.infinity,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+          ),
+          8.verticalSpace,
+          Container(
+            height: 9.h,
+            width: 137.w,
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
+          ),
+        ],
       ),
     );
   }
