@@ -12,7 +12,7 @@ mixin RoutePath {
   //* Splash
   static const String splash = '/splash';
   static const String chooseLanguage = '/choose-language';
-  static const String intro = '/intro';
+  static const String onboardIntroduce = '/onboard-introduce';
   static const String noAuth = '/no-auth';
 
   //* Monetization
@@ -36,7 +36,6 @@ mixin RoutePath {
 
   //* Home
   static const String home = '/';
-
 
   //* Course
   static const String course = '/course';
@@ -78,7 +77,7 @@ mixin RouteNamed {
   //* Splash Screen
   static const String splash = 'Splash Page';
   static const String chooseLanguage = 'Choose Language Page';
-  static const String intro = 'Intro Page';
+  static const String onboardIntroduce = 'Onboard Introduce Page';
   static const String noAuth = 'No Auth Page';
 
   //* Monetization
@@ -125,7 +124,7 @@ mixin RouteNamed {
   //* Setting
   static const String setting = 'Setting';
   static const String profile = 'Profile';
-  static const String notification = 'Notification';    
+  static const String notification = 'Notification';
   static const String changeLanguage = 'Change Language';
   static const String manageSubscription = 'Manage Subscription';
   static const String profileDeleteDialog = 'Profile Delete Dialog';

@@ -39,9 +39,9 @@ class ChooseLanguageRoute extends GoRouteData with $ChooseLanguageRoute {
 }
 
 //* Intro Page
-@TypedGoRoute<IntroRoute>(path: RoutePath.intro, name: RouteNamed.intro)
-class IntroRoute extends GoRouteData with $IntroRoute {
-  const IntroRoute();
+@TypedGoRoute<OnboardIntroduceRoute>(path: RoutePath.onboardIntroduce, name: RouteNamed.onboardIntroduce)
+class OnboardIntroduceRoute extends GoRouteData with $OnboardIntroduceRoute {
+  const OnboardIntroduceRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(

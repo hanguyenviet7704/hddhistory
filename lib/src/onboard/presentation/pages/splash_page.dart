@@ -103,7 +103,7 @@ class _SplashPageState extends State<SplashPage> {
     }
     if (AppGlobalValue.accessToken.isEmpty) {
       if (isFirstTime) {
-        ChooseLanguageRoute().go(context);
+        OnboardIntroduceRoute().go(context);
         return;
       }
 
