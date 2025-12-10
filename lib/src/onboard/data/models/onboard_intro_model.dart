@@ -7,6 +7,7 @@ abstract class OnboardIntroModel with _$OnboardIntroModel {
     @Default('') String image,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
+    @Default('') String sourceTitle,
     @Default('') String source,
   }) = _OnboardIntroModel;
 
@@ -19,5 +20,7 @@ extension OnboardIntroModelExtension on OnboardIntroModel {
     image: image,
     title: title,
     content: content,
+    sourceTitle: sourceTitle,
+    source: source,
   );
 }

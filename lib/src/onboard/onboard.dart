@@ -23,11 +23,7 @@ part 'domain/entities/onboard_intro_entity.dart';
 part 'domain/entities/onboard_motivation_entity.dart';
 part 'domain/entities/onboard_option_entity.dart';
 part 'domain/repositories/i_onboard_repository.dart';
-part 'domain/usecases/create_onboard_usecase.dart';
-part 'domain/usecases/delete_onboard_usecase.dart';
 part 'domain/usecases/get_all_onboards_usecase.dart';
-part 'domain/usecases/get_onboard_usecase.dart';
-part 'domain/usecases/update_onboard_usecase.dart';
 //* Parts for generated files
 part 'onboard.freezed.dart';
 part 'onboard.g.dart';
