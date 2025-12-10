@@ -135,6 +135,22 @@ const IntroInput: React.FC<{
         />
       </Box>
 
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          label="Source Title"
+          value={item.sourceTitle || ""}
+          onChange={(e) =>
+            onChange(item.id, {
+              ...item,
+              sourceTitle: e.target.value,
+            })
+          }
+          fullWidth
+          size="small"
+          variant="outlined"
+        />
+      </Box>
+
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
         <Box sx={{ mr: 2 }}>
           <CloudflareFileUpload
@@ -351,6 +367,7 @@ const OnboardingManagement: React.FC = () => {
       image: "",
       content: { [lang]: "" },
       source: "",
+      sourceTitle: "",
     };
   };
 
@@ -422,6 +439,7 @@ const OnboardingManagement: React.FC = () => {
           title: cleanedTitle,
           content: cleanedContent,
           source: intro.source || "",
+          sourceTitle: intro.sourceTitle || "",
         } as OnboardingIntroPayload;
       })
       .filter(Boolean) as OnboardingIntroPayload[];
@@ -992,6 +1010,15 @@ const OnboardingManagement: React.FC = () => {
                         <Typography gutterBottom sx={{ fontWeight: "bold" }}>
                           {getTranslationValue(intro.title, lang)}
                         </Typography>
+                        {intro.sourceTitle && (
+                          <Typography
+                            variant="subtitle2"
+                            color="text.secondary"
+                            sx={{ display: "block", mb: 0.5 }}
+                          >
+                            {intro.sourceTitle}
+                          </Typography>
+                        )}
                         {intro.source && (
                           <Typography
                             variant="caption"
@@ -1130,7 +1157,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {onboarding.skillsetWantToMaster.map((item) =>
-                  renderChipWithIconAndTitle(item)
+                  renderChipWithIcon(item)
                 )}
               </Box>
             </Box>
@@ -1256,7 +1283,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {onboarding.comfortableLearningTime.map((item) =>
-                  renderChipWithIcon(item)
+                  renderChipWithIconAndTitle(item)
                 )}
               </Box>
             </Box>
@@ -1363,13 +1390,13 @@ const OnboardingManagement: React.FC = () => {
           {activeTab === "gender" &&
             renderLabelsTab("gender", "Gender Options")}
           {activeTab === "skillsetWantToMaster" &&
-            renderLabelsTab("skillsetWantToMaster", "Skillset to Master", true)}
+            renderLabelsTab("skillsetWantToMaster", "Skillset to Master")}
           {activeTab === "learningGoal" &&
             renderLabelsTab("learningGoal", "Learning Goals")}
           {activeTab === "learningStruggles" &&
             renderLabelsTab("learningStruggles", "Learning Struggles")}
           {activeTab === "comfortableLearningTime" &&
-            renderLabelsTab("comfortableLearningTime", "Learning Times")}
+            renderLabelsTab("comfortableLearningTime", "Learning Times", true)}
           {activeTab === "dailyLearningGoal" && renderDailyGoalTab()}
           {activeTab === "welcome" &&
             renderMotivationTab("welcome", "Welcome")}

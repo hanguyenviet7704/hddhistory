@@ -8,6 +8,7 @@ export interface IOnboardingIntro {
   image: string;
   content: ITranslation;
   source: string;
+  sourceTitle: string;
 }
 
 export interface OnboardingIntroPayload {
@@ -16,6 +17,7 @@ export interface OnboardingIntroPayload {
   image: string;
   content: ITranslation;
   source: string;
+  sourceTitle: string;
 }
 
 export interface IOnboarding {
