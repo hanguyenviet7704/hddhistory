@@ -26,6 +26,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
   final Set<String> _processedTransactionIds = {};
   Timer? _restoreTimeout;
+  bool _ignoreHandledOnce = false; // bypass dedup once for user-triggered flows
 
   void setSelectedProductId(String productId) {
     emit(state.copyWith(selectedProductId: productId));
@@ -62,10 +63,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
     if (state.status == MonetizationStatus.purchasing) return;
     String productId = isHighlight ? state.bestDealProduct.productId : state.selectedProduct.productId;
+    _ignoreHandledOnce = true; // user-initiated purchase; allow next receipt even if duplicate
     emit(state.copyWith(status: MonetizationStatus.purchasing));
     await runUseCase<IapVerifyEntity>(
       usecase: () => _purchaseUsecase.call(PurchaseParams(productId: productId, type: state.selectedProduct.type)),
-      onSuccess: (verify) {},
+      onSuccess: (verify) {
+        emit(state.copyWith(status: MonetizationStatus.initial));
+      },
       onFailure: (error) => _onPurchaseFailure(),
     );
   }
@@ -73,6 +77,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   Future<void> restorePurchases() async {
     if (state.status == MonetizationStatus.restoring) return;
     emit(state.copyWith(status: MonetizationStatus.restoring));
+    _ignoreHandledOnce = true; // user-initiated restore; allow next receipt even if duplicate
 
     _restoreTimeout?.cancel();
     DMessage.showMessage(
@@ -223,7 +228,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     );
   }
 
-  bool _alreadyHandled(String transactionId) => transactionId.isNotEmpty && _processedTransactionIds.contains(transactionId);
+  bool _alreadyHandled(String transactionId) {
+    if (_ignoreHandledOnce) {
+      _ignoreHandledOnce = false; // consume bypass
+      return false;
+    }
+    return transactionId.isNotEmpty && _processedTransactionIds.contains(transactionId);
+  }
 
   void _markHandled(String transactionId) {
     if (transactionId.isEmpty) return;
