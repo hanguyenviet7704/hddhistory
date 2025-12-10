@@ -1,1294 +1,372 @@
-import React, { useState, useEffect, useRef } from "react";
-import {
-  ILearningItem,
-  LearningItemPayload,
-  ExerciseInput,
-  ExerciseInputPayload,
-} from "../../types/interface/learning-item/learning-item.interface";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { TrashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
-import { learningItemService } from "../../services/learningItemService";
-import {
-  LearningItemType,
-  ExerciseType,
-  FormDragDropType,
-  RoleplaySectionType,
-  SectionConversationPosition,
-} from "../../types/enum/learningItem.enum";
-import { KeypointLevel } from "../../utils/enum/course.enum";
-import {
-  ArrowDownTrayIcon,
-  ArrowPathIcon,
-  PlusCircleIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
-import { PlusIcon, XMarkIcon } from "@heroicons/react/24/solid";
-import { motion, AnimatePresence } from "framer-motion";
-import { DndContext, closestCenter } from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import SortableItem from "../../components/common/SortableItem";
-import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { Combobox } from "@headlessui/react";
+import { ICourse } from "../../types/interface/cource.interface";
+import { courseService } from "../../services/courseService";
 import { useNavigate } from "react-router-dom";
-import LearningItemConfirm from "../../components/learning-item/LearningItemConfirm";
-import { keypointService } from "../../services/keypointService";
-import { DocumentType } from "../../utils/enum/course.enum";
-import {
-  IExerciseChoiceOption,
-  IExerciseSingleChoice,
-} from "../../types/interface/learning-item/excercises/single-choice.interface";
-import { IExerciseDragDrop } from "../../types/interface/learning-item/excercises/drag-drop.interface";
-import {
-  IExerciseRecord,
-  IScoringCriteria,
-} from "../../types/interface/learning-item/excercises/record.interface";
-import {
-  IDocument,
-  IMediaDocument,
-} from "../../types/interface/learning-item/document.interface";
+import { XMarkIcon } from "@heroicons/react/24/solid";
+import { ILesson, LessonPayload } from "../../types/interface/lesson.interface";
+import { LessonStatus, LessonType } from "../../types/enum/lesson.enum";
+import { lessonService } from "../../services/lessonService";
+import LessonConfirm from "../../components/lessons/LessonConfirm";
 import { useNotification } from "../../utils/hooks/useNotification";
+import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
+import { tagService } from "../../services/tagService";
 import { ITag } from "../../types/interface/tag.interface";
-import { ITranslation } from "../../utils/translate";
+import { learningItemService } from "../../services/learningItemService";
+import { ILearningItem } from "../../types/interface/learning-item/learning-item.interface";
+import { AnimatePresence } from "framer-motion";
+import { LearningItemType } from "../../types/enum/learningItem.enum";
 import {
   getTranslationValue,
-  getCurrentTranslationValue,
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
-import { LangCode } from "../../types/enum/common.enum";
-import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
-import { avatarService } from "../../services/avatarService";
-import { iconService } from "../../services/iconService";
-import {
-  IConversation,
-  IHint,
-  ILeadingText,
-  ISection,
-  ISectionContent,
-  ISectionContentPayload,
-  ISectionPayload,
-} from "../../types/interface/learning-item/roleplays/section.interface";
-import { IRoleplayColorTemplate } from "../../types/interface/learning-item/roleplays/color-template.interface";
-import { roleplayColorTemplateService } from "../../services/roleplayColorTemplateService";
-import { IAvatar } from "../../types/interface/avatar.interface";
+import RoleplayFromDetail from "./RoleplayFromDetail";
 
-const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
-  DocumentType.TITLE,
-  DocumentType.CAPTION,
-  DocumentType.TEXT,
-];
+interface RoleplayFormProps {
+  roleplayLesson?: ILesson;
+  onSave?: (roleplayLesson: ILesson) => void;
+}
 
-const isTextualDocumentType = (type: DocumentType) =>
-  TEXTUAL_DOCUMENT_TYPES.includes(type);
+export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormProps) {
+  const lang = useSelector((state: RootState) => state.lang.code);
+  const isEditMode = !!roleplayLesson;
+  const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
 
-const cleanDocumentItems = (documents: IDocument[]) => {
-  return documents
-    .map((doc) => {
-      const cleanedContent = cleanTranslation(doc.data?.content);
-      const cleanedUrl = cleanTranslation(doc.data?.url);
-      const cleanedData: any = { ...doc.data };
-      if (cleanedContent && Object.keys(cleanedContent).length > 0) {
-        cleanedData.content = cleanedContent;
-      } else {
-        delete cleanedData.content;
-      }
-      if (cleanedUrl && Object.keys(cleanedUrl).length > 0) {
-        cleanedData.url = cleanedUrl;
-      } else {
-        delete cleanedData.url;
-      }
-      if (!cleanedData.thumbnail) {
-        delete cleanedData.thumbnail;
-      }
+  const createEmptyRoleplay = (): ILearningItem =>
+    ({
+      _id: "",
+      keypointId: "",
+      type: LearningItemType.ROLEPLAY,
+      title: { [lang]: "" },
+      description: { [lang]: "" },
+      image: "",
+      isSub: false,
+      tag: [],
+      questions: [],
+      subQuestions: [],
+      documents: [],
+      roleplay: {
+        image: "",
+        contents: [],
+        missions: [],
+        colorTemplateId: "",
+      },
+      index: 0,
+    } as ILearningItem);
 
-      const hasValue =
-        (isTextualDocumentType(doc.type) &&
-          !!cleanedData.content &&
-          Object.keys(cleanedData.content).length > 0) ||
-        ((doc.type === DocumentType.IMAGE ||
-          doc.type === DocumentType.AUDIO ||
-          doc.type === DocumentType.ANIMATION) &&
-          !!cleanedData.url) ||
-        (doc.type === DocumentType.VIDEO &&
-          (!!cleanedData.url || !!cleanedData.thumbnail));
-
-      return hasValue ? ({ ...doc, data: cleanedData } as IDocument) : null;
-    })
-    .filter(Boolean) as IDocument[];
-};
-
-const getDocumentContentLabel = (type: DocumentType) => {
-  switch (type) {
-    case DocumentType.TITLE:
-      return "Title";
-    case DocumentType.CAPTION:
-      return "Caption";
-    default:
-      return "Content";
-  }
-};
-
-const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
-  content: { [currentLang]: "" },
-  url: { [currentLang]: "" },
-  thumbnail: "",
-});
-
-const distributeEvenlyIntegers = (slots: number, total: number) => {
-  if (slots <= 0) return [];
-  const base = Math.floor(total / slots);
-  let remainder = total - base * slots;
-  return Array.from({ length: slots }, () => {
-    if (remainder > 0) {
-      remainder -= 1;
-      return base + 1;
-    }
-    return base;
-  });
-};
-
-const scaleValuesToTotal = (values: number[], target: number) => {
-  if (!values.length) return [];
-  const normalized = values.map((val) => Math.max(0, Math.round(val)));
-  const total = normalized.reduce((sum, val) => sum + val, 0);
-
-  if (total === 0) {
-    return distributeEvenlyIntegers(values.length, target);
-  }
-
-  const raw = normalized.map((val) => (val / total) * target);
-  const floored = raw.map((val) => Math.floor(val));
-  let remainder = target - floored.reduce((sum, val) => sum + val, 0);
-
-  const fractionalOrder = raw
-    .map((val, idx) => ({ idx, frac: val - floored[idx] }))
-    .sort((a, b) => b.frac - a.frac);
-
-  fractionalOrder.forEach(({ idx }) => {
-    if (remainder > 0) {
-      floored[idx] += 1;
-      remainder -= 1;
-    }
-  });
-
-  let cursor = 0;
-  while (remainder > 0 && floored.length > 0) {
-    floored[cursor % floored.length] += 1;
-    remainder -= 1;
-    cursor += 1;
-  }
-
-  return floored;
-};
-
-const rebalanceRecordScoringCriteria = (
-  criteriaInput?: Partial<IScoringCriteria>[],
-  exerciseMaxScore?: number,
-  lang?: LangCode
-): IScoringCriteria[] => {
-  const isValidNumber = (value: unknown): value is number =>
-    typeof value === "number" && !Number.isNaN(value);
-
-  const sanitized =
-    criteriaInput?.map((item) => ({
-      criteria: (item.criteria ?? { en: "" }) as ITranslation,
-      maxScore: isValidNumber(item.maxScore)
-        ? Math.max(0, Math.round(item.maxScore))
-        : undefined,
-    })) || [];
-
-  if (!sanitized.length) return [];
-
-  if (!isValidNumber(exerciseMaxScore)) {
-    return sanitized.map((item) => ({
-      ...item,
-      maxScore: isValidNumber(item.maxScore) ? item.maxScore : 0,
-    }));
-  }
-
-  const lastIndex = sanitized.length - 1;
-  if (lastIndex < 0) return [];
-
-  const result = sanitized.map((item) => ({ ...item }));
-
-  const manualIndices = result
-    .map((_, idx) => idx)
-    .filter((idx) => idx !== lastIndex);
-
-  let manualSum = 0;
-  manualIndices.forEach((idx) => {
-    const val = result[idx].maxScore;
-    const normalized = isValidNumber(val) ? Math.max(0, Math.round(val)) : 0;
-    result[idx].maxScore = normalized;
-    manualSum += normalized;
-  });
-
-  if (manualSum > exerciseMaxScore) {
-    const manualValues = manualIndices.map((idx) => result[idx].maxScore || 0);
-    const scaled = scaleValuesToTotal(manualValues, exerciseMaxScore);
-    manualIndices.forEach((idx, order) => {
-      result[idx].maxScore = scaled[order] || 0;
-    });
-    manualSum = exerciseMaxScore;
-  }
-
-  const remaining = Math.max(0, exerciseMaxScore - manualSum);
-  result[lastIndex].maxScore = remaining;
-
-  return result.map((item) => ({
-    ...item,
-    maxScore: item.maxScore || 0,
-  }));
-};
-
-// Helper component to display text with truncation and tooltip
-const TextWithTooltip = ({
-  text = "",
-  maxLength = 150,
-  lang = LangCode.EN,
-}: {
-  text?: string | ITranslation;
-  maxLength?: number;
-  lang?: LangCode;
-}) => {
-  if (!text) return null;
-
-  const displayText =
-    typeof text === "string" ? text : getTranslationValue(text, lang);
-
-  if (!displayText) return null;
-
-  return (
-    <div className="relative group">
-      <span className="truncate inline-block max-w-xl">
-        {displayText.length > maxLength
-          ? `${displayText.substring(0, maxLength)}...`
-          : displayText}
-      </span>
-      {displayText.length > maxLength && (
-        <div className="absolute bottom-full left-0 mb-2 hidden group-hover:block z-10 bg-gray-800 text-white text-xs rounded py-2 px-3 w-64 max-h-40 overflow-y-auto shadow-lg">
-          {displayText}
-        </div>
-      )}
-    </div>
+  // sync roleplay lesson prop -> local state (important when fetch async)
+  const [currentRoleplayLesson, setCurrentRoleplayLesson] = useState<ILesson>(
+    roleplayLesson ??
+      ({
+        _id: "",
+        courseId: "",
+        learningItemId: "",
+        type: LessonType.ROLEPLAY,
+        title: { [lang]: "" },
+        description: { [lang]: "" },
+        image: "",
+        keypoints: [],
+        estimateCompleTime: { [lang]: "" },
+        icon: null,
+        status: LessonStatus.DRAFT,
+        index: 0,
+      } as ILesson)
   );
-};
-
-// Helper component to display tag with icon and title
-const TagDisplay = ({
-  tag,
-  lang,
-}: {
-  tag: ITag | null;
-  lang: keyof ITranslation;
-}) => {
-  if (!tag) return null;
-
-  return (
-    <div className="flex items-center gap-1">
-      {tag.url && (
-        <img
-          src={tag.url}
-          alt={tag.title?.[lang] || ""}
-          className="w-5 h-5 object-contain flex-shrink-0"
-        />
-      )}
-      <span>{tag.title?.[lang]}</span>
-    </div>
-  );
-};
-
-// Color picker component with text input
-const ColorPicker = ({
-  value,
-  onChange,
-  label,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  label: string;
-}) => {
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      <div className="flex items-center gap-2">
-        <input
-          type="color"
-          value={value || "#000000"}
-          onChange={(e) => onChange(e.target.value)}
-          className="h-10 w-20 border border-gray-300 rounded cursor-pointer"
-        />
-        <input
-          type="text"
-          value={value || "#000000"}
-          onChange={(e) => onChange(e.target.value)}
-          className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-          placeholder="#000000"
-        />
-      </div>
-    </div>
-  );
-};
-
-// Avatar selector component
-const AvatarSelector = ({
-  value,
-  onChange,
-  label,
-}: {
-  value: IAvatar | null | undefined;
-  onChange: (value: IAvatar | null) => void;
-  label: string;
-}) => {
-  const [avatars, setAvatars] = useState<IAvatar[]>([]);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAvatars = async () => {
+    if (roleplayLesson) {
+      setCurrentRoleplayLesson({ ...roleplayLesson, type: LessonType.ROLEPLAY });
+    }
+  }, [roleplayLesson]);
+
+  const [saving, setSaving] = useState(false);
+  const [courses, setCourses] = useState<ICourse[]>([]);
+  const [courseQuery, setCourseQuery] = useState("");
+  const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
+  const [confirmDeleteRoleplay, setConfirmDeleteRoleplay] = useState(false);
+  const [icons, setIcons] = useState<ITag[]>([]);
+  const [iconQuery, setIconQuery] = useState("");
+  const [isIconSearchActive, setIsIconSearchActive] = useState(false);
+  const [roleplayItem, setRoleplayItem] =
+    useState<ILearningItem>(createEmptyRoleplay);
+  const roleplaySaveRef = useRef<
+    (() => Promise<ILearningItem | undefined>) | null
+  >(null);
+
+  const mergeRoleplayState = (
+    prev: ILearningItem | null,
+    incoming: ILearningItem
+  ): ILearningItem => {
+    if (!prev) return incoming;
+    return {
+      ...prev,
+      ...incoming,
+      roleplay: {
+        image:
+          incoming.roleplay?.image ||
+          prev.roleplay?.image ||
+          incoming.image ||
+          "",
+        colorTemplateId:
+          incoming.roleplay?.colorTemplateId ||
+          prev.roleplay?.colorTemplateId ||
+          "",
+        contents:
+          (incoming.roleplay?.contents?.length
+            ? incoming.roleplay.contents
+            : prev.roleplay?.contents) || [],
+        missions:
+          (incoming.roleplay?.missions?.length
+            ? incoming.roleplay.missions
+            : prev.roleplay?.missions) || [],
+      },
+    } as ILearningItem;
+  };
+
+  const refreshRoleplay = useCallback(
+    async (id: string) => {
       try {
-        const res = await avatarService.getList({ page: 1, take: 1000 });
-        setAvatars(res.data.items || res.data || []);
+        const res = await learningItemService.getById(id);
+        const apiItem: ILearningItem = res.data?.data ?? res.data;
+        const merged = mergeRoleplayState(roleplayItem, apiItem);
+        setRoleplayItem(merged);
+        return merged;
       } catch (err) {
-        console.error("fetchAvatars", err);
-      } finally {
-        setLoading(false);
+        console.error("refreshRoleplay", err);
+        return undefined;
       }
-    };
-    fetchAvatars();
-  }, []);
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      {loading ? (
-        <div className="flex items-center justify-center h-20 border border-gray-200 rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <div className="border border-gray-200 rounded-lg p-2 max-h-32 overflow-y-auto">
-          <div className="grid grid-cols-8 gap-2">
-            {avatars.map((avatar) => (
-              <button
-                key={avatar._id}
-                type="button"
-                onClick={() => onChange(avatar)}
-                className={`w-full flex flex-col items-center gap-1 p-1 rounded-lg border-2 text-xs ${
-                  value?._id === avatar._id
-                    ? "border-blue-500"
-                    : "border-gray-300"
-                }`}
-              >
-                <div className="w-12 h-12 rounded-full overflow-hidden border">
-                  <img
-                    src={avatar.url}
-                    alt={avatar.name}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <span className="truncate max-w-[72px]">{avatar.name}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
+    },
+    [roleplayItem]
   );
-};
 
-// Icon selector component
-const IconSelector = ({
-  value,
-  onChange,
-  label,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  label: string;
-}) => {
-  const [icons, setIcons] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  // Hàm mới để xoá icon
+  const handleClearIcon = () => {
+    setCurrentRoleplayLesson((prev) => ({
+      ...prev,
+      icon: null, // Gán icon về null để xoá
+    }));
+    // Đảm bảo ô tìm kiếm cũng được làm sạch
+    setIconQuery("");
+    setIsIconSearchActive(false);
+  };
 
   useEffect(() => {
+    let active = true;
     const fetchIcons = async () => {
       try {
-        const res = await iconService.getList({ page: 1, take: 100 });
-        setIcons(res.data.items || []);
+        const res = await tagService.getList({
+          search: iconQuery,
+        });
+        const list: ITag[] = res.data.items ?? [];
+        if (active) setIcons(list);
       } catch (err) {
         console.error("fetchIcons", err);
-      } finally {
-        setLoading(false);
       }
     };
     fetchIcons();
-  }, []);
-
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      {loading ? (
-        <div className="flex items-center justify-center h-20 border border-gray-200 rounded-lg">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
-        </div>
-      ) : (
-        <div className="border border-gray-200 rounded-lg p-2 max-h-32 overflow-y-auto">
-          <div className="grid grid-cols-8 gap-2">
-            {icons.map((icon) => (
-              <button
-                key={icon._id}
-                type="button"
-                onClick={() => onChange(icon.url)}
-                className={`w-10 h-10 border-2 ${
-                  value === icon.url ? "border-blue-500" : "border-gray-300"
-                } overflow-hidden flex items-center justify-center`}
-              >
-                <img
-                  src={icon.url}
-                  alt={icon.name}
-                  className="w-full h-full object-contain"
-                />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-// Keypoint selector component
-const KeypointSelector = ({
-  value,
-  onChange,
-  label,
-}: {
-  value: string;
-  onChange: (value: string) => void;
-  label: string;
-}) => {
-  const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
-  const [keypointQuery, setKeypointQuery] = useState("");
-  const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
-    null
-  );
-  const lang = useSelector(
-    (state: RootState) => state.lang.code
-  ) as keyof ITranslation as LangCode;
-
-  useEffect(() => {
-    let active = true;
-    const fetchKeypoints = async () => {
-      try {
-        const res = await keypointService.getList({
-          page: 1,
-          take: 20,
-          search: keypointQuery,
-        });
-        const list: IKeypoint[] = res.data.items ?? [];
-        if (active) setKeypoints(list);
-      } catch (err) {
-        console.error("fetchKeypoints", err);
-      }
-    };
-    fetchKeypoints();
     return () => {
       active = false;
     };
-  }, [keypointQuery]);
+  }, [iconQuery]);
 
+  // Fetch selected roleplay details when learningItemId changes
   useEffect(() => {
-    if (value) {
-      const fetchKeypointDetail = async () => {
+    if (currentRoleplayLesson.learningItemId) {
+      const fetchLearningItemDetails = async () => {
         try {
-          const res = await keypointService.getById(value);
+          const res = await learningItemService.getById(
+            currentRoleplayLesson.learningItemId || ""
+          );
           if (res.data) {
-            setSelectedKeypoint(res.data);
+            const apiItem = res.data as ILearningItem;
+            // If API response lacks nested roleplay data, preserve existing state
+            setRoleplayItem((prev) => mergeRoleplayState(prev, apiItem));
           }
         } catch (err) {
-          console.error("fetchKeypointDetail", err);
+          console.error("fetchLearningItemDetails", err);
         }
       };
-      fetchKeypointDetail();
+      fetchLearningItemDetails();
     } else {
-      setSelectedKeypoint(null);
+      setRoleplayItem(createEmptyRoleplay());
     }
-  }, [value]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRoleplayLesson.learningItemId]);
 
-  return (
-    <div>
-      <label className="block text-sm font-medium text-gray-700 mb-1">
-        {label}
-      </label>
-      <Combobox<string | null>
-        value={value || null}
-        onChange={(val: string | null) => {
-          onChange(val ?? "");
-          setKeypointQuery("");
-        }}
-      >
-        <div className="relative">
-          <Combobox.Input
-            displayValue={(val: string | null) => {
-              if (selectedKeypoint) {
-                return selectedKeypoint.title?.[lang] || "";
-              }
-              return keypointQuery;
-            }}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setKeypointQuery(e.target.value)
-            }
-            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="Search keypoint..."
-          />
-          <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-            {keypoints
-              .filter((k) =>
-                k.title?.[lang]
-                  ?.toLowerCase()
-                  .includes(keypointQuery.toLowerCase())
-              )
-              .map((c) => (
-                <Combobox.Option
-                  key={c._id}
-                  value={c._id}
-                  className="cursor-pointer px-3 py-3 hover:bg-blue-50"
-                >
-                  {c.title?.[lang]}
-                </Combobox.Option>
-              ))}
-          </Combobox.Options>
-        </div>
-      </Combobox>
-    </div>
-  );
-};
+  const handleRoleplayLessonImageChange = (newUrl: string) => {
+    setCurrentRoleplayLesson((prev) => ({
+      ...prev,
+      image: newUrl,
+    }));
+  };
 
-interface RoleplayFormProps {
-  roleplay?: ILearningItem;
-  onSave?: (roleplay: ILearningItem) => void;
-  onCancel?: () => void;
-}
-
-export default function RoleplayForm({
-  roleplay,
-  onSave,
-  onCancel,
-}: RoleplayFormProps) {
-  const navigate = useNavigate();
-  const lang = useSelector(
-    (state: RootState) => state.lang.code
-  ) as keyof ITranslation as LangCode;
-  const isEditMode = !!roleplay;
-  const { showSuccess, showError } = useNotification();
-  const showErrorRef = useRef(showError);
-  useEffect(() => {
-    showErrorRef.current = showError;
-  }, [showError]);
-
-  // State for keypoint search
-  const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
-  const [keypointQuery, setKeypointQuery] = useState("");
-  const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
-    null
-  );
-
-  // State for section ID counter
-  const [nextSectionId, setNextSectionId] = useState(1);
-
-  // State for content ID counter
-  const [nextContentId, setNextContentId] = useState(1);
-
-  // State for drag-drop option and answer ID counters
-  const [nextOptionId, setNextOptionId] = useState(1);
-  const [nextAnswerId, setNextAnswerId] = useState(1);
-
-  // Sync roleplay prop -> local state
-  const [currentRoleplay, setCurrentRoleplay] = useState<ILearningItem>(
-    () =>
-      roleplay ??
-      ({
-        _id: "",
-        keypointId: "",
-        type: LearningItemType.ROLEPLAY,
-        title: { [lang]: "" },
-        description: { [lang]: "" },
-        image: "",
-        isSub: false,
-        tag: [],
-        questions: [],
-        subQuestions: [],
-        documents: [],
-        sections: [],
-        index: 0,
-      } as ILearningItem)
-  );
-
-  useEffect(() => {
-    if (roleplay) {
-      // Find max section ID and set nextSectionId accordingly
-      const maxSectionId = [...(roleplay.sections || [])].reduce(
-        (max, s) => Math.max(max, s.id ?? 0),
-        0
-      );
-      setNextSectionId(maxSectionId + 1);
-
-      // Find max content ID and set nextContentId accordingly
-      const maxContentId = [...(roleplay.sections || [])]
-        .flatMap((s) => s.contents || [])
-        .reduce((max, c) => Math.max(max, c.id ?? 0), 0);
-      setNextContentId(maxContentId + 1);
-
-      // Find max option and answer IDs for drag-drop exercise
-      const maxOptionId = [...(roleplay.sections || [])]
-        .flatMap((s) => s.contents || [])
-        .filter((c) => c.type === RoleplaySectionType.EXERCISE)
-        .flatMap((c) => (c.exercise as IExerciseDragDrop)?.options || [])
-        .reduce((max, opt) => Math.max(max, opt.id || 0), 0);
-      setNextOptionId(maxOptionId + 1);
-
-      const maxAnswerId = [...(roleplay.sections || [])]
-        .flatMap((s) => s.contents || [])
-        .filter((c) => c.type === RoleplaySectionType.EXERCISE)
-        .flatMap((c) => (c.exercise as IExerciseDragDrop)?.answer || [])
-        .reduce((max, ans) => Math.max(max, ans.id || 0), 0);
-      const startOptionId = maxOptionId + 1;
-      const startAnswerId = maxAnswerId + 1;
-      setNextOptionId(startOptionId);
-      setNextAnswerId(startAnswerId);
-
-      let optionCounter = startOptionId;
-      let answerCounter = startAnswerId;
-
-      const normalizeExerciseIds = (exerciseData: any) => {
-        if (exerciseData?.type !== ExerciseType.DRAG_DROP) return exerciseData;
-        const options = (exerciseData.options || []).map((opt: any) =>
-          opt && opt.id ? opt : { ...opt, id: optionCounter++ }
-        );
-        const answer = (exerciseData.answer || []).map((ans: any) =>
-          ans && ans.id ? ans : { ...ans, id: answerCounter++ }
-        );
-        return { ...exerciseData, options, answer } as IExerciseDragDrop;
-      };
-
-      const normalizedSections = (roleplay.sections || []).map((section) => ({
-        ...section,
-        contents: (section.contents || []).map((content) => {
-          if (content.type !== RoleplaySectionType.EXERCISE) return content;
-          return {
-            ...content,
-            exercise: normalizeExerciseIds(content.exercise),
-          };
-        }),
-      }));
-
-      setNextOptionId(optionCounter);
-      setNextAnswerId(answerCounter);
-      setCurrentRoleplay({ ...roleplay, sections: normalizedSections });
-    } else {
-      // Reset form when creating new roleplay
-      setCurrentRoleplay({
-        _id: "",
-        keypointId: "",
-        type: LearningItemType.ROLEPLAY,
-        title: { [lang]: "" },
-        description: { [lang]: "" },
-        image: "",
-        isSub: false,
-        tag: [],
-        questions: [],
-        subQuestions: [],
-        documents: [],
-        sections: [],
-        index: 0,
-      } as ILearningItem);
-      setNextSectionId(1);
-      setNextContentId(1);
-      setNextOptionId(1);
-      setNextAnswerId(1);
-    }
-  }, [roleplay]); // Remove lang from dependency to prevent reset on language change
-
-  // Separate effect to update title and description language when creating new roleplay
-  useEffect(() => {
-    if (!roleplay && currentRoleplay._id === "") {
-      // Only update the title and description fields to ensure they have the current language
-      setCurrentRoleplay((prev) => ({
-        ...prev,
-        title: { [lang]: (prev.title as ITranslation)?.[lang] || "" },
-        description: {
-          [lang]: (prev.description as ITranslation)?.[lang] || "",
-        },
-      }));
-    }
-  }, [lang, roleplay, currentRoleplay._id]);
-
+  // Fetch courses based on query
   useEffect(() => {
     let active = true;
-    const fetchTemplates = async () => {
+    const fetchCourses = async () => {
       try {
-        setColorTemplatesLoading(true);
-        const res = await roleplayColorTemplateService.getList({
-          page: 1,
-          take: 1000,
-        });
-        const list: IRoleplayColorTemplate[] =
-          res?.data?.items || res?.items || res?.data || res || [];
-        if (active) setColorTemplates(list);
-      } catch (err) {
-        console.error("fetchRoleplayColorTemplates", err);
-        showErrorRef.current?.("Failed to load roleplay color templates");
-      } finally {
-        if (active) setColorTemplatesLoading(false);
-      }
-    };
-    fetchTemplates();
-    return () => {
-      active = false;
-    };
-  }, []);
-
-  const [saving, setSaving] = useState(false);
-  const [modalOpen, setModalOpen] = useState<{
-    sectionId: number | null;
-    contentType: RoleplaySectionType;
-    content?: any;
-    formData?: any;
-  }>({ sectionId: null, contentType: RoleplaySectionType.CONVERSATION });
-  const [confirmDeleteSection, setConfirmDeleteSection] = useState<{
-    sectionId: number | null;
-    sectionTitle: string;
-  } | null>(null);
-  const [confirmDeleteContent, setConfirmDeleteContent] = useState<{
-    sectionId: number | null;
-    contentId: number | null;
-    contentTitle: string;
-  } | null>(null);
-
-  const [confirmDeleteRoleplay, setConfirmDeleteRoleplay] = useState(false);
-  const [showContentTypePopup, setShowContentTypePopup] = useState(false);
-  const [currentSectionForPopup, setCurrentSectionForPopup] = useState<
-    number | null
-  >(null);
-  const [validationErrors, setValidationErrors] = useState<{
-    [key: string]: string;
-  }>({});
-  const [colorTemplates, setColorTemplates] = useState<
-    IRoleplayColorTemplate[]
-  >([]);
-  const [colorTemplatesLoading, setColorTemplatesLoading] = useState(false);
-
-  const getColorTemplateForSection = (
-    sectionId?: number | null
-  ): IRoleplayColorTemplate | undefined => {
-    if (!sectionId) return undefined;
-    const section = currentRoleplay.sections?.find((s) => s.id === sectionId);
-    if (!section?.colorTemplateId) return undefined;
-    return colorTemplates.find((t) => t._id === section.colorTemplateId);
-  };
-
-  const transformExerciseToPayload = (
-    exercise?: ExerciseInput
-  ): ExerciseInputPayload | undefined => {
-    if (!exercise) return undefined;
-
-    const exercisePayload = { ...(exercise as ExerciseInputPayload) };
-
-    if ("tag" in exercise) {
-      const tagValue = (exercise as { tag?: ITag | string | null }).tag;
-      const payloadWithTag = exercisePayload as {
-        tag?: string;
-        tagId?: string;
-      };
-      payloadWithTag.tagId =
-        typeof tagValue === "string" ? tagValue : tagValue?._id || "";
-      delete payloadWithTag.tag;
-    }
-
-    // Clean ITranslation fields - only add if not empty
-    if ("speechBubble" in exercisePayload && exercisePayload.speechBubble) {
-      const cleanedSpeechBubble = cleanTranslation(
-        exercisePayload.speechBubble as ITranslation
-      );
-      if (cleanedSpeechBubble) {
-        (exercisePayload as any).speechBubble = cleanedSpeechBubble;
-      } else {
-        delete (exercisePayload as any).speechBubble;
-      }
-    }
-    if ("explanation" in exercisePayload && exercisePayload.explanation) {
-      const cleanedExplanation = cleanTranslation(
-        exercisePayload.explanation as ITranslation
-      );
-      if (cleanedExplanation) {
-        (exercisePayload as any).explanation = cleanedExplanation;
-      } else {
-        delete (exercisePayload as any).explanation;
-      }
-    }
-    if ("targetArea" in exercisePayload && exercisePayload.targetArea) {
-      const cleanedTargetArea = cleanTranslation(
-        exercisePayload.targetArea as ITranslation
-      );
-      if (cleanedTargetArea) {
-        (exercisePayload as any).targetArea = cleanedTargetArea;
-      } else {
-        delete (exercisePayload as any).targetArea;
-      }
-    }
-    if (
-      "options" in exercisePayload &&
-      Array.isArray(exercisePayload.options)
-    ) {
-      (exercisePayload as any).options = exercisePayload.options.map(
-        (opt: any) => {
-          const cleanedOption: any = { ...opt };
-          const cleanedValue = cleanTranslation(opt.value);
-          if (cleanedValue) {
-            cleanedOption.value = cleanedValue;
-          }
-          const cleanedText = cleanTranslation(opt.text);
-          if (cleanedText) {
-            cleanedOption.text = cleanedText;
-          }
-          return cleanedOption;
-        }
-      );
-    }
-    if ("answer" in exercisePayload && Array.isArray(exercisePayload.answer)) {
-      (exercisePayload as any).answer = exercisePayload.answer.map(
-        (ans: any) => {
-          const cleanedAnswer: any = { ...ans };
-          const cleanedCorrectAnswer = cleanTranslation(ans.correctAnswer);
-          if (cleanedCorrectAnswer) {
-            cleanedAnswer.correctAnswer = cleanedCorrectAnswer;
-          }
-          return cleanedAnswer;
-        }
-      );
-    }
-    if (
-      "document" in exercisePayload &&
-      Array.isArray(exercisePayload.document)
-    ) {
-      const cleanedDocuments = cleanDocumentItems(
-        exercisePayload.document as IDocument[]
-      );
-      if (cleanedDocuments.length > 0) {
-        (exercisePayload as any).document = cleanedDocuments;
-      } else {
-        delete (exercisePayload as any).document;
-      }
-    }
-
-    return exercisePayload;
-  };
-
-  const transformSectionsToPayload = (
-    sectionList?: ISection[]
-  ): ISectionPayload[] | undefined => {
-    if (!sectionList) return undefined;
-
-    return sectionList.map((section) => {
-      const sectionPayload: any = {
-        id: section.id,
-        textColor: section.textColor,
-        backgroundColor: section.backgroundColor,
-        image: section.image || "",
-        colorTemplateId: section.colorTemplateId,
-        contents: [],
-      };
-
-      // Always include title field but clean empty translations
-      sectionPayload.title = cleanTranslation(section.title) || {};
-
-      // Always include transition field but clean empty translations
-      sectionPayload.transition = cleanTranslation(section.transition) || {};
-
-      // Process contents
-      if (section.contents?.length) {
-        sectionPayload.contents = section.contents.map((content) => {
-          const contentPayload: any = {
-            id: content.id,
-            type: content.type,
-          };
-
-          // Handle exercise content
-          if (content.type === RoleplaySectionType.EXERCISE) {
-            const exercisePayload = transformExerciseToPayload(
-              content.exercise
-            );
-            if (exercisePayload) {
-              contentPayload.exercise = exercisePayload;
-            }
-          }
-          // Handle conversation content
-          else if (
-            content.type === RoleplaySectionType.CONVERSATION &&
-            content.conversation
-          ) {
-            const cleanedConversationAudio = cleanTranslation(
-              content.conversation.audio
-            );
-            contentPayload.conversation = {
-              position: content.conversation.position,
-              backgroundColor: content.conversation.backgroundColor,
-              textColor: content.conversation.textColor,
-              avatarId:
-                content.conversation.avatar?._id ||
-                content.conversation.avatarId ||
-                "",
-              // Always include content field but clean empty translations
-              content: content.conversation.content
-                ? cleanTranslation(content.conversation.content) || {}
-                : {},
-              audio: cleanedConversationAudio || {},
-            };
-          }
-          // Handle leading text content
-          else if (
-            content.type === RoleplaySectionType.LEADING_TEXT &&
-            content.leadingText
-          ) {
-            const cleanedLeadingAudio = cleanTranslation(
-              content.leadingText.audio
-            );
-            contentPayload.leadingText = {
-              ...content.leadingText,
-              // Always include content field but clean empty translations
-              content: content.leadingText.content
-                ? cleanTranslation(content.leadingText.content) || {}
-                : {},
-              audio: cleanedLeadingAudio || {},
-            };
-          }
-          // Handle hint content
-          else if (content.type === RoleplaySectionType.HINT && content.hint) {
-            contentPayload.hint = {
-              ...content.hint,
-              // Always include content field but clean empty translations
-              content: content.hint.content
-                ? cleanTranslation(content.hint.content) || {}
-                : {},
-            };
-          }
-
-          return contentPayload as ISectionContentPayload;
-        });
-      }
-
-      return sectionPayload;
-    });
-  };
-
-  const buildLearningItemPayload = (
-    item: ILearningItem
-  ): LearningItemPayload => {
-    const payload: any = {
-      keypointId: item.keypointId,
-      title: cleanTranslation(item.title) || {},
-      type: LearningItemType.ROLEPLAY,
-      image: item.image,
-      tag: item.tag || [],
-      isSub: item.isSub,
-      sections: transformSectionsToPayload(item.sections),
-      index: item.index,
-    };
-
-    const cleanedDescription = cleanTranslation(item.description);
-    if (cleanedDescription && Object.keys(cleanedDescription).length > 0) {
-      payload.description = cleanedDescription;
-    }
-
-    return payload as LearningItemPayload;
-  };
-
-  // Fetch keypoint based on query
-  useEffect(() => {
-    let active = true;
-    const fetchKeypoints = async () => {
-      try {
-        const res = await keypointService.getList({
+        const res = await courseService.getList({
           page: 1,
           take: 20,
-          search: keypointQuery,
+          search: courseQuery,
+          isAll: true,
         });
-        const list: IKeypoint[] = res.data.items ?? [];
-        if (active) setKeypoints(list);
+        const list: ICourse[] = res.data.items ?? [];
+        if (active) setCourses(list);
       } catch (err) {
-        console.error("fetchKeypoints", err);
+        console.error("fetchCourses", err);
       }
     };
-    fetchKeypoints();
+    fetchCourses();
     return () => {
       active = false;
     };
-  }, [keypointQuery]);
+  }, [courseQuery]);
 
-  // Fetch selected keypoint details when keypointId changes
+  // Fetch selected course details when courseId changes
   useEffect(() => {
-    if (currentRoleplay.keypointId) {
-      const fetchKeypointDetail = async () => {
+    if (currentRoleplayLesson.courseId) {
+      const fetchCourseDetails = async () => {
         try {
-          const res = await keypointService.getById(currentRoleplay.keypointId);
-
+          const res = await courseService.getById(currentRoleplayLesson.courseId);
           if (res.data) {
-            setSelectedKeypoint(res.data);
+            setSelectedCourse(res.data);
           }
         } catch (err) {
-          console.error("fetchKeypointDetail", err);
+          console.error("fetchCourseDetails", err);
         }
       };
-      fetchKeypointDetail();
+      fetchCourseDetails();
     } else {
-      setSelectedKeypoint(null);
+      setSelectedCourse(null);
     }
-  }, [currentRoleplay.keypointId]);
+  }, [currentRoleplayLesson.courseId]);
 
-  // Save entire roleplay (create or update)
-  const handleSaveRoleplay = async () => {
+  // Save entire roleplay lesson (create or update)
+  const handleSaveRoleplayLesson = async () => {
     try {
       setSaving(true);
-      const payload = buildLearningItemPayload(currentRoleplay);
 
-      let res;
-      if (currentRoleplay._id) {
-        res = await learningItemService.update(currentRoleplay._id, payload);
-      } else {
-        res = await learningItemService.create(payload);
+      // Try saving the embedded roleplay; fall back to existing roleplay if already saved
+      let savedRoleplay: ILearningItem | undefined =
+        (await roleplaySaveRef.current?.()) || undefined;
+
+      if (!savedRoleplay?._id) {
+        const existingId =
+          roleplayItem?._id || currentRoleplayLesson.learningItemId || "";
+        if (existingId) {
+          savedRoleplay =
+            (await refreshRoleplay(existingId)) ||
+            (roleplayItem?._id === existingId ? roleplayItem : undefined);
+        }
       }
 
-      const savedRoleplay = res.data?.data ?? res.data;
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      onSave?.(savedRoleplay);
+      if (!savedRoleplay?._id) {
+        showError("Please complete and save the roleplay content first.");
+        setSaving(false);
+        return;
+      }
 
-      isEditMode
-        ? showSuccess("Saved roleplay successfully")
-        : showSuccess("Create roleplay successfully");
+      // Prepare LessonPayload with all ITranslation fields
+      // Update translation values and clean empty ones
+      const title = cleanTranslation(
+        updateTranslationValue(
+          currentRoleplayLesson.title,
+          lang,
+          currentRoleplayLesson.title?.[lang] || ""
+        )
+      );
+      const description = cleanTranslation(
+        updateTranslationValue(
+          currentRoleplayLesson.description,
+          lang,
+          currentRoleplayLesson.description?.[lang] || ""
+        )
+      );
+      const estimateCompleTime = cleanTranslation(
+        updateTranslationValue(
+          currentRoleplayLesson.estimateCompleTime,
+          lang,
+          currentRoleplayLesson.estimateCompleTime?.[lang] || ""
+        )
+      );
+
+      // keypoints in LessonPayload should be string array (IDs)
+      // Since ILesson.keypoints is IKeypoint[], we need to extract IDs
+      const keypointIds = currentRoleplayLesson.keypoints?.map((kp) => kp._id) || [];
+
+      const ensuredRoleplay =
+        (await refreshRoleplay(savedRoleplay._id)) ||
+        mergeRoleplayState(roleplayItem, savedRoleplay);
+
+      setRoleplayItem(ensuredRoleplay);
+
+      const lessonPayload: any = {
+        courseId: currentRoleplayLesson.courseId,
+        learningItemId: ensuredRoleplay._id,
+        type: LessonType.ROLEPLAY,
+        title: title || { [lang]: "" },
+        ...(description && { description }),
+        ...(estimateCompleTime && { estimateCompleTime }),
+        icon: (currentRoleplayLesson.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
+        image: currentRoleplayLesson.image,
+        keypoints: keypointIds, // Convert IKeypoint[] to string[]
+        status: currentRoleplayLesson.status,
+        index: currentRoleplayLesson.index,
+      };
+
+      // Optional fields already handled by conditional spread operator above
+
+      let res;
+      if (currentRoleplayLesson._id) {
+        res = await lessonService.update(
+          currentRoleplayLesson._id,
+          lessonPayload as Partial<LessonPayload>
+        );
+      } else {
+        res = await lessonService.create(lessonPayload as LessonPayload);
+      }
+      const savedRoleplayLesson = res.data?.data ?? res.data;
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      onSave?.(savedRoleplayLesson);
+      setCurrentRoleplayLesson((prev) => ({
+        ...prev,
+        learningItemId: ensuredRoleplay._id,
+      }));
+
+      currentRoleplayLesson._id
+        ? showSuccess("Saved roleplay lesson successfully")
+        : showSuccess("Create roleplay lesson successfully");
     } catch (err) {
-      console.error("handleSaveRoleplay", err);
+      console.error("handleSaveRoleplayLesson", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save roleplay"
+        (err as any).response?.data?.message || "Failed to save roleplay lesson"
       );
     } finally {
       setSaving(false);
     }
   };
 
-  // Reorder sections and reassign IDs
-  const handleReorderSections = (activeId: number, overId: number) => {
-    setCurrentRoleplay((prev) => {
-      if (!prev) return prev;
-      const list = prev.sections || [];
-
-      const activeIndex = list.findIndex((item) => item.id === activeId);
-      const overIndex = list.findIndex((item) => item.id === overId);
-
-      if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex) {
-        return prev;
-      }
-
-      const newList = arrayMove(list, activeIndex, overIndex);
-
-      // Reassign IDs starting from 1
-      const reassignedList = newList.map((item, index) => ({
-        ...item,
-        id: index + 1,
-      }));
-
-      // Update the next ID
-      setNextSectionId(reassignedList.length + 1);
-
-      return { ...prev, sections: reassignedList };
-    });
+  const handleSelectIcon = (icon: ITag) => {
+    setCurrentRoleplayLesson((prev) => ({
+      ...prev,
+      icon: icon as any, // Store full ITag object for display
+    }));
+    setIconQuery("");
   };
 
-  // Reorder content within a section and reassign IDs
-  const handleReorderContent = (
-    sectionId: number,
-    activeId: number,
-    overId: number
-  ) => {
-    setCurrentRoleplay((prev) => {
-      if (!prev) return prev;
-      const sections = prev.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-
-      if (sectionIndex === -1) return prev;
-
-      const section = sections[sectionIndex];
-      const contentList = section.contents || [];
-
-      const activeIndex = contentList.findIndex((item) => item.id === activeId);
-      const overIndex = contentList.findIndex((item) => item.id === overId);
-
-      if (activeIndex === -1 || overIndex === -1 || activeIndex === overIndex) {
-        return prev;
-      }
-
-      const newContentList = arrayMove(contentList, activeIndex, overIndex);
-
-      // Reassign IDs starting from 1
-      const reassignedList = newContentList.map((item, index) => ({
-        ...item,
-        id: index + 1,
-      }));
-
-      // Update the section with the reordered content
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = {
-        ...section,
-        contents: reassignedList,
-      };
-
-      return { ...prev, sections: updatedSections };
-    });
-  };
-
-  // Open content type popup
-  const handleOpenContentTypePopup = (sectionId: number) => {
-    setCurrentSectionForPopup(sectionId);
-    setShowContentTypePopup(true);
-  };
-
-  // Select content type and open content form
-  const handleSelectContentType = (contentType: RoleplaySectionType) => {
-    if (currentSectionForPopup === null) return;
-
-    const template = getColorTemplateForSection(currentSectionForPopup);
-    const formData = createEmptyContent(contentType, nextContentId, template);
-
-    setModalOpen({
-      sectionId: currentSectionForPopup,
-      contentType,
-      formData,
-    });
-
-    setShowContentTypePopup(false);
-    setCurrentSectionForPopup(null);
-  };
-
-  const handleOpenModal = (
-    sectionId: number,
-    contentType: RoleplaySectionType,
-    content?: any
-  ) => {
-    // If there is content data (editing), copy the data
-    // If not (adding new), create empty content
-    const sectionTemplate = getColorTemplateForSection(sectionId);
-    const formData = content
-      ? { ...content }
-      : createEmptyContent(contentType, nextContentId, sectionTemplate);
-
-    // Open modal with corresponding information
-    setModalOpen({ sectionId, contentType, content, formData });
-  };
-
-  // Create empty content based on type
-  const createEmptyContent = (
-    type: RoleplaySectionType,
-    id: number,
-    template?: IRoleplayColorTemplate
-  ) => {
-    switch (type) {
-      case RoleplaySectionType.CONVERSATION:
-        const leftStyle = template?.conversation?.left;
-        return {
-          id,
-          type,
-          conversation: {
-            avatar: undefined,
-            avatarId: "",
-            position: SectionConversationPosition.LEFT,
-            backgroundColor: leftStyle?.backgroundColor || "#FFFFFF",
-            textColor: leftStyle?.textColor || "#000000",
-            content: { [lang]: "" },
-            audio: { [lang]: "" },
-          } as IConversation,
-        } as ISectionContent;
-      case RoleplaySectionType.LEADING_TEXT:
-        return {
-          id,
-          type,
-          leadingText: {
-            backgroundColor:
-              template?.leadingText?.backgroundColor || "#000000",
-            textColor: template?.leadingText?.textColor || "#000000",
-            content: { [lang]: "" },
-            audio: { [lang]: "" },
-          } as ILeadingText,
-        } as ISectionContent;
-      case RoleplaySectionType.HINT:
-        return {
-          id,
-          type,
-          hint: {
-            icon: "",
-            backgroundColor: template?.hint?.backgroundColor || "#FFFFFF",
-            textColor: template?.hint?.textColor || "#000000",
-            content: { [lang]: "" },
-          } as IHint,
-        } as ISectionContent;
-      case RoleplaySectionType.EXERCISE:
-        // Create a default single choice exercise
-        return {
-          id,
-          type,
-          exercise: {
-            id: 1,
-            type: ExerciseType.SINGLE_CHOICE,
-            speechBubble: { [lang]: "" },
-            tag: null,
-            keypointId: "",
-            document: [],
-            explanation: { [lang]: "" },
-            options: [] as IExerciseChoiceOption[],
-            level: [KeypointLevel.WEAK_POINT],
-            maxScore: 10,
-            mainQuestion: 0,
-          } as IExerciseSingleChoice,
-        } as ISectionContent;
-      default:
-        return null;
-    }
-  };
-
-  // Request delete section
-  const requestDeleteSection = (
-    sectionId: number,
-    sectionTitle = "section"
-  ) => {
-    setConfirmDeleteSection({ sectionId, sectionTitle });
-  };
-
-  // Request delete content
-  const requestDeleteContent = (
-    sectionId: number,
-    contentId: number,
-    contentTitle = "content"
-  ) => {
-    setConfirmDeleteContent({ sectionId, contentId, contentTitle });
-  };
-
-  // Delete entire roleplay
   const handleDeleteRoleplay = async () => {
-    if (!currentRoleplay._id) return;
+    if (!currentRoleplayLesson._id) return;
     try {
-      await learningItemService.remove(currentRoleplay._id);
+      await lessonService.remove(currentRoleplayLesson._id);
       setConfirmDeleteRoleplay(false);
-      if (onCancel) {
-        onCancel();
-      } else {
-        navigate("/roleplay");
-      }
+      navigate("/roleplay");
     } catch (err) {
       console.error(err);
     } finally {
@@ -1296,3093 +374,18 @@ export default function RoleplayForm({
     }
   };
 
-  // Handle saving content and roleplay together
-  const handleSaveContentAndRoleplay = async (
-    contentData: any,
-    options?: { sectionId?: number | null; isEditing?: boolean }
-  ) => {
-    try {
-      // Xóa lỗi cũ
-      setValidationErrors({});
-
-      const embeddedSectionId =
-        typeof contentData?.__sectionId === "number"
-          ? (contentData.__sectionId as number)
-          : null;
-      const baseContent =
-        embeddedSectionId !== null ? { ...contentData } : contentData;
-      if (embeddedSectionId !== null) {
-        delete baseContent.__sectionId;
-      }
-
-      // Chuẩn hóa avatarId cho conversation
-      let normalizedContent = baseContent;
-      if (
-        baseContent.type === RoleplaySectionType.CONVERSATION &&
-        baseContent.conversation
-      ) {
-        const avatarObj = baseContent.conversation.avatar;
-        const avatarId =
-          baseContent.conversation.avatarId || avatarObj?._id || "";
-        normalizedContent = {
-          ...baseContent,
-          conversation: {
-            ...baseContent.conversation,
-            avatar: avatarObj,
-            avatarId,
-          },
-        };
-      }
-
-      // Thực hiện xác thực dựa trên loại nội dung
-      let hasError = false;
-      const errors: { [key: string]: string } = {};
-
-      if (normalizedContent.type === RoleplaySectionType.CONVERSATION) {
-        if (!normalizedContent.conversation.avatarId) {
-          errors.avatar = "Avatar is required for conversation content";
-          hasError = true;
-        }
-      } else if (normalizedContent.type === RoleplaySectionType.LEADING_TEXT) {
-        if (
-          !getCurrentTranslationValue(
-            normalizedContent.leadingText.content,
-            lang
-          )
-        ) {
-          errors.content = "Content is required for leading text";
-          hasError = true;
-        }
-      } else if (normalizedContent.type === RoleplaySectionType.HINT) {
-        if (!normalizedContent.hint.icon) {
-          errors.icon = "Icon is required for hint content";
-          hasError = true;
-        }
-        if (!getCurrentTranslationValue(normalizedContent.hint.content, lang)) {
-          errors.hintContent = "Content is required for hint content";
-          hasError = true;
-        }
-      }
-
-      // Nếu có lỗi, cập nhật state và dừng việc lưu
-      if (hasError) {
-        setValidationErrors(errors);
-        return;
-      }
-
-      setSaving(true);
-
-      const targetSectionId =
-        embeddedSectionId ?? options?.sectionId ?? modalOpen.sectionId;
-      const isEditingExisting =
-        options?.isEditing ?? Boolean(modalOpen.content);
-
-      if (!targetSectionId) {
-        setSaving(false);
-        showError("Missing section context");
-        return;
-      }
-
-      const normalizedInput =
-        contentData && contentData.__sectionId
-          ? (() => {
-              const cloned = { ...contentData };
-              delete cloned.__sectionId;
-              return cloned;
-            })()
-          : contentData;
-
-      let updatedRoleplay;
-      if (isEditingExisting) {
-        // Update existing content
-        const sections = currentRoleplay.sections || [];
-        const sectionIndex = sections.findIndex(
-          (s) => s.id === targetSectionId
-        );
-
-        if (sectionIndex === -1) return;
-
-        const section = sections[sectionIndex];
-        const contentList = section.contents || [];
-        const updatedContentList = contentList.map((c) =>
-          c.id === normalizedContent.id ? normalizedContent : c
-        );
-
-        const updatedSections = [...sections];
-        updatedSections[sectionIndex] = {
-          ...section,
-          contents: updatedContentList,
-        };
-
-        updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
-      } else {
-        // Add new content
-        const sections = currentRoleplay.sections || [];
-        const sectionIndex = sections.findIndex(
-          (s) => s.id === targetSectionId
-        );
-
-        if (sectionIndex === -1) return;
-
-        const section = sections[sectionIndex];
-        const contentList = section.contents || [];
-        const updatedContentList = [...contentList, normalizedContent];
-
-        const updatedSections = [...sections];
-        updatedSections[sectionIndex] = {
-          ...section,
-          contents: updatedContentList,
-        };
-
-        updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
-
-        // Update the next content ID
-        setNextContentId(nextContentId + 1);
-      }
-
-      setCurrentRoleplay(updatedRoleplay);
-
-      const payload = buildLearningItemPayload(updatedRoleplay);
-
-      if (updatedRoleplay._id) {
-        await learningItemService.update(updatedRoleplay._id, payload);
-      } else {
-        const res = await learningItemService.create(payload);
-        const savedRoleplay = res.data?.data ?? res.data;
-        setCurrentRoleplay(savedRoleplay);
-        onSave?.(savedRoleplay);
-      }
-
-      showSuccess("Content saved successfully");
-      setModalOpen({
-        sectionId: null,
-        contentType: RoleplaySectionType.CONVERSATION,
-      });
-    } catch (err) {
-      console.error("handleSaveContentAndRoleplay", err);
-      showError(
-        (err as any).response?.data?.message || "Failed to save content"
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Handle deleting content and saving roleplay together
-  const handleDeleteContentAndSaveRoleplay = async () => {
-    if (!confirmDeleteContent) return;
-    const { sectionId, contentId } = confirmDeleteContent;
-    if (!sectionId || !contentId) {
-      setConfirmDeleteContent(null);
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      const sections = currentRoleplay.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-
-      if (sectionIndex === -1) return;
-
-      const section = sections[sectionIndex];
-      const contentList = section.contents || [];
-      const updatedContentList = contentList.filter((c) => c.id !== contentId);
-
-      const reassignedList = updatedContentList.map((item, index) => ({
-        ...item,
-        id: index + 1,
-      }));
-
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = {
-        ...section,
-        contents: reassignedList,
-      };
-
-      const updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
-      setCurrentRoleplay(updatedRoleplay);
-
-      const payload = buildLearningItemPayload(updatedRoleplay);
-
-      if (updatedRoleplay._id) {
-        await learningItemService.update(updatedRoleplay._id, payload);
-      }
-
-      showSuccess("Content deleted successfully");
-      setConfirmDeleteContent(null);
-    } catch (err) {
-      console.error("handleDeleteContentAndSaveRoleplay", err);
-      showError(
-        (err as any).response?.data?.message || "Failed to delete content"
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // Handle deleting section and saving roleplay together
-  const handleDeleteSectionAndSaveRoleplay = async () => {
-    if (!confirmDeleteSection) return;
-    const { sectionId } = confirmDeleteSection;
-    if (!sectionId) {
-      setConfirmDeleteSection(null);
-      return;
-    }
-
-    try {
-      setSaving(true);
-
-      const sections = currentRoleplay.sections || [];
-      const updatedSections = sections.filter((s) => s.id !== sectionId);
-
-      const reassignedList = updatedSections.map((item, index) => ({
-        ...item,
-        id: index + 1,
-      }));
-
-      setNextSectionId(reassignedList.length + 1);
-
-      const updatedRoleplay = { ...currentRoleplay, sections: reassignedList };
-      setCurrentRoleplay(updatedRoleplay);
-
-      const payload = buildLearningItemPayload(updatedRoleplay);
-
-      if (updatedRoleplay._id) {
-        await learningItemService.update(updatedRoleplay._id, payload);
-      }
-
-      showSuccess("Section deleted successfully");
-      setConfirmDeleteSection(null);
-    } catch (err) {
-      console.error("handleDeleteSectionAndSaveRoleplay", err);
-      showError(
-        (err as any).response?.data?.message || "Failed to save section "
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const addNewSection = (template: IRoleplayColorTemplate) => {
-    const newSection: ISection = {
-      id: nextSectionId,
-      title: { [lang]: `Section ${nextSectionId}` },
-      transition: { [lang]: "" },
-      textColor: template?.transition?.textColor || "#000000",
-      backgroundColor: template?.transition?.backgroundColor || "#ffffff",
-      image: "", // Added image field
-      colorTemplateId: template?._id,
-      contents: [],
-    };
-
-    setCurrentRoleplay((prev) => ({
-      ...prev,
-      sections: [...(prev.sections || []), newSection],
-    }));
-
-    setNextSectionId(nextSectionId + 1);
-  };
-
-  const updateSectionColorTemplate = async (
-    sectionId: number,
-    templateId: string
-  ) => {
-    const template = colorTemplates.find((item) => item._id === templateId);
-    if (!template) return;
-
-    const sections = currentRoleplay.sections || [];
-    const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-    if (sectionIndex === -1) return;
-
-    const updatedSection = {
-      ...sections[sectionIndex],
-      colorTemplateId: templateId,
-      textColor:
-        template.transition?.textColor || sections[sectionIndex].textColor,
-      backgroundColor:
-        template.transition?.backgroundColor ||
-        sections[sectionIndex].backgroundColor,
-      contents: (sections[sectionIndex].contents || []).map((content) => {
-        if (content.type === RoleplaySectionType.CONVERSATION) {
-          const style =
-            content.conversation.position === SectionConversationPosition.RIGHT
-              ? template.conversation?.right
-              : template.conversation?.left;
-          return {
-            ...content,
-            conversation: {
-              ...content.conversation,
-              backgroundColor:
-                style?.backgroundColor || content.conversation.backgroundColor,
-              textColor: style?.textColor || content.conversation.textColor,
-            },
-          };
-        }
-        if (content.type === RoleplaySectionType.LEADING_TEXT) {
-          return {
-            ...content,
-            leadingText: {
-              ...content.leadingText,
-              backgroundColor:
-                template.leadingText?.backgroundColor ||
-                content.leadingText.backgroundColor,
-              textColor:
-                template.leadingText?.textColor ||
-                content.leadingText.textColor,
-            },
-          };
-        }
-        if (content.type === RoleplaySectionType.HINT) {
-          return {
-            ...content,
-            hint: {
-              ...content.hint,
-              backgroundColor:
-                template.hint?.backgroundColor || content.hint.backgroundColor,
-              textColor: template.hint?.textColor || content.hint.textColor,
-            },
-          };
-        }
-        return content;
-      }),
-    };
-
-    const updatedSections = [...sections];
-    updatedSections[sectionIndex] = updatedSection;
-    const updatedRoleplay = { ...currentRoleplay, sections: updatedSections };
-    setCurrentRoleplay(updatedRoleplay);
-
-    if (!updatedRoleplay._id) return;
-
-    try {
-      setSaving(true);
-      const payload = buildLearningItemPayload(updatedRoleplay);
-      await learningItemService.update(updatedRoleplay._id, payload);
-      showSuccess("Updated section color template");
-    } catch (err) {
-      console.error("updateSectionColorTemplate", err);
-      showError(
-        (err as any).response?.data?.message || "Failed to save color template"
-      );
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  // const handleSelectTemplateForSection = (
-  //   template: IRoleplayColorTemplate
-  // ) => {
-  //   addNewSection(template);
-  //   setTemplateModalOpen(false);
-  // };
-
-  // Update section title
-  const updateSectionTitle = (sectionId: number, title: ITranslation) => {
-    setCurrentRoleplay((prev) => {
-      const sections = prev.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-
-      if (sectionIndex === -1) return prev;
-
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = {
-        ...updatedSections[sectionIndex],
-        title,
-      };
-
-      return { ...prev, sections: updatedSections };
-    });
-  };
-
-  // Update section transition
-  const updateSectionTransition = (
-    sectionId: number,
-    transition: ITranslation
-  ) => {
-    setCurrentRoleplay((prev) => {
-      const sections = prev.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-
-      if (sectionIndex === -1) return prev;
-
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = {
-        ...updatedSections[sectionIndex],
-        transition,
-      };
-
-      return { ...prev, sections: updatedSections };
-    });
-  };
-
-  // Update section transition text color
-  const updateSectionTransitionTextColor = (
-    sectionId: number,
-    textColor: string
-  ) => {
-    setCurrentRoleplay((prev) => {
-      const sections = prev.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-
-      if (sectionIndex === -1) return prev;
-
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = {
-        ...updatedSections[sectionIndex],
-        textColor,
-      };
-
-      return { ...prev, sections: updatedSections };
-    });
-  };
-
-  // Update section transition backgound color
-  const updateSectionTransitionBackgoundColor = (
-    sectionId: number,
-    backgroundColor: string
-  ) => {
-    setCurrentRoleplay((prev) => {
-      const sections = prev.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-
-      if (sectionIndex === -1) return prev;
-
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = {
-        ...updatedSections[sectionIndex],
-        backgroundColor,
-      };
-
-      return { ...prev, sections: updatedSections };
-    });
-  };
-
-  // Update section image
-  const updateSectionImage = (sectionId: number, image: string) => {
-    setCurrentRoleplay((prev) => {
-      const sections = prev.sections || [];
-      const sectionIndex = sections.findIndex((s) => s.id === sectionId);
-
-      if (sectionIndex === -1) return prev;
-
-      const updatedSections = [...sections];
-      updatedSections[sectionIndex] = {
-        ...updatedSections[sectionIndex],
-        image,
-      };
-
-      return { ...prev, sections: updatedSections };
-    });
-  };
-
-  // Render sections with drag and drop
-  const renderSections = () => {
-    const sections = currentRoleplay.sections || [];
-
-    return (
-      <div className="mb-6 bg-gray-50 rounded-xl p-6 shadow-sm">
-        <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">
-            Roleplay Sections
-          </h2>
-        </div>
-
-        <p className="text-sm text-gray-500 mb-4">
-          👉 Drag to reorder sections. Click on section to edit.
-        </p>
-
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={(event) => {
-            const { active, over } = event;
-
-            if (over && active.id !== over.id) {
-              const activeId =
-                typeof active.id === "string" ? parseInt(active.id) : active.id;
-              const overId =
-                typeof over.id === "string" ? parseInt(over.id) : over.id;
-
-              handleReorderSections(activeId, overId);
-            }
-          }}
-        >
-          <SortableContext
-            items={sections.map((item) => item.id!.toString())}
-            strategy={verticalListSortingStrategy}
-          >
-            {sections.length > 0 ? (
-              <div className="space-y-3">
-                {sections.map((section) => {
-                  const template = colorTemplates.find(
-                    (item) => item._id === section.colorTemplateId
-                  );
-                  return (
-                    <SortableItem key={section.id} id={section.id!.toString()}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                      >
-                        <div className="flex items-start justify-between mb-3">
-                          <div className="flex items-center gap-2">
-                            <h3 className="font-medium text-gray-800">
-                              {getTranslationValue(section.title, lang)}
-                            </h3>
-                            <span className="text-xs text-gray-500">
-                              ID: {section.id}
-                            </span>
-                            {template && (
-                              <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                                {template.title}
-                              </span>
-                            )}
-                          </div>
-                          <div className="flex gap-1">
-                            <button
-                              onClick={handleSaveRoleplay}
-                              className="text-blue-600 hover:text-blue-800 px-2 py-1 rounded flex items-center gap-1 border border-blue-200 bg-blue-50"
-                              title="Save section changes"
-                              disabled={saving}
-                            >
-                              {saving ? (
-                                <ArrowPathIcon className="h-5 w-5 animate-spin text-blue-500" />
-                              ) : (
-                                <ArrowDownTrayIcon className="h-5 w-5" />
-                              )}
-                              <span className="text-sm font-medium">
-                                {saving ? "Saving" : "Save"}
-                              </span>
-                            </button>
-                            <button
-                              onClick={() =>
-                                requestDeleteSection(
-                                  section.id || 0,
-                                  getTranslationValue(section.title, lang)
-                                )
-                              }
-                              className="text-red-500 hover:text-red-700 p-1 rounded"
-                              title="Delete Section"
-                            >
-                              <TrashIcon className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-3">
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Section Title
-                            </label>
-                            <input
-                              type="text"
-                              value={getCurrentTranslationValue(
-                                section.title,
-                                lang
-                              )}
-                              onChange={(e) =>
-                                updateSectionTitle(
-                                  section.id,
-                                  updateTranslationValue(
-                                    section.title || {},
-                                    lang,
-                                    e.target.value
-                                  )
-                                )
-                              }
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                              placeholder="Enter section title"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Transition
-                            </label>
-                            <input
-                              type="text"
-                              value={getCurrentTranslationValue(
-                                section.transition,
-                                lang
-                              )}
-                              onChange={(e) =>
-                                updateSectionTransition(
-                                  section.id,
-                                  updateTranslationValue(
-                                    section.transition || {},
-                                    lang,
-                                    e.target.value
-                                  )
-                                )
-                              }
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                              placeholder="Enter transition text"
-                            />
-                          </div>
-                          <div>
-                            <ColorPicker
-                              value={section.backgroundColor || "#000000"}
-                              onChange={(value) =>
-                                updateSectionTransitionBackgoundColor(
-                                  section.id,
-                                  value
-                                )
-                              }
-                              label="Backgound Color"
-                            />
-                          </div>
-                          <div>
-                            <ColorPicker
-                              value={section.textColor || "#ffffff"}
-                              onChange={(value) =>
-                                updateSectionTransitionTextColor(
-                                  section.id,
-                                  value
-                                )
-                              }
-                              label="Text Color"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Section Image
-                            </label>
-                            <CloudflareFileUpload
-                              initialUrl={section.image || ""}
-                              onUrlChange={(url) =>
-                                updateSectionImage(section.id, url)
-                              }
-                              label=""
-                              uploadPayload={{
-                                prefix: "",
-                                folder: "roleplays",
-                              }}
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">
-                              Color Template
-                            </label>
-                            <select
-                              value={section.colorTemplateId || ""}
-                              onChange={(e) =>
-                                updateSectionColorTemplate(
-                                  section.id,
-                                  e.target.value
-                                )
-                              }
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                            >
-                              <option value="">Select template</option>
-                              {colorTemplates.map((template) => (
-                                <option key={template._id} value={template._id}>
-                                  {template.title}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-
-                        <div className="border-t pt-3">
-                          <div className="flex justify-between items-center mb-2">
-                            <h4 className="text-sm font-medium text-gray-700">
-                              Content
-                            </h4>
-                          </div>
-
-                          {section.contents && section.contents.length > 0 ? (
-                            <DndContext
-                              collisionDetection={closestCenter}
-                              onDragEnd={(event) => {
-                                const { active, over } = event;
-
-                                if (over && active.id !== over.id) {
-                                  const activeId =
-                                    typeof active.id === "string"
-                                      ? parseInt(active.id)
-                                      : active.id;
-                                  const overId =
-                                    typeof over.id === "string"
-                                      ? parseInt(over.id)
-                                      : over.id;
-
-                                  handleReorderContent(
-                                    section.id,
-                                    activeId,
-                                    overId
-                                  );
-                                }
-                              }}
-                            >
-                              <SortableContext
-                                items={section.contents.map((item) =>
-                                  item.id!.toString()
-                                )}
-                                strategy={verticalListSortingStrategy}
-                              >
-                                <div className="space-y-2">
-                                  {section.contents.map((content) => (
-                                    <SortableItem
-                                      key={content.id}
-                                      id={content.id!.toString()}
-                                    >
-                                      <div className="bg-gray-50 border border-gray-200 rounded p-2 hover:bg-gray-100 transition-colors">
-                                        <div className="flex items-center justify-between">
-                                          <div className="flex items-center gap-2">
-                                            <span className="text-xs font-medium text-pink-400">
-                                              {content.type}
-                                            </span>
-                                            {content.type ===
-                                              RoleplaySectionType.CONVERSATION && (
-                                              <div className="flex items-center gap-1">
-                                                {content.conversation.avatar
-                                                  ?.url && (
-                                                  <img
-                                                    src={
-                                                      content.conversation
-                                                        .avatar.url
-                                                    }
-                                                    alt={
-                                                      content.conversation
-                                                        .avatar.name
-                                                    }
-                                                    className="w-4 h-4 rounded-full object-cover"
-                                                  />
-                                                )}
-                                                <span className="text-xs text-gray-500">
-                                                  {
-                                                    content.conversation.avatar
-                                                      ?.name
-                                                  }
-                                                </span>
-                                                <div
-                                                  className="w-3 h-3 rounded-full border border-gray-300"
-                                                  style={{
-                                                    backgroundColor:
-                                                      content.conversation
-                                                        .backgroundColor,
-                                                  }}
-                                                ></div>
-                                                <div
-                                                  className="w-3 h-3 rounded-full border border-gray-300"
-                                                  style={{
-                                                    backgroundColor:
-                                                      content.conversation
-                                                        .textColor,
-                                                  }}
-                                                ></div>
-                                                <span className="text-xs text-gray-500">
-                                                  {
-                                                    content.conversation
-                                                      .position
-                                                  }
-                                                </span>
-                                                {getTranslationValue(
-                                                  content.conversation.audio,
-                                                  lang
-                                                ) && (
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-3 w-3 text-gray-500"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      strokeWidth={2}
-                                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                                                    />
-                                                  </svg>
-                                                )}
-                                                <TextWithTooltip
-                                                  text={
-                                                    content.conversation.content
-                                                  }
-                                                  maxLength={100}
-                                                  lang={lang}
-                                                />
-                                              </div>
-                                            )}
-                                            {content.type ===
-                                              RoleplaySectionType.LEADING_TEXT && (
-                                              <div className="flex items-center gap-1">
-                                                <div
-                                                  className="w-3 h-3 rounded-full border border-gray-300"
-                                                  style={{
-                                                    backgroundColor:
-                                                      content.leadingText
-                                                        .backgroundColor,
-                                                  }}
-                                                ></div>
-                                                <div
-                                                  className="w-3 h-3 rounded-full border border-gray-300"
-                                                  style={{
-                                                    backgroundColor:
-                                                      content.leadingText
-                                                        .textColor,
-                                                  }}
-                                                ></div>
-                                                {getTranslationValue(
-                                                  content.leadingText.audio,
-                                                  lang
-                                                ) && (
-                                                  <svg
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                    className="h-3 w-3 text-gray-500"
-                                                    fill="none"
-                                                    viewBox="0 0 24 24"
-                                                    stroke="currentColor"
-                                                  >
-                                                    <path
-                                                      strokeLinecap="round"
-                                                      strokeLinejoin="round"
-                                                      strokeWidth={2}
-                                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                                                    />
-                                                  </svg>
-                                                )}
-                                                <TextWithTooltip
-                                                  text={
-                                                    content.leadingText.content
-                                                  }
-                                                  maxLength={100}
-                                                  lang={lang}
-                                                />
-                                              </div>
-                                            )}
-                                            {content.type ===
-                                              RoleplaySectionType.HINT && (
-                                              <div className="flex items-center gap-1">
-                                                {content.hint.icon && (
-                                                  <img
-                                                    src={content.hint.icon}
-                                                    alt="Hint icon"
-                                                    className="w-4 h-4 object-contain"
-                                                  />
-                                                )}
-                                                <div
-                                                  className="w-3 h-3 rounded-full border border-gray-300"
-                                                  style={{
-                                                    backgroundColor:
-                                                      content.hint.textColor,
-                                                  }}
-                                                ></div>
-                                                <TextWithTooltip
-                                                  text={content.hint.content}
-                                                  maxLength={100}
-                                                  lang={lang}
-                                                />
-                                              </div>
-                                            )}
-                                            {content.type ===
-                                              RoleplaySectionType.EXERCISE && (
-                                              <div className="flex flex-col gap-1">
-                                                <div className="flex items-center gap-1">
-                                                  <span className="text-xs text-gray-500">
-                                                    {content.exercise.type}
-                                                  </span>
-                                                  {content.exercise
-                                                    .speechBubble && (
-                                                    <TextWithTooltip
-                                                      text={
-                                                        content.exercise
-                                                          .speechBubble
-                                                      }
-                                                      maxLength={100}
-                                                      lang={lang}
-                                                    />
-                                                  )}
-                                                  {content.exercise.tag && (
-                                                    <div className="ml-7">
-                                                      <TagDisplay
-                                                        tag={
-                                                          content.exercise.tag
-                                                        }
-                                                        lang={lang}
-                                                      />
-                                                    </div>
-                                                  )}
-                                                </div>
-                                                {content.exercise.maxScore && (
-                                                  <div>
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      Max score:{" "}
-                                                      {
-                                                        content.exercise
-                                                          .maxScore
-                                                      }
-                                                    </span>
-                                                    <span className="text-xs font-medium text-gray-600">
-                                                      {"scoringCriteria" in
-                                                        content.exercise &&
-                                                        content.exercise
-                                                          .scoringCriteria && (
-                                                          <span className="text-xs font-mono text-gray-500">
-                                                            {" ("}
-                                                            Criteria:{" "}
-                                                            {
-                                                              content.exercise
-                                                                .scoringCriteria
-                                                                .length
-                                                            }
-                                                            {") "}
-                                                          </span>
-                                                        )}
-                                                    </span>
-                                                  </div>
-                                                )}
-
-                                                {content.exercise
-                                                  .keypointId && (
-                                                  <span className="text-xs font-medium text-gray-600">
-                                                    Keypoint:{" "}
-                                                    {
-                                                      keypoints.find(
-                                                        (k) =>
-                                                          k._id ===
-                                                          content.exercise
-                                                            .keypointId
-                                                      )?.title?.[lang]
-                                                    }
-                                                  </span>
-                                                )}
-                                                {content.exercise.document &&
-                                                  content.exercise.document
-                                                    .length > 0 && (
-                                                    <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                      <span className="text-xs font-medium text-gray-600">
-                                                        Documents:
-                                                      </span>
-                                                      {content.exercise.document.map(
-                                                        (
-                                                          doc: IDocument,
-                                                          index: number
-                                                        ) => (
-                                                          <div
-                                                            key={index}
-                                                            className="ml-2 mt-1 text-xs"
-                                                          >
-                                                            <span className="font-semibold text-green-600">
-                                                              {doc.type.toUpperCase()}
-                                                            </span>
-                                                            {isTextualDocumentType(
-                                                              doc.type
-                                                            ) &&
-                                                              doc.data
-                                                                .content && (
-                                                                <div className="ml-1">
-                                                                  <TextWithTooltip
-                                                                    text={
-                                                                      doc.data
-                                                                        .content
-                                                                    }
-                                                                    maxLength={
-                                                                      100
-                                                                    }
-                                                                    lang={lang}
-                                                                  />
-                                                                </div>
-                                                              )}
-                                                            {doc.type ===
-                                                              DocumentType.IMAGE &&
-                                                              getTranslationValue(
-                                                                doc.data.url,
-                                                                lang
-                                                              ) && (
-                                                                <div className="ml-1">
-                                                                  <TextWithTooltip
-                                                                    text={
-                                                                      doc.data
-                                                                        .url
-                                                                    }
-                                                                    maxLength={
-                                                                      100
-                                                                    }
-                                                                    lang={lang}
-                                                                  />
-                                                                </div>
-                                                              )}
-                                                            {doc.type ===
-                                                              DocumentType.AUDIO &&
-                                                              getTranslationValue(
-                                                                doc.data.url,
-                                                                lang
-                                                              ) && (
-                                                                <div className="ml-1">
-                                                                  <TextWithTooltip
-                                                                    text={
-                                                                      doc.data
-                                                                        .url
-                                                                    }
-                                                                    maxLength={
-                                                                      100
-                                                                    }
-                                                                    lang={lang}
-                                                                  />
-                                                                </div>
-                                                              )}
-                                                            {doc.type ===
-                                                              DocumentType.VIDEO && (
-                                                              <>
-                                                                {getTranslationValue(
-                                                                  doc.data.url,
-                                                                  lang
-                                                                ) && (
-                                                                  <div className="ml-1">
-                                                                    <TextWithTooltip
-                                                                      text={
-                                                                        doc.data
-                                                                          .url
-                                                                      }
-                                                                      maxLength={
-                                                                        100
-                                                                      }
-                                                                      lang={
-                                                                        lang
-                                                                      }
-                                                                    />
-                                                                  </div>
-                                                                )}
-                                                                {doc.data
-                                                                  .thumbnail && (
-                                                                  <div className="ml-1">
-                                                                    <TextWithTooltip
-                                                                      text={
-                                                                        doc.data
-                                                                          .thumbnail
-                                                                      }
-                                                                      maxLength={
-                                                                        100
-                                                                      }
-                                                                    />
-                                                                  </div>
-                                                                )}
-                                                              </>
-                                                            )}
-                                                          </div>
-                                                        )
-                                                      )}
-                                                    </div>
-                                                  )}
-                                                {content.exercise
-                                                  .explanation && (
-                                                  <div className="flex items-center gap-1">
-                                                    <svg
-                                                      xmlns="http://www.w3.org/2000/svg"
-                                                      className="h-3 w-3 text-gray-500"
-                                                      fill="none"
-                                                      viewBox="0 0 24 24"
-                                                      stroke="currentColor"
-                                                    >
-                                                      <path
-                                                        strokeLinecap="round"
-                                                        strokeLinejoin="round"
-                                                        strokeWidth={2}
-                                                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                                      />
-                                                    </svg>
-                                                    <TextWithTooltip
-                                                      text={
-                                                        content.exercise
-                                                          .explanation
-                                                      }
-                                                      maxLength={100}
-                                                      lang={lang}
-                                                    />
-                                                  </div>
-                                                )}
-                                                {(content.exercise.type ===
-                                                  ExerciseType.SINGLE_CHOICE ||
-                                                  content.exercise.type ===
-                                                    ExerciseType.MULTIPLE_CHOICE) &&
-                                                  Array.isArray(
-                                                    (content.exercise as any)
-                                                      .options
-                                                  ) && (
-                                                    <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                      <span className="text-xs font-medium text-gray-600">
-                                                        Options:
-                                                      </span>
-                                                      <ul className="mt-1 space-y-1">
-                                                        {(
-                                                          content.exercise as any
-                                                        ).options.map(
-                                                          (
-                                                            opt: any,
-                                                            idx: number
-                                                          ) => (
-                                                            <li
-                                                              key={idx}
-                                                              className="flex items-center"
-                                                            >
-                                                              <span
-                                                                className={`w-2 h-2 rounded-full mr-1 ${
-                                                                  opt.isCorrect
-                                                                    ? "bg-green-500"
-                                                                    : "bg-gray-300"
-                                                                }`}
-                                                              ></span>
-                                                              <TextWithTooltip
-                                                                text={opt.value}
-                                                                lang={lang}
-                                                              />
-                                                            </li>
-                                                          )
-                                                        )}
-                                                      </ul>
-                                                    </div>
-                                                  )}
-                                                {content.exercise.type ===
-                                                  ExerciseType.DRAG_DROP && (
-                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                    <div className="flex items-center gap-1 mb-1">
-                                                      <span className="text-xs font-medium text-gray-600">
-                                                        Form:
-                                                      </span>
-                                                      <span className="text-xs text-gray-500">
-                                                        {"form" in
-                                                          content.exercise &&
-                                                          (content.exercise
-                                                            .form ||
-                                                            "Not specified")}
-                                                      </span>
-                                                    </div>
-                                                    {"targetArea" in
-                                                      content.exercise &&
-                                                      content.exercise
-                                                        .targetArea && (
-                                                        <div className="flex items-center gap-1 mb-1">
-                                                          <span className="text-xs font-medium text-gray-600">
-                                                            Target:
-                                                          </span>
-                                                          <TextWithTooltip
-                                                            text={
-                                                              content.exercise
-                                                                .targetArea
-                                                            }
-                                                            maxLength={100}
-                                                            lang={lang}
-                                                          />
-                                                        </div>
-                                                      )}
-                                                    {"options" in
-                                                      content.exercise &&
-                                                      content.exercise
-                                                        .options &&
-                                                      Array.isArray(
-                                                        content.exercise.options
-                                                      ) &&
-                                                      content.exercise.options
-                                                        .length > 0 && (
-                                                        <div className="mb-1">
-                                                          <span className="text-xs font-medium text-gray-600">
-                                                            Options:
-                                                          </span>
-                                                          <ul className="mt-1 space-y-1">
-                                                            {content.exercise.options.map(
-                                                              (
-                                                                opt: any,
-                                                                idx: number
-                                                              ) => (
-                                                                <li
-                                                                  key={
-                                                                    opt.id ||
-                                                                    idx
-                                                                  }
-                                                                  className="flex items-center"
-                                                                >
-                                                                  <TextWithTooltip
-                                                                    text={
-                                                                      opt.text
-                                                                    }
-                                                                    lang={lang}
-                                                                  />
-                                                                </li>
-                                                              )
-                                                            )}
-                                                          </ul>
-                                                        </div>
-                                                      )}
-                                                    {"answer" in
-                                                      content.exercise &&
-                                                      content.exercise.answer &&
-                                                      Array.isArray(
-                                                        content.exercise.answer
-                                                      ) &&
-                                                      content.exercise.answer
-                                                        .length > 0 && (
-                                                        <div>
-                                                          <span className="text-xs font-medium text-gray-600">
-                                                            Answers:
-                                                          </span>
-                                                          <ul className="mt-1 space-y-1">
-                                                            {content.exercise.answer.map(
-                                                              (
-                                                                ans: any,
-                                                                idx: number
-                                                              ) => (
-                                                                <li
-                                                                  key={
-                                                                    ans.id ||
-                                                                    idx
-                                                                  }
-                                                                  className="flex items-center"
-                                                                >
-                                                                  <TextWithTooltip
-                                                                    text={
-                                                                      ans.correctAnswer
-                                                                    }
-                                                                    lang={lang}
-                                                                  />
-                                                                </li>
-                                                              )
-                                                            )}
-                                                          </ul>
-                                                        </div>
-                                                      )}
-                                                  </div>
-                                                )}
-                                                {content.exercise.type ===
-                                                  ExerciseType.RECORD && (
-                                                  <div className="mt-1 p-1 bg-gray-100 rounded">
-                                                    <div className="flex items-center gap-1">
-                                                      <svg
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        className="h-3 w-3 text-gray-500"
-                                                        fill="none"
-                                                        viewBox="0 0 24 24"
-                                                        stroke="currentColor"
-                                                      >
-                                                        <path
-                                                          strokeLinecap="round"
-                                                          strokeLinejoin="round"
-                                                          strokeWidth={2}
-                                                          d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"
-                                                        />
-                                                      </svg>
-                                                      <span className="text-xs text-gray-500">
-                                                        Max Duration:{" "}
-                                                        {
-                                                          (
-                                                            content.exercise as IExerciseRecord
-                                                          ).maxDuration
-                                                        }
-                                                        s
-                                                      </span>
-                                                    </div>
-                                                    {(
-                                                      content.exercise as IExerciseRecord
-                                                    ).maxCharacter && (
-                                                      <div className="flex items-center gap-1">
-                                                        <svg
-                                                          xmlns="http://www.w3.org/2000/svg"
-                                                          className="h-3 w-3 text-gray-500"
-                                                          fill="none"
-                                                          viewBox="0 0 24 24"
-                                                          stroke="currentColor"
-                                                        >
-                                                          <path
-                                                            strokeLinecap="round"
-                                                            strokeLinejoin="round"
-                                                            strokeWidth={2}
-                                                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                                                          />
-                                                        </svg>
-                                                        <span className="text-xs text-gray-500">
-                                                          Max Character:{" "}
-                                                          {
-                                                            (
-                                                              content.exercise as IExerciseRecord
-                                                            ).maxCharacter
-                                                          }
-                                                        </span>
-                                                      </div>
-                                                    )}
-                                                  </div>
-                                                )}
-                                              </div>
-                                            )}
-                                          </div>
-                                          <div className="flex gap-1">
-                                            <button
-                                              onClick={() =>
-                                                handleOpenModal(
-                                                  section.id,
-                                                  content.type,
-                                                  content
-                                                )
-                                              }
-                                              className="text-blue-600 hover:text-blue-800 p-1 rounded"
-                                              title="Edit"
-                                            >
-                                              <svg
-                                                xmlns="http://www.w3.org/2000/svg"
-                                                className="h-4 w-4"
-                                                viewBox="0 0 20 20"
-                                                fill="currentColor"
-                                              >
-                                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                                              </svg>
-                                            </button>
-                                            <button
-                                              onClick={() =>
-                                                requestDeleteContent(
-                                                  section.id,
-                                                  content.id || 0,
-                                                  `${content.type} content`
-                                                )
-                                              }
-                                              className="text-red-500 hover:text-red-700 p-1 rounded"
-                                              title="Delete"
-                                            >
-                                              <TrashIcon className="h-4 w-4" />
-                                            </button>
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </SortableItem>
-                                  ))}
-                                </div>
-                              </SortableContext>
-                            </DndContext>
-                          ) : null}
-                          <div className="text-center pt-5">
-                            <button
-                              className="text-blue-500 hover:text-blue-700 transition-colors"
-                              onClick={() =>
-                                handleOpenContentTypePopup(section.id)
-                              }
-                            >
-                              <PlusIcon className="h-5 w-5" />
-                            </button>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </SortableItem>
-                  );
-                })}
-              </div>
-            ) : null}
-
-            <div className="text-center pt-5">
-              <button
-                className="text-blue-500 hover:text-blue-700 transition-colors"
-                onClick={() => {
-                  if (colorTemplatesLoading) {
-                    showError("Please wait for color templates to load");
-                    return;
-                  }
-                  if (!colorTemplates.length) {
-                    showError("Please create a roleplay color template first");
-                    return;
-                  }
-                  addNewSection(colorTemplates[0]);
-                }}
-              >
-                <PlusCircleIcon className="h-8 w-8" />
-              </button>
-            </div>
-          </SortableContext>
-        </DndContext>
-      </div>
-    );
-  };
-
-  // Content form component with dynamic fields
-  // Content form component with dynamic fields and validation
-  const ContentForm = ({
-    content,
-    onSave,
-    onCancel,
-    contentType,
-    sectionId,
-    formData,
-  }: {
-    content?: any;
-    onSave: (
-      c: any,
-      options?: { sectionId?: number; isEditing?: boolean }
-    ) => void;
-    onCancel: () => void;
-    contentType: RoleplaySectionType;
-    sectionId: number;
-    formData: any;
-  }) => {
-    const [localFormData, setLocalFormData] = useState<any>(formData);
-    const [validationErrors, setValidationErrors] = useState<{
-      [key: string]: string;
-    }>({});
-
-    const [localNextOptionId, setLocalNextOptionId] = useState(nextOptionId);
-    const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
-
-    const normalizeTranslationField = (
-      value: ITranslation | string | undefined
-    ): ITranslation => {
-      if (!value) return { [lang]: "" };
-      if (typeof value === "string") {
-        const trimmed = value.trim();
-        if (!trimmed) return { [lang]: "" };
-        const normalized: ITranslation = { [lang]: trimmed };
-        if (lang !== LangCode.EN && !normalized[LangCode.EN]) {
-          normalized[LangCode.EN] = trimmed;
-        }
-        return normalized;
-      }
-      return value;
-    };
-
-    const ensureLocalizedContent = (data: any) => {
-      if (!data) return data;
-      const updated: any = { ...data };
-
-      if (updated.conversation) {
-        updated.conversation = {
-          ...updated.conversation,
-          content: updated.conversation.content || { [lang]: "" },
-          audio: normalizeTranslationField(updated.conversation.audio),
-        };
-      }
-
-      if (updated.leadingText) {
-        updated.leadingText = {
-          ...updated.leadingText,
-          content: updated.leadingText.content || { [lang]: "" },
-          audio: normalizeTranslationField(updated.leadingText.audio),
-        };
-      }
-
-      if (updated.hint) {
-        updated.hint = {
-          ...updated.hint,
-          content: updated.hint.content || { [lang]: "" },
-        };
-      }
-
-      return updated;
-    };
-
-    // Update local form data when formData prop changes
-    useEffect(() => {
-      const normalizedFormData = ensureLocalizedContent(formData);
-      if (normalizedFormData?.exercise?.type === ExerciseType.RECORD) {
-        const normalizedCriteria = rebalanceRecordScoringCriteria(
-          normalizedFormData.exercise.scoringCriteria,
-          typeof normalizedFormData.exercise.maxScore === "number"
-            ? normalizedFormData.exercise.maxScore
-            : undefined
-        );
-
-        setLocalFormData({
-          ...normalizedFormData,
-          exercise: {
-            ...normalizedFormData.exercise,
-            scoringCriteria: normalizedCriteria,
-          },
-        });
-      } else {
-        setLocalFormData(normalizedFormData);
-      }
-      // Clear errors when form data is reset (e.g., when opening a new content form)
-      setValidationErrors({});
-    }, [formData]);
-
-    // Ensure translation objects have current language key when language changes
-    useEffect(() => {
-      setLocalFormData((prev: any) => {
-        if (!prev) return prev;
-        const updated = ensureLocalizedContent(prev);
-        if (updated.exercise) {
-          updated.exercise = {
-            ...updated.exercise,
-            speechBubble: updated.exercise.speechBubble || { [lang]: "" },
-            explanation: updated.exercise.explanation || { [lang]: "" },
-            targetArea: updated.exercise.targetArea || { [lang]: "" },
-          };
-
-          if (updated.exercise.options) {
-            updated.exercise.options = updated.exercise.options.map(
-              (opt: any) => ({
-                ...opt,
-                value: opt.value || { [lang]: "" },
-                text: opt.text || { [lang]: "" },
-              })
-            );
-          }
-
-          if (updated.exercise.answer) {
-            updated.exercise.answer = updated.exercise.answer.map(
-              (ans: any) => ({
-                ...ans,
-                correctAnswer: ans.correctAnswer || { [lang]: "" },
-              })
-            );
-          }
-        }
-        return updated;
-      });
-    }, [lang]);
-
-    // --- Validation Function ---
-    const validateForm = () => {
-      const errors: { [key: string]: string } = {};
-
-      if (contentType === RoleplaySectionType.CONVERSATION) {
-        if (!localFormData.conversation?.avatar?._id) {
-          errors.avatar = "Avatar is required.";
-        }
-      } else if (contentType === RoleplaySectionType.LEADING_TEXT) {
-        if (
-          !getTranslationValue(localFormData.leadingText?.content, lang)?.trim()
-        ) {
-          errors.content = "Content is required.";
-        }
-      } else if (contentType === RoleplaySectionType.HINT) {
-        if (!localFormData.hint?.icon?.trim()) {
-          errors.icon = "Icon is required.";
-        }
-        if (!getTranslationValue(localFormData.hint?.content, lang)?.trim()) {
-          errors.hintContent = "Content is required.";
-        }
-      }
-
-      setValidationErrors(errors);
-      return Object.keys(errors).length === 0;
-    };
-
-    const handleChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({ ...prev, [field]: value }));
-    };
-
-    const sectionTemplate = getColorTemplateForSection(sectionId);
-
-    const handleConversationChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => {
-        const prevConversation = prev.conversation || {};
-        const nextValue =
-          field === "audio" && typeof value === "string"
-            ? updateTranslationValue(prevConversation.audio || {}, lang, value)
-            : value;
-
-        const updatedConversation: any = {
-          ...prevConversation,
-          [field]: nextValue,
-        };
-
-        if (field === "position" && sectionTemplate && value) {
-          const style =
-            value === SectionConversationPosition.RIGHT
-              ? sectionTemplate.conversation?.right
-              : sectionTemplate.conversation?.left;
-          if (style?.backgroundColor) {
-            updatedConversation.backgroundColor = style.backgroundColor;
-          }
-          if (style?.textColor) {
-            updatedConversation.textColor = style.textColor;
-          }
-        }
-
-        return {
-          ...prev,
-          conversation: updatedConversation,
-        };
-      });
-      // Clear error on change
-      if (field === "avatar" || field === "avatarId") {
-        setValidationErrors((prev) => ({ ...prev, avatar: "" }));
-      }
-    };
-
-    const handleLeadingTextChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => {
-        const prevLeading = prev.leadingText || {};
-        const nextValue =
-          field === "audio" && typeof value === "string"
-            ? updateTranslationValue(prevLeading.audio || {}, lang, value)
-            : value;
-
-        return {
-          ...prev,
-          leadingText: {
-            ...prevLeading,
-            [field]: nextValue,
-          },
-        };
-      });
-      // Clear error on change
-      if (field === "content" && validationErrors.content) {
-        setValidationErrors((prev) => ({ ...prev, content: "" }));
-      }
-    };
-
-    const handleHintChange = (field: string, value: any) => {
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        hint: {
-          ...prev.hint,
-          [field]: value,
-        },
-      }));
-      // Clear error on change
-      if (field === "icon" && validationErrors.icon) {
-        setValidationErrors((prev) => ({ ...prev, icon: "" }));
-      }
-      if (field === "content" && validationErrors.hintContent) {
-        setValidationErrors((prev) => ({ ...prev, hintContent: "" }));
-      }
-    };
-
-    const handleExerciseChange = (
-      field: string,
-      value: any,
-      options?: { skipRebalance?: boolean }
-    ) => {
-      setLocalFormData((prev: any) => {
-        const nextExercise = {
-          ...prev.exercise,
-          [field]: value,
-        };
-
-        if (
-          nextExercise.type === ExerciseType.RECORD &&
-          !options?.skipRebalance
-        ) {
-          const normalized = rebalanceRecordScoringCriteria(
-            nextExercise.scoringCriteria,
-            typeof nextExercise.maxScore === "number"
-              ? nextExercise.maxScore
-              : undefined
-          );
-          nextExercise.scoringCriteria = normalized;
-        }
-
-        return {
-          ...prev,
-          exercise: nextExercise,
-        };
-      });
-    };
-
-    const handleDocumentChange = (
-      index: number,
-      field: keyof IDocument,
-      value: any
-    ) => {
-      setLocalFormData((prev: any) => {
-        if (!prev.exercise?.document) return prev;
-        const newDocuments = [...prev.exercise.document];
-        const updatedDoc = {
-          ...newDocuments[index],
-          [field]: value,
-        };
-        if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument(lang);
-        }
-        newDocuments[index] = updatedDoc;
-        return {
-          ...prev,
-          exercise: {
-            ...prev.exercise,
-            document: newDocuments,
-          },
-        };
-      });
-    };
-
-    const handleDataChange = (
-      docIndex: number,
-      field: keyof IMediaDocument,
-      value: string | ITranslation
-    ) => {
-      setLocalFormData((prev: any) => {
-        if (!prev.exercise?.document) return prev;
-        const newDocuments = [...prev.exercise.document];
-        const currentDoc = newDocuments[docIndex];
-        const targetFieldValue = currentDoc?.data?.[field];
-        const shouldTranslate =
-          (field === "content" || field === "url") && typeof value === "string";
-
-        newDocuments[docIndex] = {
-          ...currentDoc,
-          data: {
-            ...currentDoc.data,
-            [field]: shouldTranslate
-              ? updateTranslationValue(
-                  (targetFieldValue as ITranslation) || {},
-                  lang,
-                  value
-                )
-              : value,
-          },
-        };
-        return {
-          ...prev,
-          exercise: {
-            ...prev.exercise,
-            document: newDocuments,
-          },
-        };
-      });
-    };
-
-    const renderDocumentFields = (doc: IDocument, index: number) => {
-      if (isTextualDocumentType(doc.type)) {
-        const label = getDocumentContentLabel(doc.type);
-        const isLongForm = doc.type === DocumentType.TEXT;
-        const placeholder =
-          doc.type === DocumentType.TEXT
-            ? "Enter content"
-            : `Enter ${label.toLowerCase()}`;
-
-        return (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              {label}
-            </label>
-            {isLongForm ? (
-              <textarea
-                value={getCurrentTranslationValue(doc.data.content, lang)}
-                onChange={(e) =>
-                  handleDataChange(index, "content", e.target.value)
-                }
-                rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder={placeholder}
-              />
-            ) : (
-              <input
-                type="text"
-                value={getCurrentTranslationValue(doc.data.content, lang)}
-                onChange={(e) =>
-                  handleDataChange(index, "content", e.target.value)
-                }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder={placeholder}
-              />
-            )}
-          </div>
-        );
-      }
-
-      const mediaUrl = getCurrentTranslationValue(doc.data.url, lang) || "";
-
-      if (doc.type === DocumentType.IMAGE) {
-        return (
-          <div className="w-52">
-            <CloudflareFileUpload
-              initialUrl={mediaUrl}
-              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
-              label="Image URL"
-              uploadPayload={{
-                prefix: "",
-                folder: "roleplays",
-              }}
-            />
-          </div>
-        );
-      }
-
-      if (doc.type === DocumentType.AUDIO) {
-        return (
-          <div className="w-52">
-            <CloudflareFileUpload
-              initialUrl={mediaUrl}
-              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
-              label="Audio URL"
-              uploadPayload={{
-                prefix: "",
-                folder: "roleplays",
-              }}
-              accept="audio/*"
-            />
-          </div>
-        );
-      }
-
-      if (doc.type === DocumentType.VIDEO) {
-        return (
-          <div className="flex flex-col gap-3">
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={mediaUrl}
-                onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
-                label="Video URL"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "roleplays",
-                }}
-              />
-            </div>
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={doc.data.thumbnail || ""}
-                onUrlChange={(newUrl) =>
-                  handleDataChange(index, "thumbnail", newUrl)
-                }
-                label="Video Thumbnail"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "roleplays",
-                }}
-              />
-            </div>
-          </div>
-        );
-      }
-
-      if (doc.type === DocumentType.ANIMATION) {
-        return (
-          <div className="w-52">
-            <CloudflareFileUpload
-              initialUrl={mediaUrl}
-              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
-              label="Animation URL"
-              uploadPayload={{
-                prefix: "",
-                folder: "roleplays",
-              }}
-              accept="application/json,.json,.lottie"
-            />
-          </div>
-        );
-      }
-
-      return null;
-    };
-
-    const addNewDocument = () => {
-      if (
-        contentType !== RoleplaySectionType.EXERCISE ||
-        !localFormData.exercise
-      )
-        return;
-
-      const currentMaxId = (localFormData.exercise.document || []).reduce(
-        (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
-        0
-      );
-      const newId = currentMaxId + 1;
-
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        exercise: {
-          ...prev.exercise,
-          document: [
-            ...(prev.exercise.document || []),
-            {
-              id: newId,
-              type: DocumentType.TEXT,
-              data: createEmptyMediaDocument(lang),
-            },
-          ],
-        },
-      }));
-    };
-
-    const removeDocument = (index: number) => {
-      if (
-        contentType !== RoleplaySectionType.EXERCISE ||
-        !localFormData.exercise
-      )
-        return;
-      setLocalFormData((prev: any) => {
-        const documents = prev.exercise?.document;
-        if (!documents) {
-          return prev;
-        }
-        return {
-          ...prev,
-          exercise: {
-            ...prev.exercise,
-            document: documents.filter(
-              (_: IDocument, i: number) => i !== index
-            ),
-          },
-        };
-      });
-    };
-
-    const handleSave = () => {
-      if (!validateForm()) {
-        return; // Stop if validation fails
-      }
-
-      // Update global counters for options and answers
-      setNextOptionId(localNextOptionId);
-      setNextAnswerId(localNextAnswerId);
-
-      let dataToSave = localFormData;
-
-      if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        localFormData.exercise
-      ) {
-        const cleanedDocuments = cleanDocumentItems(
-          localFormData.exercise.document || []
-        );
-        dataToSave = {
-          ...dataToSave,
-          exercise: {
-            ...localFormData.exercise,
-            document: cleanedDocuments,
-          },
-        };
-      }
-
-      if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        localFormData.exercise?.type === ExerciseType.RECORD
-      ) {
-        const normalizedCriteria = rebalanceRecordScoringCriteria(
-          localFormData.exercise.scoringCriteria,
-          typeof localFormData.exercise.maxScore === "number"
-            ? localFormData.exercise.maxScore
-            : undefined
-        );
-
-        dataToSave = {
-          ...localFormData,
-          exercise: {
-            ...localFormData.exercise,
-            scoringCriteria: normalizedCriteria,
-          },
-        };
-
-        setLocalFormData(dataToSave);
-      }
-
-      onSave(
-        { ...dataToSave, __sectionId: sectionId },
-        { sectionId, isEditing: Boolean(content) }
-      );
-    };
-
-    // Add new option
-    const addOption = () => {
-      if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
-      ) {
-        const newOptions = [
-          ...localFormData.exercise.options,
-          { value: "", isCorrect: false },
-        ];
-        handleExerciseChange("options", newOptions);
-      } else if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        localFormData.exercise.type === ExerciseType.DRAG_DROP
-      ) {
-        const newId = localNextOptionId;
-        setLocalNextOptionId(newId + 1);
-
-        const newOptions = [
-          ...localFormData.exercise.options,
-          { text: "", id: newId },
-        ];
-        handleExerciseChange("options", newOptions);
-      }
-    };
-
-    // Remove option
-    const removeOption = (index: number) => {
-      if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
-      ) {
-        const newOptions = [...localFormData.exercise.options];
-        newOptions.splice(index, 1);
-        handleExerciseChange("options", newOptions);
-      } else if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        localFormData.exercise.type === ExerciseType.DRAG_DROP
-      ) {
-        const newOptions = [...localFormData.exercise.options];
-        newOptions.splice(index, 1);
-        handleExerciseChange("options", newOptions);
-      }
-    };
-
-    // Update option value
-    const updateOptionValue = (index: number, value: string) => {
-      if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
-      ) {
-        const newOptions = [...localFormData.exercise.options];
-        const currentTranslation = newOptions[index].value || {};
-        const updatedTranslation = updateTranslationValue(
-          currentTranslation,
-          lang,
-          value
-        );
-        newOptions[index] = { ...newOptions[index], value: updatedTranslation };
-        handleExerciseChange("options", newOptions);
-      } else if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        localFormData.exercise.type === ExerciseType.DRAG_DROP
-      ) {
-        const newOptions = [...localFormData.exercise.options];
-        const currentTranslation = newOptions[index].text || {};
-        const updatedTranslation = updateTranslationValue(
-          currentTranslation,
-          lang,
-          value
-        );
-        newOptions[index] = { ...newOptions[index], text: updatedTranslation };
-        handleExerciseChange("options", newOptions);
-      }
-    };
-
-    // Update option correctness
-    const updateOptionCorrectness = (index: number, isCorrect: boolean) => {
-      if (
-        contentType === RoleplaySectionType.EXERCISE &&
-        (localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-          localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE)
-      ) {
-        const newOptions = [...localFormData.exercise.options];
-        newOptions[index] = { ...newOptions[index], isCorrect };
-        handleExerciseChange("options", newOptions);
-      }
-    };
-
-    // Add new answer
-    const addAnswer = () => {
-      const newId = localNextAnswerId;
-      setLocalNextAnswerId(newId + 1);
-
-      const existingAnswers = Array.isArray(localFormData.exercise.answer)
-        ? localFormData.exercise.answer
-        : [];
-
-      const newAnswer = [...existingAnswers, { correctAnswer: "", id: newId }];
-      handleExerciseChange("answer", newAnswer);
-    };
-
-    // Remove answer
-    const removeAnswer = (index: number) => {
-      const existingAnswers = Array.isArray(localFormData.exercise.answer)
-        ? localFormData.exercise.answer
-        : [];
-
-      const newAnswer = existingAnswers.filter(
-        (_: any, i: number) => i !== index
-      );
-      handleExerciseChange("answer", newAnswer);
-    };
-
-    // Update answer value
-    const updateAnswerValue = (index: number, value: string) => {
-      const existingAnswers = Array.isArray(localFormData.exercise.answer)
-        ? localFormData.exercise.answer
-        : [];
-
-      const newAnswer = [...existingAnswers];
-      const currentTranslation = newAnswer[index].correctAnswer || {};
-      const updatedTranslation = updateTranslationValue(
-        currentTranslation,
-        lang,
-        value
-      );
-      newAnswer[index] = {
-        ...newAnswer[index],
-        correctAnswer: updatedTranslation,
-      };
-      handleExerciseChange("answer", newAnswer);
-    };
-
-    const handlePasteExerciseOptions = (
-      index: number,
-      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-      if (contentType !== RoleplaySectionType.EXERCISE) return;
-      const pasted = e.clipboardData.getData("text");
-      if (!pasted) return;
-      const lines = pasted
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter(Boolean);
-      if (lines.length <= 1) return;
-      e.preventDefault();
-
-      setLocalFormData((prev: any) => {
-        const currentExercise = prev.exercise || {};
-        const currentOptions = Array.isArray(currentExercise.options)
-          ? [...currentExercise.options]
-          : [];
-        let nextId = localNextOptionId;
-
-        if (!currentOptions[index]) {
-          if (currentExercise.type === ExerciseType.DRAG_DROP) {
-            currentOptions[index] = { text: { [lang]: "" }, id: nextId++ };
-          } else {
-            currentOptions[index] = { value: { [lang]: "" }, isCorrect: false };
-          }
-        }
-
-        lines.forEach((line, offset) => {
-          const targetIndex = index + offset;
-          const existing = currentOptions[targetIndex];
-          if (currentExercise.type === ExerciseType.DRAG_DROP) {
-            const id = existing?.id ?? nextId++;
-            currentOptions[targetIndex] = {
-              ...existing,
-              id,
-              text: updateTranslationValue(existing?.text || {}, lang, line),
-            };
-          } else {
-            currentOptions[targetIndex] = {
-              ...existing,
-              value: updateTranslationValue(existing?.value || {}, lang, line),
-              isCorrect: existing?.isCorrect ?? false,
-            };
-          }
-        });
-
-        if (nextId !== localNextOptionId) setLocalNextOptionId(nextId);
-        return {
-          ...prev,
-          exercise: { ...currentExercise, options: currentOptions },
-        };
-      });
-    };
-
-    const handlePasteExerciseAnswers = (
-      index: number,
-      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
-      const pasted = e.clipboardData.getData("text");
-      if (!pasted) return;
-      const lines = pasted
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter(Boolean);
-      if (lines.length <= 1) return;
-      e.preventDefault();
-
-      setLocalFormData((prev: any) => {
-        const currentExercise = prev.exercise || {};
-        const currentAnswer = Array.isArray(currentExercise.answer)
-          ? [...currentExercise.answer]
-          : [];
-        let nextId = localNextAnswerId;
-
-        if (!currentAnswer[index]) {
-          currentAnswer[index] = {
-            correctAnswer: { [lang]: "" },
-            id: nextId++,
-          };
-        }
-
-        lines.forEach((line, offset) => {
-          const targetIndex = index + offset;
-          const existing = currentAnswer[targetIndex];
-          const id = existing?.id ?? nextId++;
-          currentAnswer[targetIndex] = {
-            ...existing,
-            id,
-            correctAnswer: updateTranslationValue(
-              existing?.correctAnswer || {},
-              lang,
-              line
-            ),
-          };
-        });
-
-        if (nextId !== localNextAnswerId) setLocalNextAnswerId(nextId);
-        return {
-          ...prev,
-          exercise: { ...currentExercise, answer: currentAnswer },
-        };
-      });
-    };
-
-    const handlePasteCriteria = (
-      index: number,
-      e: React.ClipboardEvent<HTMLTextAreaElement>
-    ) => {
-      const pasted = e.clipboardData.getData("text");
-      if (!pasted) return;
-      const lines = pasted
-        .split(/\r?\n/)
-        .map((l) => l.trim())
-        .filter(Boolean);
-      if (lines.length <= 1) return;
-      e.preventDefault();
-
-      const current = getScoringCriteria();
-      const next = [...current];
-      if (!next[index]) {
-        next[index] = { criteria: { [lang]: "" }, maxScore: undefined };
-      }
-      lines.forEach((line, offset) => {
-        const targetIndex = index + offset;
-        const existing = next[targetIndex];
-        next[targetIndex] = {
-          ...existing,
-          criteria: updateTranslationValue(
-            (existing as any)?.criteria || {},
-            lang,
-            line
-          ),
-          maxScore: existing?.maxScore,
-        };
-      });
-      handleExerciseChange("scoringCriteria", next);
-    };
-
-    const getScoringCriteria = () =>
-      Array.isArray(localFormData.exercise?.scoringCriteria)
-        ? (localFormData.exercise
-            .scoringCriteria as Partial<IScoringCriteria>[])
-        : [];
-
-    const addScoringCriteria = () => {
-      const current = getScoringCriteria();
-      handleExerciseChange("scoringCriteria", [
-        ...current,
-        { c: "", maxScore: undefined },
-      ]);
-    };
-
-    const removeScoringCriteria = (index: number) => {
-      const current = getScoringCriteria();
-      const next = current.filter((_, idx) => idx !== index);
-      handleExerciseChange("scoringCriteria", next);
-    };
-
-    const updateScoringCriteria = (
-      index: number,
-      field: keyof IScoringCriteria,
-      value: string | ITranslation
-    ) => {
-      const current = getScoringCriteria();
-      if (!current[index]) return;
-
-      const parsedValue =
-        field === "maxScore"
-          ? value === ""
-            ? undefined
-            : Number(value)
-          : field === "criteria" && typeof value === "string"
-          ? updateTranslationValue(current[index].criteria || {}, lang, value)
-          : value;
-
-      const next = current.map((item, idx) =>
-        idx === index ? { ...item, [field]: parsedValue } : item
-      );
-
-      const isNumeric =
-        field === "maxScore" &&
-        typeof parsedValue === "number" &&
-        !Number.isNaN(parsedValue);
-      if (isNumeric) {
-        const totalValue =
-          typeof localFormData.exercise.maxScore === "number" &&
-          !Number.isNaN(localFormData.exercise.maxScore)
-            ? localFormData.exercise.maxScore
-            : undefined;
-        if (typeof totalValue === "number") {
-          const lastIndex = next.length - 1;
-          const otherManualSum = next.reduce((sum, item, idx) => {
-            if (idx === index || idx === lastIndex) return sum;
-            const val =
-              typeof item.maxScore === "number" && !Number.isNaN(item.maxScore)
-                ? Math.max(0, Math.round(item.maxScore))
-                : 0;
-            return sum + val;
-          }, 0);
-          const maxAllowed = Math.max(0, totalValue - otherManualSum);
-          const adjusted =
-            typeof parsedValue === "number"
-              ? Math.min(Math.max(0, Math.round(parsedValue)), maxAllowed)
-              : parsedValue;
-          next[index] = { ...next[index], maxScore: adjusted };
-        } else if (typeof parsedValue === "number") {
-          const adjusted = Math.max(0, Math.round(parsedValue));
-          next[index] = { ...next[index], maxScore: adjusted };
-        }
-      }
-
-      handleExerciseChange("scoringCriteria", next, {
-        skipRebalance: field === "maxScore" && !isNumeric,
-      });
-    };
-
-    const scoringCriteria = getScoringCriteria();
-    const scoringCriteriaTotal = scoringCriteria.reduce((sum, item) => {
-      const value =
-        typeof item.maxScore === "number" && !Number.isNaN(item.maxScore)
-          ? item.maxScore
-          : 0;
-      return sum + value;
-    }, 0);
-
-    return (
-      <div className="space-y-4">
-        {contentType === RoleplaySectionType.CONVERSATION && (
-          <>
-            <div>
-              <AvatarSelector
-                value={localFormData.conversation.avatar}
-                onChange={(value) =>
-                  handleConversationChange("avatar", value || undefined)
-                }
-                label="Avatar"
-              />
-              {validationErrors.avatar && (
-                <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.avatar}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Position
-              </label>
-              <select
-                value={
-                  localFormData.conversation.position ||
-                  SectionConversationPosition.LEFT
-                }
-                onChange={(e) =>
-                  handleConversationChange("position", e.target.value)
-                }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                <option value={SectionConversationPosition.LEFT}>Left</option>
-                <option value={SectionConversationPosition.RIGHT}>Right</option>
-              </select>
-            </div>
-
-            <ColorPicker
-              value={localFormData.conversation.backgroundColor || "#FFFFFF"}
-              onChange={(value) =>
-                handleConversationChange("backgroundColor", value)
-              }
-              label="Backgound Color"
-            />
-
-            <ColorPicker
-              value={localFormData.conversation.textColor || "#000000"}
-              onChange={(value) => handleConversationChange("textColor", value)}
-              label="Text Color"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Content
-              </label>
-              <textarea
-                value={getCurrentTranslationValue(
-                  localFormData.conversation.content,
-                  lang
-                )}
-                onChange={(e) =>
-                  handleConversationChange(
-                    "content",
-                    updateTranslationValue(
-                      localFormData.conversation.content || {},
-                      lang,
-                      e.target.value
-                    )
-                  )
-                }
-                rows={3}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter content"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Audio
-              </label>
-              <CloudflareFileUpload
-                initialUrl={
-                  getCurrentTranslationValue(
-                    localFormData.conversation.audio,
-                    lang
-                  ) || ""
-                }
-                onUrlChange={(newUrl) =>
-                  handleConversationChange("audio", newUrl)
-                }
-                label=""
-                uploadPayload={{
-                  prefix: "",
-                  folder: "roleplays",
-                }}
-                accept="audio/*"
-              />
-            </div>
-          </>
-        )}
-
-        {contentType === RoleplaySectionType.LEADING_TEXT && (
-          <>
-            <ColorPicker
-              value={localFormData.leadingText.backgroundColor || "#000000"}
-              onChange={(value) =>
-                handleLeadingTextChange("backgroundColor", value)
-              }
-              label="Backgound Color"
-            />
-
-            <ColorPicker
-              value={localFormData.leadingText.textColor || "#000000"}
-              onChange={(value) => handleLeadingTextChange("textColor", value)}
-              label="Text Color"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Content
-              </label>
-              <textarea
-                value={getCurrentTranslationValue(
-                  localFormData.leadingText.content,
-                  lang
-                )}
-                onChange={(e) =>
-                  handleLeadingTextChange(
-                    "content",
-                    updateTranslationValue(
-                      localFormData.leadingText.content || {},
-                      lang,
-                      e.target.value
-                    )
-                  )
-                }
-                rows={3}
-                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                  validationErrors.content ? "border-red-500" : ""
-                }`}
-                placeholder="Enter content"
-              />
-              {validationErrors.content && (
-                <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.content}
-                </p>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Audio
-              </label>
-              <CloudflareFileUpload
-                initialUrl={
-                  getCurrentTranslationValue(
-                    localFormData.leadingText.audio,
-                    lang
-                  ) || ""
-                }
-                onUrlChange={(newUrl) =>
-                  handleLeadingTextChange("audio", newUrl)
-                }
-                label=""
-                uploadPayload={{
-                  prefix: "",
-                  folder: "roleplays",
-                }}
-                accept="audio/*"
-              />
-            </div>
-          </>
-        )}
-
-        {contentType === RoleplaySectionType.HINT && (
-          <>
-            <div>
-              <IconSelector
-                value={localFormData.hint.icon || ""}
-                onChange={(value) => handleHintChange("icon", value)}
-                label="Icon"
-              />
-              {validationErrors.icon && (
-                <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.icon}
-                </p>
-              )}
-            </div>
-
-            <ColorPicker
-              value={localFormData.hint.backgroundColor || "#FFFFFF"}
-              onChange={(value) => handleHintChange("backgroundColor", value)}
-              label="Background Color"
-            />
-
-            <ColorPicker
-              value={localFormData.hint.textColor || "#000000"}
-              onChange={(value) => handleHintChange("textColor", value)}
-              label="Text Color"
-            />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Content
-              </label>
-              <textarea
-                value={getCurrentTranslationValue(
-                  localFormData.hint.content,
-                  lang
-                )}
-                onChange={(e) =>
-                  handleHintChange(
-                    "content",
-                    updateTranslationValue(
-                      localFormData.hint.content || {},
-                      lang,
-                      e.target.value
-                    )
-                  )
-                }
-                rows={3}
-                className={`border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                  validationErrors.hintContent ? "border-red-500" : ""
-                }`}
-                placeholder="Enter content"
-              />
-              {validationErrors.hintContent && (
-                <p className="mt-1 text-sm text-red-600">
-                  {validationErrors.hintContent}
-                </p>
-              )}
-            </div>
-          </>
-        )}
-
-        {contentType === RoleplaySectionType.EXERCISE && (
-          <>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Exercise Type
-              </label>
-              <select
-                value={
-                  localFormData.exercise.type || ExerciseType.SINGLE_CHOICE
-                }
-                onChange={(e) => handleExerciseChange("type", e.target.value)}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              >
-                <option value={ExerciseType.SINGLE_CHOICE}>
-                  Single Choice
-                </option>
-                <option value={ExerciseType.MULTIPLE_CHOICE}>
-                  Multiple Choice
-                </option>
-                <option value={ExerciseType.DRAG_DROP}>Drag & Drop</option>
-                <option value={ExerciseType.RECORD}>Record</option>
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Speech Bubble
-              </label>
-              <input
-                type="text"
-                value={getCurrentTranslationValue(
-                  localFormData.exercise?.speechBubble,
-                  lang
-                )}
-                onChange={(e) =>
-                  handleExerciseChange(
-                    "speechBubble",
-                    updateTranslationValue(
-                      localFormData.exercise.speechBubble || {},
-                      lang,
-                      e.target.value
-                    )
-                  )
-                }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter speech bubble text"
-              />
-            </div>
-
-            <KeypointSelector
-              value={localFormData.exercise.keypointId || ""}
-              onChange={(value) => handleExerciseChange("keypointId", value)}
-              label="Keypoint"
-            />
-
-            <div className="border rounded-lg p-4 bg-gray-50">
-              <div className="flex justify-between items-center mb-3">
-                <h3 className="font-medium text-gray-800">Content Documents</h3>
-              </div>
-
-              {(localFormData.exercise.document || []).map(
-                (doc: IDocument, index: number) => (
-                  <div
-                    key={doc.id}
-                    className="border rounded-lg p-4 bg-white mb-3"
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium text-sky-400">
-                        Content {index + 1}
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => removeDocument(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Type
-                        </label>
-                        <select
-                          value={doc.type}
-                          onChange={(e) =>
-                            handleDocumentChange(
-                              index,
-                              "type",
-                              e.target.value as DocumentType
-                            )
-                          }
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                        >
-                          <option value={DocumentType.TITLE}>Title</option>
-                          <option value={DocumentType.CAPTION}>Caption</option>
-                          <option value={DocumentType.TEXT}>Text</option>
-                          <option value={DocumentType.IMAGE}>Image</option>
-                          <option value={DocumentType.VIDEO}>Video</option>
-                          <option value={DocumentType.AUDIO}>Audio</option>
-                          <option value={DocumentType.ANIMATION}>Animation</option>
-                        </select>
-                      </div>
-
-                      {renderDocumentFields(doc, index)}
-                    </div>
-                  </div>
-                )
-              )}
-
-              <div className="text-center">
-                <button
-                  type="button"
-                  onClick={addNewDocument}
-                  className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                >
-                  Add Content
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Max Score
-              </label>
-              <input
-                type="number"
-                value={localFormData.exercise.maxScore ?? ""}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  const isEmpty = val === "";
-                  handleExerciseChange("maxScore", isEmpty ? "" : Number(val), {
-                    skipRebalance: isEmpty,
-                  });
-                }}
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Enter max score"
-              />
-            </div>
-
-            {(localFormData.exercise.type === ExerciseType.SINGLE_CHOICE ||
-              localFormData.exercise.type === ExerciseType.MULTIPLE_CHOICE) && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Options
-                </label>
-                <div className="space-y-3">
-                  {localFormData.exercise.options?.map(
-                    (opt: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <input
-                          type="text"
-                          value={getCurrentTranslationValue(opt.value, lang)}
-                          onChange={(e) =>
-                            updateOptionValue(idx, e.target.value)
-                          }
-                          onPaste={(e) => handlePasteExerciseOptions(idx, e)}
-                          className="flex-1 border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          placeholder={`Option ${idx + 1}`}
-                        />
-                        <label className="flex items-center">
-                          <input
-                            type="checkbox"
-                            checked={opt.isCorrect}
-                            onChange={(e) =>
-                              updateOptionCorrectness(idx, e.target.checked)
-                            }
-                            className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
-                          />
-                          <span className="ml-1 text-sm">
-                            {localFormData.exercise.type ===
-                            ExerciseType.SINGLE_CHOICE
-                              ? "Correct"
-                              : "Correct Answer"}
-                          </span>
-                        </label>
-                        {localFormData.exercise.options.length > 2 && (
-                          <button
-                            type="button"
-                            onClick={() => removeOption(idx)}
-                            className="text-red-500 hover:text-red-700 p-1"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        )}
-                      </div>
-                    )
-                  )}
-                  <button
-                    type="button"
-                    onClick={addOption}
-                    className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-1" />
-                    Add Option
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.DRAG_DROP && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Form Type
-                </label>
-                <select
-                  value={
-                    localFormData.exercise.form ||
-                    FormDragDropType.TextGapFilling
-                  }
-                  onChange={(e) => handleExerciseChange("form", e.target.value)}
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                >
-                  <option value={FormDragDropType.TextGapFilling}>
-                    Text Gap Filling
-                  </option>
-                  <option value={FormDragDropType.CuesPlacement}>
-                    Cues Placement
-                  </option>
-                  <option value={FormDragDropType.StressPlacement}>
-                    Stress Placement
-                  </option>
-                  <option value={FormDragDropType.ArrangeTheSequence}>
-                    Arrange The Sequence
-                  </option>
-                </select>
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.DRAG_DROP && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Target Area
-                </label>
-                <textarea
-                  rows={3}
-                  value={getCurrentTranslationValue(
-                    localFormData.exercise?.targetArea,
-                    lang
-                  )}
-                  onChange={(e) =>
-                    handleExerciseChange(
-                      "targetArea",
-                      updateTranslationValue(
-                        localFormData.exercise.targetArea || {},
-                        lang,
-                        e.target.value
-                      )
-                    )
-                  }
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
-                  placeholder="Enter target area"
-                />
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.DRAG_DROP && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Options
-                </label>
-                <div className="space-y-2">
-                  {localFormData.exercise.options.map(
-                    (opt: any, idx: number) => (
-                      <div key={opt.id} className="flex items-center">
-                        <input
-                          type="text"
-                          value={getCurrentTranslationValue(opt.text, lang)}
-                          onChange={(e) =>
-                            updateOptionValue(idx, e.target.value)
-                          }
-                          onPaste={(e) => handlePasteExerciseOptions(idx, e)}
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          placeholder={`Option ${idx + 1}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeOption(idx)}
-                          className="ml-2 text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    )
-                  )}
-                  <button
-                    type="button"
-                    onClick={addOption}
-                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-1" />
-                    Add Option
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.DRAG_DROP && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Answer
-                </label>
-                <div className="space-y-2">
-                  {localFormData.exercise.answer?.map(
-                    (ans: any, idx: number) => (
-                      <div key={ans.id} className="flex items-center">
-                        <input
-                          type="text"
-                          value={getCurrentTranslationValue(
-                            ans.correctAnswer,
-                            lang
-                          )}
-                          onChange={(e) =>
-                            updateAnswerValue(idx, e.target.value)
-                          }
-                          onPaste={(e) => handlePasteExerciseAnswers(idx, e)}
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          placeholder={`Answer ${idx + 1}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeAnswer(idx)}
-                          className="ml-2 text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    )
-                  )}
-                  <button
-                    type="button"
-                    onClick={addAnswer}
-                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-1" />
-                    Add Answer
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.RECORD && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Duration (seconds)
-                </label>
-                <input
-                  type="number"
-                  value={localFormData.exercise.maxDuration}
-                  onChange={(e) =>
-                    handleExerciseChange(
-                      "maxDuration",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder="Enter max duration"
-                />
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.RECORD && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Max Character
-                </label>
-                <input
-                  type="number"
-                  value={localFormData.exercise.maxCharacter}
-                  onChange={(e) =>
-                    handleExerciseChange(
-                      "maxCharacter",
-                      parseInt(e.target.value)
-                    )
-                  }
-                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                  placeholder="Enter max character"
-                />
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.RECORD && (
-              <div>
-                <div className="flex items-center justify-between mb-1">
-                  <label className="block text-sm font-medium text-gray-700">
-                    Scoring Criteria
-                  </label>
-                  <button
-                    type="button"
-                    onClick={addScoringCriteria}
-                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-1" />
-                    Add Criteria
-                  </button>
-                </div>
-                {scoringCriteria.length === 0 ? (
-                  <p className="text-sm text-gray-500">
-                    Add at least one criterion to describe how this record is
-                    scored.
-                  </p>
-                ) : (
-                  <div className="space-y-3">
-                    {scoringCriteria.map((criteriaItem, index) => (
-                      <div
-                        key={`scoring-${index}`}
-                        className="border rounded-lg p-3 space-y-2"
-                      >
-                        <div className="flex items-center justify-between">
-                          <span className="text-sm font-semibold text-gray-700">
-                            Criterion {index + 1}
-                          </span>
-                          <button
-                            type="button"
-                            onClick={() => removeScoringCriteria(index)}
-                            className="text-red-500 hover:text-red-700"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                          </button>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-                          <div className="md:col-span-2">
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Description
-                            </label>
-                            <textarea
-                              value={getCurrentTranslationValue(
-                                criteriaItem.criteria,
-                                lang
-                              )}
-                              onChange={(e) =>
-                                updateScoringCriteria(
-                                  index,
-                                  "criteria",
-                                  e.target.value
-                                )
-                              }
-                              onPaste={(e) => handlePasteCriteria(index, e)}
-                              rows={2}
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
-                              placeholder="e.g., Pronunciation clarity"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-xs font-medium text-gray-600 mb-1">
-                              Max Score
-                            </label>
-                            <input
-                              type="number"
-                              value={
-                                typeof criteriaItem.maxScore === "number"
-                                  ? criteriaItem.maxScore
-                                  : ""
-                              }
-                              onChange={(e) =>
-                                updateScoringCriteria(
-                                  index,
-                                  "maxScore",
-                                  e.target.value
-                                )
-                              }
-                              className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                              placeholder="Auto"
-                            />
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-                {scoringCriteria.length > 0 && (
-                  <p className="mt-2 text-xs text-gray-500">
-                    Total criteria score: {scoringCriteriaTotal}
-                    {localFormData.exercise.maxScore
-                      ? ` / ${localFormData.exercise.maxScore}`
-                      : ""}
-                    {localFormData.exercise.maxScore &&
-                      scoringCriteriaTotal !==
-                        localFormData.exercise.maxScore &&
-                      " • Missing values are auto-filled on save to match the exercise max score."}
-                  </p>
-                )}
-              </div>
-            )}
-          </>
-        )}
-
-        <div className="flex justify-end gap-2 mt-6">
-          <button
-            className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
-            onClick={onCancel}
-          >
-            Cancel
-          </button>
-          <button
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-            onClick={handleSave}
-            disabled={saving}
-          >
-            {saving ? (
-              <>Saving...</>
-            ) : content ? (
-              "Update Content"
-            ) : (
-              "Add Content"
-            )}
-          </button>
-        </div>
-      </div>
-    );
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
-      <div className="max-w-7xl mx-auto">
-        {/* Card: left image / right form */}
-        <div className="bg-white shadow-xl rounded-xl overflow-hidden flex flex-col md:flex-row">
-          {/* LEFT: image + image input */}
-          <div className="flex-1 flex flex-col items-center p-6 bg-gray-50">
-            <div className="w-full max-w-md">
-              {currentRoleplay.image ? (
+      <div className="max-w-7xl mx-auto space-y-6">
+        {/* Main lesson form */}
+        <div className="bg-white shadow-xl rounded-xl overflow-visible flex flex-col md:flex-row">
+          {/* LEFT: image + upload */}
+          <div className="flex-1 flex flex-col items-start p-6 bg-gray-50">
+            <div className="w-full">
+              {currentRoleplayLesson.image ? (
                 <img
-                  src={currentRoleplay.image}
-                  alt={currentRoleplay.title?.[lang]}
+                  src={currentRoleplayLesson.image}
+                  alt={getTranslationValue(currentRoleplayLesson.title, lang)}
                   className="w-full max-h-[320px] object-cover rounded-xl shadow-lg border border-gray-200"
                 />
               ) : (
@@ -4394,52 +397,65 @@ export default function RoleplayForm({
               )}
             </div>
 
-            <div className="mt-6 w-full max-w-md">
-              <label className="block mb-2 text-sm font-medium text-gray-700">
-                Image URL
-              </label>
-
-              <div className="mt-6 w-52 h-auto max-w-md">
-                <CloudflareFileUpload
-                  initialUrl={currentRoleplay.image || ""}
-                  onUrlChange={(url) => {
-                    setCurrentRoleplay((prev) => ({
-                      ...prev,
-                      image: url,
-                    }));
-                  }}
-                  label=""
-                  // Bạn có thể tùy chỉnh payload này theo nhu cầu
-                  uploadPayload={{
-                    prefix: "",
-                    folder: "entrances",
-                  }}
-                />
-              </div>
+            <div className="mt-6 w-52 h-auto max-w-md">
+              <CloudflareFileUpload
+                initialUrl={currentRoleplayLesson.image || ""}
+                onUrlChange={handleRoleplayLessonImageChange}
+                label="Upload Image"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "lessons",
+                }}
+              />
             </div>
           </div>
 
           {/* RIGHT: form */}
           <div className="flex-[1.5] p-6">
-            <div className="flex justify-between items-center mb-6">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
-                {isEditMode ? "✏️ Edit Roleplay" : "🌱 Create New Roleplay"}
-              </h1>
+            <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+              <div>
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800">
+                  {isEditMode
+                    ? "✏️ Edit Roleplay Lesson"
+                    : "🌱 Create New Roleplay Lesson"}
+                </h1>
+                <p className="text-gray-500 text-sm mt-1">
+                  Fill in lesson details, then build the roleplay below.
+                </p>
+              </div>
+              <div className="flex gap-2">
+                {currentRoleplayLesson._id && (
+                  <button
+                    onClick={() => setConfirmDeleteRoleplay(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg shadow hover:from-red-700 hover:to-red-800 transition-all flex items-center gap-2"
+                  >
+                    Delete
+                  </button>
+                )}
+                <button
+                  onClick={handleSaveRoleplayLesson}
+                  disabled={saving}
+                  className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
+                    saving
+                      ? "bg-gray-400 cursor-not-allowed"
+                      : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                  }`}
+                >
+                  {saving ? <>Saving...</> : isEditMode ? "Save" : "Create"}
+                </button>
+              </div>
             </div>
 
-            <div className="space-y-6">
+            <div className="space-y-6 mt-6">
               {/* Title */}
               <div>
                 <label className="block mb-1 text-sm font-medium text-gray-700">
                   Title *
                 </label>
                 <input
-                  value={getCurrentTranslationValue(
-                    currentRoleplay.title,
-                    lang
-                  )}
+                  value={currentRoleplayLesson.title?.[lang] || ""}
                   onChange={(e) =>
-                    setCurrentRoleplay((prev) => ({
+                    setCurrentRoleplayLesson((prev) => ({
                       ...prev,
                       title: updateTranslationValue(
                         prev.title,
@@ -4449,7 +465,7 @@ export default function RoleplayForm({
                     }))
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  placeholder="Roleplay title..."
+                  placeholder="Roleplay lesson title..."
                   required
                 />
               </div>
@@ -4460,12 +476,9 @@ export default function RoleplayForm({
                   Description
                 </label>
                 <textarea
-                  value={getCurrentTranslationValue(
-                    currentRoleplay.description,
-                    lang
-                  )}
+                  value={currentRoleplayLesson.description?.[lang] || ""}
                   onChange={(e) =>
-                    setCurrentRoleplay((prev) => ({
+                    setCurrentRoleplayLesson((prev) => ({
                       ...prev,
                       description: updateTranslationValue(
                         prev.description,
@@ -4480,393 +493,242 @@ export default function RoleplayForm({
                 />
               </div>
 
-              {/* Keypoint: Combobox always shown */}
               <div>
                 <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Keypoint
+                  Time complete
                 </label>
-
-                <Combobox<string | null>
-                  value={currentRoleplay.keypointId || null}
-                  onChange={(val: string | null) => {
-                    setCurrentRoleplay((prev) =>
-                      prev ? { ...prev, keypointId: val ?? "" } : prev
-                    );
-                    setKeypointQuery("");
-                  }}
-                >
-                  <div className="relative">
-                    <Combobox.Input
-                      displayValue={(val: string | null) => {
-                        if (selectedKeypoint) {
-                          return selectedKeypoint.title?.[lang] || "";
-                        }
-                        return keypointQuery;
-                      }}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                        setKeypointQuery(e.target.value)
-                      }
-                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                      placeholder="Search keypoint..."
-                    />
-
-                    <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                      {keypoints
-                        .filter((k) =>
-                          k.title?.[lang]
-                            ?.toLowerCase()
-                            .includes(keypointQuery.toLowerCase())
-                        )
-                        .map((c) => (
-                          <Combobox.Option
-                            key={c._id}
-                            value={c._id}
-                            className="cursor-pointer px-3 py-3 hover:bg-blue-50"
-                          >
-                            {c.title?.[lang]}
-                          </Combobox.Option>
-                        ))}
-                    </Combobox.Options>
-                  </div>
-                </Combobox>
-              </div>
-
-              {/* Tags */}
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Tags
-                </label>
-                <div className="flex flex-wrap gap-2 mb-2">
-                  {currentRoleplay.tag?.map((tag, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center bg-indigo-100 rounded-md"
-                    >
-                      <input
-                        type="text"
-                        value={tag}
-                        onChange={(e) => {
-                          const newTags = [...(currentRoleplay.tag || [])];
-                          newTags[index] = e.target.value;
-                          setCurrentRoleplay({
-                            ...currentRoleplay,
-                            tag: newTags,
-                          });
-                        }}
-                        className="px-3 py-1 bg-transparent border-0 focus:ring-0 text-sm"
-                        placeholder="Enter tag"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const newTags = (currentRoleplay.tag || []).filter(
-                            (_, i) => i !== index
-                          );
-                          setCurrentRoleplay({
-                            ...currentRoleplay,
-                            tag: newTags,
-                          });
-                        }}
-                        className="text-red-600 hover:text-red-800 px-2 py-1"
-                      >
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M6 18L18 6M6 6l12 12"
-                          ></path>
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setCurrentRoleplay({
-                      ...currentRoleplay,
-                      tag: [...(currentRoleplay.tag || []), ""],
-                    })
+                <input
+                  value={currentRoleplayLesson.estimateCompleTime?.[lang] || ""}
+                  onChange={(e) =>
+                    setCurrentRoleplayLesson((prev) => ({
+                      ...prev,
+                      estimateCompleTime: updateTranslationValue(
+                        prev.estimateCompleTime,
+                        lang,
+                        e.target.value
+                      ),
+                    }))
                   }
-                  className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <svg
-                    className="w-4 h-4 mr-1"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      d="M12 4v16m8-8H4"
-                    ></path>
-                  </svg>
-                  Add Tag
-                </button>
+                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  placeholder="Lesson estimate complete time..."
+                  required
+                />
               </div>
-            </div>
-            <div className="flex pt-4 gap-2 justify-end">
-              {onCancel && (
-                <button
-                  onClick={onCancel}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                >
-                  Back
-                </button>
-              )}
-              <button
-                onClick={handleSaveRoleplay}
-                disabled={saving}
-                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-lg text-white font-semibold shadow transition ${
-                  saving
-                    ? "bg-gray-400 cursor-not-allowed"
-                    : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
-                }`}
-              >
-                {saving ? (
-                  <>Saving...</>
-                ) : isEditMode ? (
-                  "Save Roleplay"
-                ) : (
-                  "Create Roleplay"
-                )}
-              </button>
+
+              {/* Status + Course row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Status
+                  </label>
+                  <select
+                    value={currentRoleplayLesson.status}
+                    onChange={(e) =>
+                      setCurrentRoleplayLesson((prev) =>
+                        prev
+                          ? { ...prev, status: e.target.value as LessonStatus }
+                          : prev
+                      )
+                    }
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  >
+                    {Object.values(LessonStatus).map((status) => (
+                      <option key={status} value={status}>
+                        {status.charAt(0).toUpperCase() + status.slice(1)}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Course: Combobox always shown */}
+                <div>
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Course *
+                  </label>
+
+                  <Combobox<string | null>
+                    value={currentRoleplayLesson.courseId || null}
+                    onChange={(val: string | null) => {
+                      setCurrentRoleplayLesson((prev) =>
+                        prev ? { ...prev, courseId: val ?? "" } : prev
+                      );
+                      setCourseQuery("");
+                    }}
+                  >
+                    <div className="relative">
+                      <Combobox.Input
+                        displayValue={(val: string | null) => {
+                          if (selectedCourse) {
+                            return getTranslationValue(
+                              selectedCourse.title,
+                              lang
+                            );
+                          }
+                          return courseQuery;
+                        }}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          setCourseQuery(e.target.value)
+                        }
+                        className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                        placeholder="Search course..."
+                      />
+
+                      <Combobox.Options className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                        {courses
+                          .filter((c) =>
+                            getTranslationValue(c.title, lang)
+                              ?.toLowerCase()
+                              .includes(courseQuery.toLowerCase())
+                          )
+                          .map((c) => (
+                            <Combobox.Option
+                              key={c._id}
+                              value={c._id}
+                              className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                            >
+                              {getTranslationValue(c.title, lang)}
+                            </Combobox.Option>
+                          ))}
+                      </Combobox.Options>
+                    </div>
+                  </Combobox>
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Icon
+                </label>
+
+                <div className="relative">
+                  <input
+                    value={
+                      isIconSearchActive
+                        ? iconQuery
+                        : getTranslationValue(
+                            (currentRoleplayLesson.icon as any)?.title,
+                            lang
+                          ) || ""
+                    }
+                    onChange={(e) => setIconQuery(e.target.value)}
+                    onFocus={() => {
+                      setIsIconSearchActive(true);
+                      setIconQuery(
+                        getTranslationValue(
+                          (currentRoleplayLesson.icon as any)?.title,
+                          lang
+                        ) || ""
+                      );
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setIsIconSearchActive(false);
+                        setIconQuery("");
+                      }, 150);
+                    }}
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Search icon..."
+                  />
+
+                  {currentRoleplayLesson.icon && !isIconSearchActive && (
+                    <button
+                      type="button"
+                      onClick={handleClearIcon}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                    >
+                      <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  )}
+
+                  {isIconSearchActive && (
+                    <div className="absolute z-30 mt-1 w-full max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
+                      {icons
+                        .filter((icon) =>
+                          icon.title?.[lang]
+                            ?.toLowerCase()
+                            .includes(iconQuery.toLowerCase())
+                        )
+                        .map((icon) => (
+                          <div
+                            key={icon._id}
+                            className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => {
+                              handleSelectIcon(icon);
+                              setIsIconSearchActive(false);
+                              setIconQuery("");
+                            }}
+                          >
+                            {icon.url ? (
+                              <img
+                                src={icon.url}
+                                alt={icon.title?.[lang]}
+                                className="w-6 h-6 object-cover rounded"
+                              />
+                            ) : (
+                              <div
+                                className="w-6 h-6 rounded flex items-center justify-center"
+                                style={{
+                                  backgroundColor: icon.color || "#f3f4f6",
+                                }}
+                              >
+                                <span>{icon.url}</span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-800">
+                                {icon.title?.[lang]}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Sections */}
-        {currentRoleplay._id ? (
-          <div className="mt-8">{renderSections()}</div>
-        ) : null}
-
-        {/* If in edit mode, show Delete button */}
-        {currentRoleplay._id && (
-          <div className="flex justify-center mt-8">
-            <button
-              onClick={() => setConfirmDeleteRoleplay(true)}
-              className="px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg shadow hover:from-red-700 hover:to-red-800 transition-all flex items-center gap-2"
-            >
-              <TrashIcon className="h-5 w-5" />
-              Delete Roleplay
-            </button>
+        {/* Roleplay content full width */}
+        <div className="bg-white shadow-xl rounded-xl overflow-visible p-6">
+          <div className="mt-2">
+            {roleplayItem && (
+                  <RoleplayFromDetail
+                    key={`embedded-roleplay-${roleplayItem._id || "new"}-${
+                      roleplayItem.roleplay?.missions?.length || 0
+                    }-${roleplayItem.roleplay?.contents?.length || 0}`}
+                    roleplay={roleplayItem}
+                    onSave={async (saved) => {
+                      const refreshed =
+                        saved._id && (await refreshRoleplay(saved._id));
+                      const merged = refreshed
+                        ? refreshed
+                        : mergeRoleplayState(roleplayItem, saved);
+                      setRoleplayItem(merged);
+                      setCurrentRoleplayLesson((prev) => ({
+                        ...prev,
+                        learningItemId: merged._id,
+                      }));
+                    }}
+                    externalTitle={currentRoleplayLesson.title}
+                    lockTitle
+                    embedded
+                    hideActions
+                    hideMeta
+                    saveRef={roleplaySaveRef}
+                  />
+            )}
           </div>
-        )}
+        </div>
 
         {/* Delete confirmation modal */}
         <AnimatePresence>
           {confirmDeleteRoleplay && (
-            <LearningItemConfirm
+            <LessonConfirm
               title="Confirm Delete"
-              message="Are you sure you want to delete this roleplay? This action cannot be undone."
+              message="Are you sure you want to delete this roleplay lesson? This action cannot be undone."
               onCancel={() => setConfirmDeleteRoleplay(false)}
               onConfirm={handleDeleteRoleplay}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Content type selection popup */}
-        <AnimatePresence>
-          {showContentTypePopup && (
-            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
-              <motion.div
-                initial={{ opacity: 0, y: 100 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 100 }}
-                className="bg-white w-full max-w-md rounded-t-2xl shadow-xl p-6"
-              >
-                <h2 className="text-xl font-bold mb-4">Select Content Type</h2>
-                <div className="grid grid-cols-2 gap-4">
-                  <button
-                    onClick={() =>
-                      handleSelectContentType(RoleplaySectionType.CONVERSATION)
-                    }
-                    className="p-4 bg-blue-50 rounded-lg hover:bg-blue-100 transition flex flex-col items-center gap-2"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-blue-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                        />
-                      </svg>
-                    </div>
-                    <span className="font-medium">Conversation</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleSelectContentType(RoleplaySectionType.LEADING_TEXT)
-                    }
-                    className="p-4 bg-purple-50 rounded-lg hover:bg-purple-100 transition flex flex-col items-center gap-2"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-purple-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
-                        />
-                      </svg>
-                    </div>
-                    <span className="font-medium">Leading Text</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleSelectContentType(RoleplaySectionType.HINT)
-                    }
-                    className="p-4 bg-green-50 rounded-lg hover:bg-green-100 transition flex flex-col items-center gap-2"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-green-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                    </div>
-                    <span className="font-medium">Hint</span>
-                  </button>
-                  <button
-                    onClick={() =>
-                      handleSelectContentType(RoleplaySectionType.EXERCISE)
-                    }
-                    className="p-4 bg-red-50 rounded-lg hover:bg-red-100 transition flex flex-col items-center gap-2"
-                  >
-                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-6 w-6 text-red-600"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
-                        />
-                      </svg>
-                    </div>
-                    <span className="font-medium">Exercise</span>
-                  </button>
-                </div>
-                <button
-                  onClick={() => {
-                    setShowContentTypePopup(false);
-                    setCurrentSectionForPopup(null);
-                  }}
-                  className="mt-6 w-full py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition"
-                >
-                  Cancel
-                </button>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Content form modal */}
-        <AnimatePresence>
-          {modalOpen.sectionId && (
-            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-white w-[600px] rounded-xl shadow-xl flex flex-col"
-                style={{ maxHeight: "90vh" }}
-              >
-                <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
-                  <h2 className="text-xl font-bold">
-                    {modalOpen.content ? "Edit Content" : "New Content"}
-                  </h2>
-
-                  <button
-                    onClick={() =>
-                      setModalOpen({
-                        sectionId: null,
-                        contentType: RoleplaySectionType.CONVERSATION,
-                      })
-                    }
-                    className="text-gray-500 hover:text-gray-700 p-1 rounded-full transition-colors"
-                  >
-                    <XMarkIcon className="h-6 w-6" />
-                  </button>
-                </div>
-
-                <div className="flex-grow overflow-y-auto p-6">
-                  <ContentForm
-                    content={modalOpen.content}
-                    onSave={handleSaveContentAndRoleplay}
-                    onCancel={() =>
-                      setModalOpen({
-                        sectionId: null,
-                        contentType: RoleplaySectionType.CONVERSATION,
-                      })
-                    }
-                    contentType={modalOpen.contentType}
-                    sectionId={modalOpen.sectionId!}
-                    formData={modalOpen.formData}
-                  />
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Delete confirmation modal for sections */}
-        <AnimatePresence>
-          {confirmDeleteSection && (
-            <LearningItemConfirm
-              title="Confirm Delete"
-              message={`Are you sure you want to delete "${confirmDeleteSection.sectionTitle}"?`}
-              onCancel={() => setConfirmDeleteSection(null)}
-              onConfirm={handleDeleteSectionAndSaveRoleplay}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Delete confirmation modal for content */}
-        <AnimatePresence>
-          {confirmDeleteContent && (
-            <LearningItemConfirm
-              title="Confirm Delete"
-              message={`Are you sure you want to delete "${confirmDeleteContent.contentTitle}"?`}
-              onCancel={() => setConfirmDeleteContent(null)}
-              onConfirm={handleDeleteContentAndSaveRoleplay}
             />
           )}
         </AnimatePresence>

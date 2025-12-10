@@ -11,4 +11,11 @@ export const subscriptionService = {
     const res = await axiosClient.get(`/payment/subscriptions/${id}`);
     return res.data;
   },
+
+  async getActivePremiumForUser(userId: string) {
+    const res = await axiosClient.get(
+      `/payment/subscriptions/users/${userId}/active-premium`
+    );
+    return res.data;
+  },
 };

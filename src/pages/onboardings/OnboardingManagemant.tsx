@@ -13,14 +13,18 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { Edit, Delete, Add, Save, Close } from "@mui/icons-material";
-import { ILablel, LangCode } from "../../types/enum/common.enum";
+import {
+  ILablel,
+  LangCode,
+  IMotivation,
+  LablelPayload,
+} from "../../types/enum/common.enum";
 import {
   IOnboardingIntro,
   IOnboarding,
   OnboardingPayload,
   OnboardingIntroPayload,
 } from "../../types/interface/onboarding.interface";
-import { LablelPayload } from "../../types/enum/common.enum";
 import type { ITranslation } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -34,6 +38,23 @@ import {
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
+
+type MotivationField =
+  | "welcome"
+  | "motivationOne"
+  | "motivationTwo"
+  | "motivationThree"
+  | "loading";
+
+type OnboardingArrayField =
+  | "intro"
+  | "age"
+  | "gender"
+  | "skillsetWantToMaster"
+  | "learningGoal"
+  | "learningStruggles"
+  | "comfortableLearningTime"
+  | "dailyLearningGoal";
 
 const IntroInput: React.FC<{
   item: IOnboardingIntro;
@@ -96,6 +117,22 @@ const IntroInput: React.FC<{
             <Add />
           </IconButton>
         </Box>
+      </Box>
+
+      <Box sx={{ mb: 2 }}>
+        <TextField
+          label="Source"
+          value={item.source || ""}
+          onChange={(e) =>
+            onChange(item.id, {
+              ...item,
+              source: e.target.value,
+            })
+          }
+          fullWidth
+          size="small"
+          variant="outlined"
+        />
       </Box>
 
       <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -213,15 +250,76 @@ const LabelInput: React.FC<{
                 ...item,
                 label: updateTranslationValue(item.label, lang, e.target.value),
               })
-          }
-          fullWidth
-          size="small"
-          variant="outlined"
-        />
+            }
+            fullWidth
+            size="small"
+            variant="outlined"
+          />
+        </Box>
       </Box>
-    </Box>
   </Box>
 );
+
+const MotivationInput: React.FC<{
+  item: IMotivation;
+  onChange: (value: IMotivation) => void;
+  lang: LangCode;
+  title: string;
+}> = ({ item, onChange, lang, title }) => {
+  const handleImageChange = useCallback(
+    (newUrl: string) => {
+      onChange({ ...item, image: newUrl });
+    },
+    [item, onChange]
+  );
+
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: "column",
+        mb: 3,
+        p: 2,
+        borderRadius: 1,
+        bgcolor: "grey.100",
+        boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+        transition: "all 0.3s ease",
+        "&:hover": { boxShadow: "0 4px 8px rgba(0,0,0,0.15)" },
+      }}
+    >
+      <Typography variant="subtitle1" sx={{ mb: 2, fontWeight: "bold" }}>
+        {title}
+      </Typography>
+      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+        <CloudflareFileUpload
+          initialUrl={item.image || ""}
+          onUrlChange={handleImageChange}
+          label="Image"
+          uploadPayload={{ prefix: "", folder: "onboarding" }}
+        />
+      </Box>
+      <TextField
+        label="Content"
+        value={getCurrentTranslationValue(item.content, lang)}
+        onChange={(e) =>
+          onChange({
+            ...item,
+            content: updateTranslationValue(
+              item.content as ITranslation,
+              lang,
+              e.target.value
+            ),
+          })
+        }
+        fullWidth
+        multiline
+        rows={3}
+        size="small"
+        variant="outlined"
+      />
+    </Box>
+  );
+};
 
 // --- Component Cha: OnboardingManagement ---
 const OnboardingManagement: React.FC = () => {
@@ -238,11 +336,10 @@ const OnboardingManagement: React.FC = () => {
     age: 1,
     gender: 1,
     skillsetWantToMaster: 1,
-    seemLikeYou: 1,
-    strugglesWhenSpeaking: 1,
+    learningGoal: 1,
+    learningStruggles: 1,
     comfortableLearningTime: 1,
     dailyLearningGoal: 1,
-    timeToBecomeSkilled: 1,
   });
 
   const createNewIntro = (): IOnboardingIntro => {
@@ -253,10 +350,11 @@ const OnboardingManagement: React.FC = () => {
       title: { [lang]: "" },
       image: "",
       content: { [lang]: "" },
+      source: "",
     };
   };
 
-  const createNewLabel = (field: keyof IOnboarding): ILablel => {
+  const createNewLabel = (field: OnboardingArrayField): ILablel => {
     const newId = nextIds[field as keyof typeof nextIds];
     setNextIds((prev) => ({ ...prev, [field]: newId + 1 }));
     return {
@@ -268,16 +366,15 @@ const OnboardingManagement: React.FC = () => {
   };
 
   const calculateNextIds = (data: IOnboarding) => {
-    const fields: (keyof IOnboarding)[] = [
+    const fields: OnboardingArrayField[] = [
       "intro",
       "age",
       "gender",
       "skillsetWantToMaster",
-      "seemLikeYou",
-      "strugglesWhenSpeaking",
+      "learningGoal",
+      "learningStruggles",
       "comfortableLearningTime",
       "dailyLearningGoal",
-      "timeToBecomeSkilled",
     ];
 
     const newIds = { ...nextIds };
@@ -324,6 +421,7 @@ const OnboardingManagement: React.FC = () => {
           image: intro.image,
           title: cleanedTitle,
           content: cleanedContent,
+          source: intro.source || "",
         } as OnboardingIntroPayload;
       })
       .filter(Boolean) as OnboardingIntroPayload[];
@@ -357,6 +455,17 @@ const OnboardingManagement: React.FC = () => {
       })
       .filter(Boolean) as LablelPayload[];
 
+  const buildMotivationPayload = (
+    motivation: IMotivation | undefined
+  ): IMotivation => {
+    const cleanedContent = cleanTranslation(motivation?.content);
+
+    return {
+      image: motivation?.image || "",
+      content: (cleanedContent || {}) as ITranslation,
+    };
+  };
+
   const handleEdit = (tab: string): void => {
     setActiveTab(tab);
     setIsDialogOpen(true);
@@ -375,9 +484,9 @@ const OnboardingManagement: React.FC = () => {
           onboarding.skillsetWantToMaster || [],
           false
         ),
-        seemLikeYou: buildLabelPayload(onboarding.seemLikeYou || [], false),
-        strugglesWhenSpeaking: buildLabelPayload(
-          onboarding.strugglesWhenSpeaking || [],
+        learningGoal: buildLabelPayload(onboarding.learningGoal || [], false),
+        learningStruggles: buildLabelPayload(
+          onboarding.learningStruggles || [],
           false
         ),
         comfortableLearningTime: buildLabelPayload(
@@ -388,10 +497,11 @@ const OnboardingManagement: React.FC = () => {
           onboarding.dailyLearningGoal || [],
           false
         ),
-        timeToBecomeSkilled: buildLabelPayload(
-          onboarding.timeToBecomeSkilled || [],
-          false
-        ),
+        welcome: buildMotivationPayload(onboarding.welcome),
+        motivationOne: buildMotivationPayload(onboarding.motivationOne),
+        motivationTwo: buildMotivationPayload(onboarding.motivationTwo),
+        motivationThree: buildMotivationPayload(onboarding.motivationThree),
+        loading: buildMotivationPayload(onboarding.loading),
       };
 
       await onboardingService.update(onboarding._id, payload);
@@ -407,7 +517,7 @@ const OnboardingManagement: React.FC = () => {
 
   // ĐÃ SỬA: Nhận `id` thay vì `index`
   const handleArrayChange = useCallback(
-    (field: keyof IOnboarding, id: number, value: any): void => {
+    (field: OnboardingArrayField, id: number, value: any): void => {
       if (!onboarding) return;
       const currentValue = onboarding[field] as any[];
       // Tìm index bằng id
@@ -421,7 +531,17 @@ const OnboardingManagement: React.FC = () => {
     [onboarding]
   );
 
-  const addToArray = (field: keyof IOnboarding): void => {
+  const updateMotivationField = useCallback(
+    (field: MotivationField, value: IMotivation) => {
+      setOnboarding((prev) => (prev ? { ...prev, [field]: value } : prev));
+    },
+    []
+  );
+
+  const getMotivationValue = (field: MotivationField): IMotivation =>
+    onboarding?.[field] || { image: "", content: {} };
+
+  const addToArray = (field: OnboardingArrayField): void => {
     if (!onboarding) return;
 
     if (field === "intro") {
@@ -436,7 +556,10 @@ const OnboardingManagement: React.FC = () => {
   };
 
   // ĐÃ SỬA: Nhận `id` thay vì `index`
-  const addToArrayAtIndex = (field: keyof IOnboarding, id: number): void => {
+  const addToArrayAtIndex = (
+    field: OnboardingArrayField,
+    id: number
+  ): void => {
     if (!onboarding) return;
     const currentValue = onboarding[field] as any[];
     // Tìm index bằng id
@@ -457,7 +580,7 @@ const OnboardingManagement: React.FC = () => {
   };
 
   // ĐÃ SỬA: Nhận `id` thay vì `index`
-  const removeFromArray = (field: keyof IOnboarding, id: number): void => {
+  const removeFromArray = (field: OnboardingArrayField, id: number): void => {
     if (!onboarding) return;
     const currentValue = onboarding[field] as any[];
     // Tìm index bằng id
@@ -531,41 +654,8 @@ const OnboardingManagement: React.FC = () => {
     </Box>
   );
 
-  const renderTimeframeTab = (): React.ReactNode => (
-    <Box sx={{ mb: 3 }}>
-      <Typography variant="h6" sx={{ mb: 2 }}>
-        Time to Become Skilled
-      </Typography>
-      <Box sx={{ mt: 2 }}>
-        {Array.isArray(onboarding?.timeToBecomeSkilled) &&
-          (onboarding?.timeToBecomeSkilled as ILablel[]).map(
-            (item: ILablel) => (
-              <LabelInput
-                key={item.id}
-                item={item}
-                onChange={(id, newLabel) =>
-                  handleArrayChange("timeToBecomeSkilled", id, newLabel)
-                }
-                onDelete={(id) => removeFromArray("timeToBecomeSkilled", id)}
-                onAdd={(id) => addToArrayAtIndex("timeToBecomeSkilled", id)}
-                lang={lang}
-              />
-            )
-          )}
-        <Button
-          onClick={() => addToArray("timeToBecomeSkilled")}
-          variant="outlined"
-          startIcon={<Add />}
-          sx={{ mt: 1 }}
-        >
-          Add Timeframe
-        </Button>
-      </Box>
-    </Box>
-  );
-
   const renderLabelsTab = (
-    field: keyof IOnboarding,
+    field: OnboardingArrayField,
     title: string,
     showTitle?: boolean
   ): React.ReactNode => (
@@ -598,6 +688,18 @@ const OnboardingManagement: React.FC = () => {
         </Button>
       </Box>
     </Box>
+  );
+
+  const renderMotivationTab = (
+    field: MotivationField,
+    title: string
+  ): React.ReactNode => (
+    <MotivationInput
+      item={getMotivationValue(field)}
+      onChange={(value) => updateMotivationField(field, value)}
+      lang={lang}
+      title={title}
+    />
   );
 
   const renderChipWithIcon = (item: ILablel) => {
@@ -656,6 +758,70 @@ const OnboardingManagement: React.FC = () => {
         <Typography variant="body1" sx={{ fontWeight: "medium" }}>
           {getTranslationValue(item.label, lang)}
         </Typography>
+      </Box>
+    );
+  };
+
+  const renderMotivationSection = (
+    field: MotivationField,
+    title: string
+  ): React.ReactNode => {
+    const motivation = getMotivationValue(field);
+
+    return (
+      <Box
+        sx={{
+          mb: 6,
+          p: 3,
+          borderRadius: 2,
+          bgcolor: "grey.50",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          transition: "all 0.3s ease",
+          "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.12)" },
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h5" sx={{ fontWeight: "bold" }}>
+            {title}
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<Edit />}
+            onClick={() => handleEdit(field)}
+            sx={{
+              transition: "all 0.3s ease",
+              "&:hover": { bgcolor: "primary.main", color: "white" },
+            }}
+          >
+            Edit
+          </Button>
+        </Box>
+        <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
+          {motivation.image && (
+            <Box
+              component="img"
+              src={motivation.image}
+              alt={title}
+              sx={{
+                width: 160,
+                height: 160,
+                objectFit: "cover",
+                borderRadius: 2,
+                boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+              }}
+            />
+          )}
+          <Typography sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
+            {getTranslationValue(motivation.content, lang)}
+          </Typography>
+        </Box>
       </Box>
     );
   };
@@ -826,6 +992,15 @@ const OnboardingManagement: React.FC = () => {
                         <Typography gutterBottom sx={{ fontWeight: "bold" }}>
                           {getTranslationValue(intro.title, lang)}
                         </Typography>
+                        {intro.source && (
+                          <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            sx={{ display: "block", mb: 1 }}
+                          >
+                            {intro.source}
+                          </Typography>
+                        )}
                         <Typography
                           sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
                         >
@@ -960,7 +1135,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Profile Section */}
+            {/* Learning Goals */}
             <Box
               sx={{
                 mb: 6,
@@ -981,12 +1156,12 @@ const OnboardingManagement: React.FC = () => {
                 }}
               >
                 <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                  Seem like You
+                  Learning Goals
                 </Typography>
                 <Button
                   variant="outlined"
                   startIcon={<Edit />}
-                  onClick={() => handleEdit("seemLikeYou")}
+                  onClick={() => handleEdit("learningGoal")}
                   sx={{
                     transition: "all 0.3s ease",
                     "&:hover": { bgcolor: "primary.main", color: "white" },
@@ -996,7 +1171,9 @@ const OnboardingManagement: React.FC = () => {
                 </Button>
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {onboarding.seemLikeYou.map((item) => renderChipWithIcon(item))}
+                {onboarding.learningGoal.map((item) =>
+                  renderChipWithIcon(item)
+                )}
               </Box>
             </Box>
 
@@ -1021,12 +1198,12 @@ const OnboardingManagement: React.FC = () => {
                 }}
               >
                 <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                  Speaking Struggles
+                  Learning Struggles
                 </Typography>
                 <Button
                   variant="outlined"
                   startIcon={<Edit />}
-                  onClick={() => handleEdit("strugglesWhenSpeaking")}
+                  onClick={() => handleEdit("learningStruggles")}
                   sx={{
                     transition: "all 0.3s ease",
                     "&:hover": { bgcolor: "primary.main", color: "white" },
@@ -1036,7 +1213,7 @@ const OnboardingManagement: React.FC = () => {
                 </Button>
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {onboarding.strugglesWhenSpeaking.map((item) =>
+                {onboarding.learningStruggles.map((item) =>
                   renderChipWithIcon(item)
                 )}
               </Box>
@@ -1126,47 +1303,11 @@ const OnboardingManagement: React.FC = () => {
               </Box>
             </Box>
 
-            {/* Timeframe Section */}
-            <Box
-              sx={{
-                mb: 6,
-                p: 3,
-                borderRadius: 2,
-                bgcolor: "grey.50",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
-                transition: "all 0.3s ease",
-                "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.12)" },
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2,
-                }}
-              >
-                <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                  Time to Become Skilled
-                </Typography>
-                <Button
-                  variant="outlined"
-                  startIcon={<Edit />}
-                  onClick={() => handleEdit("timeToBecomeSkilled")}
-                  sx={{
-                    transition: "all 0.3s ease",
-                    "&:hover": { bgcolor: "primary.main", color: "white" },
-                  }}
-                >
-                  Edit
-                </Button>
-              </Box>
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                {onboarding.timeToBecomeSkilled.map((item) =>
-                  renderChipWithIcon(item)
-                )}
-              </Box>
-            </Box>
+            {renderMotivationSection("welcome", "Welcome")}
+            {renderMotivationSection("motivationOne", "Motivation One")}
+            {renderMotivationSection("motivationTwo", "Motivation Two")}
+            {renderMotivationSection("motivationThree", "Motivation Three")}
+            {renderMotivationSection("loading", "Loading")}
           </Box>
         ) : (
           <Typography>No onboarding data found</Typography>
@@ -1200,13 +1341,16 @@ const OnboardingManagement: React.FC = () => {
               {activeTab === "gender" && "Edit Gender Options"}
               {activeTab === "skillsetWantToMaster" &&
                 "Edit Skillset to Master"}
-              {activeTab === "seemLikeYou" && "Edit Profile Types"}
-              {activeTab === "strugglesWhenSpeaking" &&
-                "Edit Speaking Struggles"}
+              {activeTab === "learningGoal" && "Edit Learning Goals"}
+              {activeTab === "learningStruggles" &&
+                "Edit Learning Struggles"}
               {activeTab === "comfortableLearningTime" && "Edit Learning Times"}
               {activeTab === "dailyLearningGoal" && "Edit Daily Goals"}
-              {activeTab === "timeToBecomeSkilled" &&
-                "Edit Time to Become Skilled"}
+              {activeTab === "welcome" && "Edit Welcome"}
+              {activeTab === "motivationOne" && "Edit Motivation One"}
+              {activeTab === "motivationTwo" && "Edit Motivation Two"}
+              {activeTab === "motivationThree" && "Edit Motivation Three"}
+              {activeTab === "loading" && "Edit Loading"}
             </Typography>
             <IconButton onClick={() => setIsDialogOpen(false)}>
               <Close />
@@ -1220,14 +1364,23 @@ const OnboardingManagement: React.FC = () => {
             renderLabelsTab("gender", "Gender Options")}
           {activeTab === "skillsetWantToMaster" &&
             renderLabelsTab("skillsetWantToMaster", "Skillset to Master", true)}
-          {activeTab === "seemLikeYou" &&
-            renderLabelsTab("seemLikeYou", "Profile Types")}
-          {activeTab === "strugglesWhenSpeaking" &&
-            renderLabelsTab("strugglesWhenSpeaking", "Speaking Struggles")}
+          {activeTab === "learningGoal" &&
+            renderLabelsTab("learningGoal", "Learning Goals")}
+          {activeTab === "learningStruggles" &&
+            renderLabelsTab("learningStruggles", "Learning Struggles")}
           {activeTab === "comfortableLearningTime" &&
             renderLabelsTab("comfortableLearningTime", "Learning Times")}
           {activeTab === "dailyLearningGoal" && renderDailyGoalTab()}
-          {activeTab === "timeToBecomeSkilled" && renderTimeframeTab()}
+          {activeTab === "welcome" &&
+            renderMotivationTab("welcome", "Welcome")}
+          {activeTab === "motivationOne" &&
+            renderMotivationTab("motivationOne", "Motivation One")}
+          {activeTab === "motivationTwo" &&
+            renderMotivationTab("motivationTwo", "Motivation Two")}
+          {activeTab === "motivationThree" &&
+            renderMotivationTab("motivationThree", "Motivation Three")}
+          {activeTab === "loading" &&
+            renderMotivationTab("loading", "Loading")}
         </DialogContent>
         <DialogActions>
           <Button

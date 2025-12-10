@@ -28,7 +28,6 @@ const createEmptyTemplate = (): RoleplayColorTemplateForm => ({
     right: defaultStyle("#fff7ed", "#1c1917"),
   },
   leadingText: defaultStyle("#eef2ff", "#1e1b4b"),
-  hint: defaultStyle("#ecfccb", "#3f6212"),
   transition: defaultStyle("#fdf2f8", "#86198f"),
 });
 
@@ -160,7 +159,7 @@ const RoleplayColorManagement: React.FC = () => {
       | "conversationLeft"
       | "conversationRight"
       | "leadingText"
-      | "hint"
+     
       | "transition",
     field: keyof IColorStyle,
     value: string
@@ -173,7 +172,6 @@ const RoleplayColorManagement: React.FC = () => {
           right: cloneStyle(prev.conversation?.right),
         },
         leadingText: cloneStyle(prev.leadingText),
-        hint: cloneStyle(prev.hint),
         transition: cloneStyle(prev.transition),
       };
 
@@ -191,9 +189,6 @@ const RoleplayColorManagement: React.FC = () => {
           break;
         case "leadingText":
           next.leadingText = updateStyle(next.leadingText);
-          break;
-        case "hint":
-          next.hint = updateStyle(next.hint);
           break;
         case "transition":
           next.transition = updateStyle(next.transition);
@@ -215,7 +210,6 @@ const RoleplayColorManagement: React.FC = () => {
         right: cloneStyle(template.conversation?.right),
       },
       leadingText: cloneStyle(template.leadingText),
-      hint: cloneStyle(template.hint),
       transition: cloneStyle(template.transition),
     });
     setShowForm(true);
@@ -235,7 +229,6 @@ const RoleplayColorManagement: React.FC = () => {
       title: trimmedTitle,
       conversation: form.conversation,
       leadingText: form.leadingText,
-      hint: form.hint,
       transition: form.transition,
     };
 
@@ -307,7 +300,7 @@ const RoleplayColorManagement: React.FC = () => {
                   {template.title}
                 </h3>
                 <p className="text-sm text-gray-500">
-                  Conversation, leading text, hint & transition colors
+                  Conversation, leading text & transition colors
                 </p>
               </div>
               <div className="flex gap-2">
@@ -341,10 +334,6 @@ const RoleplayColorManagement: React.FC = () => {
               <ColorSwatchPreview
                 label="Leading Text"
                 style={cloneStyle(template.leadingText)}
-              />
-              <ColorSwatchPreview
-                label="Hint"
-                style={cloneStyle(template.hint)}
               />
               <ColorSwatchPreview
                 label="Transition"
@@ -421,14 +410,6 @@ const RoleplayColorManagement: React.FC = () => {
                   value={form.leadingText}
                   onChange={(field, value) =>
                     handleStyleChange("leadingText", field, value)
-                  }
-                />
-
-                <ColorStyleField
-                  label="Hint"
-                  value={form.hint}
-                  onChange={(field, value) =>
-                    handleStyleChange("hint", field, value)
                   }
                 />
 

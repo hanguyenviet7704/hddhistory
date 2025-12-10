@@ -1,7 +1,7 @@
 import { ITranslation } from "../../../../utils/translate";
 import {
-  RoleplaySectionType,
-  SectionConversationPosition,
+  RoleplayContentType,
+  RoleplayConversationPosition,
 } from "../../../enum/learningItem.enum";
 import { IAvatar } from "../../avatar.interface";
 import {
@@ -12,7 +12,7 @@ import {
 export interface IConversation {
   avatarId: string;
   avatar?: IAvatar;
-  position: SectionConversationPosition;
+  position: RoleplayConversationPosition;
   backgroundColor: string;
   textColor: string;
   content: ITranslation;
@@ -26,37 +26,36 @@ export interface ILeadingText {
   audio: ITranslation;
 }
 
-export interface IHint {
-  icon: string;
-  backgroundColor: string;
+export interface ITransition {
   textColor: string;
   content: ITranslation;
 }
 
-export interface ISectionContent {
+export interface IRoleplayContent {
   id: number;
-  type: RoleplaySectionType;
+  type: RoleplayContentType;
   conversation: IConversation;
   leadingText: ILeadingText;
-  hint: IHint;
+  transition: ITransition;
   exercise: ExerciseInput;
 }
 
-export interface ISection {
+export interface IMission {
   id: number;
-  title: ITranslation;
-  transition: ITranslation;
-  textColor: string;
-  backgroundColor: string;
-  image: string;
-  colorTemplateId?: string;
-  contents: ISectionContent[];
+  content: ITranslation;
 }
 
-export type ISectionContentPayload = Omit<ISectionContent, "exercise"> & {
+export interface IRoleplay {
+  image: string;
+  contents: IRoleplayContent[];
+  missions: IMission[];
+  colorTemplateId: string;
+}
+
+export type IRoleplayContentPayload = Omit<IRoleplayContent, "exercise"> & {
   exercise?: ExerciseInputPayload;
 };
 
-export type ISectionPayload = Omit<ISection, "contents"> & {
-  contents: ISectionContentPayload[];
+export type IRoleplayPayload = Omit<IRoleplay, "contents"> & {
+  contents: IRoleplayContentPayload[];
 };

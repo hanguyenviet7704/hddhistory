@@ -129,7 +129,7 @@ const RoadmapPage: React.FC = () => {
       const res = await lessonService.getList({ courseId, type, search });
       const items: ILessonBrief[] = res.data?.items || [];
       switch (type) {
-        case LessonType.ENTRANCE:
+        case LessonType.ROLEPLAY:
           setEntranceLessons(items);
           break;
         case LessonType.OUTPUT:
@@ -178,7 +178,7 @@ const RoadmapPage: React.FC = () => {
   // ---------- Node actions ----------
   const openCreateNode = async (levelIndex: number) => {
     setTitleError("");
-    if (!entranceLessons.length) await fetchLessonsByType(LessonType.ENTRANCE);
+    if (!entranceLessons.length) await fetchLessonsByType(LessonType.ROLEPLAY);
     if (!outputLessons.length) await fetchLessonsByType(LessonType.OUTPUT);
     setIsCreatingNode({ on: true, levelIndex });
   };
@@ -239,7 +239,7 @@ const RoadmapPage: React.FC = () => {
     if (field === "entrance") {
       lessonList = entranceLessons.length
         ? entranceLessons
-        : await fetchLessonsByType(LessonType.ENTRANCE);
+        : await fetchLessonsByType(LessonType.ROLEPLAY);
     } else if (field === "output") {
       lessonList = outputLessons.length
         ? outputLessons
@@ -368,7 +368,7 @@ const RoadmapPage: React.FC = () => {
     let icon = "";
     let color = "";
     switch (lesson.type) {
-      case LessonType.ENTRANCE:
+      case LessonType.ROLEPLAY:
         icon = "🧭";
         color = "bg-blue-100 text-blue-800";
         break;

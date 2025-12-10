@@ -8,7 +8,6 @@ import { IExerciseChoiceOption } from "./single-choice.interface";
 export interface IExerciseMultipleChoice {
   id: number;
   type: ExerciseType;
-  speechBubble: ITranslation;
   tag: ITag | null;
   document: IDocument[];
   explanation: ITranslation;
@@ -22,7 +21,6 @@ export interface IExerciseMultipleChoice {
 export interface ExerciseMultipleChoicePayload {
   id: number;
   type: ExerciseType;
-  speechBubble: ITranslation;
   tagId: string;
   document: IDocument[];
   explanation: ITranslation;

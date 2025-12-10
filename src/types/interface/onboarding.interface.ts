@@ -1,5 +1,5 @@
 import { ITranslation } from "../../utils/translate";
-import { ILablel, LablelPayload } from "../enum/common.enum";
+import { ILablel, IMotivation, LablelPayload } from "../enum/common.enum";
 import { BaseQuery } from "./common.interface";
 
 export interface IOnboardingIntro {
@@ -7,6 +7,7 @@ export interface IOnboardingIntro {
   title: ITranslation;
   image: string;
   content: ITranslation;
+  source: string;
 }
 
 export interface OnboardingIntroPayload {
@@ -14,6 +15,7 @@ export interface OnboardingIntroPayload {
   title: ITranslation;
   image: string;
   content: ITranslation;
+  source: string;
 }
 
 export interface IOnboarding {
@@ -22,11 +24,15 @@ export interface IOnboarding {
   age: ILablel[];
   gender: ILablel[];
   skillsetWantToMaster: ILablel[];
-  seemLikeYou: ILablel[];
-  strugglesWhenSpeaking: ILablel[];
+  learningGoal: ILablel[];
+  learningStruggles: ILablel[];
   comfortableLearningTime: ILablel[];
   dailyLearningGoal: ILablel[];
-  timeToBecomeSkilled: ILablel[];
+  welcome: IMotivation;
+  motivationOne: IMotivation;
+  motivationTwo: IMotivation;
+  motivationThree: IMotivation;
+  loading: IMotivation;
 }
 
 export interface OnboardingPayload {
@@ -34,11 +40,15 @@ export interface OnboardingPayload {
   age: LablelPayload[];
   gender: LablelPayload[];
   skillsetWantToMaster: LablelPayload[];
-  seemLikeYou: LablelPayload[];
-  strugglesWhenSpeaking: LablelPayload[];
+  learningGoal: LablelPayload[];
+  learningStruggles: LablelPayload[];
   comfortableLearningTime: LablelPayload[];
   dailyLearningGoal: LablelPayload[];
-  timeToBecomeSkilled: LablelPayload[];
+  welcome: IMotivation;
+  motivationOne: IMotivation;
+  motivationTwo: IMotivation;
+  motivationThree: IMotivation;
+  loading: IMotivation;
 }
 
 export class OnboardingListQuery extends BaseQuery {

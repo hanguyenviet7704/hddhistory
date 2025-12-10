@@ -11,4 +11,9 @@ export const purchaseService = {
     const res = await axiosClient.get(`/payment/purchases/${id}`);
     return res.data;
   },
+
+  async findByUser(userId: string) {
+    const res = await axiosClient.get(`/payment/purchases/users/${userId}`);
+    return res.data;
+  },
 };

@@ -5,6 +5,6 @@ export enum LessonStatus {
 
 export enum LessonType {
   LESSON = "lesson",
-  ENTRANCE = "entrance",
+  ROLEPLAY = "roleplay",
   OUTPUT = "output",
 }

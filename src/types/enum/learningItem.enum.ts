@@ -18,14 +18,14 @@ export enum FormDragDropType {
   ArrangeTheSequence = "Arrange the Sequence",
 }
 
-export enum RoleplaySectionType {
+export enum RoleplayContentType {
   CONVERSATION = "conversation",
   LEADING_TEXT = "leading_text",
-  HINT = "hint",
+  TRANSITION = "transition",
   EXERCISE = "exercise",
 }
 
-export enum SectionConversationPosition {
+export enum RoleplayConversationPosition {
   LEFT = "left",
   RIGHT = "right",
 }

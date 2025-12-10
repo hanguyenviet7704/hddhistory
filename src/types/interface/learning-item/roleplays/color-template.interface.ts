@@ -15,7 +15,6 @@ export interface IRoleplayColorTemplate {
   title: string;
   conversation: IConversationColor;
   leadingText: IColorStyle;
-  hint: IColorStyle;
   transition: IColorStyle;
 }
 

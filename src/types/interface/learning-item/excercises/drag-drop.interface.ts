@@ -21,7 +21,6 @@ export interface IExerciseDragDrop {
   id: number;
   type: ExerciseType;
   form: FormDragDropType;
-  speechBubble: ITranslation;
   tag: ITag | null;
   document: IDocument[];
   explanation: ITranslation;
@@ -38,7 +37,6 @@ export interface ExerciseDragDropPayload {
   id: number;
   type: ExerciseType;
   form: FormDragDropType;
-  speechBubble: ITranslation;
   tagId: string;
   document: IDocument[];
   explanation: ITranslation;

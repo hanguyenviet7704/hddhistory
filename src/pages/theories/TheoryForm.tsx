@@ -283,35 +283,19 @@ export default function TheoryForm({
     return (
       documents
         .map((doc) => {
-          const payload: any = {
-            id: doc.id,
-            tagId: doc.tag?._id || "",
-            document: [],
-          };
-
-          // Only add speechBubble if it has non-empty translations
-          const cleanedSpeechBubble = cleanTranslation(doc.speechBubble);
-          if (cleanedSpeechBubble) {
-            payload.speechBubble = cleanedSpeechBubble;
-          }
-
           const cleanedDocuments = doc.document?.length
             ? cleanDocumentItems(doc.document)
             : [];
 
-          if (cleanedDocuments.length > 0) {
-            payload.document = cleanedDocuments;
-          }
-
-          // Skip if nothing to send
-          if (
-            !payload.speechBubble &&
-            (!payload.document || payload.document.length === 0)
-          ) {
+          if (cleanedDocuments.length === 0) {
             return null;
           }
 
-          return payload;
+          return {
+            id: doc.id,
+            tagId: doc.tag?._id || "",
+            document: cleanedDocuments,
+          } as TheoryDocumentPayload;
         })
         // Remove empty payloads
         .filter(Boolean) as TheoryDocumentPayload[]
@@ -568,17 +552,6 @@ export default function TheoryForm({
                             </div>
                           </div>
                           <div className="text-sm text-gray-600 space-y-1">
-                            {theoryDoc.speechBubble && (
-                              <div className="flex items-start">
-                                <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
-                                  Speech Bubble:
-                                </span>
-                                <TextWithTooltip
-                                  text={theoryDoc.speechBubble}
-                                  lang={lang}
-                                />
-                              </div>
-                            )}
                             {theoryDoc.tag && (
                               <div className="flex items-start">
                                 <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
@@ -740,7 +713,6 @@ export default function TheoryForm({
       }
       return {
         id: nextDocId,
-        speechBubble: { [lang]: "" },
         tag: null,
         document: [],
       };
@@ -955,18 +927,10 @@ export default function TheoryForm({
     };
 
     const handleSave = () => {
-      // Clean speechBubble if empty
       const cleanedData: any = {
         ...formData,
         tag: selectedTag,
       };
-
-      const cleanedSpeechBubble = cleanTranslation(formData.speechBubble);
-      if (cleanedSpeechBubble) {
-        cleanedData.speechBubble = cleanedSpeechBubble;
-      } else {
-        delete cleanedData.speechBubble;
-      }
 
       const cleanedDocuments = formData.document?.length
         ? cleanDocumentItems(formData.document)
@@ -991,27 +955,6 @@ export default function TheoryForm({
 
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Speech Bubble
-          </label>
-          <input
-            type="text"
-            value={getCurrentTranslationValue(formData.speechBubble, lang)}
-            onChange={(e) =>
-              handleChange(
-                "speechBubble",
-                updateTranslationValue(
-                  formData.speechBubble || {},
-                  lang,
-                  e.target.value
-                )
-              )
-            }
-            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-            placeholder="Enter speech bubble text"
-          />
-        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">
             Tag

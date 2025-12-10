@@ -12,7 +12,6 @@ export interface IScoringCriteria {
 export interface IExerciseRecord {
   id: number;
   type: ExerciseType;
-  speechBubble: ITranslation;
   tag: ITag | null;
   document: IDocument[];
   explanation: ITranslation;
@@ -29,7 +28,6 @@ export interface IExerciseRecord {
 export interface ExerciseRecordPayload {
   id: number;
   type: ExerciseType;
-  speechBubble: string;
   tagId: string;
   document: IDocument[];
   explanation: string;
