@@ -426,52 +426,40 @@ const OnboardingManagement: React.FC = () => {
   }, []); // ĐÃ SỬA: Chỉ chạy 1 lần
 
   const buildIntroPayload = (list: IOnboardingIntro[]): OnboardingIntroPayload[] =>
-    list
-      .map((intro) => {
-        const cleanedTitle = cleanTranslation(intro.title);
-        const cleanedContent = cleanTranslation(intro.content);
+    list.map((intro) => {
+      const cleanedTitle = cleanTranslation(intro.title) || intro.title;
+      const cleanedContent = cleanTranslation(intro.content) || intro.content;
 
-        if (!cleanedTitle || !cleanedContent) return null;
-
-        return {
-          id: intro.id,
-          image: intro.image,
-          title: cleanedTitle,
-          content: cleanedContent,
-          source: intro.source || "",
-          sourceTitle: intro.sourceTitle || "",
-        } as OnboardingIntroPayload;
-      })
-      .filter(Boolean) as OnboardingIntroPayload[];
+      return {
+        id: intro.id,
+        image: intro.image,
+        title: cleanedTitle || {},
+        content: cleanedContent || {},
+        source: intro.source || "",
+        sourceTitle: intro.sourceTitle || "",
+      } as OnboardingIntroPayload;
+    });
 
   const buildLabelPayload = (
     list: ILablel[],
     requireTitle: boolean = false
   ): LablelPayload[] =>
-    list
-      .map((l) => {
-        const cleanedLabel = cleanTranslation(l.label);
-        const cleanedTitle = cleanTranslation(l.title);
+    list.map((l) => {
+      const cleanedLabel = cleanTranslation(l.label) || l.label;
+      const cleanedTitle = cleanTranslation(l.title) || l.title;
 
-        // Bỏ item nếu label trống
-        if (!cleanedLabel || Object.keys(cleanedLabel).length === 0) {
-          return null;
-        }
+      const payload: Partial<LablelPayload> = {
+        id: l.id,
+        icon: l.icon,
+        label: cleanedLabel || {},
+      };
 
-        const payload: Partial<LablelPayload> = {
-          id: l.id,
-          icon: l.icon,
-          label: cleanedLabel,
-        };
+      if (requireTitle) {
+        payload.title = cleanedTitle || {};
+      }
 
-        // Chỉ thêm title khi có giá trị (tránh gửi object rỗng)
-        if (cleanedTitle && Object.keys(cleanedTitle).length > 0) {
-          payload.title = cleanedTitle;
-        }
-
-        return payload as LablelPayload;
-      })
-      .filter(Boolean) as LablelPayload[];
+      return payload as LablelPayload;
+    });
 
   const buildMotivationPayload = (
     motivation: IMotivation | undefined
@@ -509,7 +497,7 @@ const OnboardingManagement: React.FC = () => {
         ),
         comfortableLearningTime: buildLabelPayload(
           onboarding.comfortableLearningTime || [],
-          false
+          true
         ),
         dailyLearningGoal: buildLabelPayload(
           onboarding.dailyLearningGoal || [],
@@ -739,7 +727,7 @@ const OnboardingManagement: React.FC = () => {
         >
           <img
             src={item.icon}
-            alt={getTranslationValue(item.label, lang)}
+            alt={getCurrentTranslationValue(item.label, lang)}
             style={{
               width: 32,
               height: 32,
@@ -749,7 +737,7 @@ const OnboardingManagement: React.FC = () => {
             }}
           />
           <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-            {getTranslationValue(item.label, lang)}
+            {getCurrentTranslationValue(item.label, lang)}
           </Typography>
         </Box>
       );
@@ -774,7 +762,7 @@ const OnboardingManagement: React.FC = () => {
           {item.icon}
         </Typography>
         <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-          {getTranslationValue(item.label, lang)}
+          {getCurrentTranslationValue(item.label, lang)}
         </Typography>
       </Box>
     );
@@ -863,7 +851,7 @@ const OnboardingManagement: React.FC = () => {
         >
           <img
             src={item.icon}
-            alt={getTranslationValue(item.label, lang)}
+            alt={getCurrentTranslationValue(item.label, lang)}
             style={{
               width: 32,
               height: 32,
@@ -872,13 +860,13 @@ const OnboardingManagement: React.FC = () => {
               display: "block",
             }}
           />
-          {getTranslationValue(item.title, lang) && (
+          {getCurrentTranslationValue(item.title, lang) && (
             <Typography variant="body1" sx={{ mr: 1, fontWeight: "medium" }}>
-              {getTranslationValue(item.title, lang)}
+              {getCurrentTranslationValue(item.title, lang)}
             </Typography>
           )}
           <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-            {getTranslationValue(item.label, lang)}
+            {getCurrentTranslationValue(item.label, lang)}
           </Typography>
         </Box>
       );
@@ -902,13 +890,13 @@ const OnboardingManagement: React.FC = () => {
         <Typography variant="body1" sx={{ mr: 1 }}>
           {item.icon}
         </Typography>
-        {getTranslationValue(item.title, lang) && (
+        {getCurrentTranslationValue(item.title, lang) && (
           <Typography variant="body1" sx={{ mr: 1, fontWeight: "medium" }}>
-            {getTranslationValue(item.title, lang)}
+            {getCurrentTranslationValue(item.title, lang)}
           </Typography>
         )}
         <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-          {getTranslationValue(item.label, lang)}
+          {getCurrentTranslationValue(item.label, lang)}
         </Typography>
       </Box>
     );
@@ -996,7 +984,7 @@ const OnboardingManagement: React.FC = () => {
                         {intro.image && (
                           <img
                             src={intro.image}
-                            alt={getTranslationValue(intro.title, lang)}
+                            alt={getCurrentTranslationValue(intro.title, lang)}
                             style={{
                               width: "100%",
                               height: 200,
@@ -1008,7 +996,7 @@ const OnboardingManagement: React.FC = () => {
                       </Box>
                       <Box sx={{ flex: 2 }}>
                         <Typography gutterBottom sx={{ fontWeight: "bold" }}>
-                          {getTranslationValue(intro.title, lang)}
+                          {getCurrentTranslationValue(intro.title, lang)}
                         </Typography>
                         {intro.sourceTitle && (
                           <Typography
@@ -1031,7 +1019,7 @@ const OnboardingManagement: React.FC = () => {
                         <Typography
                           sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
                         >
-                          {getTranslationValue(intro.content, lang)}
+                          {getCurrentTranslationValue(intro.content, lang)}
                         </Typography>
                       </Box>
                     </Box>
