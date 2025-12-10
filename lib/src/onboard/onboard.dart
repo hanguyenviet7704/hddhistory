@@ -15,10 +15,12 @@ part 'data/datasources/local/onboard_local_data_source.dart';
 part 'data/datasources/remote/onboard_api.dart';
 part 'data/models/onboard_intro_model.dart';
 part 'data/models/onboard_model.dart';
+part 'data/models/onboard_motivation.dart';
 part 'data/models/onboard_option_model.dart';
 part 'data/repositories/onboard_repository.dart';
 part 'domain/entities/onboard_entity.dart';
 part 'domain/entities/onboard_intro_entity.dart';
+part 'domain/entities/onboard_motivation_entity.dart';
 part 'domain/entities/onboard_option_entity.dart';
 part 'domain/repositories/i_onboard_repository.dart';
 part 'domain/usecases/create_onboard_usecase.dart';
@@ -34,10 +36,13 @@ part 'presentation/cubits/intro_cubit.dart';
 part 'presentation/cubits/intro_state.dart';
 part 'presentation/cubits/onboard_cubit.dart';
 part 'presentation/cubits/onboard_state.dart';
+//* Pages
 part 'presentation/pages/choose_language_page.dart';
 part 'presentation/pages/intro_page.dart';
+part 'presentation/pages/onboard_introduce_page.dart';
 part 'presentation/pages/onboard_page.dart';
 part 'presentation/pages/splash_page.dart';
+//* Widgets
 part 'presentation/widgets/character_illustration_widget.dart';
 part 'presentation/widgets/character_section.dart';
 part 'presentation/widgets/chat_bubble_widget.dart';

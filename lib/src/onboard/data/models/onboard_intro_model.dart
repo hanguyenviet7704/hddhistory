@@ -7,6 +7,7 @@ abstract class OnboardIntroModel with _$OnboardIntroModel {
     @Default('') String image,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
+    @Default('') String source,
   }) = _OnboardIntroModel;
 
   factory OnboardIntroModel.fromJson(Map<String, dynamic> json) => _$OnboardIntroModelFromJson(json);

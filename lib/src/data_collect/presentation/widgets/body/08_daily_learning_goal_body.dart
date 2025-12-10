@@ -1,7 +1,7 @@
 part of '../../../data_collect.dart';
 
-class StruggleWhenSpeakingBody extends StatelessWidget {
-  const StruggleWhenSpeakingBody({super.key});
+class DailyLearningGoalBody extends StatelessWidget {
+  const DailyLearningGoalBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -12,7 +12,7 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
           children: [
             // Title
             AppText(
-              context.text.onboarding.onboardingStruggleQuestion,
+              context.text.onboarding.onboardingChooseSkillsetTitle,
               textAlign: TextAlign.center,
               style: AppStyle.textBold20.copyWith(
                 color: const Color(0xFF364152), // Text/Secondary
@@ -22,19 +22,19 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
             ),
 
             4.verticalSpace,
-
             // Subtitle
             AppText(
-              context.text.onboarding.onboardingStruggleQuestionSubtitle,
+              context.text.onboarding.onboardingChooseSkillsetSubtitle,
+              maxLines: 10,
               style: AppStyle.text12.copyWith(
                 color: const Color(0xFF7F8EA4), // Text/Tertiary
               ),
             ),
 
-            Spacer(),
+            20.verticalSpace,
 
-            // Struggle Options
-            StruggleOptions(),
+            // Topic Options
+            TopicOptions(),
           ],
         );
       },
@@ -42,27 +42,26 @@ class StruggleWhenSpeakingBody extends StatelessWidget {
   }
 }
 
-class StruggleOptions extends StatelessWidget {
-  const StruggleOptions({super.key});
+class DailyLearningGoalOptions extends StatelessWidget {
+  const DailyLearningGoalOptions({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
-      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedStruggles != current.selectedStruggles,
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedTopics != current.selectedTopics,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
+
         return Expanded(
           child: ListView.separated(
-            itemCount: state.onboardData.strugglesWhenSpeaking.length,
+            itemCount: state.onboardData.skillsetWantToMaster.length,
             separatorBuilder: (context, index) => 12.verticalSpace,
             itemBuilder: (context, index) {
-              final struggle = state.onboardData.strugglesWhenSpeaking[index];
-              final isSelected = state.isStruggleSelected(struggle);
-
-              return StruggleOption(
-                value: struggle,
-                isSelected: isSelected,
-                onChanged: (value) => cubit.selectStruggle(value ?? OnboardOptionEntity()),
+              final topic = state.onboardData.skillsetWantToMaster[index];
+              return TopicOption(
+                value: topic,
+                isSelected: state.isTopicSelected(topic),
+                onChanged: (value) => cubit.selectTopic(value ?? OnboardOptionEntity()),
               );
             },
           ),

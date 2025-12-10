@@ -105,7 +105,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
             },
           )
           .toList(),
-      'seemLikeYou': entity.seemLikeYou
+      'learningGoal': entity.learningGoal
           .map(
             (e) => {
               'id': e.id,
@@ -115,7 +115,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
             },
           )
           .toList(),
-      'strugglesWhenSpeaking': entity.strugglesWhenSpeaking
+      'learningStruggles': entity.learningStruggles
           .map(
             (e) => {
               'id': e.id,
@@ -145,16 +145,6 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
             },
           )
           .toList(),
-      'timeToBecomeSkilled': entity.timeToBecomeSkilled
-          .map(
-            (e) => {
-              'id': e.id,
-              'icon': e.icon,
-              'label': e.label.toJson(),
-              'title': e.title.toJson(),
-            },
-          )
-          .toList(),
       'intro': entity.intro
           .map(
             (e) => {
@@ -162,6 +152,46 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
               'image': e.image,
               'title': e.title.toJson(),
               'content': e.content.toJson(),
+            },
+          )
+          .toList(),
+      'welcome': entity.welcome
+          .map(
+            (e) => {
+              'content': e.content.toJson(),
+              'image': e.image,
+            },
+          )
+          .toList(),
+      'motivationOne': entity.motivationOne
+          .map(
+            (e) => {
+              'content': e.content.toJson(),
+              'image': e.image,
+            },
+          )
+          .toList(),
+      'motivationTwo': entity.motivationTwo
+          .map(
+            (e) => {
+              'content': e.content.toJson(),
+              'image': e.image,
+            },
+          )
+          .toList(),
+      'motivationThree': entity.motivationThree
+          .map(
+            (e) => {
+              'content': e.content.toJson(),
+              'image': e.image,
+            },
+          )
+          .toList(),
+      'loading': entity.loading
+          .map(
+            (e) => {
+              'content': e.content.toJson(),
+              'image': e.image,
             },
           )
           .toList(),

@@ -41,10 +41,10 @@ class StepBody extends StatelessWidget {
       DataCollectStep.age => const AgeCollectBody(),
       DataCollectStep.gender => const GenderCollectBody(),
       DataCollectStep.chooseTopic => const ChooseTopicBody(),
-      DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => const StruggleWhenSpeakingBody(),
+      DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => SizedBox.shrink(),
       DataCollectStep.bestTimeOfDayToLearn => const BestTimeToLearnBody(),
       DataCollectStep.dailyLearningGoal => const LearningGoalBody(),
-      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => const TimeToSkilledBody(),
+      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => SizedBox.shrink(),
     };
   }
 }
