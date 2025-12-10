@@ -1,6 +1,6 @@
 part of '../../../monetization.dart';
 
-enum MonetizationStatus { initial, loading, success, purchaseSuccess, failure }
+enum MonetizationStatus { initial, loading, restoring, purchasing, purchaseSuccess, success, failure }
 
 @freezed
 abstract class IapState with _$IapState {

@@ -19,6 +19,7 @@ class SettingRoute extends BaseTransitionRouteData with $SettingRoute {
     providers: [
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
       BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
     ],
     child: const SettingPage(),
   );
@@ -35,6 +36,7 @@ class ProfileRoute extends BaseTransitionRouteData with $ProfileRoute {
     providers: [
       BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
     ],
     child: const ProfilePage(),
   );
