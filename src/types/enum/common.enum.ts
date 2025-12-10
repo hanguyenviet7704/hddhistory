@@ -24,3 +24,8 @@ export interface LablelPayload {
   title: ITranslation;
   label: ITranslation;
 }
+
+export interface IMotivation {
+  image: string;
+  content: ITranslation;
+}
