@@ -6,6 +6,25 @@ class IntroLanguageSheet extends StatelessWidget {
 
   const IntroLanguageSheet({super.key, required this.selectedLocale, required this.onSelected});
 
+  static Future<void> show(BuildContext context) async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      isScrollControlled: true,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24.r))),
+      builder: (sheetContext) {
+        final selectedLocale = sheetContext.read<LocaleCubit>().state;
+
+        return IntroLanguageSheet(
+          selectedLocale: selectedLocale,
+          onSelected: (locale) {
+            context.read<LocaleCubit>().setLocale(locale);
+          },
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Padding(

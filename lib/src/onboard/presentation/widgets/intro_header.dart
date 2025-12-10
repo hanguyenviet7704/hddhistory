@@ -19,13 +19,6 @@ class IntroHeader extends StatelessWidget {
               color: Colors.white,
               borderRadius: BorderRadius.circular(100.r),
               border: Border.all(color: AppCustomColor.borderDefault, width: 2),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.04),
-                  blurRadius: 16,
-                  offset: const Offset(0, 4),
-                ),
-              ],
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
