@@ -131,6 +131,8 @@ extension ListProductDetailsExtension on List<ProductDetails> {
 }
 
 extension PurchaseDetailsExtension on PurchaseDetails {
+  String get transactionId => purchaseID?.trim().isNotEmpty == true ? purchaseID! : verificationData.serverVerificationData;
+
   String get toJsonString =>
       '{"purchaseID": "$purchaseID", \r\n"productID": "$productID", \r\n"transactionDate": "$transactionDate", \r\n"status": "$status", \r\n"verificationData": "${verificationData.toJsonString}"}';
 }

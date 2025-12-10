@@ -73,7 +73,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   Future<void> restorePurchases() async {
     if (state.status == MonetizationStatus.restoring) return;
     emit(state.copyWith(status: MonetizationStatus.restoring));
-    
+
     _restoreTimeout?.cancel();
     DMessage.showMessage(
       message: AppConfig.instance.context?.text.monetization.restoreProcessingToast ?? '',
@@ -109,7 +109,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     if (_purchaseDetailSubscription != null) return;
 
     _purchaseDetailSubscription = _iapRepository.purchaseDetailStream.listen((purchaseDetail) async {
-      final transactionId = _transactionIdOf(purchaseDetail);
+      final transactionId = purchaseDetail.transactionId;
 
       switch (purchaseDetail.status) {
         case PurchaseStatus.pending:
@@ -199,9 +199,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       emit(state.copyWith(status: MonetizationStatus.purchaseSuccess));
       AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       DMessage.showMessage(
-        message: isRestore
-            ? AppConfig.instance.context?.text.monetization.restoreSuccessToast ?? ''
-            : AppConfig.instance.context?.text.monetization.paymentSuccessToast ?? '',
+        message: isRestore ? AppConfig.instance.context?.text.monetization.restoreSuccessToast ?? '' : AppConfig.instance.context?.text.monetization.paymentSuccessToast ?? '',
         type: MessageType.success,
       );
       // await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
@@ -233,16 +231,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     _persistProcessedTransactions();
   }
 
-  String _transactionIdOf(PurchaseDetails purchaseDetail) =>
-      purchaseDetail.purchaseID?.trim().isNotEmpty == true
-          ? purchaseDetail.purchaseID!
-          : purchaseDetail.verificationData.serverVerificationData;
-
-  Future<void> _finishTransaction(PurchaseDetails purchaseDetail) async {
-    if (purchaseDetail.pendingCompletePurchase) {
-      await _iapService.completePurchase(purchaseDetail);
-    }
-  }
+  Future<void> _finishTransaction(PurchaseDetails purchaseDetail) async => await _iapService.completePurchase(purchaseDetail);
 
   Future<void> _loadProcessedTransactions() async {
     final ids = await _iapRepository.loadProcessedTransactionIds();
