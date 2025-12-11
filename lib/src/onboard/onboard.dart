@@ -28,10 +28,10 @@ part 'domain/usecases/get_all_onboards_usecase.dart';
 part 'onboard.freezed.dart';
 part 'onboard.g.dart';
 //* State is shared between BLoC and Cubit
-part 'presentation/cubits/intro_cubit.dart';
-part 'presentation/cubits/intro_state.dart';
-part 'presentation/cubits/onboard_cubit.dart';
-part 'presentation/cubits/onboard_state.dart';
+part 'presentation/cubits/intro/intro_cubit.dart';
+part 'presentation/cubits/intro/intro_state.dart';
+part 'presentation/cubits/onboard/onboard_cubit.dart';
+part 'presentation/cubits/onboard/onboard_state.dart';
 //* Pages
 part 'presentation/pages/choose_language_page.dart';
 part 'presentation/pages/onboard_introduce_page.dart';

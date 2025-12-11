@@ -1,4 +1,4 @@
-part of '../../onboard.dart';
+part of '../../../onboard.dart';
 
 enum OnboardStatus { initial, loading, success, failure }
 

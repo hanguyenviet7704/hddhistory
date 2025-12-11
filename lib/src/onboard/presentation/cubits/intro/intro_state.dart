@@ -1,4 +1,4 @@
-part of '../../onboard.dart';
+part of '../../../onboard.dart';
 
 @freezed
 sealed class IntroState with _$IntroState {

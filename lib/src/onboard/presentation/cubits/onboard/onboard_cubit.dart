@@ -1,4 +1,4 @@
-part of '../../onboard.dart';
+part of '../../../onboard.dart';
 
 @lazySingleton
 class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<OnboardState> {
