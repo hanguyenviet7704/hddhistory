@@ -11,14 +11,14 @@ class HowToLearnBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              title: context.text.onboarding.onboardingChooseSkillsetTitle,
-              subtitle: context.text.onboarding.onboardingChooseSkillsetSubtitle,
+              note: context.text.onboarding.onboardingHowToLearnNote,
+              title: context.text.onboarding.onboardingHowToLearnTitle,
             ),
 
-            24.verticalSpace,
+            20.verticalSpace,
 
-            // Topic Options
-            const SkillsetsWantToMasterBodyOptions(),
+            // Banner carousel reusing paywall decor logic
+            const PaywallBannerCarousel(),
           ],
         );
       },
