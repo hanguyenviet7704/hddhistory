@@ -44,6 +44,7 @@ import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import TextStyle from "@tiptap/extension-text-style";
 import Color from "@tiptap/extension-color";
+import { Extension } from "@tiptap/core";
 
 type MotivationField =
   | "welcome"
@@ -69,12 +70,54 @@ const sanitizeTranslation = (
 
   Object.entries(translation || {}).forEach(([key, value]) => {
     if (value !== undefined) {
-      sanitized[key as LangCode] = DOMPurify.sanitize(value);
+      sanitized[key as LangCode] = sanitizeHtml(value);
     }
   });
 
   return sanitized;
 };
+
+const sanitizeHtml = (html: string) =>
+  DOMPurify.sanitize(html, {
+    ADD_ATTR: ["style"],
+  });
+
+const FontSize = Extension.create({
+  name: "fontSize",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["textStyle"],
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: (element) => element.style.fontSize || null,
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) {
+                return {};
+              }
+              return {
+                style: `font-size: ${attributes.fontSize}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setFontSize:
+        (size: string) =>
+        ({ chain }: { chain: any }) =>
+          chain().setMark("textStyle", { fontSize: size }).run(),
+      unsetFontSize:
+        () =>
+        ({ chain }: { chain: any }) =>
+          chain().setMark("textStyle", { fontSize: null }).run(),
+    };
+  },
+});
 
 const TiptapEditor: React.FC<{
   value: string;
@@ -88,6 +131,7 @@ const TiptapEditor: React.FC<{
       Underline,
       TextStyle,
       Color.configure({ types: ["textStyle"] }),
+      FontSize,
     ],
     content: value || "",
     editorProps: {
@@ -108,6 +152,23 @@ const TiptapEditor: React.FC<{
       editor.commands.setContent(value || "", false);
     }
   }, [editor, value]);
+
+  const [currentFontSize, setCurrentFontSize] = useState<string>("");
+
+  useEffect(() => {
+    if (!editor) return;
+    const update = () => {
+      const size = editor.getAttributes("textStyle").fontSize || "";
+      setCurrentFontSize(size);
+    };
+    editor.on("selectionUpdate", update);
+    editor.on("transaction", update);
+    update();
+    return () => {
+      editor.off("selectionUpdate", update);
+      editor.off("transaction", update);
+    };
+  }, [editor]);
 
   if (!editor) return null;
 
@@ -225,6 +286,35 @@ const TiptapEditor: React.FC<{
               cursor: "pointer",
             }}
           />
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary">
+            Cỡ chữ
+          </Typography>
+          <select
+            value={currentFontSize || ""}
+            onChange={(e) =>
+              e.target.value
+                ? editor.commands.setFontSize(e.target.value)
+                : editor.commands.unsetFontSize()
+            }
+            style={{
+              height: 30,
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              padding: "4px 6px",
+              fontSize: 12,
+            }}
+          >
+            <option value="">Default</option>
+            <option value="14px">14</option>
+            <option value="16px">16</option>
+            <option value="18px">18</option>
+            <option value="20px">20</option>
+            <option value="24px">24</option>
+            <option value="28px">28</option>
+            <option value="32px">32</option>
+          </select>
         </Box>
         <Button {...buttonProps} onClick={clearFormat}>
           Clear
