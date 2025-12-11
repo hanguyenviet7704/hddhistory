@@ -57,3 +57,4 @@ part 'presentation/widgets/item/summary_progress_bar.dart';
 part 'presentation/widgets/item/this_describe_you_option.dart';
 part 'presentation/widgets/item/topic_option.dart';
 part 'presentation/widgets/item/user_data_state.dart';
+part 'presentation/widgets/item/motivation_step_content.dart';

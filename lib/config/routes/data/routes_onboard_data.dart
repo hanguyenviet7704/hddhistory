@@ -26,13 +26,18 @@ class DataCollectRoute extends GoRouteData with $DataCollectRoute {
 
 @TypedGoRoute<DataCollectMotivationStepRoute>(path: RoutePath.dataCollectMotivationStep, name: RouteNamed.dataCollectMotivationStep)
 class DataCollectMotivationStepRoute extends BaseTransitionRouteData with $DataCollectMotivationStepRoute {
-  const DataCollectMotivationStepRoute();
+  const DataCollectMotivationStepRoute({required this.step});
+
+  final int step;
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const DataCollectMotivationStepPage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<DataCollectCubit>(),
+    child: DataCollectMotivationStepPage(step: step),
+  );
 }
 
 @TypedGoRoute<DataCollectSummaryRoute>(path: RoutePath.dataCollectSummary, name: RouteNamed.dataCollectSummary)

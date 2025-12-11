@@ -22,7 +22,7 @@ mixin RoutePath {
   //* Onboard
   static const String onboard = '/onboard';
   static const String dataCollect = '/data-collect';
-  static const String dataCollectMotivationStep = '/data-collect-motivation-step';
+  static const String dataCollectMotivationStep = '/data-collect-motivation-step/:step';
   static const String dataCollectSummary = '/data-collect-summary';
 
   //* Auth
