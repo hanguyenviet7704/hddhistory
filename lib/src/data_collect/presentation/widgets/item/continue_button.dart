@@ -15,8 +15,7 @@ class ContinueButton extends StatelessWidget {
     }
 
     if (state.currentStep == DataCollectStep.name) {
-      context.read<DataCollectCubit>().goToNextStep();
-      DataCollectMotivationStepRoute(step: 1).push(context); // Motivation 01
+      DataCollectMotivationStepRoute(step: 0).push(context); // Motivation 01
       return;
     }
 

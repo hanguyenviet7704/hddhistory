@@ -37,13 +37,15 @@ class DataCollectMotivationStepPage extends StatelessWidget {
   }
 
   void _handleTap(BuildContext context) {
-    final navigator = Navigator.of(context);
-    if (navigator.canPop()) {
-      navigator.pop();
-      return;
+    switch (step) {
+      case 0:
+        context.read<DataCollectCubit>().goToNextStep();
+        context.back();
+        break;
+      case 1:
+        DataCollectRoute().go(context);
+        break;
     }
-
-    DataCollectRoute().go(context);
   }
 
   _MotivationSlide _buildSlide(BuildContext context, DataCollectState state) {
