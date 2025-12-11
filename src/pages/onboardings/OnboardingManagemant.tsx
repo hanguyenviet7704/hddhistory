@@ -29,7 +29,7 @@ import type { ITranslation } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import {
@@ -39,9 +39,11 @@ import {
   cleanTranslation,
 } from "../../utils/translation";
 import DOMPurify from "dompurify";
-import ReactQuill from "react-quill";
-import ReactDOM from "react-dom";
-import "react-quill/dist/quill.snow.css";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
 
 type MotivationField =
   | "welcome"
@@ -74,38 +76,164 @@ const sanitizeTranslation = (
   return sanitized;
 };
 
-(ReactDOM as any).findDOMNode =
-  (ReactDOM as any).findDOMNode ||
-  ((inst: any) => {
-    if (!inst) return null;
-    if (inst.nodeType) return inst;
-    if (inst.editingArea && inst.editingArea.current)
-      return inst.editingArea.current;
-    if (inst.editor && inst.editor.root) return inst.editor.root;
-    if (inst.base) return inst.base;
-    return null;
+const TiptapEditor: React.FC<{
+  value: string;
+  onChange: (html: string) => void;
+}> = ({ value, onChange }) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [3, 4] },
+      }),
+      Underline,
+      TextStyle,
+      Color.configure({ types: ["textStyle"] }),
+    ],
+    content: value || "",
+    editorProps: {
+      attributes: {
+        style:
+          "min-height: 160px; padding: 12px; border: 1px solid #d0d7de; border-radius: 6px; background: white; outline: none;",
+      },
+    },
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
   });
 
-const buildQuillModules = (toolbarId: string) => ({
-  toolbar: {
-    container: `#${toolbarId}`,
-  },
-});
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (value !== current) {
+      editor.commands.setContent(value || "", false);
+    }
+  }, [editor, value]);
 
-const quillFormats = [
-  "header",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "color",
-  "background",
-  "list",
-  "bullet",
-  "link",
-  "blockquote",
-  "code-block",
-];
+  if (!editor) return null;
+
+  const applyColor = (color: string) =>
+    editor.chain().focus().setColor(color).run();
+  const applyHighlight = (color: string) =>
+    editor
+      .chain()
+      .focus()
+      .setMark("textStyle", { backgroundColor: color })
+      .run();
+  const clearFormat = () =>
+    editor.chain().focus().unsetAllMarks().clearNodes().run();
+
+  const buttonProps = { size: "small" as const };
+
+  return (
+    <Box>
+      <Box
+        sx={{
+          mb: 1,
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
+          flexWrap: "wrap",
+          border: "1px solid",
+          borderColor: "grey.200",
+          borderRadius: 1,
+          p: 0.75,
+          bgcolor: "white",
+        }}
+      >
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
+          Bold
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
+          Italic
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
+          Underline
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+        >
+          Strike
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          • List
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          1. List
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+        >
+          H3
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 4 }).run()
+          }
+        >
+          H4
+        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary">
+            Màu chữ
+          </Typography>
+          <input
+            type="color"
+            aria-label="Text color"
+            onChange={(e) => applyColor(e.target.value)}
+            style={{
+              height: 28,
+              width: 36,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          />
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary">
+            Nền
+          </Typography>
+          <input
+            type="color"
+            aria-label="Highlight color"
+            onChange={(e) => applyHighlight(e.target.value)}
+            style={{
+              height: 28,
+              width: 36,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          />
+        </Box>
+        <Button {...buttonProps} onClick={clearFormat}>
+          Clear
+        </Button>
+      </Box>
+      <EditorContent editor={editor} />
+    </Box>
+  );
+};
 
 const IntroInput: React.FC<{
   item: IOnboardingIntro;
@@ -114,24 +242,6 @@ const IntroInput: React.FC<{
   onAdd: (id: number) => void;
   lang: LangCode;
 }> = ({ item, onChange, onDelete, onAdd, lang }) => {
-  const quillRef = useRef<ReactQuill | null>(null);
-  const toolbarId = `intro-toolbar-${item.id}`;
-
-  const normalizeColor = useCallback((value: string) => {
-    const trimmed = value.trim();
-    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(trimmed)) return trimmed;
-    return trimmed; // allow named colors or rgba inputs
-  }, []);
-
-  const applyFormat = useCallback(
-    (format: "color" | "background", value: string) => {
-      const editor = quillRef.current?.getEditor();
-      if (!editor) return;
-      editor.format(format, normalizeColor(value));
-    },
-    [normalizeColor]
-  );
-
   const handleImageChange = useCallback(
     (newUrl: string) => {
       // Gọi onChange với ID của item hiện tại
@@ -239,92 +349,14 @@ const IntroInput: React.FC<{
           <Typography variant="caption" sx={{ mb: 0.5, display: "block" }}>
             Content (rich text + màu)
           </Typography>
-          <Box
-            id={toolbarId}
-            sx={{
-              mb: 1,
-              display: "flex",
-              gap: 1,
-              alignItems: "center",
-              flexWrap: "wrap",
-              border: "1px solid",
-              borderColor: "grey.200",
-              borderRadius: 1,
-              p: 0.5,
-              bgcolor: "white",
-            }}
-            className="ql-toolbar ql-snow"
-          >
-            <select className="ql-header" defaultValue="">
-              <option value="1" />
-              <option value="2" />
-              <option value="3" />
-              <option value="" />
-            </select>
-            <button className="ql-bold" />
-            <button className="ql-italic" />
-            <button className="ql-underline" />
-            <button className="ql-strike" />
-            <select className="ql-color" />
-            <select className="ql-background" />
-            <select className="ql-list" defaultValue="">
-              <option value="ordered" />
-              <option value="bullet" />
-            </select>
-            <button className="ql-blockquote" />
-            <button className="ql-code-block" />
-            <button className="ql-link" />
-            <button className="ql-clean" />
-            <Box
-              sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}
-            >
-              <Typography variant="caption" color="text.secondary">
-                Màu chữ:
-              </Typography>
-              <input
-                type="color"
-                aria-label="Custom text color"
-                onChange={(e) => applyFormat("color", e.target.value)}
-                style={{
-                  height: 24,
-                  width: 36,
-                  border: "none",
-                  background: "transparent",
-                }}
-              />
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-              <Typography variant="caption" color="text.secondary">
-                Nền:
-              </Typography>
-              <input
-                type="color"
-                aria-label="Custom highlight color"
-                onChange={(e) => applyFormat("background", e.target.value)}
-                style={{
-                  height: 24,
-                  width: 36,
-                  border: "none",
-                  background: "transparent",
-                }}
-              />
-            </Box>
-          </Box>
-          <ReactQuill
-            theme="snow"
-            ref={(ref) => {
-              quillRef.current = ref;
-            }}
+          <TiptapEditor
             value={getCurrentTranslationValue(item.content, lang)}
-            onChange={(value) =>
+            onChange={(html) =>
               onChange(item.id, {
                 ...item,
-                content: updateTranslationValue(item.content, lang, value),
+                content: updateTranslationValue(item.content, lang, html),
               })
             }
-            modules={buildQuillModules(toolbarId)}
-            formats={quillFormats}
-            style={{ background: "white" }}
           />
           {getCurrentTranslationValue(item.content, lang).trim() !== "" && (
             <Box
