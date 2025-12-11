@@ -8,19 +8,16 @@ class AgeCollectBody extends StatelessWidget {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
       builder: (context, state) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Title
-            AppText(
-              context.text.onboarding.onboardingUserAgeQuestion,
-              style: AppStyle.textBold20.copyWith(
-                color: const Color(0xFF364152), // Text/Secondary
-                fontWeight: FontWeight.w500,
-              ),
+            DataCollectSectionHeader(
+              title: context.text.onboarding.onboardingUserAgeQuestion,
             ),
 
+            24.verticalSpace,
+
             // Age Range Options
-            AgeOptions(),
+            const AgeOptions(),
           ],
         );
       },
@@ -38,18 +35,19 @@ class AgeOptions extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
         return Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            spacing: 12.h,
-            children: state.onboardData.age
-                .map(
-                  (option) => AgeOption(
-                    value: option,
-                    groupValue: state.selectedAgeRange ?? OnboardOptionEntity(),
-                    onChanged: (value) => cubit.selectAgeRange(value ?? OnboardOptionEntity()),
-                  ),
-                )
-                .toList(),
+          child: ListView.separated(
+            itemCount: state.onboardData.age.length,
+            separatorBuilder: (_, _) => 12.verticalSpace,
+            itemBuilder: (context, index) {
+              final option = state.onboardData.age[index];
+              final selected = option == state.selectedAgeRange;
+              return DataCollectOptionTile(
+                option: option,
+                isSelected: selected,
+                onTap: () => cubit.selectAgeRange(option),
+                enableLeading: false,
+              );
+            },
           ),
         );
       },

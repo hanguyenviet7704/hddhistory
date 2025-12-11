@@ -8,19 +8,16 @@ class GenderCollectBody extends StatelessWidget {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
       builder: (context, state) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Title
-            AppText(
-              context.text.onboarding.onboardingUserGenderQuestion,
-              style: AppStyle.textBold20.copyWith(
-                color: const Color(0xFF364152), // Text/Secondary
-                fontWeight: FontWeight.w500,
-              ),
+            DataCollectSectionHeader(
+              title: context.text.onboarding.onboardingUserGenderQuestion,
             ),
 
+            32.verticalSpace,
+
             // Gender Options
-            GenderOptions(),
+            const GenderOptions(),
           ],
         );
       },
@@ -38,18 +35,20 @@ class GenderOptions extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
         return Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            spacing: 12.h,
-            children: state.onboardData.gender
-                .map(
-                  (option) => GenderOption(
-                    value: option,
-                    groupValue: state.selectedGender ?? OnboardOptionEntity(),
-                    onChanged: (value) => cubit.selectGender(value ?? OnboardOptionEntity()),
-                  ),
-                )
-                .toList(),
+          child: ListView.separated(
+            itemCount: state.onboardData.gender.length,
+            separatorBuilder: (_, _) => 12.verticalSpace,
+            itemBuilder: (context, index) {
+              final option = state.onboardData.gender[index];
+              final selected = option == state.selectedGender;
+              return DataCollectOptionTile(
+                option: option,
+                isSelected: selected,
+                onTap: () => cubit.selectGender(option),
+                type: DataCollectOptionType.radio,
+                enableLeading: true,
+              );
+            },
           ),
         );
       },

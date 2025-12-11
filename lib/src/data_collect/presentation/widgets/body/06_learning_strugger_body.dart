@@ -8,33 +8,18 @@ class LearningStruggerBody extends StatelessWidget {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
       builder: (context, state) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Title
-            AppText(
-              context.text.onboarding.onboardingChooseSkillsetTitle,
-              textAlign: TextAlign.center,
-              style: AppStyle.textBold20.copyWith(
-                color: const Color(0xFF364152), // Text/Secondary
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 10,
+            DataCollectSectionHeader(
+              note: context.text.onboarding.onboardingStruggleNote,
+              title: context.text.onboarding.onboardingStruggleQuestion,
+              subtitle: context.text.onboarding.onboardingStruggleQuestionSubtitle,
             ),
 
-            4.verticalSpace,
-            // Subtitle
-            AppText(
-              context.text.onboarding.onboardingChooseSkillsetSubtitle,
-              maxLines: 10,
-              style: AppStyle.text12.copyWith(
-                color: const Color(0xFF7F8EA4), // Text/Tertiary
-              ),
-            ),
-
-            20.verticalSpace,
+            24.verticalSpace,
 
             // Topic Options
-            TopicOptions(),
+            const LearningStruggerOptions(),
           ],
         );
       },
@@ -48,20 +33,22 @@ class LearningStruggerOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
-      buildWhen: (previous, current) => previous.onboardData != current.onboardData,
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedLearningStruggles != current.selectedLearningStruggles,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
         return Expanded(
           child: ListView.separated(
-            itemCount: state.onboardData.skillsetWantToMaster.length,
+            itemCount: state.onboardData.learningStruggles.length,
             separatorBuilder: (context, index) => 12.verticalSpace,
             itemBuilder: (context, index) {
-              final topic = state.onboardData.skillsetWantToMaster[index];
-              return TopicOption(
-                value: topic,
-                isSelected: state.isLearningGoalSelected(topic),
-                onChanged: (value) => cubit.selectSkillsetWantToMaster(value ?? OnboardOptionEntity()),
+              final struggle = state.onboardData.learningStruggles[index];
+              final isSelected = state.selectedLearningStruggles.contains(struggle);
+              return DataCollectOptionTile(
+                option: struggle,
+                isSelected: isSelected,
+                onTap: () => cubit.selectLearningStruggles(struggle),
+                type: DataCollectOptionType.checkbox,
               );
             },
           ),

@@ -8,33 +8,17 @@ class SkillsetsWantToMasterBody extends StatelessWidget {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
       builder: (context, state) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Title
-            AppText(
-              context.text.onboarding.onboardingChooseSkillsetTitle,
-              textAlign: TextAlign.center,
-              style: AppStyle.textBold20.copyWith(
-                color: const Color(0xFF364152), // Text/Secondary
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 10,
+            DataCollectSectionHeader(
+              title: context.text.onboarding.onboardingChooseSkillsetTitle,
+              subtitle: context.text.onboarding.onboardingChooseSkillsetSubtitle,
             ),
 
-            4.verticalSpace,
-            // Subtitle
-            AppText(
-              context.text.onboarding.onboardingChooseSkillsetSubtitle,
-              maxLines: 10,
-              style: AppStyle.text12.copyWith(
-                color: const Color(0xFF7F8EA4), // Text/Tertiary
-              ),
-            ),
-
-            20.verticalSpace,
+            24.verticalSpace,
 
             // Topic Options
-            TopicOptions(),
+            const TopicOptions(),
           ],
         );
       },
@@ -60,7 +44,7 @@ class TopicOptions extends StatelessWidget {
               final topic = state.onboardData.skillsetWantToMaster[index];
               return TopicOption(
                 value: topic,
-                isSelected: state.isLearningGoalSelected(topic),
+                isSelected: state.selectedSkillsetsWantToMaster.contains(topic),
                 onChanged: (value) => cubit.selectSkillsetWantToMaster(value ?? OnboardOptionEntity()),
               );
             },

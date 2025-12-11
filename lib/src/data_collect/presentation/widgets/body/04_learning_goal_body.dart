@@ -8,23 +8,16 @@ class LearningGoalBody extends StatelessWidget {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
       builder: (context, state) {
         return Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Title
-            AppText(
-              context.text.onboarding.onboardingTimeSpentTitle,
-              textAlign: TextAlign.center,
-              style: AppStyle.textBold20.copyWith(
-                color: const Color(0xFF364152), // Text/Secondary
-                fontWeight: FontWeight.w500,
-              ),
-              maxLines: 10,
+            DataCollectSectionHeader(
+              title: context.text.onboarding.onboardingTimeSpentTitle,
             ),
 
-            Spacer(),
+            const Spacer(),
 
             // Learning Goal Options
-            LearningGoalOptions(),
+            const LearningGoalOptions(),
           ],
         );
       },
@@ -38,85 +31,27 @@ class LearningGoalOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
-      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedDailyLearningGoal != current.selectedDailyLearningGoal,
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedLearningGoal != current.selectedLearningGoal,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        return Column(
-          spacing: 12.h,
-          children: state.onboardData.learningGoal.map((goalOption) {
-            return LearningGoalOption(
-              value: goalOption,
-              groupValue: state.selectedDailyLearningGoal ?? OnboardOptionEntity(),
-              onChanged: (value) => cubit.selectDailyLearningGoal(value ?? OnboardOptionEntity()),
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: state.onboardData.learningGoal.length,
+          separatorBuilder: (_, _) => 12.verticalSpace,
+          itemBuilder: (context, index) {
+            final goalOption = state.onboardData.learningGoal[index];
+            final selected = goalOption == state.selectedLearningGoal;
+            return DataCollectOptionTile(
+              option: goalOption,
+              isSelected: selected,
+              onTap: () => cubit.selectLearningGoal(goalOption),
+              type: DataCollectOptionType.radio,
+              enableLeading: false,
             );
-          }).toList(),
+          },
         );
       },
-    );
-  }
-}
-
-class LearningGoalOption extends StatelessWidget {
-  final OnboardOptionEntity value;
-  final OnboardOptionEntity groupValue;
-  final Function(OnboardOptionEntity?) onChanged;
-
-  const LearningGoalOption({
-    super.key,
-    required this.value,
-    required this.groupValue,
-    required this.onChanged,
-  });
-
-  bool get isSelected => value == groupValue;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(value),
-      child: Container(
-        height: 54.h,
-        padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-        decoration: BoxDecoration(
-          color: isSelected ? Colors.white : const Color(0xFFF5F7FB), // Background/Gray
-          border: Border.all(
-            color: isSelected
-                ? const Color(0xFF554FF0) // Brand/Primary
-                : const Color(0xFFE3E8EF), // Border/Default
-            width: 2,
-          ),
-          borderRadius: BorderRadius.circular(16.r),
-        ),
-        child: Row(
-          children: [
-            // Emoji
-            DCachedImage(
-              url: value.icon,
-              width: 24.w,
-              height: 24.h,
-            ),
-
-            16.horizontalSpace,
-
-            // Title
-            Expanded(
-              child: AppText(
-                value.label.text,
-                style: AppStyle.text16.copyWith(
-                  color: isSelected
-                      ? const Color(0xFF0D121C) // content/primary
-                      : const Color(0xFF7F8EA4), // Text/Tertiary
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
-              ),
-            ),
-
-            // Radio button using CustomRadio
-            CustomRadio(isSelected: isSelected),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -48,6 +48,8 @@ part 'presentation/widgets/item/analysis_state.dart';
 part 'presentation/widgets/item/animated_summary_progress_bar.dart';
 part 'presentation/widgets/item/continue_button.dart';
 part 'presentation/widgets/item/custom_radio.dart';
+part 'presentation/widgets/item/data_collect_option_tile.dart';
+part 'presentation/widgets/item/data_collect_section_header.dart';
 part 'presentation/widgets/item/gender_option.dart';
 part 'presentation/widgets/item/onboarding_input.dart';
 part 'presentation/widgets/item/progress_bar.dart';
