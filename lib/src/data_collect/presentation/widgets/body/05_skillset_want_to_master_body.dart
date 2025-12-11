@@ -1,7 +1,7 @@
 part of '../../../data_collect.dart';
 
-class ChooseTopicBody extends StatelessWidget {
-  const ChooseTopicBody({super.key});
+class SkillsetsWantToMasterBody extends StatelessWidget {
+  const SkillsetsWantToMasterBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +61,7 @@ class TopicOptions extends StatelessWidget {
               return TopicOption(
                 value: topic,
                 isSelected: state.isLearningGoalSelected(topic),
-                onChanged: (value) => cubit.selectTopic(value ?? OnboardOptionEntity()),
+                onChanged: (value) => cubit.selectSkillsetWantToMaster(value ?? OnboardOptionEntity()),
               );
             },
           ),

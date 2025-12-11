@@ -37,14 +37,15 @@ class StepBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentStep = context.select((DataCollectCubit cubit) => cubit.state.currentStep);
     return switch (currentStep) {
-      DataCollectStep.name => const NameCollectBody(),
-      DataCollectStep.age => const AgeCollectBody(),
-      DataCollectStep.gender => const GenderCollectBody(),
-      DataCollectStep.chooseLearningGoal => const ChooseTopicBody(),
-      DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => SizedBox.shrink(),
-      DataCollectStep.bestTimeOfDayToLearn => const BestTimeToLearnBody(),
-      DataCollectStep.dailyLearningGoal => const LearningGoalBody(),
-      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => SizedBox.shrink(),
+      DataCollectStep.collectName => const NameCollectBody(),
+      DataCollectStep.collectAge => const AgeCollectBody(),
+      DataCollectStep.collectGender => const GenderCollectBody(),
+      DataCollectStep.collectLearningGoal => const LearningGoalBody(),
+      DataCollectStep.collectSkillsetsWantToMaster => const SkillsetsWantToMasterBody(),
+      DataCollectStep.collectLearningStrugger =>  const LearningStruggerBody(),
+      DataCollectStep.motivateHowToLearn => const HowToLearnBody(),
+      DataCollectStep.collectDailyLearningGoal => const DailyLearningGoalBody(),
+      DataCollectStep.collectComfortableLearningTime => ComfortableLearningTimeBody(),
     };
   }
 }

@@ -1,7 +1,7 @@
 part of '../../../data_collect.dart';
 
-class BestTimeToLearnBody extends StatelessWidget {
-  const BestTimeToLearnBody({super.key});
+class ComfortableLearningTimeBody extends StatelessWidget {
+  const ComfortableLearningTimeBody({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +48,7 @@ class TimeOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
-      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedBestTimeToLearn != current.selectedBestTimeToLearn,
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedComfortableLearningTime != current.selectedComfortableLearningTime,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
@@ -60,8 +60,8 @@ class TimeOptions extends StatelessWidget {
             final timeOption = state.onboardData.comfortableLearningTime[index];
             return TimeOption(
               value: timeOption,
-              groupValue: state.selectedBestTimeToLearn ?? OnboardOptionEntity(),
-              onChanged: (value) => cubit.selectBestTimeToLearn(value ?? OnboardOptionEntity()),
+              groupValue: state.selectedComfortableLearningTime ?? OnboardOptionEntity(),
+              onChanged: (value) => cubit.selectComfortableLearningTime(value ?? OnboardOptionEntity()),
             );
           },
         );

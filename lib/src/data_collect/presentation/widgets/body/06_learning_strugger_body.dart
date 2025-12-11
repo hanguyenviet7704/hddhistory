@@ -61,7 +61,7 @@ class LearningStruggerOptions extends StatelessWidget {
               return TopicOption(
                 value: topic,
                 isSelected: state.isLearningGoalSelected(topic),
-                onChanged: (value) => cubit.selectTopic(value ?? OnboardOptionEntity()),
+                onChanged: (value) => cubit.selectSkillsetWantToMaster(value ?? OnboardOptionEntity()),
               );
             },
           ),

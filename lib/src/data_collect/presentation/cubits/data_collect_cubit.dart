@@ -23,11 +23,11 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
         "age": state.selectedAgeRange?.label.text,
         "gender": state.selectedGender?.label.text,
         "onboarding": {
-          "comfortableLearningTime": state.selectedBestTimeToLearn?.id,
+          "comfortableLearningTime": state.selectedComfortableLearningTime?.id,
           "dailyLearningGoal": state.selectedDailyLearningGoal?.id,
-          "timeToBecomeSkilled": state.selectedTimeToBecomeSkilled?.id,
-          "skillsetWantToMaster": state.selectedLearningGoal.map((e) => e.id).toList(),
-          "strugglesWhenSpeaking": state.selectedStruggles.map((e) => e.id).toList(),
+          "learningGoal": state.selectedLearningGoal?.id,
+          "skillsetWantToMaster": state.selectedSkillsetsWantToMaster.map((e) => e.id).toList(),
+          "learningStruggles": state.selectedLearningStruggles.map((e) => e.id).toList(),
         },
       }),
     );
@@ -59,29 +59,29 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
   void setOnboardData(OnboardEntity onboardData) => emit(state.copyWith(onboardData: onboardData));
   void selectAgeRange(OnboardOptionEntity ageRange) => emit(state.copyWith(selectedAgeRange: ageRange));
   void selectGender(OnboardOptionEntity gender) => emit(state.copyWith(selectedGender: gender));
-  void selectTopic(OnboardOptionEntity topic) {
-    final topics = List<OnboardOptionEntity>.from(state.selectedLearningGoal);
-    if (topics.contains(topic)) {
-      topics.remove(topic);
+  void selectLearningGoal(OnboardOptionEntity learningGoal) => emit(state.copyWith(selectedLearningGoal: learningGoal));
+  void selectSkillsetWantToMaster(OnboardOptionEntity skillsetWantToMaster) {
+    final topics = List<OnboardOptionEntity>.from(state.selectedSkillsetsWantToMaster);
+    if (topics.contains(skillsetWantToMaster)) {
+      topics.remove(skillsetWantToMaster);
     } else {
-      topics.add(topic);
+      topics.add(skillsetWantToMaster);
     }
-    emit(state.copyWith(selectedLearningGoal: topics));
+    emit(state.copyWith(selectedSkillsetsWantToMaster: topics));
   }
 
-  void selectStruggle(OnboardOptionEntity struggle) {
-    final struggles = List<OnboardOptionEntity>.from(state.selectedStruggles);
+  void selectLearningStruggles(OnboardOptionEntity struggle) {
+    final struggles = List<OnboardOptionEntity>.from(state.selectedLearningStruggles);
     if (struggles.contains(struggle)) {
       struggles.remove(struggle);
     } else {
       struggles.add(struggle);
     }
-    emit(state.copyWith(selectedStruggles: struggles));
+    emit(state.copyWith(selectedLearningStruggles: struggles));
   }
 
-  void selectBestTimeToLearn(OnboardOptionEntity bestTimeToLearn) => emit(state.copyWith(selectedBestTimeToLearn: bestTimeToLearn));
   void selectDailyLearningGoal(OnboardOptionEntity dailyLearningGoal) => emit(state.copyWith(selectedDailyLearningGoal: dailyLearningGoal));
-  void selectTimeToBecomeSkilled(OnboardOptionEntity timeToBecomeSkilled) => emit(state.copyWith(selectedTimeToBecomeSkilled: timeToBecomeSkilled));
+  void selectComfortableLearningTime(OnboardOptionEntity comfortableLearningTime) => emit(state.copyWith(selectedComfortableLearningTime: comfortableLearningTime));
 
   void startAnalysis() {
     emit(state.copyWith(status: DataCollectStatus.loading));
