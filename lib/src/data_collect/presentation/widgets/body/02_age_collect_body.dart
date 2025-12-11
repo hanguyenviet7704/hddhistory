@@ -14,7 +14,7 @@ class AgeCollectBody extends StatelessWidget {
               title: context.text.onboarding.onboardingUserAgeQuestion,
             ),
 
-            24.verticalSpace,
+            Spacer(),
 
             // Age Range Options
             const AgeOptions(),
@@ -34,21 +34,21 @@ class AgeOptions extends StatelessWidget {
       buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedAgeRange != current.selectedAgeRange,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
-        return Expanded(
-          child: ListView.separated(
-            itemCount: state.onboardData.age.length,
-            separatorBuilder: (_, _) => 12.verticalSpace,
-            itemBuilder: (context, index) {
-              final option = state.onboardData.age[index];
-              final selected = option == state.selectedAgeRange;
-              return DataCollectOptionTile(
-                option: option,
-                isSelected: selected,
-                onTap: () => cubit.selectAgeRange(option),
-                enableLeading: false,
-              );
-            },
-          ),
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: state.onboardData.age.length,
+          physics: AlwaysScrollableScrollPhysics(),
+          separatorBuilder: (_, _) => 12.verticalSpace,
+          itemBuilder: (context, index) {
+            final option = state.onboardData.age[index];
+            final selected = option == state.selectedAgeRange;
+            return DataCollectOptionTile(
+              option: option,
+              isSelected: selected,
+              onTap: () => cubit.selectAgeRange(option),
+              enableLeading: false,
+            );
+          },
         );
       },
     );

@@ -14,7 +14,7 @@ class GenderCollectBody extends StatelessWidget {
               title: context.text.onboarding.onboardingUserGenderQuestion,
             ),
 
-            32.verticalSpace,
+            Spacer(),
 
             // Gender Options
             const GenderOptions(),
@@ -34,22 +34,21 @@ class GenderOptions extends StatelessWidget {
       buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedGender != current.selectedGender,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
-        return Expanded(
-          child: ListView.separated(
-            itemCount: state.onboardData.gender.length,
-            separatorBuilder: (_, _) => 12.verticalSpace,
-            itemBuilder: (context, index) {
-              final option = state.onboardData.gender[index];
-              final selected = option == state.selectedGender;
-              return DataCollectOptionTile(
-                option: option,
-                isSelected: selected,
-                onTap: () => cubit.selectGender(option),
-                type: DataCollectOptionType.radio,
-                enableLeading: true,
-              );
-            },
-          ),
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: state.onboardData.gender.length,
+          separatorBuilder: (_, _) => 12.verticalSpace,
+          itemBuilder: (context, index) {
+            final option = state.onboardData.gender[index];
+            final selected = option == state.selectedGender;
+            return DataCollectOptionTile(
+              option: option,
+              isSelected: selected,
+              onTap: () => cubit.selectGender(option),
+              type: DataCollectOptionType.radio,
+              enableLeading: true,
+            );
+          },
         );
       },
     );

@@ -15,7 +15,7 @@ class SkillsetsWantToMasterBody extends StatelessWidget {
               subtitle: context.text.onboarding.onboardingChooseSkillsetSubtitle,
             ),
 
-            24.verticalSpace,
+            Spacer(),
 
             // Topic Options
             const SkillsetsWantToMasterBodyOptions(),
@@ -36,19 +36,18 @@ class SkillsetsWantToMasterBodyOptions extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        return Expanded(
-          child: ListView.separated(
-            itemCount: state.onboardData.skillsetWantToMaster.length,
-            separatorBuilder: (context, index) => 12.verticalSpace,
-            itemBuilder: (context, index) {
-              final topic = state.onboardData.skillsetWantToMaster[index];
-              return TopicOption(
-                value: topic,
-                isSelected: state.selectedSkillsetsWantToMaster.contains(topic),
-                onChanged: (value) => cubit.selectSkillsetWantToMaster(value ?? OnboardOptionEntity()),
-              );
-            },
-          ),
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: state.onboardData.skillsetWantToMaster.length,
+          separatorBuilder: (context, index) => 12.verticalSpace,
+          itemBuilder: (context, index) {
+            final topic = state.onboardData.skillsetWantToMaster[index];
+            return TopicOption(
+              value: topic,
+              isSelected: state.selectedSkillsetsWantToMaster.contains(topic),
+              onChanged: (value) => cubit.selectSkillsetWantToMaster(value ?? OnboardOptionEntity()),
+            );
+          },
         );
       },
     );
