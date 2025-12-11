@@ -14,6 +14,7 @@ class ComfortableLearningTimeBody extends StatelessWidget {
               title: context.text.onboarding.onboardingTimeStudyQuestion,
               subtitle: context.text.onboarding.onboardingTimeStudySubtitle,
             ),
+            20.verticalSpace,
 
             Spacer(),
 

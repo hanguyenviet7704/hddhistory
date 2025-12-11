@@ -14,6 +14,7 @@ class DailyLearningGoalBody extends StatelessWidget {
               title: context.text.onboarding.onboardingTimeSpentTitle,
               subtitle: context.text.onboarding.onboardingDailyGoalSubtitle,
             ),
+            20.verticalSpace,
 
             Spacer(),
 

@@ -13,6 +13,7 @@ class GenderCollectBody extends StatelessWidget {
             DataCollectSectionHeader(
               title: context.text.onboarding.onboardingUserGenderQuestion,
             ),
+            20.verticalSpace,
 
             Spacer(),
 
