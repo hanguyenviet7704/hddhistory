@@ -74,13 +74,13 @@ const sanitizeTranslation = (
   return sanitized;
 };
 
-// react-quill vẫn gọi findDOMNode; patch tạm cho React 19+
 (ReactDOM as any).findDOMNode =
   (ReactDOM as any).findDOMNode ||
   ((inst: any) => {
     if (!inst) return null;
     if (inst.nodeType) return inst;
-    if (inst.editingArea && inst.editingArea.current) return inst.editingArea.current;
+    if (inst.editingArea && inst.editingArea.current)
+      return inst.editingArea.current;
     if (inst.editor && inst.editor.root) return inst.editor.root;
     if (inst.base) return inst.base;
     return null;
@@ -275,7 +275,9 @@ const IntroInput: React.FC<{
             <button className="ql-code-block" />
             <button className="ql-link" />
             <button className="ql-clean" />
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}>
+            <Box
+              sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}
+            >
               <Typography variant="caption" color="text.secondary">
                 Màu chữ:
               </Typography>
@@ -283,7 +285,12 @@ const IntroInput: React.FC<{
                 type="color"
                 aria-label="Custom text color"
                 onChange={(e) => applyFormat("color", e.target.value)}
-                style={{ height: 24, width: 36, border: "none", background: "transparent" }}
+                style={{
+                  height: 24,
+                  width: 36,
+                  border: "none",
+                  background: "transparent",
+                }}
               />
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -294,7 +301,12 @@ const IntroInput: React.FC<{
                 type="color"
                 aria-label="Custom highlight color"
                 onChange={(e) => applyFormat("background", e.target.value)}
-                style={{ height: 24, width: 36, border: "none", background: "transparent" }}
+                style={{
+                  height: 24,
+                  width: 36,
+                  border: "none",
+                  background: "transparent",
+                }}
               />
             </Box>
           </Box>
