@@ -23,6 +23,7 @@ mixin RoutePath {
   static const String onboard = '/onboard';
   static const String dataCollect = '/data-collect';
   static const String dataCollectMotivationStep = '/data-collect-motivation-step/:step';
+  static const String dataCollectFeedback = '/data-collect-feedback';
   static const String dataCollectSummary = '/data-collect-summary';
 
   //* Auth
@@ -88,6 +89,7 @@ mixin RouteNamed {
   static const String onboard = 'Onboard Page';
   static const String dataCollect = 'Data Collect Page';
   static const String dataCollectMotivationStep = 'Data Collect Motivation Step Page';
+  static const String dataCollectFeedback = 'Data Collect Feedback Page';
   static const String dataCollectSummary = 'Data Collect Summary Page';
 
   //* Auth

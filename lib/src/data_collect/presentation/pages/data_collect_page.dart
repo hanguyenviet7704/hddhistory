@@ -17,7 +17,7 @@ class DataCollectPage extends StatelessWidget {
             Expanded(
               child: Padding(
                 padding: EdgeInsets.all(20.w),
-                child: StepBody(),
+                child: const StepBody(),
               ),
             ),
 
@@ -42,7 +42,7 @@ class StepBody extends StatelessWidget {
       DataCollectStep.collectGender => const GenderCollectBody(),
       DataCollectStep.collectLearningGoal => const LearningGoalBody(),
       DataCollectStep.collectSkillsetsWantToMaster => const SkillsetsWantToMasterBody(),
-      DataCollectStep.collectLearningStrugger =>  const LearningStruggerBody(),
+      DataCollectStep.collectLearningStrugger => const LearningStruggerBody(),
       DataCollectStep.motivateHowToLearn => const HowToLearnBody(),
       DataCollectStep.collectDailyLearningGoal => const DailyLearningGoalBody(),
       DataCollectStep.collectComfortableLearningTime => ComfortableLearningTimeBody(),

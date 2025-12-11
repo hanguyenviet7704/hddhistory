@@ -15,23 +15,22 @@ class ContinueButton extends StatelessWidget {
     }
 
     if (state.currentStep == DataCollectStep.collectName) {
-      DataCollectMotivationStepRoute(step: 0).push(context); // Motivation 01
+      DataCollectMotivationStepRoute(step: 0).push(context); // Welcome
       return;
     }
 
-
     if (state.currentStep == DataCollectStep.collectSkillsetsWantToMaster) {
-      DataCollectMotivationStepRoute(step: 1).push(context); // Motivation 02
+      DataCollectMotivationStepRoute(step: 1).push(context); // Motivation 01
       return;
     }
 
     if (state.currentStep == DataCollectStep.collectLearningStrugger) {
-      DataCollectMotivationStepRoute(step: 2).push(context); // Motivation 03
+      DataCollectMotivationStepRoute(step: 2).push(context); // Motivation 02
       return;
     }
 
     if (state.currentStep == DataCollectStep.collectComfortableLearningTime) {
-      DataCollectMotivationStepRoute(step: 3).push(context); // Motivation 04
+      DataCollectMotivationStepRoute(step: 3).push(context); // Motivation 03
       return;
     }
 

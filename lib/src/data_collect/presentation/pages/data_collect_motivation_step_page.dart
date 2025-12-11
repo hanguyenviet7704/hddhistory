@@ -37,6 +37,11 @@ class DataCollectMotivationStepPage extends StatelessWidget {
   }
 
   void _handleTap(BuildContext context) {
+    if (step == 2) {
+      DataCollectFeedbackRoute().replace(context);
+      return;
+    }
+
     if (step == 3) {
       DataCollectSummaryRoute().go(context);
       return;

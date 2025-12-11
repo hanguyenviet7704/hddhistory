@@ -43,6 +43,17 @@ class DataCollectMotivationStepRoute extends BaseTransitionRouteData with $DataC
   );
 }
 
+@TypedGoRoute<DataCollectFeedbackRoute>(path: RoutePath.dataCollectFeedback, name: RouteNamed.dataCollectFeedback)
+class DataCollectFeedbackRoute extends BaseTransitionRouteData with $DataCollectFeedbackRoute {
+  const DataCollectFeedbackRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => const DataCollectFeedbackPage();
+}
+
 @TypedGoRoute<DataCollectSummaryRoute>(path: RoutePath.dataCollectSummary, name: RouteNamed.dataCollectSummary)
 class DataCollectSummaryRoute extends GoRouteData with $DataCollectSummaryRoute {
   const DataCollectSummaryRoute();
