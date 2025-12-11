@@ -15,7 +15,7 @@ class DailyLearningGoalBody extends StatelessWidget {
               subtitle: context.text.onboarding.onboardingDailyGoalSubtitle,
             ),
 
-            24.verticalSpace,
+            Spacer(),
 
             // Topic Options
             const DailyLearningGoalOptions(),
@@ -36,21 +36,20 @@ class DailyLearningGoalOptions extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        return Expanded(
-          child: ListView.separated(
-            itemCount: state.onboardData.dailyLearningGoal.length,
-            separatorBuilder: (context, index) => 12.verticalSpace,
-            itemBuilder: (context, index) {
-              final option = state.onboardData.dailyLearningGoal[index];
-              final isSelected = option == state.selectedDailyLearningGoal;
-              return DataCollectOptionTile(
-                option: option,
-                isSelected: isSelected,
-                onTap: () => cubit.selectDailyLearningGoal(option),
-                type: DataCollectOptionType.radio,
-              );
-            },
-          ),
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: state.onboardData.dailyLearningGoal.length,
+          separatorBuilder: (context, index) => 12.verticalSpace,
+          itemBuilder: (context, index) {
+            final option = state.onboardData.dailyLearningGoal[index];
+            final isSelected = option == state.selectedDailyLearningGoal;
+            return DataCollectOptionTile(
+              option: option,
+              isSelected: isSelected,
+              onTap: () => cubit.selectDailyLearningGoal(option),
+              type: DataCollectOptionType.radio,
+            );
+          },
         );
       },
     );

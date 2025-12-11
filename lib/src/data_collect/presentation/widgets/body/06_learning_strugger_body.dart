@@ -16,7 +16,7 @@ class LearningStruggerBody extends StatelessWidget {
               subtitle: context.text.onboarding.onboardingStruggleQuestionSubtitle,
             ),
 
-            24.verticalSpace,
+            Spacer(),
 
             // Topic Options
             const LearningStruggerOptions(),
@@ -37,21 +37,20 @@ class LearningStruggerOptions extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        return Expanded(
-          child: ListView.separated(
-            itemCount: state.onboardData.learningStruggles.length,
-            separatorBuilder: (context, index) => 12.verticalSpace,
-            itemBuilder: (context, index) {
-              final struggle = state.onboardData.learningStruggles[index];
-              final isSelected = state.selectedLearningStruggles.contains(struggle);
-              return DataCollectOptionTile(
-                option: struggle,
-                isSelected: isSelected,
-                onTap: () => cubit.selectLearningStruggles(struggle),
-                type: DataCollectOptionType.checkbox,
-              );
-            },
-          ),
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: state.onboardData.learningStruggles.length,
+          separatorBuilder: (context, index) => 12.verticalSpace,
+          itemBuilder: (context, index) {
+            final struggle = state.onboardData.learningStruggles[index];
+            final isSelected = state.selectedLearningStruggles.contains(struggle);
+            return DataCollectOptionTile(
+              option: struggle,
+              isSelected: isSelected,
+              onTap: () => cubit.selectLearningStruggles(struggle),
+              type: DataCollectOptionType.checkbox,
+            );
+          },
         );
       },
     );

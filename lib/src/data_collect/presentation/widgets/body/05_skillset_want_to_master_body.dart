@@ -42,10 +42,11 @@ class SkillsetsWantToMasterBodyOptions extends StatelessWidget {
           separatorBuilder: (context, index) => 12.verticalSpace,
           itemBuilder: (context, index) {
             final topic = state.onboardData.skillsetWantToMaster[index];
-            return TopicOption(
-              value: topic,
+            return DataCollectOptionTile(
+              option: topic,
               isSelected: state.selectedSkillsetsWantToMaster.contains(topic),
-              onChanged: (value) => cubit.selectSkillsetWantToMaster(value ?? OnboardOptionEntity()),
+              onTap: () => cubit.selectSkillsetWantToMaster(topic),
+              type: DataCollectOptionType.checkbox,
             );
           },
         );

@@ -15,7 +15,7 @@ class ComfortableLearningTimeBody extends StatelessWidget {
               subtitle: context.text.onboarding.onboardingTimeStudySubtitle,
             ),
 
-            32.verticalSpace,
+            Spacer(),
 
             // Time Options
             const TimeOptions(),
@@ -36,25 +36,24 @@ class TimeOptions extends StatelessWidget {
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
-        return Expanded(
-          child: ListView.separated(
-            itemCount: state.onboardData.comfortableLearningTime.length,
-            separatorBuilder: (context, index) => 12.verticalSpace,
-            itemBuilder: (context, index) {
-              final timeOption = state.onboardData.comfortableLearningTime[index];
-              final isSelected = timeOption == state.selectedComfortableLearningTime;
-              final subtitle = timeOption.title.text.isNotEmpty ? timeOption.title.text : null;
-              return DataCollectOptionTile(
-                option: timeOption,
-                isSelected: isSelected,
-                onTap: () => cubit.selectComfortableLearningTime(timeOption),
-                type: DataCollectOptionType.none,
-                subtitle: subtitle,
-                titleStyle: AppStyle.text14,
-                subtitleStyle: AppStyle.text12,
-              );
-            },
-          ),
+        return ListView.separated(
+          shrinkWrap: true,
+          itemCount: state.onboardData.comfortableLearningTime.length,
+          separatorBuilder: (context, index) => 12.verticalSpace,
+          itemBuilder: (context, index) {
+            final timeOption = state.onboardData.comfortableLearningTime[index];
+            final isSelected = timeOption == state.selectedComfortableLearningTime;
+            final subtitle = timeOption.title.text.isNotEmpty ? timeOption.title.text : null;
+            return DataCollectOptionTile(
+              option: timeOption,
+              isSelected: isSelected,
+              onTap: () => cubit.selectComfortableLearningTime(timeOption),
+              type: DataCollectOptionType.none,
+              subtitle: subtitle,
+              titleStyle: AppStyle.text14,
+              subtitleStyle: AppStyle.text12,
+            );
+          },
         );
       },
     );
