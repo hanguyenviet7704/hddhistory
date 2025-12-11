@@ -10,13 +10,13 @@ abstract class DataCollectState with _$DataCollectState {
     String? userName,
     OnboardOptionEntity? selectedAgeRange,
     OnboardOptionEntity? selectedGender,
-    @Default([]) List<OnboardOptionEntity> selectedTopics,
+    @Default([]) List<OnboardOptionEntity> selectedLearningGoal,
     @Default([]) List<OnboardOptionEntity> selectedStruggles,
     OnboardOptionEntity? selectedBestTimeToLearn,
     OnboardOptionEntity? selectedDailyLearningGoal,
     OnboardOptionEntity? selectedTimeToBecomeSkilled,
     @Default(false) bool analysisComplete,
-    
+
     // Analysis progress fields
     @Default(0.0) double personalBackgroundProgress,
     @Default(0.0) double difficultiesProgress,
@@ -35,7 +35,7 @@ enum DataCollectStep {
   name,
   age,
   gender,
-  chooseTopic,
+  chooseLearningGoal,
   whatDoYouUsuallyStruggleWithWhenSpeaking,
   bestTimeOfDayToLearn,
   dailyLearningGoal,
@@ -53,7 +53,7 @@ extension DataCollectStateExtension on DataCollectState {
     DataCollectStep.name => userName != null && userName!.isNotEmpty,
     DataCollectStep.age => selectedAgeRange != null,
     DataCollectStep.gender => selectedGender != null,
-    DataCollectStep.chooseTopic => selectedTopics.isNotEmpty,
+    DataCollectStep.chooseLearningGoal => selectedLearningGoal.isNotEmpty,
     DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => selectedStruggles.isNotEmpty,
     DataCollectStep.bestTimeOfDayToLearn => selectedBestTimeToLearn != null,
     DataCollectStep.dailyLearningGoal => selectedDailyLearningGoal != null,
@@ -62,6 +62,6 @@ extension DataCollectStateExtension on DataCollectState {
 
   bool get isLastStep => currentStep == DataCollectStep.howMuchTimeYouWantToBecomeSkilled;
 
-  bool isTopicSelected(OnboardOptionEntity topic) => selectedTopics.contains(topic);
+  bool isLearningGoalSelected(OnboardOptionEntity topic) => selectedLearningGoal.contains(topic);
   bool isStruggleSelected(OnboardOptionEntity struggle) => selectedStruggles.contains(struggle);
 }

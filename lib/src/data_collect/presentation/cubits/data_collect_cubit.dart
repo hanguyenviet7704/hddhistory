@@ -26,7 +26,7 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
           "comfortableLearningTime": state.selectedBestTimeToLearn?.id,
           "dailyLearningGoal": state.selectedDailyLearningGoal?.id,
           "timeToBecomeSkilled": state.selectedTimeToBecomeSkilled?.id,
-          "skillsetWantToMaster": state.selectedTopics.map((e) => e.id).toList(),
+          "skillsetWantToMaster": state.selectedLearningGoal.map((e) => e.id).toList(),
           "strugglesWhenSpeaking": state.selectedStruggles.map((e) => e.id).toList(),
         },
       }),
@@ -60,13 +60,13 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
   void selectAgeRange(OnboardOptionEntity ageRange) => emit(state.copyWith(selectedAgeRange: ageRange));
   void selectGender(OnboardOptionEntity gender) => emit(state.copyWith(selectedGender: gender));
   void selectTopic(OnboardOptionEntity topic) {
-    final topics = List<OnboardOptionEntity>.from(state.selectedTopics);
+    final topics = List<OnboardOptionEntity>.from(state.selectedLearningGoal);
     if (topics.contains(topic)) {
       topics.remove(topic);
     } else {
       topics.add(topic);
     }
-    emit(state.copyWith(selectedTopics: topics));
+    emit(state.copyWith(selectedLearningGoal: topics));
   }
 
   void selectStruggle(OnboardOptionEntity struggle) {

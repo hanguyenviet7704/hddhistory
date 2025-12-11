@@ -48,7 +48,7 @@ class TopicOptions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
-      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedTopics != current.selectedTopics,
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 
@@ -60,7 +60,7 @@ class TopicOptions extends StatelessWidget {
               final topic = state.onboardData.skillsetWantToMaster[index];
               return TopicOption(
                 value: topic,
-                isSelected: state.isTopicSelected(topic),
+                isSelected: state.isLearningGoalSelected(topic),
                 onChanged: (value) => cubit.selectTopic(value ?? OnboardOptionEntity()),
               );
             },

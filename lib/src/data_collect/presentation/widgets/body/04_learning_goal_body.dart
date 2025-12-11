@@ -44,7 +44,7 @@ class LearningGoalOptions extends StatelessWidget {
 
         return Column(
           spacing: 12.h,
-          children: state.onboardData.dailyLearningGoal.map((goalOption) {
+          children: state.onboardData.learningGoal.map((goalOption) {
             return LearningGoalOption(
               value: goalOption,
               groupValue: state.selectedDailyLearningGoal ?? OnboardOptionEntity(),
@@ -91,7 +91,11 @@ class LearningGoalOption extends StatelessWidget {
         child: Row(
           children: [
             // Emoji
-            DCachedImage(url: value.icon, width: 24.w, height: 24.h),
+            DCachedImage(
+              url: value.icon,
+              width: 24.w,
+              height: 24.h,
+            ),
 
             16.horizontalSpace,
 

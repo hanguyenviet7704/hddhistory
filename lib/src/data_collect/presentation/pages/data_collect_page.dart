@@ -40,7 +40,7 @@ class StepBody extends StatelessWidget {
       DataCollectStep.name => const NameCollectBody(),
       DataCollectStep.age => const AgeCollectBody(),
       DataCollectStep.gender => const GenderCollectBody(),
-      DataCollectStep.chooseTopic => const ChooseTopicBody(),
+      DataCollectStep.chooseLearningGoal => const ChooseTopicBody(),
       DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => SizedBox.shrink(),
       DataCollectStep.bestTimeOfDayToLearn => const BestTimeToLearnBody(),
       DataCollectStep.dailyLearningGoal => const LearningGoalBody(),

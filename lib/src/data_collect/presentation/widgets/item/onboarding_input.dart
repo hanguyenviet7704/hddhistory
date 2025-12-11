@@ -23,7 +23,6 @@ class OnboardingInput extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final effectiveKeyboardType = keyboardType ?? TextInputType.name;
-    final isSingleLine = maxLines == 1;
 
     return TextFormField(
       controller: controller,
