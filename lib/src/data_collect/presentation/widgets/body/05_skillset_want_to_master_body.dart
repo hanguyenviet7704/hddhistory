@@ -18,7 +18,7 @@ class SkillsetsWantToMasterBody extends StatelessWidget {
             24.verticalSpace,
 
             // Topic Options
-            const TopicOptions(),
+            const SkillsetsWantToMasterBodyOptions(),
           ],
         );
       },
@@ -26,13 +26,13 @@ class SkillsetsWantToMasterBody extends StatelessWidget {
   }
 }
 
-class TopicOptions extends StatelessWidget {
-  const TopicOptions({super.key});
+class SkillsetsWantToMasterBodyOptions extends StatelessWidget {
+  const SkillsetsWantToMasterBodyOptions({super.key});
 
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<DataCollectCubit, DataCollectState>(
-      buildWhen: (previous, current) => previous.onboardData != current.onboardData,
+      buildWhen: (previous, current) => previous.onboardData != current.onboardData || previous.selectedSkillsetsWantToMaster != current.selectedSkillsetsWantToMaster,
       builder: (context, state) {
         final cubit = context.read<DataCollectCubit>();
 

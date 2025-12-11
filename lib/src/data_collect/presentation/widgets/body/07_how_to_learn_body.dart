@@ -34,7 +34,7 @@ class HowToLearnBody extends StatelessWidget {
             20.verticalSpace,
 
             // Topic Options
-            TopicOptions(),
+            SkillsetsWantToMasterBodyOptions(),
           ],
         );
       },

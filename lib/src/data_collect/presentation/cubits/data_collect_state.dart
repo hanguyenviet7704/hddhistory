@@ -62,7 +62,7 @@ extension DataCollectStateExtension on DataCollectState {
     DataCollectStep.collectComfortableLearningTime => selectedComfortableLearningTime != null,
   };
 
-  bool get isLastStep => currentStep == DataCollectStep.collectSkillsetsWantToMaster;
+  bool get isLastStep => currentStep == DataCollectStep.collectComfortableLearningTime;
 
   bool isLearningGoalSelected(OnboardOptionEntity learningGoal) => selectedLearningGoal?.id == learningGoal.id;
   bool isLearningStruggleSelected(OnboardOptionEntity learningStruggle) => selectedLearningStruggles.contains(learningStruggle);

@@ -19,9 +19,19 @@ class ContinueButton extends StatelessWidget {
       return;
     }
 
+
+    if (state.currentStep == DataCollectStep.collectSkillsetsWantToMaster) {
+      DataCollectMotivationStepRoute(step: 1).push(context); // Motivation 02
+      return;
+    }
+
     if (state.currentStep == DataCollectStep.collectLearningStrugger) {
-      context.read<DataCollectCubit>().goToNextStep();
-      DataCollectMotivationStepRoute(step: 1).push(context); // Motivation 01
+      DataCollectMotivationStepRoute(step: 2).push(context); // Motivation 03
+      return;
+    }
+
+    if (state.currentStep == DataCollectStep.collectComfortableLearningTime) {
+      DataCollectMotivationStepRoute(step: 3).push(context); // Motivation 04
       return;
     }
 
