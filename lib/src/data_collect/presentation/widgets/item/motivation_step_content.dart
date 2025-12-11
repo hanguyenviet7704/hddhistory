@@ -17,7 +17,7 @@ class MotivationStepContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Color titleColor = isDarkBackground ? Colors.white : AppCustomColor.textBrand;
-    final Color subtitleColor = isDarkBackground ? Colors.white.withOpacity(0.8) : AppCustomColor.textSecondary;
+    final Color subtitleColor = isDarkBackground ? Colors.white.op(0.8) : AppCustomColor.textSecondary;
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 28.w),
@@ -36,7 +36,6 @@ class MotivationStepContent extends StatelessWidget {
             title,
             textAlign: TextAlign.center,
             maxLines: 3,
-            enableFitScaleDown: true,
             style: AppStyle.textBold20.copyWith(
               color: titleColor,
               fontWeight: FontWeight.w700,
@@ -49,7 +48,6 @@ class MotivationStepContent extends StatelessWidget {
               subtitle!,
               textAlign: TextAlign.center,
               maxLines: 4,
-              enableFitScaleDown: true,
               style: AppStyle.text16.copyWith(
                 color: subtitleColor,
                 fontWeight: FontWeight.w500,
@@ -57,6 +55,7 @@ class MotivationStepContent extends StatelessWidget {
               ),
             ),
           ],
+          80.verticalSpace,
         ],
       ),
     );

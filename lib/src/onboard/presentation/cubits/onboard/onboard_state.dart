@@ -15,3 +15,12 @@ abstract class OnboardState with _$OnboardState {
 
   factory OnboardState.fromJson(Map<String, dynamic> json) => _$OnboardStateFromJson(json);
 }
+
+extension OnboardStateExtension on OnboardState {
+  List<OnboardMotivationEntity> get motivations => [
+    onboardData.welcome,
+    onboardData.motivationOne,
+    onboardData.motivationTwo,
+    onboardData.motivationThree,
+  ];
+}

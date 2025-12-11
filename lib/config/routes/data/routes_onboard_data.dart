@@ -34,8 +34,11 @@ class DataCollectMotivationStepRoute extends BaseTransitionRouteData with $DataC
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<DataCollectCubit>(),
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<DataCollectCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
+    ],
     child: DataCollectMotivationStepPage(step: step),
   );
 }

@@ -39,7 +39,14 @@ class IntroStepContent extends StatelessWidget {
                 8.verticalSpace,
                 Align(
                   alignment: Alignment.centerLeft,
-                  child: _buildRichContent(intro.content.text),
+                  child: AppText(
+                    intro.content.text,
+                    style: AppStyle.text20.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppCustomColor.textPrimary,
+                      height: 1.5,
+                    ),
+                  ),
                 ),
                 16.verticalSpace,
                 _SourceRow(intro: intro),
@@ -50,50 +57,6 @@ class IntroStepContent extends StatelessWidget {
       ),
     );
   }
-
-  Widget _buildRichContent(String text) {
-    final pattern = RegExp(r'<b>(.*?)<\/b>', multiLine: true);
-    final spans = <TextSpan>[];
-    int currentIndex = 0;
-
-    for (final match in pattern.allMatches(text)) {
-      if (match.start > currentIndex) {
-        spans.add(_defaultSpan(text.substring(currentIndex, match.start)));
-      }
-      spans.add(_highlightSpan(match.group(1) ?? ''));
-      currentIndex = match.end;
-    }
-
-    if (currentIndex < text.length) {
-      spans.add(_defaultSpan(text.substring(currentIndex)));
-    }
-
-    if (spans.isEmpty) {
-      spans.add(_defaultSpan(text));
-    }
-
-    return RichText(
-      text: TextSpan(children: spans),
-    );
-  }
-
-  TextSpan _defaultSpan(String value) => TextSpan(
-    text: value,
-    style: AppStyle.text20.copyWith(
-      fontWeight: FontWeight.w700,
-      color: AppCustomColor.textPrimary,
-      height: 1.5,
-    ),
-  );
-
-  TextSpan _highlightSpan(String value) => TextSpan(
-    text: value,
-    style: AppStyle.text20.copyWith(
-      fontWeight: FontWeight.w700,
-      color: AppCustomColor.brandPrimary,
-      height: 1.5,
-    ),
-  );
 }
 
 class _SourceRow extends StatelessWidget {
