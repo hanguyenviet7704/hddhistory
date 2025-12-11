@@ -29,7 +29,7 @@ import type { ITranslation } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import {
@@ -38,6 +38,10 @@ import {
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
+import DOMPurify from "dompurify";
+import ReactQuill from "react-quill";
+import ReactDOM from "react-dom";
+import "react-quill/dist/quill.snow.css";
 
 type MotivationField =
   | "welcome"
@@ -56,6 +60,53 @@ type OnboardingArrayField =
   | "comfortableLearningTime"
   | "dailyLearningGoal";
 
+const sanitizeTranslation = (
+  translation: ITranslation | undefined
+): ITranslation => {
+  const sanitized: ITranslation = {};
+
+  Object.entries(translation || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      sanitized[key as LangCode] = DOMPurify.sanitize(value);
+    }
+  });
+
+  return sanitized;
+};
+
+// react-quill vẫn gọi findDOMNode; patch tạm cho React 19+
+(ReactDOM as any).findDOMNode =
+  (ReactDOM as any).findDOMNode ||
+  ((inst: any) => {
+    if (!inst) return null;
+    if (inst.nodeType) return inst;
+    if (inst.editingArea && inst.editingArea.current) return inst.editingArea.current;
+    if (inst.editor && inst.editor.root) return inst.editor.root;
+    if (inst.base) return inst.base;
+    return null;
+  });
+
+const buildQuillModules = (toolbarId: string) => ({
+  toolbar: {
+    container: `#${toolbarId}`,
+  },
+});
+
+const quillFormats = [
+  "header",
+  "bold",
+  "italic",
+  "underline",
+  "strike",
+  "color",
+  "background",
+  "list",
+  "bullet",
+  "link",
+  "blockquote",
+  "code-block",
+];
+
 const IntroInput: React.FC<{
   item: IOnboardingIntro;
   onChange: (id: number, newIntro: IOnboardingIntro) => void;
@@ -63,6 +114,24 @@ const IntroInput: React.FC<{
   onAdd: (id: number) => void;
   lang: LangCode;
 }> = ({ item, onChange, onDelete, onAdd, lang }) => {
+  const quillRef = useRef<ReactQuill | null>(null);
+  const toolbarId = `intro-toolbar-${item.id}`;
+
+  const normalizeColor = useCallback((value: string) => {
+    const trimmed = value.trim();
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(trimmed)) return trimmed;
+    return trimmed; // allow named colors or rgba inputs
+  }, []);
+
+  const applyFormat = useCallback(
+    (format: "color" | "background", value: string) => {
+      const editor = quillRef.current?.getEditor();
+      if (!editor) return;
+      editor.format(format, normalizeColor(value));
+    },
+    [normalizeColor]
+  );
+
   const handleImageChange = useCallback(
     (newUrl: string) => {
       // Gọi onChange với ID của item hiện tại
@@ -167,25 +236,101 @@ const IntroInput: React.FC<{
 
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <Box sx={{ flex: 1 }}>
-          <TextField
-            label="Content"
+          <Typography variant="caption" sx={{ mb: 0.5, display: "block" }}>
+            Content (rich text + màu)
+          </Typography>
+          <Box
+            id={toolbarId}
+            sx={{
+              mb: 1,
+              display: "flex",
+              gap: 1,
+              alignItems: "center",
+              flexWrap: "wrap",
+              border: "1px solid",
+              borderColor: "grey.200",
+              borderRadius: 1,
+              p: 0.5,
+              bgcolor: "white",
+            }}
+            className="ql-toolbar ql-snow"
+          >
+            <select className="ql-header" defaultValue="">
+              <option value="1" />
+              <option value="2" />
+              <option value="3" />
+              <option value="" />
+            </select>
+            <button className="ql-bold" />
+            <button className="ql-italic" />
+            <button className="ql-underline" />
+            <button className="ql-strike" />
+            <select className="ql-color" />
+            <select className="ql-background" />
+            <select className="ql-list" defaultValue="">
+              <option value="ordered" />
+              <option value="bullet" />
+            </select>
+            <button className="ql-blockquote" />
+            <button className="ql-code-block" />
+            <button className="ql-link" />
+            <button className="ql-clean" />
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, ml: 1 }}>
+              <Typography variant="caption" color="text.secondary">
+                Màu chữ:
+              </Typography>
+              <input
+                type="color"
+                aria-label="Custom text color"
+                onChange={(e) => applyFormat("color", e.target.value)}
+                style={{ height: 24, width: 36, border: "none", background: "transparent" }}
+              />
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+              <Typography variant="caption" color="text.secondary">
+                Nền:
+              </Typography>
+              <input
+                type="color"
+                aria-label="Custom highlight color"
+                onChange={(e) => applyFormat("background", e.target.value)}
+                style={{ height: 24, width: 36, border: "none", background: "transparent" }}
+              />
+            </Box>
+          </Box>
+          <ReactQuill
+            theme="snow"
+            ref={(ref) => {
+              quillRef.current = ref;
+            }}
             value={getCurrentTranslationValue(item.content, lang)}
-            onChange={(e) => {
+            onChange={(value) =>
               onChange(item.id, {
                 ...item,
-                content: updateTranslationValue(
-                  item.content,
-                  lang,
-                  e.target.value
-                ),
-              });
-            }}
-            fullWidth
-            multiline
-            rows={3}
-            size="small"
-            variant="outlined"
+                content: updateTranslationValue(item.content, lang, value),
+              })
+            }
+            modules={buildQuillModules(toolbarId)}
+            formats={quillFormats}
+            style={{ background: "white" }}
           />
+          {getCurrentTranslationValue(item.content, lang).trim() !== "" && (
+            <Box
+              sx={{
+                mt: 1.5,
+                p: 1.5,
+                borderRadius: 1,
+                bgcolor: "grey.50",
+                border: "1px solid",
+                borderColor: "grey.200",
+              }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  getCurrentTranslationValue(item.content, lang)
+                ),
+              }}
+            />
+          )}
         </Box>
       </Box>
     </Box>
@@ -256,23 +401,23 @@ const LabelInput: React.FC<{
       </Box>
     )}
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <Box sx={{ flex: 1 }}>
-          <TextField
-            label="Label"
-            value={getCurrentTranslationValue(item.label, lang)}
-            onChange={(e) =>
-              onChange(item.id, {
-                ...item,
-                label: updateTranslationValue(item.label, lang, e.target.value),
-              })
-            }
-            fullWidth
-            size="small"
-            variant="outlined"
-          />
-        </Box>
+    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      <Box sx={{ flex: 1 }}>
+        <TextField
+          label="Label"
+          value={getCurrentTranslationValue(item.label, lang)}
+          onChange={(e) =>
+            onChange(item.id, {
+              ...item,
+              label: updateTranslationValue(item.label, lang, e.target.value),
+            })
+          }
+          fullWidth
+          size="small"
+          variant="outlined"
+        />
       </Box>
+    </Box>
   </Box>
 );
 
@@ -425,10 +570,16 @@ const OnboardingManagement: React.FC = () => {
     fetchOnboarding();
   }, []); // ĐÃ SỬA: Chỉ chạy 1 lần
 
-  const buildIntroPayload = (list: IOnboardingIntro[]): OnboardingIntroPayload[] =>
+  const buildIntroPayload = (
+    list: IOnboardingIntro[]
+  ): OnboardingIntroPayload[] =>
     list.map((intro) => {
-      const cleanedTitle = cleanTranslation(intro.title) || intro.title;
-      const cleanedContent = cleanTranslation(intro.content) || intro.content;
+      const cleanedTitle = sanitizeTranslation(
+        cleanTranslation(intro.title) || intro.title
+      );
+      const cleanedContent = sanitizeTranslation(
+        cleanTranslation(intro.content) || intro.content
+      );
 
       return {
         id: intro.id,
@@ -445,8 +596,12 @@ const OnboardingManagement: React.FC = () => {
     requireTitle: boolean = false
   ): LablelPayload[] =>
     list.map((l) => {
-      const cleanedLabel = cleanTranslation(l.label) || l.label;
-      const cleanedTitle = cleanTranslation(l.title) || l.title;
+      const cleanedLabel = sanitizeTranslation(
+        cleanTranslation(l.label) || l.label
+      );
+      const cleanedTitle = sanitizeTranslation(
+        cleanTranslation(l.title) || l.title
+      );
 
       const payload: Partial<LablelPayload> = {
         id: l.id,
@@ -562,10 +717,7 @@ const OnboardingManagement: React.FC = () => {
   };
 
   // ĐÃ SỬA: Nhận `id` thay vì `index`
-  const addToArrayAtIndex = (
-    field: OnboardingArrayField,
-    id: number
-  ): void => {
+  const addToArrayAtIndex = (field: OnboardingArrayField, id: number): void => {
     if (!onboarding) return;
     const currentValue = onboarding[field] as any[];
     // Tìm index bằng id
@@ -1016,11 +1168,14 @@ const OnboardingManagement: React.FC = () => {
                             {intro.source}
                           </Typography>
                         )}
-                        <Typography
-                          sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
-                        >
-                          {getCurrentTranslationValue(intro.content, lang)}
-                        </Typography>
+                        <Box
+                          sx={{ lineHeight: 1.6 }}
+                          dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(
+                              getCurrentTranslationValue(intro.content, lang)
+                            ),
+                          }}
+                        />
                       </Box>
                     </Box>
                   </Box>
@@ -1357,8 +1512,7 @@ const OnboardingManagement: React.FC = () => {
               {activeTab === "skillsetWantToMaster" &&
                 "Edit Skillset to Master"}
               {activeTab === "learningGoal" && "Edit Learning Goals"}
-              {activeTab === "learningStruggles" &&
-                "Edit Learning Struggles"}
+              {activeTab === "learningStruggles" && "Edit Learning Struggles"}
               {activeTab === "comfortableLearningTime" && "Edit Learning Times"}
               {activeTab === "dailyLearningGoal" && "Edit Daily Goals"}
               {activeTab === "welcome" && "Edit Welcome"}
@@ -1386,16 +1540,14 @@ const OnboardingManagement: React.FC = () => {
           {activeTab === "comfortableLearningTime" &&
             renderLabelsTab("comfortableLearningTime", "Learning Times", true)}
           {activeTab === "dailyLearningGoal" && renderDailyGoalTab()}
-          {activeTab === "welcome" &&
-            renderMotivationTab("welcome", "Welcome")}
+          {activeTab === "welcome" && renderMotivationTab("welcome", "Welcome")}
           {activeTab === "motivationOne" &&
             renderMotivationTab("motivationOne", "Motivation One")}
           {activeTab === "motivationTwo" &&
             renderMotivationTab("motivationTwo", "Motivation Two")}
           {activeTab === "motivationThree" &&
             renderMotivationTab("motivationThree", "Motivation Three")}
-          {activeTab === "loading" &&
-            renderMotivationTab("loading", "Loading")}
+          {activeTab === "loading" && renderMotivationTab("loading", "Loading")}
         </DialogContent>
         <DialogActions>
           <Button
