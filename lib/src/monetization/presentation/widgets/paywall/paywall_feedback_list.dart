@@ -50,6 +50,7 @@ class PaywallFeedbackList extends StatelessWidget {
       physics: const BouncingScrollPhysics(),
       padding: EdgeInsets.zero,
       scrollDirection: Axis.horizontal,
+      clipBehavior: Clip.none,
       child: IntrinsicHeight(
         child: Row(
           children: _feedbacks.map((feedback) => _FeedbackCard(feedback: feedback)).toList(),

@@ -29,6 +29,11 @@ class ContinueButton extends StatelessWidget {
       return;
     }
 
+    if (state.currentStep == DataCollectStep.motivateHowToLearn) {
+      DataCollectFeedbackRoute().push(context);
+      return;
+    }
+
     if (state.currentStep == DataCollectStep.collectComfortableLearningTime) {
       DataCollectMotivationStepRoute(step: 3).push(context); // Motivation 03
       return;

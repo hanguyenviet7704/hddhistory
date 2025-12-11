@@ -51,7 +51,10 @@ class DataCollectFeedbackRoute extends BaseTransitionRouteData with $DataCollect
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const DataCollectFeedbackPage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<DataCollectCubit>(),
+    child: const DataCollectFeedbackPage(),
+  );
 }
 
 @TypedGoRoute<DataCollectSummaryRoute>(path: RoutePath.dataCollectSummary, name: RouteNamed.dataCollectSummary)
