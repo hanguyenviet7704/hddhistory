@@ -16,7 +16,7 @@ class DataCollectPage extends StatelessWidget {
             // Content
             Expanded(
               child: Padding(
-                padding: EdgeInsets.all(20.w),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: const StepBody(),
               ),
             ),

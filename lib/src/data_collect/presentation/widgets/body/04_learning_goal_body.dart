@@ -13,7 +13,6 @@ class LearningGoalBody extends StatelessWidget {
             DataCollectSectionHeader(
               title: context.text.onboarding.onboardingLearningGoalQuestion,
             ),
-            20.verticalSpace,
 
             const Spacer(),
 

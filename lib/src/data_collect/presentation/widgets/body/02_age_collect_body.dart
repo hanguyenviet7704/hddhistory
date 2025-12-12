@@ -13,7 +13,6 @@ class AgeCollectBody extends StatelessWidget {
             DataCollectSectionHeader(
               title: context.text.onboarding.onboardingUserAgeQuestion,
             ),
-            20.verticalSpace,
 
             Spacer(),
 

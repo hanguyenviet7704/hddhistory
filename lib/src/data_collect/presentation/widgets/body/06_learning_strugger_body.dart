@@ -15,7 +15,6 @@ class LearningStruggerBody extends StatelessWidget {
               title: context.text.onboarding.onboardingStruggleQuestion,
               subtitle: context.text.onboarding.onboardingStruggleQuestionSubtitle,
             ),
-            20.verticalSpace,
 
             Spacer(),
 

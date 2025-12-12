@@ -14,7 +14,6 @@ class SkillsetsWantToMasterBody extends StatelessWidget {
               title: context.text.onboarding.onboardingChooseSkillsetTitle,
               subtitle: context.text.onboarding.onboardingChooseSkillsetSubtitle,
             ),
-            20.verticalSpace,
             Spacer(),
 
             // Topic Options
