@@ -14,19 +14,27 @@
       },
       "oauth_client": [
         {
-          "client_id": "116378588635-6htd7rkoc9777o1m108oqkbvkn8mfvq8.apps.googleusercontent.com",
+          "client_id": "116378588635-gnl2bh096t4s15p37dlv2479lm9vkqra.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.eup.meup",
-            "certificate_hash": "642f4cf77da47c227d11bd75a81b250f15d0c6bf"
+            "certificate_hash": "4c9c19dea14baccd5735ab1a13c3983380bc0320"
           }
         },
         {
-          "client_id": "116378588635-dpusongprce0nbrpu30sdib8ajmk05sm.apps.googleusercontent.com",
+          "client_id": "116378588635-nssm4t04m0bjctkta4dei3vgefg5f4e4.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.eup.meup",
             "certificate_hash": "29302f0b8342cbf06b93c4a4a3c47b3a2fa6c7f6"
+          }
+        },
+        {
+          "client_id": "116378588635-td5h30a3g959ho1dc34angfa4pf7589b.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eup.meup",
+            "certificate_hash": "58b888d919aecf9bca1777020e1690fd6165884b"
           }
         },
         {
@@ -66,19 +74,19 @@
       },
       "oauth_client": [
         {
-          "client_id": "116378588635-p0veldvm6nekp0q25649fiq4a7rn0h93.apps.googleusercontent.com",
+          "client_id": "116378588635-23mstaih7v10h9dkdvvuhnd2m3gpaonk.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eup.meup.dev",
+            "certificate_hash": "58b888d919aecf9bca1777020e1690fd6165884b"
+          }
+        },
+        {
+          "client_id": "116378588635-jf1ic96mn7lra5833ftjpfk5ginhoaoe.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.eup.meup.dev",
             "certificate_hash": "29302f0b8342cbf06b93c4a4a3c47b3a2fa6c7f6"
-          }
-        },
-        {
-          "client_id": "116378588635-qpo0cqgjmgoulngre8p1d4lv1rgoo0ej.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "com.eup.meup.dev",
-            "certificate_hash": "642f4cf77da47c227d11bd75a81b250f15d0c6bf"
           }
         },
         {
@@ -118,15 +126,15 @@
       },
       "oauth_client": [
         {
-          "client_id": "116378588635-ao6fo9dk4t4l31u7gptum3sdd7ave71e.apps.googleusercontent.com",
+          "client_id": "116378588635-ekrrjhqhg1g4plg3sdrij7gs7jcd5bn4.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.eup.meup.stg",
-            "certificate_hash": "642f4cf77da47c227d11bd75a81b250f15d0c6bf"
+            "certificate_hash": "58b888d919aecf9bca1777020e1690fd6165884b"
           }
         },
         {
-          "client_id": "116378588635-j4lpch9sqeta9c0i59s62u5q1cptee9i.apps.googleusercontent.com",
+          "client_id": "116378588635-iai9qfhv1ultmh9ij5c2gucam36nnbv6.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.eup.meup.stg",
