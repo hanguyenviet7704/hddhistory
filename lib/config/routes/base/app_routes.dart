@@ -43,6 +43,7 @@ mixin RoutePath {
   static const String courseRoadmap = '/course-roadmap';
   static const String lessonList = 'lesson-list';
   static const String lessonExplainPopup = 'lesson-explain-popup';
+  static const String courseLessonEmptyNotiPopup = 'course-lesson-empty-noti-popup';
 
   //? Course - Lesson
   static const String lesson = 'lesson';
@@ -109,6 +110,7 @@ mixin RouteNamed {
   static const String courseRoadmap = 'Course Roadmap';
   static const String lessonList = 'Lesson List';
   static const String lessonExplainPopup = 'Lesson Explain Popup';
+  static const String courseLessonEmptyNotiPopup = 'Course Lesson Empty Noti Popup';
 
   //? Course - Lesson
   static const String lesson = 'Lesson';

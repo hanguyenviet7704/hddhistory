@@ -26,6 +26,11 @@ class SkillSetTab extends StatelessWidget {
               showProgress: false,
               isSelected: state.isSelectedCourse(course.id),
               onTap: () {
+                if (course.numberOfLesson == 0) {
+                  CourseLessonEmptyNotiPopup.show(context);
+                  return;
+                }
+
                 context.read<HomeCubit>()
                   ..selectSkillset(skillset)
                   ..selectCourseIndex(index);

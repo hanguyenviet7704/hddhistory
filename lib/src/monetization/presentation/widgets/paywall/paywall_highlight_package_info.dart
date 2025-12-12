@@ -183,11 +183,12 @@ class _HighlightCard extends StatelessWidget {
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.brandPrimary,
               fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
             ),
           ),
         ),
         12.verticalSpace,
-        const _PaywallLegalLinks(), 
+        const _PaywallLegalLinks(),
         SizedBox(height: bottomPadding / 2 + 8.h),
       ],
     );

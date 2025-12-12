@@ -43,16 +43,14 @@ class HomePage extends StatelessWidget {
                         SingleChildScrollView(
                           scrollDirection: Axis.horizontal,
                           padding: EdgeInsets.symmetric(horizontal: 20.w),
-                          child: IntrinsicHeight(
-                            child: Row(
-                              children: state.myCourses
-                                  .map(
-                                    (course) => CourseCardWidget(
-                                      course: course.withSkillset,
-                                    ),
-                                  )
-                                  .toList(),
-                            ),
+                          child: Row(
+                            children: state.myCourses
+                                .map(
+                                  (course) => CourseCardWidget(
+                                    course: course.withSkillset,
+                                  ),
+                                )
+                                .toList(),
                           ),
                         ),
                         20.verticalSpace,
