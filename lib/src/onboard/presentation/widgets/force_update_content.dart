@@ -32,7 +32,7 @@ class ForceUpdateContent extends StatelessWidget {
           topRight: Radius.circular(20.r),
         ),
       ),
-      child: DCachedImage(
+      child: CacheNetworkGraphic(
         url: AppAsset.images.common.mainIcon.path,
         height: 286.h,
         fit: BoxFit.contain,

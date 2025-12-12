@@ -11,7 +11,7 @@ class ContinueButton extends StatelessWidget {
       context.read<DataCollectCubit>()
         ..startAnalysis()
         ..loginAnonymous();
-      DataCollectSummaryRoute().go(context);
+      DataCollectMotivationStepRoute(step: 3).push(context); // Motivation 03
       return;
     }
 

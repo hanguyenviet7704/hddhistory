@@ -18,7 +18,7 @@ class LessonMetadata extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         if (icon != null && icon!.url.isNotEmpty)
-          DCachedImage(
+          CacheNetworkGraphic(
             url: icon!.url,
             width: 16.w,
             height: 16.h,

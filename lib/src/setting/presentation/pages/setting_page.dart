@@ -5,6 +5,7 @@ class SettingPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    context.read<IapCubit>().loadIapProducts();
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
       body: CupertinoScaffold(

@@ -36,7 +36,7 @@ class CourseCardWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 // Course image
-                DCachedImage(
+                CacheNetworkGraphic(
                   url: course.image,
                   width: 50.w,
                   height: 50.w,

@@ -44,6 +44,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   void loadIapProducts() async {
+    if (state.iapProducts.isNotEmpty) return;
     await runUseCase<List<IapProductEntity>>(
       usecase: () => _getPackagesUsecase.call(GetPackagesParams(platform: PaymentPlatform.fromDevicePlatform)),
       onSuccess: (products) {

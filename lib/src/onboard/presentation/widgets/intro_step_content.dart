@@ -18,7 +18,7 @@ class IntroStepContent extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 8.verticalSpace,
-                DCachedImage(
+                CacheNetworkGraphic(
                   url: intro.image,
                   height: 260.h,
                   width: 320.w,

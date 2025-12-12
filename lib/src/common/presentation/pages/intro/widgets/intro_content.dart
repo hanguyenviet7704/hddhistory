@@ -16,7 +16,7 @@ class IntroAuthContent extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: Align(
               alignment: Alignment.bottomCenter,
-              child: DCachedImage(
+              child: CacheNetworkGraphic(
                 url: imagePath,
                 width: 1.sw,
               ),

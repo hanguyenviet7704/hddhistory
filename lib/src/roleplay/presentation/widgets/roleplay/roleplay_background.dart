@@ -17,7 +17,7 @@ class RoleplayHeroBackground extends StatelessWidget {
           children: [
             ImageFiltered(
               imageFilter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: DCachedImage(
+              child: CacheNetworkGraphic(
                 url: imageUrl,
                 fit: BoxFit.cover,
               ),

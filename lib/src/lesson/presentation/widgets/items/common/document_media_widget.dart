@@ -8,7 +8,7 @@ class DocumentMediaWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (type) {
-      ContentDocumentType.image => DCachedImage(
+      ContentDocumentType.image => CacheNetworkGraphic(
         url: url,
         width: double.infinity,
         borderRadius: BorderRadius.circular(16.r),

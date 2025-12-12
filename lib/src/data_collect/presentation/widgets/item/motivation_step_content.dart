@@ -25,7 +25,7 @@ class MotivationStepContent extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          DCachedImage(
+          CacheNetworkGraphic(
             url: imageUrl,
             height: 260.h,
             width: 320.w,

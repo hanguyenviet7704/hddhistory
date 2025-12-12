@@ -46,7 +46,7 @@ class DataCollectOptionTile extends StatelessWidget {
           crossAxisAlignment: subtitle != null ? CrossAxisAlignment.start : CrossAxisAlignment.center,
           children: [
             if (enableLeading && option.icon.isNotEmpty)
-              DCachedImage(
+              CacheNetworkGraphic(
                 url: option.icon,
                 width: leadingIconSize.w,
                 height: leadingIconSize.h,

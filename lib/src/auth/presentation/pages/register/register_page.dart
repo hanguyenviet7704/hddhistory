@@ -60,38 +60,25 @@ class RegisterPage extends StatelessWidget {
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 20.w),
                   child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      // Logo and tagline
-                      Column(
-                        children: [
-                          Container(
-                            width: 100.w,
-                            height: 100.w,
-                            decoration: const BoxDecoration(
-                              color: Colors.white,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Image.asset(
-                              AppAsset.images.common.mainIcon.path,
-                              width: 80.w,
-                            ),
-                          ),
-                          24.verticalSpace,
-                          AppText(
-                            context.text.auth.authHeadLine,
-                            maxLines: 5,
-                            style: AppStyle.text24.copyWith(
-                              color: const Color(0xFF110751),
-                              fontWeight: FontWeight.w600,
-                              height: 1.5,
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
-                        ],
+                      Image.asset(
+                        AppAsset.images.common.logoBanner.path,
+                        height: 60.h,
+                      ),
+                      86.verticalSpace,
+                      AppText(
+                        context.text.auth.authHeadLine,
+                        maxLines: 5,
+                        margin: EdgeInsets.symmetric(horizontal: 20.w),
+                        style: AppStyle.textBold24.copyWith(
+                          color: const Color(0xFF110751),
+                          fontWeight: FontWeight.w600,
+                          height: 1.5,
+                        ),
+                        textAlign: TextAlign.center,
                       ),
 
-                      32.verticalSpace,
+                      166.verticalSpace,
 
                       // Social login buttons
                       Column(
@@ -107,7 +94,7 @@ class RegisterPage extends StatelessWidget {
                           ],
 
                           // Google button
-                          GoogleLoginButton(     
+                          GoogleLoginButton(
                             onPressed: () {
                               context.read<AuthBloc>().add(const AuthEvent.loginSSOGoogle());
                             },
