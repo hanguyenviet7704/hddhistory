@@ -45,7 +45,6 @@ part 'presentation/widgets/body/07_how_to_learn_body.dart';
 part 'presentation/widgets/body/08_daily_learning_goal_body.dart';
 part 'presentation/widgets/body/09_comfortable_learning_time_body.dart';
 part 'presentation/widgets/item/age_option.dart';
-part 'presentation/widgets/item/analysis_state.dart';
 part 'presentation/widgets/item/animated_summary_progress_bar.dart';
 part 'presentation/widgets/item/continue_button.dart';
 part 'presentation/widgets/item/custom_radio.dart';

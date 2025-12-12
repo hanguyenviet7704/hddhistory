@@ -25,6 +25,8 @@ class AnimatedSummaryProgressBar extends StatefulWidget {
 class _AnimatedSummaryProgressBarState extends State<AnimatedSummaryProgressBar> with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _animation;
+  bool _hasReportedCompletion = false;
+  bool _hasStarted = false;
 
   @override
   void initState() {
@@ -34,32 +36,72 @@ class _AnimatedSummaryProgressBarState extends State<AnimatedSummaryProgressBar>
       vsync: this,
     );
 
-    _animation =
-        Tween<double>(
-            begin: 0.0,
-            end: widget.progress,
-          ).animate(
-            CurvedAnimation(
-              parent: _controller,
-              curve: Curves.easeInOut,
-            ),
-          )
-          ..addStatusListener((status) {
-            if (status == AnimationStatus.completed && widget.onAnimationComplete != null) {
-              widget.onAnimationComplete!();
-            }
-          });
+    _animation = _createAnimation(begin: 0.0, end: widget.progress);
 
-    // Start the animation after the specified delay
+    _startWithDelay();
+  }
+
+  Animation<double> _createAnimation({required double begin, required double end}) {
+    final animation = Tween<double>(
+      begin: begin,
+      end: end.clamp(0.0, 1.0),
+    ).animate(
+      CurvedAnimation(
+        parent: _controller,
+        curve: Curves.easeInOut,
+      ),
+    );
+
+    animation.addStatusListener(_handleStatusChange);
+    return animation;
+  }
+
+  void _handleStatusChange(AnimationStatus status) {
+    final isCompleted = status == AnimationStatus.completed;
+    final reachedFullProgress = widget.progress >= 1.0 && !_hasReportedCompletion;
+
+    if (isCompleted && reachedFullProgress) {
+      _hasReportedCompletion = true;
+      widget.onAnimationComplete?.call();
+    }
+  }
+
+  void _startWithDelay() {
     Future.delayed(widget.delay, () {
-      if (mounted) {
-        _controller.forward();
-      }
+      if (!mounted) return;
+      _hasStarted = true;
+      _controller.forward(from: 0);
     });
+  }
+
+  void _animateToProgress(double newProgress) {
+    _animation.removeStatusListener(_handleStatusChange);
+
+    final currentValue = _animation.value;
+    _controller.duration = widget.duration;
+    _animation = _createAnimation(begin: currentValue, end: newProgress);
+
+    if (_hasStarted) {
+      _controller.forward(from: 0);
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant AnimatedSummaryProgressBar oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    if (widget.progress != oldWidget.progress) {
+      if (widget.progress < 1.0) {
+        _hasReportedCompletion = false;
+      }
+
+      _animateToProgress(widget.progress);
+    }
   }
 
   @override
   void dispose() {
+    _animation.removeStatusListener(_handleStatusChange);
     _controller.dispose();
     super.dispose();
   }
@@ -82,11 +124,27 @@ class _AnimatedSummaryProgressBarState extends State<AnimatedSummaryProgressBar>
                     fontWeight: FontWeight.w500,
                   ),
                 ),
-                AppText(
-                  '${(_animation.value * 100).toInt()}%',
-                  style: AppStyle.textBold14.copyWith(
-                    color: const Color(0xFFAAB8CD), // Text/Quaternary
-                    fontWeight: FontWeight.w600,
+                SizedBox(
+                  height: 20.h,
+                  width: 36.w,
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    transitionBuilder: (child, animation) => FadeTransition(opacity: animation, child: child),
+                    child: _animation.value >= 0.999
+                        ? AppAsset.icons.app.icTick.image(
+                            key: const ValueKey('progress-complete'),
+                            width: 20.w,
+                            height: 20.w,
+                          )
+                        : AppText(
+                            '${(_animation.value * 100).toInt()}%',
+                            key: const ValueKey('progress-percent'),
+                            style: AppStyle.textBold14.copyWith(
+                              color: const Color(0xFFAAB8CD), // Text/Quaternary
+                              fontWeight: FontWeight.w600,
+                            ),
+                            textAlign: TextAlign.right,
+                          ),
                   ),
                 ),
               ],
