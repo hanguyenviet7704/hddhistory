@@ -46,15 +46,15 @@ class IntroLanguageSheet extends StatelessWidget {
             ),
           ),
           16.verticalSpace,
-          ...AppLocale.values.map(
+          ...AppLocaleX.displayLocales.map(
             (locale) => Padding(
-              padding: EdgeInsets.only(bottom: locale == AppLocale.values.last ? 0 : 12.h),
+              padding: EdgeInsets.only(bottom: locale == AppLocaleX.displayLocales.last ? 0 : 12.h),
               child: _LanguageTile(
                 locale: locale,
                 isSelected: locale == selectedLocale,
                 onTap: () {
                   onSelected(locale);
-                  Navigator.of(context).pop();
+                  context.back();
                 },
               ),
             ),

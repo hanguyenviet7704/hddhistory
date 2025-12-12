@@ -40,4 +40,6 @@ extension AppLocaleX on AppLocale {
     AppLocale.vi => AppAsset.svg.common.icVnFlag,
     AppLocale.zh => AppAsset.svg.common.icCnFlag,
   };
+
+  static List<AppLocale> get displayLocales => [AppLocale.en, AppLocale.vi];
 }

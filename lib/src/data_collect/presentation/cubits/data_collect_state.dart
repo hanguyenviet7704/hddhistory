@@ -15,7 +15,6 @@ abstract class DataCollectState with _$DataCollectState {
     @Default([]) List<OnboardOptionEntity> selectedLearningStruggles,
     OnboardOptionEntity? selectedDailyLearningGoal,
     OnboardOptionEntity? selectedComfortableLearningTime,
-    @Default(false) bool analysisComplete,
 
     // Analysis progress fields
     @Default(0.0) double personalBackgroundProgress,

@@ -116,7 +116,6 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
           difficultiesProgress: 1.0,
           learningGoalProgress: 1.0,
           studyHabitsProgress: 1.0,
-          analysisComplete: true,
           status: DataCollectStatus.success,
         ),
       );
@@ -130,7 +129,6 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
         difficultiesProgress: 0.0,
         learningGoalProgress: 0.0,
         studyHabitsProgress: 0.0,
-        analysisComplete: false,
       ),
     );
   }

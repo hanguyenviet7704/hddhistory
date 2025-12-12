@@ -41,6 +41,7 @@ class IntroStepContent extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: AppText(
                     intro.content.text,
+                    maxLines: 10,
                     style: AppStyle.text20.copyWith(
                       fontWeight: FontWeight.w700,
                       color: AppCustomColor.textPrimary,
