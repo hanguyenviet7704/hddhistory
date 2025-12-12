@@ -47,7 +47,7 @@ class UserSubscriptionActiveCard extends StatelessWidget {
           8.verticalSpace,
           AppText(
             nextBilling,
-            maxLines: 1,
+            maxLines: 3,
             textAlign: TextAlign.center,
             enableFitScaleDown: true,
             style: AppStyle.text14.copyWith(

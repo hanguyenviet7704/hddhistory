@@ -21,9 +21,9 @@ class PaywallAllPackageInfoBottomSheet extends StatelessWidget {
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
       expand: false,
-      initialChildSize: 0.65,
-      minChildSize: 0.65,
-      maxChildSize: 0.65,
+      initialChildSize: 0.56,
+      minChildSize: 0.56,
+      maxChildSize: 0.56,
       builder: (context, controller) {
         return Container(
           decoration: BoxDecoration(
