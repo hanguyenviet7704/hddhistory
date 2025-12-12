@@ -18,6 +18,7 @@ class HomeHeaderWidget extends StatelessWidget {
             builder: (context, username) {
               return AppText(
                 context.text.home.homeGreetingTitle(username: username),
+                enableFitScaleDown: true,
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textTertiary,
                 ),

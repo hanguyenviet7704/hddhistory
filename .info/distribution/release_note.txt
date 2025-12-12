@@ -7,6 +7,4 @@ Build Date: {{date}}
 What's New:
 - First distribution
 - Onboarding flow
-- Register flow
-- Course flow
-- Lesson keypoint flow
+
