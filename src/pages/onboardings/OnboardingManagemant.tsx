@@ -29,7 +29,7 @@ import type { ITranslation } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import {
@@ -38,6 +38,13 @@ import {
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
+import DOMPurify from "dompurify";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Underline from "@tiptap/extension-underline";
+import TextStyle from "@tiptap/extension-text-style";
+import Color from "@tiptap/extension-color";
+import { Extension } from "@tiptap/core";
 
 type MotivationField =
   | "welcome"
@@ -55,6 +62,268 @@ type OnboardingArrayField =
   | "learningStruggles"
   | "comfortableLearningTime"
   | "dailyLearningGoal";
+
+const sanitizeTranslation = (
+  translation: ITranslation | undefined
+): ITranslation => {
+  const sanitized: ITranslation = {};
+
+  Object.entries(translation || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      sanitized[key as LangCode] = sanitizeHtml(value);
+    }
+  });
+
+  return sanitized;
+};
+
+const sanitizeHtml = (html: string) =>
+  DOMPurify.sanitize(html, {
+    ADD_ATTR: ["style"],
+  });
+
+const FontSize = Extension.create({
+  name: "fontSize",
+  addGlobalAttributes() {
+    return [
+      {
+        types: ["textStyle"],
+        attributes: {
+          fontSize: {
+            default: null,
+            parseHTML: (element) => element.style.fontSize || null,
+            renderHTML: (attributes) => {
+              if (!attributes.fontSize) {
+                return {};
+              }
+              return {
+                style: `font-size: ${attributes.fontSize}`,
+              };
+            },
+          },
+        },
+      },
+    ];
+  },
+  addCommands() {
+    return {
+      setFontSize:
+        (size: string) =>
+        ({ chain }: { chain: any }) =>
+          chain().setMark("textStyle", { fontSize: size }).run(),
+      unsetFontSize:
+        () =>
+        ({ chain }: { chain: any }) =>
+          chain().setMark("textStyle", { fontSize: null }).run(),
+    };
+  },
+});
+
+const TiptapEditor: React.FC<{
+  value: string;
+  onChange: (html: string) => void;
+}> = ({ value, onChange }) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: { levels: [3, 4] },
+      }),
+      Underline,
+      TextStyle,
+      Color.configure({ types: ["textStyle"] }),
+      FontSize,
+    ],
+    content: value || "",
+    editorProps: {
+      attributes: {
+        style:
+          "min-height: 160px; padding: 12px; border: 1px solid #d0d7de; border-radius: 6px; background: white; outline: none;",
+      },
+    },
+    onUpdate: ({ editor }) => {
+      onChange(editor.getHTML());
+    },
+  });
+
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (value !== current) {
+      editor.commands.setContent(value || "", false);
+    }
+  }, [editor, value]);
+
+  const [currentFontSize, setCurrentFontSize] = useState<string>("");
+
+  useEffect(() => {
+    if (!editor) return;
+    const update = () => {
+      const size = editor.getAttributes("textStyle").fontSize || "";
+      setCurrentFontSize(size);
+    };
+    editor.on("selectionUpdate", update);
+    editor.on("transaction", update);
+    update();
+    return () => {
+      editor.off("selectionUpdate", update);
+      editor.off("transaction", update);
+    };
+  }, [editor]);
+
+  if (!editor) return null;
+
+  const applyColor = (color: string) =>
+    editor.chain().focus().setColor(color).run();
+  const applyHighlight = (color: string) =>
+    editor
+      .chain()
+      .focus()
+      .setMark("textStyle", { backgroundColor: color })
+      .run();
+  const clearFormat = () =>
+    editor.chain().focus().unsetAllMarks().clearNodes().run();
+
+  const buttonProps = { size: "small" as const };
+
+  return (
+    <Box>
+      <Box
+        sx={{
+          mb: 1,
+          display: "flex",
+          gap: 1,
+          alignItems: "center",
+          flexWrap: "wrap",
+          border: "1px solid",
+          borderColor: "grey.200",
+          borderRadius: 1,
+          p: 0.75,
+          bgcolor: "white",
+        }}
+      >
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+        >
+          Bold
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+        >
+          Italic
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleUnderline().run()}
+        >
+          Underline
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+        >
+          Strike
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+        >
+          • List
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+        >
+          1. List
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+        >
+          H3
+        </Button>
+        <Button
+          {...buttonProps}
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 4 }).run()
+          }
+        >
+          H4
+        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary">
+            Màu chữ
+          </Typography>
+          <input
+            type="color"
+            aria-label="Text color"
+            onChange={(e) => applyColor(e.target.value)}
+            style={{
+              height: 28,
+              width: 36,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          />
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary">
+            Nền
+          </Typography>
+          <input
+            type="color"
+            aria-label="Highlight color"
+            onChange={(e) => applyHighlight(e.target.value)}
+            style={{
+              height: 28,
+              width: 36,
+              border: "none",
+              background: "transparent",
+              cursor: "pointer",
+            }}
+          />
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <Typography variant="caption" color="text.secondary">
+            Cỡ chữ
+          </Typography>
+          <select
+            value={currentFontSize || ""}
+            onChange={(e) =>
+              e.target.value
+                ? editor.commands.setFontSize(e.target.value)
+                : editor.commands.unsetFontSize()
+            }
+            style={{
+              height: 30,
+              borderRadius: 4,
+              border: "1px solid #ccc",
+              padding: "4px 6px",
+              fontSize: 12,
+            }}
+          >
+            <option value="">Default</option>
+            <option value="14px">14</option>
+            <option value="16px">16</option>
+            <option value="18px">18</option>
+            <option value="20px">20</option>
+            <option value="24px">24</option>
+            <option value="28px">28</option>
+            <option value="32px">32</option>
+          </select>
+        </Box>
+        <Button {...buttonProps} onClick={clearFormat}>
+          Clear
+        </Button>
+      </Box>
+      <EditorContent editor={editor} />
+    </Box>
+  );
+};
 
 const IntroInput: React.FC<{
   item: IOnboardingIntro;
@@ -167,25 +436,35 @@ const IntroInput: React.FC<{
 
       <Box sx={{ display: "flex", alignItems: "center" }}>
         <Box sx={{ flex: 1 }}>
-          <TextField
-            label="Content"
+          <Typography variant="caption" sx={{ mb: 0.5, display: "block" }}>
+            Content (rich text + màu)
+          </Typography>
+          <TiptapEditor
             value={getCurrentTranslationValue(item.content, lang)}
-            onChange={(e) => {
+            onChange={(html) =>
               onChange(item.id, {
                 ...item,
-                content: updateTranslationValue(
-                  item.content,
-                  lang,
-                  e.target.value
-                ),
-              });
-            }}
-            fullWidth
-            multiline
-            rows={3}
-            size="small"
-            variant="outlined"
+                content: updateTranslationValue(item.content, lang, html),
+              })
+            }
           />
+          {getCurrentTranslationValue(item.content, lang).trim() !== "" && (
+            <Box
+              sx={{
+                mt: 1.5,
+                p: 1.5,
+                borderRadius: 1,
+                bgcolor: "grey.50",
+                border: "1px solid",
+                borderColor: "grey.200",
+              }}
+              dangerouslySetInnerHTML={{
+                __html: DOMPurify.sanitize(
+                  getCurrentTranslationValue(item.content, lang)
+                ),
+              }}
+            />
+          )}
         </Box>
       </Box>
     </Box>
@@ -256,23 +535,23 @@ const LabelInput: React.FC<{
       </Box>
     )}
 
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <Box sx={{ flex: 1 }}>
-          <TextField
-            label="Label"
-            value={getCurrentTranslationValue(item.label, lang)}
-            onChange={(e) =>
-              onChange(item.id, {
-                ...item,
-                label: updateTranslationValue(item.label, lang, e.target.value),
-              })
-            }
-            fullWidth
-            size="small"
-            variant="outlined"
-          />
-        </Box>
+    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      <Box sx={{ flex: 1 }}>
+        <TextField
+          label="Label"
+          value={getCurrentTranslationValue(item.label, lang)}
+          onChange={(e) =>
+            onChange(item.id, {
+              ...item,
+              label: updateTranslationValue(item.label, lang, e.target.value),
+            })
+          }
+          fullWidth
+          size="small"
+          variant="outlined"
+        />
       </Box>
+    </Box>
   </Box>
 );
 
@@ -425,53 +704,51 @@ const OnboardingManagement: React.FC = () => {
     fetchOnboarding();
   }, []); // ĐÃ SỬA: Chỉ chạy 1 lần
 
-  const buildIntroPayload = (list: IOnboardingIntro[]): OnboardingIntroPayload[] =>
-    list
-      .map((intro) => {
-        const cleanedTitle = cleanTranslation(intro.title);
-        const cleanedContent = cleanTranslation(intro.content);
+  const buildIntroPayload = (
+    list: IOnboardingIntro[]
+  ): OnboardingIntroPayload[] =>
+    list.map((intro) => {
+      const cleanedTitle = sanitizeTranslation(
+        cleanTranslation(intro.title) || intro.title
+      );
+      const cleanedContent = sanitizeTranslation(
+        cleanTranslation(intro.content) || intro.content
+      );
 
-        if (!cleanedTitle || !cleanedContent) return null;
-
-        return {
-          id: intro.id,
-          image: intro.image,
-          title: cleanedTitle,
-          content: cleanedContent,
-          source: intro.source || "",
-          sourceTitle: intro.sourceTitle || "",
-        } as OnboardingIntroPayload;
-      })
-      .filter(Boolean) as OnboardingIntroPayload[];
+      return {
+        id: intro.id,
+        image: intro.image,
+        title: cleanedTitle || {},
+        content: cleanedContent || {},
+        source: intro.source || "",
+        sourceTitle: intro.sourceTitle || "",
+      } as OnboardingIntroPayload;
+    });
 
   const buildLabelPayload = (
     list: ILablel[],
     requireTitle: boolean = false
   ): LablelPayload[] =>
-    list
-      .map((l) => {
-        const cleanedLabel = cleanTranslation(l.label);
-        const cleanedTitle = cleanTranslation(l.title);
+    list.map((l) => {
+      const cleanedLabel = sanitizeTranslation(
+        cleanTranslation(l.label) || l.label
+      );
+      const cleanedTitle = sanitizeTranslation(
+        cleanTranslation(l.title) || l.title
+      );
 
-        // Bỏ item nếu label trống
-        if (!cleanedLabel || Object.keys(cleanedLabel).length === 0) {
-          return null;
-        }
+      const payload: Partial<LablelPayload> = {
+        id: l.id,
+        icon: l.icon,
+        label: cleanedLabel || {},
+      };
 
-        const payload: Partial<LablelPayload> = {
-          id: l.id,
-          icon: l.icon,
-          label: cleanedLabel,
-        };
+      if (requireTitle) {
+        payload.title = cleanedTitle || {};
+      }
 
-        // Chỉ thêm title khi có giá trị (tránh gửi object rỗng)
-        if (cleanedTitle && Object.keys(cleanedTitle).length > 0) {
-          payload.title = cleanedTitle;
-        }
-
-        return payload as LablelPayload;
-      })
-      .filter(Boolean) as LablelPayload[];
+      return payload as LablelPayload;
+    });
 
   const buildMotivationPayload = (
     motivation: IMotivation | undefined
@@ -509,7 +786,7 @@ const OnboardingManagement: React.FC = () => {
         ),
         comfortableLearningTime: buildLabelPayload(
           onboarding.comfortableLearningTime || [],
-          false
+          true
         ),
         dailyLearningGoal: buildLabelPayload(
           onboarding.dailyLearningGoal || [],
@@ -574,10 +851,7 @@ const OnboardingManagement: React.FC = () => {
   };
 
   // ĐÃ SỬA: Nhận `id` thay vì `index`
-  const addToArrayAtIndex = (
-    field: OnboardingArrayField,
-    id: number
-  ): void => {
+  const addToArrayAtIndex = (field: OnboardingArrayField, id: number): void => {
     if (!onboarding) return;
     const currentValue = onboarding[field] as any[];
     // Tìm index bằng id
@@ -739,7 +1013,7 @@ const OnboardingManagement: React.FC = () => {
         >
           <img
             src={item.icon}
-            alt={getTranslationValue(item.label, lang)}
+            alt={getCurrentTranslationValue(item.label, lang)}
             style={{
               width: 32,
               height: 32,
@@ -749,7 +1023,7 @@ const OnboardingManagement: React.FC = () => {
             }}
           />
           <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-            {getTranslationValue(item.label, lang)}
+            {getCurrentTranslationValue(item.label, lang)}
           </Typography>
         </Box>
       );
@@ -774,7 +1048,7 @@ const OnboardingManagement: React.FC = () => {
           {item.icon}
         </Typography>
         <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-          {getTranslationValue(item.label, lang)}
+          {getCurrentTranslationValue(item.label, lang)}
         </Typography>
       </Box>
     );
@@ -863,7 +1137,7 @@ const OnboardingManagement: React.FC = () => {
         >
           <img
             src={item.icon}
-            alt={getTranslationValue(item.label, lang)}
+            alt={getCurrentTranslationValue(item.label, lang)}
             style={{
               width: 32,
               height: 32,
@@ -872,13 +1146,13 @@ const OnboardingManagement: React.FC = () => {
               display: "block",
             }}
           />
-          {getTranslationValue(item.title, lang) && (
+          {getCurrentTranslationValue(item.title, lang) && (
             <Typography variant="body1" sx={{ mr: 1, fontWeight: "medium" }}>
-              {getTranslationValue(item.title, lang)}
+              {getCurrentTranslationValue(item.title, lang)}
             </Typography>
           )}
           <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-            {getTranslationValue(item.label, lang)}
+            {getCurrentTranslationValue(item.label, lang)}
           </Typography>
         </Box>
       );
@@ -902,13 +1176,13 @@ const OnboardingManagement: React.FC = () => {
         <Typography variant="body1" sx={{ mr: 1 }}>
           {item.icon}
         </Typography>
-        {getTranslationValue(item.title, lang) && (
+        {getCurrentTranslationValue(item.title, lang) && (
           <Typography variant="body1" sx={{ mr: 1, fontWeight: "medium" }}>
-            {getTranslationValue(item.title, lang)}
+            {getCurrentTranslationValue(item.title, lang)}
           </Typography>
         )}
         <Typography variant="body1" sx={{ fontWeight: "medium" }}>
-          {getTranslationValue(item.label, lang)}
+          {getCurrentTranslationValue(item.label, lang)}
         </Typography>
       </Box>
     );
@@ -996,7 +1270,7 @@ const OnboardingManagement: React.FC = () => {
                         {intro.image && (
                           <img
                             src={intro.image}
-                            alt={getTranslationValue(intro.title, lang)}
+                            alt={getCurrentTranslationValue(intro.title, lang)}
                             style={{
                               width: "100%",
                               height: 200,
@@ -1008,7 +1282,7 @@ const OnboardingManagement: React.FC = () => {
                       </Box>
                       <Box sx={{ flex: 2 }}>
                         <Typography gutterBottom sx={{ fontWeight: "bold" }}>
-                          {getTranslationValue(intro.title, lang)}
+                          {getCurrentTranslationValue(intro.title, lang)}
                         </Typography>
                         {intro.sourceTitle && (
                           <Typography
@@ -1028,11 +1302,14 @@ const OnboardingManagement: React.FC = () => {
                             {intro.source}
                           </Typography>
                         )}
-                        <Typography
-                          sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}
-                        >
-                          {getTranslationValue(intro.content, lang)}
-                        </Typography>
+                        <Box
+                          sx={{ lineHeight: 1.6 }}
+                          dangerouslySetInnerHTML={{
+                            __html: DOMPurify.sanitize(
+                              getCurrentTranslationValue(intro.content, lang)
+                            ),
+                          }}
+                        />
                       </Box>
                     </Box>
                   </Box>
@@ -1369,8 +1646,7 @@ const OnboardingManagement: React.FC = () => {
               {activeTab === "skillsetWantToMaster" &&
                 "Edit Skillset to Master"}
               {activeTab === "learningGoal" && "Edit Learning Goals"}
-              {activeTab === "learningStruggles" &&
-                "Edit Learning Struggles"}
+              {activeTab === "learningStruggles" && "Edit Learning Struggles"}
               {activeTab === "comfortableLearningTime" && "Edit Learning Times"}
               {activeTab === "dailyLearningGoal" && "Edit Daily Goals"}
               {activeTab === "welcome" && "Edit Welcome"}
@@ -1398,16 +1674,14 @@ const OnboardingManagement: React.FC = () => {
           {activeTab === "comfortableLearningTime" &&
             renderLabelsTab("comfortableLearningTime", "Learning Times", true)}
           {activeTab === "dailyLearningGoal" && renderDailyGoalTab()}
-          {activeTab === "welcome" &&
-            renderMotivationTab("welcome", "Welcome")}
+          {activeTab === "welcome" && renderMotivationTab("welcome", "Welcome")}
           {activeTab === "motivationOne" &&
             renderMotivationTab("motivationOne", "Motivation One")}
           {activeTab === "motivationTwo" &&
             renderMotivationTab("motivationTwo", "Motivation Two")}
           {activeTab === "motivationThree" &&
             renderMotivationTab("motivationThree", "Motivation Three")}
-          {activeTab === "loading" &&
-            renderMotivationTab("loading", "Loading")}
+          {activeTab === "loading" && renderMotivationTab("loading", "Loading")}
         </DialogContent>
         <DialogActions>
           <Button
