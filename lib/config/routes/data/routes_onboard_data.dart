@@ -62,8 +62,11 @@ class DataCollectSummaryRoute extends GoRouteData with $DataCollectSummaryRoute 
   const DataCollectSummaryRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<DataCollectCubit>(),
+  Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<DataCollectCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
+    ],
     child: const DataCollectSummaryPage(),
   );
 }

@@ -33,7 +33,6 @@ part 'presentation/cubits/intro/intro_state.dart';
 part 'presentation/cubits/onboard/onboard_cubit.dart';
 part 'presentation/cubits/onboard/onboard_state.dart';
 //* Pages
-part 'presentation/pages/choose_language_page.dart';
 part 'presentation/pages/onboard_introduce_page.dart';
 part 'presentation/pages/onboard_page.dart';
 part 'presentation/pages/splash_page.dart';
@@ -47,8 +46,8 @@ part 'presentation/widgets/force_update_content.dart';
 part 'presentation/widgets/home_indicator_widget.dart';
 part 'presentation/widgets/intro_content.dart';
 part 'presentation/widgets/intro_header.dart';
-part 'presentation/widgets/intro_step_content.dart';
 part 'presentation/widgets/intro_language_sheet.dart';
+part 'presentation/widgets/intro_step_content.dart';
 part 'presentation/widgets/onboard_chat_item.dart';
 part 'presentation/widgets/splash_content_card.dart';
 part 'presentation/widgets/status_bar_widget.dart';

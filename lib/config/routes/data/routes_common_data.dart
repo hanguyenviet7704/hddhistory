@@ -29,15 +29,6 @@ class SplashRoute extends GoRouteData with $SplashRoute {
   Widget build(BuildContext context, GoRouterState state) => const SplashPage();
 }
 
-//* Choose Language Page
-@TypedGoRoute<ChooseLanguageRoute>(path: RoutePath.chooseLanguage, name: RouteNamed.chooseLanguage)
-class ChooseLanguageRoute extends GoRouteData with $ChooseLanguageRoute {
-  const ChooseLanguageRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => const ChooseLanguagePage();
-}
-
 //* Intro Page
 @TypedGoRoute<OnboardIntroduceRoute>(path: RoutePath.onboardIntroduce, name: RouteNamed.onboardIntroduce)
 class OnboardIntroduceRoute extends GoRouteData with $OnboardIntroduceRoute {

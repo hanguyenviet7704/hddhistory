@@ -1,7 +1,5 @@
 part of '../../data_collect.dart';
 
-
-
 class DataCollectSummaryPage extends StatefulWidget {
   const DataCollectSummaryPage({super.key});
 
@@ -53,9 +51,9 @@ class _DataCollectSummaryPageState extends State<DataCollectSummaryPage> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     // Success illustration
-                    DCachedImage(
-                      width: 103.w,
-                      url: AppAsset.images.common.birdHappy.path,
+                    CacheNetworkGraphic(
+                      width: 320.w,
+                      url: context.select((OnboardCubit bloc) => bloc.state.onboardData.loading.image),
                       fit: BoxFit.contain,
                     ),
                     36.verticalSpace,
