@@ -31,14 +31,19 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
           children: [
             Padding(
               padding: EdgeInsets.only(top: 28.h, bottom: 16.h),
-              child: AppText(
-                context.text.exercise.exerciseSubheaderLabelBuildNonverbal,
-                maxLines: 1,
-                textAlign: TextAlign.center,
-                style: AppStyle.textBold14.copyWith(
-                  color: AppCustomColor.textSecondary,
-                  height: 1.6,
-                ),
+              child: BlocSelector<LessonCubit, LessonState, String>(
+                selector: (state) => state.currentLearningItem.title.text,
+                builder: (context, title) {
+                  return AppText(
+                    title,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: AppStyle.textBold14.copyWith(
+                      color: AppCustomColor.textSecondary,
+                      height: 1.6,
+                    ),
+                  );
+                },
               ),
             ),
             Expanded(
@@ -106,15 +111,15 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
                     ),
                   ),
                 ],
+              ),
             ),
-          ),
-          LessonCompletionPrimaryButton(
-            label: context.text.exercise.exerciseCompleteLessonButton,
-            onPressed: () => context.back(),
-            margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
-          ),
-        ],
-      ),
+            LessonCompletionPrimaryButton(
+              label: context.text.exercise.exerciseCompleteLessonButton,
+              onPressed: () => context.back(),
+              margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
+            ),
+          ],
+        ),
       ),
     );
   }

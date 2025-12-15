@@ -1,16 +1,11 @@
 part of '../../../../lesson.dart';
 
-class LessonCompletionHeader extends StatelessWidget {
-  const LessonCompletionHeader({
+class KeypointCompleteHeader extends StatelessWidget {
+  final EdgeInsets margin;
+  const KeypointCompleteHeader({
     super.key,
-    this.title = 'Maintaining Appropriate Eye Contact',
-    this.subtitle = 'Building Nonverbal Presence',
     this.margin = EdgeInsets.zero,
   });
-
-  final String title;
-  final String subtitle;
-  final EdgeInsets margin;
 
   @override
   Widget build(BuildContext context) {
@@ -45,26 +40,36 @@ class LessonCompletionHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AppText(
-                  subtitle.toUpperCase(),
-                  maxLines: 1,
-                  enableFitScaleDown: true,
-                  style: AppStyle.text10.copyWith(
-                    color: AppCustomColor.textTertiary,
-                    height: 1.75,
-                    letterSpacing: 0.5,
-                    fontWeight: FontWeight.w600,
-                  ),
+                BlocSelector<CourseLessonCubit, CourseLessonState, String>(
+                  selector: (state) => state.selectedLesson.keypoints.firstWhere((keypoint) => keypoint.id == state.currentKeypointId).title.text,
+                  builder: (context, title) {
+                    return AppText(
+                      title.toUpperCase(),
+                      maxLines: 1,
+                      enableFitScaleDown: true,
+                      style: AppStyle.text10.copyWith(
+                        color: AppCustomColor.textTertiary,
+                        height: 1.75,
+                        letterSpacing: 0.5,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    );
+                  },
                 ),
                 2.verticalSpace,
-                AppText(
-                  title,
-                  maxLines: 2,
-                  enableFitScaleDown: true,
-                  style: AppStyle.textBold14.copyWith(
-                    color: AppCustomColor.textSecondary,
-                    height: 1.4,
-                  ),
+                BlocSelector<LessonCubit, LessonState, String>(
+                  selector: (state) => state.currentLearningItem.title.text,
+                  builder: (context, title) {
+                    return AppText(
+                      title,
+                      maxLines: 2,
+                      enableFitScaleDown: true,
+                      style: AppStyle.textBold14.copyWith(
+                        color: AppCustomColor.textSecondary,
+                        height: 1.4,
+                      ),
+                    );
+                  },
                 ),
               ],
             ),

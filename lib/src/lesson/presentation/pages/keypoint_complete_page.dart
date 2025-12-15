@@ -10,14 +10,12 @@ class KeypointCompletePage extends StatelessWidget {
       body: SafeArea(
         child: Column(
           children: [
-            LessonCompletionHeader(
+            KeypointCompleteHeader(
               margin: EdgeInsets.only(
                 left: 20.w,
                 right: 20.w,
                 top: 20.h,
               ),
-              title: context.text.exercise.exerciseSubheaderLabelBuildNonverbal.toUpperCase(),
-              subtitle: context.text.exercise.exerciseLessonCompleteMessage.toUpperCase(),
             ),
             Expanded(
               child: Column(

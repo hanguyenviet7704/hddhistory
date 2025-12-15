@@ -17,9 +17,11 @@ class LessonProgressBar extends StatelessWidget {
 
         if (learningItem.type != LearningItemType.roleplay) {
           context.back();
+          // CourseRoadmapRoute().go(context);
+          return;
         }
-        CourseRoadmapRoute().go(context);
-        context.read<PageCubit>().setCurrentIndex(1);
+        context.back();
+        RoleplayIntroRoute().go(context);
       },
       onKeepLearning: () {
         context.back();
