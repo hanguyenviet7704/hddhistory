@@ -12,9 +12,9 @@ class _SplashPageState extends State<SplashPage> {
   void initState() {
     // _requestTrackingPermission();
     _configAppLocalization();
-    _getAppData();
-    _setTrackingUser();
     _onboardingUser();
+    _setTrackingUser();
+    _getAppData();
     _checkForUpdate();
     super.initState();
   }
@@ -30,20 +30,6 @@ class _SplashPageState extends State<SplashPage> {
 
     if (!mounted) return;
     context.read<LocaleCubit>().setLocale(locale);
-  }
-
-  void _getAppData() async {
-    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
-    UserState userState = context.read<UserCubit>().state;
-    AppGlobalValue.accessToken = userState.accessToken;
-    AppGlobalValue.refreshToken = userState.refreshToken;
-
-    // if (!mounted) return;
-    // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
-
-    context.read<IapCubit>().init();
-    context.read<PageCubit>().setIsPassSplashScreen(true);
-    // context.read<HandfeelingCubit>().getBrushes();
   }
 
   void _setTrackingUser() {
@@ -76,35 +62,55 @@ class _SplashPageState extends State<SplashPage> {
     }
   }
 
+  void _getAppData() async {
+    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
+    UserState userState = context.read<UserCubit>().state;
+    AppGlobalValue.accessToken = userState.accessToken;
+    AppGlobalValue.refreshToken = userState.refreshToken;
+
+    // if (!mounted) return;
+    // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
+
+    context.read<IapCubit>().init();
+    context.read<PageCubit>().setIsPassSplashScreen(true);
+
+    if (AppGlobalValue.accessToken.isEmpty) return;
+    AppDI.injector.get<HomeCubit>().initializeData();
+  }
+
   void _initScreen(_) async {
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
-    
+
     bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
     if (isInitialLink) return;
 
     if (!mounted) return;
     bool isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
-    if (AppGlobalValue.accessToken.isEmpty) {
-      if (isUserPassOnboarding) {
-        OnboardIntroduceRoute().go(context);
-        return;
-      }
 
-      RegisterRoute().go(context);
-      return;
-    }
-
-    AppDI.injector.get<HomeCubit>().initializeData();
-    String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
     Future.delayed(const Duration(milliseconds: 3000), () async {
       if (!mounted) return;
 
-      if (roadmapId.isEmpty) {
-        CourseRoute().go(context);
+      if (AppGlobalValue.accessToken.isEmpty) {
+        if (isUserPassOnboarding) {
+          OnboardIntroduceRoute().go(context);
+          return;
+        }
+
+        RegisterRoute().go(context);
         return;
       }
 
-      HomeRoute().go(context);
+      String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
+      Future.delayed(const Duration(milliseconds: 3000), () async {
+        if (!mounted) return;
+
+        if (roadmapId.isEmpty) {
+          CourseRoute().go(context);
+          return;
+        }
+
+        HomeRoute().go(context);
+      });
     });
   }
 
@@ -140,7 +146,6 @@ class _SplashPageState extends State<SplashPage> {
           child: Image.asset(
             AppAsset.images.common.mainIcon.path,
             width: 100.w,
-            height: 100.w,
           ).animate().fadeIn(duration: 0.8.seconds),
         ),
       ),

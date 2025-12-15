@@ -26,7 +26,10 @@ class SplashRoute extends GoRouteData with $SplashRoute {
   const SplashRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const SplashPage();
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<IapCubit>(),
+    child: const SplashPage(),
+  );
 }
 
 //* Intro Page
