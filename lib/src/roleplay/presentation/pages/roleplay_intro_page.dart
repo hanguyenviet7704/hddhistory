@@ -65,9 +65,10 @@ class _RoleplayIntroView extends StatelessWidget {
               RoleplayIntroActionButton(
                 label: context.text.roleplay.rolePlayIntroStartButton,
                 onPressed: () {
-                  context.read<RoleplayCubit>().resetIndex();
-                  context.read<RoleplayPointCubit>().reset();
-                  RoleplayRoute().go(context);
+                  // context.read<RoleplayCubit>().resetIndex();
+                  // context.read<RoleplayPointCubit>().reset();
+                  // RoleplayRoute().go(context);
+                  RoleplayIntroPopup.show(context);
                 },
               ),
               SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom),

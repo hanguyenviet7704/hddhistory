@@ -53,6 +53,7 @@ mixin RoutePath {
   static const String exerciseResultPopup = 'exercise-result-popup';
 
   //? Course - Roleplay
+  static const String roleplayIntroPopup = 'roleplay-intro-popup';
   static const String roleplayIntro = 'roleplay-intro';
   static const String roleplay = 'roleplay';
   static const String roleplayFeedback = 'roleplay-feedback';
@@ -120,6 +121,7 @@ mixin RouteNamed {
   static const String exerciseResultPopup = 'Exercise Result Popup';
 
   //? Course - Roleplay
+  static const String roleplayIntroPopup = 'Roleplay Intro Popup';
   static const String roleplay = 'Roleplay';
   static const String roleplayIntro = 'Roleplay Intro';
   static const String roleplayFeedback = 'Roleplay Feedback';

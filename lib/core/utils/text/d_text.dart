@@ -139,9 +139,18 @@ class AppText extends StatelessWidget {
     }
 
     if (enableFitScaleDown) {
-      tmpText = FittedBox(
-        fit: BoxFit.scaleDown,
-        child: tmpText,
+      tmpText = LayoutBuilder(
+        builder: (context, constraints) {
+          // Constrain the child to the available width so Text can still wrap
+          return FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: ConstrainedBox(
+              constraints: BoxConstraints(maxWidth: constraints.maxWidth),
+              child: tmpText,
+            ),
+          );
+        },
       );
     }
 
