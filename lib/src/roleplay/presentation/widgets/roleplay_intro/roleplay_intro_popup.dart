@@ -164,7 +164,7 @@ class _RoleplayIntroPopupState extends State<RoleplayIntroPopup> {
           TextSpan(text: context.text.roleplay.rolePlayIntroPopupSubtitle1Prefix, style: subtitleStyle),
           if (context.text.roleplay.rolePlayIntroPopupSubtitle1Highlight.isNotEmpty)
             TextSpan(
-              text: context.text.roleplay.rolePlayIntroPopupSubtitle1Highlight,
+              text: ' ${context.text.roleplay.rolePlayIntroPopupSubtitle1Highlight}',
               style: subtitleStyle.copyWith(fontWeight: FontWeight.w700),
             ),
         ],
@@ -223,7 +223,14 @@ class _IntroStepContent extends StatelessWidget {
               8.verticalSpace,
               RichText(
                 textAlign: TextAlign.center,
-                text: TextSpan(children: step.subtitleSpans),
+                text: TextSpan(
+                  style: AppStyle.text14.copyWith(
+                    fontWeight: FontWeight.w400,
+                    color: AppCustomColor.textTertiary,
+                    height: 24 / 16,
+                  ),
+                  children: step.subtitleSpans,
+                ),
               ),
             ],
           ),
@@ -244,7 +251,7 @@ class _RoleplayIntroStep {
     required this.subtitleSpans,
   });
 
-  TextStyle get titleStyle => AppStyle.text24.copyWith(
+  TextStyle get titleStyle => AppStyle.text22.copyWith(
     fontWeight: FontWeight.w700,
     color: AppCustomColor.textPrimary,
     height: 1.5,
