@@ -18,7 +18,7 @@ class StartJourneyButton extends StatelessWidget {
         child: InkWell(
           onTap: () {
           AppDI.injector.get<HomeCubit>().initializeData();
-          AppDI.injector.get<UserCubit>().setIsFirstTime(false);
+          AppDI.injector.get<UserCubit>().setIsUserPassOnboarding(false);
           RegisterRoute().go(context);
         },
           borderRadius: BorderRadius.circular(1000.r),
