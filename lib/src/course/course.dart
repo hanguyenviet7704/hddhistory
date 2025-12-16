@@ -2,6 +2,8 @@ library;
 
 //* Package imports
 //* Single project import
+import 'dart:ui' as ui;
+
 import 'package:collection/collection.dart';
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
@@ -62,6 +64,7 @@ part 'presentation/widgets/course/course_tab_chip.dart';
 part 'presentation/widgets/course/course_tabbar.dart';
 part 'presentation/widgets/course/course_tabbar_view.dart';
 part 'presentation/widgets/course/my_course_tab.dart';
+part 'presentation/widgets/course/course_intro_popup.dart';
 part 'presentation/widgets/course/skill_set_tab.dart';
 part 'presentation/widgets/course_roadmap/course_level_content.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';

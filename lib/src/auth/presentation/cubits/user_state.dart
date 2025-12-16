@@ -10,6 +10,7 @@ abstract class UserState with _$UserState {
     @Default(true) bool isAppEventConfigured,
     @Default(true) bool isUserPassOnboarding,
     @Default(true) bool isFirstTimeUserAccessLessonList,
+    @Default(true) bool isFirstTimeUserChooseCourse,
   }) = _UserState;
 
   factory UserState.initial() => UserState();

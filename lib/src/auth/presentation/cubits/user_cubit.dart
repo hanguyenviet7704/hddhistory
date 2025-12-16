@@ -17,6 +17,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   void setIsUserPassOnboarding(bool isUserPassOnboarding) => emit(state.copyWith(isUserPassOnboarding: isUserPassOnboarding));
   void setIsAppEventConfigured(bool isAppEventConfigured) => emit(state.copyWith(isAppEventConfigured: isAppEventConfigured));
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
+  void setIsFirstTimeUserChooseCourse(bool isFirstTimeUserChooseCourse) => emit(state.copyWith(isFirstTimeUserChooseCourse: isFirstTimeUserChooseCourse));
 
   void setAccessToken(String accessToken) {
     AppGlobalValue.accessToken = accessToken;

@@ -65,7 +65,7 @@ dependencies:
   scrollable_positioned_list: ^0.3.8
   record: ^6.1.2
   dotted_border: ^3.1.0
-  timeline_tile_plus: ^0.0.3
+  timeline_tile_plus: ^0.1.0
   fl_chart: ^1.1.1
 
 
@@ -109,7 +109,7 @@ dependencies:
   # App Services 
   # App Storage Services
   hydrated_bloc: ^10.1.1
-  flutter_secure_storage: ^9.2.4
+  flutter_secure_storage: ^10.0.0
   path_provider: ^2.1.5
   
   # Supabase Services
@@ -131,7 +131,7 @@ dependencies:
 
   # App Purchases Services
   in_app_purchase: ^3.2.3
-  in_app_purchase_storekit: ^0.4.6
+  in_app_purchase_storekit: ^0.4.7
   in_app_purchase_android: ^0.4.0+3
   # purchases_flutter: ^8.2.2
 
@@ -146,16 +146,16 @@ dependencies:
 #  geocoding: ^3.0.0
 
   # App Firebase Services
-  firebase_core: ^4.2.1
-  firebase_auth: ^6.1.2
-  firebase_remote_config: ^6.1.2
+  firebase_core: ^4.3.0
+  firebase_auth: ^6.1.3
+  firebase_remote_config: ^6.1.3
 
   # SSO Auth
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
 
   # App Notification Services
-  firebase_messaging: ^16.0.4
+  firebase_messaging: ^16.1.0
   awesome_notifications: ^0.10.1
 
   # App Models and Utils
@@ -185,8 +185,8 @@ dependencies:
 
   # App Tracking Services
   sentry_flutter: ^9.8.0
-  firebase_crashlytics: ^5.0.5
-  firebase_analytics: ^12.0.4
+  firebase_crashlytics: ^5.0.6
+  firebase_analytics: ^12.1.0
 
   # ffmpeg_kit_flutter_new: ^1.1.0
 
@@ -212,14 +212,14 @@ dependencies:
 
   expandable: ^5.0.1
   flutter_cache_manager: ^3.4.1
-  skeletonizer: ^2.1.1
+  skeletonizer: ^2.1.2
   shimmer: ^3.0.0
   simple_ripple_animation: ^0.1.0
   percent_indicator: ^4.2.5
 
   # App External Services
   crypto: ^3.0.7
-  image: ^4.5.4
+  image: ^4.6.0
   vector_graphics: ^1.1.19
   flutter_svg_provider: ^1.0.7
   app_tracking_transparency: ^2.0.6+1

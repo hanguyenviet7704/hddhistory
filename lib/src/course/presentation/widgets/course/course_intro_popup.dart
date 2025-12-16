@@ -1,7 +1,7 @@
-part of '../../../roleplay.dart';
+part of '../../../course.dart';
 
-class RoleplayIntroPopup extends StatefulWidget {
-  const RoleplayIntroPopup({super.key});
+class CourseIntroPopup extends StatefulWidget {
+  const CourseIntroPopup({super.key});
 
   static final List<BaseMultiLanguage> _introDecorations = [
     BaseMultiLanguage(
@@ -33,7 +33,7 @@ class RoleplayIntroPopup extends StatefulWidget {
           opacity: animation,
           child: ScaleTransition(
             scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            child: const RoleplayIntroPopup(),
+            child: const CourseIntroPopup(),
           ),
         );
       },
@@ -41,10 +41,10 @@ class RoleplayIntroPopup extends StatefulWidget {
   }
 
   @override
-  State<RoleplayIntroPopup> createState() => _RoleplayIntroPopupState();
+  State<CourseIntroPopup> createState() => _CourseIntroPopupState();
 }
 
-class _RoleplayIntroPopupState extends State<RoleplayIntroPopup> {
+class _CourseIntroPopupState extends State<CourseIntroPopup> {
   late final PageController _pageController;
   int _currentPage = 0;
 
@@ -117,7 +117,7 @@ class _RoleplayIntroPopupState extends State<RoleplayIntroPopup> {
                               spacing: 10.w,
                             ),
                           ),
-                          40.verticalSpace,
+                          30.verticalSpace,
                         ],
                       ),
                     ),
@@ -146,42 +146,26 @@ class _RoleplayIntroPopupState extends State<RoleplayIntroPopup> {
       return;
     }
 
+    context.read<UserCubit>().setIsFirstTimeUserChooseCourse(false);
     context.pop();
   }
 
   List<_RoleplayIntroStep> _buildSteps(BuildContext context) {
-    final TextStyle subtitleStyle = AppStyle.text16.copyWith(
-      fontWeight: FontWeight.w400,
-      color: AppCustomColor.textTertiary,
-      height: 24 / 16,
-    );
-
     return [
       _RoleplayIntroStep(
-        decorationPath: RoleplayIntroPopup._introDecorations[0].text,
+        decorationPath: CourseIntroPopup._introDecorations[0].text,
         title: context.text.roleplay.rolePlayIntroPopupTitle1,
-        subtitleSpans: [
-          TextSpan(text: context.text.roleplay.rolePlayIntroPopupSubtitle1Prefix, style: subtitleStyle),
-          if (context.text.roleplay.rolePlayIntroPopupSubtitle1Highlight.isNotEmpty)
-            TextSpan(
-              text: ' ${context.text.roleplay.rolePlayIntroPopupSubtitle1Highlight}',
-              style: subtitleStyle.copyWith(fontWeight: FontWeight.w700),
-            ),
-        ],
+        subtitle: context.text.roleplay.rolePlayIntroPopupSubtitle1,
       ),
       _RoleplayIntroStep(
-        decorationPath: RoleplayIntroPopup._introDecorations[1].text,
+        decorationPath: CourseIntroPopup._introDecorations[1].text,
         title: context.text.roleplay.rolePlayIntroPopupTitle2,
-        subtitleSpans: [
-          TextSpan(text: context.text.roleplay.rolePlayIntroPopupSubtitle2, style: subtitleStyle),
-        ],
+        subtitle: context.text.roleplay.rolePlayIntroPopupSubtitle2,
       ),
       _RoleplayIntroStep(
-        decorationPath: RoleplayIntroPopup._introDecorations[2].text,
+        decorationPath: CourseIntroPopup._introDecorations[2].text,
         title: context.text.roleplay.rolePlayIntroPopupTitle3,
-        subtitleSpans: [
-          TextSpan(text: context.text.roleplay.rolePlayIntroPopupSubtitle3, style: subtitleStyle),
-        ],
+        subtitle: context.text.roleplay.rolePlayIntroPopupSubtitle3,
       ),
     ];
   }
@@ -220,15 +204,12 @@ class _IntroStepContent extends StatelessWidget {
                 style: step.titleStyle,
               ),
               8.verticalSpace,
-              RichText(
+              AppText(
+                step.subtitle,
+                maxLines: 3,
                 textAlign: TextAlign.center,
-                text: TextSpan(
-                  style: AppStyle.text14.copyWith(
-                    fontWeight: FontWeight.w400,
-                    color: AppCustomColor.textTertiary,
-                    height: 24 / 16,
-                  ),
-                  children: step.subtitleSpans,
+                style: AppStyle.text14.copyWith(
+                  color: AppCustomColor.textTertiary,
                 ),
               ),
             ],
@@ -242,12 +223,12 @@ class _IntroStepContent extends StatelessWidget {
 class _RoleplayIntroStep {
   final String decorationPath;
   final String title;
-  final List<InlineSpan> subtitleSpans;
+  final String subtitle;
 
   const _RoleplayIntroStep({
     required this.decorationPath,
     required this.title,
-    required this.subtitleSpans,
+    required this.subtitle,
   });
 
   TextStyle get titleStyle => AppStyle.text22.copyWith(
