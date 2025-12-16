@@ -216,7 +216,6 @@ class _IntroStepContent extends StatelessWidget {
               AppText(
                 step.title,
                 maxLines: 2,
-                enableFitScaleDown: true,
                 textAlign: TextAlign.center,
                 style: step.titleStyle,
               ),
