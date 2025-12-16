@@ -1,4 +1,4 @@
-part of '../../onboard.dart';
+part of '../../../onboard.dart';
 
 enum OnboardStatus { initial, loading, success, failure }
 
@@ -14,4 +14,13 @@ abstract class OnboardState with _$OnboardState {
   factory OnboardState.initial() => OnboardState();
 
   factory OnboardState.fromJson(Map<String, dynamic> json) => _$OnboardStateFromJson(json);
+}
+
+extension OnboardStateExtension on OnboardState {
+  List<OnboardMotivationEntity> get motivations => [
+    onboardData.welcome,
+    onboardData.motivationOne,
+    onboardData.motivationTwo,
+    onboardData.motivationThree,
+  ];
 }

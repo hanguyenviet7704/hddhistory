@@ -14,7 +14,7 @@ class LessonLayout extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
+      body: SafePage(
         child: Unfocused(
           child: Stack(
             children: [

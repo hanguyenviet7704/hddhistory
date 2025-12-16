@@ -34,7 +34,7 @@ class CourseCard extends StatelessWidget {
         child: Row(
           children: [
             // Course image
-            DCachedImage(
+            CacheNetworkGraphic(
               url: course.image,
               width: 80.w,
               height: 80.w,

@@ -14,7 +14,7 @@ class LessonBadge extends StatelessWidget {
           return Row(
             spacing: 6.w,
             children: [
-              DCachedImage(
+              CacheNetworkGraphic(
                 url: tag.url,
                 width: 20.w,
                 height: 20.w,

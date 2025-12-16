@@ -32,7 +32,7 @@ class _UserSubcriptionPageState extends State<UserSubcriptionPage> {
                   12.verticalSpace,
                   _CurrentPlanRow(
                     actionLabel: hasSubscription ? t.monetization.manageChangeCta : t.monetization.manageUpgradeCta,
-                    onAction: () => const PaywallRoute().push(context),
+                    onAction: () => const PaywallRoute().replace(context),
                   ),
                   12.verticalSpace,
                   hasSubscription ? UserSubscriptionActiveCard(subscription: subscription!) : const UserSubscriptionEmptyState(),

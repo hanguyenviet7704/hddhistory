@@ -30,7 +30,7 @@ class RoleplayHintCard extends StatelessWidget {
               children: [
                 if (hint.icon.isNotEmpty) ...[
                   WidgetSpan(
-                    child: DCachedImage(url: hint.icon, height: 16.h),
+                    child: CacheNetworkGraphic(url: hint.icon, height: 16.h),
                   ),
                   WidgetSpan(child: 6.horizontalSpace),
                 ],

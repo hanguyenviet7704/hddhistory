@@ -22,8 +22,7 @@ class NameCollectBody extends StatelessWidget {
             height: 1.4,
           ),
         ),
-
-        Spacer(),
+        20.verticalSpace,
         OnboardingInput(
           hintText: context.text.onboarding.onboardingUserNamePlaceholder,
           controller: context.read<DataCollectCubit>().nameController,

@@ -93,6 +93,7 @@ class IAPService implements IIapService {
   @override
   Future<void> completePurchase(PurchaseDetails purchaseDetails) async {
     _safeCall(() async {
+      // Complete/acknowledge only when the SDK reports it pending.
       // if (!purchaseDetails.pendingCompletePurchase) return;
       await _inAppPurchase.completePurchase(purchaseDetails);
     });

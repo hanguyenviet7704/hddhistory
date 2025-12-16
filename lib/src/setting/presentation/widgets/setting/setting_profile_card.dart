@@ -101,7 +101,7 @@ class _SettingProfileAvatar extends StatelessWidget {
         width: size,
         height: size,
         child: ClipOval(
-          child: AnyImageWidget(
+          child: CacheNetworkGraphic(
             url: user.avatar,
             width: size,
             height: size,

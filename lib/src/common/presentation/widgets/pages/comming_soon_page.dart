@@ -10,42 +10,57 @@ class CommingSoonPage extends StatelessWidget {
         decoration: BoxDecoration(
           image: DecorationImage(
             image: AssetImage(AppAsset.images.common.commingSoonBg.path),
-            fit: BoxFit.fill,
+            fit: BoxFit.cover,
           ),
         ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            SizedBox(width: double.infinity),
-            // Image.asset(AppAsset.images.common.commingSoonIntro.path, height: 391.h),
-            40.verticalSpace,
-            AppText(
-              'context.text.fakedoorComingSoon',
-              style: AppStyle.text40.copyWith(color: AppColorLight.surface),
-            ),
-            20.verticalSpace,
-            AppText(
-              'context.text.fakedoorFeaturesNameIsAlmostReady(featuresName: Art Story)',
-              style: AppStyle.text24.copyWith(color: AppColorLight.surface),
-              maxLines: 2,
-              textAlign: TextAlign.center,
-            ),
-            40.verticalSpace,
-            Row(
+        child: SafeArea(
+          child: Padding(
+            padding: EdgeInsets.symmetric(horizontal: 24.w),
+            child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AppButton.secondary(
-                  onPressed: () => context.back(),
-                  child: 'context.text.fakedoorIDoNotWantNotifications',
+                40.verticalSpace,
+                AppText(
+                  context.text.common.fakedoorComingSoon,
+                  style: AppStyle.text40.copyWith(color: AppColorLight.surface),
+                  textAlign: TextAlign.center,
                 ),
-                24.horizontalSpace,
-                AppButton.primary(
-                  onPressed: () => context.back(),
-                  child: 'context.text.fakedoorNotifyMe',
+                20.verticalSpace,
+                Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.w),
+                  child: AppText(
+                    context.text.common.fakedoorFeaturesNameIsAlmostReady(featuresName: 'Art Story'),
+                    style: AppStyle.text24.copyWith(color: AppColorLight.surface),
+                    maxLines: 2,
+                    textAlign: TextAlign.center,
+                  ),
                 ),
+                40.verticalSpace,
+                Wrap(
+                  alignment: WrapAlignment.center,
+                  spacing: 16.w,
+                  runSpacing: 16.h,
+                  children: [
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width > 400 ? null : double.infinity,
+                      child: AppButton.secondary(
+                        onPressed: () => context.back(),
+                        child: context.text.common.fakedoorIDoNotWantNotifications,
+                      ),
+                    ),
+                    SizedBox(
+                      width: MediaQuery.of(context).size.width > 400 ? null : double.infinity,
+                      child: AppButton.primary(
+                        onPressed: () => context.back(),
+                        child: context.text.common.fakedoorNotifyMe,
+                      ),
+                    ),
+                  ],
+                ),
+                40.verticalSpace,
               ],
             ),
-          ],
+          ),
         ),
       ),
     );

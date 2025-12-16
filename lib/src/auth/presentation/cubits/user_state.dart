@@ -7,9 +7,10 @@ abstract class UserState with _$UserState {
   const factory UserState({
     @Default(UserStatus.initial) UserStatus status,
     @Default(AuthEntity()) AuthEntity auth,
-    @Default(true) bool isFirstTimeUserRunApp,
-    @Default(true) bool isFirstTimeUserAccessApp,
+    @Default(true) bool isAppEventConfigured,
+    @Default(true) bool isUserPassOnboarding,
     @Default(true) bool isFirstTimeUserAccessLessonList,
+    @Default(true) bool isFirstTimeUserChooseCourse,
   }) = _UserState;
 
   factory UserState.initial() => UserState();

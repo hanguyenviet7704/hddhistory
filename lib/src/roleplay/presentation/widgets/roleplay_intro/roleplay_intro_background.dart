@@ -18,7 +18,7 @@ class RoleplayIntroBackground extends StatelessWidget {
           if (imageUrl.isNotEmpty)
             ImageFiltered(
               imageFilter: ui.ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-              child: DCachedImage(
+              child: CacheNetworkGraphic(
                 url: imageUrl,
                 width: double.infinity,
                 height: double.infinity,

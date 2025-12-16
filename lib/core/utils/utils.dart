@@ -10,6 +10,7 @@ import 'package:darq/darq.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter_cache_manager/flutter_cache_manager.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -19,11 +20,13 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart' as df;
 //* Import all dependency here
+import 'package:lottie/lottie.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:skeletonizer/skeletonizer.dart' as sk;
 import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 //* Import all files here
+import '../../config/di/di.dart';
 import '../../config/routes/routes.dart';
 import '../../config/services/services.dart';
 import '../../config/themes/themes.dart';
@@ -44,9 +47,10 @@ part 'button/cta_button.dart';
 part 'button/gradient_button.dart';
 //* Export all decoration files
 part 'decoration/gradient_indicator.dart';
-part 'images/any_image_widget.dart';
+part 'images/cache_network_graphic.dart';
 //* Export all images files
 part 'images/cache_image.dart';
+part 'images/cache_lottie.dart';
 part 'images/container_image.dart';
 part 'images/image_view_page.dart';
 part 'images/network_avatar.dart';
@@ -100,8 +104,8 @@ part 'webview/web_view.dart';
 part 'wrap/gradient_box_border.dart';
 part 'wrap/gradient_typography.dart';
 part 'wrap/load_more.dart';
-part 'wrap/unfocused.dart';
 part 'wrap/safe_body.dart';
+part 'wrap/unfocused.dart';
 // part 'wrap/loading_wrap.dart';
 
 // import 'package:flutter_widget_from_html_core/flutter_widget_from_html_core.dart';

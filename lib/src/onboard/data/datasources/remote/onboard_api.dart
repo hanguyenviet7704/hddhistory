@@ -8,19 +8,4 @@ abstract class OnboardApi {
 
   @GET(AppEndpoint.onboardings)
   Future<BaseResponse<OnboardModel>> getAllOnboard();
-
-  @GET(AppEndpoint.onboardingsById)
-  Future<BaseResponse<OnboardModel>> getOnboard(@Path('id') String id);
-
-  @POST(AppEndpoint.onboardings)
-  Future<BaseResponse<OnboardModel>> createOnboard(@Body() Map<String, dynamic> body);
-
-  @PUT(AppEndpoint.onboardingsById)
-  Future<BaseResponse<OnboardModel>> updateOnboard(
-    @Path('id') String id,
-    @Body() Map<String, dynamic> body,
-  );
-
-  @DELETE(AppEndpoint.onboardingsById)
-  Future<BaseResponse<void>> deleteOnboard(@Path('id') String id);
 }

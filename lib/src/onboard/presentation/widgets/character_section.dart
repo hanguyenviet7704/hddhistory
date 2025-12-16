@@ -90,7 +90,7 @@ class CharacterIllustration extends StatelessWidget {
             child: child,
           );
         },
-        child: DCachedImage(
+        child: CacheNetworkGraphic(
           key: ValueKey<String>(iconPath),
           url: iconPath,
           height: 210.h,

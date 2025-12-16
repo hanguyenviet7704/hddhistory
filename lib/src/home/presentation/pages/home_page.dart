@@ -34,8 +34,9 @@ class HomePage extends StatelessWidget {
                         4.verticalSpace,
                         AppText(
                           context.text.home.continueLearning,
+                          enableFitScaleDown: true,
                           margin: EdgeInsets.symmetric(horizontal: 20.w),
-                          style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+                          style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
                         ),
                         12.verticalSpace,
                         // Course cards horizontal scroll
@@ -60,8 +61,8 @@ class HomePage extends StatelessWidget {
 
                 // Skillsets section
                 SectionHeaderWidget(
-                  title: context.text.home.homeAllCourseButton,
-                  actionText: context.text.home.homeCourseButton,
+                  title: context.text.home.homeRecommendCourse,
+                  actionText: context.text.home.homeSeeAllLearningListButton,
                   onActionTap: () => CourseRoute().push(context),
                 ),
                 16.verticalSpace,

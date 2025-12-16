@@ -12,7 +12,7 @@ mixin RoutePath {
   //* Splash
   static const String splash = '/splash';
   static const String chooseLanguage = '/choose-language';
-  static const String intro = '/intro';
+  static const String onboardIntroduce = '/onboard-introduce';
   static const String noAuth = '/no-auth';
 
   //* Monetization
@@ -22,7 +22,8 @@ mixin RoutePath {
   //* Onboard
   static const String onboard = '/onboard';
   static const String dataCollect = '/data-collect';
-  static const String dataCollectMotivationStep = '/data-collect-motivation-step';
+  static const String dataCollectMotivationStep = '/data-collect-motivation-step/:step';
+  static const String dataCollectFeedback = '/data-collect-feedback';
   static const String dataCollectSummary = '/data-collect-summary';
 
   //* Auth
@@ -37,12 +38,12 @@ mixin RoutePath {
   //* Home
   static const String home = '/';
 
-
   //* Course
   static const String course = '/course';
   static const String courseRoadmap = '/course-roadmap';
   static const String lessonList = 'lesson-list';
   static const String lessonExplainPopup = 'lesson-explain-popup';
+  static const String courseLessonEmptyNotiPopup = 'course-lesson-empty-noti-popup';
 
   //? Course - Lesson
   static const String lesson = 'lesson';
@@ -52,6 +53,7 @@ mixin RoutePath {
   static const String exerciseResultPopup = 'exercise-result-popup';
 
   //? Course - Roleplay
+  static const String roleplayIntroPopup = 'roleplay-intro-popup';
   static const String roleplayIntro = 'roleplay-intro';
   static const String roleplay = 'roleplay';
   static const String roleplayFeedback = 'roleplay-feedback';
@@ -78,7 +80,7 @@ mixin RouteNamed {
   //* Splash Screen
   static const String splash = 'Splash Page';
   static const String chooseLanguage = 'Choose Language Page';
-  static const String intro = 'Intro Page';
+  static const String onboardIntroduce = 'Onboard Introduce Page';
   static const String noAuth = 'No Auth Page';
 
   //* Monetization
@@ -89,6 +91,7 @@ mixin RouteNamed {
   static const String onboard = 'Onboard Page';
   static const String dataCollect = 'Data Collect Page';
   static const String dataCollectMotivationStep = 'Data Collect Motivation Step Page';
+  static const String dataCollectFeedback = 'Data Collect Feedback Page';
   static const String dataCollectSummary = 'Data Collect Summary Page';
 
   //* Auth
@@ -108,6 +111,7 @@ mixin RouteNamed {
   static const String courseRoadmap = 'Course Roadmap';
   static const String lessonList = 'Lesson List';
   static const String lessonExplainPopup = 'Lesson Explain Popup';
+  static const String courseLessonEmptyNotiPopup = 'Course Lesson Empty Noti Popup';
 
   //? Course - Lesson
   static const String lesson = 'Lesson';
@@ -117,6 +121,7 @@ mixin RouteNamed {
   static const String exerciseResultPopup = 'Exercise Result Popup';
 
   //? Course - Roleplay
+  static const String roleplayIntroPopup = 'Roleplay Intro Popup';
   static const String roleplay = 'Roleplay';
   static const String roleplayIntro = 'Roleplay Intro';
   static const String roleplayFeedback = 'Roleplay Feedback';
@@ -125,7 +130,7 @@ mixin RouteNamed {
   //* Setting
   static const String setting = 'Setting';
   static const String profile = 'Profile';
-  static const String notification = 'Notification';    
+  static const String notification = 'Notification';
   static const String changeLanguage = 'Change Language';
   static const String manageSubscription = 'Manage Subscription';
   static const String profileDeleteDialog = 'Profile Delete Dialog';

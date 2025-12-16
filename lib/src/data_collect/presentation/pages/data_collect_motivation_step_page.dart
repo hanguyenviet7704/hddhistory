@@ -1,105 +1,94 @@
 part of '../../data_collect.dart';
 
+/// Shows a single motivation slide. The caller pushes this route with the
+/// desired [step] so we don't reveal all slides at once.
 class DataCollectMotivationStepPage extends StatelessWidget {
-  const DataCollectMotivationStepPage({super.key});
+  /// 0: welcome, 1: motivationOne, 2: motivationTwo, 3: motivationThree
+  final int step;
+
+  const DataCollectMotivationStepPage({super.key, required this.step});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFC7C5FA), // Border/Brand
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Content
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.all(20.w),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    // Illustration
-                    Image.asset(
-                      width: 245.w,
-                      AppAsset.images.common.birdWing.path,
-                      fit: BoxFit.contain,
-                    ),
+    return BlocBuilder<DataCollectCubit, DataCollectState>(
+      builder: (context, state) {
+        final slide = _buildSlide(context, state);
 
-                    32.verticalSpace,
-
-                    // Title and subtitle
-                    Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 20.w),
-                      child: Column(
-                        children: [
-                          AppText(
-                            context.text.onboarding.onboardingAfterOnboardEncourageTitle,
-                            textAlign: TextAlign.center,
-                            maxLines: 2,
-                            style: AppStyle.textBold24.copyWith(
-                              color: Colors.white, // Text/White
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-
-                          AppText(
-                            context.text.onboarding.onboardingAfterOnboardEncourageMessage,
-                            maxLines: 3,
-                            textAlign: TextAlign.center,
-                            style: AppStyle.textBold20.copyWith(
-                              color: const Color(0xFF362F82), // Brand/Brand/Primary/700
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                          12.verticalSpace,
-                          // Description
-                          AppText(
-                            context.text.onboarding.onboardingAfterOnboardEncourageSubText,
-                            maxLines: 3,
-                            textAlign: TextAlign.center,
-                            style: AppStyle.text14.copyWith(
-                              color: const Color(0xFF362F82).op(0.6), // Brand/Brand/Primary/700 with 60% opacity
-                              fontWeight: FontWeight.w400,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          value: slide.isDark ? SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent) : SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
+          child: GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            // onTap: () => _handleTap(context),
+            child: Scaffold(
+              backgroundColor: slide.backgroundColor,
+              body: SafeArea(
+                child: MotivationStepContent(
+                  imageUrl: slide.imageUrl,
+                  title: slide.title,
+                  subtitle: slide.subtitle,
+                  isDarkBackground: slide.isDark,
+                  onSkip: () => _handleTap(context),
                 ),
               ),
             ),
-
-            Container(
-              margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
-              width: double.infinity,
-              height: 54.h,
-              decoration: BoxDecoration(
-                color: const Color(0xFF554FF0),
-                borderRadius: BorderRadius.circular(1000.r),
-              ),
-              child: Material(
-                color: Colors.transparent,
-                child: InkWell(
-                  onTap: () {
-                  DataCollectRoute().go(context);
-                },
-                  borderRadius: BorderRadius.circular(1000.r),
-                  child: Center(
-                child: AppText(
-                  context.text.onboarding.onboardingSkipGreetingButton,
-                      style: AppStyle.text16.copyWith(
-                    fontWeight: FontWeight.w600,
-                        color: Colors.white,
-                        height: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
+
+  void _handleTap(BuildContext context) {
+    if (step == 3) {
+      DataCollectSummaryRoute().go(context);
+      return;
+    }
+
+    context.read<DataCollectCubit>().goToNextStep();
+    context.back();
+  }
+
+  _MotivationSlide _buildSlide(BuildContext context, DataCollectState state) {
+    final userName = state.userName ?? context.read<DataCollectCubit>().nameController.text;
+    final List<OnboardMotivationEntity> motivations = context.read<OnboardCubit>().state.motivations;
+
+    final motivation = (step >= 0 && step < motivations.length) ? motivations[step] : const OnboardMotivationEntity();
+
+    final title = _localTitle(context, userName);
+
+    final bool isDark = step == 0;
+    final Color background = isDark ? AppCustomColor.textBrand : AppCustomColor.brandPrimary50;
+
+    return _MotivationSlide(
+      title: title,
+      subtitle: motivation.content.text,
+      imageUrl: motivation.image.isNotEmpty ? motivation.image : AppAsset.images.common.birdWing.path,
+      backgroundColor: background,
+      isDark: isDark,
+    );
+  }
+
+  String _localTitle(BuildContext context, String? userName) {
+    return switch (step) {
+      0 => context.text.onboarding.onboardingMotivationWelcomeTitle(userName: userName ?? ''),
+      1 => context.text.onboarding.onboardingMotivationOneTitle(userName: userName ?? ''),
+      2 => context.text.onboarding.onboardingMotivationTwoTitle(userName: userName ?? ''),
+      _ => context.text.onboarding.onboardingMotivationThreeTitle,
+    };
+  }
+}
+
+class _MotivationSlide {
+  final String title;
+  final String subtitle;
+  final String imageUrl;
+  final Color backgroundColor;
+  final bool isDark;
+
+  _MotivationSlide({
+    required this.title,
+    required this.subtitle,
+    required this.imageUrl,
+    required this.backgroundColor,
+    required this.isDark,
+  });
 }

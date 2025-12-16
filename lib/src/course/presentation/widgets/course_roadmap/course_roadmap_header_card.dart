@@ -32,10 +32,12 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                 children: [
                   AppText(
                     homeState.courseName,
+                    textWidthBasis: TextWidthBasis.longestLine,
                     style: AppStyle.text24.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppCustomColor.textPrimary,
                     ),
+                    textAlign: TextAlign.center,
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

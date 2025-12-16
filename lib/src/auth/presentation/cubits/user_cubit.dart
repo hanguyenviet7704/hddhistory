@@ -14,9 +14,10 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   @override
   Map<String, dynamic> toJson(UserState state) => state.toJson();
 
-  void setIsFirstTime(bool isFirstTime) => emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
-  void setIsFirstTimeUserRunApp(bool isFirstTimeUserRunApp) => emit(state.copyWith(isFirstTimeUserRunApp: isFirstTimeUserRunApp));
+  void setIsUserPassOnboarding(bool isUserPassOnboarding) => emit(state.copyWith(isUserPassOnboarding: isUserPassOnboarding));
+  void setIsAppEventConfigured(bool isAppEventConfigured) => emit(state.copyWith(isAppEventConfigured: isAppEventConfigured));
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
+  void setIsFirstTimeUserChooseCourse(bool isFirstTimeUserChooseCourse) => emit(state.copyWith(isFirstTimeUserChooseCourse: isFirstTimeUserChooseCourse));
 
   void setAccessToken(String accessToken) {
     AppGlobalValue.accessToken = accessToken;
@@ -44,10 +45,10 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   }
 
   Future<void> clearData() async {
-    bool isFirstTime = state.isFirstTimeUserAccessApp;
+    bool isUserPassOnboarding = state.isUserPassOnboarding;
     emit(UserState.initial());
     AppDI.injector.get<ProfileCubit>().reset();
-    emit(state.copyWith(isFirstTimeUserAccessApp: isFirstTime));
+    emit(state.copyWith(isUserPassOnboarding: isUserPassOnboarding));
     _appTrackingService.setUserId(null);
     _appTrackingService.setUserProperties({});
   }

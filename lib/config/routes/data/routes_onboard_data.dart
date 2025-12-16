@@ -26,13 +26,35 @@ class DataCollectRoute extends GoRouteData with $DataCollectRoute {
 
 @TypedGoRoute<DataCollectMotivationStepRoute>(path: RoutePath.dataCollectMotivationStep, name: RouteNamed.dataCollectMotivationStep)
 class DataCollectMotivationStepRoute extends BaseTransitionRouteData with $DataCollectMotivationStepRoute {
-  const DataCollectMotivationStepRoute();
+  const DataCollectMotivationStepRoute({required this.step});
+
+  final int step;
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => const DataCollectMotivationStepPage();
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<DataCollectCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
+    ],
+    child: DataCollectMotivationStepPage(step: step),
+  );
+}
+
+@TypedGoRoute<DataCollectFeedbackRoute>(path: RoutePath.dataCollectFeedback, name: RouteNamed.dataCollectFeedback)
+class DataCollectFeedbackRoute extends BaseTransitionRouteData with $DataCollectFeedbackRoute {
+  const DataCollectFeedbackRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<DataCollectCubit>(),
+    child: const DataCollectFeedbackPage(),
+  );
 }
 
 @TypedGoRoute<DataCollectSummaryRoute>(path: RoutePath.dataCollectSummary, name: RouteNamed.dataCollectSummary)
@@ -40,8 +62,11 @@ class DataCollectSummaryRoute extends GoRouteData with $DataCollectSummaryRoute 
   const DataCollectSummaryRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<DataCollectCubit>(),
+  Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<DataCollectCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
+    ],
     child: const DataCollectSummaryPage(),
   );
 }

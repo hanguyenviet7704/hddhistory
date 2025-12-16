@@ -11,11 +11,10 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     // _requestTrackingPermission();
-    _initPurchaseListener();
     _configAppLocalization();
-    _getAppData();
-    _setTrackingUser();
     _onboardingUser();
+    _setTrackingUser();
+    _getAppData();
     _checkForUpdate();
     super.initState();
   }
@@ -24,42 +23,25 @@ class _SplashPageState extends State<SplashPage> {
   //   AppService.instance.appEventService.requestTrackingPermission();
   // }
 
-  void _initPurchaseListener() {
-    // Ensure the global purchase listener is attached as early as possible and only once per app session.
-    AppDI.injector.get<IapCubit>().init();
-  }
-
   Future<void> _configAppLocalization() async {
-    bool isFirstTimeUserAccessApp = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
-    if (!isFirstTimeUserAccessApp) return;
+    bool isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
+    if (!isUserPassOnboarding) return;
     AppLocale locale = await LocaleSettings.useDeviceLocale();
+
     if (!mounted) return;
     context.read<LocaleCubit>().setLocale(locale);
   }
 
-  void _getAppData() async {
-    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
-    UserState userState = context.read<UserCubit>().state;
-    AppGlobalValue.accessToken = userState.accessToken;
-    AppGlobalValue.refreshToken = userState.refreshToken;
-
-    if (!mounted) return;
-    // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
-
-    // context.read<IAPCubit>().loadIapProducts();
-    context.read<PageCubit>().setIsPassSplashScreen(true);
-    // context.read<HandfeelingCubit>().getBrushes();
+  void _setTrackingUser() {
+    context.read<UserCubit>().setTrackingUser();
   }
 
   void _onboardingUser() {
-    bool isFirstTimeUserRunApp = context.read<UserCubit>().state.isFirstTimeUserRunApp;
-    if (!isFirstTimeUserRunApp) return;
+    //* This is for setup tracking user by tiktok and facebook app events
+    bool isAppEventConfigured = context.read<UserCubit>().state.isAppEventConfigured;
+    if (!isAppEventConfigured) return;
+    context.read<UserCubit>().setIsAppEventConfigured(false);
     AppService.instance.appEventService.logAppInstall();
-    context.read<UserCubit>().setIsFirstTimeUserRunApp(false);
-  }
-
-  void _setTrackingUser() {
-    context.read<UserCubit>().setTrackingUser();
   }
 
   Future<void> _checkForUpdate() async {
@@ -80,63 +62,65 @@ class _SplashPageState extends State<SplashPage> {
     }
   }
 
-  void _trackingDrawWelcomeScrView(String viewSource) {
-    AppService.instance.appTrackingService.trackEvent(
-      TrackingKey.drawWelcomeScrView,
-      parameters: {
-        'source': viewSource,
-      },
-    );
+  void _getAppData() async {
+    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
+    UserState userState = context.read<UserCubit>().state;
+    AppGlobalValue.accessToken = userState.accessToken;
+    AppGlobalValue.refreshToken = userState.refreshToken;
+
+    // if (!mounted) return;
+    // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
+
+    context.read<IapCubit>().init();
+    context.read<PageCubit>().setIsPassSplashScreen(true);
+
+    if (AppGlobalValue.accessToken.isEmpty) return;
+    AppDI.injector.get<HomeCubit>().initializeData();
   }
 
   void _initScreen(_) async {
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
 
-    if (!mounted) return;
     bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
     if (isInitialLink) return;
 
     if (!mounted) return;
-    bool isFirstTime = context.read<UserCubit>().state.isFirstTimeUserAccessApp;
-    if (isFirstTime) {
-      _trackingDrawWelcomeScrView('first_time');
-    }
-    if (AppGlobalValue.accessToken.isEmpty) {
-      if (isFirstTime) {
-        ChooseLanguageRoute().go(context);
-        return;
-      }
+    bool isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
 
-      RegisterRoute().go(context);
-      return;
-    }
-
-    AppDI.injector.get<HomeCubit>().initializeData();
-    String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
     Future.delayed(const Duration(milliseconds: 3000), () async {
       if (!mounted) return;
 
-      if (roadmapId.isEmpty) {
-        CourseRoute().go(context);
+      if (AppGlobalValue.accessToken.isEmpty) {
+        if (isUserPassOnboarding) {
+          OnboardIntroduceRoute().go(context);
+          return;
+        }
+
+        RegisterRoute().go(context);
         return;
       }
 
-      HomeRoute().go(context);
+      String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
+      Future.delayed(const Duration(milliseconds: 3000), () async {
+        if (!mounted) return;
+
+        if (roadmapId.isEmpty) {
+          CourseRoute().go(context);
+          return;
+        }
+
+        HomeRoute().go(context);
+      });
     });
   }
 
   void _handleUpdatePressed() async {
     try {
       final String appStoreUrl = Platform.isIOS
-          ? 'https://apps.apple.com/us/app/meup-learn-how-to-draw/id6745777751' // Replace with your App Store ID
+          ? 'http://apps.apple.com/us/app/meup-up-your-skills/id6755175330' // Replace with your App Store ID
           : 'https://play.google.com/store/apps/details?id=com.eup.meup'; // Replace with your package name
 
-      if (await canLaunchUrl(Uri.parse(appStoreUrl))) {
-        await launchUrl(
-          Uri.parse(appStoreUrl),
-          mode: LaunchMode.externalApplication,
-        );
-      }
+      appStoreUrl.launchURL();
     } catch (e) {
       LogDev.error('Error launching app store: $e');
     }
@@ -151,7 +135,7 @@ class _SplashPageState extends State<SplashPage> {
       ),
     );
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -162,7 +146,6 @@ class _SplashPageState extends State<SplashPage> {
           child: Image.asset(
             AppAsset.images.common.mainIcon.path,
             width: 100.w,
-            height: 100.w,
           ).animate().fadeIn(duration: 0.8.seconds),
         ),
       ),

@@ -26,15 +26,14 @@ class DocumentWidget extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(16.w),
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      margin: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 0),
       decoration: ShapeDecoration(
         color: AppColorLight.surface,
         shape: RoundedRectangleBorder(
-          side: BorderSide(
-            width: 2.w,
-            color: const Color(0xFFE3E8EF),
-          ),
+          // side: BorderSide(
+          //   width: 2.w,
+          //   color: const Color(0xFFE3E8EF),
+          // ),
           borderRadius: BorderRadius.circular(16.r),
         ),
       ),

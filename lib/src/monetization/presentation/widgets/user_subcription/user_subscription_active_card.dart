@@ -8,8 +8,6 @@ class UserSubscriptionActiveCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = t.monetization;
-    final planName = _planName(subscription.productId, text);
-    final statusLabel = _statusLabel(subscription.status, text);
     final nextBilling = _nextBillingText(
       productId: subscription.productId,
       date: subscription.currentPeriodEnd,
@@ -36,7 +34,7 @@ class UserSubscriptionActiveCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           AppText(
-            planName,
+            subscription.product.title,
             maxLines: 1,
             textAlign: TextAlign.center,
             style: AppStyle.text16.copyWith(
@@ -45,22 +43,13 @@ class UserSubscriptionActiveCard extends StatelessWidget {
               height: 1.5,
             ),
           ),
-          6.verticalSpace,
-          AppText(
-            statusLabel,
-            maxLines: 1,
-            textAlign: TextAlign.center,
-            style: AppStyle.text12.copyWith(
-              fontWeight: FontWeight.w600,
-              color: AppCustomColor.brandPrimary,
-              height: 1.5,
-            ),
-          ),
+
           8.verticalSpace,
           AppText(
             nextBilling,
-            maxLines: 1,
+            maxLines: 3,
             textAlign: TextAlign.center,
+            enableFitScaleDown: true,
             style: AppStyle.text14.copyWith(
               fontWeight: FontWeight.w500,
               color: AppCustomColor.textSecondary,
@@ -70,15 +59,6 @@ class UserSubscriptionActiveCard extends StatelessWidget {
         ],
       ),
     );
-  }
-
-  String _planName(String productId, TranslationsMonetizationEn text) {
-    final id = productId.toLowerCase();
-    if (id.contains('year')) return text.managePlanYearly;
-    if (id.contains('month')) return text.managePlanMonthly;
-    if (id.contains('week')) return text.managePlanWeekly;
-    if (id.contains('life')) return text.managePlanLifetime;
-    return text.manageDefaultPlan;
   }
 
   String _nextBillingText({
@@ -94,20 +74,5 @@ class UserSubscriptionActiveCard extends StatelessWidget {
     final locale = Localizations.localeOf(context).toLanguageTag();
     final formatted = DateFormat.yMMMMd(locale).format(date.toLocal());
     return text.manageNextBillingOn(date: formatted);
-  }
-
-  String _statusLabel(SubscriptionStatus status, TranslationsMonetizationEn text) {
-    switch (status) {
-      case SubscriptionStatus.active:
-        return text.manageStatusActive;
-      case SubscriptionStatus.grace:
-        return text.manageStatusGrace;
-      case SubscriptionStatus.onHold:
-        return text.manageStatusOnHold;
-      case SubscriptionStatus.canceled:
-        return text.manageStatusCanceled;
-      case SubscriptionStatus.expired:
-        return text.manageStatusExpired;
-    }
   }
 }

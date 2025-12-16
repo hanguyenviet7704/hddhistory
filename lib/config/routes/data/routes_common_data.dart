@@ -26,22 +26,16 @@ class SplashRoute extends GoRouteData with $SplashRoute {
   const SplashRoute();
 
   @override
-  Widget build(BuildContext context, GoRouterState state) => const SplashPage();
-}
-
-//* Choose Language Page
-@TypedGoRoute<ChooseLanguageRoute>(path: RoutePath.chooseLanguage, name: RouteNamed.chooseLanguage)
-class ChooseLanguageRoute extends GoRouteData with $ChooseLanguageRoute {
-  const ChooseLanguageRoute();
-
-  @override
-  Widget build(BuildContext context, GoRouterState state) => const ChooseLanguagePage();
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<IapCubit>(),
+    child: const SplashPage(),
+  );
 }
 
 //* Intro Page
-@TypedGoRoute<IntroRoute>(path: RoutePath.intro, name: RouteNamed.intro)
-class IntroRoute extends GoRouteData with $IntroRoute {
-  const IntroRoute();
+@TypedGoRoute<OnboardIntroduceRoute>(path: RoutePath.onboardIntroduce, name: RouteNamed.onboardIntroduce)
+class OnboardIntroduceRoute extends GoRouteData with $OnboardIntroduceRoute {
+  const OnboardIntroduceRoute();
 
   @override
   Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
@@ -49,7 +43,7 @@ class IntroRoute extends GoRouteData with $IntroRoute {
       BlocProvider.value(value: AppDI.injector.get<IntroCubit>()),
       BlocProvider.value(value: AppDI.injector.get<OnboardCubit>()),
     ],
-    child: const IntroPage(),
+    child: const OnboardIntroducePage(),
   );
 }
 

@@ -4,19 +4,18 @@ part of '../../data_collect.dart';
 abstract class DataCollectState with _$DataCollectState {
   const factory DataCollectState({
     @Default(DataCollectStatus.initial) DataCollectStatus status,
-    @Default(DataCollectStep.name) DataCollectStep currentStep,
+    @Default(DataCollectStep.collectName) DataCollectStep currentStep,
     String? errorMessage,
     @Default(OnboardEntity()) OnboardEntity onboardData,
     String? userName,
     OnboardOptionEntity? selectedAgeRange,
     OnboardOptionEntity? selectedGender,
-    @Default([]) List<OnboardOptionEntity> selectedTopics,
-    @Default([]) List<OnboardOptionEntity> selectedStruggles,
-    OnboardOptionEntity? selectedBestTimeToLearn,
+    OnboardOptionEntity? selectedLearningGoal,
+    @Default([]) List<OnboardOptionEntity> selectedSkillsetsWantToMaster,
+    @Default([]) List<OnboardOptionEntity> selectedLearningStruggles,
     OnboardOptionEntity? selectedDailyLearningGoal,
-    OnboardOptionEntity? selectedTimeToBecomeSkilled,
-    @Default(false) bool analysisComplete,
-    
+    OnboardOptionEntity? selectedComfortableLearningTime,
+
     // Analysis progress fields
     @Default(0.0) double personalBackgroundProgress,
     @Default(0.0) double difficultiesProgress,
@@ -32,14 +31,15 @@ abstract class DataCollectState with _$DataCollectState {
 enum DataCollectStatus { initial, loading, success, failure }
 
 enum DataCollectStep {
-  name,
-  age,
-  gender,
-  chooseTopic,
-  whatDoYouUsuallyStruggleWithWhenSpeaking,
-  bestTimeOfDayToLearn,
-  dailyLearningGoal,
-  howMuchTimeYouWantToBecomeSkilled,
+  collectName,
+  collectAge,
+  collectGender,
+  collectLearningGoal,
+  collectSkillsetsWantToMaster,
+  collectLearningStrugger,
+  motivateHowToLearn,
+  collectDailyLearningGoal,
+  collectComfortableLearningTime,
 }
 
 extension DataCollectStepExtension on DataCollectStep {
@@ -50,18 +50,19 @@ extension DataCollectStepExtension on DataCollectStep {
 
 extension DataCollectStateExtension on DataCollectState {
   bool get canContinue => switch (currentStep) {
-    DataCollectStep.name => userName != null && userName!.isNotEmpty,
-    DataCollectStep.age => selectedAgeRange != null,
-    DataCollectStep.gender => selectedGender != null,
-    DataCollectStep.chooseTopic => selectedTopics.isNotEmpty,
-    DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => selectedStruggles.isNotEmpty,
-    DataCollectStep.bestTimeOfDayToLearn => selectedBestTimeToLearn != null,
-    DataCollectStep.dailyLearningGoal => selectedDailyLearningGoal != null,
-    DataCollectStep.howMuchTimeYouWantToBecomeSkilled => selectedTimeToBecomeSkilled != null,
+    DataCollectStep.collectName => userName != null && userName!.isNotEmpty,
+    DataCollectStep.collectAge => selectedAgeRange != null,
+    DataCollectStep.collectGender => selectedGender != null,
+    DataCollectStep.collectLearningGoal => selectedLearningGoal != null,
+    DataCollectStep.collectSkillsetsWantToMaster => selectedSkillsetsWantToMaster.isNotEmpty,
+    DataCollectStep.collectLearningStrugger => selectedLearningStruggles.isNotEmpty,
+    DataCollectStep.motivateHowToLearn => true,
+    DataCollectStep.collectDailyLearningGoal => selectedDailyLearningGoal != null,
+    DataCollectStep.collectComfortableLearningTime => selectedComfortableLearningTime != null,
   };
 
-  bool get isLastStep => currentStep == DataCollectStep.howMuchTimeYouWantToBecomeSkilled;
+  bool get isLastStep => currentStep == DataCollectStep.collectComfortableLearningTime;
 
-  bool isTopicSelected(OnboardOptionEntity topic) => selectedTopics.contains(topic);
-  bool isStruggleSelected(OnboardOptionEntity struggle) => selectedStruggles.contains(struggle);
+  bool isLearningGoalSelected(OnboardOptionEntity learningGoal) => selectedLearningGoal?.id == learningGoal.id;
+  bool isLearningStruggleSelected(OnboardOptionEntity learningStruggle) => selectedLearningStruggles.contains(learningStruggle);
 }

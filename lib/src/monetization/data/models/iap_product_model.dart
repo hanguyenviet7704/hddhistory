@@ -23,7 +23,8 @@ enum PaymentPlatform {
   @JsonValue('google')
   google,
   @JsonValue('apple')
-  apple;
+  apple
+  ;
 
   static PaymentPlatform get fromDevicePlatform {
     if (Platform.isIOS) return apple;
@@ -103,6 +104,7 @@ extension IapProductModelListExtension on List<IapProductModel> {
     }
 
     result.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
+    result.sort((a, b) => b.bestDeal ? 1 : -1);
     return result;
   }
 }

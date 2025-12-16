@@ -25,8 +25,12 @@ class LocalStoreService implements ILocalStoreService {
   }
 
   void initialize() async {
-    AndroidOptions androidOptions = const AndroidOptions(encryptedSharedPreferences: true);
-    IOSOptions iosOptions = const IOSOptions(accessibility: KeychainAccessibility.first_unlock);
+    AndroidOptions androidOptions = AndroidOptions(
+      resetOnError: true,
+    );
+    IOSOptions iosOptions = const IOSOptions(
+      accessibility: KeychainAccessibility.first_unlock,
+    );
     _storage = FlutterSecureStorage(aOptions: androidOptions, iOptions: iosOptions);
   }
 

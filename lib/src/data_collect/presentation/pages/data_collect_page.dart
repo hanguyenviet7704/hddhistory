@@ -16,8 +16,8 @@ class DataCollectPage extends StatelessWidget {
             // Content
             Expanded(
               child: Padding(
-                padding: EdgeInsets.all(20.w),
-                child: StepBody(),
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: const StepBody(),
               ),
             ),
 
@@ -37,14 +37,15 @@ class StepBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final currentStep = context.select((DataCollectCubit cubit) => cubit.state.currentStep);
     return switch (currentStep) {
-      DataCollectStep.name => const NameCollectBody(),
-      DataCollectStep.age => const AgeCollectBody(),
-      DataCollectStep.gender => const GenderCollectBody(),
-      DataCollectStep.chooseTopic => const ChooseTopicBody(),
-      DataCollectStep.whatDoYouUsuallyStruggleWithWhenSpeaking => const StruggleWhenSpeakingBody(),
-      DataCollectStep.bestTimeOfDayToLearn => const BestTimeToLearnBody(),
-      DataCollectStep.dailyLearningGoal => const LearningGoalBody(),
-      DataCollectStep.howMuchTimeYouWantToBecomeSkilled => const TimeToSkilledBody(),
+      DataCollectStep.collectName => const NameCollectBody(),
+      DataCollectStep.collectAge => const AgeCollectBody(),
+      DataCollectStep.collectGender => const GenderCollectBody(),
+      DataCollectStep.collectLearningGoal => const LearningGoalBody(),
+      DataCollectStep.collectSkillsetsWantToMaster => const SkillsetsWantToMasterBody(),
+      DataCollectStep.collectLearningStrugger => const LearningStruggerBody(),
+      DataCollectStep.motivateHowToLearn => const HowToLearnBody(),
+      DataCollectStep.collectDailyLearningGoal => const DailyLearningGoalBody(),
+      DataCollectStep.collectComfortableLearningTime => ComfortableLearningTimeBody(),
     };
   }
 }

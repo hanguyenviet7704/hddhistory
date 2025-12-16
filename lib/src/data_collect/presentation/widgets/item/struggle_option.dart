@@ -31,7 +31,7 @@ class StruggleOption extends StatelessWidget {
         ),
         child: Row(
           children: [
-            DCachedImage(url: value.icon, width: 24.w, height: 24.h),
+            CacheNetworkGraphic(url: value.icon, width: 24.w, height: 24.h),
             16.horizontalSpace,
             Expanded(
               child: AppText(

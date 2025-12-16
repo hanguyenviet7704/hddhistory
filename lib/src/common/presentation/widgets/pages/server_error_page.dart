@@ -6,9 +6,9 @@ class ServerErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ErrorLayout(
-      title: 'context.text.errorServerError',
-      description: 'context.text.errorOopsSomethingWentWrongWhileLoading',
-      buttonText: 'context.text.canvasTryAgain',
+      title: context.text.common.errorServerError,
+      description: context.text.common.errorOopsSomethingWentWrongWhileLoading,
+      buttonText: context.text.common.canvasTryAgain,
       illustration: AppAsset.images.common.databaseError.path,
       onTryAgain: () => HomeRoute().go(context),
     );

@@ -10,7 +10,7 @@ class DocumentVideoWidget extends StatelessWidget {
     return Column(
       children: [
         16.verticalSpace,
-        DCachedImage(url: url, width: double.infinity, borderRadius: BorderRadius.circular(16.r), fit: BoxFit.cover),
+        CacheNetworkGraphic(url: url, width: double.infinity, borderRadius: BorderRadius.circular(16.r), fit: BoxFit.cover),
       ],
     );
   }

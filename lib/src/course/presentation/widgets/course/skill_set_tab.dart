@@ -4,6 +4,29 @@ class SkillSetTab extends StatelessWidget {
   final SkillsetEntity skillset;
   const SkillSetTab({super.key, required this.skillset});
 
+  void _onTapCourse(BuildContext context, CourseEntity course, int index) {
+    bool isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
+    if (isFirstTimeUserChooseCourse) {
+      CourseIntroPopup.show(context, onClose: () => _handleCourseTap(context, course, index));
+      return;
+    }
+
+    _handleCourseTap(context, course, index);
+  }
+
+  void _handleCourseTap(BuildContext context, CourseEntity course, int index) {
+    if (course.numberOfLesson == 0) {
+      CourseLessonEmptyNotiPopup.show(context);
+      return;
+    }
+
+    context.read<HomeCubit>()
+      ..selectSkillset(skillset)
+      ..selectCourseIndex(index);
+    CourseRoadmapRoute().go(context);
+    context.read<PageCubit>().setCurrentIndex(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<HomeCubit, HomeState>(
@@ -25,13 +48,7 @@ class SkillSetTab extends StatelessWidget {
               course: course,
               showProgress: false,
               isSelected: state.isSelectedCourse(course.id),
-              onTap: () {
-                context.read<HomeCubit>()
-                  ..selectSkillset(skillset)
-                  ..selectCourseIndex(index);
-                CourseRoadmapRoute().go(context);
-                context.read<PageCubit>().setCurrentIndex(1);
-              },
+              onTap: () => _onTapCourse(context, course, index),
             );
           },
         );

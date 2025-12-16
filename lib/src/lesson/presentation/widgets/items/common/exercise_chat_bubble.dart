@@ -5,29 +5,33 @@ class ChatInformationWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
-      child: Row(
-        children: [
-          Container(
-            height: 42.w,
-            width: 42.w,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: const Color(0xFFEEF2F6),
-              image: DecorationImage(
-                image: AssetImage(AppAsset.images.app.birdSee.path),
-                fit: BoxFit.cover,
+    return BlocSelector<LessonCubit, LessonState, String>(
+      selector: (state) => state.currentLessonSpeechBubble,
+      builder: (context, speechBubble) {
+        if (speechBubble.isEmpty) return const SizedBox.shrink();
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
+          child: Row(
+            children: [
+              Container(
+                height: 42.w,
+                width: 42.w,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: const Color(0xFFEEF2F6),
+                  image: DecorationImage(
+                    image: AssetImage(AppAsset.images.app.birdSee.path),
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-            ),
+              8.horizontalSpace,
+
+              ExerciseChatBubble(text: speechBubble, radius: 12, tailVerticalAlignment: 0.5),
+            ],
           ),
-          8.horizontalSpace,
-          BlocSelector<LessonCubit, LessonState, String>(
-            selector: (state) => state.currentLessonSpeechBubble,
-            builder: (context, speechBubble) => ExerciseChatBubble(text: speechBubble, radius: 12, tailVerticalAlignment: 0.5),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

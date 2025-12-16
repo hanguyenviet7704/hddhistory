@@ -123,7 +123,7 @@ class _RoleplayParticipantAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (isSamePerson) return SizedBox.shrink();
 
-    Widget avatar = DCachedImage(
+    Widget avatar = CacheNetworkGraphic(
       url: conversation.avatar.url,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.circular(50.r),

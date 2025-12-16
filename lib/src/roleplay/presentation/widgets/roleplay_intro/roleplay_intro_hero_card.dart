@@ -40,7 +40,7 @@ class RoleplayIntroHeroCard extends StatelessWidget {
       );
     }
 
-    return DCachedImage(
+    return CacheNetworkGraphic(
       url: imageUrl,
       fit: BoxFit.cover,
       borderRadius: BorderRadius.zero,

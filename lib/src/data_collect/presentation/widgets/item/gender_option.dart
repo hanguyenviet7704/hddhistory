@@ -34,7 +34,7 @@ class GenderOption extends StatelessWidget {
           children: [
             Row(
               children: [
-                DCachedImage(url: value.icon, width: 24.w, height: 24.h),
+                CacheNetworkGraphic(url: value.icon, width: 24.w, height: 24.h),
                 16.horizontalSpace,
                 AppText(
                   value.label.text,

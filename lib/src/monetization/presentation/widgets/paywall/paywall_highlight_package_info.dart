@@ -137,7 +137,7 @@ class _HighlightCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.of(context).padding.bottom;
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
 
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -183,12 +183,13 @@ class _HighlightCard extends StatelessWidget {
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.brandPrimary,
               fontWeight: FontWeight.w600,
+              decoration: TextDecoration.underline,
             ),
           ),
         ),
         12.verticalSpace,
         const _PaywallLegalLinks(),
-        SizedBox(height: bottomPadding + 8.h),
+        SizedBox(height: bottomPadding / 2 + 8.h),
       ],
     );
   }
