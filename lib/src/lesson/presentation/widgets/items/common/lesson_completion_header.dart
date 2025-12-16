@@ -41,7 +41,7 @@ class KeypointCompleteHeader extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 BlocSelector<CourseLessonCubit, CourseLessonState, String>(
-                  selector: (state) => state.selectedLesson.keypoints.firstWhere((keypoint) => keypoint.id == state.currentKeypointId).title.text,
+                  selector: (state) => state.selectedLesson.title.text,
                   builder: (context, title) {
                     return AppText(
                       title.toUpperCase(),
@@ -57,8 +57,8 @@ class KeypointCompleteHeader extends StatelessWidget {
                   },
                 ),
                 2.verticalSpace,
-                BlocSelector<LessonCubit, LessonState, String>(
-                  selector: (state) => state.currentLearningItem.title.text,
+                BlocSelector<CourseLessonCubit, CourseLessonState, String>(
+                  selector: (state) => state.currentKeypoint.title.text,
                   builder: (context, title) {
                     return AppText(
                       title,

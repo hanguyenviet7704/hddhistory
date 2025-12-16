@@ -39,6 +39,7 @@ class SkillsetsWantToMasterBodyOptions extends StatelessWidget {
           shrinkWrap: true,
           itemCount: state.onboardData.skillsetWantToMaster.length,
           separatorBuilder: (context, index) => 12.verticalSpace,
+          padding: EdgeInsets.symmetric(vertical: 20.h),
           itemBuilder: (context, index) {
             final topic = state.onboardData.skillsetWantToMaster[index];
             return DataCollectOptionTile(

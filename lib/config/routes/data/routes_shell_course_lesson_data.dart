@@ -82,6 +82,7 @@ class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRo
   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
     ],
     child: const LessonCompletePage(),
   );

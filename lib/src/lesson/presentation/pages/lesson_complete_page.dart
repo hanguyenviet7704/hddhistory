@@ -31,8 +31,8 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
           children: [
             Padding(
               padding: EdgeInsets.only(top: 28.h, bottom: 16.h),
-              child: BlocSelector<LessonCubit, LessonState, String>(
-                selector: (state) => state.currentLearningItem.title.text,
+              child: BlocSelector<CourseLessonCubit, CourseLessonState, String>(
+                selector: (state) => state.selectedLesson.title.text,
                 builder: (context, title) {
                   return AppText(
                     title,

@@ -19,6 +19,10 @@ abstract class CourseLessonState with _$CourseLessonState {
 extension CourseLessonStateExtension on CourseLessonState {
   bool get isCompleted => selectedLesson.progess == ProcessEnum.done;
 
+  KeypointEntity get currentKeypoint {
+    return selectedLesson.keypoints.firstWhere((keypoint) => keypoint.id == currentKeypointId);
+  }
+
   bool get isAllOtherKeypointsCompleted {
     List<KeypointEntity> otherKeypoints = selectedLesson.keypoints.where((keypoint) {
       return keypoint.id != currentKeypointId;

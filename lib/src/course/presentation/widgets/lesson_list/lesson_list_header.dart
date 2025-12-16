@@ -48,12 +48,13 @@ class LessonListHeader extends StatelessWidget {
         // Lesson title
         AppText(
           lesson.title.text,
+          maxLines: 3,
+          textAlign: TextAlign.center,
           style: AppStyle.text24.copyWith(
             color: AppCustomColor.textPrimary,
             fontWeight: FontWeight.w600,
             height: 1.5,
           ),
-          textAlign: TextAlign.center,
         ),
         8.verticalSpace,
 
