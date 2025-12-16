@@ -224,7 +224,15 @@ def parse_key_params(raw_key: str) -> Tuple[str, List[str]]:
 def detect_placeholders(text: str) -> List[str]:
     if not text:
         return []
-    # Ignore ICU plural/select placeholders after the first comma (e.g., {count, plural, ...})
+    icu_match = re.match(r"^\{\s*(\w+)\s*,\s*(plural|select\w*)\s*,(.*)\}\s*$", text, re.S)
+    if icu_match:
+        placeholders: Set[str] = {icu_match.group(1)}
+        cat_map = icu_to_category_map(text)
+        if cat_map:
+            for body in cat_map.values():
+                placeholders.update(detect_placeholders(body))
+        return sorted(placeholders)
+
     brace_placeholders = re.findall(r"\{([a-zA-Z_][\w]*)\}", text)
     dollar_placeholders = re.findall(r"\$\{?([a-zA-Z_][\w]*)\}?", text)
     candidates = set(brace_placeholders + dollar_placeholders)
