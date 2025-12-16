@@ -1,7 +1,8 @@
 part of '../../../course.dart';
 
 class CourseIntroPopup extends StatefulWidget {
-  const CourseIntroPopup({super.key});
+  final void Function()? onClose;
+  const CourseIntroPopup({super.key, this.onClose});
 
   static final List<BaseMultiLanguage> _introDecorations = [
     BaseMultiLanguage(
@@ -18,7 +19,7 @@ class CourseIntroPopup extends StatefulWidget {
     ),
   ];
 
-  static void show(BuildContext context) {
+  static void show(BuildContext context, {void Function()? onClose}) {
     showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -33,7 +34,7 @@ class CourseIntroPopup extends StatefulWidget {
           opacity: animation,
           child: ScaleTransition(
             scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            child: const CourseIntroPopup(),
+            child: CourseIntroPopup(onClose: onClose ?? () => context.pop()),
           ),
         );
       },
@@ -148,6 +149,7 @@ class _CourseIntroPopupState extends State<CourseIntroPopup> {
 
     context.read<UserCubit>().setIsFirstTimeUserChooseCourse(false);
     context.pop();
+    widget.onClose?.call();
   }
 
   List<_RoleplayIntroStep> _buildSteps(BuildContext context) {

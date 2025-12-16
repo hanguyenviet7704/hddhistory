@@ -52,7 +52,7 @@ class _DataCollectSummaryPageState extends State<DataCollectSummaryPage> {
                   children: [
                     // Success illustration
                     CacheNetworkGraphic(
-                      width: 320.w,
+                      width: 300.w,
                       url: context.select((OnboardCubit bloc) => bloc.state.onboardData.loading.image),
                       fit: BoxFit.contain,
                     ),

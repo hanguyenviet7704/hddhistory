@@ -6,7 +6,7 @@ class MyCourseTab extends StatelessWidget {
   void _onTapCourse(BuildContext context, CourseEntity course, int index) {
     bool isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
     if (isFirstTimeUserChooseCourse) {
-      CourseIntroPopup.show(context);
+      CourseIntroPopup.show(context, onClose: () => _handleCourseTap(context, course, index));
       return;
     }
 

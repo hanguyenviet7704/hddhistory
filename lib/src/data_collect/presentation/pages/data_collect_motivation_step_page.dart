@@ -18,7 +18,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
           value: slide.isDark ? SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent) : SystemUiOverlayStyle.dark.copyWith(statusBarColor: Colors.transparent),
           child: GestureDetector(
             behavior: HitTestBehavior.opaque,
-            onTap: () => _handleTap(context),
+            // onTap: () => _handleTap(context),
             child: Scaffold(
               backgroundColor: slide.backgroundColor,
               body: SafeArea(
@@ -27,6 +27,7 @@ class DataCollectMotivationStepPage extends StatelessWidget {
                   title: slide.title,
                   subtitle: slide.subtitle,
                   isDarkBackground: slide.isDark,
+                  onSkip: () => _handleTap(context),
                 ),
               ),
             ),

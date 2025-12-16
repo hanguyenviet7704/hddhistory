@@ -5,13 +5,15 @@ class MotivationStepContent extends StatelessWidget {
   final String title;
   final String? subtitle;
   final bool isDarkBackground;
-
+  final VoidCallback onSkip;
+  
   const MotivationStepContent({
     super.key,
     required this.imageUrl,
     required this.title,
     this.subtitle,
     this.isDarkBackground = false,
+    required this.onSkip,
   });
 
   @override
@@ -55,7 +57,17 @@ class MotivationStepContent extends StatelessWidget {
               ),
             ),
           ],
-          80.verticalSpace,
+          160.verticalSpace,
+          Padding(
+            padding: EdgeInsets.only(bottom: 16.h, top: 8.h),
+            child: SizedBox(
+              width: 200.w,
+              child: ContinueButtonWidget(
+                text: context.text.onboarding.onboardingSkipGreetingButton,
+                onPressed: onSkip,
+              ),
+            ),
+          ),
         ],
       ),
     );
