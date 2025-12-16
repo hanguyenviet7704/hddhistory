@@ -414,10 +414,10 @@ packages:
     dependency: "direct main"
     description:
       name: facebook_app_events
-      sha256: ae90b89ef7ece3120f80832cdc105c13b6d123ab24ed6d0927d040bef814421d
+      sha256: aa2abf3ec05424ad0169069e26eca96fd33b15f70c329c01cfd49a8a639aec4f
       url: "https://pub.dev"
     source: hosted
-    version: "0.21.0"
+    version: "0.22.0"
   fake_async:
     dependency: transitive
     description:
@@ -946,10 +946,10 @@ packages:
     dependency: "direct main"
     description:
       name: go_router
-      sha256: c92d18e1fe994cb06d48aa786c46b142a5633067e8297cff6b5a3ac742620104
+      sha256: eff94d2a6fc79fa8b811dde79c7549808c2346037ee107a1121b4a644c745f2a
       url: "https://pub.dev"
     source: hosted
-    version: "17.0.0"
+    version: "17.0.1"
   go_router_builder:
     dependency: "direct dev"
     description:
@@ -2143,18 +2143,18 @@ packages:
     dependency: transitive
     description:
       name: syncfusion_flutter_core
-      sha256: e1fdfcc3ed7e1f040ba95838780b2eb1857e3e5eccb817fbe94ea2b09c35eac4
+      sha256: a984dfd5496ad318e7c42fb26e29a17d1132fe264e45ad11d15dc19a34921af4
       url: "https://pub.dev"
     source: hosted
-    version: "31.2.18"
+    version: "32.1.19"
   syncfusion_flutter_datepicker:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_datepicker
-      sha256: eb7858ceab2b4ef0e36a1c27c44ff714d924d33acfece07336823f0921458bfd
+      sha256: "0548fa13eea60baea5c4b40b7960c6c3bd1afce48840dd961a6be4a3c89ec52d"
       url: "https://pub.dev"
     source: hosted
-    version: "31.2.18"
+    version: "32.1.19"
   synchronized:
     dependency: transitive
     description:
