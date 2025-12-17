@@ -54,8 +54,8 @@ part 'presentation/pages/roleplay_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/roleplay/roleplay_audio_controller.dart';
 part 'presentation/widgets/roleplay/roleplay_background.dart';
-part 'presentation/widgets/roleplay/roleplay_bottom_action.dart';
 part 'presentation/widgets/roleplay/roleplay_bubble_widget.dart';
+part 'presentation/widgets/roleplay/roleplay_content.dart';
 part 'presentation/widgets/roleplay/roleplay_content_list.dart';
 part 'presentation/widgets/roleplay/roleplay_hintext_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_leadingtext_widget.dart';
@@ -71,8 +71,8 @@ part 'presentation/widgets/roleplay_intro/roleplay_intro_action_button.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_background.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_details.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_hero_card.dart';
-part 'presentation/widgets/roleplay_intro/roleplay_intro_time_chip.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_missions.dart';
+part 'presentation/widgets/roleplay_intro/roleplay_intro_time_chip.dart';
 //* Parts for generated files
 part 'roleplay.freezed.dart';
 part 'roleplay.g.dart';

@@ -38,47 +38,15 @@ class _RoleplayPageView extends StatelessWidget {
             children: [
               RoleplayHeroBackground(),
               SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      RoleplayPageHeader(
-                        section: currentSection,
-                        useLightContent: hasHeroImage,
-                      ),
-                      Expanded(
-                        child: RoleplayContentList(
-                          key: ValueKey(currentSection.id),
-                          section: currentSection,
-                        ),
-                      ),
-                      BlocSelector<RoleplayCubit, RoleplayState, bool>(
-                        selector: (state) => state.isCurrentSectionRevealed,
-                        builder: (context, isSectionReady) {
-                          final bottomSpacing = SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom);
-                          if (kDebugMode) {
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                RoleplayBottomAction(currentSection: currentSection),
-                                bottomSpacing,
-                              ],
-                            );
-                          }
-                          if (!isSectionReady) return bottomSpacing;
-
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              RoleplayBottomAction(currentSection: currentSection),
-                              bottomSpacing,
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+                bottom: false,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    RoleplayPageHeader(
+                      useLightContent: hasHeroImage,
+                    ),
+                    RoleplayContent(currentSection: currentSection),
+                  ],
                 ),
               ),
             ],

@@ -201,7 +201,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
       key: _listKey,
       controller: _scrollController,
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.only(bottom: 16.h, top: 24.h),
+      padding: EdgeInsets.zero,
       initialItemCount: _visibleIndexes.length,
       itemBuilder: (context, index, animation) {
         if (index >= _visibleIndexes.length) return const SizedBox.shrink();

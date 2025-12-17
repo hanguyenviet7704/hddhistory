@@ -79,6 +79,12 @@ class _RoleplayBubbleContent extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
             color: conversation.backgroundColor.toHexColor,
+            border: isRight
+                ? null
+                : Border.all(
+                    color: AppCustomColor.textPrimary.withOpacity(0.08),
+                    width: 1,
+                  ),
             borderRadius: _radius,
           ),
           child: Column(
