@@ -82,7 +82,7 @@ class _RoleplayBubbleContent extends StatelessWidget {
             border: isRight
                 ? null
                 : Border.all(
-                    color: AppCustomColor.textPrimary.withOpacity(0.08),
+                    color: AppCustomColor.textPrimary.op(0.08),
                     width: 1,
                   ),
             borderRadius: _radius,

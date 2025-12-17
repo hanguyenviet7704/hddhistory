@@ -98,12 +98,14 @@ class RoleplayAudioButton extends StatelessWidget {
   final RoleplayAudioController? controller;
   final Color iconColor;
   final bool dense;
+  final bool disabledUI;
 
   const RoleplayAudioButton({
     super.key,
     required this.controller,
     required this.iconColor,
     this.dense = false,
+    this.disabledUI = false,
   });
 
   @override
@@ -128,6 +130,10 @@ class RoleplayAudioButton extends StatelessWidget {
           stream: controller!.playerStateStream,
           builder: (context, snapshot) {
             final isPlaying = snapshot.data?.playing ?? false;
+            if (disabledUI) {
+              return SizedBox.shrink();
+            }
+            
             return Icon(
               isPlaying ? Icons.pause_rounded : Icons.volume_up_rounded,
               color: iconColor,

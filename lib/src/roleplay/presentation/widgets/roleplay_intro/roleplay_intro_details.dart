@@ -33,7 +33,7 @@ class RoleplayIntroDetails extends StatelessWidget {
             AppText(
               lesson.description.text,
               maxLines: 100,
-              textAlign: TextAlign.center,
+              textAlign: TextAlign.left,
               style: AppStyle.text16.copyWith(
                 fontWeight: FontWeight.w400,
                 color: Colors.white.withValues(alpha: 0.8),

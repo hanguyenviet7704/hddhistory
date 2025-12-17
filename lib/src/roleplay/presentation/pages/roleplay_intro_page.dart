@@ -66,7 +66,7 @@ class _RoleplayIntroViewState extends State<_RoleplayIntroView> {
       fit: StackFit.expand,
       children: [
         BlocSelector<RoleplayCubit, RoleplayState, String>(
-          selector: (state) => state.currentRoleplay.image,
+          selector: (state) => state.currentLesson.image,
           builder: (context, imageUrl) {
             return RoleplayIntroBackground(imageUrl: imageUrl);
           },
@@ -85,7 +85,7 @@ class _RoleplayIntroViewState extends State<_RoleplayIntroView> {
                       Align(
                         alignment: Alignment.center,
                         child: BlocSelector<RoleplayCubit, RoleplayState, String>(
-                          selector: (state) => state.currentRoleplay.image,
+                          selector: (state) => state.currentLesson.image,
                           builder: (context, imageUrl) {
                             return RoleplayIntroHeroCard(imageUrl: imageUrl);
                           },
