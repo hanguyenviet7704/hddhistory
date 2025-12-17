@@ -1,9 +1,9 @@
 part of '../../../roleplay.dart';
 
-class RoleplayExerciseWidget extends StatelessWidget {
+class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;
 
-  const RoleplayExerciseWidget({super.key, required this.exercise});
+  const RoleplayExerciseOverlay({super.key, required this.exercise});
 
   @override
   Widget build(BuildContext context) {

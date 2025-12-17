@@ -22,6 +22,8 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default([]) List<ScoringCriteriaEntity> scoringCriteria,
     @Default(0) int mainQuestion,
     @Default(KeypointEntity()) KeypointEntity keypoint,
+
+    @Default(QuestionResultEntity()) QuestionResultEntity result,
   }) = _QuestionEntity;
 
   factory QuestionEntity.fromJson(Map<String, dynamic> json) => _$QuestionEntityFromJson(json);
@@ -42,4 +44,22 @@ enum QuestionTypeEnum {
   stressPlacement,
   @JsonValue('speaking')
   speaking,
+}
+
+@freezed
+abstract class QuestionResultEntity with _$QuestionResultEntity {
+  const factory QuestionResultEntity({
+    @Default(0) int id,
+    @Default(0) int questionId,
+    @Default(0) int answerId,
+    @Default(0) int score,
+  }) = _QuestionResultEntity;
+
+  factory QuestionResultEntity.fromJson(Map<String, dynamic> json) => _$QuestionResultEntityFromJson(json);
+}
+
+extension QuestionEntityExtension on QuestionEntity {
+  bool get isCompleted => result.score > 0 && result.answerId > 0;
+
+  String get questionText => document.first.data.content.text;
 }
