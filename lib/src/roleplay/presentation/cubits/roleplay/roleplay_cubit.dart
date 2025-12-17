@@ -34,7 +34,7 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
       return;
     }
     emit(state.copyWith(currentSectionIndex: nextIndex, isCurrentSectionRevealed: false));
-    if (state.currentSection.contents.last.type == RoleplaySectionType.exercise) {
+    if (state.currentSection.contents.last.type == RoleplayContentType.exercise) {
       setLearningItemToLessonCubit();
       LessonRoute().push(AppConfig.instance.context!);
     }

@@ -1,7 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayPageHeader extends StatelessWidget {
-  final SectionEntity section;
+  final RoleplayEntity section;
   final bool useLightContent;
 
   const RoleplayPageHeader({

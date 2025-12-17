@@ -19,7 +19,7 @@ abstract class RoleplayState with _$RoleplayState {
 }
 
 extension RoleplayStateExtension on RoleplayState {
-  SectionEntity get currentSection {
-    return currentLearningItem.sections.elementAtOrDefault(currentSectionIndex, defaultValue: SectionEntity());
+  RoleplayEntity get currentSection {
+    return currentLearningItem.sections.elementAtOrDefault(currentSectionIndex, defaultValue: RoleplayEntity());
   }
 }

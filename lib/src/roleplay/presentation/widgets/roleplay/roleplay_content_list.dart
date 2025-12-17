@@ -1,7 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayContentList extends StatefulWidget {
-  final SectionEntity section;
+  final RoleplayEntity section;
 
   const RoleplayContentList({super.key, required this.section});
 
@@ -17,7 +17,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   final Map<int, RoleplayAudioController> _audioControllers = {};
   final List<int> _visibleIndexes = [];
 
-  late List<SectionContentEntity> _displayableContents;
+  late List<RoleplayContentEntity> _displayableContents;
   bool _isSequencing = false;
 
   @override
@@ -38,7 +38,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   }
 
   void _configureContents() {
-    _displayableContents = widget.section.contents.where((c) => c.type != RoleplaySectionType.exercise).toList();
+    _displayableContents = widget.section.contents.where((c) => c.type != RoleplayContentType.exercise).toList();
     _prepareAudioControllers();
     _visibleIndexes.clear();
   }
@@ -60,8 +60,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     for (var i = 0; i < _displayableContents.length; i++) {
       final content = _displayableContents[i];
       final String audioUrl = switch (content.type) {
-        RoleplaySectionType.conversation => content.conversation.audio.text,
-        RoleplaySectionType.leadingText => content.leadingText.audio.text,
+        RoleplayContentType.conversation => content.conversation.audio.text,
+        RoleplayContentType.leadingText => content.leadingText.audio.text,
         _ => '',
       };
       if (audioUrl.isNotEmpty) {
@@ -98,8 +98,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     final RoleplayAudioController? controller = _audioControllers[currentIndex];
 
     switch (content.type) {
-      case RoleplaySectionType.conversation:
-      case RoleplaySectionType.leadingText:
+      case RoleplayContentType.conversation:
+      case RoleplayContentType.leadingText:
         if (controller != null && controller.hasAudio) {
           await controller.playAutoAndWait();
           return;
@@ -182,7 +182,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   double _getBottomPadding(int index, int contentIndex) {
     if (index == _visibleIndexes.length - 1) return 0;
     final content = _displayableContents[index];
-    if (content.type != RoleplaySectionType.conversation) return 16.h;
+    if (content.type != RoleplayContentType.conversation) return 16.h;
     final nextConversation = contentIndex < _displayableContents.length - 1 ? _displayableContents[contentIndex + 1].conversation : null;
     if (_isSamePerson(content.conversation, nextConversation)) return 0;
     return 16.h;
@@ -212,17 +212,17 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         final audioController = _audioControllers[contentIndex];
 
         final Widget child = switch (content.type) {
-          RoleplaySectionType.conversation => RoleplayConversationBubble(
+          RoleplayContentType.conversation => RoleplayConversationBubble(
             conversation: content.conversation,
             previousConversation: previousConversation,
             audioController: audioController,
           ),
-          RoleplaySectionType.leadingText => RoleplayLeadingTextCard(
+          RoleplayContentType.leadingText => RoleplayLeadingTextCard(
             leadingText: content.leadingText,
             audioController: audioController,
           ),
-          RoleplaySectionType.hint => RoleplayHintCard(hint: content.hint),
-          RoleplaySectionType.exercise => const SizedBox.shrink(),
+          RoleplayContentType.transition => RoleplayHintCard(hint: content.hint),
+          RoleplayContentType.exercise => const SizedBox.shrink(),
         };
 
         return SizeTransition(

@@ -27,7 +27,7 @@ class _RoleplayPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoleplayCubit, RoleplayState, SectionEntity>(
+    return BlocSelector<RoleplayCubit, RoleplayState, RoleplayEntity>(
       selector: (state) => state.currentSection,
       builder: (context, currentSection) {
         final bool hasHeroImage = currentSection.image.isNotEmpty;

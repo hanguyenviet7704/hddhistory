@@ -1,7 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayHintCard extends StatelessWidget {
-  final HintEntity hint;
+  final TransitionEntity hint;
 
   const RoleplayHintCard({super.key, required this.hint});
 

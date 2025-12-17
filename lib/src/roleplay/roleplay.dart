@@ -4,7 +4,6 @@ import 'dart:math' as math;
 import 'dart:ui' as ui;
 
 //* Package imports
-import 'package:darq/darq.dart';
 import 'package:dio/dio.dart';
 import 'package:dotted_border/dotted_border.dart';
 import 'package:fl_chart/fl_chart.dart';
@@ -23,20 +22,22 @@ part 'data/datasources/remote/roleplay_api.dart';
 part 'data/datasources/remote/roleplay_feedback_api.dart';
 part 'data/models/conversation_avatar_model.dart';
 part 'data/models/conversation_model.dart';
-part 'data/models/hint_model.dart';
 part 'data/models/leading_text_model.dart';
+part 'data/models/roleplay_content_model.dart';
 part 'data/models/roleplay_feedback_model.dart';
-part 'data/models/section_content_model.dart';
-part 'data/models/section_model.dart';
+part 'data/models/roleplay_mission_model.dart';
+part 'data/models/roleplay_model.dart';
+part 'data/models/transition_model.dart';
+//* Domain Layer - Entities, Repositories, Use Cases
 part 'data/repositories/roleplay_repository.dart';
 part 'domain/entities/conversation_avatar_entity.dart';
-//* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/conversation_entity.dart';
-part 'domain/entities/hint_entity.dart';
 part 'domain/entities/leading_text_entity.dart';
+part 'domain/entities/roleplay_content_entity.dart';
+part 'domain/entities/roleplay_entity.dart';
 part 'domain/entities/roleplay_feedback_entity.dart';
-part 'domain/entities/section_content_entity.dart';
-part 'domain/entities/section_entity.dart';
+part 'domain/entities/roleplay_mission_entity.dart';
+part 'domain/entities/transition_entity.dart';
 part 'domain/repositories/i_roleplay_repository.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
 part 'domain/usecases/send_feedback_roleplay_usecase.dart';

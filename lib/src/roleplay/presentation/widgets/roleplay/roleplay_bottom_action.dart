@@ -1,7 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayBottomAction extends StatelessWidget {
-  final SectionEntity currentSection;
+  final RoleplayEntity currentSection;
 
   const RoleplayBottomAction({
     super.key,
@@ -10,7 +10,7 @@ class RoleplayBottomAction extends StatelessWidget {
 
   bool get _isExerciseSection {
     if (currentSection.contents.isEmpty) return false;
-    return currentSection.contents.last.type == RoleplaySectionType.exercise;
+    return currentSection.contents.last.type == RoleplayContentType.exercise;
   }
 
   String get _transitionLabel {
