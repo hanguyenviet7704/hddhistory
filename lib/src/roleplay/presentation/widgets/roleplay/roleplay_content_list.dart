@@ -222,7 +222,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
             audioController: audioController,
           ),
           RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
-          RoleplayContentType.exercise => const SizedBox.shrink(),
+          RoleplayContentType.exercise => RoleplayExerciseWidget(exercise: content.exercise),
         };
 
         return SizeTransition(

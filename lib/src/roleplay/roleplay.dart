@@ -5,7 +5,6 @@ import 'dart:ui' as ui;
 
 //* Package imports
 import 'package:dio/dio.dart';
-import 'package:dotted_border/dotted_border.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -27,7 +26,7 @@ part 'data/models/roleplay_content_model.dart';
 part 'data/models/roleplay_feedback_model.dart';
 part 'data/models/roleplay_mission_model.dart';
 part 'data/models/roleplay_model.dart';
-part 'data/models/transition_model.dart';
+part 'data/models/transition_model.dart'; 
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'data/repositories/roleplay_repository.dart';
 part 'domain/entities/conversation_avatar_entity.dart';
@@ -57,6 +56,7 @@ part 'presentation/widgets/roleplay/roleplay_background.dart';
 part 'presentation/widgets/roleplay/roleplay_bubble_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_content.dart';
 part 'presentation/widgets/roleplay/roleplay_content_list.dart';
+part 'presentation/widgets/roleplay/roleplay_exercise_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_transition_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_leadingtext_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_page_header.dart';

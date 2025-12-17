@@ -44,7 +44,7 @@ class LessonCard extends StatelessWidget {
   bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
 
   void _onTap(BuildContext context) {
-    if (lesson.progess == ProcessEnum.notStarted) return;
+    if (lesson.progess == ProcessEnum.notStarted && !kDebugMode) return;
 
     bool isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
     if (premiumLesson && !isUserPremium) {
