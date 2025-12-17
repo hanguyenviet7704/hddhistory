@@ -21,7 +21,7 @@ class RoleplayPageHeader extends StatelessWidget {
         _RoleplayBackButton(isLight: useLightContent),
         16.horizontalSpace,
         AppText(
-          section.title.text,
+          'section.title.text',
           maxLines: 2,
           style: AppStyle.text20.copyWith(
             fontWeight: FontWeight.w700,

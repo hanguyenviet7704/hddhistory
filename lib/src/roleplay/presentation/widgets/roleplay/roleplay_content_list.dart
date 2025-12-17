@@ -221,7 +221,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
             leadingText: content.leadingText,
             audioController: audioController,
           ),
-          RoleplayContentType.transition => RoleplayHintCard(hint: content.hint),
+          RoleplayContentType.transition => RoleplayHintCard(hint: content.transition),
           RoleplayContentType.exercise => const SizedBox.shrink(),
         };
 

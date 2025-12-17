@@ -12,7 +12,7 @@ class RoleplayConversationBubble extends StatelessWidget {
     required this.audioController,
   });
 
-  bool get _isRight => conversation.position == SectionConversationPosition.right;
+  bool get _isRight => conversation.position == RoleplayConversationPosition.right;
   bool get _isSamePerson {
     if (previousConversation == null) return false;
     return previousConversation!.avatar.id == conversation.avatar.id;

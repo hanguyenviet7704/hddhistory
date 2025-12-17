@@ -6,7 +6,7 @@ class RoleplayHeroBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<RoleplayCubit, RoleplayState, String>(
-      selector: (state) => state.currentSection.image,
+      selector: (state) => state.currentRoleplay.image,
       builder: (context, imageUrl) {
         if (imageUrl.isEmpty) {
           return Container(color: AppCustomColor.backgroundWhite);

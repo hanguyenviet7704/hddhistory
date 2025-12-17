@@ -14,7 +14,7 @@ class RoleplayBottomAction extends StatelessWidget {
   }
 
   String get _transitionLabel {
-    if (currentSection.transition.text.isNotEmpty) return currentSection.transition.text;
+    // if (currentSection.transition.text.isNotEmpty) return currentSection.transition.text;
     if (_isExerciseSection) return 'Start';
     return 'Continue';
   }
@@ -41,7 +41,7 @@ class RoleplayBottomAction extends StatelessWidget {
           textAlign: TextAlign.center,
           style: AppStyle.text14.copyWith(
             fontWeight: FontWeight.w600,
-            color: currentSection.textColor.toHexColor,
+            // color: currentSection.textColor.toHexColor,
           ),
         ),
       ),

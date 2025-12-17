@@ -4,7 +4,7 @@ part of '../../roleplay.dart';
 abstract class ConversationModel with _$ConversationModel {
   const factory ConversationModel({
     @Default(ConversationAvatarModel()) ConversationAvatarModel avatar,
-    @Default(SectionConversationPosition.left) SectionConversationPosition position,
+    @Default(RoleplayConversationPosition.left) RoleplayConversationPosition position,
     @Default('') String backgroundColor,
     @Default('') String textColor,
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
@@ -25,7 +25,7 @@ extension ConversationModelExtension on ConversationModel {
   );
 }
 
-enum SectionConversationPosition {
+enum RoleplayConversationPosition {
   @JsonValue('left')
   left,
   @JsonValue('right')

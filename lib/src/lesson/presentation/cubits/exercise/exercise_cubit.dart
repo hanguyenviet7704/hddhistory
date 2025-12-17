@@ -110,37 +110,6 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   //* Roleplay Page Flow
   void setQuestionPoint(QuestionEntity question) {
-    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
-    if (learningItem.type != LearningItemType.roleplay) return;
-    KeypointEntity point = question.keypoint.copyWith(isUseRoleplayModule: true);
-
-    switch (question.type) {
-      case QuestionTypeEnum.multipleChoice || QuestionTypeEnum.singleChoice:
-        int score = AppDI.injector.get<ChoiceCubit>().pointCalculation();
-        point = point.copyWith(point: score);
-        break;
-      case QuestionTypeEnum.cuesPlacement:
-        int score = AppDI.injector.get<CuesPlacementCubit>().pointCalculation();
-        point = point.copyWith(point: score);
-        break;
-      case QuestionTypeEnum.dragAndDrop:
-        int score = AppDI.injector.get<DragAndDropCubit>().pointCalculation();
-        point = point.copyWith(point: score);
-        break;
-      case QuestionTypeEnum.arrangeTheSequence:
-        int score = AppDI.injector.get<ArrangeTheSequenceCubit>().pointCalculation();
-        point = point.copyWith(point: score);
-        break;
-      case QuestionTypeEnum.stressPlacement:
-        int score = AppDI.injector.get<MarkStressWordCubit>().pointCalculation();
-        point = point.copyWith(point: score);
-        break;
-      case QuestionTypeEnum.speaking:
-        int score = AppDI.injector.get<SpeakingCubit>().pointCalculation();
-        point = point.copyWith(point: score);
-        break;
-    }
-    
-    AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
+    // Roleplay scoring removed; no-op for lesson flow
   }
 }
