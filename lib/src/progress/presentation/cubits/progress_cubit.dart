@@ -156,7 +156,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     final String userId = _userCubit.state.user.id;
     final String courseId = _homeCubit.state.currentCourse.id;
     final CourseLessonState courseLessonState = _courseLessonCubit.state;
-    final LessonEntity lessonEntity = _roleplayCubit.lesson;
+    final LessonEntity lessonEntity = _roleplayCubit.state.currentLesson;
     String lessonId = '';
 
     switch (lessonType) {

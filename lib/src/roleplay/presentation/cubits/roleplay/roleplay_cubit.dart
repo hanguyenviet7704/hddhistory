@@ -10,30 +10,25 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     this._sendFeedbackRoleplayUseCase,
   ) : super(RoleplayState.initial());
 
-  LessonEntity lesson = LessonEntity();
 
   void reset() => emit(RoleplayState.initial());
-  void resetIndex() => emit(state.copyWith(currentSectionIndex: 0));
-  void setLessonId(LessonEntity lesson) => this.lesson = lesson;
+  void setCurrentLesson(LessonEntity lesson) => emit(state.copyWith(currentLesson: lesson));
 
   void setLearningItemToLessonCubit() {
     LearningItemEntity learningItem = state.currentLearningItem;
     learningItem = learningItem.copyWith(
-      sectionQuestionIndex: state.currentSectionIndex,
       isPlayingRoleplayQuestions: true,
     );
     AppDI.injector.get<LessonCubit>().setLearningItemFromRoleplay(learningItem);
   }
 
   void goToNextSection() {
-    final nextIndex = state.currentSectionIndex + 1;
     // if (nextIndex >= state.currentLearningItem.sections.length) {
     //   AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
     //   _sendFeedback();
     //   RoleplayCompleteRoute().go(AppConfig.instance.context!);
     //   return;
     // }
-    emit(state.copyWith(currentSectionIndex: nextIndex, isCurrentSectionRevealed: false));
     if (state.currentRoleplay.contents.last.type == RoleplayContentType.exercise) {
       setLearningItemToLessonCubit();
       LessonRoute().push(AppConfig.instance.context!);

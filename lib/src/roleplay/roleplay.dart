@@ -71,6 +71,8 @@ part 'presentation/widgets/roleplay_intro/roleplay_intro_action_button.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_background.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_details.dart';
 part 'presentation/widgets/roleplay_intro/roleplay_intro_hero_card.dart';
+part 'presentation/widgets/roleplay_intro/roleplay_intro_time_chip.dart';
+part 'presentation/widgets/roleplay_intro/roleplay_intro_missions.dart';
 //* Parts for generated files
 part 'roleplay.freezed.dart';
 part 'roleplay.g.dart';
