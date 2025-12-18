@@ -198,9 +198,6 @@ class _HighlightCard extends StatelessWidget {
 class _PaywallLegalLinks extends StatelessWidget {
   const _PaywallLegalLinks();
 
-  String get _termsUrl => 'https://meup.training/terms-and-conditions.html';
-  String get _privacyUrl => 'https://meup.training/privacy-policy.html';
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -210,7 +207,7 @@ class _PaywallLegalLinks extends StatelessWidget {
           Expanded(
             child: Align(
               alignment: Alignment.centerRight,
-              child: _LegalLink(label: t.auth.termsOfUse, url: _termsUrl),
+              child: _LegalLink(label: t.auth.termsOfUse, url: LegalUrl.termsAndConditions),
             ),
           ),
           Container(
@@ -222,7 +219,7 @@ class _PaywallLegalLinks extends StatelessWidget {
           Expanded(
             child: Align(
               alignment: Alignment.centerLeft,
-              child: _LegalLink(label: t.auth.privacyPolicy, url: _privacyUrl),
+              child: _LegalLink(label: t.auth.privacyPolicy, url: LegalUrl.privacyPolicy),
             ),
           ),
         ],

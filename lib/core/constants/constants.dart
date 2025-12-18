@@ -20,6 +20,7 @@ part 'manual/env.dart';
 part 'manual/in_app_key.dart';
 part 'manual/injector_key.dart';
 part 'manual/isolate_constants.dart';
+part 'manual/legal_url.dart';
 part 'manual/local_store_key.dart';
 part 'manual/moderation_key.dart';
 part 'manual/network.dart';

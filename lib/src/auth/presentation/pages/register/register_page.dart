@@ -65,12 +65,12 @@ class RegisterPage extends StatelessWidget {
                         AppAsset.images.common.logoBanner.path,
                         height: 60.h,
                       ),
-                      86.verticalSpace,
+                      66.verticalSpace,
                       AppText(
                         context.text.auth.authHeadLine,
                         maxLines: 5,
                         margin: EdgeInsets.symmetric(horizontal: 20.w),
-                        style: AppStyle.textBold24.copyWith(
+                        style: AppStyle.textBold20.copyWith(
                           color: const Color(0xFF110751),
                           fontWeight: FontWeight.w600,
                           height: 1.5,
@@ -78,7 +78,7 @@ class RegisterPage extends StatelessWidget {
                         textAlign: TextAlign.center,
                       ),
 
-                      166.verticalSpace,
+                      126.verticalSpace,
 
                       // Social login buttons
                       Column(
@@ -115,21 +115,66 @@ class RegisterPage extends StatelessWidget {
 
               // Bottom section with privacy policy and terms
               Padding(
-                padding: EdgeInsets.only(bottom: 20.h, left: 50.w, right: 50.w),
-                child: AppText(
-                  context.text.auth.authLegalNotice,
-                  maxLines: 5,
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF110751).op(0.5),
-                    height: 1.75,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
+                padding: EdgeInsets.only(bottom: 20.h, left: 30.w, right: 30.w),
+                child: const _RegisterLegalLinks(),
               ),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _RegisterLegalLinks extends StatelessWidget {
+  const _RegisterLegalLinks();
+
+  @override
+  Widget build(BuildContext context) {
+    final baseStyle = AppStyle.text12.copyWith(
+      color: const Color(0xFF110751).op(0.5),
+      height: 1.75,
+    );
+    final linkStyle = baseStyle.copyWith(decoration: TextDecoration.underline);
+
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Text(context.text.auth.authLegalNoticePrefix, style: baseStyle, textAlign: TextAlign.center),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _InlineLegalLink(
+              label: context.text.auth.privacyPolicy,
+              url: LegalUrl.privacyPolicy,
+              style: linkStyle,
+            ),
+            Text(', ', style: baseStyle),
+            _InlineLegalLink(
+              label: context.text.auth.termsAndConditions,
+              url: LegalUrl.termsAndConditions,
+              style: linkStyle,
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _InlineLegalLink extends StatelessWidget {
+  final String label;
+  final String url;
+  final TextStyle style;
+
+  const _InlineLegalLink({required this.label, required this.url, required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: url.launchURL,
+      child: Text(label, style: style),
     );
   }
 }

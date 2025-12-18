@@ -41,11 +41,13 @@ class SettingPage extends StatelessWidget {
                         trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
                         onTap: () => const ChangeLanguageRoute().go(context),
                       ),
-                      SettingOptionTile(
-                        iconAsset: AppAsset.svg.app.icCreditCard,
-                        title: context.text.setting.settingRowUpgradePremium,
-                        onTap: () => const ManageSubscriptionRoute().go(context),
-                      ),
+                      if (user.iapSubscriptions.isNotEmpty) ...[
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icCreditCard,
+                          title: context.text.setting.settingRowUpgradePremium,
+                          onTap: () => const ManageSubscriptionRoute().go(context),
+                        ),
+                      ],
                       if (user.iapSubscriptions.isEmpty) ...[
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icSet,
