@@ -51,6 +51,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
+        BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
         BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
         BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
         BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),

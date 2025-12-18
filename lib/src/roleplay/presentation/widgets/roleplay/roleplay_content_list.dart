@@ -166,6 +166,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     required QuestionEntity exercise,
   }) async {
     _cancelPendingExercise();
+    RoleplayExerciseResultOverlayManager.hide();
     _pendingExerciseContentIndex = contentIndex;
     _pendingExerciseCompleter = Completer<void>();
 
@@ -177,6 +178,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
       ),
       onOverlayShown: () {
         LearningItemEntity learningItem = LearningItemEntity(
+          type: LearningItemType.roleplay,
           mainQuestions: [exercise],
         );
         AppDI.injector.get<ExerciseCubit>().setRoleplayQuestions(learningItem);
@@ -190,6 +192,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     if (_isDisposing || !mounted) return;
     if (_pendingExerciseContentIndex != contentIndex) return;
 
+    RoleplayExerciseResultOverlayManager.hide();
     RoleplayExerciseOverlayManager.hide();
     setState(() {
       _completedExerciseIndexes.add(contentIndex);
@@ -208,6 +211,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   }
 
   void _cancelPendingExercise() {
+    RoleplayExerciseResultOverlayManager.hide();
     RoleplayExerciseOverlayManager.hide();
     _completePendingExercise();
   }

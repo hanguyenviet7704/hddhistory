@@ -61,5 +61,8 @@ abstract class QuestionResultEntity with _$QuestionResultEntity {
 extension QuestionEntityExtension on QuestionEntity {
   bool get isCompleted => result.score > 0 && result.answerId > 0;
 
-  String get questionText => document.first.data.content.text;
+  String get questionText {
+    if (document.isEmpty) return 'No question text';
+    return document.first.data.content.text;
+  }
 }

@@ -9,19 +9,42 @@ class _ExpandedExerciseBody extends StatelessWidget {
     this.onCheckPressed,
   });
 
-  void _handleAnswerChecked(bool isCorrect) {
-    debugPrint('Answer is correct: $isCorrect');
+  void _handleAnswerChecked(BuildContext context, bool isCorrect) {
+    RoleplayExerciseResultOverlayManager.show(
+      context: context,
+      builder: (_) => RoleplayExerciseResultBottomSheet(
+        isCorrect: isCorrect,
+        onContinue: () {
+          RoleplayExerciseResultOverlayManager.hide();
+          onCheckPressed?.call();
+        },
+      ),
+    );
   }
 
-  Widget _buildExerciseLessonBody(QuestionTypeEnum questionType) {
+  Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {
     return switch (questionType) {
-      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(
+        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+      ),
+      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(
+        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+      ),
+      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(
+        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+      ),
+      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(
+        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+      ),
+      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(
+        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+      ),
+      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(
+        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+      ),
+      QuestionTypeEnum.speaking => SpeakingLessonBody(
+        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+      ),
     };
   }
 
@@ -41,7 +64,7 @@ class _ExpandedExerciseBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget lessonBody = _buildExerciseLessonBody(exercise.type);
+    Widget lessonBody = _buildExerciseLessonBody(context, exercise.type);
     Widget bottomButton = _buildBottomButton(context, lessonBody);
     return SingleChildScrollView(
       child: Column(
