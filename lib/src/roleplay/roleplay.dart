@@ -51,6 +51,7 @@ part 'presentation/pages/roleplay_feedback_page.dart';
 part 'presentation/pages/roleplay_intro_page.dart';
 part 'presentation/pages/roleplay_page.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_colapsed_exercise_body.dart';
+part 'presentation/widgets/roleplay/exercise/roleplay_exercise_answer.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_content_widget.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_overlay.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_result_overlay.dart';
