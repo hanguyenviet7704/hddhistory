@@ -1,5 +1,6 @@
 import {
   PaymentCurrency,
+  PaymentEnvironment,
   PaymentPlatform,
   PurchaseEventType,
   PurchaseStatus,
@@ -29,6 +30,7 @@ export interface IPurchase {
 }
 
 export class PurchaseListQuery extends BaseQuery {
+  environment!: PaymentEnvironment;
   platform?: PaymentPlatform;
   status?: PurchaseStatus;
 
@@ -39,6 +41,7 @@ export class PurchaseListQuery extends BaseQuery {
 
   override toQueryParams(): string {
     const params = new URLSearchParams(super.toQueryParams());
+    params.set("environment", this.environment);
     if (this.platform) params.set("platform", this.platform);
     if (this.status) params.set("status", this.status);
 
@@ -47,11 +50,12 @@ export class PurchaseListQuery extends BaseQuery {
 }
 
 export class GetRevenueListQuery extends BaseQuery {
+  environment!: PaymentEnvironment;
   currency!: PaymentCurrency;
   from?: string;
   to?: string;
   platform?: PaymentPlatform;
-  status?: PurchaseStatus;
+  eventType?: PurchaseEventType;
   productId?: string;
 
   constructor(init?: Partial<GetRevenueListQuery>) {
@@ -61,9 +65,10 @@ export class GetRevenueListQuery extends BaseQuery {
 
   override toQueryParams(): string {
     const params = new URLSearchParams(super.toQueryParams());
+    params.set("environment", this.environment);
     params.set("currency", this.currency);
     if (this.platform) params.set("platform", this.platform);
-    if (this.status) params.set("status", this.status);
+    if (this.eventType) params.set("eventType", this.eventType);
     if (this.from) params.set("from", this.from);
     if (this.to) params.set("to", this.to);
     if (this.productId) params.set("productId", this.productId);

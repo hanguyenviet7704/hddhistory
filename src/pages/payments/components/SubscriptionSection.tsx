@@ -20,6 +20,7 @@ import {
 import { IPurchase } from "../../../types/interface/payments/purchase.interface";
 import { IUser, UserListQuery } from "../../../types/interface/user.interface";
 import {
+  PaymentEnvironment,
   PaymentPlatform,
   PurchaseStatus,
   SubscriptionStatus,
@@ -112,6 +113,9 @@ const SubscriptionSection: React.FC = () => {
   const [showUserSuggestions, setShowUserSuggestions] = useState(false);
   const [platformFilter, setPlatformFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
+  const [environment, setEnvironment] = useState<PaymentEnvironment>(
+    PaymentEnvironment.PRODUCTION
+  );
   const [page, setPage] = useState(1);
   const take = 20;
   const [lastCount, setLastCount] = useState(0);
@@ -121,6 +125,7 @@ const SubscriptionSection: React.FC = () => {
     setError(null);
     try {
       const query = new SubscriptionListQuery({
+        environment,
         take,
         page,
       });
@@ -143,7 +148,7 @@ const SubscriptionSection: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, platformFilter, statusFilter, take, userFilter]);
+  }, [environment, page, platformFilter, statusFilter, take, userFilter]);
 
   const handleOpenDetail = useCallback(
     async (subscription: SubscriptionRecord) => {
@@ -262,7 +267,7 @@ const SubscriptionSection: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [platformFilter, statusFilter, userFilter]);
+  }, [environment, platformFilter, statusFilter, userFilter]);
 
   const stats = useMemo(() => {
     const total = subscriptions.length;
@@ -316,7 +321,9 @@ const SubscriptionSection: React.FC = () => {
                   setShowUserSuggestions(true);
                 }}
                 onFocus={() => setShowUserSuggestions(true)}
-                onBlur={() => setTimeout(() => setShowUserSuggestions(false), 150)}
+                onBlur={() =>
+                  setTimeout(() => setShowUserSuggestions(false), 150)
+                }
                 placeholder="Lọc theo user (tên/email)"
                 className="pl-10 pr-9 py-2 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-slate-50/50 min-w-[220px]"
               />
@@ -396,6 +403,17 @@ const SubscriptionSection: React.FC = () => {
               <option value="">Tất cả platform</option>
               <option value={PaymentPlatform.APPLE}>Apple</option>
               <option value={PaymentPlatform.GOOGLE}>Google</option>
+            </select>
+
+            <select
+              value={environment}
+              onChange={(e) =>
+                setEnvironment(e.target.value as PaymentEnvironment)
+              }
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+            >
+              <option value={PaymentEnvironment.PRODUCTION}>Production</option>
+              <option value={PaymentEnvironment.SANDBOX}>Sandbox</option>
             </select>
 
             <select
@@ -719,8 +737,14 @@ const SubscriptionSection: React.FC = () => {
                                   <p className="font-semibold uppercase">
                                     {purchase.eventType}
                                   </p>
-                                  <p>Purchase: {formatDateTime(purchase.purchaseTime)}</p>
-                                  <p>Expire: {formatDateTime(purchase.expiryTime)}</p>
+                                  <p>
+                                    Purchase:{" "}
+                                    {formatDateTime(purchase.purchaseTime)}
+                                  </p>
+                                  <p>
+                                    Expire:{" "}
+                                    {formatDateTime(purchase.expiryTime)}
+                                  </p>
                                 </div>
                               </td>
                             </tr>

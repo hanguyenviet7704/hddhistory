@@ -13,23 +13,36 @@ import {
   RevenueStatisticsResponse,
 } from "../../../types/interface/payments/purchase.interface";
 import {
+  IProduct,
+  ProductListQuery,
+} from "../../../types/interface/payments/product.interface";
+import {
   PaymentCurrency,
-  PaymentPlatform,
-  PurchaseStatus,
+  PaymentEnvironment,
+  PurchaseEventType,
 } from "../../../types/enum/payment.enum";
 import {
   formatDateTime,
   platformLabels,
   priceLabel,
-  purchaseStatusLabel,
-  purchaseStatusTone,
   eventTypeLabel,
   eventTypeTone,
 } from "../paymentShared";
+import { productService } from "../../../services/payments/productService";
 
 type PurchaseRecord = IPurchase & { _id?: string };
+type ProductRecord = IProduct & { _id?: string };
 
 const normalizeEntries = (payload: any): PurchaseRecord[] => {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.items)) return payload.items;
+  if (Array.isArray(payload.data?.items)) return payload.data.items;
+  if (Array.isArray(payload.data)) return payload.data;
+  return [];
+};
+
+const normalizeProducts = (payload: any): ProductRecord[] => {
   if (!payload) return [];
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.items)) return payload.items;
@@ -60,33 +73,56 @@ const RevenueDashboard: React.FC = () => {
   const [currency, setCurrency] = useState<PaymentCurrency>(
     PaymentCurrency.VND
   );
-  const [from, setFrom] = useState<string>(
-    startOfCurrentMonth().toISOString()
+  const [environment, setEnvironment] = useState<PaymentEnvironment>(
+    PaymentEnvironment.PRODUCTION
   );
+  const [from, setFrom] = useState<string>(startOfCurrentMonth().toISOString());
   const [to, setTo] = useState<string>(endOfCurrentMonth().toISOString());
-  const [platform, setPlatform] = useState<string>("");
-  const [status, setStatus] = useState<string>("");
+  const [eventType, setEventType] = useState<string>("");
+  const [productId, setProductId] = useState<string>("");
   const [stats, setStats] = useState<RevenueStatisticsResponse | null>(null);
   const [entries, setEntries] = useState<PurchaseRecord[]>([]);
+  const [products, setProducts] = useState<ProductRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [productError, setProductError] = useState<string | null>(null);
+  const [productLoading, setProductLoading] = useState(false);
   const [page, setPage] = useState(1);
   const take = 20;
   const [lastCount, setLastCount] = useState(0);
+
+  const fetchProducts = useCallback(async () => {
+    setProductLoading(true);
+    setProductError(null);
+    try {
+      const query = new ProductListQuery({ page: 1, take: 200 });
+      const res = await productService.getList(query);
+      setProducts(normalizeProducts(res));
+    } catch (err: any) {
+      console.error("Fetch products failed", err);
+      setProductError(
+        err?.response?.data?.message || "Không thể tải danh sách sản phẩm"
+      );
+      setProducts([]);
+    } finally {
+      setProductLoading(false);
+    }
+  }, []);
 
   const fetchData = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
       const query = new GetRevenueListQuery({
+        environment,
         currency,
         page,
         take,
       });
       if (from) query.from = from;
       if (to) query.to = to;
-      if (platform) query.platform = platform as PaymentPlatform;
-      if (status) query.status = status as PurchaseStatus;
+      if (eventType) query.eventType = eventType as PurchaseEventType;
+      if (productId) query.productId = productId;
 
       const [statRes, entryRes] = await Promise.all([
         purchaseService.getRevenueStatistics(query),
@@ -109,7 +145,7 @@ const RevenueDashboard: React.FC = () => {
     } finally {
       setLoading(false);
     }
-  }, [currency, from, platform, status, to, page]);
+  }, [currency, environment, from, eventType, productId, to, page]);
 
   useEffect(() => {
     fetchData();
@@ -117,7 +153,11 @@ const RevenueDashboard: React.FC = () => {
 
   useEffect(() => {
     setPage(1);
-  }, [currency, from, to, platform, status]);
+  }, [currency, environment, from, to, eventType, productId]);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const refundRate = useMemo(() => {
     if (!stats) return 0;
@@ -184,6 +224,17 @@ const RevenueDashboard: React.FC = () => {
               <option value={PaymentCurrency.VND}>VND</option>
             </select>
 
+            <select
+              value={environment}
+              onChange={(e) =>
+                setEnvironment(e.target.value as PaymentEnvironment)
+              }
+              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+            >
+              <option value={PaymentEnvironment.PRODUCTION}>Production</option>
+              <option value={PaymentEnvironment.SANDBOX}>Sandbox</option>
+            </select>
+
             <div className="flex items-center gap-2">
               <label className="text-xs text-slate-500">Từ</label>
               <input
@@ -214,27 +265,48 @@ const RevenueDashboard: React.FC = () => {
             </div>
 
             <select
-              value={platform}
-              onChange={(e) => setPlatform(e.target.value)}
+              value={eventType}
+              onChange={(e) => setEventType(e.target.value)}
               className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
             >
-              <option value="">Tất cả platform</option>
-              <option value={PaymentPlatform.APPLE}>Apple</option>
-              <option value={PaymentPlatform.GOOGLE}>Google</option>
+              <option value="">Tất cả event</option>
+              <option value={PurchaseEventType.INITIAL}>
+                {eventTypeLabel[PurchaseEventType.INITIAL]}
+              </option>
+              <option value={PurchaseEventType.RENEWAL}>
+                {eventTypeLabel[PurchaseEventType.RENEWAL]}
+              </option>
+              <option value={PurchaseEventType.CANCEL}>
+                {eventTypeLabel[PurchaseEventType.CANCEL]}
+              </option>
+              <option value={PurchaseEventType.REFUND}>
+                {eventTypeLabel[PurchaseEventType.REFUND]}
+              </option>
             </select>
 
-            <select
-              value={status}
-              onChange={(e) => setStatus(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
-            >
-              <option value="">Tất cả trạng thái</option>
-              <option value={PurchaseStatus.PAID}>Paid</option>
-              <option value={PurchaseStatus.PENDING}>Pending</option>
-              <option value={PurchaseStatus.FAILED}>Failed</option>
-              <option value={PurchaseStatus.CANCELED}>Canceled</option>
-              <option value={PurchaseStatus.REFUNDED}>Refunded</option>
-            </select>
+            <div className="flex flex-col gap-1">
+              <select
+                value={productId}
+                onChange={(e) => setProductId(e.target.value)}
+                disabled={productLoading}
+                className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500 disabled:opacity-60"
+              >
+                <option value="">Sản phẩm</option>
+                {products.map((product) => (
+                  <option
+                    key={product.id || product._id || product.productId}
+                    value={product.productId}
+                  >
+                    {product.title} - {product.productId}
+                  </option>
+                ))}
+              </select>
+              {productError && (
+                <span className="text-[11px] text-amber-600">
+                  {productError}
+                </span>
+              )}
+            </div>
           </div>
 
           <button
@@ -252,27 +324,42 @@ const RevenueDashboard: React.FC = () => {
           </div>
         )}
 
-                <div className="overflow-x-auto">
+        <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-slate-100">
             <thead className="bg-slate-50">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">User</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">Product</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">Platform</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">Giá</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">Event</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">Thời gian</th>
-                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">Status</th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  User
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Product
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Platform
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Giá
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Event
+                </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Thời gian
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-500">Đang tải dữ liệu...</td>
+                  <td colSpan={6} className="py-10 text-center text-slate-500">
+                    Đang tải dữ liệu...
+                  </td>
                 </tr>
               ) : entries.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-500">Chưa có giao dịch nào trong khoảng thời gian này.</td>
+                  <td colSpan={6} className="py-10 text-center text-slate-500">
+                    Chưa có giao dịch nào trong khoảng thời gian này.
+                  </td>
                 </tr>
               ) : (
                 entries.map((entry) => {
@@ -289,14 +376,26 @@ const RevenueDashboard: React.FC = () => {
                     <tr key={entry.id} className="hover:bg-slate-50/70">
                       <td className="px-4 py-3">
                         <div className="space-y-1">
-                          <p className="text-sm font-semibold text-slate-900">{entry.userName || entry.userEmail || "N/A"}</p>
-                          {entry.userEmail && <p className="text-[11px] text-slate-500">{entry.userEmail}</p>}
+                          <p className="text-sm font-semibold text-slate-900">
+                            {entry.userName || entry.userEmail || "N/A"}
+                          </p>
+                          {entry.userEmail && (
+                            <p className="text-[11px] text-slate-500">
+                              {entry.userEmail}
+                            </p>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="space-y-1">
-                          <p className="text-sm font-semibold text-slate-900">{entry.productId}</p>
-                          {entry.orderId && <p className="text-[11px] text-slate-500">Order: {entry.orderId}</p>}
+                          <p className="text-sm font-semibold text-slate-900">
+                            {entry.productId}
+                          </p>
+                          {entry.orderId && (
+                            <p className="text-[11px] text-slate-500">
+                              Order: {entry.orderId}
+                            </p>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -305,20 +404,21 @@ const RevenueDashboard: React.FC = () => {
                           {platformLabels[entry.platform]}
                         </span>
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-800">{priceLabel(amount, entry.currency)}</td>
+                      <td className="px-4 py-3 text-sm text-slate-800">
+                        {priceLabel(amount, entry.currency)}
+                      </td>
                       <td className="px-4 py-3 text-sm text-slate-700">
-                        <div className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-medium ${eventTone}`}>
+                        <div
+                          className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full border text-xs font-medium ${eventTone}`}
+                        >
                           <span className="h-2 w-2 rounded-full bg-current/60" />
                           <span className="uppercase tracking-wide">
                             {eventLabel}
                           </span>
                         </div>
                       </td>
-                      <td className="px-4 py-3 text-sm text-slate-700">{formatDateTime(entry.purchaseTime)}</td>
-                      <td className="px-4 py-3">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${purchaseStatusTone[entry.status]}`}>
-                          {purchaseStatusLabel[entry.status]}
-                        </span>
+                      <td className="px-4 py-3 text-sm text-slate-700">
+                        {formatDateTime(entry.purchaseTime)}
                       </td>
                     </tr>
                   );

@@ -37,3 +37,8 @@ export enum PurchaseEventType {
   CANCEL = "cancel",
   REFUND = "refund",
 }
+
+export enum PaymentEnvironment {
+  PRODUCTION = "production",
+  SANDBOX = "sandbox",
+}

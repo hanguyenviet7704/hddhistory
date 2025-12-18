@@ -1,4 +1,8 @@
-import { PaymentPlatform, SubscriptionStatus } from "../../enum/payment.enum";
+import {
+  PaymentEnvironment,
+  PaymentPlatform,
+  SubscriptionStatus,
+} from "../../enum/payment.enum";
 import { BaseQuery } from "../common.interface";
 
 export interface ISubscription {
@@ -23,6 +27,7 @@ export interface DeleteSubscriptionPayload {
 }
 
 export class SubscriptionListQuery extends BaseQuery {
+  environment!: PaymentEnvironment;
   userId?: string = "";
   platform?: PaymentPlatform;
   status?: SubscriptionStatus;
@@ -34,6 +39,7 @@ export class SubscriptionListQuery extends BaseQuery {
 
   override toQueryParams(): string {
     const params = new URLSearchParams(super.toQueryParams());
+    params.set("environment", this.environment);
     if (this.userId) params.set("userId", this.userId);
     if (this.platform) params.set("platform", this.platform);
     if (this.status) params.set("status", this.status);
