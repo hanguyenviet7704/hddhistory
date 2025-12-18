@@ -22,7 +22,7 @@ class RoleplayContent extends StatelessWidget {
                 padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + MediaQuery.paddingOf(context).bottom),
                 child: RoleplayContentList(
                   key: ValueKey(currentSection.id),
-                  section: currentSection,
+                  roleplayData: currentSection,
                 ),
               ),
             ),

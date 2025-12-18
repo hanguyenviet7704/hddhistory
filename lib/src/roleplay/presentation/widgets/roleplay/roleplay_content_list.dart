@@ -1,9 +1,9 @@
 part of '../../../roleplay.dart';
 
 class RoleplayContentList extends StatefulWidget {
-  final RoleplayEntity section;
+  final RoleplayEntity roleplayData;
 
-  const RoleplayContentList({super.key, required this.section});
+  const RoleplayContentList({super.key, required this.roleplayData});
 
   @override
   State<RoleplayContentList> createState() => _RoleplayContentListState();
@@ -16,9 +16,14 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   final ScrollController _scrollController = ScrollController();
   final Map<int, RoleplayAudioController> _audioControllers = {};
   final List<int> _visibleIndexes = [];
+  final Set<int> _completedExerciseIndexes = {};
+
+  Completer<void>? _pendingExerciseCompleter;
+  int? _pendingExerciseContentIndex;
 
   late List<RoleplayContentEntity> _displayableContents;
   bool _isSequencing = false;
+  bool _isDisposing = false;
 
   @override
   void initState() {
@@ -32,18 +37,21 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   @override
   void didUpdateWidget(RoleplayContentList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.section.id != widget.section.id) {
+    if (oldWidget.roleplayData.id != widget.roleplayData.id) {
       unawaited(_resetForNewSection());
     }
   }
 
   void _configureContents() {
-    _displayableContents = widget.section.contents.where((c) => c.type != RoleplayContentType.exercise).toList();
+    _cancelPendingExercise();
+    _completedExerciseIndexes.clear();
+    _displayableContents = widget.roleplayData.contents.toList();
     _prepareAudioControllers();
     _visibleIndexes.clear();
   }
 
   Future<void> _resetForNewSection() async {
+    _cancelPendingExercise();
     await _disposeControllers();
     if (!mounted) return;
     setState(() {
@@ -75,11 +83,11 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     _isSequencing = true;
 
     try {
-      while (mounted && _visibleIndexes.length < _displayableContents.length) {
-        final bool shouldWaitForLastAudio = _appendNextIndex();
+      while (!_isDisposing && mounted && _visibleIndexes.length < _displayableContents.length) {
+        final bool shouldWaitForLastCompletion = _appendNextIndex();
         await _waitBeforeNext();
-        if (!mounted) return;
-        if (shouldWaitForLastAudio) {
+        if (_isDisposing || !mounted) return;
+        if (shouldWaitForLastCompletion) {
           _updateSectionCompletion(true);
         }
       }
@@ -89,6 +97,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   }
 
   Future<void> _waitBeforeNext() async {
+    if (_isDisposing) return;
     if (_visibleIndexes.isEmpty) return;
 
     final int currentIndex = _visibleIndexes.last;
@@ -98,6 +107,12 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     final RoleplayAudioController? controller = _audioControllers[currentIndex];
 
     switch (content.type) {
+      case RoleplayContentType.exercise:
+        if (!_isExerciseCompleted(currentIndex, content.exercise)) {
+          await _showExerciseOverlayAndWait(contentIndex: currentIndex, exercise: content.exercise);
+          return;
+        }
+        break;
       case RoleplayContentType.conversation:
       case RoleplayContentType.leadingText:
         if (controller != null && controller.hasAudio) {
@@ -138,8 +153,57 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   }
 
   void _updateSectionCompletion(bool isCompleted) {
-    if (!mounted) return;
+    if (_isDisposing || !mounted) return;
     context.read<RoleplayCubit>().setCurrentSectionRevealed(isCompleted);
+  }
+
+  bool _isExerciseCompleted(int contentIndex, QuestionEntity exercise) {
+    return exercise.isCompleted || _completedExerciseIndexes.contains(contentIndex);
+  }
+
+  Future<void> _showExerciseOverlayAndWait({
+    required int contentIndex,
+    required QuestionEntity exercise,
+  }) async {
+    _cancelPendingExercise();
+    _pendingExerciseContentIndex = contentIndex;
+    _pendingExerciseCompleter = Completer<void>();
+
+    RoleplayExerciseOverlayManager.show(
+      context: context,
+      builder: (_) => RoleplayExerciseOverlayInteractive(
+        exercise: exercise,
+        onCheckPressed: () => _handleExerciseCheckPressed(contentIndex),
+      ),
+    );
+
+    await _pendingExerciseCompleter!.future;
+  }
+
+  void _handleExerciseCheckPressed(int contentIndex) {
+    if (_isDisposing || !mounted) return;
+    if (_pendingExerciseContentIndex != contentIndex) return;
+
+    RoleplayExerciseOverlayManager.hide();
+    setState(() {
+      _completedExerciseIndexes.add(contentIndex);
+    });
+    _scheduleScrollToBottom();
+    _completePendingExercise();
+  }
+
+  void _completePendingExercise() {
+    final completer = _pendingExerciseCompleter;
+    _pendingExerciseCompleter = null;
+    _pendingExerciseContentIndex = null;
+    if (completer != null && !completer.isCompleted) {
+      completer.complete();
+    }
+  }
+
+  void _cancelPendingExercise() {
+    RoleplayExerciseOverlayManager.hide();
+    _completePendingExercise();
   }
 
   bool _appendNextIndex() {
@@ -155,6 +219,12 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     }
 
     final RoleplayAudioController? lastController = _audioControllers[newIndex];
+
+    final lastContent = _displayableContents[newIndex];
+    if (lastContent.type == RoleplayContentType.exercise && !_isExerciseCompleted(newIndex, lastContent.exercise)) {
+      return true;
+    }
+
     if (lastController != null && lastController.hasAudio) {
       return true;
     }
@@ -164,6 +234,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
 
   @override
   void dispose() {
+    _isDisposing = true;
+    _cancelPendingExercise();
     unawaited(_disposeControllers());
     _scrollController.dispose();
     super.dispose();
@@ -181,7 +253,10 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
 
   double _getBottomPadding(int index, int contentIndex) {
     if (index == _visibleIndexes.length - 1) return 0;
-    final content = _displayableContents[index];
+    final content = _displayableContents[contentIndex];
+    if (content.type == RoleplayContentType.exercise && !_isExerciseCompleted(contentIndex, content.exercise)) {
+      return 0;
+    }
     if (content.type != RoleplayContentType.conversation) return 16.h;
     final nextConversation = contentIndex < _displayableContents.length - 1 ? _displayableContents[contentIndex + 1].conversation : null;
     if (_isSamePerson(content.conversation, nextConversation)) return 0;
@@ -222,7 +297,10 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
             audioController: audioController,
           ),
           RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
-          RoleplayContentType.exercise => RoleplayExerciseContentWidget(exercise: content.exercise),
+          RoleplayContentType.exercise => RoleplayExerciseContentWidget(
+            exercise: content.exercise,
+            isCompleted: _isExerciseCompleted(contentIndex, content.exercise),
+          ),
         };
 
         return SizeTransition(

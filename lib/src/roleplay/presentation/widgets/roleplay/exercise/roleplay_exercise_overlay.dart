@@ -23,14 +23,51 @@ class RoleplayExerciseOverlayManager {
   static bool get isVisible => _currentEntry != null;
 }
 
+class RoleplayExerciseOverlayInteractive extends StatefulWidget {
+  final QuestionEntity exercise;
+  final VoidCallback onCheckPressed;
+
+  const RoleplayExerciseOverlayInteractive({
+    super.key,
+    required this.exercise,
+    required this.onCheckPressed,
+  });
+
+  @override
+  State<RoleplayExerciseOverlayInteractive> createState() => _RoleplayExerciseOverlayInteractiveState();
+}
+
+class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOverlayInteractive> {
+  bool _isExpanded = false;
+
+  void _expand() {
+    if (_isExpanded) return;
+    setState(() => _isExpanded = true);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return RoleplayExerciseOverlay(
+      exercise: widget.exercise,
+      isExpanded: _isExpanded,
+      onTapToAnswer: _expand,
+      onCheckPressed: widget.onCheckPressed,
+    );
+  }
+}
+
 class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;
   final bool isExpanded;
+  final VoidCallback? onTapToAnswer;
+  final VoidCallback? onCheckPressed;
 
   const RoleplayExerciseOverlay({
     super.key,
     required this.exercise,
     this.isExpanded = false,
+    this.onTapToAnswer,
+    this.onCheckPressed,
   });
 
   @override
@@ -60,7 +97,16 @@ class RoleplayExerciseOverlay extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _DragHandle(),
-              if (isExpanded) _ExpandedExerciseBody(questionText: exercise.questionText) else _CollapsedExerciseBody(questionText: exercise.questionText),
+              if (isExpanded)
+                _ExpandedExerciseBody(
+                  questionText: exercise.questionText,
+                  onCheckPressed: onCheckPressed,
+                )
+              else
+                _CollapsedExerciseBody(
+                  questionText: exercise.questionText,
+                  onTapToAnswer: onTapToAnswer,
+                ),
             ],
           ),
         ),
@@ -90,8 +136,12 @@ class _DragHandle extends StatelessWidget {
 
 class _CollapsedExerciseBody extends StatelessWidget {
   final String questionText;
+  final VoidCallback? onTapToAnswer;
 
-  const _CollapsedExerciseBody({required this.questionText});
+  const _CollapsedExerciseBody({
+    required this.questionText,
+    this.onTapToAnswer,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -118,6 +168,7 @@ class _CollapsedExerciseBody extends StatelessWidget {
             child: AppText(
               t.roleplay.rolePlayExerciseTapToAnswer,
               maxLines: 2,
+              onTap: onTapToAnswer,
               textAlign: TextAlign.center,
               style: AppStyle.text16.copyWith(
                 color: AppCustomColor.brandPrimary,
@@ -134,8 +185,12 @@ class _CollapsedExerciseBody extends StatelessWidget {
 
 class _ExpandedExerciseBody extends StatelessWidget {
   final String questionText;
+  final VoidCallback? onCheckPressed;
 
-  const _ExpandedExerciseBody({required this.questionText});
+  const _ExpandedExerciseBody({
+    required this.questionText,
+    this.onCheckPressed,
+  });
 
   List<String> get _placeholderOptions => const [
     'Căng thẳng, mệt mỏi từ trước đó',
@@ -186,23 +241,27 @@ class _ExpandedExerciseBody extends StatelessWidget {
             );
           }),
           24.verticalSpace,
-          SizedBox(
-            height: 48.h,
-            width: double.infinity,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: AppCustomColor.brandPrimary,
-                borderRadius: BorderRadius.circular(1000.r),
-              ),
-              child: Center(
-                child: AppText(
-                  t.exercise.exerciseCheckButton,
-                  maxLines: 1,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text16.copyWith(
-                    color: AppCustomColor.textWhite,
-                    fontWeight: FontWeight.w700,
-                    height: 1.5,
+          GestureDetector(
+            behavior: HitTestBehavior.opaque,
+            onTap: onCheckPressed,
+            child: SizedBox(
+              height: 48.h,
+              width: double.infinity,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  color: AppCustomColor.brandPrimary,
+                  borderRadius: BorderRadius.circular(1000.r),
+                ),
+                child: Center(
+                  child: AppText(
+                    t.exercise.exerciseCheckButton,
+                    maxLines: 1,
+                    textAlign: TextAlign.center,
+                    style: AppStyle.text16.copyWith(
+                      color: AppCustomColor.textWhite,
+                      fontWeight: FontWeight.w700,
+                      height: 1.5,
+                    ),
                   ),
                 ),
               ),
