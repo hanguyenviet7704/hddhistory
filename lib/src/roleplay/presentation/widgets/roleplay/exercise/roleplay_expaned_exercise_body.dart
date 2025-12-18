@@ -43,11 +43,14 @@ class _ExpandedExerciseBody extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget lessonBody = _buildExerciseLessonBody(exercise.type);
     Widget bottomButton = _buildBottomButton(context, lessonBody);
-    return Column(
-      children: [
-        lessonBody,
-        bottomButton,
-      ],
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          lessonBody,
+          60.verticalSpace,
+          bottomButton,
+        ],
+      ),
     );
   }
 }

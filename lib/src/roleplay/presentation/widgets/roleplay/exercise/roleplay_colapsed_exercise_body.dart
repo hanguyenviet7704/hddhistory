@@ -1,6 +1,5 @@
 part of '../../../../roleplay.dart';
 
-
 class _CollapsedExerciseBody extends StatelessWidget {
   final String questionText;
   final VoidCallback? onTapToAnswer;

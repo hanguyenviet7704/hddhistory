@@ -35,7 +35,12 @@ extension LearningItemEntityExtension on LearningItemEntity {
   bool get isPlayingMainQuestions => !isPlayingSubQuestions && !isPlayingRoleplayQuestions;
 
   List<QuestionEntity> get questions {
-    if (type == LearningItemType.exercise) return mainQuestions;
-    return [];
+    // if (type == LearningItemType.exercise) return mainQuestions;
+    //  if (type == LearningItemType.roleplay) {
+    //   if (roleplay.contents.isEmpty) return [];
+    //   return roleplay.contents.map((content) => content.exercise).toList();
+    // }
+    // return [];
+    return mainQuestions;
   }
 }

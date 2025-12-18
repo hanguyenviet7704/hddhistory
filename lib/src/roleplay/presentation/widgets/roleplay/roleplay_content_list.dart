@@ -176,7 +176,10 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         onCheckPressed: () => _handleExerciseCheckPressed(contentIndex),
       ),
       onOverlayShown: () {
-        AppDI.injector.get<ExerciseCubit>();
+        LearningItemEntity learningItem = LearningItemEntity(
+          mainQuestions: [exercise],
+        );
+        AppDI.injector.get<ExerciseCubit>().setRoleplayQuestions(learningItem);
       },
     );
 
