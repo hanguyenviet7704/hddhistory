@@ -30,3 +30,10 @@ export enum SubscriptionStatus {
   ON_HOLD = "on_hold", // payment fail quá nhiều lần, permission bị tạm khóa
   CANCELED = "canceled", // user đã tắt auto-renew, nhưng vẫn còn dùng đến cuối kỳ
 }
+
+export enum PurchaseEventType {
+  INITIAL = "initial",
+  RENEWAL = "renewal",
+  CANCEL = "cancel",
+  REFUND = "refund",
+}

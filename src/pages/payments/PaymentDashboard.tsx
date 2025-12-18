@@ -1,33 +1,33 @@
 import React, { useState } from "react";
 import {
   CreditCardIcon,
+  ChartPieIcon,
   SparklesIcon,
-  UserIcon,
 } from "@heroicons/react/24/outline";
-import ProductSection from "./components/ProductSection";
+import RevenueDashboard from "./components/RevenueDashboard";
 import SubscriptionSection from "./components/SubscriptionSection";
-import UserPremiumSection from "./components/UserPremiumSection";
+import ProductSection from "./components/ProductSection";
 
-type TabKey = "products" | "userPremium" | "subscriptions";
+type TabKey = "dashboard" | "subscriptions" | "products";
 
 const PaymentDashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<TabKey>("products");
+  const [activeTab, setActiveTab] = useState<TabKey>("dashboard");
 
   const tabs: { key: TabKey; label: string; description: string }[] = [
     {
-      key: "products",
-      label: "Product management",
-      description: "Quản lý SKU, giá và trạng thái hiển thị.",
-    },
-    {
-      key: "userPremium",
-      label: "User Premium",
-      description: "Tra cứu gói premium hiện tại và log mua hàng của user.",
+      key: "dashboard",
+      label: "Dashboard",
+      description: "Tổng quan doanh thu.",
     },
     {
       key: "subscriptions",
       label: "Subscriptions",
       description: "Theo dõi gia hạn và chu kỳ premium.",
+    },
+    {
+      key: "products",
+      label: "Product management",
+      description: "Quản lý SKU, giá và trạng thái hiển thị.",
     },
   ];
 
@@ -81,11 +81,11 @@ const PaymentDashboard: React.FC = () => {
                       : "bg-slate-100 text-slate-500"
                   }`}
                 >
+                  {tab.key === "dashboard" && (
+                    <ChartPieIcon className="h-5 w-5" />
+                  )}
                   {tab.key === "products" && (
                     <CreditCardIcon className="h-5 w-5" />
-                  )}
-                  {tab.key === "userPremium" && (
-                    <UserIcon className="h-5 w-5" />
                   )}
                   {tab.key === "subscriptions" && (
                     <SparklesIcon className="h-5 w-5" />
@@ -96,12 +96,12 @@ const PaymentDashboard: React.FC = () => {
           ))}
         </div>
 
-        {activeTab === "products" ? (
-          <ProductSection />
-        ) : activeTab === "userPremium" ? (
-          <UserPremiumSection />
-        ) : (
+        {activeTab === "dashboard" ? (
+          <RevenueDashboard />
+        ) : activeTab === "subscriptions" ? (
           <SubscriptionSection />
+        ) : (
+          <ProductSection />
         )}
       </div>
     </div>

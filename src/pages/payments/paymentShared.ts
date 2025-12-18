@@ -2,6 +2,7 @@ import {
   PaymentCurrency,
   PaymentPlatform,
   ProductType,
+  PurchaseEventType,
   PurchaseStatus,
   SubscriptionStatus,
 } from "../../types/enum/payment.enum";
@@ -32,6 +33,20 @@ export const purchaseStatusTone: Record<PurchaseStatus, string> = {
   [PurchaseStatus.FAILED]: "bg-red-50 text-red-700 border-red-200",
   [PurchaseStatus.CANCELED]: "bg-slate-100 text-slate-700 border-slate-200",
   [PurchaseStatus.REFUNDED]: "bg-purple-50 text-purple-700 border-purple-100",
+};
+
+export const eventTypeLabel: Record<PurchaseEventType, string> = {
+  [PurchaseEventType.INITIAL]: "Initial",
+  [PurchaseEventType.RENEWAL]: "Renewal",
+  [PurchaseEventType.CANCEL]: "Cancel",
+  [PurchaseEventType.REFUND]: "Refund",
+};
+
+export const eventTypeTone: Record<PurchaseEventType, string> = {
+  [PurchaseEventType.INITIAL]: "bg-sky-50 text-sky-700 border-sky-100",
+  [PurchaseEventType.RENEWAL]: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  [PurchaseEventType.CANCEL]: "bg-amber-50 text-amber-800 border-amber-200",
+  [PurchaseEventType.REFUND]: "bg-purple-50 text-purple-700 border-purple-100",
 };
 
 export const subscriptionStatusLabel: Record<SubscriptionStatus, string> = {

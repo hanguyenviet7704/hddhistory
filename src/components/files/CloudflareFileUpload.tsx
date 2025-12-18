@@ -1,10 +1,11 @@
 // src/components/common/CloudflareFileUpload.tsx
-import React, { useState, useEffect, useId } from "react";
+import React, { useState, useEffect, useId, useRef } from "react";
 import {
   CloudArrowUpIcon,
   XMarkIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
+import lottie, { AnimationItem } from "lottie-web";
 import { UploadFileToCloudflare } from "../../types/interface/files/cloudflare.interface";
 import { cloudflareService } from "../../services/cloudflareR2Service";
 
@@ -34,6 +35,30 @@ export default function CloudflareFileUpload({
   const [previewUrl, setPreviewUrl] = useState(initialUrl);
   const [fileType, setFileType] = useState<string>(""); // 👈 thêm state để biết đang xử lý audio hay image
   const [fileName, setFileName] = useState<string>("");
+  const [animationError, setAnimationError] = useState(false);
+  const animationContainerRef = useRef<HTMLDivElement | null>(null);
+  const animationInstanceRef = useRef<AnimationItem | null>(null);
+  const extractKeyFromUrl = (url: string) => {
+    try {
+      const parsed = new URL(url);
+      return decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+    } catch {
+      return "";
+    }
+  };
+
+  const normalizeAnimationData = (raw: any) => {
+    if (!raw) return null;
+    if (typeof raw === "string") {
+      try {
+        return JSON.parse(raw);
+      } catch {
+        return null;
+      }
+    }
+    if (raw.data) return raw.data;
+    return raw;
+  };
 
   useEffect(() => {
     setPreviewUrl(initialUrl);
@@ -73,6 +98,7 @@ export default function CloudflareFileUpload({
     setPreviewUrl("");
     onUrlChange("");
     setError(null);
+    setAnimationError(false);
   };
 
   const isAudio =
@@ -90,6 +116,80 @@ export default function CloudflareFileUpload({
     accept.includes("json") ||
     accept.includes("lottie") ||
     /\.(json|lottie)$/i.test(previewUrl);
+
+  useEffect(() => {
+    if (!isAnimation || !previewUrl || !animationContainerRef.current) {
+      animationInstanceRef.current?.destroy();
+      animationInstanceRef.current = null;
+      setAnimationError(false);
+      return;
+    }
+
+    let cancelled = false;
+
+    const loadAnimation = async () => {
+      setAnimationError(false);
+      animationInstanceRef.current?.destroy();
+      animationInstanceRef.current = null;
+
+      const attachAnimation = (animationData: any) => {
+        if (cancelled || !animationContainerRef.current) return;
+        animationInstanceRef.current = lottie.loadAnimation({
+          container: animationContainerRef.current,
+          renderer: "svg",
+          loop: true,
+          autoplay: true,
+          animationData,
+        });
+        const onDataFailed = () => setAnimationError(true);
+        animationInstanceRef.current?.addEventListener(
+          "data_failed",
+          onDataFailed
+        );
+        animationInstanceRef.current?.addEventListener("error", onDataFailed);
+      };
+
+      try {
+        let data: any = null;
+
+        // Prefer backend proxy to avoid CORS issues with R2
+        const key = extractKeyFromUrl(previewUrl) || previewUrl;
+        try {
+          const proxied = await cloudflareService.download(key);
+          data = normalizeAnimationData(proxied);
+        } catch (proxyErr) {
+          console.error("Animation proxy error:", proxyErr);
+        }
+
+        // Fallback to direct fetch if proxy did not return usable data
+        try {
+          const res = await fetch(previewUrl, { mode: "cors" });
+          if (res.ok) {
+            data = await res.json();
+          }
+        } catch {
+          // Ignore fetch errors; we'll show a preview error instead
+        }
+
+        if (!data) {
+          throw new Error("Cannot load animation data");
+        }
+
+        attachAnimation(data);
+      } catch (err) {
+        console.error("Animation preview error:", err);
+        if (!cancelled) setAnimationError(true);
+      }
+    };
+
+    loadAnimation();
+
+    return () => {
+      cancelled = true;
+      animationInstanceRef.current?.destroy();
+      animationInstanceRef.current = null;
+    };
+  }, [isAnimation, previewUrl]);
 
   return (
     <div>
@@ -116,21 +216,30 @@ export default function CloudflareFileUpload({
                 Trình duyệt của bạn không hỗ trợ phát audio.
               </audio>
             ) : isAnimation ? (
-              <div className="w-full h-full flex flex-col items-center justify-center text-sm text-gray-700">
-                <div className="px-3 py-2 bg-gray-100 border border-dashed border-gray-300 rounded">
-                  <span className="font-semibold">Animation file</span>
-                  <div className="text-xs text-gray-500">
-                    {fileName || previewUrl}
+              <div className="relative w-full h-full bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
+                <div
+                  ref={animationContainerRef}
+                  className="w-full h-full flex items-center justify-center"
+                />
+                {animationError && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-sm text-red-600 px-3 text-center">
+                    Không thể hiển thị preview cho animation này. Vui lòng kiểm
+                    tra lại file.
                   </div>
+                )}
+                <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 text-xs text-gray-700">
+                  <span className="font-semibold truncate">
+                    {fileName || "Animation preview"}
+                  </span>
+                  <a
+                    href={previewUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="text-indigo-600 hover:underline"
+                  >
+                    Open
+                  </a>
                 </div>
-                <a
-                  href={previewUrl}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="mt-2 text-indigo-600 hover:underline text-xs"
-                >
-                  Open
-                </a>
               </div>
             ) : isImage ? (
               <img

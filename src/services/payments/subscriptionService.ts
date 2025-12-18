@@ -1,4 +1,7 @@
-import { SubscriptionListQuery } from "../../types/interface/payments/subscription.interface";
+import {
+  DeleteSubscriptionPayload,
+  SubscriptionListQuery,
+} from "../../types/interface/payments/subscription.interface";
 import axiosClient from "../axiosClient";
 
 export const subscriptionService = {
@@ -17,5 +20,11 @@ export const subscriptionService = {
       `/payment/subscriptions/users/${userId}/active-premium`
     );
     return res.data;
+  },
+
+  async remove(id: string, payload: Partial<DeleteSubscriptionPayload>) {
+    return axiosClient.delete(`/payment/subscriptions/${id}`, {
+      data: payload,
+    });
   },
 };
