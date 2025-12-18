@@ -1,4 +1,27 @@
-part of '../../../roleplay.dart';
+part of '../../../../roleplay.dart';
+
+typedef RoleplayExerciseOverlayBuilder = Widget Function(BuildContext context);
+
+class RoleplayExerciseOverlayManager {
+  static OverlayEntry? _currentEntry;
+
+  static void show({
+    required BuildContext context,
+    required RoleplayExerciseOverlayBuilder builder,
+  }) {
+    hide();
+    final overlay = OverlayEntry(builder: builder);
+    Overlay.of(context, rootOverlay: true).insert(overlay);
+    _currentEntry = overlay;
+  }
+
+  static void hide() {
+    _currentEntry?.remove();
+    _currentEntry = null;
+  }
+
+  static bool get isVisible => _currentEntry != null;
+}
 
 class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;

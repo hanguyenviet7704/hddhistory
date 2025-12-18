@@ -1,4 +1,4 @@
-part of '../../../roleplay.dart';
+part of '../../../../roleplay.dart';
 
 class RoleplayExerciseContentWidget extends StatelessWidget {
   final QuestionEntity exercise;
