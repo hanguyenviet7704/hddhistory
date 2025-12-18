@@ -8,11 +8,13 @@ class RoleplayExerciseOverlayManager {
   static void show({
     required BuildContext context,
     required RoleplayExerciseOverlayBuilder builder,
+    required VoidCallback onOverlayShown,
   }) {
     hide();
     final overlay = OverlayEntry(builder: builder);
     Overlay.of(context, rootOverlay: true).insert(overlay);
     _currentEntry = overlay;
+    onOverlayShown();
   }
 
   static void hide() {
@@ -47,11 +49,24 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
 
   @override
   Widget build(BuildContext context) {
-    return RoleplayExerciseOverlay(
-      exercise: widget.exercise,
-      isExpanded: _isExpanded,
-      onTapToAnswer: _expand,
-      onCheckPressed: widget.onCheckPressed,
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
+        // BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+        // BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+      ],
+      child: RoleplayExerciseOverlay(
+        exercise: widget.exercise,
+        isExpanded: _isExpanded,
+        onTapToAnswer: _expand,
+        onCheckPressed: widget.onCheckPressed,
+      ),
     );
   }
 }
@@ -91,7 +106,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
         ),
         child: SafeArea(
           top: false,
-          minimum: EdgeInsets.only(bottom: viewPadding.bottom > 0 ? viewPadding.bottom / 2 : 12.h),
+          // minimum: EdgeInsets.only(bottom: viewPadding.bottom > 0 ? viewPadding.bottom / 2 : 12.h),
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -99,7 +114,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
               _DragHandle(),
               if (isExpanded)
                 _ExpandedExerciseBody(
-                  questionText: exercise.questionText,
+                  exercise: exercise,
                   onCheckPressed: onCheckPressed,
                 )
               else
@@ -129,189 +144,6 @@ class _DragHandle extends StatelessWidget {
             borderRadius: BorderRadius.circular(30.r),
           ),
         ),
-      ),
-    );
-  }
-}
-
-class _CollapsedExerciseBody extends StatelessWidget {
-  final String questionText;
-  final VoidCallback? onTapToAnswer;
-
-  const _CollapsedExerciseBody({
-    required this.questionText,
-    this.onTapToAnswer,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Translations t = Translations.of(context);
-
-    return Padding(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppText(
-            questionText,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: AppStyle.text20.copyWith(
-              color: AppCustomColor.textPrimary,
-              fontWeight: FontWeight.w700,
-              height: 1.5,
-            ),
-          ),
-          24.verticalSpace,
-          Center(
-            child: AppText(
-              t.roleplay.rolePlayExerciseTapToAnswer,
-              maxLines: 2,
-              onTap: onTapToAnswer,
-              textAlign: TextAlign.center,
-              style: AppStyle.text16.copyWith(
-                color: AppCustomColor.brandPrimary,
-                fontWeight: FontWeight.w700,
-                height: 1.5,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ExpandedExerciseBody extends StatelessWidget {
-  final String questionText;
-  final VoidCallback? onCheckPressed;
-
-  const _ExpandedExerciseBody({
-    required this.questionText,
-    this.onCheckPressed,
-  });
-
-  List<String> get _placeholderOptions => const [
-    'Căng thẳng, mệt mỏi từ trước đó',
-    'Câu từ mang tính xúc phạm',
-    'Đồng nghiệp đóng góp vô lý',
-    'Phản ứng theo bản năng',
-    'Im lặng đồng nghĩa là dễ "bị bắt nạt"',
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    final Translations t = Translations.of(context);
-
-    return Padding(
-      padding: EdgeInsets.all(20.w),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AppText(
-            questionText,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: AppStyle.text20.copyWith(
-              color: AppCustomColor.textPrimary,
-              fontWeight: FontWeight.w700,
-              height: 1.5,
-            ),
-          ),
-          24.verticalSpace,
-          AppText(
-            t.roleplay.rolePlayExerciseSelectAllThatApply,
-            style: AppStyle.text12.copyWith(
-              color: AppCustomColor.textTertiary,
-              fontWeight: FontWeight.w500,
-              height: 1.5,
-            ),
-          ),
-          8.verticalSpace,
-          ..._placeholderOptions.asMap().entries.map((entry) {
-            final bool isSelected = entry.key < 2;
-            return Padding(
-              padding: EdgeInsets.only(bottom: entry.key == _placeholderOptions.length - 1 ? 0 : 8.h),
-              child: _AnswerCard(
-                label: entry.value,
-                isSelected: isSelected,
-              ),
-            );
-          }),
-          24.verticalSpace,
-          GestureDetector(
-            behavior: HitTestBehavior.opaque,
-            onTap: onCheckPressed,
-            child: SizedBox(
-              height: 48.h,
-              width: double.infinity,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: AppCustomColor.brandPrimary,
-                  borderRadius: BorderRadius.circular(1000.r),
-                ),
-                child: Center(
-                  child: AppText(
-                    t.exercise.exerciseCheckButton,
-                    maxLines: 1,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.text16.copyWith(
-                      color: AppCustomColor.textWhite,
-                      fontWeight: FontWeight.w700,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AnswerCard extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-
-  const _AnswerCard({
-    required this.label,
-    required this.isSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final Color borderColor = isSelected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary;
-    final TextStyle textStyle = isSelected
-        ? AppStyle.text14.copyWith(
-            color: AppCustomColor.textSecondary,
-            fontWeight: FontWeight.w500,
-            height: 1.75,
-          )
-        : AppStyle.text14.copyWith(
-            color: AppCustomColor.textSecondary,
-            height: 1.75,
-          );
-
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 12.h, horizontal: 16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(12.r),
-        border: Border.all(
-          color: borderColor,
-          width: 2,
-        ),
-      ),
-      child: AppText(
-        label,
-        maxLines: 2,
-        overflow: TextOverflow.ellipsis,
-        style: textStyle,
       ),
     );
   }

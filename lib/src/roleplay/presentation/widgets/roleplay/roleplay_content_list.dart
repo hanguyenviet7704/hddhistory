@@ -175,6 +175,9 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         exercise: exercise,
         onCheckPressed: () => _handleExerciseCheckPressed(contentIndex),
       ),
+      onOverlayShown: () {
+        AppDI.injector.get<ExerciseCubit>();
+      },
     );
 
     await _pendingExerciseCompleter!.future;
