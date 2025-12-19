@@ -28,7 +28,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   void nextQuestion() {
     AppDI.injector.get<LessonCubit>().setIsShowResultOverlay(false);
-    setQuestionPoint(state.currentQuestion);
+    // setQuestionPoint(state.currentQuestion);
 
     if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) {
       AppDI.injector.get<LessonCubit>().nextLearningItem();
@@ -110,6 +110,36 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   //* Roleplay Page Flow
   void setQuestionPoint(QuestionEntity question) {
-    // Roleplay scoring removed; no-op for lesson flow
+    if (state.currentLearningItem.type != LearningItemType.roleplay) return;
+    KeypointEntity point = question.keypoint.copyWith(isUseRoleplayModule: true);
+
+    switch (question.type) {
+      case QuestionTypeEnum.multipleChoice || QuestionTypeEnum.singleChoice:
+        int score = AppDI.injector.get<ChoiceCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.cuesPlacement:
+        int score = AppDI.injector.get<CuesPlacementCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.dragAndDrop:
+        int score = AppDI.injector.get<DragAndDropCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.arrangeTheSequence:
+        int score = AppDI.injector.get<ArrangeTheSequenceCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.stressPlacement:
+        int score = AppDI.injector.get<MarkStressWordCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+      case QuestionTypeEnum.speaking:
+        int score = AppDI.injector.get<SpeakingCubit>().pointCalculation();
+        point = point.copyWith(point: score);
+        break;
+    }
+    
+    AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
   }
 }

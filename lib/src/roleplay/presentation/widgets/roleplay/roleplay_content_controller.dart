@@ -188,16 +188,23 @@ class RoleplayContentController extends ChangeNotifier {
     _onShowExerciseOverlay(
       contentIndex: contentIndex,
       exercise: exercise,
-      onCheckPressed: () => handleExerciseCheckPressed(contentIndex),
+      onCheckPressed: () => handleExerciseCheckPressed(
+        contentIndex: contentIndex,
+        exercise: exercise,
+      ),
     );
 
     await _pendingExerciseCompleter!.future;
   }
 
-  void handleExerciseCheckPressed(int contentIndex) {
+  void handleExerciseCheckPressed({
+    required int contentIndex,
+    required QuestionEntity exercise,
+  }) {
     if (_isDisposing) return;
     if (_pendingExerciseContentIndex != contentIndex) return;
 
+    AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);
     _onHideOverlays();
     _completedExerciseIndexes.add(contentIndex);
     notifyListeners();
