@@ -10,7 +10,6 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     this._sendFeedbackRoleplayUseCase,
   ) : super(RoleplayState.initial());
 
-
   void reset() => emit(RoleplayState.initial());
   void setCurrentLesson(LessonEntity lesson) => emit(state.copyWith(currentLesson: lesson));
 
@@ -38,6 +37,37 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
   void setCurrentSectionRevealed(bool isRevealed) {
     if (state.isCurrentSectionRevealed == isRevealed) return;
     emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
+  }
+
+  void setExerciseRecordAnswer({
+    required int questionId,
+    String? textAnswer,
+    String? recordPath,
+  }) {
+    if (state.currentRoleplay.contents.isEmpty) return;
+
+    final updatedContents = state.currentRoleplay.contents.map((content) {
+      if (content.type != RoleplayContentType.exercise || content.exercise.id != questionId) {
+        return content;
+      }
+
+      final updatedResult = content.exercise.result.copyWith(
+        textAnswer: (textAnswer != null && textAnswer.isNotEmpty) ? textAnswer : content.exercise.result.textAnswer,
+        recordPath: (recordPath != null && recordPath.isNotEmpty) ? recordPath : content.exercise.result.recordPath,
+      );
+
+      return content.copyWith(
+        exercise: content.exercise.copyWith(result: updatedResult),
+      );
+    }).toList();
+
+    emit(
+      state.copyWith(
+        currentLearningItem: state.currentLearningItem.copyWith(
+          roleplay: state.currentRoleplay.copyWith(contents: updatedContents),
+        ),
+      ),
+    );
   }
 
   void loadLearningItem(String id, {BaseMultiLanguage? estimateCompleTime}) async {

@@ -27,32 +27,31 @@ class _RoleplayPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoleplayCubit, RoleplayState, RoleplayEntity>(
-      selector: (state) => state.currentRoleplay,
-      builder: (context, currentSection) {
-        final bool hasHeroImage = currentSection.image.isNotEmpty;
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: hasHeroImage ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              RoleplayHeroBackground(),
-              SafeArea(
-                bottom: false,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    RoleplayPageHeader(
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: context.select((RoleplayCubit bloc) => bloc.state.currentRoleplay.image.isNotEmpty ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          RoleplayHeroBackground(),
+          SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                BlocSelector<RoleplayCubit, RoleplayState, bool>(
+                  selector: (state) => state.currentRoleplay.image.isNotEmpty,
+                  builder: (context, hasHeroImage) {
+                    return RoleplayPageHeader(
                       useLightContent: hasHeroImage,
-                    ),
-                    RoleplayContent(currentSection: currentSection),
-                  ],
+                    );
+                  },
                 ),
-              ),
-            ],
+                RoleplayContent(),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

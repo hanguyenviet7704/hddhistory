@@ -1,8 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayContent extends StatelessWidget {
-  final RoleplayEntity currentSection;
-  const RoleplayContent({super.key, required this.currentSection});
+  const RoleplayContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -20,9 +19,14 @@ class RoleplayContent extends StatelessWidget {
               ),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + MediaQuery.paddingOf(context).bottom),
-                child: RoleplayContentList(
-                  key: ValueKey(currentSection.id),
-                  roleplayData: currentSection,
+                child: BlocSelector<RoleplayCubit, RoleplayState, RoleplayEntity>(
+                  selector: (state) => state.currentRoleplay,
+                  builder: (context, currentRoleplay) {
+                    return RoleplayContentList(
+                      key: ValueKey(currentRoleplay.id),
+                      roleplayData: currentRoleplay,
+                    );
+                  },
                 ),
               ),
             ),

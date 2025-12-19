@@ -46,23 +46,24 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     return _correctOptions;
   }
 
-  String? get _userTextAnswer {
-    if (exercise.targetArea.text.isNotEmpty) return exercise.targetArea.text;
-    if (exercise.explanation.text.isNotEmpty) return exercise.explanation.text;
-    return null;
-  }
-
-  String? get _audioUrl {
-    if (exercise.record.isNotEmpty) return exercise.record;
-    return null;
-  }
-
   @override
   Widget build(BuildContext context) {
     final t = Translations.of(context);
     final bool isSpeaking = exercise.type == QuestionTypeEnum.speaking;
     final Color labelColor = AppCustomColor.successGreen;
     final String label = isSpeaking ? t.exercise.exerciseYourAnswer : t.exercise.exerciseFeedbackCorrectAnswer;
+    final QuestionEntity? roleplayExercise = context.select<RoleplayCubit, QuestionEntity?>(
+      (cubit) {
+        for (final content in cubit.state.currentRoleplay.contents) {
+          if (content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id) {
+            return content.exercise;
+          }
+        }
+        return null;
+      },
+    );
+    final String recordText = roleplayExercise?.result.textAnswer ?? '';
+    final String recordAudio = roleplayExercise?.result.recordPath ?? '';
 
     return Container(
       width: double.infinity,
@@ -92,13 +93,13 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
             ),
           ),
           8.verticalSpace,
-          _buildAnswerBody(context),
+          _buildAnswerBody(context, recordText: recordText, recordAudio: recordAudio),
         ],
       ),
     );
   }
 
-  Widget _buildAnswerBody(BuildContext context) {
+  Widget _buildAnswerBody(BuildContext context, {String? recordText, String? recordAudio}) {
     switch (exercise.type) {
       case QuestionTypeEnum.singleChoice:
         return _buildBulletList([_correctOptions.firstOrNull ?? '']);
@@ -114,7 +115,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
       case QuestionTypeEnum.cuesPlacement:
         return _buildBulletList(_correctOptions);
       case QuestionTypeEnum.speaking:
-        return _buildSpeakingAnswer(context);
+        return _buildSpeakingAnswer(recordText: recordText, recordAudio: recordAudio);
     }
   }
 
@@ -198,7 +199,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
       }
 
       if (i < answers.length) {
-        final answer = answers[i];
+        final answer = answers[i].replaceAll('"', '').replaceAll('“', '').replaceAll('”', '').trim();
         spans.add(
           TextSpan(
             text: answer,
@@ -215,8 +216,8 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     return RichText(text: TextSpan(children: spans));
   }
 
-  Widget _buildSpeakingAnswer(BuildContext context) {
-    if (_audioUrl != null && _audioUrl!.isNotEmpty) {
+  Widget _buildSpeakingAnswer({String? recordText, String? recordAudio}) {
+    if (recordAudio != null && recordAudio.isNotEmpty) {
       return Container(
         width: double.infinity,
         padding: EdgeInsets.all(12.w),
@@ -224,11 +225,14 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
           color: AppCustomColor.backgroundGray,
           borderRadius: BorderRadius.circular(12.r),
         ),
-        child: AudioPlayerWidget(audioUrl: _audioUrl),
+        child: AudioPlayerWidget(audioUrl: recordAudio),
       );
     }
 
-    final fallback = _userTextAnswer ?? context.text.exercise.exerciseFeedbackCorrectAnswer;
-    return _buildParagraph(fallback);
+    if (recordText != null && recordText.isNotEmpty) {
+      return _buildParagraph(recordText);
+    }
+
+    return const SizedBox.shrink();
   }
 }

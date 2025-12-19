@@ -49,17 +49,15 @@ enum QuestionTypeEnum {
 @freezed
 abstract class QuestionResultEntity with _$QuestionResultEntity {
   const factory QuestionResultEntity({
-    @Default(0) int id,
-    @Default(0) int questionId,
-    @Default(0) int answerId,
-    @Default(0) int score,
+    @Default('') String recordPath,
+    @Default('') String textAnswer,
   }) = _QuestionResultEntity;
 
   factory QuestionResultEntity.fromJson(Map<String, dynamic> json) => _$QuestionResultEntityFromJson(json);
 }
 
 extension QuestionEntityExtension on QuestionEntity {
-  bool get isCompleted => result.score > 0 && result.answerId > 0;
+  bool get isCompleted => false;
 
   String get questionText {
     if (document.isEmpty) return 'No question text';
