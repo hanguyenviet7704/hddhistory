@@ -39,6 +39,8 @@ import {
 import PaymentStatCard from "./PaymentStatCard";
 import {
   formatDateTime,
+  platformIconTone,
+  platformIcons,
   platformLabels,
   priceLabel,
   purchaseStatusLabel,
@@ -212,7 +214,6 @@ const SubscriptionSection: React.FC = () => {
       const normalized = normalizeSubscriptions(res);
       setSubscriptions(normalized);
       setLastCount(normalized.length);
-      console.log(1111, process.env.NODE_ENV);
     } catch (err: any) {
       console.error("Failed to fetch subscriptions", err);
       setError(
@@ -1181,6 +1182,8 @@ const SubscriptionSection: React.FC = () => {
               ) : (
                 filteredSubscriptions.map((sub) => {
                   const id = getSubscriptionId(sub);
+                  const PlatformIcon = platformIcons[sub.platform];
+                  const platformTone = platformIconTone[sub.platform];
                   return (
                     <tr key={id} className="hover:bg-slate-50/70">
                       <td className="px-4 py-3">
@@ -1213,7 +1216,7 @@ const SubscriptionSection: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                          <SparklesIcon className="h-4 w-4 text-amber-500" />
+                          <PlatformIcon className={`h-4 w-4 ${platformTone}`} />
                           {platformLabels[sub.platform]}
                         </span>
                       </td>
@@ -1394,6 +1397,10 @@ const SubscriptionSection: React.FC = () => {
                       <tbody className="divide-y divide-slate-100">
                         {relatedPurchases.map((purchase) => {
                           const amount = purchase.rawPrice ?? purchase.price;
+                          const PlatformIcon =
+                            platformIcons[purchase.platform];
+                          const platformTone =
+                            platformIconTone[purchase.platform];
                           return (
                             <tr
                               key={purchase.id}
@@ -1444,7 +1451,9 @@ const SubscriptionSection: React.FC = () => {
                               </td>
                               <td className="px-4 py-3">
                                 <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                                  <SparklesIcon className="h-4 w-4 text-amber-500" />
+                                  <PlatformIcon
+                                    className={`h-4 w-4 ${platformTone}`}
+                                  />
                                   {platformLabels[purchase.platform]}
                                 </span>
                               </td>
