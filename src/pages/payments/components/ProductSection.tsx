@@ -16,10 +16,7 @@ import {
   IProduct,
   ProductListQuery,
 } from "../../../types/interface/payments/product.interface";
-import {
-  PaymentPlatform,
-  ProductType,
-} from "../../../types/enum/payment.enum";
+import { PaymentPlatform, ProductType } from "../../../types/enum/payment.enum";
 import PaymentStatCard from "./PaymentStatCard";
 import { platformLabels, priceLabel, typeLabels } from "../paymentShared";
 
@@ -107,9 +104,10 @@ const ProductSection: React.FC = () => {
       (p) => p.platform === PaymentPlatform.GOOGLE
     ).length;
     const subs = products.filter((p) =>
-      [ProductType.SUBSCRIPTION_AUTO_RENEW, ProductType.SUBSCRIPTION_NON_RENEW].includes(
-        p.type
-      )
+      [
+        ProductType.SUBSCRIPTION_AUTO_RENEW,
+        ProductType.SUBSCRIPTION_NON_RENEW,
+      ].includes(p.type)
     ).length;
     return { total, active, ios, android, subs };
   }, [products]);
@@ -197,7 +195,8 @@ const ProductSection: React.FC = () => {
     () =>
       [...products].sort((a, b) => {
         // Best deal lên đầu, sau đó subs auto-renew, subs non-renew, còn lại
-        const bestDealScore = Number(b.bestDeal ?? false) - Number(a.bestDeal ?? false);
+        const bestDealScore =
+          Number(b.bestDeal ?? false) - Number(a.bestDeal ?? false);
         if (bestDealScore !== 0) return bestDealScore;
 
         const typePriority = (type: ProductType) => {
@@ -434,11 +433,11 @@ const ProductSection: React.FC = () => {
                           {product.productId}
                         </code>
                       </td>
-                  <td className="px-4 py-3">
+                      <td className="px-4 py-3">
                         <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-50 text-indigo-700">
                           {typeLabels[product.type]}
                         </span>
-                  </td>
+                      </td>
                       <td className="px-4 py-3">
                         {hasSale ? (
                           <div className="space-y-0.5">
