@@ -212,6 +212,7 @@ const SubscriptionSection: React.FC = () => {
       const normalized = normalizeSubscriptions(res);
       setSubscriptions(normalized);
       setLastCount(normalized.length);
+      console.log(1111, process.env.NODE_ENV);
     } catch (err: any) {
       console.error("Failed to fetch subscriptions", err);
       setError(
@@ -255,7 +256,10 @@ const SubscriptionSection: React.FC = () => {
           (p) => p.productId === sub.productId
         );
         let raw: any =
-          (sub as any).rawPrice ?? (sub as any).price ?? (sub as any).amount ?? "";
+          (sub as any).rawPrice ??
+          (sub as any).price ??
+          (sub as any).amount ??
+          "";
         let derivedProductId = sub.productId || product?.productId || "";
 
         if (!raw && sub.anchorId) {
@@ -265,7 +269,8 @@ const SubscriptionSection: React.FC = () => {
             );
             if (purchases.length) {
               const latest = purchases[0];
-              raw = latest.rawPrice ?? latest.price ?? (latest as any).amount ?? "";
+              raw =
+                latest.rawPrice ?? latest.price ?? (latest as any).amount ?? "";
               derivedProductId = derivedProductId || latest.productId;
             }
           } catch (err) {
@@ -287,7 +292,9 @@ const SubscriptionSection: React.FC = () => {
             (product?.currency as PaymentCurrency) ||
             prev.currency,
           purchaseTime: toLocalDateTimeInput(
-            sub.currentPeriodStart ? new Date(sub.currentPeriodStart) : new Date()
+            sub.currentPeriodStart
+              ? new Date(sub.currentPeriodStart)
+              : new Date()
           ),
           expiryTime: toLocalDateTimeInput(
             sub.currentPeriodEnd
@@ -963,7 +970,9 @@ const SubscriptionSection: React.FC = () => {
                 {manualSubmitting && (
                   <span className="h-4 w-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
                 )}
-                {manualEditTarget ? "Cập nhật subscription" : "Tạo subscription"}
+                {manualEditTarget
+                  ? "Cập nhật subscription"
+                  : "Tạo subscription"}
               </button>
             </div>
           </div>
