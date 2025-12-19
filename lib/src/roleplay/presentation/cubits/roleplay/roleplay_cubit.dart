@@ -21,17 +21,15 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     AppDI.injector.get<LessonCubit>().setLearningItemFromRoleplay(learningItem);
   }
 
-  void goToNextSection() {
-    // if (nextIndex >= state.currentLearningItem.sections.length) {
-    //   AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
-    //   _sendFeedback();
-    //   RoleplayCompleteRoute().go(AppConfig.instance.context!);
-    //   return;
+  void endRoleplay() {
+    AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
+    _sendFeedback();
+    RoleplayCompleteRoute().go(AppConfig.instance.context!);
+
+    // if (state.currentRoleplay.contents.last.type == RoleplayContentType.exercise) {
+    //   setLearningItemToLessonCubit();
+    //   LessonRoute().push(AppConfig.instance.context!);
     // }
-    if (state.currentRoleplay.contents.last.type == RoleplayContentType.exercise) {
-      setLearningItemToLessonCubit();
-      LessonRoute().push(AppConfig.instance.context!);
-    }
   }
 
   void setCurrentSectionRevealed(bool isRevealed) {
