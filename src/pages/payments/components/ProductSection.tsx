@@ -6,8 +6,6 @@ import {
   ExclamationTriangleIcon,
   PlusIcon,
   QueueListIcon,
-  ShoppingBagIcon,
-  SparklesIcon,
   StarIcon,
 } from "@heroicons/react/24/outline";
 import ProductModal from "../../../components/payments/ProductModal";
@@ -18,7 +16,13 @@ import {
 } from "../../../types/interface/payments/product.interface";
 import { PaymentPlatform, ProductType } from "../../../types/enum/payment.enum";
 import PaymentStatCard from "./PaymentStatCard";
-import { platformLabels, priceLabel, typeLabels } from "../paymentShared";
+import {
+  platformIconTone,
+  platformIcons,
+  platformLabels,
+  priceLabel,
+  typeLabels,
+} from "../paymentShared";
 
 type ProductRecord = IProduct & { _id?: string };
 
@@ -234,13 +238,13 @@ const ProductSection: React.FC = () => {
         <PaymentStatCard
           label="Apple"
           value={stats.ios}
-          icon={SparklesIcon}
+          icon={platformIcons[PaymentPlatform.APPLE]}
           accent="from-amber-400 to-orange-500"
         />
         <PaymentStatCard
           label="Google"
           value={stats.android}
-          icon={ShoppingBagIcon}
+          icon={platformIcons[PaymentPlatform.GOOGLE]}
           accent="from-sky-500 to-blue-500"
         />
         <PaymentStatCard
@@ -402,6 +406,8 @@ const ProductSection: React.FC = () => {
                   const hasSale =
                     product.salePrice !== undefined &&
                     product.salePrice !== null;
+                  const PlatformIcon = platformIcons[product.platform];
+                  const platformTone = platformIconTone[product.platform];
                   return (
                     <tr key={id} className="hover:bg-slate-50/70">
                       <td className="px-4 py-3">
@@ -424,7 +430,7 @@ const ProductSection: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                          <SparklesIcon className="h-4 w-4 text-amber-500" />
+                          <PlatformIcon className={`h-4 w-4 ${platformTone}`} />
                           {platformLabels[product.platform]}
                         </span>
                       </td>

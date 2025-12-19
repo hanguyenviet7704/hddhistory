@@ -39,6 +39,8 @@ import {
 import PaymentStatCard from "./PaymentStatCard";
 import {
   formatDateTime,
+  platformIconTone,
+  platformIcons,
   platformLabels,
   priceLabel,
   purchaseStatusLabel,
@@ -255,7 +257,10 @@ const SubscriptionSection: React.FC = () => {
           (p) => p.productId === sub.productId
         );
         let raw: any =
-          (sub as any).rawPrice ?? (sub as any).price ?? (sub as any).amount ?? "";
+          (sub as any).rawPrice ??
+          (sub as any).price ??
+          (sub as any).amount ??
+          "";
         let derivedProductId = sub.productId || product?.productId || "";
 
         if (!raw && sub.anchorId) {
@@ -265,7 +270,8 @@ const SubscriptionSection: React.FC = () => {
             );
             if (purchases.length) {
               const latest = purchases[0];
-              raw = latest.rawPrice ?? latest.price ?? (latest as any).amount ?? "";
+              raw =
+                latest.rawPrice ?? latest.price ?? (latest as any).amount ?? "";
               derivedProductId = derivedProductId || latest.productId;
             }
           } catch (err) {
@@ -287,7 +293,9 @@ const SubscriptionSection: React.FC = () => {
             (product?.currency as PaymentCurrency) ||
             prev.currency,
           purchaseTime: toLocalDateTimeInput(
-            sub.currentPeriodStart ? new Date(sub.currentPeriodStart) : new Date()
+            sub.currentPeriodStart
+              ? new Date(sub.currentPeriodStart)
+              : new Date()
           ),
           expiryTime: toLocalDateTimeInput(
             sub.currentPeriodEnd
@@ -963,7 +971,9 @@ const SubscriptionSection: React.FC = () => {
                 {manualSubmitting && (
                   <span className="h-4 w-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
                 )}
-                {manualEditTarget ? "Cập nhật subscription" : "Tạo subscription"}
+                {manualEditTarget
+                  ? "Cập nhật subscription"
+                  : "Tạo subscription"}
               </button>
             </div>
           </div>
@@ -1172,6 +1182,8 @@ const SubscriptionSection: React.FC = () => {
               ) : (
                 filteredSubscriptions.map((sub) => {
                   const id = getSubscriptionId(sub);
+                  const PlatformIcon = platformIcons[sub.platform];
+                  const platformTone = platformIconTone[sub.platform];
                   return (
                     <tr key={id} className="hover:bg-slate-50/70">
                       <td className="px-4 py-3">
@@ -1204,7 +1216,7 @@ const SubscriptionSection: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                          <SparklesIcon className="h-4 w-4 text-amber-500" />
+                          <PlatformIcon className={`h-4 w-4 ${platformTone}`} />
                           {platformLabels[sub.platform]}
                         </span>
                       </td>
@@ -1385,6 +1397,10 @@ const SubscriptionSection: React.FC = () => {
                       <tbody className="divide-y divide-slate-100">
                         {relatedPurchases.map((purchase) => {
                           const amount = purchase.rawPrice ?? purchase.price;
+                          const PlatformIcon =
+                            platformIcons[purchase.platform];
+                          const platformTone =
+                            platformIconTone[purchase.platform];
                           return (
                             <tr
                               key={purchase.id}
@@ -1435,7 +1451,9 @@ const SubscriptionSection: React.FC = () => {
                               </td>
                               <td className="px-4 py-3">
                                 <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                                  <SparklesIcon className="h-4 w-4 text-amber-500" />
+                                  <PlatformIcon
+                                    className={`h-4 w-4 ${platformTone}`}
+                                  />
                                   {platformLabels[purchase.platform]}
                                 </span>
                               </td>

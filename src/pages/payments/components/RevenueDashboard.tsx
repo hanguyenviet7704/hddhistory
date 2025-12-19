@@ -5,7 +5,6 @@ import {
   ChartBarIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
-  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { purchaseService } from "../../../services/payments/purchaseService";
 import {
@@ -24,6 +23,8 @@ import {
 } from "../../../types/enum/payment.enum";
 import {
   formatDateTime,
+  platformIconTone,
+  platformIcons,
   platformLabels,
   priceLabel,
   eventTypeLabel,
@@ -370,6 +371,8 @@ const RevenueDashboard: React.FC = () => {
               ) : (
                 entries.map((entry) => {
                   const amount = entry.rawPrice ?? entry.price;
+                  const PlatformIcon = platformIcons[entry.platform];
+                  const platformTone = platformIconTone[entry.platform];
                   const eventTone =
                     entry.eventType && eventTypeTone[entry.eventType]
                       ? eventTypeTone[entry.eventType]
@@ -406,7 +409,7 @@ const RevenueDashboard: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                          <SparklesIcon className="h-4 w-4 text-amber-500" />
+                          <PlatformIcon className={`h-4 w-4 ${platformTone}`} />
                           {platformLabels[entry.platform]}
                         </span>
                       </td>

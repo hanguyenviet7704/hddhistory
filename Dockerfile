@@ -17,6 +17,8 @@ COPY . .
 # khai báo ARG trước khi chạy build và export thành ENV để npm build thấy
 ARG REACT_APP_BACKEND_AI_TUTOR
 ENV REACT_APP_BACKEND_AI_TUTOR=${REACT_APP_BACKEND_AI_TUTOR}
+ARG NODE_ENV
+ENV NODE_ENV=${NODE_ENV}
 
 # Build ứng dụng (sẽ tạo thư mục build/ hoặc dist/ tùy script)
 RUN echo "DEBUG ENV => $REACT_APP_BACKEND_AI_TUTOR"

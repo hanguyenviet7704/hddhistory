@@ -1,3 +1,5 @@
+import type { ComponentType, ReactElement, SVGProps } from "react";
+import { SiApple, SiGoogle } from "react-icons/si";
 import {
   PaymentCurrency,
   PaymentPlatform,
@@ -7,9 +9,24 @@ import {
   SubscriptionStatus,
 } from "../../types/enum/payment.enum";
 
+type PlatformIcon = ComponentType<SVGProps<SVGSVGElement>>;
+
+const AppleIcon: PlatformIcon = (props) => SiApple(props) as ReactElement;
+const GoogleIcon: PlatformIcon = (props) => SiGoogle(props) as ReactElement;
+
 export const platformLabels: Record<PaymentPlatform, string> = {
   [PaymentPlatform.APPLE]: "Apple",
   [PaymentPlatform.GOOGLE]: "Google",
+};
+
+export const platformIcons: Record<PaymentPlatform, PlatformIcon> = {
+  [PaymentPlatform.APPLE]: AppleIcon,
+  [PaymentPlatform.GOOGLE]: GoogleIcon,
+};
+
+export const platformIconTone: Record<PaymentPlatform, string> = {
+  [PaymentPlatform.APPLE]: "text-slate-900",
+  [PaymentPlatform.GOOGLE]: "text-blue-600",
 };
 
 export const typeLabels: Record<ProductType, string> = {
@@ -44,7 +61,8 @@ export const eventTypeLabel: Record<PurchaseEventType, string> = {
 
 export const eventTypeTone: Record<PurchaseEventType, string> = {
   [PurchaseEventType.INITIAL]: "bg-sky-50 text-sky-700 border-sky-100",
-  [PurchaseEventType.RENEWAL]: "bg-emerald-50 text-emerald-700 border-emerald-100",
+  [PurchaseEventType.RENEWAL]:
+    "bg-emerald-50 text-emerald-700 border-emerald-100",
   [PurchaseEventType.CANCEL]: "bg-amber-50 text-amber-800 border-amber-200",
   [PurchaseEventType.REFUND]: "bg-purple-50 text-purple-700 border-purple-100",
 };
@@ -60,12 +78,11 @@ export const subscriptionStatusLabel: Record<SubscriptionStatus, string> = {
 export const subscriptionStatusTone: Record<SubscriptionStatus, string> = {
   [SubscriptionStatus.ACTIVE]:
     "bg-emerald-50 text-emerald-700 border-emerald-100",
-  [SubscriptionStatus.EXPIRED]:
-    "bg-slate-100 text-slate-700 border-slate-200",
+  [SubscriptionStatus.EXPIRED]: "bg-slate-100 text-slate-700 border-slate-200",
   [SubscriptionStatus.GRACE]: "bg-amber-50 text-amber-700 border-amber-100",
-  [SubscriptionStatus.ON_HOLD]: "bg-orange-50 text-orange-700 border-orange-100",
-  [SubscriptionStatus.CANCELED]:
-    "bg-red-50 text-red-700 border-red-200",
+  [SubscriptionStatus.ON_HOLD]:
+    "bg-orange-50 text-orange-700 border-orange-100",
+  [SubscriptionStatus.CANCELED]: "bg-red-50 text-red-700 border-red-200",
 };
 
 export const priceLabel = (
