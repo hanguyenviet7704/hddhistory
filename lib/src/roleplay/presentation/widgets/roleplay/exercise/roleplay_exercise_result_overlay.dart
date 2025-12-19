@@ -23,7 +23,7 @@ class RoleplayExerciseResultOverlayManager {
   static bool get isVisible => _currentEntry != null;
 }
 
-class RoleplayExerciseResultBottomSheet extends StatelessWidget {
+class RoleplayExerciseResultBottomSheet extends StatefulWidget {
   final bool isCorrect;
   final VoidCallback onContinue;
 
@@ -34,10 +34,38 @@ class RoleplayExerciseResultBottomSheet extends StatelessWidget {
   });
 
   @override
+  State<RoleplayExerciseResultBottomSheet> createState() => _RoleplayExerciseResultBottomSheetState();
+}
+
+class _RoleplayExerciseResultBottomSheetState extends State<RoleplayExerciseResultBottomSheet> with SingleTickerProviderStateMixin {
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 240),
+    );
+    final curved = CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic);
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(curved);
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.2), end: Offset.zero).animate(curved);
+    _animationController.forward();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final Translations t = Translations.of(context);
 
-    final String title = isCorrect ? '${t.exercise.exerciseFeedbackCorrectAnswer}!' : t.exercise.exerciseFeedbackIncorrect;
+    final String title = widget.isCorrect ? '${t.exercise.exerciseFeedbackCorrectAnswer}!' : t.exercise.exerciseFeedbackIncorrect;
 
     return Stack(
       alignment: Alignment.bottomCenter,
@@ -50,17 +78,24 @@ class RoleplayExerciseResultBottomSheet extends StatelessWidget {
         ),
         SafeArea(
           top: false,
-          child: ExerciseResultSummary(
-            type: isCorrect ? ResultType.correct : ResultType.incorrect,
-            onContinue: onContinue,
-            continueLabel: t.exercise.exerciseSkipButton,
-            explainLabel: '',
-            closeExplainLabel: '',
-            title: title,
-            successAccentColor: AppCustomColor.successGreen,
-            errorAccentColor: AppCustomColor.errorRed,
-            successBackgroundColor: AppCustomColor.backgroundSuccess,
-            errorBackgroundColor: AppCustomColor.backgroundError,
+          bottom: false,
+          child: FadeTransition(
+            opacity: _fadeAnimation,
+            child: SlideTransition(
+              position: _slideAnimation,
+              child: ExerciseResultSummary(
+                type: widget.isCorrect ? ResultType.correct : ResultType.incorrect,
+                onContinue: widget.onContinue,
+                continueLabel: t.exercise.exerciseSkipButton,
+                explainLabel: '',
+                closeExplainLabel: '',
+                title: title,
+                successAccentColor: AppCustomColor.successGreen,
+                errorAccentColor: AppCustomColor.errorRed,
+                successBackgroundColor: AppCustomColor.backgroundSuccess,
+                errorBackgroundColor: AppCustomColor.backgroundError,
+              ),
+            ),
           ),
         ),
       ],

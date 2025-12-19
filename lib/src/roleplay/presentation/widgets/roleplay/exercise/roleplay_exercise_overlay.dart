@@ -39,8 +39,24 @@ class RoleplayExerciseOverlayInteractive extends StatefulWidget {
   State<RoleplayExerciseOverlayInteractive> createState() => _RoleplayExerciseOverlayInteractiveState();
 }
 
-class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOverlayInteractive> {
+class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOverlayInteractive> with SingleTickerProviderStateMixin {
   bool _isExpanded = false;
+  late final AnimationController _animationController;
+  late final Animation<double> _fadeAnimation;
+  late final Animation<Offset> _slideAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 240),
+    );
+    final curved = CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic);
+    _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(curved);
+    _slideAnimation = Tween<Offset>(begin: const Offset(0, 0.15), end: Offset.zero).animate(curved);
+    _animationController.forward();
+  }
 
   void _expand() {
     if (_isExpanded) return;
@@ -48,25 +64,37 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   }
 
   @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
-        BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
-        // BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
-        // BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
-      ],
-      child: RoleplayExerciseOverlay(
-        exercise: widget.exercise,
-        isExpanded: _isExpanded,
-        onTapToAnswer: _expand,
-        onCheckPressed: widget.onCheckPressed,
+    return FadeTransition(
+      opacity: _fadeAnimation,
+      child: SlideTransition(
+        position: _slideAnimation,
+        child: MultiBlocProvider(
+          providers: [
+            BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
+            BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
+            // BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+            // BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+          ],
+          child: RoleplayExerciseOverlay(
+            exercise: widget.exercise,
+            isExpanded: _isExpanded,
+            onTapToAnswer: _expand,
+            onCheckPressed: widget.onCheckPressed,
+          ),
+        ),
       ),
     );
   }
@@ -113,16 +141,39 @@ class RoleplayExerciseOverlay extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               _DragHandle(),
-              if (isExpanded)
-                _ExpandedExerciseBody(
-                  exercise: exercise,
-                  onCheckPressed: onCheckPressed,
-                )
-              else
-                _CollapsedExerciseBody(
-                  questionText: exercise.questionText,
-                  onTapToAnswer: onTapToAnswer,
-                ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 220),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+                  final fade = Tween<double>(begin: 0, end: 1).animate(curved);
+                  final slide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(curved);
+                  return SizeTransition(
+                    sizeFactor: curved,
+                    axisAlignment: -1,
+                    child: FadeTransition(
+                      opacity: fade,
+                      child: SlideTransition(position: slide, child: child),
+                    ),
+                  );
+                },
+                child: isExpanded
+                    ? KeyedSubtree(
+                        key: const ValueKey('expanded'),
+                        child: _ExpandedExerciseBody(
+                          exercise: exercise,
+                          onCheckPressed: onCheckPressed,
+                        ),
+                      )
+                    : KeyedSubtree(
+                        key: const ValueKey('collapsed'),
+                        child: _CollapsedExerciseBody(
+                          questionText: exercise.questionText,
+                          onTapToAnswer: onTapToAnswer,
+                        ),
+                      ),
+              ),
             ],
           ),
         ),

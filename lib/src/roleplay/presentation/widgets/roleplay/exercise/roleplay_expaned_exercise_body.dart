@@ -66,13 +66,20 @@ class _ExpandedExerciseBody extends StatelessWidget {
   Widget build(BuildContext context) {
     Widget lessonBody = _buildExerciseLessonBody(context, exercise.type);
     Widget bottomButton = _buildBottomButton(context, lessonBody);
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          lessonBody,
-          60.verticalSpace,
-          bottomButton,
-        ],
+    final viewInsets = MediaQuery.viewInsetsOf(context);
+    return AnimatedPadding(
+      duration: const Duration(milliseconds: 200),
+      curve: Curves.easeOut,
+      padding: EdgeInsets.only(bottom: viewInsets.bottom),
+      child: SingleChildScrollView(
+        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+        child: Column(
+          children: [
+            lessonBody,
+            60.verticalSpace,
+            bottomButton,
+          ],
+        ),
       ),
     );
   }
