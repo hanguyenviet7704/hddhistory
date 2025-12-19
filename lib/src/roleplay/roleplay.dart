@@ -10,6 +10,7 @@ import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:just_audio/just_audio.dart' as just_audio;
+import 'package:flutter/rendering.dart';
 //* Single project import
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
@@ -58,6 +59,7 @@ part 'presentation/widgets/roleplay/exercise/roleplay_exercise_result_overlay.da
 part 'presentation/widgets/roleplay/exercise/roleplay_expaned_exercise_body.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/roleplay/roleplay_audio_controller.dart';
+part 'presentation/widgets/roleplay/roleplay_content_controller.dart';
 part 'presentation/widgets/roleplay/roleplay_background.dart';
 part 'presentation/widgets/roleplay/roleplay_bubble_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_content.dart';

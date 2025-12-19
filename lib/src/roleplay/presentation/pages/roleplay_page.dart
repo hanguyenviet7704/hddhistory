@@ -28,7 +28,7 @@ class _RoleplayPageView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: context.select((RoleplayCubit bloc) => bloc.state.currentRoleplay.image.isNotEmpty ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark),
+      value: context.read<RoleplayCubit>().state.currentRoleplay.image.isNotEmpty ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Stack(
         fit: StackFit.expand,
         children: [
