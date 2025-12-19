@@ -19,15 +19,7 @@ class RoleplayContent extends StatelessWidget {
               ),
               child: Padding(
                 padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + MediaQuery.paddingOf(context).bottom),
-                child: BlocSelector<RoleplayCubit, RoleplayState, RoleplayEntity>(
-                  selector: (state) => state.currentRoleplay,
-                  builder: (context, currentRoleplay) {
-                    return RoleplayContentList(
-                      key: ValueKey(currentRoleplay.id),
-                      roleplayData: currentRoleplay,
-                    );
-                  },
-                ),
+                child: const RoleplayContentList(),
               ),
             ),
           ),

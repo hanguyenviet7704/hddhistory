@@ -1,9 +1,7 @@
 part of '../../../roleplay.dart';
 
 class RoleplayContentList extends StatefulWidget {
-  final RoleplayEntity roleplayData;
-
-  const RoleplayContentList({super.key, required this.roleplayData});
+  const RoleplayContentList({super.key});
 
   @override
   State<RoleplayContentList> createState() => _RoleplayContentListState();
@@ -37,15 +35,13 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   @override
   void didUpdateWidget(RoleplayContentList oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.roleplayData.id != widget.roleplayData.id) {
-      unawaited(_resetForNewSection());
-    }
+    // Content updates now handled via RoleplayCubit listener in build.
   }
 
   void _configureContents() {
     _cancelPendingExercise();
     _completedExerciseIndexes.clear();
-    _displayableContents = widget.roleplayData.contents.toList();
+    _displayableContents = context.read<RoleplayCubit>().state.currentRoleplay.contents.toList();
     _prepareAudioControllers();
     _visibleIndexes.clear();
   }
@@ -276,51 +272,63 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   @override
   Widget build(BuildContext context) {
     if (_displayableContents.isEmpty) {
-      return ListView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
+      return BlocListener<RoleplayCubit, RoleplayState>(
+        listenWhen: (previous, current) => previous.currentRoleplay.id != current.currentRoleplay.id,
+        listener: (context, state) {
+          unawaited(_resetForNewSection());
+        },
+        child: ListView(
+          controller: _scrollController,
+          physics: const BouncingScrollPhysics(),
+        ),
       );
     }
 
-    return AnimatedList(
-      key: _listKey,
-      controller: _scrollController,
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.zero,
-      initialItemCount: _visibleIndexes.length,
-      itemBuilder: (context, index, animation) {
-        if (index >= _visibleIndexes.length) return const SizedBox.shrink();
-        final contentIndex = _visibleIndexes[index];
-        if (contentIndex >= _displayableContents.length) return const SizedBox.shrink();
-        final content = _displayableContents[contentIndex];
-        final previousConversation = contentIndex > 0 ? _displayableContents[contentIndex - 1].conversation : null;
-        final audioController = _audioControllers[contentIndex];
-
-        final Widget child = switch (content.type) {
-          RoleplayContentType.conversation => RoleplayConversationBubble(
-            conversation: content.conversation,
-            previousConversation: previousConversation,
-            audioController: audioController,
-          ),
-          RoleplayContentType.leadingText => RoleplayLeadingText(
-            leadingText: content.leadingText,
-            audioController: audioController,
-          ),
-          RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
-          RoleplayContentType.exercise => RoleplayExerciseContentWidget(
-            exercise: content.exercise,
-            isCompleted: _isExerciseCompleted(contentIndex, content.exercise),
-          ),
-        };
-
-        return SizeTransition(
-          sizeFactor: animation,
-          child: Padding(
-            padding: EdgeInsets.only(bottom: _getBottomPadding(index, contentIndex)),
-            child: child,
-          ),
-        );
+    return BlocListener<RoleplayCubit, RoleplayState>(
+      listenWhen: (previous, current) => previous.currentRoleplay.id != current.currentRoleplay.id,
+      listener: (context, state) {
+        unawaited(_resetForNewSection());
       },
+      child: AnimatedList(
+        key: _listKey,
+        controller: _scrollController,
+        physics: const BouncingScrollPhysics(),
+        padding: EdgeInsets.zero,
+        initialItemCount: _visibleIndexes.length,
+        itemBuilder: (context, index, animation) {
+          if (index >= _visibleIndexes.length) return const SizedBox.shrink();
+          final contentIndex = _visibleIndexes[index];
+          if (contentIndex >= _displayableContents.length) return const SizedBox.shrink();
+          final content = _displayableContents[contentIndex];
+          final previousConversation = contentIndex > 0 ? _displayableContents[contentIndex - 1].conversation : null;
+          final audioController = _audioControllers[contentIndex];
+
+          final Widget child = switch (content.type) {
+            RoleplayContentType.conversation => RoleplayConversationBubble(
+              conversation: content.conversation,
+              previousConversation: previousConversation,
+              audioController: audioController,
+            ),
+            RoleplayContentType.leadingText => RoleplayLeadingText(
+              leadingText: content.leadingText,
+              audioController: audioController,
+            ),
+            RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
+            RoleplayContentType.exercise => RoleplayExerciseContentWidget(
+              exercise: content.exercise,
+              isCompleted: _isExerciseCompleted(contentIndex, content.exercise),
+            ),
+          };
+
+          return SizeTransition(
+            sizeFactor: animation,
+            child: Padding(
+              padding: EdgeInsets.only(bottom: _getBottomPadding(index, contentIndex)),
+              child: child,
+            ),
+          );
+        },
+      ),
     );
   }
 }
