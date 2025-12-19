@@ -1,4 +1,5 @@
 import {
+  PaymentCurrency,
   PaymentEnvironment,
   PaymentPlatform,
   SubscriptionStatus,
@@ -20,6 +21,20 @@ export interface ISubscription {
   isTrial: boolean;
   lastVerifiedAt?: Date;
   lastEventAt?: Date;
+  isManual?: boolean;
+}
+
+export interface ManualSubscriptionPayload {
+  confirmPassword: string;
+  userId: string;
+  userName?: string;
+  userEmail?: string;
+  productId: string;
+  rawPrice: number;
+  currency: PaymentCurrency;
+  purchaseTime?: string;
+  expiryTime?: string;
+  environment: PaymentEnvironment;
 }
 
 export interface DeleteSubscriptionPayload {

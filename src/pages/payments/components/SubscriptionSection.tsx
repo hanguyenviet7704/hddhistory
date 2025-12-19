@@ -3,6 +3,9 @@ import {
   ArrowPathIcon,
   CreditCardIcon,
   ExclamationTriangleIcon,
+  PlusCircleIcon,
+  CheckCircleIcon,
+  PencilSquareIcon,
   QueueListIcon,
   ShieldCheckIcon,
   SparklesIcon,
@@ -13,15 +16,23 @@ import {
 import { subscriptionService } from "../../../services/payments/subscriptionService";
 import { purchaseService } from "../../../services/payments/purchaseService";
 import { userService } from "../../../services/userService";
+import { productService } from "../../../services/payments/productService";
 import {
   ISubscription,
+  ManualSubscriptionPayload,
   SubscriptionListQuery,
 } from "../../../types/interface/payments/subscription.interface";
 import { IPurchase } from "../../../types/interface/payments/purchase.interface";
 import { IUser, UserListQuery } from "../../../types/interface/user.interface";
 import {
+  IProduct,
+  ProductListQuery,
+} from "../../../types/interface/payments/product.interface";
+import {
+  PaymentCurrency,
   PaymentEnvironment,
   PaymentPlatform,
+  PurchaseEventType,
   PurchaseStatus,
   SubscriptionStatus,
 } from "../../../types/enum/payment.enum";
@@ -38,6 +49,7 @@ import {
 
 type SubscriptionRecord = ISubscription & { _id?: string };
 type PurchaseRecord = IPurchase & { _id?: string };
+type ProductRecord = IProduct & { _id?: string };
 type UserRecord = IUser & { id?: string; _id?: string; userId?: string };
 
 const getSubscriptionId = (subscription: SubscriptionRecord) =>
@@ -59,6 +71,13 @@ const statusDotTone: Record<SubscriptionStatus, string> = {
   [SubscriptionStatus.GRACE]: "bg-amber-500",
   [SubscriptionStatus.ON_HOLD]: "bg-orange-500",
   [SubscriptionStatus.CANCELED]: "bg-red-500",
+};
+
+const purchaseEventTone: Record<PurchaseEventType, string> = {
+  [PurchaseEventType.INITIAL]: "text-sky-600",
+  [PurchaseEventType.RENEWAL]: "text-emerald-600",
+  [PurchaseEventType.CANCEL]: "text-amber-700",
+  [PurchaseEventType.REFUND]: "text-purple-600",
 };
 
 const normalizeSubscriptions = (payload: any): SubscriptionRecord[] => {
@@ -88,6 +107,25 @@ const normalizeUsers = (payload: any): UserRecord[] => {
   return [];
 };
 
+const normalizeProducts = (payload: any): ProductRecord[] => {
+  if (!payload) return [];
+  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload.items)) return payload.items;
+  if (Array.isArray(payload.data?.items)) return payload.data.items;
+  if (Array.isArray(payload.data)) return payload.data;
+  return [];
+};
+
+const defaultEnvironment =
+  process.env.NODE_ENV === "production"
+    ? PaymentEnvironment.PRODUCTION
+    : PaymentEnvironment.SANDBOX;
+
+const toLocalDateTimeInput = (date: Date) => {
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffset).toISOString().slice(0, 16);
+};
+
 const SubscriptionSection: React.FC = () => {
   const [subscriptions, setSubscriptions] = useState<SubscriptionRecord[]>([]);
   const [selectedSub, setSelectedSub] = useState<SubscriptionRecord | null>(
@@ -113,12 +151,49 @@ const SubscriptionSection: React.FC = () => {
   const [showUserSuggestions, setShowUserSuggestions] = useState(false);
   const [platformFilter, setPlatformFilter] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("");
-  const [environment, setEnvironment] = useState<PaymentEnvironment>(
-    PaymentEnvironment.PRODUCTION
+  const [environment, setEnvironment] =
+    useState<PaymentEnvironment>(defaultEnvironment);
+  const [manualOpen, setManualOpen] = useState(false);
+  const [manualSubmitting, setManualSubmitting] = useState(false);
+  const [manualError, setManualError] = useState<string | null>(null);
+  const [manualUserSearch, setManualUserSearch] = useState("");
+  const [manualUserOptions, setManualUserOptions] = useState<UserRecord[]>([]);
+  const [manualUserLoading, setManualUserLoading] = useState(false);
+  const [manualUserSelected, setManualUserSelected] =
+    useState<UserRecord | null>(null);
+  const [showManualUserSuggestions, setShowManualUserSuggestions] =
+    useState(false);
+  const [manualProducts, setManualProducts] = useState<ProductRecord[]>([]);
+  const [manualProductLoading, setManualProductLoading] = useState(false);
+  const [manualProductError, setManualProductError] = useState<string | null>(
+    null
   );
+  const [manualForm, setManualForm] = useState<{
+    productId: string;
+    rawPrice: string;
+    currency: PaymentCurrency;
+    purchaseTime: string;
+    expiryTime: string;
+    environment: PaymentEnvironment;
+    confirmPassword: string;
+  }>({
+    productId: "",
+    rawPrice: "",
+    currency: PaymentCurrency.VND,
+    purchaseTime: toLocalDateTimeInput(new Date()),
+    expiryTime: toLocalDateTimeInput(
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+    ),
+    environment: defaultEnvironment,
+    confirmPassword: "",
+  });
   const [page, setPage] = useState(1);
   const take = 20;
   const [lastCount, setLastCount] = useState(0);
+  const [manualProductsLoaded, setManualProductsLoaded] = useState(false);
+  const [manualEditTarget, setManualEditTarget] =
+    useState<SubscriptionRecord | null>(null);
+  const [manualPrefillLoading, setManualPrefillLoading] = useState(false);
 
   const fetchSubscriptions = useCallback(async () => {
     setLoading(true);
@@ -149,6 +224,95 @@ const SubscriptionSection: React.FC = () => {
       setLoading(false);
     }
   }, [environment, page, platformFilter, statusFilter, take, userFilter]);
+
+  const fetchManualProducts = useCallback(async () => {
+    setManualProductLoading(true);
+    setManualProductError(null);
+    try {
+      const query = new ProductListQuery({ page: 1, take: 200 });
+      const res = await productService.getList(query);
+      const normalized = normalizeProducts(res);
+      setManualProducts(normalized);
+      setManualProductsLoaded(true);
+    } catch (err: any) {
+      console.error("Failed to fetch products for manual subscription", err);
+      setManualProductError(
+        err?.response?.data?.message || "Không thể tải danh sách sản phẩm"
+      );
+      setManualProducts([]);
+    } finally {
+      setManualProductLoading(false);
+    }
+  }, []);
+
+  const handleOpenManualEdit = useCallback(
+    async (sub: SubscriptionRecord) => {
+      if (!sub.isManual) return;
+      setManualPrefillLoading(true);
+      setManualError(null);
+      try {
+        const product = manualProducts.find(
+          (p) => p.productId === sub.productId
+        );
+        let raw: any =
+          (sub as any).rawPrice ?? (sub as any).price ?? (sub as any).amount ?? "";
+        let derivedProductId = sub.productId || product?.productId || "";
+
+        if (!raw && sub.anchorId) {
+          try {
+            const purchases = normalizePurchases(
+              await purchaseService.findByAnchor(sub.anchorId)
+            );
+            if (purchases.length) {
+              const latest = purchases[0];
+              raw = latest.rawPrice ?? latest.price ?? (latest as any).amount ?? "";
+              derivedProductId = derivedProductId || latest.productId;
+            }
+          } catch (err) {
+            console.error("Prefill purchases failed", err);
+          }
+        }
+
+        setManualForm((prev) => ({
+          ...prev,
+          productId: derivedProductId,
+          rawPrice:
+            typeof raw === "number"
+              ? String(raw)
+              : typeof raw === "string"
+              ? raw
+              : "",
+          currency:
+            ((sub as any).currency as PaymentCurrency) ||
+            (product?.currency as PaymentCurrency) ||
+            prev.currency,
+          purchaseTime: toLocalDateTimeInput(
+            sub.currentPeriodStart ? new Date(sub.currentPeriodStart) : new Date()
+          ),
+          expiryTime: toLocalDateTimeInput(
+            sub.currentPeriodEnd
+              ? new Date(sub.currentPeriodEnd)
+              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+          ),
+          environment,
+          confirmPassword: "",
+        }));
+        setManualUserSelected({
+          userId: sub.userId,
+          name: sub.userName || "",
+          email: sub.userEmail || "",
+          id: sub.userId,
+          status: (sub as any).status || "",
+        } as UserRecord);
+        setManualUserSearch(sub.userName || sub.userEmail || sub.userId || "");
+        setManualEditTarget(sub);
+        setManualOpen(true);
+      } finally {
+        setManualPrefillLoading(false);
+      }
+    },
+    [environment, manualProducts]
+  );
 
   const handleOpenDetail = useCallback(
     async (subscription: SubscriptionRecord) => {
@@ -260,6 +424,26 @@ const SubscriptionSection: React.FC = () => {
 
   useEffect(() => {
     const handle = setTimeout(() => {
+      if (!manualUserSearch.trim()) {
+        setManualUserOptions([]);
+        return;
+      }
+      setManualUserLoading(true);
+      const query = new UserListQuery({
+        search: manualUserSearch.trim(),
+        take: 8,
+      });
+      userService
+        .getList(query)
+        .then((res) => setManualUserOptions(normalizeUsers(res)))
+        .catch((err) => console.error("Fetch users failed", err))
+        .finally(() => setManualUserLoading(false));
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [manualUserSearch]);
+
+  useEffect(() => {
+    const handle = setTimeout(() => {
       fetchSubscriptions();
     }, 250);
     return () => clearTimeout(handle);
@@ -268,6 +452,25 @@ const SubscriptionSection: React.FC = () => {
   useEffect(() => {
     setPage(1);
   }, [environment, platformFilter, statusFilter, userFilter]);
+
+  useEffect(() => {
+    if (manualOpen) {
+      if (!manualProductsLoaded && !manualProductLoading) {
+        fetchManualProducts();
+      }
+      // keep modal environment in sync with filter when opening
+      setManualForm((prev) => ({
+        ...prev,
+        environment,
+      }));
+    }
+  }, [
+    environment,
+    fetchManualProducts,
+    manualOpen,
+    manualProductLoading,
+    manualProductsLoaded,
+  ]);
 
   const stats = useMemo(() => {
     const total = subscriptions.length;
@@ -280,6 +483,129 @@ const SubscriptionSection: React.FC = () => {
   }, [subscriptions]);
 
   const filteredSubscriptions = useMemo(() => subscriptions, [subscriptions]);
+
+  const resetManualForm = useCallback(() => {
+    setManualForm({
+      productId: "",
+      rawPrice: "",
+      currency: PaymentCurrency.VND,
+      purchaseTime: toLocalDateTimeInput(new Date()),
+      expiryTime: toLocalDateTimeInput(
+        new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
+      ),
+      environment,
+      confirmPassword: "",
+    });
+    setManualUserSelected(null);
+    setManualUserSearch("");
+    setManualUserOptions([]);
+    setManualError(null);
+    setManualEditTarget(null);
+  }, [environment]);
+
+  const validateManualForm = () => {
+    if (
+      !manualUserSelected?.userId &&
+      !manualUserSelected?.id &&
+      !manualUserSelected?._id
+    ) {
+      setManualError("Vui lòng chọn user để nâng cấp.");
+      return false;
+    }
+    if (!manualForm.productId) {
+      setManualError("Vui lòng chọn sản phẩm.");
+      return false;
+    }
+    const price = Number(manualForm.rawPrice);
+    if (!Number.isFinite(price) || price < 0) {
+      setManualError("Giá rawPrice không hợp lệ.");
+      return false;
+    }
+    if (!manualForm.purchaseTime || !manualForm.expiryTime) {
+      setManualError("Vui lòng chọn thời gian purchase/expiry.");
+      return false;
+    }
+    const purchaseDate = new Date(manualForm.purchaseTime);
+    const expiryDate = new Date(manualForm.expiryTime);
+    if (
+      Number.isNaN(purchaseDate.getTime()) ||
+      Number.isNaN(expiryDate.getTime())
+    ) {
+      setManualError("Thời gian không hợp lệ.");
+      return false;
+    }
+    if (!manualEditTarget) {
+      const startOfToday = new Date();
+      startOfToday.setHours(0, 0, 0, 0);
+      if (purchaseDate.getTime() < startOfToday.getTime()) {
+        setManualError("Purchase time phải trong hoặc sau ngày hiện tại.");
+        return false;
+      }
+    }
+    if (expiryDate.getTime() <= purchaseDate.getTime()) {
+      setManualError("Expiry time phải lớn hơn purchase time.");
+      return false;
+    }
+    if (!manualForm.confirmPassword.trim()) {
+      setManualError("Vui lòng nhập mật khẩu xác nhận.");
+      return false;
+    }
+    setManualError(null);
+    return true;
+  };
+
+  const handleSubmitManual = async () => {
+    if (!validateManualForm()) return;
+    setManualSubmitting(true);
+    try {
+      const userId =
+        manualEditTarget?.userId ||
+        manualUserSelected?.userId ||
+        manualUserSelected?.id ||
+        manualUserSelected?._id ||
+        "";
+      const payload: ManualSubscriptionPayload = {
+        confirmPassword: manualForm.confirmPassword.trim(),
+        userId,
+        userEmail: manualEditTarget?.userEmail || manualUserSelected?.email,
+        userName: manualEditTarget?.userName || manualUserSelected?.name,
+        productId: manualForm.productId,
+        rawPrice: Number(manualForm.rawPrice),
+        currency: manualForm.currency,
+        purchaseTime: new Date(manualForm.purchaseTime).toISOString(),
+        expiryTime: new Date(manualForm.expiryTime).toISOString(),
+        environment: manualForm.environment,
+      };
+      if (manualEditTarget) {
+        const targetId =
+          manualEditTarget.id ||
+          manualEditTarget._id ||
+          manualEditTarget.anchorId;
+        if (targetId) {
+          await subscriptionService.updateManual(targetId, {
+            confirmPassword: payload.confirmPassword,
+            rawPrice: payload.rawPrice,
+            expiryTime: payload.expiryTime,
+          });
+        } else {
+          throw new Error("Không tìm thấy ID subscription để cập nhật.");
+        }
+      } else {
+        await subscriptionService.createManual(payload);
+      }
+      setManualSubmitting(false);
+      setManualOpen(false);
+      resetManualForm();
+      fetchSubscriptions();
+    } catch (err: any) {
+      console.error("Manual subscription failed", err);
+      setManualError(
+        err?.response?.data?.message ||
+          "Không thể tạo subscription thủ công, vui lòng kiểm tra lại."
+      );
+      setManualSubmitting(false);
+    }
+  };
 
   return (
     <div className="space-y-5">
@@ -309,6 +635,340 @@ const SubscriptionSection: React.FC = () => {
           accent="from-indigo-500 to-purple-500"
         />
       </div>
+
+      {manualOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-3xl max-h-[85vh] overflow-hidden flex flex-col">
+            <div className="flex items-start justify-between p-4 border-b border-slate-100">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  {manualEditTarget
+                    ? "Sửa subscription thủ công"
+                    : "Tạo subscription thủ công"}
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Nâng cấp premium cho user không qua store
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  setManualOpen(false);
+                  resetManualForm();
+                }}
+                className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="p-4 space-y-4 overflow-y-auto">
+              {manualError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {manualError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    User
+                  </label>
+                  <div className="relative">
+                    <input
+                      value={
+                        manualUserSelected
+                          ? manualUserSelected.name ||
+                            manualUserSelected.email ||
+                            manualUserSelected.userId ||
+                            manualUserSelected.id ||
+                            manualUserSelected._id ||
+                            ""
+                          : manualUserSearch
+                      }
+                      onChange={(e) => {
+                        if (manualEditTarget) return;
+                        setManualUserSelected(null);
+                        setManualUserSearch(e.target.value);
+                        setShowManualUserSuggestions(true);
+                      }}
+                      onFocus={() =>
+                        !manualEditTarget && setShowManualUserSuggestions(true)
+                      }
+                      onBlur={() =>
+                        setTimeout(
+                          () => setShowManualUserSuggestions(false),
+                          150
+                        )
+                      }
+                      placeholder="Tìm user theo tên/email"
+                      className={`w-full h-10 px-3 rounded-xl border ${
+                        manualEditTarget
+                          ? "border-slate-200 bg-slate-100 text-slate-500"
+                          : "border-slate-200"
+                      } focus:ring-2 focus:ring-teal-500 focus:border-teal-500 bg-slate-50/50`}
+                      disabled={!!manualEditTarget}
+                    />
+                    {manualUserSelected && !manualEditTarget && (
+                      <button
+                        onClick={() => {
+                          setManualUserSelected(null);
+                          setManualUserSearch("");
+                          setManualUserOptions([]);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                      >
+                        <XMarkIcon className="h-4 w-4" />
+                      </button>
+                    )}
+
+                    {showManualUserSuggestions &&
+                      !manualEditTarget &&
+                      manualUserSearch.trim().length > 0 && (
+                        <div className="absolute z-30 mt-2 w-full max-h-56 overflow-y-auto rounded-xl border border-slate-100 bg-white shadow-lg">
+                          {manualUserLoading ? (
+                            <div className="px-3 py-2 text-sm text-slate-500">
+                              Đang tìm user...
+                            </div>
+                          ) : manualUserOptions.length === 0 ? (
+                            <div className="px-3 py-2 text-sm text-slate-500">
+                              Không có kết quả
+                            </div>
+                          ) : (
+                            manualUserOptions.map((user) => {
+                              const id =
+                                user.userId || user.id || user._id || "";
+                              const label =
+                                user.name ||
+                                user.email ||
+                                user.userId ||
+                                user.id ||
+                                id;
+                              return (
+                                <button
+                                  key={id}
+                                  onClick={() => {
+                                    setManualUserSelected(user);
+                                    setManualUserSearch(label);
+                                    setShowManualUserSuggestions(false);
+                                  }}
+                                  className="w-full text-left px-3 py-2 text-sm hover:bg-teal-50"
+                                >
+                                  <div className="font-semibold">{label}</div>
+                                  {user.email && (
+                                    <div className="text-xs text-slate-500">
+                                      {user.email}
+                                    </div>
+                                  )}
+                                </button>
+                              );
+                            })
+                          )}
+                        </div>
+                      )}
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    Sản phẩm
+                  </label>
+                  <select
+                    value={manualForm.productId}
+                    onChange={(e) =>
+                      setManualForm((prev) => ({
+                        ...prev,
+                        productId: e.target.value,
+                      }))
+                    }
+                    disabled={manualProductLoading || !!manualEditTarget}
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500 disabled:opacity-60"
+                  >
+                    <option value="">Chọn sản phẩm</option>
+                    {manualProducts.map((product) => (
+                      <option
+                        key={product.id || product._id || product.productId}
+                        value={product.productId}
+                      >
+                        {product.title} - {product.productId}
+                      </option>
+                    ))}
+                  </select>
+                  {manualProductError && (
+                    <p className="text-[11px] text-amber-600">
+                      {manualProductError}
+                    </p>
+                  )}
+                  {manualForm.productId && (
+                    <p className="text-[12px] text-slate-500">
+                      {(() => {
+                        const product = manualProducts.find(
+                          (p) => p.productId === manualForm.productId
+                        );
+                        const platform = product?.platform;
+                        return platform
+                          ? `Platform: ${platformLabels[platform]}`
+                          : "Platform: -";
+                      })()}
+                    </p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    Raw price
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    value={manualForm.rawPrice}
+                    onChange={(e) =>
+                      setManualForm((prev) => ({
+                        ...prev,
+                        rawPrice: e.target.value,
+                      }))
+                    }
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500"
+                    placeholder="Nhập raw price"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    Currency
+                  </label>
+                  <select
+                    value={manualForm.currency}
+                    onChange={(e) =>
+                      setManualForm((prev) => ({
+                        ...prev,
+                        currency: e.target.value as PaymentCurrency,
+                      }))
+                    }
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+                    disabled={!!manualEditTarget}
+                  >
+                    <option value={PaymentCurrency.VND}>VND</option>
+                    <option value={PaymentCurrency.USD}>USD</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    Purchase time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={manualForm.purchaseTime}
+                    onChange={(e) =>
+                      setManualForm((prev) => ({
+                        ...prev,
+                        purchaseTime: e.target.value,
+                      }))
+                    }
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500"
+                    disabled={!!manualEditTarget}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    Expiry time
+                  </label>
+                  <input
+                    type="datetime-local"
+                    value={manualForm.expiryTime}
+                    onChange={(e) =>
+                      setManualForm((prev) => ({
+                        ...prev,
+                        expiryTime: e.target.value,
+                      }))
+                    }
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    Environment
+                  </label>
+                  <select
+                    value={manualForm.environment}
+                    onChange={(e) =>
+                      setManualForm((prev) => ({
+                        ...prev,
+                        environment: e.target.value as PaymentEnvironment,
+                      }))
+                    }
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+                    disabled={!!manualEditTarget}
+                  >
+                    <option value={PaymentEnvironment.PRODUCTION}>
+                      Production
+                    </option>
+                    <option value={PaymentEnvironment.SANDBOX}>Sandbox</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-medium text-slate-700">
+                    Mật khẩu xác nhận
+                  </label>
+                  {/* fake input to discourage password managers */}
+                  <input
+                    type="text"
+                    name="manual-subscription-username"
+                    value="."
+                    onChange={() => {
+                      /* noop */
+                    }}
+                    className="hidden"
+                    aria-hidden="true"
+                    tabIndex={-1}
+                    autoComplete="username"
+                  />
+                  <input
+                    type="password"
+                    value={manualForm.confirmPassword}
+                    onChange={(e) =>
+                      setManualForm((prev) => ({
+                        ...prev,
+                        confirmPassword: e.target.value,
+                      }))
+                    }
+                    className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500"
+                    placeholder="Nhập mật khẩu"
+                    autoComplete="new-password"
+                    name="manual-subscription-password"
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="flex items-center justify-end gap-2 p-4 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setManualOpen(false);
+                  resetManualForm();
+                }}
+                className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50"
+                disabled={manualSubmitting}
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={handleSubmitManual}
+                disabled={manualSubmitting}
+                className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-70"
+              >
+                {manualSubmitting && (
+                  <span className="h-4 w-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
+                )}
+                {manualEditTarget ? "Cập nhật subscription" : "Tạo subscription"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="rounded-2xl border border-slate-100 bg-white shadow-sm">
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-4 border-b border-slate-100">
@@ -430,13 +1090,25 @@ const SubscriptionSection: React.FC = () => {
             </select>
           </div>
 
-          <button
-            onClick={() => fetchSubscriptions()}
-            className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
-          >
-            <ArrowPathIcon className="h-5 w-5" />
-            Làm mới
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => {
+                resetManualForm();
+                setManualOpen(true);
+              }}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-teal-200 text-teal-700 hover:bg-teal-50 transition"
+            >
+              <PlusCircleIcon className="h-5 w-5" />
+              Tạo Subscription
+            </button>
+            <button
+              onClick={() => fetchSubscriptions()}
+              className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
+            >
+              <ArrowPathIcon className="h-5 w-5" />
+              Làm mới
+            </button>
+          </div>
         </div>
 
         {error && (
@@ -515,9 +1187,20 @@ const SubscriptionSection: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-4 py-3">
-                        <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
-                          {sub.productId}
-                        </code>
+                        <div className="flex items-center gap-2">
+                          <code className="text-xs bg-slate-100 px-2 py-1 rounded-lg text-slate-700">
+                            {sub.productId}
+                          </code>
+                          {sub.isManual && (
+                            <span className="inline-flex items-center gap-1 text-[12px] text-emerald-700">
+                              <CheckCircleIcon
+                                className="h-4 w-4"
+                                title="Manual subscription"
+                              />
+                              Manual
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
@@ -582,14 +1265,28 @@ const SubscriptionSection: React.FC = () => {
                             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition"
                           >
                             <EyeIcon className="h-5 w-5" />
-                            Chi tiết
+                          </button>
+                          <button
+                            onClick={() => handleOpenManualEdit(sub)}
+                            disabled={!sub.isManual || manualPrefillLoading}
+                            className={`inline-flex items-center gap-2 px-3 py-2 rounded-xl border text-sm ${
+                              sub.isManual
+                                ? "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+                                : "border-slate-200 text-slate-400 cursor-not-allowed"
+                            }`}
+                            title={
+                              sub.isManual
+                                ? "Sửa subscription thủ công"
+                                : "Chỉ chỉnh sửa được subscription tạo thủ công"
+                            }
+                          >
+                            <PencilSquareIcon className="h-5 w-5" />
                           </button>
                           <button
                             onClick={() => handleOpenDelete(sub)}
                             className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-red-200 text-red-700 hover:bg-red-50 transition"
                           >
                             <TrashIcon className="h-5 w-5" />
-                            Xoá
                           </button>
                         </div>
                       </td>
@@ -669,7 +1366,7 @@ const SubscriptionSection: React.FC = () => {
                       <thead className="bg-slate-50">
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                            Status
+                            Status / Event
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
                             Product
@@ -702,6 +1399,19 @@ const SubscriptionSection: React.FC = () => {
                                   >
                                     {purchaseStatusLabel[purchase.status]}
                                   </span>
+                                  <span
+                                    className={`w-full text-center text-[11px] uppercase ${
+                                      purchaseEventTone[purchase.eventType]
+                                    }`}
+                                  >
+                                    {purchase.eventType}
+                                  </span>
+                                  {purchase.isManual && (
+                                    <span className="inline-flex items-center justify-center gap-1 text-[11px] text-emerald-700">
+                                      <CheckCircleIcon className="h-4 w-4" />
+                                      Manual
+                                    </span>
+                                  )}
                                   {purchase.status === PurchaseStatus.FAILED &&
                                     purchase.failureReason && (
                                       <p className="text-[11px] text-red-600">
@@ -734,9 +1444,6 @@ const SubscriptionSection: React.FC = () => {
                               </td>
                               <td className="px-4 py-3 text-sm text-slate-700">
                                 <div className="space-y-0.5">
-                                  <p className="font-semibold uppercase">
-                                    {purchase.eventType}
-                                  </p>
                                   <p>
                                     Purchase:{" "}
                                     {formatDateTime(purchase.purchaseTime)}

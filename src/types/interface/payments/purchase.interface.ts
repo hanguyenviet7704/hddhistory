@@ -27,6 +27,7 @@ export interface IPurchase {
   rawPayload?: string;
   failureReason?: string;
   idempotencyKey?: string;
+  isManual?: boolean;
 }
 
 export class PurchaseListQuery extends BaseQuery {

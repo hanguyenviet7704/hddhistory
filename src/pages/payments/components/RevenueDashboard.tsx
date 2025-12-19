@@ -4,6 +4,7 @@ import {
   BanknotesIcon,
   ChartBarIcon,
   CurrencyDollarIcon,
+  CheckCircleIcon,
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { purchaseService } from "../../../services/payments/purchaseService";
@@ -69,12 +70,17 @@ const endOfCurrentMonth = () => {
   );
 };
 
+const defaultEnvironment =
+  process.env.NODE_ENV === "production"
+    ? PaymentEnvironment.PRODUCTION
+    : PaymentEnvironment.SANDBOX;
+
 const RevenueDashboard: React.FC = () => {
   const [currency, setCurrency] = useState<PaymentCurrency>(
     PaymentCurrency.VND
   );
   const [environment, setEnvironment] = useState<PaymentEnvironment>(
-    PaymentEnvironment.PRODUCTION
+    defaultEnvironment
   );
   const [from, setFrom] = useState<string>(startOfCurrentMonth().toISOString());
   const [to, setTo] = useState<string>(endOfCurrentMonth().toISOString());
@@ -218,7 +224,7 @@ const RevenueDashboard: React.FC = () => {
             <select
               value={currency}
               onChange={(e) => setCurrency(e.target.value as PaymentCurrency)}
-              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+              className="h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
             >
               <option value={PaymentCurrency.USD}>USD</option>
               <option value={PaymentCurrency.VND}>VND</option>
@@ -229,7 +235,7 @@ const RevenueDashboard: React.FC = () => {
               onChange={(e) =>
                 setEnvironment(e.target.value as PaymentEnvironment)
               }
-              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+              className="h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
             >
               <option value={PaymentEnvironment.PRODUCTION}>Production</option>
               <option value={PaymentEnvironment.SANDBOX}>Sandbox</option>
@@ -247,7 +253,7 @@ const RevenueDashboard: React.FC = () => {
                   }
                   setFrom(new Date(e.target.value).toISOString());
                 }}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+                className="h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
               />
               <label className="text-xs text-slate-500">Đến</label>
               <input
@@ -260,14 +266,14 @@ const RevenueDashboard: React.FC = () => {
                   }
                   setTo(new Date(e.target.value).toISOString());
                 }}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+                className="h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
               />
             </div>
 
             <select
               value={eventType}
               onChange={(e) => setEventType(e.target.value)}
-              className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
+              className="h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
             >
               <option value="">Tất cả event</option>
               <option value={PurchaseEventType.INITIAL}>
@@ -289,7 +295,7 @@ const RevenueDashboard: React.FC = () => {
                 value={productId}
                 onChange={(e) => setProductId(e.target.value)}
                 disabled={productLoading}
-                className="px-3 py-2 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500 disabled:opacity-60"
+                className="h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500 disabled:opacity-60"
               >
                 <option value="">Sản phẩm</option>
                 {products.map((product) => (
@@ -415,6 +421,12 @@ const RevenueDashboard: React.FC = () => {
                           <span className="uppercase tracking-wide">
                             {eventLabel}
                           </span>
+                          {entry.isManual && (
+                            <span className="inline-flex items-center gap-1 text-[11px] text-emerald-700">
+                              <CheckCircleIcon className="h-4 w-4" />
+                              Manual
+                            </span>
+                          )}
                         </div>
                       </td>
                       <td className="px-4 py-3 text-sm text-slate-700">
