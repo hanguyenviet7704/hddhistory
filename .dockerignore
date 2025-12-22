@@ -5,7 +5,7 @@ dist
 Dockerfile
 README.md
 .vscode
-.env
+#.env
 .git
 .gitignore
 npm-debug.log
