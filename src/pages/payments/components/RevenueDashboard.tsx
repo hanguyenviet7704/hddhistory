@@ -139,6 +139,11 @@ const RevenueDashboard: React.FC = () => {
       setStats(normalizedStats);
       setEntries(normalizedEntries);
       setLastCount(normalizedEntries.length);
+      console.log(
+        1111,
+        process.env.REACT_APP_NODE_ENV,
+        process.env.REACT_APP_BACKEND_AI_TUTOR
+      );
     } catch (err: any) {
       console.error("Fetch revenue dashboard failed", err);
       setError(
