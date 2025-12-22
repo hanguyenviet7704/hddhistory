@@ -33,7 +33,7 @@ pipeline {
                             cd /home/ansible/resource/meup/admin-dev/
                             git checkout develop
                             git pull origin develop
-                            docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID} --build-arg REACT_APP_BACKEND_AI_TUTOR=https://api-aitutor-dev.eup.ai .
+                            docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID} .
                             docker push registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID}
                             exit
                         EOF"""
@@ -76,7 +76,7 @@ pipeline {
                             cd /home/ansible/resource/meup/admin-prod/
                             git fetch --all --tags
                             git checkout tags/${env.GIT_TAG_NAME}
-                            docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} --build-arg REACT_APP_BACKEND_AI_TUTOR=https://api.meup.training .
+                            docker build -t registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME} .
                             docker push registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME}
                             exit
                         EOF"""
