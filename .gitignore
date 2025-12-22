@@ -83,3 +83,7 @@ prompt_gen.md
 release_content.md
 TEST.md
 example.json
+
+# AI
+.claude/
+plans/
