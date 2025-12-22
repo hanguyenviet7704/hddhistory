@@ -72,7 +72,7 @@ const endOfCurrentMonth = () => {
 };
 
 const defaultEnvironment =
-  process.env.NODE_ENV === "production"
+  process.env.REACT_APP_NODE_ENV === "production"
     ? PaymentEnvironment.PRODUCTION
     : PaymentEnvironment.SANDBOX;
 
@@ -80,9 +80,8 @@ const RevenueDashboard: React.FC = () => {
   const [currency, setCurrency] = useState<PaymentCurrency>(
     PaymentCurrency.VND
   );
-  const [environment, setEnvironment] = useState<PaymentEnvironment>(
-    defaultEnvironment
-  );
+  const [environment, setEnvironment] =
+    useState<PaymentEnvironment>(defaultEnvironment);
   const [from, setFrom] = useState<string>(startOfCurrentMonth().toISOString());
   const [to, setTo] = useState<string>(endOfCurrentMonth().toISOString());
   const [eventType, setEventType] = useState<string>("");

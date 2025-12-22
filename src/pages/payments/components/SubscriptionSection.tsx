@@ -119,7 +119,7 @@ const normalizeProducts = (payload: any): ProductRecord[] => {
 };
 
 const defaultEnvironment =
-  process.env.NODE_ENV === "production"
+  process.env.REACT_APP_NODE_ENV === "production"
     ? PaymentEnvironment.PRODUCTION
     : PaymentEnvironment.SANDBOX;
 
@@ -1397,8 +1397,7 @@ const SubscriptionSection: React.FC = () => {
                       <tbody className="divide-y divide-slate-100">
                         {relatedPurchases.map((purchase) => {
                           const amount = purchase.rawPrice ?? purchase.price;
-                          const PlatformIcon =
-                            platformIcons[purchase.platform];
+                          const PlatformIcon = platformIcons[purchase.platform];
                           const platformTone =
                             platformIconTone[purchase.platform];
                           return (
