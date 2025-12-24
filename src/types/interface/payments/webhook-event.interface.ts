@@ -1,9 +1,11 @@
-import { PaymentPlatform } from "../../enum/payment.enum";
+import { PaymentEnvironment, PaymentPlatform } from "../../enum/payment.enum";
 import { BaseQuery } from "../common.interface";
 
 export interface IWebhookEvent {
+  purchaseId: string;
   id: string;
   platform: PaymentPlatform;
+  environment: PaymentEnvironment;
   eventType: string;
   rawBody: string;
   processed: boolean;
