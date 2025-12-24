@@ -7,6 +7,7 @@ class RoleplayExerciseResultOverlayManager {
 
   static void show({
     required BuildContext context,
+    required QuestionTypeEnum questionType,
     required RoleplayExerciseResultOverlayBuilder builder,
   }) {
     hide();
@@ -26,11 +27,13 @@ class RoleplayExerciseResultOverlayManager {
 class RoleplayExerciseResultBottomSheet extends StatefulWidget {
   final bool isCorrect;
   final VoidCallback onContinue;
+  final QuestionTypeEnum? questionType;
 
   const RoleplayExerciseResultBottomSheet({
     super.key,
     required this.isCorrect,
     required this.onContinue,
+    this.questionType,
   });
 
   @override
@@ -61,12 +64,15 @@ class _RoleplayExerciseResultBottomSheetState extends State<RoleplayExerciseResu
     super.dispose();
   }
 
+  String _resolveTitle(BuildContext context) {
+    if (widget.questionType == QuestionTypeEnum.speaking) {
+      return context.text.exercise.exerciseCompleteVoiceTask;
+    }
+    return widget.isCorrect ? '${context.text.exercise.exerciseFeedbackCorrectAnswer}!' : context.text.exercise.exerciseFeedbackIncorrect;
+  }
+
   @override
   Widget build(BuildContext context) {
-    final Translations t = Translations.of(context);
-
-    final String title = widget.isCorrect ? '${t.exercise.exerciseFeedbackCorrectAnswer}!' : t.exercise.exerciseFeedbackIncorrect;
-
     return Stack(
       alignment: Alignment.bottomCenter,
       children: [
@@ -89,7 +95,7 @@ class _RoleplayExerciseResultBottomSheetState extends State<RoleplayExerciseResu
                 continueLabel: t.exercise.exerciseSkipButton,
                 explainLabel: '',
                 closeExplainLabel: '',
-                title: title,
+                title: _resolveTitle(context),
                 successAccentColor: AppCustomColor.successGreen,
                 errorAccentColor: AppCustomColor.errorRed,
                 successBackgroundColor: AppCustomColor.backgroundSuccess,

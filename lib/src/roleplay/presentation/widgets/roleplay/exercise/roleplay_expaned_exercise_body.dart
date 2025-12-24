@@ -12,8 +12,10 @@ class _ExpandedExerciseBody extends StatelessWidget {
   void _handleAnswerChecked(BuildContext context, bool isCorrect) {
     RoleplayExerciseResultOverlayManager.show(
       context: context,
+      questionType: exercise.type,
       builder: (_) => RoleplayExerciseResultBottomSheet(
         isCorrect: isCorrect,
+        questionType: exercise.type,
         onContinue: () {
           RoleplayExerciseResultOverlayManager.hide();
           onCheckPressed?.call();
