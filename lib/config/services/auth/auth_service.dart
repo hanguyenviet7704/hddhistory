@@ -9,34 +9,31 @@ class AuthService implements IAuthService {
     try {
       // Initialize Google Sign In
       await _googleSignIn.initialize();
+      // Trigger the authentication flow
+      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate();
 
-      // Trigger the Google Sign In flow with scope hint
-      final GoogleSignInAccount googleUser = await _googleSignIn.authenticate(
-        scopeHint: ['email', 'profile'],
-      );
-
-      // Obtain the auth details from the account
+      // Obtain the auth details from the request
       final GoogleSignInAuthentication googleAuth = googleUser.authentication;
 
-      // Get access token for the scopes
-      final GoogleSignInClientAuthorization? authorization = await googleUser.authorizationClient.authorizationForScopes(['email', 'profile']);
+      // Create a new credential
+      final credential = GoogleAuthProvider.credential(idToken: googleAuth.idToken);
 
-      // Create a new credential with the Google tokens
-      final OAuthCredential credential = GoogleAuthProvider.credential(
-        accessToken: authorization?.accessToken,
-        idToken: googleAuth.idToken,
-      );
-
-      // Sign in to Firebase with the Google credential
+      // Once signed in, return the UserCredential
       return await _firebaseAuth.signInWithCredential(credential);
     } on GoogleSignInException catch (e) {
       if (kDebugMode) LogDev.error('Failed to sign in with Google: ${e.toString()}');
+      DMessage.showMessage(type: MessageType.error, message: 'Google: ${e.toString()}');
+      Clipboard.setData(ClipboardData(text: e.toString()));
       throw AppException.generic('Google sign-in error: ${e.toString()}');
     } on FirebaseAuthException catch (e) {
       if (kDebugMode) LogDev.error('Failed to sign in with Google: ${e.toString()}');
+      DMessage.showMessage(type: MessageType.error, message: 'Firebase: ${e.toString()}');
+      Clipboard.setData(ClipboardData(text: e.toString()));
       throw AppException.generic(_getFirebaseAuthErrorMessage(e));
     } catch (e) {
       if (kDebugMode) LogDev.error('Failed to sign in with Google: ${e.toString()}');
+      DMessage.showMessage(type: MessageType.error, message: 'General: ${e.toString()}');
+      Clipboard.setData(ClipboardData(text: e.toString()));
       throw AppException.generic('Failed to sign in with Google: ${e.toString()}');
     }
   }
@@ -100,11 +97,11 @@ class AuthService implements IAuthService {
   @override
   Future<void> signOut() async {
     try {
-      await _firebaseAuth.signOut();
+      _firebaseAuth.signOut();
 
       // Sign out from Google if currently signed in
-      final googleSignIn = GoogleSignIn.instance;
-      await googleSignIn.signOut();
+      _googleSignIn.signOut();
+      _googleSignIn.disconnect();
     } catch (e) {
       throw AppException.generic('Failed to sign out: ${e.toString()}');
     }

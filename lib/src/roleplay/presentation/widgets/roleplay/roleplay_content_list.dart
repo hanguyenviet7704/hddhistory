@@ -124,7 +124,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
             key: _listKey,
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.zero,
+            padding: EdgeInsets.only(bottom: 155.h),
             initialItemCount: _controller.visibleIndexes.length,
             itemBuilder: (context, index, animation) {
               final curvedAnimation = CurvedAnimation(

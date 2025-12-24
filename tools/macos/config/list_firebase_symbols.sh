@@ -39,7 +39,7 @@ fi
 # Set environment-specific configurations
 CONFIG_FILE=""
 BUNDLE_ID=""
-PROJECT_ID="artlexis-4ba70"
+PROJECT_ID="meup-bf64f"
 
 if [[ "$PLATFORM" == "android" ]]; then
     # Android configuration

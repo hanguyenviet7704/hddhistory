@@ -134,8 +134,8 @@ The script automatically extracts these Firebase App IDs from your `google-servi
 
 ### Firebase Console Links
 
-- **Project Overview**: https://console.firebase.google.com/project/artlexis-4ba70
-- **Crashlytics Dashboard**: https://console.firebase.google.com/project/artlexis-4ba70/crashlytics
+- **Project Overview**: https://console.firebase.google.com/project/meup-bf64f
+- **Crashlytics Dashboard**: https://console.firebase.google.com/project/meup-bf64f/crashlytics
 
 ## Dependencies
 
