@@ -11,6 +11,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   late GlobalKey<AnimatedListState> _listKey;
   final ScrollController _scrollController = ScrollController();
   late final RoleplayContentController _controller;
+  bool _isOverlayVisible = false;
 
   @override
   void initState() {
@@ -26,6 +27,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
       onHideOverlays: () {
         RoleplayExerciseResultOverlayManager.hide();
         RoleplayExerciseOverlayManager.hide();
+        if (mounted) setState(() => _isOverlayVisible = false);
       },
       onSectionCompletionChanged: (isCompleted) {
         if (!mounted) return;
@@ -73,8 +75,14 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     }
   }
 
+  /// Schedules scroll to bottom after animation completes.
+  /// Waits for SizeTransition animation (350ms) plus buffer to ensure
+  /// the last widget is fully laid out before calculating maxScrollExtent.
   void _scheduleScrollToBottom() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      // Wait for SizeTransition animation to complete (350ms + 50ms buffer)
+      await Future.delayed(const Duration(milliseconds: 400));
       if (!mounted) return;
       _scrollToBottom();
     });
@@ -124,7 +132,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
             key: _listKey,
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
-            padding: EdgeInsets.only(bottom: 155.h),
+            padding: _isOverlayVisible ? EdgeInsets.only(bottom: 175.h) : EdgeInsets.zero,
             initialItemCount: _controller.visibleIndexes.length,
             itemBuilder: (context, index, animation) {
               final curvedAnimation = CurvedAnimation(
@@ -182,6 +190,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     required VoidCallback onCheckPressed,
   }) {
     RoleplayExerciseResultOverlayManager.hide();
+    setState(() => _isOverlayVisible = true);
     RoleplayExerciseOverlayManager.show(
       context: context,
       builder: (_) => RoleplayExerciseOverlayInteractive(
