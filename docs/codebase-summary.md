@@ -30,7 +30,7 @@ _Last updated: 2025-12-24_
 - **Tooling**: `build_runner`, `injectable_generator`, `go_router_builder`, `flutter_gen_runner`, `slang_build_runner`, `graphql_codegen`, `flutter_launcher_icons`, `flutter_flavorizr`.
 
 ## Testing & Quality Gates
-- Workflow documented in `TEST.md`: `dart run build_runner build`, `flutter analyze`, `flutter test` (or scoped suites), optional coverage runs.
+- Workflow: `dart run build_runner build`, `flutter analyze`, `flutter test` (or scoped suites), optional coverage runs.
 - TaskEither adoption complete—repositories, use cases, and cubits interact via lazy `TaskEither<AppException, T>` pipelines.
 - Mason bricks (e.g., `feature_clean`) scaffold feature modules; enforce consistent folder structures and test scaffolding.
 

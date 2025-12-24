@@ -43,7 +43,7 @@ Additional flows (builds, distribution, Firebase config) are documented inside `
 - Build scripts in `tools/<os>/build` honor `.env/.env.<flavor>` and `.info/app/*.json` for flavor-specific settings.
 
 ## Testing & Quality
-- Follow the workflow in `TEST.md` (build_runner → analyze → test → optional coverage).
+- Workflow: build_runner → analyze → test → optional coverage.
 - TaskEither adoption is complete—repositories, use cases, and cubits must maintain the pattern to ensure consistent error semantics.
 
 ## Support

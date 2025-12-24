@@ -46,7 +46,7 @@ lib/
 
 ## 7. Testing Requirements
 - Minimum: unit tests for every use case and repository; widget tests for critical flows (auth, purchase, lesson player).
-- Run `dart run build_runner build --delete-conflicting-outputs`, `flutter analyze`, and `flutter test` before raising PRs (see `TEST.md`).
+- Run `dart run build_runner build --delete-conflicting-outputs`, `flutter analyze`, and `flutter test` before raising PRs.
 - Mock dependencies via `mockito` or lightweight fakes; prefer TaskEither-friendly helpers for success/error cases.
 - Track coverage via `flutter test --coverage`; maintain >80% for domain/data layers.
 
