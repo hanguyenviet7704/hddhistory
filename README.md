@@ -1,141 +1,53 @@
 # Meup Flutter Application
 
-**Meup** is a comprehensive Flutter application built with Clean Architecture, multi-environment support, and robust development tooling. This project demonstrates modern Flutter development practices with advanced build processes, localization, and state management.
+Meup is a multi-platform Flutter product that delivers interactive language-learning experiences using Clean Architecture, TaskEither-based use cases, and parity tooling across macOS/Linux/Windows. This README stays concise—treat the `docs/` directory as the canonical source of truth.
 
 ## Quick Start
-
-For new developers, use the platform-matched scripts (macOS, Linux, Windows) that share the same interface. Replace `<os>` with `macos`, `linux`, or `windows` (Windows uses `.bat`).
-
-0. **Sanity-check tools** (optional but recommended)
+1. **Bootstrap tooling**
    ```bash
-   # macOS/Linux
-   tools/smoke.sh
-   # Windows
-   tools\\windows\\smoke.bat
+   tools/<os>/config/setup_project.sh        # add --non-interactive for CI
+   tools/<os>/smoke.sh                       # sanity check (tools\windows\smoke.bat)
+   ```
+2. **Generate code + localization**
+   ```bash
+   dart run build_runner build --delete-conflicting-outputs
+   tools/<os>/localization/localization.sh pull
+   dart run slang && dart run slang_build_runner
+   ```
+3. **Run quality gates**
+   ```bash
+   flutter analyze
+   flutter test
+   ```
+4. **Launch an environment**
+   ```bash
+   flutter run --flavor dev -t lib/main_dev.dart
+   # or use IDE run configurations (VS Code/.vscode, Android Studio/.idea)
    ```
 
-1. **Generate project resources** (build_runner)
-   ```bash
-   sh tools/<os>/resource/generate_file.sh        # .bat on Windows
-   ```
+Additional flows (builds, distribution, Firebase config) are documented inside `docs/system-architecture.md` and `docs/code-standards.md`.
 
-2. **Reset and clean project**
-   ```bash
-   sh tools/<os>/resource/reset_app.sh            # .bat on Windows
-   ```
+## Core Documentation
+| Topic | Location |
+| --- | --- |
+| Product Development Requirements | `docs/project-overview-pdr.md` |
+| Code Standards & Processes | `docs/code-standards.md` |
+| System Architecture | `docs/system-architecture.md` |
+| Codebase Snapshot | `docs/codebase-summary.md` |
+| Tooling & Configuration Reference | `tools/README.md`, `.info/README.md` |
 
-3. **Sync localization**
-   ```bash
-   tools/<os>/localization/localization.sh pull   # .bat on Windows
-   dart run slang                                 # regenerates lib/config/l10n
-   ```
+## Architecture Highlights
+- Feature pods in `lib/src/<feature>/` split into presentation, domain (TaskEither use cases), and data (Retrofit/GraphQL repos).
+- `lib/config/di` bootstraps `get_it` + `injectable`; `lib/config/routes` uses `go_router` for typed navigation.
+- Localization assets live under `assets/i18n/` and regenerate via `slang`.
+- Build scripts in `tools/<os>/build` honor `.env/.env.<flavor>` and `.info/app/*.json` for flavor-specific settings.
 
-4. **Run the application**
-   Use the IDE run configurations (see IDE Configuration section below) for your target flavor/mode.
-
-## Project Overview
-
-### Architecture
-- **Clean Architecture** with Domain, Data, and Presentation layers
-- **BLoC Pattern** for state management with `flutter_bloc` and `hydrated_bloc`
-- **Dependency Injection** using `get_it` and `injectable`
-- **Repository Pattern** with interfaces and implementations
-
-### Multi-Environment Support
-- **dev**: Development environment
-- **stg**: Staging environment  
-- **prod**: Production environment
-
-Each environment has its own configuration files, build scripts, and Firebase setup.
-
-### Key Features
-- Advanced build system with obfuscation and Firebase Crashlytics integration
-- Comprehensive localization system with Google Sheets integration
-- Custom development tools for macOS (Windows/Linux tools are placeholders)
-- Code generation for models, APIs, routing, and dependency injection
-- Multi-flavor support with environment-specific configurations
-
-## Documentation Structure
-
-This project uses a structured documentation approach:
-
-### 📁 [docs/common/](docs/common/)
-Reusable documentation applicable across projects:
-- [Git workflow and branching strategy](docs/common/01-01-git-workflow.md)
-- [Coding standards and best practices](docs/common/01-02-coding-standards.md)
-- [Commit message conventions](docs/common/01-03-commit-conventions.md)
-- [Flutter development guidelines](docs/common/01-04-flutter-best-practices.md)
-
-### 📁 [docs/projects/](docs/projects/)
-Project-specific documentation for Meup:
-
-#### Getting Started
-- [Prerequisites and Requirements](docs/projects/02-01-getting-started/02-01-01-prerequisites.md)
-- [Project Setup Guide](docs/projects/02-01-getting-started/02-01-02-project-setup.md)
-- [First-Time Developer Setup](docs/projects/02-01-getting-started/02-01-03-first-time-setup.md)
-
-#### Architecture & Design
-- [Clean Architecture Implementation](docs/projects/02-02-project-architecture/02-02-01-clean-architecture.md)
-- [State Management with BLoC](docs/projects/02-02-project-architecture/02-02-02-state-management.md)
-- [Dependency Injection](docs/projects/02-02-project-architecture/02-02-03-dependency-injection.md)
-- [Project Folder Structure](docs/projects/02-02-project-architecture/02-02-04-folder-structure.md)
-
-#### Build Process
-- [Build Process Overview](docs/projects/02-03-build-process/02-03-01-build-overview.md)
-- [Building for Android](docs/projects/02-03-build-process/02-03-02-building-for-android.md)
-- [Building for iOS](docs/projects/02-03-build-process/02-03-03-building-for-ios.md)
-- [App Bundle Generation](docs/projects/02-03-build-process/02-03-04-building-app-bundles.md)
-- [Code Obfuscation](docs/projects/02-03-build-process/02-03-05-code-obfuscation.md)
-
-#### Environment Configuration
-- [Environment Files (.env)](docs/projects/02-04-environment-configuration/02-04-01-environment-files.md)
-- [Using --dart-define-from-file](docs/projects/02-04-environment-configuration/02-04-02-dart-define-usage.md)
-- [Flavor Configuration](docs/projects/02-04-environment-configuration/02-04-03-flavor-configuration.md)
-
-#### Development Tools
-- [Custom Scripts Overview](docs/projects/02-05-development-tools/02-05-01-custom-scripts-overview.md)
-- [macOS Development Tools](docs/projects/02-05-development-tools/02-05-02-macos-tools.md)
-- [Code Generation](docs/projects/02-05-development-tools/02-05-03-code-generation.md)
-- [Localization Tools](docs/projects/02-05-development-tools/02-05-04-localization-tools.md)
-
-#### IDE Configuration
-- [VS Code Setup](docs/projects/02-06-ide-configuration/02-06-01-vscode-setup.md)
-- [IntelliJ/Android Studio Setup](docs/projects/02-06-ide-configuration/02-06-02-intellij-setup.md)
-
-#### Project Metadata
-- [Project Information Folder](docs/projects/02-07-project-metadata/02-07-01-project-info-folder.md)
-
-#### Testing & Deployment
-- [Testing Strategy](docs/projects/02-08-testing-deployment/02-08-01-testing-strategy.md)
-- [Firebase Integration](docs/projects/02-08-testing-deployment/02-08-02-firebase-integration.md)
-- [App Distribution](docs/projects/02-08-testing-deployment/02-08-03-app-distribution.md)
-
-## IDE Configuration
-
-### VS Code / VSCodium
-Pre-configured launch configurations are available in `.vscode/launch.json` for:
-- Development, Staging, and Production environments
-- Debug, Profile, and Release modes
-
-### IntelliJ IDEA / Android Studio
-Run configurations are available in `.idea/runConfigurations/` for all environment and mode combinations.
-
-## Important Notes
-
-### Platform Support for Custom Tools
-- ✅ **macOS**: Full toolset (Android + iOS + distribution)
-- ✅ **Linux**: Parity for Android/build/config/localization/Firebase
-- ✅ **Windows**: Parity for Android/build/config/localization/Firebase (PowerShell/BAT)
-
-All platforms share the same commands and flags; only iOS/IPA/distribution flows are macOS-only because they require Xcode. See `tools/README.md` and the platform quick links at the top of that file for usage, smoke tests, and version notes.
-
-### Build Process
-This project uses `--dart-define-from-file` (NOT `--dart-define`) for environment configuration. All build scripts are configured to load environment variables from files in the `.env/` directory.
+## Testing & Quality
+- Follow the workflow in `TEST.md` (build_runner → analyze → test → optional coverage).
+- TaskEither adoption is complete—repositories, use cases, and cubits must maintain the pattern to ensure consistent error semantics.
 
 ## Support
-
-For questions about the project structure or development setup, refer to the detailed documentation in the `docs/` directory. Each section provides comprehensive information about specific aspects of the project.
+If an answer is not in this README, check `docs/`. Update those docs before sharing process changes with other developers.
 
 ## License
-
-See [LICENSE.md](LICENSE.md) for license information.
+See `LICENSE.md`.
