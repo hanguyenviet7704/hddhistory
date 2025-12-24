@@ -11,7 +11,6 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   late GlobalKey<AnimatedListState> _listKey;
   final ScrollController _scrollController = ScrollController();
   late final RoleplayContentController _controller;
-  bool _isOverlayVisible = false;
 
   @override
   void initState() {
@@ -27,7 +26,6 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
       onHideOverlays: () {
         RoleplayExerciseResultOverlayManager.hide();
         RoleplayExerciseOverlayManager.hide();
-        if (mounted) setState(() => _isOverlayVisible = false);
       },
       onSectionCompletionChanged: (isCompleted) {
         if (!mounted) return;
@@ -132,7 +130,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
             key: _listKey,
             controller: _scrollController,
             physics: const BouncingScrollPhysics(),
-            padding: _isOverlayVisible ? EdgeInsets.only(bottom: 175.h) : EdgeInsets.zero,
+            padding: _controller.isOverlayVisible ? EdgeInsets.only(bottom: 175.h) : EdgeInsets.zero,
             initialItemCount: _controller.visibleIndexes.length,
             itemBuilder: (context, index, animation) {
               final curvedAnimation = CurvedAnimation(
@@ -190,7 +188,6 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     required VoidCallback onCheckPressed,
   }) {
     RoleplayExerciseResultOverlayManager.hide();
-    setState(() => _isOverlayVisible = true);
     RoleplayExerciseOverlayManager.show(
       context: context,
       builder: (_) => RoleplayExerciseOverlayInteractive(

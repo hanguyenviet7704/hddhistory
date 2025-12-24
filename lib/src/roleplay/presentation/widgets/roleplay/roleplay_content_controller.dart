@@ -39,10 +39,12 @@ class RoleplayContentController extends ChangeNotifier {
   bool _isDisposing = false;
   bool _shouldAutoScroll = true;
   bool _isAutoScrolling = false;
+  bool _isOverlayVisible = false;
   static const double _autoScrollThreshold = 80;
 
   List<RoleplayContentEntity> get displayableContents => _displayableContents;
   List<int> get visibleIndexes => _visibleIndexes;
+  bool get isOverlayVisible => _isOverlayVisible;
 
   RoleplayAudioController? audioControllerAt(int index) => _audioControllers[index];
 
@@ -184,6 +186,8 @@ class RoleplayContentController extends ChangeNotifier {
     _cancelPendingExercise();
     _pendingExerciseContentIndex = contentIndex;
     _pendingExerciseCompleter = Completer<void>();
+    _isOverlayVisible = true;
+    notifyListeners();
 
     _onShowExerciseOverlay(
       contentIndex: contentIndex,
@@ -206,6 +210,7 @@ class RoleplayContentController extends ChangeNotifier {
 
     AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);
     _onHideOverlays();
+    _isOverlayVisible = false;
     _completedExerciseIndexes.add(contentIndex);
     notifyListeners();
     _requestAutoScroll();
@@ -223,6 +228,7 @@ class RoleplayContentController extends ChangeNotifier {
 
   void _cancelPendingExercise() {
     _onHideOverlays();
+    _isOverlayVisible = false;
     _completePendingExercise();
   }
 
