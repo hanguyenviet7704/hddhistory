@@ -6,10 +6,10 @@ enum RoleplayStatus { initial, loading, success, failure }
 abstract class RoleplayState with _$RoleplayState {
   const factory RoleplayState({
     @Default(RoleplayStatus.initial) RoleplayStatus status,
+    @Default(LessonEntity()) LessonEntity currentLesson,
     @Default(LearningItemEntity()) LearningItemEntity currentLearningItem,
-    @Default(0) int currentSectionIndex,
-    @Default(false) bool isCurrentSectionRevealed,
     @Default(RoleplayFeedbackEntity()) RoleplayFeedbackEntity feedback,
+    @Default(false) bool isCurrentSectionRevealed,
     String? errorMessage,
   }) = _RoleplayState;
 
@@ -19,7 +19,7 @@ abstract class RoleplayState with _$RoleplayState {
 }
 
 extension RoleplayStateExtension on RoleplayState {
-  SectionEntity get currentSection {
-    return currentLearningItem.sections.elementAtOrDefault(currentSectionIndex, defaultValue: SectionEntity());
+  RoleplayEntity get currentRoleplay {
+    return currentLearningItem.roleplay;
   }
 }

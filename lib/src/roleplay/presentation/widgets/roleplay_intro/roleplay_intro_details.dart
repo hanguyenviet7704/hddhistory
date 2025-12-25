@@ -1,44 +1,48 @@
 part of '../../../roleplay.dart';
 
 class RoleplayIntroDetails extends StatelessWidget {
-  final LearningItemEntity learningItem;
-
   const RoleplayIntroDetails({
     super.key,
-    required this.learningItem,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        AppText(
-          learningItem.title.text,
-          maxLines: 2,
-          style: AppStyle.text32.copyWith(
-            fontWeight: FontWeight.w700,
-            color: AppCustomColor.textWhite,
-            height: 40 / 32,
-          ),
-        ),
-        12.verticalSpace,
-        if (learningItem.estimateCompleTime.text.isNotEmpty)
-          AppText(
-            learningItem.estimateCompleTime.text,
-            style: AppStyle.text12.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textWhite),
-          ),
-        12.verticalSpace,
-        AppText(
-          learningItem.description.text,
-          maxLines: 100,
-          style: AppStyle.text16.copyWith(
-            color: Colors.white.withValues(alpha: 0.7),
-            height: 24 / 16,
-          ),
-        ),
-      ],
+    return BlocSelector<RoleplayCubit, RoleplayState, LessonEntity>(
+      selector: (state) => state.currentLesson,
+      builder: (context, lesson) {
+        String timeText = lesson.estimateCompleTime.text;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (timeText.isNotEmpty) ...[
+              RoleplayIntroTimeChip(text: timeText),
+              16.verticalSpace,
+            ],
+            AppText(
+              lesson.title.text,
+              maxLines: 2,
+              textAlign: TextAlign.center,
+              style: AppStyle.text24.copyWith(
+                fontWeight: FontWeight.w700,
+                color: AppCustomColor.textWhite,
+                height: 36 / 24,
+              ),
+            ),
+            8.verticalSpace,
+            AppText(
+              lesson.description.text,
+              maxLines: 100,
+              textAlign: TextAlign.left,
+              style: AppStyle.text16.copyWith(
+                fontWeight: FontWeight.w400,
+                color: Colors.white.withValues(alpha: 0.8),
+                height: 24 / 16,
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -28,7 +28,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   void nextQuestion() {
     AppDI.injector.get<LessonCubit>().setIsShowResultOverlay(false);
-    setQuestionPoint(state.currentQuestion);
+    // setQuestionPoint(state.currentQuestion);
 
     if (state.currentQuestionIndex >= state.currentLearningItem.questions.length - 1) {
       AppDI.injector.get<LessonCubit>().nextLearningItem();
@@ -110,8 +110,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   //* Roleplay Page Flow
   void setQuestionPoint(QuestionEntity question) {
-    LearningItemEntity learningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
-    if (learningItem.type != LearningItemType.roleplay) return;
+    if (state.currentLearningItem.type != LearningItemType.roleplay) return;
     KeypointEntity point = question.keypoint.copyWith(isUseRoleplayModule: true);
 
     switch (question.type) {

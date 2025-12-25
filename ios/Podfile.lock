@@ -53,7 +53,7 @@ PODS:
   - DKPhotoGallery/Resource (0.0.19):
     - SDWebImage
     - SwiftyGif
-  - facebook_app_events (0.22.0):
+  - facebook_app_events (0.24.0):
     - FBSDKCoreKit (~> 18.0)
     - Flutter
   - FBAEMKit (18.0.2):
@@ -476,7 +476,7 @@ SPEC CHECKSUMS:
   device_info_plus: 21fcca2080fbcd348be798aa36c3e5ed849eefbe
   DKImagePickerController: 946cec48c7873164274ecc4624d19e3da4c1ef3c
   DKPhotoGallery: b3834fecb755ee09a593d7c9e389d8b5d6deed60
-  facebook_app_events: 2d48067b045fa2c09bf704f1ed07431ad02abeff
+  facebook_app_events: 58a1b62fd50f6009907bd167fc26b3d043e97197
   FBAEMKit: 56a4f5a9607957b547b6458b17a98c5bb2736367
   FBSDKCoreKit: 54f1240567e16862ab71c53c33dc347db5c524c5
   FBSDKCoreKit_Basics: eb530cd6a79030dbb11df460aafb2767bcad9028

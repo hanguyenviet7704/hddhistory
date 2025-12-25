@@ -38,6 +38,8 @@ class SpeakingLessonBody extends StatelessWidget {
           // For speaking exercises, we don't check correct/incorrect immediately
           // Just move to the next question after successful submission
           onAnswerChecked(true);
+          final bool isRoleplay = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type == LearningItemType.roleplay;
+          if (isRoleplay) return;
           _showResultOverlay(context, ResultType.correct);
           // AppDI.injector.get<ExerciseCubit>().nextQuestion();
         }

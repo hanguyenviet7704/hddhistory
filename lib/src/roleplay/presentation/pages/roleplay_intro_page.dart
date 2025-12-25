@@ -21,7 +21,7 @@ class RoleplayIntroPage extends StatelessWidget {
               case RoleplayStatus.failure:
                 return _RoleplayIntroError(message: state.errorMessage);
               case RoleplayStatus.success:
-                return _RoleplayIntroView(learningItem: state.currentLearningItem);
+                return _RoleplayIntroView();
             }
           },
         ),
@@ -30,17 +30,47 @@ class RoleplayIntroPage extends StatelessWidget {
   }
 }
 
-class _RoleplayIntroView extends StatelessWidget {
-  final LearningItemEntity learningItem;
+class _RoleplayIntroView extends StatefulWidget {
+  const _RoleplayIntroView();
 
-  const _RoleplayIntroView({required this.learningItem});
+  @override
+  State<_RoleplayIntroView> createState() => _RoleplayIntroViewState();
+}
+
+class _RoleplayIntroViewState extends State<_RoleplayIntroView> {
+  late final ValueNotifier<int> _stepNotifier = ValueNotifier<int>(0);
+
+  RoleplayEntity get _roleplay => context.read<RoleplayCubit>().state.currentRoleplay;
+  bool get _hasMissions => _roleplay.missions.isNotEmpty;
+
+  void _handleCta() {
+    final bool showMissions = _hasMissions && _stepNotifier.value == 1;
+
+    if (showMissions || !_hasMissions) {
+      context.read<RoleplayPointCubit>().reset();
+      RoleplayRoute().go(context);
+      return;
+    }
+    _stepNotifier.value = 1;
+  }
+
+  @override
+  void dispose() {
+    _stepNotifier.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
-        RoleplayIntroBackground(imageUrl: learningItem.image),
+        BlocSelector<RoleplayCubit, RoleplayState, String>(
+          selector: (state) => state.currentLesson.image,
+          builder: (context, imageUrl) {
+            return RoleplayIntroBackground(imageUrl: imageUrl);
+          },
+        ),
         SafeArea(
           child: Column(
             children: [
@@ -51,26 +81,50 @@ class _RoleplayIntroView extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      24.verticalSpace,
+                      12.verticalSpace,
                       Align(
                         alignment: Alignment.center,
-                        child: RoleplayIntroHeroCard(imageUrl: learningItem.image),
+                        child: BlocSelector<RoleplayCubit, RoleplayState, String>(
+                          selector: (state) => state.currentLesson.image,
+                          builder: (context, imageUrl) {
+                            return RoleplayIntroHeroCard(imageUrl: imageUrl);
+                          },
+                        ),
                       ),
-                      32.verticalSpace,
-                      RoleplayIntroDetails(learningItem: learningItem),
+                      24.verticalSpace,
+                      ValueListenableBuilder<int>(
+                        valueListenable: _stepNotifier,
+                        builder: (context, step, _) {
+                          final bool showMissions = _hasMissions && step == 1;
+
+                          return AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 200),
+                            child: showMissions
+                                ? RoleplayIntroMissions(
+                                    key: const ValueKey('missions'),
+                                    missions: _roleplay.missions,
+                                  )
+                                : RoleplayIntroDetails(
+                                    key: const ValueKey('details'),
+                                  ),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 ),
               ),
-              RoleplayIntroActionButton(
-                label: context.text.roleplay.rolePlayIntroStartButton,
-                onPressed: () {
-                  context.read<RoleplayCubit>().resetIndex();
-                  context.read<RoleplayPointCubit>().reset();
-                  RoleplayRoute().go(context);
+              ValueListenableBuilder<int>(
+                valueListenable: _stepNotifier,
+                builder: (context, step, _) {
+                  final bool showMissions = _hasMissions && step == 1;
+                  return RoleplayIntroActionButton(
+                    label: showMissions ? context.text.roleplay.rolePlayIntroStartButton : context.text.common.kContinue,
+                    onPressed: _handleCta,
+                  );
                 },
               ),
-              SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom),
+              SizedBox(height: 16.h + MediaQuery.paddingOf(context).bottom),
             ],
           ),
         ),
@@ -87,25 +141,17 @@ class _RoleplayIntroHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: Align(
         alignment: Alignment.centerLeft,
         child: GestureDetector(
+          behavior: HitTestBehavior.translucent,
           onTap: onClose,
-          child: Container(
-            width: 36.w,
-            height: 36.w,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.24),
-              borderRadius: BorderRadius.circular(40.r),
-            ),
-            alignment: Alignment.center,
-            child: SvgPicture.asset(
-              AppAsset.svg.app.icClose,
-              width: 16.w,
-              height: 16.w,
-              colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
-            ),
+          child: SvgPicture.asset(
+            AppAsset.svg.app.icClose,
+            width: 24.w,
+            height: 24.w,
+            colorFilter: const ColorFilter.mode(Colors.white, BlendMode.srcIn),
           ),
         ),
       ),

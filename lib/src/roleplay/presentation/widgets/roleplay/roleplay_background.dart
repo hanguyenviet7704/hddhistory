@@ -6,7 +6,7 @@ class RoleplayHeroBackground extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<RoleplayCubit, RoleplayState, String>(
-      selector: (state) => state.currentSection.image,
+      selector: (state) => state.currentRoleplay.image,
       builder: (context, imageUrl) {
         if (imageUrl.isEmpty) {
           return Container(color: AppCustomColor.backgroundWhite);
@@ -15,12 +15,9 @@ class RoleplayHeroBackground extends StatelessWidget {
         return Stack(
           fit: StackFit.expand,
           children: [
-            ImageFiltered(
-              imageFilter: ui.ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: CacheNetworkGraphic(
-                url: imageUrl,
-                fit: BoxFit.cover,
-              ),
+            CacheNetworkGraphic(
+              url: imageUrl,
+              fit: BoxFit.cover,
             ),
             DecoratedBox(
               decoration: BoxDecoration(
@@ -28,6 +25,9 @@ class RoleplayHeroBackground extends StatelessWidget {
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                   colors: [
+                    // const Color(0xFF2F7EA6).op(0.70),
+                    // const Color(0xFF2F7EA6).op(0.38),
+                    // const Color(0xFF123D52).op(0.78),
                     Colors.black.withValues(alpha: 0.65),
                     Colors.black.withValues(alpha: 0.2),
                     Colors.black.withValues(alpha: 0.75),

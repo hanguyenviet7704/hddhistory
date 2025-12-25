@@ -20,11 +20,11 @@ class RoleplayIntroActionButton extends StatelessWidget {
           onPressed: onPressed,
           text: label,
           size: Size.fromHeight(54.h),
-          backgroundColor: AppCustomColor.brandPrimary,
+          backgroundColor: AppCustomColor.backgroundWhite,
           shape: const StadiumBorder(),
           style: AppStyle.text16.copyWith(
             fontWeight: FontWeight.w600,
-            color: AppCustomColor.textWhite,
+            color: AppCustomColor.textPrimary,
           ),
         ),
       ),

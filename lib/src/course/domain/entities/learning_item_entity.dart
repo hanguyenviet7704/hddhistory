@@ -15,7 +15,7 @@ abstract class LearningItemEntity with _$LearningItemEntity {
     @Default([]) List<QuestionEntity> mainQuestions,
     @Default([]) List<QuestionEntity> subQuestions,
     @Default([]) List<DocumentEntity> documents,
-    @Default([]) List<SectionEntity> sections,
+    @Default(RoleplayEntity()) RoleplayEntity roleplay,
     @Default([]) List<String> tag,
     @Default(0) int index,
     @Default(false) bool isSub,
@@ -32,16 +32,15 @@ abstract class LearningItemEntity with _$LearningItemEntity {
 }
 
 extension LearningItemEntityExtension on LearningItemEntity {
-
   bool get isPlayingMainQuestions => !isPlayingSubQuestions && !isPlayingRoleplayQuestions;
 
   List<QuestionEntity> get questions {
-    if (type == LearningItemType.exercise) return mainQuestions;
-    if (type == LearningItemType.roleplay) {
-      if (sections.isEmpty) return [];
-      if (sectionQuestionIndex >= sections.length) return [];
-      return sections[sectionQuestionIndex].questions;
-    }
-    return [];
+    // if (type == LearningItemType.exercise) return mainQuestions;
+    //  if (type == LearningItemType.roleplay) {
+    //   if (roleplay.contents.isEmpty) return [];
+    //   return roleplay.contents.map((content) => content.exercise).toList();
+    // }
+    // return [];
+    return mainQuestions;
   }
 }

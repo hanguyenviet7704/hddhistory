@@ -138,7 +138,7 @@ dependencies:
   # App Ads Services
   # google_mobile_ads: ^3.0.0
   # unity_ads_plugin: ^0.3.7
-  facebook_app_events: ^0.22.0
+  facebook_app_events: ^0.24.0
 
   # App Map Services
 #  google_maps_flutter: ^2.12.1
@@ -163,7 +163,7 @@ dependencies:
   freezed_annotation: ^3.1.0
 
   # App File Services
-  file_picker: ^10.3.7
+  file_picker: ^10.3.8
   image_picker: ^1.2.1
   device_info_plus: ^12.3.0
   package_info_plus: ^9.0.0
@@ -219,7 +219,7 @@ dependencies:
 
   # App External Services
   crypto: ^3.0.7
-  image: ^4.6.0
+  image: ^4.7.2
   vector_graphics: ^1.1.19
   flutter_svg_provider: ^1.0.7
   app_tracking_transparency: ^2.0.6+1
@@ -231,11 +231,11 @@ dependency_overrides:
       url: https://github.com/rafaelsetragni/awesome_notifications.git
       # This tells pub to use the current HEAD of the PR (the pull request's fix):
       ref: refs/pull/991/head
-  # ffmpeg_kit_flutter_new:
-  #   git:
-  #     url: https://github.com/tanersener/ffmpeg-kit.git
-  #     path: flutter/flutter
-  #     ref: main
+  retrofit:
+    git:
+      url: https://github.com/trevorwang/retrofit.dart.git
+      path: retrofit
+      ref: master
 
 
 dev_dependencies:
@@ -250,7 +250,7 @@ dev_dependencies:
   # flutter pub run build_runner build --delete-conflicting-outputs
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
-  retrofit_generator: ^10.2.0
+  retrofit_generator: ^10.2.1
   build_runner: ^2.10.4
   flutter_gen_runner: ^5.12.0
   json_serializable: ^6.11.1

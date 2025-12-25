@@ -10,39 +10,62 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     this._sendFeedbackRoleplayUseCase,
   ) : super(RoleplayState.initial());
 
-  LessonEntity lesson = LessonEntity();
-
   void reset() => emit(RoleplayState.initial());
-  void resetIndex() => emit(state.copyWith(currentSectionIndex: 0));
-  void setLessonId(LessonEntity lesson) => this.lesson = lesson;
+  void setCurrentLesson(LessonEntity lesson) => emit(state.copyWith(currentLesson: lesson));
 
   void setLearningItemToLessonCubit() {
     LearningItemEntity learningItem = state.currentLearningItem;
     learningItem = learningItem.copyWith(
-      sectionQuestionIndex: state.currentSectionIndex,
       isPlayingRoleplayQuestions: true,
     );
     AppDI.injector.get<LessonCubit>().setLearningItemFromRoleplay(learningItem);
   }
 
-  void goToNextSection() {
-    final nextIndex = state.currentSectionIndex + 1;
-    if (nextIndex >= state.currentLearningItem.sections.length) {
-      AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
-      _sendFeedback();
-      RoleplayCompleteRoute().go(AppConfig.instance.context!);
-      return;
-    }
-    emit(state.copyWith(currentSectionIndex: nextIndex, isCurrentSectionRevealed: false));
-    if (state.currentSection.contents.last.type == RoleplaySectionType.exercise) {
-      setLearningItemToLessonCubit();
-      LessonRoute().push(AppConfig.instance.context!);
-    }
+  void endRoleplay() {
+    AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
+    _sendFeedback();
+    RoleplayCompleteRoute().go(AppConfig.instance.context!);
+
+    // if (state.currentRoleplay.contents.last.type == RoleplayContentType.exercise) {
+    //   setLearningItemToLessonCubit();
+    //   LessonRoute().push(AppConfig.instance.context!);
+    // }
   }
 
   void setCurrentSectionRevealed(bool isRevealed) {
     if (state.isCurrentSectionRevealed == isRevealed) return;
     emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
+  }
+
+  void setExerciseRecordAnswer({
+    required int questionId,
+    String? textAnswer,
+    String? recordPath,
+  }) {
+    if (state.currentRoleplay.contents.isEmpty) return;
+
+    final updatedContents = state.currentRoleplay.contents.map((content) {
+      if (content.type != RoleplayContentType.exercise || content.exercise.id != questionId) {
+        return content;
+      }
+
+      final updatedResult = content.exercise.result.copyWith(
+        textAnswer: (textAnswer != null && textAnswer.isNotEmpty) ? textAnswer : content.exercise.result.textAnswer,
+        recordPath: (recordPath != null && recordPath.isNotEmpty) ? recordPath : content.exercise.result.recordPath,
+      );
+
+      return content.copyWith(
+        exercise: content.exercise.copyWith(result: updatedResult),
+      );
+    }).toList();
+
+    emit(
+      state.copyWith(
+        currentLearningItem: state.currentLearningItem.copyWith(
+          roleplay: state.currentRoleplay.copyWith(contents: updatedContents),
+        ),
+      ),
+    );
   }
 
   void loadLearningItem(String id, {BaseMultiLanguage? estimateCompleTime}) async {

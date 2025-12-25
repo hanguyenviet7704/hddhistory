@@ -27,64 +27,31 @@ class _RoleplayPageView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoleplayCubit, RoleplayState, SectionEntity>(
-      selector: (state) => state.currentSection,
-      builder: (context, currentSection) {
-        final bool hasHeroImage = currentSection.image.isNotEmpty;
-        return AnnotatedRegion<SystemUiOverlayStyle>(
-          value: hasHeroImage ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              RoleplayHeroBackground(),
-              SafeArea(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      RoleplayPageHeader(
-                        section: currentSection,
-                        useLightContent: hasHeroImage,
-                      ),
-                      Expanded(
-                        child: RoleplayContentList(
-                          key: ValueKey(currentSection.id),
-                          section: currentSection,
-                        ),
-                      ),
-                      BlocSelector<RoleplayCubit, RoleplayState, bool>(
-                        selector: (state) => state.isCurrentSectionRevealed,
-                        builder: (context, isSectionReady) {
-                          final bottomSpacing = SizedBox(height: 12.h + MediaQuery.paddingOf(context).bottom);
-                          if (kDebugMode) {
-                            return Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                RoleplayBottomAction(currentSection: currentSection),
-                                bottomSpacing,
-                              ],
-                            );
-                          }
-                          if (!isSectionReady) return bottomSpacing;
-
-                          return Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              RoleplayBottomAction(currentSection: currentSection),
-                              bottomSpacing,
-                            ],
-                          );
-                        },
-                      ),
-                    ],
-                  ),
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: context.read<RoleplayCubit>().state.currentRoleplay.image.isNotEmpty ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          RoleplayHeroBackground(),
+          SafeArea(
+            bottom: false,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                BlocSelector<RoleplayCubit, RoleplayState, bool>(
+                  selector: (state) => state.currentRoleplay.image.isNotEmpty,
+                  builder: (context, hasHeroImage) {
+                    return RoleplayPageHeader(
+                      useLightContent: hasHeroImage,
+                    );
+                  },
                 ),
-              ),
-            ],
+                RoleplayContent(),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

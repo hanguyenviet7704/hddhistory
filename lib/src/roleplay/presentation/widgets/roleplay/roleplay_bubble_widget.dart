@@ -12,7 +12,7 @@ class RoleplayConversationBubble extends StatelessWidget {
     required this.audioController,
   });
 
-  bool get _isRight => conversation.position == SectionConversationPosition.right;
+  bool get _isRight => conversation.position == RoleplayConversationPosition.right;
   bool get _isSamePerson {
     if (previousConversation == null) return false;
     return previousConversation!.avatar.id == conversation.avatar.id;
@@ -79,6 +79,12 @@ class _RoleplayBubbleContent extends StatelessWidget {
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
             color: conversation.backgroundColor.toHexColor,
+            border: isRight
+                ? null
+                : Border.all(
+                    color: AppCustomColor.textPrimary.op(0.08),
+                    width: 1,
+                  ),
             borderRadius: _radius,
           ),
           child: Column(

@@ -20,6 +20,7 @@ targets:
         options:
           nullsafety: true
           parser: "FlutterCompute"
+          format_output: false
 
       json_serializable|json_serializable:
         enabled: true

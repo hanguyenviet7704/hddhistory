@@ -83,3 +83,8 @@ prompt_gen.md
 release_content.md
 TEST.md
 example.json
+repomix-output.xml
+
+# AI
+.claude/
+plans/

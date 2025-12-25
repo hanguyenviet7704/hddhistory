@@ -46,6 +46,8 @@ class MarkStressWordLessonBody extends StatelessWidget {
       },
       listener: (context, state) {
         onAnswerChecked(state.isCorrect);
+        final bool isRoleplay = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type == LearningItemType.roleplay;
+        if (isRoleplay) return;
         _showResultOverlay(
           context,
           state.isCorrect ? ResultType.correct : ResultType.incorrect,

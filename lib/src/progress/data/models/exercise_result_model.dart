@@ -9,6 +9,12 @@ abstract class ExerciseResultModel with _$ExerciseResultModel {
     @Default(0) int numberOfCorrect,
     @Default(0) int numberOfIncorrect,
     @Default('') String reviews,
+    @Default(QuestionType.singleChoice) QuestionType type,
+    @Default(FormDragDropType.textGapFilling) FormDragDropType form,
+    @Default([]) List<OptionModel> multipleAnswer,
+    @Default(OptionModel()) OptionModel singleAnswer,
+    @Default([]) List<AnswerModel> dragDropAnswer,
+    @Default(AnswerModel()) AnswerModel recordAnswer,
     DateTime? submittedAt,
   }) = _ExerciseResultModel;
 
@@ -23,6 +29,13 @@ extension ExerciseResultModelExtension on ExerciseResultModel {
     numberOfCorrect: numberOfCorrect,
     numberOfIncorrect: numberOfIncorrect,
     reviews: reviews,
+    type: type.toQuestionTypeEnum(form),
+    form: form,
+    multipleAnswer: multipleAnswer.map((model) => model.toEntity()).toList(),
+    singleAnswer: singleAnswer.toEntity(),
+    dragDropAnswer: dragDropAnswer.map((model) => model.toEntity()).toList(),
+    recordAnswer: recordAnswer.toEntity(),
     submittedAt: submittedAt,
   );
 }
+

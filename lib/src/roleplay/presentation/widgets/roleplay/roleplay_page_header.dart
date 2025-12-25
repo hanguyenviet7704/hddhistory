@@ -1,12 +1,10 @@
 part of '../../../roleplay.dart';
 
 class RoleplayPageHeader extends StatelessWidget {
-  final SectionEntity section;
   final bool useLightContent;
 
   const RoleplayPageHeader({
     super.key,
-    required this.section,
     required this.useLightContent,
   });
 
@@ -14,22 +12,30 @@ class RoleplayPageHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final Color textColor = useLightContent ? AppCustomColor.textWhite : AppCustomColor.textPrimary;
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.start,
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        _RoleplayBackButton(isLight: useLightContent),
-        16.horizontalSpace,
-        AppText(
-          section.title.text,
-          maxLines: 2,
-          style: AppStyle.text20.copyWith(
-            fontWeight: FontWeight.w700,
-            color: textColor,
-            height: 1.3,
+    return Padding(
+      padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 20.w),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _RoleplayBackButton(isLight: useLightContent),
+          BlocSelector<RoleplayCubit, RoleplayState, String>(
+            selector: (state) => state.currentLesson.title.text,
+            builder: (context, title) {
+              return AppText(
+                title,
+                maxLines: 2,
+                style: AppStyle.text20.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: textColor,
+                  height: 1.3,
+                ),
+              );
+            },
           ),
-        ),
-      ],
+          SizedBox(width: 18.w),
+        ],
+      ),
     );
   }
 }
@@ -44,7 +50,7 @@ class _RoleplayBackButton extends StatelessWidget {
     return GestureDetector(
       onTap: () => context.pop(),
       child: Icon(
-        FontAwesomeIcons.arrowLeftLong,
+        FontAwesomeIcons.xmark,
         size: 18.w,
         color: isLight ? Colors.white : AppCustomColor.textPrimary,
       ),

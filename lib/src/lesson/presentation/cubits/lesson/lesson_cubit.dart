@@ -5,7 +5,6 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   final GetAllLearningItemsUseCase _getAllLearningItemUseCase;
   final GetLearningItemUseCase _getLearningItemUseCase;
   final ProgressCubit _progressCubit;
-  final RoleplayCubit _roleplayCubit;
   final ExerciseCubit _exerciseCubit;
   final TheoryCubit _theoryCubit;
 
@@ -13,7 +12,6 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._getAllLearningItemUseCase,
     this._getLearningItemUseCase,
     this._progressCubit,
-    this._roleplayCubit,
     this._exerciseCubit,
     this._theoryCubit,
   ) : super(LessonState.initial());
@@ -22,8 +20,6 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   void reset() => emit(LessonState.initial());
   void setIsShowResultOverlay(bool value) => emit(state.copyWith(isShowResultOverlay: value));
   
-
-  //* Roleplay Page Flow
   void setLearningItemFromRoleplay(LearningItemEntity learningItem) {
     emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem]), currentLearningItemIndex: 0));
     setCurrentLearningItem(learningItem);
@@ -54,12 +50,6 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void nextLearningItem() {
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
-      if (state.currentLearningItem.type == LearningItemType.roleplay) {
-        AppConfig.instance.context!.back();
-        _roleplayCubit.goToNextSection();
-        return;
-      }
-
       if (state.subQuestions.isNotEmpty) {
         ReviewTimeRoute().go(AppConfig.instance.context!);
         return;
