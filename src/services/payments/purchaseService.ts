@@ -26,6 +26,11 @@ export const purchaseService = {
     return res.data;
   },
 
+  async getWebhooksByPurchaseId(id: string) {
+    const res = await axiosClient.get(`/payment/purchases/${id}/webhooks`);
+    return res.data;
+  },
+
   async getRevenueStatistics(
     params?: Partial<GetRevenueListQuery>
   ): Promise<RevenueStatisticsResponse> {
