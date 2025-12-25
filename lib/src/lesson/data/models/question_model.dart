@@ -44,7 +44,21 @@ enum QuestionType {
   @JsonValue('drag_drop')
   dragAndDrop,
   @JsonValue('record')
-  record,
+  record;
+
+  QuestionTypeEnum toQuestionTypeEnum(FormDragDropType form) {
+    return switch (this) {
+      QuestionType.singleChoice => QuestionTypeEnum.singleChoice,
+      QuestionType.multipleChoice => QuestionTypeEnum.multipleChoice,
+      QuestionType.record => QuestionTypeEnum.speaking,
+      QuestionType.dragAndDrop => switch (form) {
+          FormDragDropType.textGapFilling => QuestionTypeEnum.dragAndDrop,
+          FormDragDropType.cuesPlacement => QuestionTypeEnum.cuesPlacement,
+          FormDragDropType.stressPlacement => QuestionTypeEnum.stressPlacement,
+          FormDragDropType.arrangeTheSequence => QuestionTypeEnum.arrangeTheSequence,
+        }
+    };
+  }
 }
 
 enum FormDragDropType {
@@ -60,7 +74,7 @@ enum FormDragDropType {
 
 extension QuestionModelExtension on QuestionModel {
   QuestionEntity toEntity() => QuestionEntity(
-    type: toQuestionTypeEnum,
+    type: type.toQuestionTypeEnum(form),
     id: id,
     speechBubble: speechBubble,
     tag: tag.toEntity(),
@@ -80,22 +94,4 @@ extension QuestionModelExtension on QuestionModel {
     mainQuestion: mainQuestion,
     keypoint: keypoint.toEntity(),
   );
-
-  QuestionTypeEnum get toQuestionTypeEnum {
-    switch (type) {
-      case QuestionType.singleChoice:
-        return QuestionTypeEnum.singleChoice;
-      case QuestionType.multipleChoice:
-        return QuestionTypeEnum.multipleChoice;
-      case QuestionType.record:
-        return QuestionTypeEnum.speaking;
-      case QuestionType.dragAndDrop:
-        return switch (form) {
-          FormDragDropType.textGapFilling => QuestionTypeEnum.dragAndDrop,
-          FormDragDropType.cuesPlacement => QuestionTypeEnum.cuesPlacement,
-          FormDragDropType.stressPlacement => QuestionTypeEnum.stressPlacement,
-          FormDragDropType.arrangeTheSequence => QuestionTypeEnum.arrangeTheSequence,
-        };
-    }
-  }
 }
