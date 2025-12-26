@@ -1,7 +1,7 @@
 import { ITranslation } from "../../utils/translate";
 import { SkillsetStatus } from "../enum/skillset.enum";
 import { BaseQuery } from "./common.interface";
-import { ICourse } from "./cource.interface";
+import { ICourse } from "./course.interface";
 
 export interface ISkillset {
   _id: string;

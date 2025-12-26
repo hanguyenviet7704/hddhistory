@@ -15,7 +15,6 @@ import {
   RoleplayContentType,
   RoleplayConversationPosition,
 } from "../../types/enum/learningItem.enum";
-import { KeypointLevel } from "../../utils/enum/course.enum";
 import {
   PlusCircleIcon,
   TrashIcon,
@@ -31,6 +30,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import SortableItem from "../../components/common/SortableItem";
+import { KeypointLevel } from "../../utils/enum/course.enum";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { Combobox } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
@@ -302,6 +302,26 @@ const TagDisplay = ({
   );
 };
 
+const EXERCISE_TYPE_LABELS: Record<ExerciseType, string> = {
+  [ExerciseType.SINGLE_CHOICE]: "Single Choice",
+  [ExerciseType.MULTIPLE_CHOICE]: "Multiple Choice",
+  [ExerciseType.DRAG_DROP]: "Drag & Drop",
+  [ExerciseType.RECORD]: "Record",
+};
+
+const getExerciseTypeLabel = (type?: ExerciseType): string => {
+  if (!type) return "";
+  return EXERCISE_TYPE_LABELS[type] || type;
+};
+
+const getDragDropFormLabel = (
+  type?: ExerciseType,
+  form?: string | FormDragDropType
+): string => {
+  if (type !== ExerciseType.DRAG_DROP) return "";
+  return (form as string) || FormDragDropType.TextGapFilling;
+};
+
 // Color picker component with text input
 const ColorPicker = ({
   value,
@@ -432,7 +452,9 @@ const KeypointSelector = ({
           search: keypointQuery,
         });
         const list: IKeypoint[] = res.data.items ?? [];
-        if (active) setKeypoints(list);
+        if (active) {
+          setKeypoints(list);
+        }
       } catch (err) {
         console.error("fetchKeypoints", err);
       }
@@ -559,6 +581,22 @@ export default function RoleplayFromDetail({
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
     null
   );
+  const [keypointCache, setKeypointCache] = useState<Record<string, IKeypoint>>(
+    {}
+  );
+  const pendingKeypointFetches = useRef<Set<string>>(new Set());
+  const mergeKeypointCache = useCallback((items: IKeypoint[]) => {
+    if (!items.length) return;
+    setKeypointCache((prev) => {
+      const next = { ...prev };
+      items.forEach((item) => {
+        if (item?._id) {
+          next[item._id] = item;
+        }
+      });
+      return next;
+    });
+  }, []);
 
   // State for content ID counter
   const [nextContentId, setNextContentId] = useState(1);
@@ -984,7 +1022,10 @@ export default function RoleplayFromDetail({
           search: keypointQuery,
         });
         const list: IKeypoint[] = res.data.items ?? [];
-        if (active) setKeypoints(list);
+        if (active) {
+          setKeypoints(list);
+          mergeKeypointCache(list);
+        }
       } catch (err) {
         console.error("fetchKeypoints", err);
       }
@@ -993,7 +1034,7 @@ export default function RoleplayFromDetail({
     return () => {
       active = false;
     };
-  }, [keypointQuery]);
+  }, [keypointQuery, mergeKeypointCache]);
 
   // Fetch selected keypoint details when keypointId changes
   useEffect(() => {
@@ -1014,6 +1055,63 @@ export default function RoleplayFromDetail({
       setSelectedKeypoint(null);
     }
   }, [currentRoleplay.keypointId]);
+
+  useEffect(() => {
+    const contents = currentRoleplay.roleplay?.contents || [];
+    const idsToFetch: string[] = [];
+
+    contents.forEach((content) => {
+      if (content.type !== RoleplayContentType.EXERCISE) return;
+      const keypointId = content.exercise?.keypointId;
+      if (
+        keypointId &&
+        !keypointCache[keypointId] &&
+        !pendingKeypointFetches.current.has(keypointId)
+      ) {
+        idsToFetch.push(keypointId);
+        pendingKeypointFetches.current.add(keypointId);
+      }
+    });
+
+    if (!idsToFetch.length) {
+      return;
+    }
+
+    let active = true;
+    const fetchMissing = async () => {
+      await Promise.all(
+        idsToFetch.map(async (id) => {
+          try {
+            const res = await keypointService.getById(id);
+            const fetched = res.data;
+            if (active && fetched) {
+              setKeypointCache((prev) => ({ ...prev, [fetched._id]: fetched }));
+            }
+          } catch (err) {
+            console.error("fetchKeypointDetail", err);
+          } finally {
+            pendingKeypointFetches.current.delete(id);
+          }
+        })
+      );
+    };
+
+    fetchMissing();
+
+    return () => {
+      active = false;
+    };
+  }, [currentRoleplay.roleplay?.contents, keypointCache]);
+
+  const getKeypointLabel = (id?: string) => {
+    if (!id) return "";
+    const cached = keypointCache[id];
+    if (cached) {
+      return getTranslationValue(cached.title, lang);
+    }
+    const found = keypoints.find((kp) => kp._id === id);
+    return getTranslationValue(found?.title, lang) || "";
+  };
 
   // Save entire roleplay (create or update)
   const handleSaveRoleplay = useCallback(
@@ -1726,13 +1824,33 @@ export default function RoleplayFromDetail({
                 strategy={verticalListSortingStrategy}
               >
                 <div className="space-y-3">
-                  {contents.map((content) => (
-                    <SortableItem key={content.id} id={content.id!.toString()}>
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                  {contents.map((content) => {
+                    const keypointLabel =
+                      content.type === RoleplayContentType.EXERCISE
+                        ? getKeypointLabel(content.exercise.keypointId)
+                        : "";
+                    const exerciseTypeLabel =
+                      content.type === RoleplayContentType.EXERCISE
+                        ? getExerciseTypeLabel(content.exercise.type)
+                        : "";
+                    const dragDropFormLabel =
+                      content.type === RoleplayContentType.EXERCISE &&
+                      content.exercise?.type === ExerciseType.DRAG_DROP
+                        ? getDragDropFormLabel(
+                            content.exercise.type,
+                            (content.exercise as IExerciseDragDrop)?.form
+                          )
+                        : "";
+                    return (
+                      <SortableItem
+                        key={content.id}
+                        id={content.id!.toString()}
                       >
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
+                        >
                         <div className="flex items-start justify-between">
                           <div className="flex flex-col gap-2">
                             <div className="flex items-center gap-2">
@@ -1868,45 +1986,59 @@ export default function RoleplayFromDetail({
                             )}
 
                             {content.type === RoleplayContentType.EXERCISE && (
-                              <div className="flex flex-col gap-1">
-                                <div className="flex items-center gap-1">
-                                  <span className="text-xs text-gray-500">
-                                    {content.exercise.type}
+                              <div className="space-y-3">
+                                <div className="flex flex-wrap items-center gap-3">
+                                  <span className="text-base font-semibold text-gray-800">
+                                    {exerciseTypeLabel || "Exercise"}
                                   </span>
+                                  {dragDropFormLabel && (
+                                    <span className="text-xs flex items-center gap-1 text-gray-400">
+                                      <span className="font-semibold text-blue-700">
+                                        Form:
+                                      </span>
+                                      <span className="text-gray-600">
+                                        {dragDropFormLabel}
+                                      </span>
+                                    </span>
+                                  )}
+                                  {keypointLabel && (
+                                    <span className="text-xs flex items-center gap-1 text-gray-400">
+                                      <span className="font-semibold text-emerald-700">
+                                        Keypoint:
+                                      </span>
+                                      <span className="text-gray-600">
+                                        {keypointLabel}
+                                      </span>
+                                    </span>
+                                  )}
                                   {content.exercise.tag && (
-                                    <div className="ml-7">
-                                      <TagDisplay
-                                        tag={content.exercise.tag}
-                                        lang={lang}
-                                      />
-                                    </div>
+                                    <TagDisplay
+                                      tag={content.exercise.tag}
+                                      lang={lang}
+                                    />
                                   )}
                                 </div>
                                 {content.exercise.maxScore && (
-                                  <div>
-                                    <span className="text-xs font-medium text-gray-600">
+                                  <div className="flex items-center gap-2 flex-wrap text-xs text-gray-600">
+                                    <span className="font-medium text-gray-600">
                                       Max score: {content.exercise.maxScore}
                                     </span>
-                                    <span className="text-xs font-medium text-gray-600">
-                                      {"scoringCriteria" in content.exercise &&
-                                        content.exercise.scoringCriteria && (
-                                          <span className="text-xs font-mono text-gray-500">
-                                            {" ("}
-                                            Criteria:{" "}
-                                            {
-                                              content.exercise.scoringCriteria
-                                                .length
-                                            }
-                                            {") "}
-                                          </span>
-                                        )}
-                                    </span>
+                                    {"scoringCriteria" in content.exercise &&
+                                      content.exercise.scoringCriteria && (
+                                        <span className="text-xs text-gray-500 font-mono">
+                                          Criteria:{" "}
+                                          {
+                                            content.exercise.scoringCriteria
+                                              .length
+                                          }
+                                        </span>
+                                      )}
                                   </div>
                                 )}
                                 {content.exercise.type ===
                                   ExerciseType.DRAG_DROP &&
-                                  "targetArea" in content.exercise &&
-                                  content.exercise.targetArea && (
+                                  (content.exercise as IExerciseDragDrop)
+                                    .targetArea && (
                                     <div className="text-xs text-gray-600">
                                       <span className="font-semibold text-gray-700">
                                         Target Area:
@@ -1914,9 +2046,12 @@ export default function RoleplayFromDetail({
                                       <div className="pl-2">
                                         <TextWithTooltip
                                           text={formatDisplay(
-                                            (content.exercise as any).targetArea
+                                            (
+                                              content.exercise as IExerciseDragDrop
+                                            ).targetArea
                                           )}
-                                          maxLength={80}
+                                          maxLength={120}
+                                          lang={lang}
                                         />
                                       </div>
                                     </div>
@@ -1924,23 +2059,23 @@ export default function RoleplayFromDetail({
                                 {"options" in content.exercise &&
                                   Array.isArray(content.exercise.options) &&
                                   content.exercise.options.length > 0 && (
-                                    <div className="text-xs text-gray-600 flex flex-col gap-1">
-                                      <span className="font-semibold text-gray-700">
-                                        Options:
+                                    <div>
+                                      <span className="font-semibold text-blue-500 text-sm">
+                                        Options
                                       </span>
-                                      <ul className="mt-1 space-y-1">
+                                      <ul className="mt-2 space-y-1 text-sm text-gray-600">
                                         {content.exercise.options.map(
                                           (opt: any, idx: number) => (
                                             <li
                                               key={opt.id || idx}
-                                              className="flex items-center gap-2 pl-2"
+                                              className="flex items-start gap-2"
                                             >
                                               {(content.exercise.type ===
                                                 ExerciseType.SINGLE_CHOICE ||
                                                 content.exercise.type ===
                                                   ExerciseType.MULTIPLE_CHOICE) && (
                                                 <span
-                                                  className={`w-3 h-3 rounded-full ${
+                                                  className={`w-3 h-3 rounded-full mt-1 ${
                                                     opt.isCorrect
                                                       ? "bg-green-500"
                                                       : "bg-gray-300"
@@ -1954,7 +2089,8 @@ export default function RoleplayFromDetail({
                                                     ? opt.text
                                                     : opt.value
                                                 )}
-                                                maxLength={100}
+                                                maxLength={120}
+                                                lang={lang}
                                               />
                                             </li>
                                           )
@@ -1965,11 +2101,11 @@ export default function RoleplayFromDetail({
                                 {"answer" in content.exercise &&
                                   Array.isArray(content.exercise.answer) &&
                                   content.exercise.answer.length > 0 && (
-                                    <div className="text-xs text-gray-600 flex flex-col gap-1">
-                                      <span className="font-semibold text-gray-700">
-                                        Answers:
+                                    <div>
+                                      <span className="font-semibold text-blue-500 text-sm">
+                                        Answers
                                       </span>
-                                      <ul className="mt-1 space-y-1">
+                                      <ul className="mt-2 space-y-1 text-sm text-gray-600">
                                         {content.exercise.answer.map(
                                           (ans: any, idx: number) => (
                                             <li
@@ -1980,7 +2116,8 @@ export default function RoleplayFromDetail({
                                                 text={formatDisplay(
                                                   ans.correctAnswer
                                                 )}
-                                                maxLength={100}
+                                                maxLength={120}
+                                                lang={lang}
                                               />
                                             </li>
                                           )
@@ -2015,17 +2152,6 @@ export default function RoleplayFromDetail({
                                       {(content.exercise as any).maxCharacter}
                                     </span>
                                   )}
-                                {content.exercise.keypointId && (
-                                  <span className="text-xs font-medium text-gray-600">
-                                    Keypoint:{" "}
-                                    {
-                                      keypoints.find(
-                                        (k) =>
-                                          k._id === content.exercise.keypointId
-                                      )?.title?.[lang]
-                                    }
-                                  </span>
-                                )}
                               </div>
                             )}
                           </div>
@@ -2063,7 +2189,8 @@ export default function RoleplayFromDetail({
                         </div>
                       </motion.div>
                     </SortableItem>
-                  ))}
+                    );
+                  })}
                 </div>
               </SortableContext>
             </DndContext>

@@ -6,7 +6,7 @@ import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useNavigate } from "react-router-dom";
 import { courseService } from "../../services/courseService";
-import { ICourse } from "../../types/interface/cource.interface";
+import { ICourse } from "../../types/interface/course.interface";
 import { Combobox } from "@headlessui/react";
 import { PlusIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";

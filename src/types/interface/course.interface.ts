@@ -61,6 +61,7 @@ export interface IRoadmapNode {
 
 export interface IRoadmapLevel {
   id: number;
+  badge: string;
   level: CourseLevel;
   nodes: IRoadmapNode[];
 }
@@ -79,6 +80,7 @@ export interface RoadmapNodePayload {
 
 export interface RoadmapLevelPayload {
   id: number;
+  badge: string;
   level: CourseLevel;
   nodes: RoadmapNodePayload[];
 }

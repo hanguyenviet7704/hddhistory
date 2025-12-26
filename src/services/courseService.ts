@@ -2,7 +2,7 @@ import {
   CourseListQuery,
   CoursePayload,
   RoadmapPayload,
-} from "../types/interface/cource.interface";
+} from "../types/interface/course.interface";
 import axiosClient from "./axiosClient";
 
 export const courseService = {
