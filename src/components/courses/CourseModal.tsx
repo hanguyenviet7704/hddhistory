@@ -10,7 +10,7 @@ import {
   ICourse,
   IPrice,
   CoursePayload,
-} from "../../types/interface/cource.interface";
+} from "../../types/interface/course.interface";
 import { CourseLevel, CourseStatus } from "../../types/enum/course.enum";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";

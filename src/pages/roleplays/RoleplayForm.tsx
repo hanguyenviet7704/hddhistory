@@ -3,7 +3,7 @@ import { TrashIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { Combobox } from "@headlessui/react";
-import { ICourse } from "../../types/interface/cource.interface";
+import { ICourse } from "../../types/interface/course.interface";
 import { courseService } from "../../services/courseService";
 import { useNavigate } from "react-router-dom";
 import { XMarkIcon } from "@heroicons/react/24/solid";
@@ -17,6 +17,8 @@ import { tagService } from "../../services/tagService";
 import { ITag } from "../../types/interface/tag.interface";
 import { learningItemService } from "../../services/learningItemService";
 import { ILearningItem } from "../../types/interface/learning-item/learning-item.interface";
+import { keypointService } from "../../services/keypointService";
+import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { AnimatePresence } from "framer-motion";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
 import {
@@ -31,7 +33,10 @@ interface RoleplayFormProps {
   onSave?: (roleplayLesson: ILesson) => void;
 }
 
-export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormProps) {
+export default function RoleplayForm({
+  roleplayLesson,
+  onSave,
+}: RoleplayFormProps) {
   const lang = useSelector((state: RootState) => state.lang.code);
   const isEditMode = !!roleplayLesson;
   const navigate = useNavigate();
@@ -80,7 +85,10 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
 
   useEffect(() => {
     if (roleplayLesson) {
-      setCurrentRoleplayLesson({ ...roleplayLesson, type: LessonType.ROLEPLAY });
+      setCurrentRoleplayLesson({
+        ...roleplayLesson,
+        type: LessonType.ROLEPLAY,
+      });
     }
   }, [roleplayLesson]);
 
@@ -92,6 +100,11 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
   const [icons, setIcons] = useState<ITag[]>([]);
   const [iconQuery, setIconQuery] = useState("");
   const [isIconSearchActive, setIsIconSearchActive] = useState(false);
+  const [keypointOptions, setKeypointOptions] = useState<IKeypoint[]>([]);
+  const [keypointQuery, setKeypointQuery] = useState("");
+  const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
+    null
+  );
   const [roleplayItem, setRoleplayItem] =
     useState<ILearningItem>(createEmptyRoleplay);
   const roleplaySaveRef = useRef<
@@ -155,6 +168,24 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
     setIsIconSearchActive(false);
   };
 
+  const handleAddKeypoint = (kp: IKeypoint | null) => {
+    if (!kp) return;
+    setCurrentRoleplayLesson((prev) => {
+      const existing = prev.keypoints || [];
+      if (existing.some((item) => item._id === kp._id)) return prev;
+      return { ...prev, keypoints: [...existing, kp] };
+    });
+    setSelectedKeypoint(null);
+    setKeypointQuery("");
+  };
+
+  const handleRemoveKeypoint = (id: string) => {
+    setCurrentRoleplayLesson((prev) => ({
+      ...prev,
+      keypoints: (prev.keypoints || []).filter((kp) => kp._id !== id),
+    }));
+  };
+
   useEffect(() => {
     let active = true;
     const fetchIcons = async () => {
@@ -173,6 +204,28 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
       active = false;
     };
   }, [iconQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const timer = setTimeout(async () => {
+      try {
+        const res = await keypointService.getList({
+          page: 1,
+          take: 50,
+          search: keypointQuery,
+        });
+        const list: IKeypoint[] = res.data.items ?? [];
+        if (active) setKeypointOptions(list);
+      } catch (err) {
+        console.error("fetchKeypoints", err);
+      }
+    }, 250);
+
+    return () => {
+      active = false;
+      clearTimeout(timer);
+    };
+  }, [keypointQuery]);
 
   // Fetch selected roleplay details when learningItemId changes
   useEffect(() => {
@@ -233,7 +286,9 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
     if (currentRoleplayLesson.courseId) {
       const fetchCourseDetails = async () => {
         try {
-          const res = await courseService.getById(currentRoleplayLesson.courseId);
+          const res = await courseService.getById(
+            currentRoleplayLesson.courseId
+          );
           if (res.data) {
             setSelectedCourse(res.data);
           }
@@ -298,7 +353,8 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
 
       // keypoints in LessonPayload should be string array (IDs)
       // Since ILesson.keypoints is IKeypoint[], we need to extract IDs
-      const keypointIds = currentRoleplayLesson.keypoints?.map((kp) => kp._id) || [];
+      const keypointIds =
+        currentRoleplayLesson.keypoints?.map((kp) => kp._id) || [];
 
       const ensuredRoleplay =
         (await refreshRoleplay(savedRoleplay._id)) ||
@@ -373,6 +429,12 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
       setConfirmDeleteRoleplay(false);
     }
   };
+
+  const normalizedKeypointQuery = keypointQuery.toLowerCase();
+  const filteredKeypoints = keypointOptions.filter((kp) => {
+    const title = getTranslationValue(kp.title, lang)?.toLowerCase() || "";
+    return title.includes(normalizedKeypointQuery);
+  });
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
@@ -685,38 +747,127 @@ export default function RoleplayForm({ roleplayLesson, onSave }: RoleplayFormPro
                   )}
                 </div>
               </div>
+
+              <div>
+                <div className="flex items-center justify-between">
+                  <label className="block mb-1 text-sm font-medium text-gray-700">
+                    Keypoints
+                  </label>
+                  <span className="text-xs text-gray-400">
+                    Select related objectives
+                  </span>
+                </div>
+
+                <Combobox<IKeypoint | null>
+                  value={selectedKeypoint}
+                  onChange={(kp) => handleAddKeypoint(kp)}
+                >
+                  <div className="relative">
+                    <Combobox.Input
+                      displayValue={(kp) => {
+                        const option = kp as IKeypoint | null;
+                        return option
+                          ? getTranslationValue(option.title, lang)
+                          : keypointQuery;
+                      }}
+                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                        setKeypointQuery(e.target.value);
+                        setSelectedKeypoint(null);
+                      }}
+                      className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                      placeholder="Search keypoint..."
+                    />
+
+                    <Combobox.Options className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                      {filteredKeypoints.length > 0 ? (
+                        filteredKeypoints.map((kp) => (
+                          <Combobox.Option
+                            key={kp._id}
+                            value={kp}
+                            className="cursor-pointer px-3 py-3 hover:bg-blue-50"
+                          >
+                            <div className="font-medium text-gray-800">
+                              {getTranslationValue(kp.title, lang) ||
+                                "Untitled"}
+                            </div>
+                            {kp.description?.[lang] && (
+                              <div className="text-xs text-gray-500">
+                                {kp.description?.[lang]}
+                              </div>
+                            )}
+                          </Combobox.Option>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-sm text-gray-500">
+                          No keypoints found
+                        </div>
+                      )}
+                    </Combobox.Options>
+                  </div>
+                </Combobox>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {currentRoleplayLesson.keypoints?.length ? (
+                    currentRoleplayLesson.keypoints.map((kp) => (
+                      <span
+                        key={kp._id}
+                        className="flex items-center gap-2 bg-blue-50 text-blue-800 px-3 py-1 rounded-full text-sm"
+                      >
+                        <span className="truncate max-w-[220px]">
+                          {getTranslationValue(kp.title, lang) || "Untitled"}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveKeypoint(kp._id)}
+                          className="text-blue-600 hover:text-blue-800"
+                          aria-label={`Remove ${getTranslationValue(
+                            kp.title,
+                            lang
+                          )}`}
+                        >
+                          <XMarkIcon className="h-4 w-4" />
+                        </button>
+                      </span>
+                    ))
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      No keypoints selected yet.
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
         {/* Roleplay content full width */}
         <div className="bg-white shadow-xl rounded-xl overflow-visible p-6">
-          <div className="mt-2">
+          <div className="mt-2 overflow-x-auto">
             {roleplayItem && (
-                  <RoleplayFromDetail
-                    key={`embedded-roleplay-${roleplayItem._id || "new"}-${
-                      roleplayItem.roleplay?.missions?.length || 0
-                    }-${roleplayItem.roleplay?.contents?.length || 0}`}
-                    roleplay={roleplayItem}
-                    onSave={async (saved) => {
-                      const refreshed =
-                        saved._id && (await refreshRoleplay(saved._id));
-                      const merged = refreshed
-                        ? refreshed
-                        : mergeRoleplayState(roleplayItem, saved);
-                      setRoleplayItem(merged);
-                      setCurrentRoleplayLesson((prev) => ({
-                        ...prev,
-                        learningItemId: merged._id,
-                      }));
-                    }}
-                    externalTitle={currentRoleplayLesson.title}
-                    lockTitle
-                    embedded
-                    hideActions
-                    hideMeta
-                    saveRef={roleplaySaveRef}
-                  />
+              <RoleplayFromDetail
+                key={`embedded-roleplay-${roleplayItem._id || "new"}-${
+                  roleplayItem.roleplay?.missions?.length || 0
+                }-${roleplayItem.roleplay?.contents?.length || 0}`}
+                roleplay={roleplayItem}
+                onSave={async (saved) => {
+                  const refreshed =
+                    saved._id && (await refreshRoleplay(saved._id));
+                  const merged = refreshed
+                    ? refreshed
+                    : mergeRoleplayState(roleplayItem, saved);
+                  setRoleplayItem(merged);
+                  setCurrentRoleplayLesson((prev) => ({
+                    ...prev,
+                    learningItemId: merged._id,
+                  }));
+                }}
+                externalTitle={currentRoleplayLesson.title}
+                lockTitle
+                embedded
+                hideActions
+                hideMeta
+                saveRef={roleplaySaveRef}
+              />
             )}
           </div>
         </div>

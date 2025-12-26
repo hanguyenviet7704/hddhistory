@@ -2,7 +2,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { PencilIcon, TrashIcon, PlusIcon } from "@heroicons/react/24/outline";
 import { courseService } from "../../services/courseService";
-import { ICourse, CoursePayload } from "../../types/interface/cource.interface";
+import { ICourse, CoursePayload } from "../../types/interface/course.interface";
 import { CourseStatus } from "../../types/enum/course.enum";
 import CourseModal from "../../components/courses/CourseModal";
 import CourseConfirm from "../../components/courses/ConfirmModal";

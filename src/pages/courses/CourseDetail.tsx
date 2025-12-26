@@ -10,15 +10,20 @@ import {
   IRoadmapLevel,
   IRoadmapNode,
   CoursePayload,
-} from "../../types/interface/cource.interface";
+} from "../../types/interface/course.interface";
 import { ILessonBrief } from "../../types/interface/lesson.interface";
 import { LessonType } from "../../types/enum/lesson.enum";
 import { CourseLevel } from "../../types/enum/course.enum";
-import { getTranslationValue, updateTranslationValue, cleanTranslation } from "../../utils/translation";
+import {
+  getTranslationValue,
+  updateTranslationValue,
+  cleanTranslation,
+} from "../../utils/translation";
 
 // Services
 import { courseService } from "../../services/courseService";
 import { lessonService } from "../../services/lessonService";
+import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 
 // ---------- Helpers ----------
 const levelBadgeClass = (level: CourseLevel) => {
@@ -63,6 +68,8 @@ const RoadmapPage: React.FC = () => {
   // Level create/edit
   const [isCreatingLevel, setIsCreatingLevel] = useState(false);
   const [newLevel, setNewLevel] = useState<CourseLevel>(CourseLevel.LEVEL1);
+  const [newLevelBadge, setNewLevelBadge] = useState("");
+  const [levelError, setLevelError] = useState("");
 
   // Node create/edit
   const [isCreatingNode, setIsCreatingNode] = useState<{
@@ -110,8 +117,11 @@ const RoadmapPage: React.FC = () => {
       try {
         const res = await courseService.getRoadmap(courseId!);
         const data: IRoadmap = res.data?.data || res.data;
-        if (!data?.levels) data.levels = [];
-        setRoadmap(data);
+        const normalizedLevels = (data?.levels || []).map((level) => ({
+          ...level,
+          badge: level.badge || "",
+        }));
+        setRoadmap({ ...data, levels: normalizedLevels });
       } catch (e) {
         console.error(e);
         showError("Không thể tải roadmap");
@@ -154,16 +164,34 @@ const RoadmapPage: React.FC = () => {
     return Math.max(...roadmap.levels.map((l) => l.id)) + 1;
   }, [roadmap]);
 
+  const usedLevels = useMemo(
+    () => new Set(roadmap?.levels?.map((lvl) => lvl.level) || []),
+    [roadmap]
+  );
+
   const handleCreateLevel = () => {
     if (!roadmap) return;
+    setLevelError("");
+
+    const isDuplicate = roadmap.levels.some((lvl) => lvl.level === newLevel);
+    if (isDuplicate) {
+      const message =
+        "Level này đã tồn tại trong roadmap. Vui lòng chọn level khác hoặc xóa level cũ trước.";
+      setLevelError(message);
+      showError(message);
+      return;
+    }
+
     const newLevelObj: IRoadmapLevel = {
       id: nextLevelId,
       level: newLevel,
+      badge: newLevelBadge || "",
       nodes: [],
     };
     setRoadmap({ ...roadmap, levels: [...roadmap.levels, newLevelObj] });
     setIsCreatingLevel(false);
     setNewLevel(CourseLevel.LEVEL1);
+    setNewLevelBadge("");
   };
 
   const handleDeleteLevel = () => {
@@ -173,6 +201,14 @@ const RoadmapPage: React.FC = () => {
     );
     setRoadmap({ ...roadmap, levels: newLevels });
     setDeleteLevel({ show: false, levelIndex: -1 });
+  };
+
+  const handleLevelBadgeChange = (levelIndex: number, url: string) => {
+    if (!roadmap) return;
+    const updatedLevels = roadmap.levels.map((level, idx) =>
+      idx === levelIndex ? { ...level, badge: url } : level
+    );
+    setRoadmap({ ...roadmap, levels: updatedLevels });
   };
 
   // ---------- Node actions ----------
@@ -330,10 +366,20 @@ const RoadmapPage: React.FC = () => {
   const handleSaveRoadmap = async () => {
     if (!roadmap) return;
 
+    const levelLabels = roadmap.levels.map((level) => level.level);
+    const hasDuplicateLevel = new Set(levelLabels).size !== levelLabels.length;
+    if (hasDuplicateLevel) {
+      showError(
+        "Roadmap đang có level trùng nhau. Vui lòng điều chỉnh trước khi lưu."
+      );
+      return;
+    }
+
     const payload: any = {
       levels: roadmap.levels.map((level) => ({
         id: level.id,
         level: level.level,
+        badge: level.badge || "",
         nodes: level.nodes.map((n) => {
           const cleanedTitle = cleanTranslation(n.title);
           const nodePayload: any = {
@@ -511,15 +557,65 @@ const RoadmapPage: React.FC = () => {
             <div key={`lvl-${level.id}`} className="relative">
               {/* Level header with delete icon */}
               <div className="relative my-8">
-                <div
-                  onClick={() => setDeleteLevel({ show: true, levelIndex })}
-                  className="bg-slate-100 shadow-lg rounded-full px-5 py-2 border inline-flex items-center space-x-3 cursor-pointer"
-                >
-                  <span
-                    className={`px-3 py-1 text-lg font-semibold text-blue-600`}
-                  >
-                    {level.level}
-                  </span>
+                <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                  <div className="flex items-center gap-3">
+                    <div
+                      onClick={() => setDeleteLevel({ show: true, levelIndex })}
+                      className="bg-slate-100 shadow-lg rounded-full px-5 py-2 border inline-flex items-center space-x-3 cursor-pointer"
+                    >
+                      <span
+                        className={`px-3 py-1 text-lg font-semibold text-blue-600`}
+                      >
+                        {level.level}
+                      </span>
+                    </div>
+                    <IconButton
+                      onClick={() => setDeleteLevel({ show: true, levelIndex })}
+                      title="Xóa level"
+                      aria-label="Xóa level"
+                      className="bg-red-100 hover:bg-red-200 text-red-600"
+                    >
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="w-5 h-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth={2}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                        <path d="M10 11v6M14 11v6" />
+                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                      </svg>
+                    </IconButton>
+                  </div>
+
+                  <div className="flex items-center gap-4 w-full md:w-auto">
+                    {level.badge ? (
+                      <img
+                        src={level.badge}
+                        alt={`Badge ${level.level}`}
+                        className="h-12 w-12 rounded-full object-cover border shadow-sm"
+                      />
+                    ) : (
+                      <div className="h-12 w-12 rounded-full bg-gray-100 border flex items-center justify-center text-gray-500 text-xs">
+                        badge
+                      </div>
+                    )}
+                    <div className="w-full md:w-72">
+                      <CloudflareFileUpload
+                        initialUrl={level.badge || ""}
+                        onUrlChange={(url) =>
+                          handleLevelBadgeChange(levelIndex, url)
+                        }
+                        label="Badge Level"
+                        uploadPayload={{ prefix: "", folder: "roadmap-levels" }}
+                      />
+                    </div>
+                  </div>
                 </div>
               </div>
 
@@ -772,7 +868,16 @@ const RoadmapPage: React.FC = () => {
         <div className="flex space-x-3 justify-end mt-6">
           <button
             className="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-md"
-            onClick={() => setIsCreatingLevel(true)}
+            onClick={() => {
+              setIsCreatingLevel(true);
+              setLevelError("");
+              setNewLevelBadge("");
+              const availableLevel =
+                [CourseLevel.LEVEL1, CourseLevel.LEVEL2].find(
+                  (lvl) => !usedLevels.has(lvl)
+                ) || CourseLevel.LEVEL1;
+              setNewLevel(availableLevel);
+            }}
           >
             Thêm Level
           </button>
@@ -793,16 +898,44 @@ const RoadmapPage: React.FC = () => {
               <select
                 className="w-full px-3 py-2 border rounded-lg"
                 value={newLevel}
-                onChange={(e) => setNewLevel(e.target.value as CourseLevel)}
+                onChange={(e) => {
+                  setNewLevel(e.target.value as CourseLevel);
+                  setLevelError("");
+                }}
               >
-                <option value={CourseLevel.LEVEL1}>Level 1</option>
-                <option value={CourseLevel.LEVEL2}>Level 2</option>
+                <option
+                  value={CourseLevel.LEVEL1}
+                  disabled={usedLevels.has(CourseLevel.LEVEL1)}
+                >
+                  Level 1{usedLevels.has(CourseLevel.LEVEL1) ? " (đã có)" : ""}
+                </option>
+                <option
+                  value={CourseLevel.LEVEL2}
+                  disabled={usedLevels.has(CourseLevel.LEVEL2)}
+                >
+                  Level 2{usedLevels.has(CourseLevel.LEVEL2) ? " (đã có)" : ""}
+                </option>
               </select>
+              {levelError && (
+                <p className="text-sm text-red-600 mt-1">{levelError}</p>
+              )}
+            </div>
+            <div className="mb-4">
+              <CloudflareFileUpload
+                initialUrl={newLevelBadge}
+                onUrlChange={setNewLevelBadge}
+                label="Badge Level"
+                uploadPayload={{ prefix: "", folder: "roadmap-levels" }}
+              />
             </div>
             <div className="flex justify-end">
               <button
                 className="px-4 py-2 bg-gray-200 rounded-lg mr-2"
-                onClick={() => setIsCreatingLevel(false)}
+                onClick={() => {
+                  setIsCreatingLevel(false);
+                  setLevelError("");
+                  setNewLevelBadge("");
+                }}
               >
                 Hủy
               </button>

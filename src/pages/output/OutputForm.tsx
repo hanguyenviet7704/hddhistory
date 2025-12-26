@@ -12,7 +12,7 @@ import { TrashIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { Combobox } from "@headlessui/react";
-import { ICourse } from "../../types/interface/cource.interface";
+import { ICourse } from "../../types/interface/course.interface";
 import { courseService } from "../../services/courseService";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";

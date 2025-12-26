@@ -1,6 +1,6 @@
 // src/components/courses/CourseConfirm.tsx
 import React, { useState } from "react";
-import { ICourse } from "../../types/interface/cource.interface";
+import { ICourse } from "../../types/interface/course.interface";
 import { courseService } from "../../services/courseService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";

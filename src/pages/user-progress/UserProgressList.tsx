@@ -9,7 +9,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, XCircleIcon } from "@heroicons/react/24/solid";
 import { RootState } from "../../store";
-import { ICourse } from "../../types/interface/cource.interface";
+import { ICourse } from "../../types/interface/course.interface";
 import { IUser } from "../../types/interface/user.interface";
 import {
   IUserProgress,
