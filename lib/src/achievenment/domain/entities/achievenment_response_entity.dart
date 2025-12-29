@@ -11,3 +11,7 @@ abstract class AchievenmentResponseEntity with _$AchievenmentResponseEntity {
   factory AchievenmentResponseEntity.fromJson(Map<String, dynamic> json) => _$AchievenmentResponseEntityFromJson(json);
 }
 
+extension AchievenmentResponseEntityExtension on AchievenmentResponseEntity {
+  int get totalCourse => courses.length;
+  int get completedCourse => courses.where((course) => course.isCompleted).length;
+}

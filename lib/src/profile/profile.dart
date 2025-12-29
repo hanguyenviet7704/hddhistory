@@ -40,6 +40,7 @@ part 'presentation/widgets/profile_header.dart';
 part 'presentation/widgets/profile_field.dart';
 part 'presentation/widgets/profile_delete_button.dart';
 part 'presentation/widgets/profile_delete_dialog.dart';
+part 'presentation/widgets/user_achievement_list.dart';
 
 //* Parts for generated files
 part 'profile.freezed.dart';

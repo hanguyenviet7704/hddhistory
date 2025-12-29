@@ -6,7 +6,7 @@ enum AchievenmentProgressStatus { initial, loading, success, failure }
 abstract class AchievenmentProgressState with _$AchievenmentProgressState {
   const factory AchievenmentProgressState({
     @Default(AchievenmentProgressStatus.initial) AchievenmentProgressStatus status,
-    @Default([]) List<AchievenmentResponseEntity> achievenmentResponses,
+    @Default([]) List<AchievenmentResponseEntity> achievenments,
     @Default([]) List<CourseLevelProgressEntity> courseLevelProgresses,
     String? errorMessage,
   }) = _AchievenmentProgressState;

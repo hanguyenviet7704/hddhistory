@@ -26,7 +26,7 @@ class AchievenmentProgressCubit extends Cubit<AchievenmentProgressState> with Cu
         emit(
           state.copyWith(
             status: AchievenmentProgressStatus.success,
-            achievenmentResponses: data,
+            achievenments: data,
           ),
         );
       },

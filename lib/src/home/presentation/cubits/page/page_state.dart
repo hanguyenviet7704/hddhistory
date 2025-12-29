@@ -21,7 +21,7 @@ extension PageStateX on PageState {
       RouteNamed.shellRoute,
       RouteNamed.home,
       RouteNamed.courseRoadmap,
-      RouteNamed.setting,
+      RouteNamed.profile,
     ];
   }
 }
