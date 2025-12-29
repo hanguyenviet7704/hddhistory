@@ -22,27 +22,14 @@ class UserAchievementProgressBar extends StatelessWidget {
     final double barWidth = width ?? 67.w;
     final double barHeight = height ?? 6.h;
 
-    return SizedBox(
+    return LinearPercentIndicator(
       width: barWidth,
-      height: barHeight,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          color: backgroundColor ?? AppCustomColor.borderSecondary,
-          borderRadius: BorderRadius.circular(18.r),
-        ),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: FractionallySizedBox(
-            widthFactor: clampedProgress,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: foregroundColor ?? AppCustomColor.textPrimary,
-                borderRadius: BorderRadius.circular(18.r),
-              ),
-            ),
-          ),
-        ),
-      ),
+      lineHeight: barHeight,
+      percent: clampedProgress,
+      padding: EdgeInsets.zero,
+      backgroundColor: backgroundColor ?? AppCustomColor.borderSecondary,
+      progressColor: foregroundColor ?? AppCustomColor.textPrimary,
+      barRadius: Radius.circular(20.r),
     );
   }
 }

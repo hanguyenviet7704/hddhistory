@@ -43,13 +43,12 @@ class UserAchievementBottomSheet extends StatefulWidget {
 }
 
 class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet> {
-  late final PageController _pageController;
+  final PageController _pageController = PageController();
   bool _didJumpToInitial = false;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
   }
 
   @override
@@ -85,17 +84,15 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
       builder: (context, state) {
         final List<CourseLevelProgressEntity> courses = _filterCourses(state);
         _syncInitialPage(courses);
-
         final bool isLoading = state.status == AchievenmentProgressStatus.loading && courses.isEmpty;
-        final Widget content = isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : courses.isEmpty
-            ? _UserAchievementEmptyState()
-            : _UserAchievementSheetContent(
-                courses: courses,
-                controller: _pageController,
-                onGoToCourse: widget.onGoToCourse,
-              );
+        if (isLoading) return const Center(child: CircularProgressIndicator());
+        if (courses.isEmpty) return _UserAchievementEmptyState();
+
+        final Widget content = _UserAchievementSheetContent(
+          courses: courses,
+          controller: _pageController,
+          onGoToCourse: widget.onGoToCourse,
+        );
 
         return Container(
           height: 735.h,
@@ -106,7 +103,7 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
           ),
           child: Column(
             children: [
-              _UserAchievementSheetHeader(onClose: () => Navigator.of(context).pop()),
+              _UserAchievementSheetHeader(onClose: () => context.back()),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, bottomInset + 20.h),

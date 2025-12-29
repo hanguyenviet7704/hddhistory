@@ -1,53 +1,25 @@
 part of '../../../profile.dart';
 
 class UserAchievementDetailCard extends StatelessWidget {
+  final CourseLevelProgressEntity course;
+
   const UserAchievementDetailCard({
     super.key,
     required this.course,
   });
 
-  final CourseLevelProgressEntity course;
-
-  String _resolveTitle() {
+  String get title {
     final String courseTitle = course.courseTitle.text.trim();
     if (courseTitle.isNotEmpty) return courseTitle;
     return course.titleBadge.text.trim();
   }
 
-  String _levelNumber() {
-    return switch (course.level) {
-      CourseLevel.level1 => '1',
-      CourseLevel.level2 => '2',
-    };
-  }
-
-  double get _progress {
-    if (course.totalKeypoints <= 0) return 0;
-    return course.completedKeypoints / course.totalKeypoints;
-  }
-
-  int get _progressPercent {
-    return (_progress * 100).clamp(0, 100).round();
-  }
+  String get levelNumber => course.level.number;
 
   @override
   Widget build(BuildContext context) {
-    final String levelNumber = _levelNumber();
-    final String title = _resolveTitle();
-
     return Container(
       padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(20.r),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.op(0.08),
-            blurRadius: 3.r,
-            offset: Offset(0, 1.h),
-          ),
-        ],
-      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -60,8 +32,8 @@ class UserAchievementDetailCard extends StatelessWidget {
           24.verticalSpace,
           _UserAchievementDetailProgress(
             label: context.text.setting.achievementsCompleteCourseAtLevel(level: levelNumber),
-            progress: _progress,
-            percent: _progressPercent,
+            progress: course.progress,
+            percent: course.progressPercent,
           ),
         ],
       ),
@@ -120,7 +92,7 @@ class _UserAchievementDetailBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final double width = 118.55.w;
+    final double width = 120.w;
     final double height = 150.h;
 
     if (_badgeUrl.isEmpty) {
@@ -134,26 +106,11 @@ class _UserAchievementDetailBadge extends StatelessWidget {
       );
     }
 
-    final bool showOverlay = !course.isCompleted && course.darkBadge.trim().isEmpty;
-
-    return SizedBox(
+    return CacheNetworkGraphic(
+      url: _badgeUrl,
       width: width,
       height: height,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          CacheNetworkGraphic(
-            url: _badgeUrl,
-            width: width,
-            height: height,
-            fit: BoxFit.contain,
-          ),
-          if (showOverlay)
-            Container(
-              color: AppCustomColor.backgroundWhite.op(0.8),
-            ),
-        ],
-      ),
+      fit: BoxFit.contain,
     );
   }
 }
