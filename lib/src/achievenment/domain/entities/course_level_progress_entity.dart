@@ -25,6 +25,7 @@ extension CourseLevelProgressEntityExtension on CourseLevelProgressEntity {
   }
 
   double get progress {
+    if (isCompleted) return 1;
     if (totalKeypoints <= 0) return 0;
     return completedKeypoints / totalKeypoints;
   }

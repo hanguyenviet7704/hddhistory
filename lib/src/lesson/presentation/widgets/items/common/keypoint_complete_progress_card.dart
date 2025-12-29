@@ -8,11 +8,6 @@ class KeypointCompleteProgressCard extends StatelessWidget {
     required this.progress,
   });
 
-  double get _progressValue {
-    if (progress.totalKeypoints <= 0) return 0;
-    return progress.completedKeypoints / progress.totalKeypoints;
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -63,7 +58,7 @@ class KeypointCompleteProgressCard extends StatelessWidget {
                     return LinearPercentIndicator(
                       width: constraints.maxWidth,
                       lineHeight: 8.h,
-                      percent: _progressValue.clamp(0.0, 1.0),
+                      percent: progress.progress.clamp(0.0, 1.0),
                       animation: true,
                       animationDuration: 800,
                       padding: EdgeInsets.zero,

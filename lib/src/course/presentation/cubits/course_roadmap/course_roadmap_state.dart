@@ -8,6 +8,7 @@ abstract class CourseRoadmapState with _$CourseRoadmapState {
     @Default(CourseRoadmapStatus.initial) CourseRoadmapStatus status,
     @Default(RoadmapEntity()) RoadmapEntity roadmap,
     @Default(CourseLevelProgressEntity()) CourseLevelProgressEntity currentLevelProgress,
+    
     String? errorMessage,
   }) = _CourseRoadmapState;
 

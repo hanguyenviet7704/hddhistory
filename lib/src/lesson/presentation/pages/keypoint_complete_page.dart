@@ -58,6 +58,7 @@ class KeypointCompletePage extends StatelessWidget {
                     BlocSelector<CourseRoadmapCubit, CourseRoadmapState, CourseLevelProgressEntity>(
                       selector: (state) => state.currentLevelProgress,
                       builder: (context, progress) {
+                        if (progress.courseId.isEmpty) return const SizedBox.shrink();
                         return KeypointCompleteProgressCard(progress: progress);
                       },
                     ),
