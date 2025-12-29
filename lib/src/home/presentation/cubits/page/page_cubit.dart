@@ -16,7 +16,7 @@ class PageCubit extends Cubit<PageState> {
   void handleShellRouteNavigation(int index, StatefulNavigationShell navigationShell) {
     if (index == 0 && state.currentRouteName == RouteNamed.home) return;
     if (index == 1 && state.currentRouteName == RouteNamed.courseRoadmap) return;
-    if (index == 2 && state.currentRouteName == RouteNamed.setting) return;
+    if (index == 2 && state.currentRouteName == RouteNamed.profile) return;
 
     switch (index) {
       case 0:
@@ -26,7 +26,7 @@ class PageCubit extends Cubit<PageState> {
         setCurrentRouteName(RouteNamed.courseRoadmap);
         break;
       case 2:
-        setCurrentRouteName(RouteNamed.setting);
+        setCurrentRouteName(RouteNamed.profile);
         break;
     }
 

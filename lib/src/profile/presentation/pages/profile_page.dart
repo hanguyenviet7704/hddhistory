@@ -5,216 +5,90 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const _ProfileView();
-  }
-}
-
-class _ProfileView extends StatefulWidget {
-  const _ProfileView();
-
-  @override
-  State<_ProfileView> createState() => _ProfileViewState();
-}
-
-class _ProfileViewState extends State<_ProfileView> {
-  late final TextEditingController _nameController;
-  late final ValueNotifier<bool> _isEditingNotifier;
-
-  @override
-  void initState() {
-    super.initState();
-    final profileCubit = context.read<ProfileCubit>();
-    final UserEntity initialUser = profileCubit.state.user;
-    _nameController = TextEditingController(text: initialUser.name);
-    _isEditingNotifier = ValueNotifier(false);
-  }
-
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _isEditingNotifier.dispose();
-    super.dispose();
-  }
-
-  void _onToggleEdit() {
-    if (_isEditingNotifier.value) {
-      _submitUpdate();
-      return;
-    }
-    _isEditingNotifier.value = true;
-  }
-
-  void _submitUpdate() {
-    final String newName = _nameController.text.trim();
-    if (newName.isEmpty) {
-      DMessage.showMessage(
-        message: context.text.setting.settingProfileFullnameLabel,
-        type: MessageType.error,
-      );
-      return;
-    }
-    final profileCubit = context.read<ProfileCubit>();
-    final user = profileCubit.state.user;
-    profileCubit.updateUser(user.copyWith(name: newName));
-  }
-
-  void _handleDeleteAccount(UserEntity user) {
-    if (user.id.isEmpty) {
-      DMessage.showMessage(
-        message: context.text.setting.settingProfileDesstructiveButton,
-        type: MessageType.error,
-      );
-      return;
-    }
-    ProfileDeleteDialog.show(
-      context,
-      onConfirm: () {
-        context.read<AuthBloc>().add(AuthEvent.deleteAccountPermanently(user.id));
-        context.back();
-      },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final double bottomPadding = MediaQuery.paddingOf(context).bottom;
-
+    context.read<IapCubit>().loadIapProducts();
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundWhite,
-      body: SafeArea(
-        child: MultiBlocListener(
-          listeners: [
-            BlocListener<ProfileCubit, ProfileState>(
-              listenWhen: (previous, current) => previous.status != current.status || previous.user != current.user,
-              listener: (context, state) {
-                if (state.status == ProfileStatus.loading) {
-                  EasyLoading.show();
-                } else {
-                  EasyLoading.dismiss();
-                }
+      backgroundColor: AppCustomColor.backgroundGray,
+      body: CupertinoScaffold(
+        topRadius: const Radius.circular(24),
+        transitionBackgroundColor: AppCustomColor.backgroundWhite,
+        body: SafeBody(
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
+            physics: const BouncingScrollPhysics(),
+            children: [
+              SettingProfileCard(),
+              24.verticalSpace,
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  if (user.iapSubscriptions.isNotEmpty) return SizedBox.shrink();
 
-                if (state.status == ProfileStatus.success) {
-                  _nameController.text = state.user.name;
-                  if (_isEditingNotifier.value) _isEditingNotifier.value = false;
-                }
-
-                if (state.status == ProfileStatus.failure) {
-                  DMessage.showMessage(
-                    type: MessageType.error,
-                    message: state.errorMessage ?? 'Something went wrong',
+                  return SettingPreminumCard(
+                    onUpgrade: () => const PaywallRoute().push(context),
                   );
-                }
-              },
-            ),
-            BlocListener<IapCubit, IapState>(
-              listenWhen: (previous, current) => previous.status != current.status && current.status == MonetizationStatus.purchaseSuccess,
-              listener: (context, state) {
-                PaywallSuccessPurchasePopup.show(context);
-              },
-            ),
-          ],
-          child: ValueListenableBuilder<bool>(
-            valueListenable: _isEditingNotifier,
-            builder: (context, isEditing, _) {
-              return Column(
-                children: [
-                  ProfileHeader(
-                    isEditing: isEditing,
-                    onBack: () => context.back(),
-                    onActionTap: _onToggleEdit,
-                  ),
-                  Expanded(
-                    child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
-                      selector: (state) => state.user,
-                      builder: (context, user) {
-                        return ListView(
-                          padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 24.h),
-                          physics: const BouncingScrollPhysics(),
-                          children: [
-                            isEditing
-                                ? _EditableSection(
-                                    controller: _nameController,
-                                    user: user,
-                                    onSubmit: _submitUpdate,
-                                  )
-                                : _ReadonlySection(user: user),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                  if (!isEditing)
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h + bottomPadding),
-                      child: BlocSelector<ProfileCubit, ProfileState, UserEntity>(
-                        selector: (state) => state.user,
-                        builder: (context, user) {
-                          if (user.anonymous) return const SizedBox.shrink();
-                          return ProfileDeleteButton(onTap: () => _handleDeleteAccount(user));
-                        },
+                },
+              ),
+              24.verticalSpace,
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  return SettingSectionCard(
+                    title: context.text.setting.settingSectionHeaderGeneral,
+                    children: [
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icGlobe,
+                        title: context.text.setting.settingRowLanguage,
+                        trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
+                        onTap: () => const ChangeLanguageRoute().go(context),
                       ),
-                    ),
-                ],
-              );
-            },
+                      if (user.iapSubscriptions.isNotEmpty) ...[
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icCreditCard,
+                          title: context.text.setting.settingRowUpgradePremium,
+                          onTap: () => const ManageSubscriptionRoute().go(context),
+                        ),
+                      ],
+                      if (user.iapSubscriptions.isEmpty) ...[
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icSet,
+                          title: context.text.setting.settingRowRestorePurchase,
+                          onTap: () => context.read<IapCubit>().restorePurchases(),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+              24.verticalSpace,
+              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
+                selector: (state) => state.user,
+                builder: (context, user) {
+                  return SettingSectionCard(
+                    title: context.text.setting.settingSectionHeaderAbout,
+                    children: [
+                      SettingOptionTile(
+                        iconAsset: AppAsset.svg.app.icShieldPlus,
+                        title: context.text.setting.settingAboutSectionTerm,
+                        onTap: 'https://meup.training/terms-and-conditions.html'.launchURL,
+                      ),
+                      if (!user.anonymous)
+                        SettingOptionTile(
+                          iconAsset: AppAsset.svg.app.icLogOut,
+                          title: context.text.setting.settingLogOut,
+                          titleColor: AppCustomColor.errorRed,
+                          iconColor: AppCustomColor.errorRed,
+                          iconBackgroundColor: AppCustomColor.errorRed.op(.08),
+                          showChevron: false,
+                          onTap: () => context.read<AuthBloc>().add(const AuthEvent.logout()),
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ],
           ),
         ),
       ),
-    );
-  }
-}
-
-class _ReadonlySection extends StatelessWidget {
-  const _ReadonlySection({required this.user});
-
-  final UserEntity user;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ProfileFieldDisplay(
-          label: context.text.setting.settingProfileFullnameLabel,
-          value: user.name,
-        ),
-        SizedBox(height: 16.h),
-        ProfileFieldDisplay(
-          label: context.text.setting.settingProfileEmailLabel,
-          value: user.email,
-        ),
-      ],
-    );
-  }
-}
-
-class _EditableSection extends StatelessWidget {
-  const _EditableSection({
-    required this.controller,
-    required this.user,
-    required this.onSubmit,
-  });
-
-  final TextEditingController controller;
-  final UserEntity user;
-  final VoidCallback onSubmit;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        ProfileEditableField(
-          label: context.text.setting.settingProfileFullnameLabel,
-          controller: controller,
-          onSubmitted: onSubmit,
-        ),
-        SizedBox(height: 16.h),
-        ProfileReadonlyField(
-          label: context.text.setting.settingProfileEmailLabel,
-          value: user.email,
-        ),
-      ],
     );
   }
 }

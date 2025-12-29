@@ -33,6 +33,7 @@ part 'presentation/cubits/profile/profile_state.dart';
 part 'presentation/cubits/upload/upload_cubit.dart';
 part 'presentation/cubits/upload/upload_state.dart';
 //* Presentation Layer - Pages
+part 'presentation/pages/profile_info_page.dart';
 part 'presentation/pages/profile_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/profile_header.dart';

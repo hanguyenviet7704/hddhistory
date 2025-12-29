@@ -59,9 +59,10 @@ mixin RoutePath {
   static const String roleplayFeedback = 'roleplay-feedback';
   static const String roleplayComplete = 'roleplay-complete';
 
-  //* Setting
-  static const String setting = '/setting';
-  static const String profile = 'profile';
+  //* Setting - Profile
+  static const String profile = '/profile';
+  static const String setting = 'setting';
+  static const String profileInfo = 'profile-info';
   static const String notification = 'notification';
   static const String changeLanguage = 'change-language';
   static const String manageSubscription = 'manage-subscription';
@@ -127,9 +128,10 @@ mixin RouteNamed {
   static const String roleplayFeedback = 'Roleplay Feedback';
   static const String roleplayComplete = 'Roleplay Complete';
 
-  //* Setting
+  //* Setting - Profile
   static const String setting = 'Setting';
   static const String profile = 'Profile';
+  static const String profileInfo = 'Profile Info';
   static const String notification = 'Notification';
   static const String changeLanguage = 'Change Language';
   static const String manageSubscription = 'Manage Subscription';
