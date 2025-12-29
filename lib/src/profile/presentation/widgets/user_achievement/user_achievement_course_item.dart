@@ -1,4 +1,4 @@
-part of '../../profile.dart';
+part of '../../../profile.dart';
 
 class UserAchievementCourseItem extends StatelessWidget {
   const UserAchievementCourseItem({

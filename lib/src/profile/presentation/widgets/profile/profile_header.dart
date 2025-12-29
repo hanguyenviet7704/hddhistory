@@ -1,4 +1,4 @@
-part of '../../profile.dart';
+part of '../../../profile.dart';
 
 class ProfileHeader extends StatelessWidget {
   const ProfileHeader({

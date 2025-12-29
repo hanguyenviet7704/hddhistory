@@ -24,7 +24,7 @@ part 'domain/repositories/i_achievenment_repository.dart';
 part 'domain/usecases/get_achievenment_response_usecase.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/blocs/achievenment_state.dart';
+part 'presentation/cubits/achievenment_state.dart';
 part 'presentation/cubits/achievenment_cubit.dart';
 
 //* Presentation Layer - Pages
