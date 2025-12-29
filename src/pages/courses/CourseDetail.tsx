@@ -23,7 +23,7 @@ import {
 // Services
 import { courseService } from "../../services/courseService";
 import { lessonService } from "../../services/lessonService";
-import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
+import { cloudflareService } from "../../services/cloudflareR2Service";
 
 // ---------- Helpers ----------
 const levelBadgeClass = (level: CourseLevel) => {
@@ -68,8 +68,16 @@ const RoadmapPage: React.FC = () => {
   // Level create/edit
   const [isCreatingLevel, setIsCreatingLevel] = useState(false);
   const [newLevel, setNewLevel] = useState<CourseLevel>(CourseLevel.LEVEL1);
-  const [newLevelBadge, setNewLevelBadge] = useState("");
+  const [newLevelLightBadge, setNewLevelLightBadge] = useState("");
+  const [newLevelDarkBadge, setNewLevelDarkBadge] = useState("");
   const [levelError, setLevelError] = useState("");
+  const [badgeUploading, setBadgeUploading] = useState<{
+    levelIndex: number;
+    badgeType: "lightBadge" | "darkBadge";
+  } | null>(null);
+  const [newBadgeUploading, setNewBadgeUploading] = useState<
+    "lightBadge" | "darkBadge" | null
+  >(null);
 
   // Node create/edit
   const [isCreatingNode, setIsCreatingNode] = useState<{
@@ -119,7 +127,8 @@ const RoadmapPage: React.FC = () => {
         const data: IRoadmap = res.data?.data || res.data;
         const normalizedLevels = (data?.levels || []).map((level) => ({
           ...level,
-          badge: level.badge || "",
+          lightBadge: level.lightBadge || (level as any).badge || "",
+          darkBadge: level.darkBadge || "",
         }));
         setRoadmap({ ...data, levels: normalizedLevels });
       } catch (e) {
@@ -185,13 +194,15 @@ const RoadmapPage: React.FC = () => {
     const newLevelObj: IRoadmapLevel = {
       id: nextLevelId,
       level: newLevel,
-      badge: newLevelBadge || "",
+      lightBadge: newLevelLightBadge || "",
+      darkBadge: newLevelDarkBadge || "",
       nodes: [],
     };
     setRoadmap({ ...roadmap, levels: [...roadmap.levels, newLevelObj] });
     setIsCreatingLevel(false);
     setNewLevel(CourseLevel.LEVEL1);
-    setNewLevelBadge("");
+    setNewLevelLightBadge("");
+    setNewLevelDarkBadge("");
   };
 
   const handleDeleteLevel = () => {
@@ -203,12 +214,64 @@ const RoadmapPage: React.FC = () => {
     setDeleteLevel({ show: false, levelIndex: -1 });
   };
 
-  const handleLevelBadgeChange = (levelIndex: number, url: string) => {
+  const handleLevelBadgeChange = (
+    levelIndex: number,
+    badgeType: "lightBadge" | "darkBadge",
+    url: string
+  ) => {
     if (!roadmap) return;
     const updatedLevels = roadmap.levels.map((level, idx) =>
-      idx === levelIndex ? { ...level, badge: url } : level
+      idx === levelIndex ? { ...level, [badgeType]: url } : level
     );
     setRoadmap({ ...roadmap, levels: updatedLevels });
+  };
+
+  const handleLevelBadgeUpload = async (
+    levelIndex: number,
+    badgeType: "lightBadge" | "darkBadge",
+    file: File
+  ) => {
+    try {
+      setBadgeUploading({ levelIndex, badgeType });
+      const res = await cloudflareService.upload(file, {
+        prefix: "",
+        folder: "roadmap-levels",
+      });
+      const url = res?.data?.data?.url;
+      if (!url) throw new Error("Không nhận được URL badge");
+      handleLevelBadgeChange(levelIndex, badgeType, url);
+    } catch (e: any) {
+      console.error(e);
+      showError(
+        e?.response?.data?.message || "Tải badge thất bại, vui lòng thử lại."
+      );
+    } finally {
+      setBadgeUploading(null);
+    }
+  };
+
+  const handleNewLevelBadgeUpload = async (
+    badgeType: "lightBadge" | "darkBadge",
+    file: File
+  ) => {
+    try {
+      setNewBadgeUploading(badgeType);
+      const res = await cloudflareService.upload(file, {
+        prefix: "",
+        folder: "roadmap-levels",
+      });
+      const url = res?.data?.data?.url;
+      if (!url) throw new Error("Không nhận được URL badge");
+      if (badgeType === "lightBadge") setNewLevelLightBadge(url);
+      else setNewLevelDarkBadge(url);
+    } catch (e: any) {
+      console.error(e);
+      showError(
+        e?.response?.data?.message || "Tải badge thất bại, vui lòng thử lại."
+      );
+    } finally {
+      setNewBadgeUploading(null);
+    }
   };
 
   // ---------- Node actions ----------
@@ -379,7 +442,8 @@ const RoadmapPage: React.FC = () => {
       levels: roadmap.levels.map((level) => ({
         id: level.id,
         level: level.level,
-        badge: level.badge || "",
+        lightBadge: level.lightBadge || "",
+        darkBadge: level.darkBadge || "",
         nodes: level.nodes.map((n) => {
           const cleanedTitle = cleanTranslation(n.title);
           const nodePayload: any = {
@@ -593,28 +657,60 @@ const RoadmapPage: React.FC = () => {
                     </IconButton>
                   </div>
 
-                  <div className="flex items-center gap-4 w-full md:w-auto">
-                    {level.badge ? (
-                      <img
-                        src={level.badge}
-                        alt={`Badge ${level.level}`}
-                        className="h-12 w-12 rounded-full object-cover border shadow-sm"
-                      />
-                    ) : (
-                      <div className="h-12 w-12 rounded-full bg-gray-100 border flex items-center justify-center text-gray-500 text-xs">
-                        badge
-                      </div>
-                    )}
-                    <div className="w-full md:w-72">
-                      <CloudflareFileUpload
-                        initialUrl={level.badge || ""}
-                        onUrlChange={(url) =>
-                          handleLevelBadgeChange(levelIndex, url)
-                        }
-                        label="Badge Level"
-                        uploadPayload={{ prefix: "", folder: "roadmap-levels" }}
-                      />
-                    </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full md:w-auto">
+                    {(["lightBadge", "darkBadge"] as const).map((badgeType) => {
+                      const inputId = `${badgeType}-${level.id}-${levelIndex}`;
+                      const isUploading =
+                        badgeUploading?.levelIndex === levelIndex &&
+                        badgeUploading?.badgeType === badgeType;
+                      const currentUrl =
+                        badgeType === "lightBadge"
+                          ? level.lightBadge
+                          : level.darkBadge;
+                      const label =
+                        badgeType === "lightBadge" ? "Light Badge" : "Dark Badge";
+                      const fallbackText =
+                        badgeType === "lightBadge" ? "Light" : "Dark";
+                      return (
+                        <div className="flex items-center gap-3" key={inputId}>
+                          <label htmlFor={inputId} className="cursor-pointer">
+                            {currentUrl ? (
+                              <img
+                                src={currentUrl}
+                                alt={`${label} ${level.level}`}
+                                className={`h-12 w-12 rounded-full object-cover border shadow-sm ${
+                                  isUploading ? "opacity-60" : ""
+                                }`}
+                              />
+                            ) : (
+                              <div className="h-12 w-12 rounded-full bg-gray-100 border flex items-center justify-center text-gray-500 text-xs transition hover:bg-gray-200">
+                                {fallbackText}
+                              </div>
+                            )}
+                          </label>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-700">{label}</p>
+                            {isUploading && (
+                              <p className="text-xs text-blue-600 mt-1">
+                                Đang tải lên...
+                              </p>
+                            )}
+                            <input
+                              id={inputId}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
+                                const file = e.target.files?.[0];
+                                if (!file) return;
+                                handleLevelBadgeUpload(levelIndex, badgeType, file);
+                                e.target.value = "";
+                              }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               </div>
@@ -871,7 +967,8 @@ const RoadmapPage: React.FC = () => {
             onClick={() => {
               setIsCreatingLevel(true);
               setLevelError("");
-              setNewLevelBadge("");
+              setNewLevelLightBadge("");
+              setNewLevelDarkBadge("");
               const availableLevel =
                 [CourseLevel.LEVEL1, CourseLevel.LEVEL2].find(
                   (lvl) => !usedLevels.has(lvl)
@@ -921,12 +1018,61 @@ const RoadmapPage: React.FC = () => {
               )}
             </div>
             <div className="mb-4">
-              <CloudflareFileUpload
-                initialUrl={newLevelBadge}
-                onUrlChange={setNewLevelBadge}
-                label="Badge Level"
-                uploadPayload={{ prefix: "", folder: "roadmap-levels" }}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {(["lightBadge", "darkBadge"] as const).map((badgeType) => {
+                  const inputId = `new-${badgeType}`;
+                  const currentUrl =
+                    badgeType === "lightBadge"
+                      ? newLevelLightBadge
+                      : newLevelDarkBadge;
+                  const label =
+                    badgeType === "lightBadge" ? "Light Badge" : "Dark Badge";
+                  const fallbackText =
+                    badgeType === "lightBadge" ? "Light" : "Dark";
+                  const isUploading = newBadgeUploading === badgeType;
+                  return (
+                    <div className="flex items-center gap-3" key={inputId}>
+                      <label htmlFor={inputId} className="cursor-pointer">
+                        {currentUrl ? (
+                          <img
+                            src={currentUrl}
+                            alt={`${label} mới`}
+                            className={`h-12 w-12 rounded-full object-cover border shadow-sm ${
+                              isUploading ? "opacity-60" : ""
+                            }`}
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-full bg-gray-100 border flex items-center justify-center text-gray-500 text-xs transition hover:bg-gray-200">
+                            {fallbackText}
+                          </div>
+                        )}
+                      </label>
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">
+                          {label}
+                        </p>
+                        {isUploading && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            Đang tải lên...
+                          </p>
+                        )}
+                        <input
+                          id={inputId}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (!file) return;
+                            handleNewLevelBadgeUpload(badgeType, file);
+                            e.target.value = "";
+                          }}
+                        />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             <div className="flex justify-end">
               <button
@@ -934,7 +1080,8 @@ const RoadmapPage: React.FC = () => {
                 onClick={() => {
                   setIsCreatingLevel(false);
                   setLevelError("");
-                  setNewLevelBadge("");
+                  setNewLevelLightBadge("");
+                  setNewLevelDarkBadge("");
                 }}
               >
                 Hủy
