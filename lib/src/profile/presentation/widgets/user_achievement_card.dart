@@ -1,41 +1,29 @@
 part of '../../profile.dart';
 
 class UserAchievementCard extends StatelessWidget {
+  final AchievenmentResponseEntity achievement;
+
   const UserAchievementCard({
     super.key,
     required this.achievement,
   });
 
-  final AchievenmentResponseEntity achievement;
+  int get totalCourses => achievement.totalCourse;
+  int get completedCourses => achievement.completedCourse;
+
+  String subtitle(BuildContext context) => context.text.setting.achievementsCompletedCount(
+    completed: completedCourses,
+    total: totalCourses,
+  );
 
   @override
   Widget build(BuildContext context) {
-    final int totalCourses = achievement.totalCourse;
-    final int completedCourses = achievement.completedCourse;
-    final int unlockedCourses = _countUnlockedCourses(achievement.courses);
-    final bool useUnlockedLabel = completedCourses == 0 && unlockedCourses > 0;
-
-    final String subtitle = useUnlockedLabel
-        ? '$unlockedCourses of $totalCourses unlocked'
-        : '$completedCourses of $totalCourses completed';
-
-    final bool useLargeLayout = achievement.courses.length <= 2;
-    final double itemWidth = useLargeLayout ? 137.w : 90.w;
-    final TextStyle itemTitleStyle = useLargeLayout
-        ? AppStyle.text12.copyWith(
-            color: AppCustomColor.textPrimary,
-            fontWeight: FontWeight.w600,
-            height: 1.5,
-          )
-        : AppStyle.text10.copyWith(
-            color: AppCustomColor.textPrimary,
-            fontWeight: FontWeight.w600,
-            height: 1.75,
-          );
+    if (totalCourses == 0) return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
       padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 24.h),
+      margin: EdgeInsets.only(bottom: 16.h),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(20.r),
@@ -53,21 +41,20 @@ class UserAchievementCard extends StatelessWidget {
         children: [
           _UserAchievementHeader(
             title: achievement.skillsetTitle.text,
-            subtitle: subtitle,
+            subtitle: subtitle(context),
           ),
-          SizedBox(height: 12.h),
+          12.verticalSpace,
           _UserAchievementCourseRow(
             courses: achievement.courses,
-            itemWidth: itemWidth,
-            itemTitleStyle: itemTitleStyle,
+            itemTitleStyle: AppStyle.text10.copyWith(
+              color: AppCustomColor.textPrimary,
+              fontWeight: FontWeight.w600,
+              height: 1.75,
+            ),
           ),
         ],
       ),
     );
-  }
-
-  int _countUnlockedCourses(List<CourseLevelProgressEntity> courses) {
-    return courses.where((course) => course.completedKeypoints > 0 || course.isCompleted).length;
   }
 }
 
@@ -107,36 +94,30 @@ class _UserAchievementHeader extends StatelessWidget {
 }
 
 class _UserAchievementCourseRow extends StatelessWidget {
+  final List<CourseLevelProgressEntity> courses;
+  final TextStyle itemTitleStyle;
+
   const _UserAchievementCourseRow({
     required this.courses,
-    required this.itemWidth,
     required this.itemTitleStyle,
   });
-
-  final List<CourseLevelProgressEntity> courses;
-  final double itemWidth;
-  final TextStyle itemTitleStyle;
 
   @override
   Widget build(BuildContext context) {
     if (courses.isEmpty) return const SizedBox.shrink();
 
-    return SizedBox(
-      height: 146.h,
-      child: SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        physics: const BouncingScrollPhysics(),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: List.generate(
-            courses.length,
-            (index) => Padding(
-              padding: EdgeInsets.only(right: index == courses.length - 1 ? 0 : 24.w),
-              child: UserAchievementCourseItem(
-                course: courses[index],
-                itemWidth: itemWidth,
-                titleStyle: itemTitleStyle,
-              ),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      physics: const BouncingScrollPhysics(),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: List.generate(
+          courses.length,
+          (index) => Padding(
+            padding: EdgeInsets.only(right: index == courses.length - 1 ? 0 : 24.w),
+            child: UserAchievementCourseItem(
+              course: courses[index],
+              titleStyle: itemTitleStyle,
             ),
           ),
         ),

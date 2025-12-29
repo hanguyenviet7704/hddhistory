@@ -3,10 +3,7 @@ part of '../../profile.dart';
 class UserAchievementList extends StatelessWidget {
   const UserAchievementList({
     super.key,
-    this.padding,
   });
-
-  final EdgeInsetsGeometry? padding;
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +16,7 @@ class UserAchievementList extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppText(
-              'Achievements',
+              context.text.setting.achievementsTitle,
               style: AppStyle.text16.copyWith(
                 color: AppCustomColor.textSecondary,
                 fontWeight: FontWeight.w700,
@@ -30,13 +27,7 @@ class UserAchievementList extends StatelessWidget {
             Column(
               children: List.generate(
                 achievenments.length,
-                (index) {
-                  final AchievenmentResponseEntity achievement = achievenments[index];
-                  return Padding(
-                    padding: EdgeInsets.only(bottom: index == achievenments.length - 1 ? 0 : 16.h),
-                    child: UserAchievementCard(achievement: achievement),
-                  );
-                },
+                (index) => UserAchievementCard(achievement: achievenments[index]),
               ),
             ),
           ],
