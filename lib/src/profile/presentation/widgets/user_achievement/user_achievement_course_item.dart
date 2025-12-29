@@ -21,31 +21,43 @@ class UserAchievementCourseItem extends StatelessWidget {
     return course.completedKeypoints / course.totalKeypoints;
   }
 
+  void _onTap(BuildContext context) {
+    context.read<AchievenmentProgressCubit>().loadCourseLevelProgress(course.courseId);
+    UserAchievementBottomSheet.show(
+      context,
+      courseId: course.courseId,
+      initialLevel: course.level,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final bool showProgress = course.totalKeypoints > 0;
 
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        _UserAchievementBadge(course: course),
-        16.verticalSpace,
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AppText(
-              _title,
-              maxLines: 2,
-              textAlign: TextAlign.center,
-              style: titleStyle,
-            ),
-            if (showProgress) ...[
-              8.verticalSpace,
-              UserAchievementProgressBar(progress: _progress),
+    return GestureDetector(
+      onTap: () => _onTap(context),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _UserAchievementBadge(course: course),
+          16.verticalSpace,
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AppText(
+                _title,
+                maxLines: 2,
+                textAlign: TextAlign.center,
+                style: titleStyle,
+              ),
+              if (showProgress) ...[
+                8.verticalSpace,
+                UserAchievementProgressBar(progress: _progress),
+              ],
             ],
-          ],
-        ),
-      ],
+          ),
+        ],
+      ),
     );
   }
 }

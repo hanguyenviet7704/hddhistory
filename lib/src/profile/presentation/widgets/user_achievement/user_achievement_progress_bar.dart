@@ -4,22 +4,30 @@ class UserAchievementProgressBar extends StatelessWidget {
   const UserAchievementProgressBar({
     super.key,
     required this.progress,
+    this.width,
+    this.height,
+    this.backgroundColor,
+    this.foregroundColor,
   });
 
   final double progress;
+  final double? width;
+  final double? height;
+  final Color? backgroundColor;
+  final Color? foregroundColor;
 
   @override
   Widget build(BuildContext context) {
     final double clampedProgress = progress.clamp(0.0, 1.0);
-    final double width = 67.w;
-    final double height = 6.h;
+    final double barWidth = width ?? 67.w;
+    final double barHeight = height ?? 6.h;
 
     return SizedBox(
-      width: width,
-      height: height,
+      width: barWidth,
+      height: barHeight,
       child: DecoratedBox(
         decoration: BoxDecoration(
-          color: AppCustomColor.borderSecondary,
+          color: backgroundColor ?? AppCustomColor.borderSecondary,
           borderRadius: BorderRadius.circular(18.r),
         ),
         child: Align(
@@ -28,7 +36,7 @@ class UserAchievementProgressBar extends StatelessWidget {
             widthFactor: clampedProgress,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                color: AppCustomColor.textPrimary,
+                color: foregroundColor ?? AppCustomColor.textPrimary,
                 borderRadius: BorderRadius.circular(18.r),
               ),
             ),
