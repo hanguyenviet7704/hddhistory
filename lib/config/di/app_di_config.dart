@@ -25,6 +25,7 @@ part of 'di.dart';
     'lib/src/roleplay',
     'lib/src/setting',
     'lib/src/monetization',
+    'lib/src/achievenment',
   ],
   initializerName: 'init',
   preferRelativeImports: true,

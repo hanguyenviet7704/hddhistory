@@ -78,6 +78,7 @@ node_modules/
 
 # Git PR content
 task_ai/
+raw_plan/
 pr_content.md
 prompt_gen.md
 release_content.md
@@ -88,3 +89,6 @@ repomix-output.xml
 # AI
 .claude/
 plans/
+
+# Mason
+bricks/**/hooks/build/
