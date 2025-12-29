@@ -1,21 +1,17 @@
-
-
 part of '../../achievenment.dart';
 
 @lazySingleton
 class AchievenmentCubit extends Cubit<AchievenmentState>
     with CubitUseCaseHandlerMixin<AchievenmentState> {
-  final GetAchievenmentResponseUseCase _getUseCase;
-  
+  final GetAchievenmentResponseUseCase _getAchievenmentResponseUseCase;
 
   AchievenmentCubit(
-    this._getUseCase,
-    
+    this._getAchievenmentResponseUseCase,
   ) : super(AchievenmentState.initial());
 
   void loadAchievenmentResponse(String id) async {
     await runUseCase<AchievenmentResponseEntity>(
-      usecase: () => _getUseCase(id),
+      usecase: () => _getAchievenmentResponseUseCase(id),
       buildLoadingState: () => state.copyWith(status: AchievenmentStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(
@@ -26,13 +22,11 @@ class AchievenmentCubit extends Cubit<AchievenmentState>
       onSuccess: (item) {
         emit(state.copyWith(
           status: AchievenmentStatus.success,
-          selectedItem: item,
+          selectedAchievenmentResponse: item,
         ));
       },
     );
   }
-
-  
 }
 
 

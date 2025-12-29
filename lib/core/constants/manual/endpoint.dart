@@ -79,6 +79,8 @@ mixin AppEndpoint {
   static const String coursesUserProgressKeypoint = '/api/v1/courses-user-progress/keypoints';
   static const String coursesUserProgressExercise = '/api/v1/courses-user-progress/exercises';
   static const String coursesUserProgressMyCourses = '/api/v1/courses-user-progress/my-course';
+  static const String coursesUserProgressAchievements = '/api/v1/courses-user-progress/achievements';
+  static const String coursesUserProgressBadgeProgress = '/api/v1/courses-user-progress/badge-progress/{courseId}';
 
   //* Skillsets API
   static const String skillsets = '/api/v1/skillsets';

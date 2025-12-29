@@ -1,4 +1,4 @@
-part of '../../progress.dart';
+part of '../../../progress.dart';
 
 @lazySingleton
 class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<ProgressState> {

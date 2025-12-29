@@ -4,7 +4,6 @@ part of '../../achievenment.dart';
 class AchievenmentRepository with RestfulRequestHandlerMixin implements IAchievenmentRepository {
   final AchievenmentApi _api;
   final AchievenmentLocalDataSource _localDataSource;
-  
 
   AchievenmentRepository(
     this._api,
@@ -22,29 +21,6 @@ class AchievenmentRepository with RestfulRequestHandlerMixin implements IAchieve
         return cachedModel?.toEntity();
       },
       defaultValue: AchievenmentResponseEntity(),
-    );
-  }
-
-  
-
-  // ==================== HELPER METHODS ====================
-
-  /// Converts AchievenmentResponseEntity to JSON Map for API requests
-  /// Provides flexibility to customize the request body structure without affecting domain models
-  /// Reusable helper to avoid duplication in create/update methods
-  Map<String, dynamic> _entityToJson(AchievenmentResponseEntity entity) {
-    return {
-      'id': entity.id,
-      'name': entity.name,
-      // TODO: Add more fields as needed
-    };
-  }
-  
-
-  TaskEither<AppException, T> _missingDataSourceTask<T>(String operation) {
-    
-    return TaskEither.left(
-      AppException.unexpected('$operation is not implemented. Please provide a remote or local data source.'),
     );
   }
 }

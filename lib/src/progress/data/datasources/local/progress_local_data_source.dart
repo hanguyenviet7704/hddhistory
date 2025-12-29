@@ -33,7 +33,7 @@ abstract class ProgressLocalDataSource {
   Future<void> clearCache();
 }
 
-@LazySingleton(as: ProgressLocalDataSource)
+  @LazySingleton(as: ProgressLocalDataSource)
 class ProgressLocalDataSourceImpl implements ProgressLocalDataSource {
   static const String _cacheListKey = 'progress_list_cache';
   static const String _cacheLessonKey = 'progress_lesson_cache';

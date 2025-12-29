@@ -1,4 +1,4 @@
-part of '../../progress.dart';
+part of '../../../progress.dart';
 
 enum ProgressStatus { initial, loading, success, failure }
 

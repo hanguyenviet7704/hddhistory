@@ -86,7 +86,7 @@ class AchievenmentLocalDataSourceImpl implements AchievenmentLocalDataSource {
   @override
   Future<void> cacheAchievenmentResponse(AchievenmentResponseModel model) async {
     try {
-      final cacheKey = '${_cacheKey}_${model.id}';
+      final cacheKey = '${_cacheKey}_${model.skillsetId}';
       await _localStoreService.setMap(
         key: cacheKey,
         value: model.toJson(),
@@ -104,7 +104,7 @@ class AchievenmentLocalDataSourceImpl implements AchievenmentLocalDataSource {
 
       // Also remove from cached list if exists
       final cachedList = await getCachedAchievenmentResponses();
-      final updatedList = cachedList.where((item) => item.id != id).toList();
+      final updatedList = cachedList.where((item) => item.skillsetId != id).toList();
       await cacheAchievenmentResponses(updatedList);
     } catch (e) {
       // Handle error silently or log

@@ -1,4 +1,3 @@
-
 part of '../../achievenment.dart';
 
 enum AchievenmentStatus { initial, loading, success, failure }
@@ -7,7 +6,8 @@ enum AchievenmentStatus { initial, loading, success, failure }
 abstract class AchievenmentState with _$AchievenmentState {
   const factory AchievenmentState({
     @Default(AchievenmentStatus.initial) AchievenmentStatus status,
-    AchievenmentResponseEntity? selectedItem,
+    @Default(BasePageBreak<AchievenmentResponseEntity>()) BasePageBreak<AchievenmentResponseEntity> pageData,
+    AchievenmentResponseEntity? selectedAchievenmentResponse,
     String? errorMessage,
   }) = _AchievenmentState;
 
