@@ -62,9 +62,8 @@ export interface IRoadmapNode {
 export interface IRoadmapLevel {
   id: number;
   lightBadge: string;
-  titleLightBadge: ITranslation;
   darkBadge: string;
-  titleDarkBadge: ITranslation;
+  titleBadge: ITranslation;
   level: CourseLevel;
   nodes: IRoadmapNode[];
 }
@@ -85,8 +84,7 @@ export interface RoadmapLevelPayload {
   id: number;
   lightBadge: string;
   darkBadge: string;
-  titleLightBadge?: ITranslation;
-  titleDarkBadge?: ITranslation;
+  titleBadge?: ITranslation;
   level: CourseLevel;
   nodes: RoadmapNodePayload[];
 }
