@@ -7,7 +7,7 @@ abstract class AchievenmentProgressApi {
   factory AchievenmentProgressApi(@Named(DIKey.appDio) Dio dio) = _AchievenmentProgressApi;
 
   @GET(AppEndpoint.coursesUserProgressAchievements)
-  Future<BaseResponseList<AchievenmentResponseModel>> getAllAchievenmentResponses(@Queries() UserProgressFilter filter);
+  Future<BaseResponseList<AchievenmentResponseModel>> getAllAchievenmentResponses();
 
   @GET(AppEndpoint.coursesUserProgressBadgeProgress)
   Future<BaseResponseList<CourseLevelProgressModel>> getCourseLevelProgress(@Path('courseId') String courseId);

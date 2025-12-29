@@ -37,6 +37,7 @@ class ProfileRoute extends BaseTransitionRouteData with $ProfileRoute {
       BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
       BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<AchievenmentProgressCubit>()),
     ],
     child: const ProfilePage(),
   );

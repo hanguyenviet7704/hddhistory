@@ -6,6 +6,7 @@ class ProfilePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     context.read<IapCubit>().loadIapProducts();
+    context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
       body: CupertinoScaffold(
@@ -29,13 +30,8 @@ class ProfilePage extends StatelessWidget {
                 },
               ),
               24.verticalSpace,
-              AppText(
-                'Achievements',
-                style: AppStyle.textBold16.copyWith(
-                  color: AppCustomColor.textPrimary,
-                  height: 1.25,
-                ),
-              ),
+
+              UserAchievementList(),
             ],
           ),
         ),

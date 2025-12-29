@@ -40,6 +40,9 @@ part 'presentation/widgets/profile_header.dart';
 part 'presentation/widgets/profile_field.dart';
 part 'presentation/widgets/profile_delete_button.dart';
 part 'presentation/widgets/profile_delete_dialog.dart';
+part 'presentation/widgets/user_achievement_card.dart';
+part 'presentation/widgets/user_achievement_course_item.dart';
+part 'presentation/widgets/user_achievement_progress_bar.dart';
 part 'presentation/widgets/user_achievement_list.dart';
 
 //* Parts for generated files

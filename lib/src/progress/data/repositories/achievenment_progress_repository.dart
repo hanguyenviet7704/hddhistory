@@ -8,11 +8,9 @@ class AchievenmentProgressRepository with RestfulRequestHandlerMixin implements 
   AchievenmentProgressRepository(this._api, this._localDataSource);
 
   @override
-  TaskEither<AppException, List<AchievenmentResponseEntity>> getAllAchievenmentResponses(
-    UserProgressFilter filter,
-  ) {
+  TaskEither<AppException, List<AchievenmentResponseEntity>> getAllAchievenmentResponses() {
     return callApiListWithTransform<AchievenmentResponseModel, AchievenmentResponseEntity>(
-      apiCall: () => _api.getAllAchievenmentResponses(filter),
+      apiCall: () => _api.getAllAchievenmentResponses(),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async {
         await _localDataSource.cacheAchievenmentResponses(data);

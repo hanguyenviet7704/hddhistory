@@ -10,9 +10,9 @@ class AchievenmentProgressCubit extends Cubit<AchievenmentProgressState> with Cu
     this._getCourseLevelProgressUseCase,
   ) : super(AchievenmentProgressState.initial());
 
-  void loadAllAchievenmentResponses(UserProgressFilter filter) async {
+  void loadAllAchievenmentResponses() async {
     await runUseCaseList<AchievenmentResponseEntity>(
-      usecase: () => _getAllAchievenmentResponsesUseCase(filter),
+      usecase: () => _getAllAchievenmentResponsesUseCase(),
       buildLoadingState: () => state.copyWith(status: AchievenmentProgressStatus.loading),
       onFailure: (error) {
         emit(
