@@ -32,4 +32,10 @@ extension CourseLevelProgressEntityExtension on CourseLevelProgressEntity {
   int get progressPercent {
     return (progress * 100).clamp(0, 100).round();
   }
+
+  String get title {
+    final String title = courseTitle.text.trim();
+    if (title.isNotEmpty) return title;
+    return titleBadge.text.trim();
+  }
 }

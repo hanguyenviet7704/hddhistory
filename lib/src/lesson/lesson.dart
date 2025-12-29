@@ -78,8 +78,9 @@ part 'presentation/cubits/speaking/speaking_state.dart';
 part 'presentation/cubits/theory/theory_cubit.dart';
 part 'presentation/cubits/theory/theory_state.dart';
 //* Presentation Layer - Pages
+part 'presentation/pages/badge_complete_page.dart';
 part 'presentation/pages/keypoint_complete_page.dart';
-part 'presentation/pages/lesson_complete_page.dart';
+part 'presentation/pages/lesson_complete_page.dart';  
 part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/review_time_page.dart';
 //* Presentation Layer - Widgets
@@ -109,6 +110,7 @@ part 'presentation/widgets/items/common/exercise_chat_bubble.dart';
 part 'presentation/widgets/items/common/exercise_continue_button.dart';
 part 'presentation/widgets/items/common/exercise_result_summary.dart';
 part 'presentation/widgets/items/common/lesson_badge.dart';
+part 'presentation/widgets/items/common/keypoint_complete_progress_card.dart';
 part 'presentation/widgets/items/common/lesson_completion_header.dart';
 part 'presentation/widgets/items/common/lesson_completion_primary_button.dart';
 part 'presentation/widgets/items/common/lesson_completion_progress_bar.dart';

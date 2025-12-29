@@ -7,6 +7,7 @@ abstract class CourseRoadmapState with _$CourseRoadmapState {
   const factory CourseRoadmapState({
     @Default(CourseRoadmapStatus.initial) CourseRoadmapStatus status,
     @Default(RoadmapEntity()) RoadmapEntity roadmap,
+    @Default(CourseLevelProgressEntity()) CourseLevelProgressEntity currentLevelProgress,
     String? errorMessage,
   }) = _CourseRoadmapState;
 
@@ -17,4 +18,5 @@ abstract class CourseRoadmapState with _$CourseRoadmapState {
 
 extension CourseRoadmapStateExtension on CourseRoadmapState {
   bool get isCompleted => roadmap.levels.every((level) => level.isCompleted);
+  RoadmapLevelEntity get currentLevel => roadmap.levels.firstWhere((level) => !level.isCompleted);
 }

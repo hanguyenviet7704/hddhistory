@@ -50,6 +50,7 @@ mixin RoutePath {
   static const String reviewTime = 'review-time';
   static const String lessonComplete = 'lesson-complete';
   static const String keypointComplete = 'keypoint-complete';
+  static const String badgeComplete = 'badge-complete';
   static const String exerciseResultPopup = 'exercise-result-popup';
 
   //? Course - Roleplay
@@ -120,6 +121,7 @@ mixin RouteNamed {
   static const String reviewTime = 'Review Time';
   static const String lessonComplete = 'Lesson Complete';
   static const String keypointComplete = 'Keypoint Complete';
+  static const String badgeComplete = 'Badge Complete';
   static const String exerciseResultPopup = 'Exercise Result Popup';
 
   //? Course - Roleplay

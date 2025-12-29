@@ -52,6 +52,7 @@ class AchievenmentProgressCubit extends Cubit<AchievenmentProgressState> with Cu
             courseLevelProgresses: data,
           ),
         );
+        AppDI.injector.get<CourseRoadmapCubit>().setCurrentLevelProgress(data);
       },
     );
   }
