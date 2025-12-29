@@ -70,7 +70,16 @@ const RoadmapPage: React.FC = () => {
   const [newLevel, setNewLevel] = useState<CourseLevel>(CourseLevel.LEVEL1);
   const [newLevelLightBadge, setNewLevelLightBadge] = useState("");
   const [newLevelDarkBadge, setNewLevelDarkBadge] = useState("");
+  const [newLevelLightBadgeTitle, setNewLevelLightBadgeTitle] = useState("");
+  const [newLevelDarkBadgeTitle, setNewLevelDarkBadgeTitle] = useState("");
   const [levelError, setLevelError] = useState("");
+  const [badgeTitleErrors, setBadgeTitleErrors] = useState<
+    Record<string, string>
+  >({});
+  const [newBadgeTitleErrors, setNewBadgeTitleErrors] = useState<{
+    light?: string;
+    dark?: string;
+  }>({});
   const [badgeUploading, setBadgeUploading] = useState<{
     levelIndex: number;
     badgeType: "lightBadge" | "darkBadge";
@@ -129,6 +138,8 @@ const RoadmapPage: React.FC = () => {
           ...level,
           lightBadge: level.lightBadge || (level as any).badge || "",
           darkBadge: level.darkBadge || "",
+          titleLightBadge: level.titleLightBadge || {},
+          titleDarkBadge: level.titleDarkBadge || {},
         }));
         setRoadmap({ ...data, levels: normalizedLevels });
       } catch (e) {
@@ -181,6 +192,7 @@ const RoadmapPage: React.FC = () => {
   const handleCreateLevel = () => {
     if (!roadmap) return;
     setLevelError("");
+    setNewBadgeTitleErrors({});
 
     const isDuplicate = roadmap.levels.some((lvl) => lvl.level === newLevel);
     if (isDuplicate) {
@@ -191,11 +203,34 @@ const RoadmapPage: React.FC = () => {
       return;
     }
 
+    if (!newLevelLightBadgeTitle.trim() || !newLevelDarkBadgeTitle.trim()) {
+      setNewBadgeTitleErrors({
+        light: newLevelLightBadgeTitle.trim()
+          ? undefined
+          : "Vui lòng nhập tiêu đề badge (Light)",
+        dark: newLevelDarkBadgeTitle.trim()
+          ? undefined
+          : "Vui lòng nhập tiêu đề badge (Dark)",
+      });
+      showError("Vui lòng nhập tiêu đề cho cả Light/Dark badge.");
+      return;
+    }
+
     const newLevelObj: IRoadmapLevel = {
       id: nextLevelId,
       level: newLevel,
       lightBadge: newLevelLightBadge || "",
       darkBadge: newLevelDarkBadge || "",
+      titleLightBadge: updateTranslationValue(
+        undefined,
+        lang,
+        newLevelLightBadgeTitle
+      ),
+      titleDarkBadge: updateTranslationValue(
+        undefined,
+        lang,
+        newLevelDarkBadgeTitle
+      ),
       nodes: [],
     };
     setRoadmap({ ...roadmap, levels: [...roadmap.levels, newLevelObj] });
@@ -203,6 +238,8 @@ const RoadmapPage: React.FC = () => {
     setNewLevel(CourseLevel.LEVEL1);
     setNewLevelLightBadge("");
     setNewLevelDarkBadge("");
+    setNewLevelLightBadgeTitle("");
+    setNewLevelDarkBadgeTitle("");
   };
 
   const handleDeleteLevel = () => {
@@ -224,6 +261,35 @@ const RoadmapPage: React.FC = () => {
       idx === levelIndex ? { ...level, [badgeType]: url } : level
     );
     setRoadmap({ ...roadmap, levels: updatedLevels });
+  };
+
+  const handleLevelBadgeTitleChange = (
+    levelIndex: number,
+    badgeType: "titleLightBadge" | "titleDarkBadge",
+    value: string
+  ) => {
+    if (!roadmap) return;
+    const updatedLevels = roadmap.levels.map((level, idx) =>
+      idx === levelIndex
+        ? {
+            ...level,
+            [badgeType]: updateTranslationValue(
+              level[badgeType],
+              lang,
+              value
+            ),
+          }
+        : level
+    );
+    setRoadmap({ ...roadmap, levels: updatedLevels });
+    const key = `${levelIndex}-${badgeType}`;
+    if (value?.trim()) {
+      setBadgeTitleErrors((prev) => {
+        const next = { ...prev };
+        delete next[key];
+        return next;
+      });
+    }
   };
 
   const handleLevelBadgeUpload = async (
@@ -438,12 +504,34 @@ const RoadmapPage: React.FC = () => {
       return;
     }
 
+    const titleErrors: Record<string, string> = {};
+    roadmap.levels.forEach((lvl, idx) => {
+      const hasLightTitle = !!cleanTranslation(lvl.titleLightBadge);
+      const hasDarkTitle = !!cleanTranslation(lvl.titleDarkBadge);
+      if (!hasLightTitle) {
+        titleErrors[`${idx}-titleLightBadge`] =
+          "Vui lòng nhập tiêu đề badge (Light)";
+      }
+      if (!hasDarkTitle) {
+        titleErrors[`${idx}-titleDarkBadge`] =
+          "Vui lòng nhập tiêu đề badge (Dark)";
+      }
+    });
+
+    if (Object.keys(titleErrors).length) {
+      setBadgeTitleErrors(titleErrors);
+      showError("Vui lòng điền đủ tiêu đề cho badge Light/Dark.");
+      return;
+    }
+
     const payload: any = {
       levels: roadmap.levels.map((level) => ({
         id: level.id,
         level: level.level,
         lightBadge: level.lightBadge || "",
         darkBadge: level.darkBadge || "",
+        titleLightBadge: cleanTranslation(level.titleLightBadge),
+        titleDarkBadge: cleanTranslation(level.titleDarkBadge),
         nodes: level.nodes.map((n) => {
           const cleanedTitle = cleanTranslation(n.title);
           const nodePayload: any = {
@@ -671,6 +759,11 @@ const RoadmapPage: React.FC = () => {
                         badgeType === "lightBadge" ? "Light Badge" : "Dark Badge";
                       const fallbackText =
                         badgeType === "lightBadge" ? "Light" : "Dark";
+                      const errorKey =
+                        badgeType === "lightBadge"
+                          ? `${levelIndex}-titleLightBadge`
+                          : `${levelIndex}-titleDarkBadge`;
+                      const errorMsg = badgeTitleErrors[errorKey];
                       return (
                         <div className="flex items-center gap-3" key={inputId}>
                           <label htmlFor={inputId} className="cursor-pointer">
@@ -688,19 +781,44 @@ const RoadmapPage: React.FC = () => {
                               </div>
                             )}
                           </label>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-gray-700">{label}</p>
-                            {isUploading && (
-                              <p className="text-xs text-blue-600 mt-1">
-                                Đang tải lên...
-                              </p>
-                            )}
-                            <input
-                              id={inputId}
-                              type="file"
-                              accept="image/*"
-                              className="hidden"
-                              onChange={(e) => {
+                      <div className="flex-1">
+                        <p className="text-sm font-medium text-gray-700">{label}</p>
+                        {isUploading && (
+                          <p className="text-xs text-blue-600 mt-1">
+                            Đang tải lên...
+                          </p>
+                        )}
+                        <input
+                          type="text"
+                          value={getTranslationValue(
+                            badgeType === "lightBadge"
+                              ? level.titleLightBadge
+                              : level.titleDarkBadge,
+                            lang
+                          )}
+                          onChange={(e) =>
+                            handleLevelBadgeTitleChange(
+                              levelIndex,
+                              badgeType === "lightBadge"
+                                ? "titleLightBadge"
+                                : "titleDarkBadge",
+                              e.target.value
+                            )
+                          }
+                          placeholder="Nhập tiêu đề badge"
+                          className={`mt-2 w-full px-3 py-2 border rounded-lg text-sm ${
+                            errorMsg ? "border-red-500" : ""
+                          }`}
+                        />
+                        {errorMsg && (
+                          <p className="text-xs text-red-600 mt-1">{errorMsg}</p>
+                        )}
+                        <input
+                          id={inputId}
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
                                 handleLevelBadgeUpload(levelIndex, badgeType, file);
@@ -969,6 +1087,8 @@ const RoadmapPage: React.FC = () => {
               setLevelError("");
               setNewLevelLightBadge("");
               setNewLevelDarkBadge("");
+              setNewLevelLightBadgeTitle("");
+              setNewLevelDarkBadgeTitle("");
               const availableLevel =
                 [CourseLevel.LEVEL1, CourseLevel.LEVEL2].find(
                   (lvl) => !usedLevels.has(lvl)
@@ -1030,6 +1150,10 @@ const RoadmapPage: React.FC = () => {
                   const fallbackText =
                     badgeType === "lightBadge" ? "Light" : "Dark";
                   const isUploading = newBadgeUploading === badgeType;
+                  const errorMsg =
+                    badgeType === "lightBadge"
+                      ? newBadgeTitleErrors.light
+                      : newBadgeTitleErrors.dark;
                   return (
                     <div className="flex items-center gap-3" key={inputId}>
                       <label htmlFor={inputId} className="cursor-pointer">
@@ -1057,6 +1181,33 @@ const RoadmapPage: React.FC = () => {
                           </p>
                         )}
                         <input
+                          type="text"
+                          value={
+                            badgeType === "lightBadge"
+                              ? newLevelLightBadgeTitle
+                              : newLevelDarkBadgeTitle
+                          }
+                          onChange={(e) => {
+                            if (badgeType === "lightBadge")
+                              setNewLevelLightBadgeTitle(e.target.value);
+                            else setNewLevelDarkBadgeTitle(e.target.value);
+                            if (e.target.value.trim()) {
+                              setNewBadgeTitleErrors((prev) => ({
+                                ...prev,
+                                [badgeType === "lightBadge" ? "light" : "dark"]:
+                                  undefined,
+                              }));
+                            }
+                          }}
+                          placeholder="Nhập tiêu đề badge"
+                          className={`mt-2 w-full px-3 py-2 border rounded-lg text-sm ${
+                            errorMsg ? "border-red-500" : ""
+                          }`}
+                        />
+                        {errorMsg && (
+                          <p className="text-xs text-red-600 mt-1">{errorMsg}</p>
+                        )}
+                        <input
                           id={inputId}
                           type="file"
                           accept="image/*"
@@ -1082,6 +1233,8 @@ const RoadmapPage: React.FC = () => {
                   setLevelError("");
                   setNewLevelLightBadge("");
                   setNewLevelDarkBadge("");
+                  setNewLevelLightBadgeTitle("");
+                  setNewLevelDarkBadgeTitle("");
                 }}
               >
                 Hủy
