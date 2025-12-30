@@ -669,7 +669,14 @@ const SubscriptionSection: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-4 space-y-4 overflow-y-auto">
+            <form
+              className="p-4 space-y-4 overflow-y-auto"
+              autoComplete="new-password"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitManual();
+              }}
+            >
               {manualError && (
                 <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
                   {manualError}
@@ -921,19 +928,6 @@ const SubscriptionSection: React.FC = () => {
                   <label className="text-xs font-medium text-slate-700">
                     Mật khẩu xác nhận
                   </label>
-                  {/* fake input to discourage password managers */}
-                  <input
-                    type="text"
-                    name="manual-subscription-username"
-                    value="."
-                    onChange={() => {
-                      /* noop */
-                    }}
-                    className="hidden"
-                    aria-hidden="true"
-                    tabIndex={-1}
-                    autoComplete="username"
-                  />
                   <input
                     type="password"
                     value={manualForm.confirmPassword}
@@ -945,13 +939,25 @@ const SubscriptionSection: React.FC = () => {
                     }
                     className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500"
                     placeholder="Nhập mật khẩu"
+                    autoComplete="one-time-code"
+                    name={`manual-subscription-password-${
+                      manualEditTarget?.id ||
+                      manualEditTarget?._id ||
+                      manualEditTarget?.anchorId ||
+                      "new"
+                    }`}
+                    data-form-type="other"
+                  />
+                  {/* Hidden dummy fields to discourage password managers */}
+                  <input type="text" className="hidden" tabIndex={-1} />
+                  <input
+                    type="password"
+                    className="hidden"
+                    tabIndex={-1}
                     autoComplete="new-password"
-                    name="manual-subscription-password"
                   />
                 </div>
               </div>
-            </div>
-
             <div className="flex items-center justify-end gap-2 p-4 border-t border-slate-100">
               <button
                 onClick={() => {
@@ -960,13 +966,14 @@ const SubscriptionSection: React.FC = () => {
                 }}
                 className="px-3 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50"
                 disabled={manualSubmitting}
+                type="button"
               >
                 Huỷ
               </button>
               <button
-                onClick={handleSubmitManual}
                 disabled={manualSubmitting}
                 className="inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-teal-600 to-emerald-500 text-white shadow hover:from-teal-700 hover:to-emerald-600 disabled:opacity-70"
+                type="submit"
               >
                 {manualSubmitting && (
                   <span className="h-4 w-4 border-2 border-white/70 border-t-transparent rounded-full animate-spin" />
@@ -976,6 +983,8 @@ const SubscriptionSection: React.FC = () => {
                   : "Tạo subscription"}
               </button>
             </div>
+            </form>
+
           </div>
         </div>
       )}

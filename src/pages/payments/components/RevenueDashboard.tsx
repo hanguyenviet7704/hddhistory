@@ -6,6 +6,8 @@ import {
   CurrencyDollarIcon,
   CheckCircleIcon,
   EyeIcon,
+  PencilSquareIcon,
+  ExclamationTriangleIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { purchaseService } from "../../../services/payments/purchaseService";
@@ -23,6 +25,7 @@ import {
   PaymentCurrency,
   PaymentEnvironment,
   PurchaseEventType,
+  PurchaseStatus,
 } from "../../../types/enum/payment.enum";
 import {
   formatDateTime,
@@ -30,6 +33,7 @@ import {
   platformIcons,
   platformLabels,
   priceLabel,
+  purchaseStatusLabel,
   eventTypeLabel,
   eventTypeTone,
 } from "../paymentShared";
@@ -112,6 +116,16 @@ const RevenueDashboard: React.FC = () => {
   const [webhookError, setWebhookError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editSuccess, setEditSuccess] = useState<string | null>(null);
+  const [editLoading, setEditLoading] = useState(false);
+  const [editingPurchase, setEditingPurchase] = useState<PurchaseRecord | null>(
+    null
+  );
+  const [editStatus, setEditStatus] = useState<PurchaseStatus>(
+    PurchaseStatus.PENDING
+  );
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [productError, setProductError] = useState<string | null>(null);
   const [productLoading, setProductLoading] = useState(false);
   const [page, setPage] = useState(1);
@@ -221,6 +235,59 @@ const RevenueDashboard: React.FC = () => {
     setWebhookError(null);
     setWebhookLoading(false);
   }, []);
+
+  const handleOpenEdit = (purchase: PurchaseRecord) => {
+    setEditingPurchase(purchase);
+    setEditStatus(purchase.status);
+    setConfirmPassword("");
+    setEditError(null);
+    setEditSuccess(null);
+  };
+
+  const handleCloseEdit = () => {
+    setEditingPurchase(null);
+    setConfirmPassword("");
+    setEditError(null);
+    setEditSuccess(null);
+  };
+
+  const handleSubmitEdit = async () => {
+    if (!editingPurchase) return;
+    const purchaseId = getPurchaseId(editingPurchase);
+    if (!purchaseId) {
+      setEditError("Không tìm thấy purchaseId để cập nhật.");
+      return;
+    }
+    if (!confirmPassword.trim()) {
+      setEditError("Vui lòng nhập mật khẩu xác nhận.");
+      return;
+    }
+    setEditLoading(true);
+    setEditError(null);
+    setEditSuccess(null);
+    try {
+      await purchaseService.update(purchaseId, {
+        status: editStatus,
+        confirmPassword,
+      });
+      await fetchData();
+      setEntries((prev) =>
+        prev.map((p) =>
+          getPurchaseId(p) === purchaseId ? { ...p, status: editStatus } : p
+        )
+      );
+      setEditSuccess("Cập nhật purchase thành công.");
+      handleCloseEdit();
+    } catch (err: any) {
+      console.error("Update purchase failed", err);
+      setEditError(
+        err?.response?.data?.message ||
+          "Không thể cập nhật purchase, vui lòng thử lại."
+      );
+    } finally {
+      setEditLoading(false);
+    }
+  };
 
   const refundRate = useMemo(() => {
     if (!stats) return 0;
@@ -412,18 +479,21 @@ const RevenueDashboard: React.FC = () => {
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
                   Webhook
                 </th>
+                <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                  Actions
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-500">
+                  <td colSpan={8} className="py-10 text-center text-slate-500">
                     Đang tải dữ liệu...
                   </td>
                 </tr>
               ) : entries.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="py-10 text-center text-slate-500">
+                  <td colSpan={8} className="py-10 text-center text-slate-500">
                     Chưa có giao dịch nào trong khoảng thời gian này.
                   </td>
                 </tr>
@@ -510,6 +580,14 @@ const RevenueDashboard: React.FC = () => {
                           }
                         >
                           <EyeIcon className="h-5 w-5" />
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => handleOpenEdit(entry)}
+                          className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-teal-200 text-teal-700 hover:bg-teal-50 transition"
+                        >
+                          <PencilSquareIcon className="h-5 w-5" />
                         </button>
                       </td>
                     </tr>
@@ -670,6 +748,119 @@ const RevenueDashboard: React.FC = () => {
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {editingPurchase && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden">
+            <div className="flex items-start justify-between p-4 border-b border-slate-100">
+              <div>
+                <p className="text-sm font-semibold text-slate-900">
+                  Chỉnh sửa purchase
+                </p>
+                <p className="text-xs text-slate-500 mt-1">
+                  Purchase: {getPurchaseId(editingPurchase) || "-"} · User:{" "}
+                  {editingPurchase.userEmail || editingPurchase.userName || "-"}
+                </p>
+              </div>
+              <button
+                onClick={handleCloseEdit}
+                className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
+              >
+                <XMarkIcon className="h-5 w-5" />
+              </button>
+            </div>
+
+            <form
+              className="p-4 space-y-3"
+              autoComplete="new-password"
+              onSubmit={(e) => {
+                e.preventDefault();
+                handleSubmitEdit();
+              }}
+            >
+              <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-amber-800">
+                <ExclamationTriangleIcon className="h-5 w-5 flex-shrink-0 mt-0.5" />
+                <div className="text-sm leading-relaxed">
+                  Việc chỉnh sửa purchase có thể ảnh hưởng tới báo cáo doanh thu
+                  và số liệu subscription. Hãy chắc chắn bạn hiểu rõ thay đổi
+                  này.
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-600">
+                  Trạng thái
+                </label>
+                <select
+                  value={editStatus}
+                  onChange={(e) =>
+                    setEditStatus(e.target.value as PurchaseStatus)
+                  }
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  disabled={editLoading}
+                >
+                  {Object.values(PurchaseStatus).map((status) => (
+                    <option key={status} value={status}>
+                      {purchaseStatusLabel[status]}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-slate-600">
+                  Mật khẩu xác nhận
+                </label>
+                <input
+                  type="password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm"
+                  autoComplete="one-time-code"
+                  name={`purchase-edit-confirm-${getPurchaseId(
+                    editingPurchase
+                  )}`}
+                  placeholder="Nhập mật khẩu của bạn để xác nhận"
+                  disabled={editLoading}
+                  data-form-type="other"
+                />
+                {/* Hidden dummy fields to discourage browser password save */}
+                <input type="text" className="hidden" tabIndex={-1} />
+                <input type="password" className="hidden" tabIndex={-1} />
+              </div>
+
+              {editError && (
+                <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                  {editError}
+                </div>
+              )}
+              {editSuccess && (
+                <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-700">
+                  {editSuccess}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-2 border-t border-slate-100 pt-4">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-50"
+                  onClick={handleCloseEdit}
+                  disabled={editLoading}
+                >
+                  Hủy
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded-lg bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-60"
+                  disabled={editLoading}
+                >
+                  {editLoading ? "Đang lưu..." : "Lưu thay đổi"}
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
