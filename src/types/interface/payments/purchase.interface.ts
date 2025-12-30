@@ -30,6 +30,11 @@ export interface IPurchase {
   isManual?: boolean;
 }
 
+export interface UpdatePurchasePayload {
+  confirmPassword: string;
+  status: PurchaseStatus;
+}
+
 export class PurchaseListQuery extends BaseQuery {
   environment!: PaymentEnvironment;
   platform?: PaymentPlatform;

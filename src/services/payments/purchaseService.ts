@@ -2,6 +2,7 @@ import {
   GetRevenueListQuery,
   PurchaseListQuery,
   RevenueStatisticsResponse,
+  UpdatePurchasePayload,
 } from "../../types/interface/payments/purchase.interface";
 import axiosClient from "../axiosClient";
 
@@ -45,5 +46,9 @@ export const purchaseService = {
       params,
     });
     return res.data;
+  },
+
+  async update(id: string, payload: Partial<UpdatePurchasePayload>) {
+    return axiosClient.patch(`/payment/purchases/${id}`, payload, {});
   },
 };
