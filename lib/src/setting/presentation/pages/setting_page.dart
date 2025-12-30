@@ -11,23 +11,12 @@ class SettingPage extends StatelessWidget {
       body: CupertinoScaffold(
         topRadius: const Radius.circular(24),
         transitionBackgroundColor: AppCustomColor.backgroundWhite,
-        body: SafeBody(
+        body: SafePage(
           child: ListView(
             padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
             physics: const BouncingScrollPhysics(),
             children: [
-              SettingProfileCard(),
-              24.verticalSpace,
-              BlocSelector<ProfileCubit, ProfileState, UserEntity>(
-                selector: (state) => state.user,
-                builder: (context, user) {
-                  if (user.iapSubscriptions.isNotEmpty) return SizedBox.shrink();
-
-                  return SettingPreminumCard(
-                    onUpgrade: () => const PaywallRoute().push(context),
-                  );
-                },
-              ),
+              SettingHeader(),
               24.verticalSpace,
               BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                 selector: (state) => state.user,
@@ -89,6 +78,35 @@ class SettingPage extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+class SettingHeader extends StatelessWidget {
+  const SettingHeader({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        InkWell(
+          onTap: () => context.back(),
+          child: Icon(
+            Icons.arrow_back_ios_new_rounded,
+            color: AppCustomColor.textTertiary,
+            size: 24.w,
+          ),
+        ),
+        AppText(
+          context.text.setting.settingTitle,
+          style: AppStyle.textBold16.copyWith(
+            color: AppCustomColor.textPrimary,
+            height: 1.25,
+          ),
+        ),
+        SizedBox(width: 24.w),
+      ],
     );
   }
 }
