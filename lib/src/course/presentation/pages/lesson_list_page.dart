@@ -116,7 +116,8 @@ class LessonListPage extends StatelessWidget {
                         itemCount: lesson.keypoints.length,
                         separatorBuilder: (context, index) => 16.verticalSpace,
                         itemBuilder: (context, index) {
-                          final keypoint = lesson.sortedKeypoints[index];
+                          // final keypoint = lesson.sortedKeypoints[index];
+                          final keypoint = lesson.keypoints[index];
 
                           return KeypointCard(
                             keypoint: keypoint,

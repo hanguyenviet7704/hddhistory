@@ -106,12 +106,6 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
                 }
               },
             ),
-            BlocListener<IapCubit, IapState>(
-              listenWhen: (previous, current) => previous.status != current.status && current.status == MonetizationStatus.purchaseSuccess,
-              listener: (context, state) {
-                PaywallSuccessPurchasePopup.show(context);
-              },
-            ),
           ],
           child: ValueListenableBuilder<bool>(
             valueListenable: _isEditingNotifier,

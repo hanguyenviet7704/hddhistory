@@ -8,7 +8,7 @@ abstract class KeypointModel with _$KeypointModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default(0) int index,
-    @Default(StrengthLevel.optionalPractice) StrengthLevel strengthLevel,
+    @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevel,
     @Default([]) List<LearningItemModel> learningItems,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
   }) = _KeypointModel;

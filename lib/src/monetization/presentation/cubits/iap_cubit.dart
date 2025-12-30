@@ -58,7 +58,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     );
   }
 
-  Future<void> purchaseProduct({bool isHighlight = false}) async {
+  Future<void> purchaseProduct({bool isHighlight = false, PurchaseOrigin origin = PurchaseOrigin.paywall}) async {
     if (state.iapProducts.isEmpty) {
       _onPurchaseFailure(error: AppConfig.instance.context?.text.monetization.emptyProductsDesc ?? '');
       return;
@@ -67,7 +67,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     if (state.status == MonetizationStatus.purchasing) return;
     String productId = isHighlight ? state.bestDealProduct.productId : state.selectedProduct.productId;
     _ignoreHandledOnce = true; // user-initiated purchase; allow next receipt even if duplicate
-    emit(state.copyWith(status: MonetizationStatus.purchasing));
+    emit(
+      state.copyWith(
+        status: MonetizationStatus.purchasing,
+        lastAction: PurchaseAction.purchase,
+        lastOrigin: origin,
+      ),
+    );
     await runUseCase<IapVerifyEntity>(
       usecase: () => _purchaseUsecase.call(PurchaseParams(productId: productId, type: state.selectedProduct.type)),
       onSuccess: (verify) {
@@ -77,9 +83,15 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     );
   }
 
-  Future<void> restorePurchases() async {
+  Future<void> restorePurchases({PurchaseOrigin origin = PurchaseOrigin.paywall}) async {
     if (state.status == MonetizationStatus.restoring) return;
-    emit(state.copyWith(status: MonetizationStatus.restoring));
+    emit(
+      state.copyWith(
+        status: MonetizationStatus.restoring,
+        lastAction: PurchaseAction.restore,
+        lastOrigin: origin,
+      ),
+    );
     _ignoreHandledOnce = true; // user-initiated restore; allow next receipt even if duplicate
 
     _restoreTimeout?.cancel();
@@ -182,7 +194,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         if (transactionId.isNotEmpty) {
           _markHandled(transactionId);
         }
-        _onPurchaseSuccess(currentDetail, isRestore: currentDetail.status == PurchaseStatus.restored);
+        _onPurchaseSuccess(currentDetail);
         if (transactionId.isNotEmpty) {
           await _discardPendingReceipts(transactionId);
           _verifyingTransactionIds.remove(transactionId);
@@ -239,18 +251,22 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     return isSuccess;
   }
 
-  void _onPurchaseSuccess(PurchaseDetails purchaseDetail, {bool isRestore = false}) {
+  void _onPurchaseSuccess(PurchaseDetails purchaseDetail) {
     _restoreTimeout?.cancel();
     _finishTransaction(purchaseDetail);
     AppDI.injector.get<ProfileCubit>().loadUser();
-    AppConfig.instance.context?.back();
+    if (state.lastOrigin != PurchaseOrigin.paywall) {
+      AppConfig.instance.context?.back();
+    }
     _trackingService.trackSubscriptionCompleted(state.selectedProductId);
 
     Future.delayed(const Duration(seconds: 1), () async {
+      bool hasSubscription = AppDI.injector.get<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
       emit(state.copyWith(status: MonetizationStatus.purchaseSuccess));
       AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
+      if (hasSubscription) return;
       DMessage.showMessage(
-        message: isRestore ? AppConfig.instance.context?.text.monetization.restoreSuccessToast ?? '' : AppConfig.instance.context?.text.monetization.paymentSuccessToast ?? '',
+        message: AppConfig.instance.context?.text.monetization.subscriptionActiveToast ?? '',
         type: MessageType.success,
       );
       // await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
@@ -258,7 +274,14 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   }
 
   void _onPurchaseFailure({String error = ''}) {
-    emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString()));
+    emit(
+      state.copyWith(
+        status: MonetizationStatus.failure,
+        errorMessage: error.toString(),
+        lastAction: PurchaseAction.none,
+        lastOrigin: PurchaseOrigin.none,
+      ),
+    );
     _trackingService.trackPaywallStorePopupDismiss(AppConfig.instance.context!, state.selectedProductId);
     DMessage.showMessage(
       message: error.isEmpty ? AppConfig.instance.context?.text.monetization.paymentFailToast ?? '' : error,
@@ -313,6 +336,17 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   void _clearPendingReceipts(String transactionId) {
     _pendingReceiptQueue.remove(transactionId);
+  }
+
+  void consumePurchaseSuccess() {
+    if (state.status != MonetizationStatus.purchaseSuccess) return;
+    emit(
+      state.copyWith(
+        status: MonetizationStatus.initial,
+        lastAction: PurchaseAction.none,
+        lastOrigin: PurchaseOrigin.none,
+      ),
+    );
   }
 
   Future<void> _safeFinishTransaction(PurchaseDetails purchaseDetail) async {
