@@ -16,7 +16,7 @@ abstract class RoadmapEntity with _$RoadmapEntity {
 extension RoadmapEntityExtension on RoadmapEntity {
   int get lastCompletedLevelIndex {
     for (int i = levels.length - 1; i >= 0; i--) {
-      if (levels.elementAt(i).isCompleted) return i;
+      if (levels.elementAt(i).isCompleted) return i + 1;
     }
     return -1;
   }
