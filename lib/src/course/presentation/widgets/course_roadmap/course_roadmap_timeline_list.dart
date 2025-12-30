@@ -2,8 +2,10 @@ part of '../../../course.dart';
 
 class CourseRoadmapTimeline extends StatelessWidget {
   final List<LessonEntity> lessons;
+  final CourseLevel courseLevel;
   const CourseRoadmapTimeline({
     required this.lessons,
+    required this.courseLevel,
     super.key,
   });
 
@@ -73,6 +75,7 @@ class CourseRoadmapTimeline extends StatelessWidget {
                 top: 8.h,
               ),
               child: LessonCard(
+                courseLevel: courseLevel,
                 premiumLesson: lessons.isPremiumLessonAt(index),
                 lesson: lesson,
                 lessonRolePlay: lessons.lessonRolePlay(lesson.id),

@@ -26,100 +26,83 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
-      body: SafeArea(
-        child: Column(
-          children: [
-            Padding(
-              padding: EdgeInsets.only(top: 28.h, bottom: 16.h),
-              child: BlocSelector<CourseLessonCubit, CourseLessonState, String>(
-                selector: (state) => state.selectedLesson.title.text,
-                builder: (context, title) {
-                  return AppText(
-                    title,
-                    maxLines: 1,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.textBold14.copyWith(
-                      color: AppCustomColor.textSecondary,
-                      height: 1.6,
-                    ),
-                  );
+      body: Stack(
+        children: [
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Lottie.asset(
+                AppAsset.lottie.congratulations,
+                controller: _lottieController,
+                onLoaded: (composition) {
+                  _lottieController
+                    ..duration = composition.duration
+                    ..forward();
                 },
+                fit: BoxFit.cover,
+                repeat: false,
               ),
             ),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 240.h,
-                    width: 240.w,
-                    child: Stack(
-                      alignment: Alignment.center,
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: 20.w),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Lottie.asset(
-                          AppAsset.lottie.congratulations,
-                          controller: _lottieController,
-                          onLoaded: (composition) {
-                            _lottieController
-                              ..duration = composition.duration
-                              ..forward();
-                          },
-                          repeat: false,
+                        Image.asset(
+                          AppAsset.icons.app.icTick.path,
+                          width: 50.w,
+                          height: 50.w,
                         ),
-                        Container(
-                          width: 64.w,
-                          height: 64.w,
-                          decoration: BoxDecoration(
-                            color: AppCustomColor.successGreen,
-                            shape: BoxShape.circle,
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppCustomColor.successGreen.op(0.3),
-                                blurRadius: 24,
-                                offset: Offset(0, 16.h),
+                        24.verticalSpace,
+                        AppText(
+                          context.text.exercise.exerciseLessonCompleteTitle.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: AppStyle.text12.copyWith(
+                            color: AppCustomColor.textTertiary,
+                            fontWeight: FontWeight.w600,
+                            height: 1.75,
+                          ),
+                        ),
+                        4.verticalSpace,
+                        BlocSelector<CourseLessonCubit, CourseLessonState, String>(
+                          selector: (state) => state.selectedLesson.title.text,
+                          builder: (context, title) {
+                            return AppText(
+                              title,
+                              maxLines: 2,
+                              textAlign: TextAlign.center,
+                              style: AppStyle.text20.copyWith(
+                                color: AppCustomColor.textPrimary,
+                                fontWeight: FontWeight.w700,
+                                height: 1.5,
                               ),
-                            ],
-                          ),
-                          alignment: Alignment.center,
-                          child: Icon(
-                            Icons.check_rounded,
-                            size: 32.sp,
-                            color: Colors.white,
-                          ),
+                            );
+                          },
                         ),
                       ],
                     ),
                   ),
-                  24.verticalSpace,
-                  AppText(
-                    context.text.exercise.exerciseLessonCompleteTitle,
-                    maxLines: 1,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.textBold24.copyWith(
-                      color: AppCustomColor.textPrimary,
-                      height: 1.4,
-                    ),
-                  ),
-                  8.verticalSpace,
-                  AppText(
-                    context.text.exercise.exerciseLessonCompleteMessage,
-                    maxLines: 2,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.text14.copyWith(
-                      color: AppCustomColor.textTertiary,
-                      height: 1.6,
-                    ),
-                  ),
-                ],
-              ),
+                ),
+                LessonCompletionPrimaryButton(
+                  label: context.text.exercise.exerciseCompleteLessonButton,
+                  onPressed: () {
+                    final bool isLastLessonInLevel = context.read<CourseRoadmapCubit>().state.isLastLessonInLevel;
+                    if (isLastLessonInLevel) {
+                      BadgeCompleteRoute().go(context);
+                      return;
+                    }
+                    context.back();
+                  },
+                  margin: EdgeInsets.only(bottom: 16.h, top: 16.h),
+                ),
+              ],
             ),
-            LessonCompletionPrimaryButton(
-              label: context.text.exercise.exerciseCompleteLessonButton,
-              onPressed: () => context.back(),
-              margin: EdgeInsets.only(bottom: 24.h, top: 12.h),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

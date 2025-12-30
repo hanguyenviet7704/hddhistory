@@ -84,6 +84,7 @@ class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRo
     providers: [
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
     ],
     child: const LessonCompletePage(),
   );
@@ -96,8 +97,11 @@ class BadgeCompleteRoute extends BaseTransitionRouteData with $BadgeCompleteRout
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<LessonCubit>(),
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+    ],
     child: const BadgeCompletePage(),
   );
 }
