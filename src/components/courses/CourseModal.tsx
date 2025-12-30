@@ -115,6 +115,7 @@ export default function CourseModal({
           // Giả sử hàm getlist nhận vào object { search: query }
           const response = await skillsetService.getList({
             search: debouncedQuery,
+            isAll: true,
           });
           setSkillsets(response.data.items || []); // Giả sử API trả về { data: [...] }
         } catch (err) {
