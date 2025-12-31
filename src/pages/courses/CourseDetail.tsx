@@ -425,16 +425,26 @@ const RoadmapPage: React.FC = () => {
     const { field, levelIndex, nodeIndex, lessonList } = editingNode;
 
     if (field === "lessons") {
-      const currentSelected = new Set(selectedLessons);
-      if (currentSelected.has(lessonId)) currentSelected.delete(lessonId);
-      else currentSelected.add(lessonId);
-      const newSelected = Array.from(currentSelected);
+      const newSelected = (() => {
+        const existing = [...selectedLessons];
+        const existingIndex = existing.indexOf(lessonId);
+        if (existingIndex >= 0) {
+          // remove and keep order of remaining
+          existing.splice(existingIndex, 1);
+          return existing;
+        }
+        // add to end (order of clicks)
+        return [...existing, lessonId];
+      })();
+
       setSelectedLessons(newSelected);
 
       applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
         ...node,
         lessonIds: newSelected,
-        lessons: lessonList.filter((l) => newSelected.includes(l._id)),
+        lessons: newSelected
+          .map((id) => lessonList.find((l) => l._id === id))
+          .filter(Boolean) as ILessonBrief[],
       }));
     } else {
       const selected = lessonList.find((l) => l._id === lessonId) || null;
@@ -595,6 +605,7 @@ const RoadmapPage: React.FC = () => {
                 const isSelected = isMultiple
                   ? selectedLessons.includes(lesson._id)
                   : (editingNode.currentValues as string) === lesson._id;
+                const orderIndex = selectedLessons.indexOf(lesson._id);
                 return (
                   <div
                     key={lesson._id}
@@ -605,10 +616,23 @@ const RoadmapPage: React.FC = () => {
                     }`}
                     onClick={() => handleLessonSelect(lesson._id)}
                   >
-                    {renderLessonBadge(lesson)}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1">{renderLessonBadge(lesson)}</div>
+                      {isMultiple && isSelected && (
+                        <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
+                          {orderIndex + 1}
+                        </span>
+                      )}
+                    </div>
                     {isMultiple && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        {isSelected ? "✓ Đã chọn" : "Chọn bài học"}
+                      <div className="mt-2 text-sm text-gray-600 flex items-center gap-2 flex-wrap">
+                        {isSelected ? (
+                          <span className="text-blue-700">
+                            ✓ Đã chọn · Thứ tự #{orderIndex + 1}
+                          </span>
+                        ) : (
+                          <span>Chọn bài học</span>
+                        )}
                       </div>
                     )}
                   </div>
