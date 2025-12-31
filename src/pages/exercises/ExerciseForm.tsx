@@ -2341,7 +2341,7 @@ export default function ExerciseForm({
           </div>
         </div>
 
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="sticky bottom-0 bg-white pt-4 mt-6 border-t flex justify-end gap-2">
           <button
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
             onClick={onCancel}
@@ -2774,7 +2774,7 @@ export default function ExerciseForm({
                   </button>
                 </div>
 
-                <div className="flex-grow overflow-y-auto p-6">
+                <div className="flex-grow overflow-y-auto p-6 relative">
                   <QuestionForm
                     question={modalOpen.question}
                     onSave={handleSaveQuestionAndExercise}

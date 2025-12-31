@@ -305,9 +305,10 @@ export default function TheoryForm({
   const handleSaveTheory = async () => {
     try {
       setSaving(true);
+      const cleanedTitle = cleanTranslation(currentTheory.title) || {};
       const payload: LearningItemPayload = {
         keypointId: currentTheory.keypointId,
-        title: (cleanTranslation(currentTheory.title) || "") as string,
+        title: cleanedTitle as any,
         type: LearningItemType.THEORY,
         image: currentTheory.image,
         tag: currentTheory.tag || [],
@@ -364,6 +365,7 @@ export default function TheoryForm({
     try {
       setSaving(true);
       let updatedTheory;
+      const cleanedTitle = cleanTranslation(currentTheory.title) || {};
       if (modalOpen.theoryDocument) {
         const existing = currentTheory.documents || [];
         const updatedList = existing.map((doc) =>
@@ -381,7 +383,7 @@ export default function TheoryForm({
       setCurrentTheory(updatedTheory);
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: (cleanTranslation(updatedTheory.title) || "") as string,
+        title: cleanedTitle as any,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],
@@ -426,17 +428,22 @@ export default function TheoryForm({
     }
     const updatedTheory = (() => {
       if (!currentTheory) return currentTheory;
-      const newList = (currentTheory[section] || []).filter(
-        (doc) => doc.id !== itemId
-      );
+      const newList = (currentTheory[section] || [])
+        .filter((doc) => doc.id !== itemId)
+        .map((doc, idx) => ({ ...doc, id: idx + 1 }));
       return { ...currentTheory, [section]: newList };
     })();
+    setNextDocId(
+      (updatedTheory?.documents?.reduce((max, d) => Math.max(max, d.id), 0) ||
+        0) + 1
+    );
     setCurrentTheory(updatedTheory);
     try {
       setSaving(true);
+      const cleanedTitle = cleanTranslation(updatedTheory.title) || {};
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: updatedTheory.title?.[lang] || "",
+        title: cleanedTitle as any,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],
@@ -1064,7 +1071,7 @@ export default function TheoryForm({
             </button>
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="sticky bottom-0 bg-white pt-4 mt-6 border-t flex justify-end gap-2">
           <button
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
             onClick={onCancel}
@@ -1342,7 +1349,7 @@ export default function TheoryForm({
                     <XMarkIcon className="h-6 w-6" />
                   </button>
                 </div>
-                <div className="flex-grow overflow-y-auto p-6">
+                <div className="flex-grow overflow-y-auto p-6 relative">
                   <DocumentForm
                     theoryDocument={modalOpen.theoryDocument}
                     onSave={handleSaveDocumentAndTheory}
