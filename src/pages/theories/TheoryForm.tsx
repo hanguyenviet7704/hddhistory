@@ -305,9 +305,10 @@ export default function TheoryForm({
   const handleSaveTheory = async () => {
     try {
       setSaving(true);
+      const cleanedTitle = cleanTranslation(currentTheory.title) || {};
       const payload: LearningItemPayload = {
         keypointId: currentTheory.keypointId,
-        title: (cleanTranslation(currentTheory.title) || "") as string,
+        title: cleanedTitle as any,
         type: LearningItemType.THEORY,
         image: currentTheory.image,
         tag: currentTheory.tag || [],
@@ -364,6 +365,7 @@ export default function TheoryForm({
     try {
       setSaving(true);
       let updatedTheory;
+      const cleanedTitle = cleanTranslation(currentTheory.title) || {};
       if (modalOpen.theoryDocument) {
         const existing = currentTheory.documents || [];
         const updatedList = existing.map((doc) =>
@@ -381,7 +383,7 @@ export default function TheoryForm({
       setCurrentTheory(updatedTheory);
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: (cleanTranslation(updatedTheory.title) || "") as string,
+        title: cleanedTitle as any,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],
@@ -434,9 +436,10 @@ export default function TheoryForm({
     setCurrentTheory(updatedTheory);
     try {
       setSaving(true);
+      const cleanedTitle = cleanTranslation(updatedTheory.title) || {};
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: updatedTheory.title?.[lang] || "",
+        title: cleanedTitle as any,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],
