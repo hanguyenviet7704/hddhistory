@@ -73,15 +73,22 @@ class _ExpandedExerciseBody extends StatelessWidget {
       duration: const Duration(milliseconds: 200),
       curve: Curves.easeOut,
       padding: EdgeInsets.only(bottom: viewInsets.bottom),
-      child: SingleChildScrollView(
-        keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-        child: Column(
-          children: [
-            lessonBody,
-            60.verticalSpace,
-            bottomButton,
-          ],
-        ),
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+              child: Column(
+                children: [
+                  lessonBody,
+                  60.verticalSpace,
+                ],
+              ),
+            ),
+          ),
+          12.verticalSpace,
+          bottomButton,
+        ],
       ),
     );
   }

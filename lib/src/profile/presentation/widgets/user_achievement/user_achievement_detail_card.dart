@@ -8,13 +8,7 @@ class UserAchievementDetailCard extends StatelessWidget {
     required this.course,
   });
 
-  String get title {
-    final String courseTitle = course.courseTitle.text.trim();
-    if (courseTitle.isNotEmpty) return courseTitle;
-    return course.titleBadge.text.trim();
-  }
-
-  String get levelNumber => course.level.number;
+  String get levelName => course.level.name;
 
   @override
   Widget build(BuildContext context) {
@@ -24,17 +18,14 @@ class UserAchievementDetailCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _UserAchievementDetailHeader(
-            levelLabel: context.text.setting.achievementsLevelLabel(level: levelNumber),
-            title: title,
+            // levelLabel: context.text.setting.achievementsLevelLabel(level: levelName),
+            levelLabel: levelName,
+            title: course.title,
           ),
           24.verticalSpace,
           _UserAchievementDetailBadge(course: course),
           24.verticalSpace,
-          _UserAchievementDetailProgress(
-            label: context.text.setting.achievementsCompleteCourseAtLevel(level: levelNumber),
-            progress: course.progress,
-            percent: course.progressPercent,
-          ),
+          _UserAchievementDetailProgress(course: course),
         ],
       ),
     );
@@ -116,15 +107,11 @@ class _UserAchievementDetailBadge extends StatelessWidget {
 }
 
 class _UserAchievementDetailProgress extends StatelessWidget {
-  const _UserAchievementDetailProgress({
-    required this.label,
-    required this.progress,
-    required this.percent,
-  });
+  final CourseLevelProgressEntity course;
 
-  final String label;
-  final double progress;
-  final int percent;
+  const _UserAchievementDetailProgress({
+    required this.course,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +119,7 @@ class _UserAchievementDetailProgress extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AppText(
-          label,
+          context.text.setting.achievementsCompleteCourseAtLevel(level: course.level.name),
           textAlign: TextAlign.center,
           style: AppStyle.text16.copyWith(
             color: AppCustomColor.textTertiary,
@@ -140,26 +127,28 @@ class _UserAchievementDetailProgress extends StatelessWidget {
             height: 1.5,
           ),
         ),
-        8.verticalSpace,
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            UserAchievementProgressBar(
-              progress: progress,
-              width: 90.w,
-              height: 8.h,
-            ),
-            12.horizontalSpace,
-            AppText(
-              '$percent%',
-              style: AppStyle.text14.copyWith(
-                color: AppCustomColor.textTertiary,
-                fontWeight: FontWeight.w700,
-                height: 1.75,
+        if (!course.hideProgress) ...[
+          8.verticalSpace,
+          Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              UserAchievementProgressBar(
+                progress: course.progress,
+                width: 90.w,
+                height: 8.h,
               ),
-            ),
-          ],
-        ),
+              12.horizontalSpace,
+              AppText(
+                '${course.progressPercent}%',
+                style: AppStyle.text14.copyWith(
+                  color: AppCustomColor.textTertiary,
+                  fontWeight: FontWeight.w700,
+                  height: 1.75,
+                ),
+              ),
+            ],
+          ),
+        ],
       ],
     );
   }

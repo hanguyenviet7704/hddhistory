@@ -1,25 +1,14 @@
 part of '../../../profile.dart';
 
 class UserAchievementCourseItem extends StatelessWidget {
+  final CourseLevelProgressEntity course;
+  final TextStyle titleStyle;
+
   const UserAchievementCourseItem({
     super.key,
     required this.course,
     required this.titleStyle,
   });
-
-  final CourseLevelProgressEntity course;
-  final TextStyle titleStyle;
-
-  String get _title {
-    final String courseTitle = course.courseTitle.text.trim();
-    if (courseTitle.isNotEmpty) return courseTitle;
-    return course.titleBadge.text.trim();
-  }
-
-  double get _progress {
-    if (course.totalKeypoints <= 0) return 0;
-    return course.completedKeypoints / course.totalKeypoints;
-  }
 
   void _onTap(BuildContext context) {
     context.read<AchievenmentProgressCubit>().loadCourseLevelProgress(course.courseId);
@@ -32,8 +21,6 @@ class UserAchievementCourseItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool showProgress = course.totalKeypoints > 0;
-
     return GestureDetector(
       onTap: () => _onTap(context),
       child: Column(
@@ -45,14 +32,14 @@ class UserAchievementCourseItem extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                _title,
+                course.title,
                 maxLines: 2,
                 textAlign: TextAlign.center,
                 style: titleStyle,
               ),
-              if (showProgress) ...[
+              if (!course.hideProgress) ...[
                 8.verticalSpace,
-                UserAchievementProgressBar(progress: _progress),
+                UserAchievementProgressBar(progress: course.progress),
               ],
             ],
           ),
@@ -67,22 +54,12 @@ class _UserAchievementBadge extends StatelessWidget {
 
   const _UserAchievementBadge({required this.course});
 
-  String get badgeUrl {
-    if (course.isCompleted) {
-      return course.lightBadge.trim();
-    }
-    if (course.darkBadge.trim().isNotEmpty) {
-      return course.darkBadge.trim();
-    }
-    return course.lightBadge.trim();
-  }
-
   @override
   Widget build(BuildContext context) {
     final double width = 64.w;
     final double height = 80.h;
 
-    if (badgeUrl.isEmpty) {
+    if (course.badgeUrl.isEmpty) {
       return Container(
         width: width,
         height: height,
@@ -94,7 +71,7 @@ class _UserAchievementBadge extends StatelessWidget {
     }
 
     return CacheNetworkGraphic(
-      url: badgeUrl,
+      url: course.badgeUrl,
       width: width,
       height: height,
       fit: BoxFit.contain,

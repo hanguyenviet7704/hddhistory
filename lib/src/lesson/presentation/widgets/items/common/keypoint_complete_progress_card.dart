@@ -61,6 +61,7 @@ class KeypointCompleteProgressCard extends StatelessWidget {
                       percent: progress.progress.clamp(0.0, 1.0),
                       animation: true,
                       animationDuration: 800,
+                      animateFromLastPercent: true,
                       padding: EdgeInsets.zero,
                       backgroundColor: AppCustomColor.brandPrimary700,
                       progressColor: AppCustomColor.textWhite,

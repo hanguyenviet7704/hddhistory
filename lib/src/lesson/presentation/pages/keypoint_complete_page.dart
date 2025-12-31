@@ -23,6 +23,7 @@ class KeypointCompletePage extends StatelessWidget {
                           Image.asset(
                             AppAsset.images.app.keypointCompleteDecoration.path,
                             width: 267.w,
+                            
                             fit: BoxFit.contain,
                           ),
                           24.verticalSpace,

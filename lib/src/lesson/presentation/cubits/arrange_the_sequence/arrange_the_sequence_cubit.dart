@@ -37,8 +37,8 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
 
   /// Check if the current order matches the correct answer
   void checkAnswer() {
-    final List<String> currentOrder = state.currentItems.map((item) => item.text.text).toList();
-    final List<String> correctOrder = state.question.answer.map((answer) => answer.correctAnswer.text).toList();
+    final List<String> currentOrder = state.currentOrderLabels;
+    final List<String> correctOrder = state.correctOrderLabels;
 
     // Compare the two lists
     final isCorrect = _listsEqual(currentOrder, correctOrder);
@@ -58,8 +58,8 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
   int pointCalculation() {
     /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
     /// Sai ko bị trừ điểm
-    final currentOrder = state.currentItems.map((item) => item.id).toList();
-    final correctOrder = state.question.answer.map((answer) => answer.id).toList();
+    final currentOrder = state.currentOrderLabels;
+    final correctOrder = state.correctOrderLabels;
 
     if (currentOrder.isEmpty) return 0;
 

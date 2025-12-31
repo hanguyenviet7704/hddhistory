@@ -27,6 +27,7 @@ class UserAchievementProgressBar extends StatelessWidget {
       lineHeight: barHeight,
       percent: clampedProgress,
       padding: EdgeInsets.zero,
+      animateFromLastPercent: true,
       backgroundColor: backgroundColor ?? AppCustomColor.borderSecondary,
       progressColor: foregroundColor ?? AppCustomColor.textPrimary,
       barRadius: Radius.circular(20.r),

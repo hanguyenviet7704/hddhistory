@@ -39,4 +39,8 @@ extension CourseLevelProgressEntityExtension on CourseLevelProgressEntity {
     if (title.isNotEmpty) return title;
     return titleBadge.text.trim();
   }
+
+  bool get hideProgress {
+    return isCompleted || (completedKeypoints >= totalKeypoints);
+  }
 }

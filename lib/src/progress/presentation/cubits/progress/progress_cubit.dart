@@ -200,7 +200,10 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         _courseLessonCubit.loadLesson(courseLessonState.selectedLesson.id);
         _courseRoadmapCubit.loadRoadmap(courseId: courseId);
         loadUserProgressMyCourses(isInit: true, recent: true);
-        AppDI.injector.get<AchievenmentProgressCubit>().loadCourseLevelProgress(courseId);
+
+        AppDI.injector.get<AchievenmentProgressCubit>()
+          ..loadCourseLevelProgress(courseId)
+          ..loadAllAchievenmentResponses();
       },
     );
   }

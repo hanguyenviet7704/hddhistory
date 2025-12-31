@@ -19,17 +19,39 @@ sealed class ArrangeTheSequenceState with _$ArrangeTheSequenceState {
 }
 
 extension ArrangeTheSequenceStateX on ArrangeTheSequenceState {
-  List<int> get correctOrderIds => question.answer.map((answer) => answer.id).toList();
+  String _optionLabel(OptionEntity option) {
+    final text = option.text.text;
+    if (text.isNotEmpty) return text;
+    return option.value.text;
+  }
+
+  String _answerLabel(AnswerEntity answer) {
+    final text = answer.correctAnswer.text;
+    if (text.isNotEmpty) return text;
+
+    final match = question.options.firstWhere(
+      (option) => option.id == answer.id,
+      orElse: () => const OptionEntity(),
+    );
+
+    final matchText = match.text.text;
+    if (matchText.isNotEmpty) return matchText;
+    return match.value.text;
+  }
+
+  List<String> get currentOrderLabels => currentItems.map((item) => _optionLabel(item)).toList();
+
+  List<String> get correctOrderLabels => question.answer.map((answer) => _answerLabel(answer)).toList();
 
   ArrangeAnswerState getItemState(int index) {
     if (!hasChecked) return ArrangeAnswerState.normal;
-    if (index >= currentItems.length || index >= correctOrderIds.length) {
+    if (index >= currentItems.length || index >= question.answer.length) {
       return ArrangeAnswerState.incorrect;
     }
 
-    final currentId = currentItems[index].id;
-    final correctId = correctOrderIds[index];
+    final currentLabel = _optionLabel(currentItems[index]);
+    final correctLabel = _answerLabel(question.answer[index]);
 
-    return currentId == correctId ? ArrangeAnswerState.correct : ArrangeAnswerState.incorrect;
+    return currentLabel == correctLabel ? ArrangeAnswerState.correct : ArrangeAnswerState.incorrect;
   }
 }

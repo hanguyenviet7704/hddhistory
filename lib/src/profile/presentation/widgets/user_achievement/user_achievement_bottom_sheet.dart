@@ -159,34 +159,35 @@ class _UserAchievementSheetContent extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            SizedBox(
-              height: 507.h,
-              child: PageView.builder(
-                controller: controller,
-                itemCount: courses.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) => UserAchievementDetailCard(course: courses[index]),
-              ),
-            ),
-            if (courses.length > 1) ...[
-              24.verticalSpace,
-              SmoothPageIndicator(
-                controller: controller,
-                count: courses.length,
-                effect: ScrollingDotsEffect(
-                  activeDotColor: AppCustomColor.brandPrimary,
-                  dotColor: AppCustomColor.borderSecondary,
-                  dotHeight: 8.r,
-                  dotWidth: 8.r,
-                  spacing: 12.w,
+        Expanded(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Expanded(
+                child: PageView.builder(
+                  controller: controller,
+                  itemCount: courses.length,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) => UserAchievementDetailCard(course: courses[index]),
                 ),
               ),
-            ] else
-              24.verticalSpace,
-          ],
+              if (courses.length > 1) ...[
+                24.verticalSpace,
+                SmoothPageIndicator(
+                  controller: controller,
+                  count: courses.length,
+                  effect: ScrollingDotsEffect(
+                    activeDotColor: AppCustomColor.brandPrimary,
+                    dotColor: AppCustomColor.borderSecondary,
+                    dotHeight: 8.r,
+                    dotWidth: 8.r,
+                    spacing: 12.w,
+                  ),
+                ),
+              ] else
+                24.verticalSpace,
+            ],
+          ),
         ),
         36.verticalSpace,
         _UserAchievementGoToCourseButton(onTap: onGoToCourse),
