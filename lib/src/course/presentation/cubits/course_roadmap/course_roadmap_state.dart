@@ -25,6 +25,6 @@ extension CourseRoadmapStateExtension on CourseRoadmapState {
   List<LessonEntity> get currentLevelLessons => currentLevel.lessonList.where((lesson) => lesson.type == LessonType.lesson).toList();
   bool get isLastLessonInLevel {
     if (currentLevelLessons.isEmpty) return false;
-    return currentLevelLessons.last == currentLesson;
+    return currentLevelLessons.last.id == currentLesson.id;
   }
 }
