@@ -428,11 +428,15 @@ export default function TheoryForm({
     }
     const updatedTheory = (() => {
       if (!currentTheory) return currentTheory;
-      const newList = (currentTheory[section] || []).filter(
-        (doc) => doc.id !== itemId
-      );
+      const newList = (currentTheory[section] || [])
+        .filter((doc) => doc.id !== itemId)
+        .map((doc, idx) => ({ ...doc, id: idx + 1 }));
       return { ...currentTheory, [section]: newList };
     })();
+    setNextDocId(
+      (updatedTheory?.documents?.reduce((max, d) => Math.max(max, d.id), 0) ||
+        0) + 1
+    );
     setCurrentTheory(updatedTheory);
     try {
       setSaving(true);
@@ -1067,7 +1071,7 @@ export default function TheoryForm({
             </button>
           </div>
         </div>
-        <div className="flex justify-end gap-2 mt-6">
+        <div className="sticky bottom-0 bg-white pt-4 mt-6 border-t flex justify-end gap-2">
           <button
             className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition"
             onClick={onCancel}
@@ -1345,7 +1349,7 @@ export default function TheoryForm({
                     <XMarkIcon className="h-6 w-6" />
                   </button>
                 </div>
-                <div className="flex-grow overflow-y-auto p-6">
+                <div className="flex-grow overflow-y-auto p-6 relative">
                   <DocumentForm
                     theoryDocument={modalOpen.theoryDocument}
                     onSave={handleSaveDocumentAndTheory}
