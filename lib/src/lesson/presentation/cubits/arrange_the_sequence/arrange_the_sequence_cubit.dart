@@ -96,4 +96,95 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     }
     return true;
   }
+
+  ExerciseResultEntity toExerciseResult() {
+    final question = state.question;
+    final dragDropAnswer = state.currentItems.map(_arrangeNormalizeOption).toList();
+
+    return ExerciseResultEntity(
+      exerciseId: question.id.toString(),
+      type: question.type,
+      form: question.form,
+      dragDropAnswer: dragDropAnswer,
+    );
+  }
+
+  void applyExerciseResult(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.id == 0) return;
+
+    List<OptionEntity> items = [];
+    if (result.dragDropAnswer.isEmpty) {
+      items = List<OptionEntity>.from(question.options);
+    } else {
+      final usedIndices = <int>{};
+      for (final answer in result.dragDropAnswer) {
+        final index = _arrangeFindOptionIndex(question.options, answer, usedIndices);
+        if (index >= 0) {
+          items.add(question.options[index]);
+          usedIndices.add(index);
+        } else {
+          items.add(_arrangeNormalizeOption(answer));
+        }
+      }
+    }
+
+    final isCorrect = _arrangeIsCorrect(question, items);
+
+    emit(
+      state.copyWith(
+        currentItems: items,
+        hasChecked: true,
+        isCorrect: isCorrect,
+        showExplanation: false,
+      ),
+    );
+  }
+}
+
+OptionEntity _arrangeNormalizeOption(OptionEntity option) {
+  final label = option.labelText;
+  return option.withFallbackLabel(label);
+}
+
+int _arrangeFindOptionIndex(List<OptionEntity> options, OptionEntity answer, Set<int> usedIndices) {
+  if (answer.id != 0) {
+    for (int i = 0; i < options.length; i++) {
+      if (usedIndices.contains(i)) continue;
+      if (options[i].id == answer.id) return i;
+    }
+  }
+
+  final answerText = answer.labelText;
+  if (answerText.isNotEmpty) {
+    for (int i = 0; i < options.length; i++) {
+      if (usedIndices.contains(i)) continue;
+      if (options[i].labelText == answerText) return i;
+    }
+  }
+
+  return -1;
+}
+
+String _arrangeAnswerLabel(QuestionEntity question, AnswerEntity answer) {
+  if (answer.correctAnswer.text.isNotEmpty) return answer.correctAnswer.text;
+
+  final match = question.options.firstWhere(
+    (option) => option.id == answer.id,
+    orElse: () => const OptionEntity(),
+  );
+
+  final matchText = match.labelText;
+  return matchText;
+}
+
+bool _arrangeIsCorrect(QuestionEntity question, List<OptionEntity> currentItems) {
+  final currentLabels = currentItems.map((option) => option.labelText).toList();
+  final correctLabels = question.answer.map((answer) => _arrangeAnswerLabel(question, answer)).toList();
+
+  if (currentLabels.length != correctLabels.length) return false;
+  for (int i = 0; i < correctLabels.length; i++) {
+    if (currentLabels[i] != correctLabels[i]) return false;
+  }
+  return true;
 }

@@ -49,10 +49,14 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
         return content;
       }
 
-      final updatedResult = content.exercise.result.copyWith(
-        recordAnswer: content.exercise.result.recordAnswer.copyWith(
-          record: recordPath ?? content.exercise.result.recordAnswer.record,
-          review: textAnswer ?? content.exercise.result.recordAnswer.review,
+      final currentResult = content.exercise.result;
+      final updatedResult = currentResult.copyWith(
+        exerciseId: currentResult.exerciseId.isNotEmpty ? currentResult.exerciseId : content.exercise.id.toString(),
+        type: content.exercise.type,
+        form: content.exercise.form,
+        recordAnswer: AnswerEntity(
+          record: recordPath ?? currentResult.recordAnswer.record,
+          review: textAnswer ?? currentResult.recordAnswer.review,
         ),
       );
 

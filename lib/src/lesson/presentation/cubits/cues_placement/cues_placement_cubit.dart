@@ -101,4 +101,61 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
   void reset() {
     emit(CuesPlacementState.initial());
   }
+
+  ExerciseResultEntity toExerciseResult() {
+    final question = state.question;
+    final entries = state.placedMarks.entries.toList()..sort((a, b) => a.key.compareTo(b.key));
+
+    final dragDropAnswer = entries
+        .map(
+          (entry) => OptionEntity(
+            id: entry.value,
+            text: BaseMultiLanguage(en: entry.key.toString(), vi: entry.key.toString(), zh: entry.key.toString()),
+            value: BaseMultiLanguage(en: entry.key.toString(), vi: entry.key.toString(), zh: entry.key.toString()),
+          ),
+        )
+        .toList();
+
+    return ExerciseResultEntity(
+      exerciseId: question.id.toString(),
+      type: question.type,
+      form: question.form,
+      dragDropAnswer: dragDropAnswer,
+    );
+  }
+
+  void applyExerciseResult(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.id == 0) return;
+
+    final placedMarks = <int, int>{};
+    for (final answer in result.dragDropAnswer) {
+      final indexText = answer.labelText;
+      final wordIndex = int.tryParse(indexText);
+      if (wordIndex == null || wordIndex < 0) continue;
+      placedMarks[wordIndex] = answer.id;
+    }
+
+    final isCorrect = _cuesPlacementIsCorrect(question, placedMarks);
+
+    emit(
+      state.copyWith(
+        placedMarks: placedMarks,
+        hasChecked: true,
+        isCorrect: isCorrect,
+        showExplanation: false,
+      ),
+    );
+  }
+}
+
+bool _cuesPlacementIsCorrect(QuestionEntity question, Map<int, int> placedMarks) {
+  final placedPositions = placedMarks.keys.toSet();
+  final correctPositions = question.answer
+      .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
+      .where((index) => index > 0)
+      .map((index) => index - 1)
+      .toSet();
+
+  return placedPositions.length == correctPositions.length && placedPositions.every((pos) => correctPositions.contains(pos));
 }

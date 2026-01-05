@@ -129,4 +129,95 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
   void reset() {
     setQuestion(state.question);
   }
+
+  ExerciseResultEntity toExerciseResult() {
+    final question = state.question;
+    int totalSlots = question.answer.length;
+    if (totalSlots == 0 && state.placedWords.isNotEmpty) {
+      totalSlots = state.placedWords.keys.reduce(math.max) + 1;
+    }
+
+    final usedIndices = <int>{};
+    final dragDropAnswer = <OptionEntity>[];
+
+    for (int i = 0; i < totalSlots; i++) {
+      final placedWord = state.placedWords[i];
+      if (placedWord == null || placedWord.isEmpty) {
+        dragDropAnswer.add(const OptionEntity());
+        continue;
+      }
+
+      final optionIndex = _dragDropFindOptionIndex(question.options, placedWord, usedIndices);
+      final sourceOption = optionIndex >= 0 ? question.options[optionIndex] : null;
+      if (optionIndex >= 0) usedIndices.add(optionIndex);
+
+      dragDropAnswer.add(_dragDropBuildOption(placedWord, sourceOption));
+    }
+
+    return ExerciseResultEntity(
+      exerciseId: question.id.toString(),
+      type: question.type,
+      form: question.form,
+      dragDropAnswer: dragDropAnswer,
+    );
+  }
+
+  void applyExerciseResult(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.id == 0) return;
+
+    final placedWords = <int, String>{};
+    final availableWords = question.options.map((option) => option.labelText).where((text) => text.isNotEmpty).toList();
+
+    for (int i = 0; i < result.dragDropAnswer.length; i++) {
+      final answer = result.dragDropAnswer[i];
+      final label = answer.labelText;
+      if (label.isEmpty) continue;
+
+      placedWords[i] = label;
+      final removeIndex = availableWords.indexOf(label);
+      if (removeIndex != -1) {
+        availableWords.removeAt(removeIndex);
+      }
+    }
+
+    final isCorrect = _dragDropIsCorrect(question, placedWords);
+
+    emit(
+      state.copyWith(
+        placedWords: placedWords,
+        availableWords: availableWords,
+        hasChecked: true,
+        isCorrect: isCorrect,
+        showExplanation: false,
+      ),
+    );
+  }
+}
+
+int _dragDropFindOptionIndex(List<OptionEntity> options, String word, Set<int> usedIndices) {
+  for (int i = 0; i < options.length; i++) {
+    if (usedIndices.contains(i)) continue;
+    final optionText = options[i].labelText;
+    if (optionText == word) return i;
+  }
+  return -1;
+}
+
+OptionEntity _dragDropBuildOption(String word, OptionEntity? sourceOption) {
+  final fallbackOption = sourceOption ?? const OptionEntity();
+  return fallbackOption.withFallbackLabel(word);
+}
+
+bool _dragDropIsCorrect(QuestionEntity question, Map<int, String> placedWords) {
+  bool allCorrect = true;
+  for (int i = 0; i < question.answer.length; i++) {
+    final correctAnswer = question.answer[i].correctAnswer.text;
+    final placedAnswer = placedWords[i];
+    if (placedAnswer == null || placedAnswer != correctAnswer) {
+      allCorrect = false;
+      break;
+    }
+  }
+  return allCorrect;
 }

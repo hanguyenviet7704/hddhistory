@@ -314,4 +314,36 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     await _streamSubscription?.cancel();
     return super.close();
   }
+
+  ExerciseResultEntity toExerciseResult() {
+    final question = state.question;
+    final recordAnswer = AnswerEntity(
+      record: state.audioFilePath ?? '',
+      review: state.textInput,
+    );
+
+    return ExerciseResultEntity(
+      exerciseId: question.id.toString(),
+      type: question.type,
+      form: question.form,
+      recordAnswer: recordAnswer,
+    );
+  }
+
+  void applyExerciseResult(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.id == 0) return;
+
+    final record = result.recordAnswer.record;
+    final review = result.recordAnswer.review;
+    final inputMode = record.isNotEmpty ? SpeakingInputMode.recording : SpeakingInputMode.text;
+
+    emit(
+      state.copyWith(
+        inputMode: inputMode,
+        audioFilePath: record.isNotEmpty ? record : null,
+        textInput: review,
+      ),
+    );
+  }
 }

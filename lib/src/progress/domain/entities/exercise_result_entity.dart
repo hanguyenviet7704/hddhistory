@@ -13,7 +13,7 @@ abstract class ExerciseResultEntity with _$ExerciseResultEntity {
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default([]) List<OptionEntity> multipleAnswer,
     @Default(OptionEntity()) OptionEntity singleAnswer,
-    @Default([]) List<AnswerEntity> dragDropAnswer,
+    @Default([]) List<OptionEntity> dragDropAnswer,
     @Default(AnswerEntity()) AnswerEntity recordAnswer,
     DateTime? submittedAt,
   }) = _ExerciseResultEntity;

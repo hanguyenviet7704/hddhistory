@@ -13,7 +13,7 @@ abstract class ExerciseResultModel with _$ExerciseResultModel {
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default([]) List<OptionModel> multipleAnswer,
     @Default(OptionModel()) OptionModel singleAnswer,
-    @Default([]) List<AnswerModel> dragDropAnswer,
+    @Default([]) List<OptionModel> dragDropAnswer,
     @Default(AnswerModel()) AnswerModel recordAnswer,
     DateTime? submittedAt,
   }) = _ExerciseResultModel;
