@@ -1,5 +1,6 @@
 import {
   GetRevenueListQuery,
+  PurchaseHistory,
   PurchaseListQuery,
   RevenueStatisticsResponse,
   UpdatePurchasePayload,
@@ -29,6 +30,11 @@ export const purchaseService = {
 
   async getWebhooksByPurchaseId(id: string) {
     const res = await axiosClient.get(`/payment/purchases/${id}/webhooks`);
+    return res.data;
+  },
+
+  async getHistory(id: string): Promise<PurchaseHistory[]> {
+    const res = await axiosClient.get(`/payment/purchases/${id}/history`);
     return res.data;
   },
 

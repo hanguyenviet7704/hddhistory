@@ -42,3 +42,9 @@ export enum PaymentEnvironment {
   PRODUCTION = "production",
   SANDBOX = "sandbox",
 }
+
+export enum PurchaseHistorySource {
+  VERIFY = "verify",
+  WEBHOOK = "webhook",
+  MANUAL = "manual",
+}

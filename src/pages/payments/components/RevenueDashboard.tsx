@@ -14,9 +14,9 @@ import { purchaseService } from "../../../services/payments/purchaseService";
 import {
   GetRevenueListQuery,
   IPurchase,
+  PurchaseHistory,
   RevenueStatisticsResponse,
 } from "../../../types/interface/payments/purchase.interface";
-import { IWebhookEvent } from "../../../types/interface/payments/webhook-event.interface";
 import {
   IProduct,
   ProductListQuery,
@@ -34,6 +34,7 @@ import {
   platformLabels,
   priceLabel,
   purchaseStatusLabel,
+  purchaseStatusTone,
   eventTypeLabel,
   eventTypeTone,
 } from "../paymentShared";
@@ -41,7 +42,7 @@ import { productService } from "../../../services/payments/productService";
 
 type PurchaseRecord = IPurchase & { _id?: string };
 type ProductRecord = IProduct & { _id?: string };
-type WebhookRecord = IWebhookEvent & { _id?: string };
+type PurchaseHistoryRecord = PurchaseHistory[];
 
 const getPurchaseId = (purchase: PurchaseRecord) =>
   purchase.id || purchase._id || "";
@@ -55,7 +56,7 @@ const normalizeEntries = (payload: any): PurchaseRecord[] => {
   return [];
 };
 
-const normalizeWebhooks = (payload: any): WebhookRecord[] => {
+const normalizeHistory = (payload: any): PurchaseHistory[] => {
   if (!payload) return [];
   if (Array.isArray(payload)) return payload;
   if (Array.isArray(payload.items)) return payload.items;
@@ -111,9 +112,9 @@ const RevenueDashboard: React.FC = () => {
   const [products, setProducts] = useState<ProductRecord[]>([]);
   const [selectedPurchase, setSelectedPurchase] =
     useState<PurchaseRecord | null>(null);
-  const [webhooks, setWebhooks] = useState<WebhookRecord[]>([]);
-  const [webhookLoading, setWebhookLoading] = useState(false);
-  const [webhookError, setWebhookError] = useState<string | null>(null);
+  const [history, setHistory] = useState<PurchaseHistoryRecord>([]);
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
@@ -205,35 +206,35 @@ const RevenueDashboard: React.FC = () => {
     fetchProducts();
   }, [fetchProducts]);
 
-  const handleOpenWebhooks = useCallback(async (purchase: PurchaseRecord) => {
+  const handleOpenHistory = useCallback(async (purchase: PurchaseRecord) => {
     const purchaseId = getPurchaseId(purchase);
     setSelectedPurchase(purchase);
-    setWebhookLoading(true);
-    setWebhookError(null);
-    setWebhooks([]);
+    setHistoryLoading(true);
+    setHistoryError(null);
+    setHistory([]);
     if (!purchaseId) {
-      setWebhookError("Không tìm thấy id purchase để tra webhook");
-      setWebhookLoading(false);
+      setHistoryError("Không tìm thấy id purchase để tra lịch sử");
+      setHistoryLoading(false);
       return;
     }
     try {
-      const res = await purchaseService.getWebhooksByPurchaseId(purchaseId);
-      setWebhooks(normalizeWebhooks(res));
+      const res = await purchaseService.getHistory(purchaseId);
+      setHistory(normalizeHistory(res));
     } catch (err: any) {
-      console.error("Fetch webhooks failed", err);
-      setWebhookError(
-        err?.response?.data?.message || "Không thể tải danh sách webhook"
+      console.error("Fetch purchase history failed", err);
+      setHistoryError(
+        err?.response?.data?.message || "Không thể tải lịch sử purchase"
       );
     } finally {
-      setWebhookLoading(false);
+      setHistoryLoading(false);
     }
   }, []);
 
-  const handleCloseWebhooks = useCallback(() => {
+  const handleCloseHistory = useCallback(() => {
     setSelectedPurchase(null);
-    setWebhooks([]);
-    setWebhookError(null);
-    setWebhookLoading(false);
+    setHistory([]);
+    setHistoryError(null);
+    setHistoryLoading(false);
   }, []);
 
   const handleOpenEdit = (purchase: PurchaseRecord) => {
@@ -477,7 +478,7 @@ const RevenueDashboard: React.FC = () => {
                   Thời gian
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                  Webhook
+                  Lịch sử
                 </th>
                 <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
                   Actions
@@ -572,11 +573,11 @@ const RevenueDashboard: React.FC = () => {
                       </td>
                       <td className="px-4 py-3">
                         <button
-                          onClick={() => handleOpenWebhooks(entry)}
+                          onClick={() => handleOpenHistory(entry)}
                           disabled={!purchaseId}
                           className="inline-flex items-center gap-2 px-3 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 transition disabled:opacity-60"
                           title={
-                            purchaseId ? "Xem webhook" : "Không có purchaseId"
+                            purchaseId ? "Xem lịch sử" : "Không có purchaseId"
                           }
                         >
                           <EyeIcon className="h-5 w-5" />
@@ -627,7 +628,7 @@ const RevenueDashboard: React.FC = () => {
             <div className="flex items-start justify-between p-4 border-b border-slate-100">
               <div>
                 <p className="text-sm font-semibold text-slate-900">
-                  Webhook liên quan
+                  Lịch sử purchase
                 </p>
                 <p className="text-xs text-slate-500 mt-1">
                   Purchase: {getPurchaseId(selectedPurchase) || "-"} · Product:{" "}
@@ -635,7 +636,7 @@ const RevenueDashboard: React.FC = () => {
                 </p>
               </div>
               <button
-                onClick={handleCloseWebhooks}
+                onClick={handleCloseHistory}
                 className="p-2 rounded-full hover:bg-slate-100 text-slate-500"
               >
                 <XMarkIcon className="h-5 w-5" />
@@ -646,26 +647,26 @@ const RevenueDashboard: React.FC = () => {
               <div className="rounded-2xl border border-slate-100">
                 <div className="flex items-center justify-between p-3 border-b border-slate-100">
                   <p className="text-sm font-semibold text-slate-900">
-                    Danh sách webhook
+                    Danh sách lịch sử
                   </p>
-                  {webhookLoading && (
+                  {historyLoading && (
                     <div className="flex items-center gap-2 text-xs text-slate-500">
                       <span className="h-4 w-4 border-2 border-teal-500 border-t-transparent rounded-full animate-spin" />
                       Đang tải
                     </div>
                   )}
                 </div>
-                {webhookError ? (
+                {historyError ? (
                   <div className="p-4 text-sm text-red-700 bg-red-50 border border-red-200">
-                    {webhookError}
+                    {historyError}
                   </div>
-                ) : webhookLoading ? (
+                ) : historyLoading ? (
                   <div className="p-6 text-center text-sm text-slate-500">
-                    Đang tải danh sách webhook...
+                    Đang tải lịch sử purchase...
                   </div>
-                ) : webhooks.length === 0 ? (
+                ) : history.length === 0 ? (
                   <div className="p-6 text-center text-sm text-slate-500">
-                    Chưa có webhook cho purchase này.
+                    Chưa có lịch sử cho purchase này.
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -673,71 +674,40 @@ const RevenueDashboard: React.FC = () => {
                       <thead className="bg-slate-50">
                         <tr>
                           <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                            Event
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                            Platform
-                          </th>
-                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
                             Trạng thái
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                            Thời gian xử lý
+                            Nguồn
                           </th>
                           <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
-                            Lỗi
+                            Thời gian
                           </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
-                        {webhooks.map((webhook, index) => {
-                          const PlatformIcon = platformIcons[webhook.platform];
-                          const platformTone =
-                            platformIconTone[webhook.platform];
-                          const statusTone = webhook.processed
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                            : "bg-slate-100 text-slate-700 border-slate-200";
+                        {history.map((item, index) => {
+                          const statusTone =
+                            purchaseStatusTone[item.status] ||
+                            "bg-slate-100 text-slate-700 border-slate-200";
+                          const statusLabel =
+                            purchaseStatusLabel[item.status] || item.status;
                           return (
                             <tr
-                              key={
-                                webhook.id ||
-                                webhook._id ||
-                                `${webhook.purchaseId}-${index}`
-                              }
+                              key={`${item.at}-${item.status}-${index}`}
                               className="hover:bg-slate-50/70"
                             >
-                              <td className="px-4 py-3">
-                                <div className="space-y-1">
-                                  <p className="text-sm font-semibold text-slate-900">
-                                    {webhook.eventType || "-"}
-                                  </p>
-                                  <p className="text-[11px] text-slate-500">
-                                    {webhook.environment}
-                                  </p>
-                                </div>
-                              </td>
-                              <td className="px-4 py-3">
-                                <span className="inline-flex items-center gap-2 px-2.5 py-1 rounded-full bg-slate-100 text-xs font-medium text-slate-700">
-                                  <PlatformIcon
-                                    className={`h-4 w-4 ${platformTone}`}
-                                  />
-                                  {platformLabels[webhook.platform]}
-                                </span>
-                              </td>
                               <td className="px-4 py-3">
                                 <span
                                   className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-xs font-medium border ${statusTone}`}
                                 >
-                                  {webhook.processed
-                                    ? "Đã xử lý"
-                                    : "Chưa xử lý"}
+                                  {statusLabel}
                                 </span>
                               </td>
-                              <td className="px-4 py-3 text-sm text-slate-700">
-                                {formatDateTime(webhook.processedAt)}
+                              <td className="px-4 py-3 text-sm text-slate-700 uppercase">
+                                {item.source || "-"}
                               </td>
-                              <td className="px-4 py-3 text-sm text-red-600">
-                                {webhook.error || "-"}
+                              <td className="px-4 py-3 text-sm text-slate-700">
+                                {formatDateTime(item.at)}
                               </td>
                             </tr>
                           );
