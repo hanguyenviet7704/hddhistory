@@ -37,8 +37,37 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   bool _isSeeking = false;
   Duration? _duration;
   static const int _maxRetries = 3;
-  bool get _isLocalSource => (widget.filePath ?? '').isNotEmpty;
-  bool get _hasRemoteSource => (widget.audioUrl ?? '').isNotEmpty;
+
+  String? get _effectiveFilePath {
+    final rawPath = widget.filePath?.trim();
+    if (rawPath == null || rawPath.isEmpty) return null;
+    final uri = Uri.tryParse(rawPath);
+    if (uri == null) return rawPath;
+    if (uri.scheme == 'file') {
+      return uri.toFilePath();
+    }
+    if (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'content') {
+      return null;
+    }
+    return rawPath;
+  }
+
+  String? get _effectiveUrl {
+    final rawUrl = widget.audioUrl?.trim();
+    if (rawUrl != null && rawUrl.isNotEmpty) {
+      return rawUrl;
+    }
+    final rawPath = widget.filePath?.trim();
+    if (rawPath == null || rawPath.isEmpty) return null;
+    final uri = Uri.tryParse(rawPath);
+    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'content')) {
+      return uri.toString();
+    }
+    return null;
+  }
+
+  bool get _isLocalSource => _effectiveFilePath != null;
+  bool get _hasRemoteSource => _effectiveUrl != null;
 
   // Stream subscriptions for proper disposal
   StreamSubscription? _playerStateSubscription;
@@ -117,13 +146,14 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       });
 
       if (_isLocalSource) {
-        final file = File(widget.filePath!);
+        final filePath = _effectiveFilePath!;
+        final file = File(filePath);
         if (!await file.exists()) {
           throw const _LocalAudioException('Audio file not found');
         }
-        await _audioPlayer.setFilePath(widget.filePath!);
+        await _audioPlayer.setFilePath(filePath);
       } else {
-        await _audioPlayer.setUrl(widget.audioUrl!);
+        await _audioPlayer.setUrl(_effectiveUrl!);
       }
 
       if (mounted) {
@@ -173,11 +203,30 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   @override
   void didUpdateWidget(covariant AudioPlayerWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    final previousSource = oldWidget.filePath ?? oldWidget.audioUrl;
-    final currentSource = widget.filePath ?? widget.audioUrl;
+    final previousSource = _normalizeSource(oldWidget);
+    final currentSource = _normalizeSource(widget);
     if (previousSource != currentSource) {
       _initializePlayer();
     }
+  }
+
+  String? _normalizeSource(AudioPlayerWidget widget) {
+    final rawUrl = widget.audioUrl?.trim();
+    if (rawUrl != null && rawUrl.isNotEmpty) {
+      return rawUrl;
+    }
+    final rawPath = widget.filePath?.trim();
+    if (rawPath == null || rawPath.isEmpty) return null;
+    final uri = Uri.tryParse(rawPath);
+    if (uri != null) {
+      if (uri.scheme == 'file') {
+        return uri.toFilePath();
+      }
+      if (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'content') {
+        return uri.toString();
+      }
+    }
+    return rawPath;
   }
 
   String _formatDuration(Duration duration) {
