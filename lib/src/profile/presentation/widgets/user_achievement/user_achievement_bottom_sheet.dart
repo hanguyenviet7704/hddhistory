@@ -5,18 +5,15 @@ class UserAchievementBottomSheet extends StatefulWidget {
     super.key,
     required this.courseId,
     this.initialLevel,
-    this.onGoToCourse,
   });
 
   final String courseId;
   final CourseLevel? initialLevel;
-  final VoidCallback? onGoToCourse;
 
   static Future<void> show(
     BuildContext context, {
     required String courseId,
     CourseLevel? initialLevel,
-    VoidCallback? onGoToCourse,
   }) {
     return showModalBottomSheet(
       context: context,
@@ -28,11 +25,12 @@ class UserAchievementBottomSheet extends StatefulWidget {
       builder: (context) => MultiBlocProvider(
         providers: [
           BlocProvider.value(value: AppDI.injector.get<AchievenmentProgressCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
         ],
         child: UserAchievementBottomSheet(
           courseId: courseId,
           initialLevel: initialLevel,
-          onGoToCourse: onGoToCourse,
         ),
       ),
     );
@@ -76,6 +74,13 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
     });
   }
 
+  void _onGoToCourse(BuildContext context) {
+    context.back();
+    AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
+    CourseRoadmapRoute().go(context);
+    AppDI.injector.get<PageCubit>().setCurrentIndex(1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final double bottomInset = MediaQuery.viewPaddingOf(context).bottom;
@@ -91,7 +96,7 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
         final Widget content = _UserAchievementSheetContent(
           courses: courses,
           controller: _pageController,
-          onGoToCourse: widget.onGoToCourse,
+          onGoToCourse: () => _onGoToCourse(context),
         );
 
         return Container(
@@ -144,15 +149,17 @@ class _UserAchievementSheetHeader extends StatelessWidget {
 }
 
 class _UserAchievementSheetContent extends StatelessWidget {
+  final List<CourseLevelProgressEntity> courses;
+  final PageController controller;
+  final VoidCallback onGoToCourse;
+
   const _UserAchievementSheetContent({
     required this.courses,
     required this.controller,
     required this.onGoToCourse,
   });
 
-  final List<CourseLevelProgressEntity> courses;
-  final PageController controller;
-  final VoidCallback? onGoToCourse;
+  
 
   @override
   Widget build(BuildContext context) {
