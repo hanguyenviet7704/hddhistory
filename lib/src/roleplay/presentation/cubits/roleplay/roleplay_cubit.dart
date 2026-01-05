@@ -50,8 +50,10 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
       }
 
       final updatedResult = content.exercise.result.copyWith(
-        textAnswer: (textAnswer != null && textAnswer.isNotEmpty) ? textAnswer : content.exercise.result.textAnswer,
-        recordPath: (recordPath != null && recordPath.isNotEmpty) ? recordPath : content.exercise.result.recordPath,
+        recordAnswer: content.exercise.result.recordAnswer.copyWith(
+          record: recordPath ?? content.exercise.result.recordAnswer.record,
+          review: textAnswer ?? content.exercise.result.recordAnswer.review,
+        ),
       );
 
       return content.copyWith(

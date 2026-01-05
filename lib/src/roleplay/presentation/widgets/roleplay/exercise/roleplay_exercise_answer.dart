@@ -62,8 +62,8 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
         return null;
       },
     );
-    final String recordText = roleplayExercise?.result.textAnswer ?? '';
-    final String recordAudio = roleplayExercise?.result.recordPath ?? '';
+    final String recordText = roleplayExercise?.result.recordAnswer.review ?? '';
+    final String recordAudio = roleplayExercise?.result.recordAnswer.record ?? '';
 
     return Container(
       width: double.infinity,
