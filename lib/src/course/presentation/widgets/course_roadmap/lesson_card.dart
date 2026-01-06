@@ -56,7 +56,9 @@ class LessonCard extends StatelessWidget {
 
     switch (lesson.type) {
       case LessonType.lesson:
-        context.read<ProgressCubit>().loadUserProgressLesson(lessonId: lessonRolePlay.id);
+        if(lessonRolePlay.id.isNotEmpty) {
+          context.read<ProgressCubit>().loadUserProgressLesson(lessonId: lessonRolePlay.id);
+        }
         context.read<CourseLessonCubit>()
           ..reset()
           ..loadLesson(lesson.id);
