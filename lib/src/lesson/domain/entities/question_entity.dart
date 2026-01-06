@@ -23,7 +23,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default(0) int mainQuestion,
     @Default(KeypointEntity()) KeypointEntity keypoint,
 
-    @Default(QuestionResultEntity()) QuestionResultEntity result,
+    @Default(ExerciseResultEntity()) ExerciseResultEntity result,
   }) = _QuestionEntity;
 
   factory QuestionEntity.fromJson(Map<String, dynamic> json) => _$QuestionEntityFromJson(json);
@@ -44,16 +44,6 @@ enum QuestionTypeEnum {
   stressPlacement,
   @JsonValue('speaking')
   speaking,
-}
-
-@freezed
-abstract class QuestionResultEntity with _$QuestionResultEntity {
-  const factory QuestionResultEntity({
-    @Default('') String recordPath,
-    @Default('') String textAnswer,
-  }) = _QuestionResultEntity;
-
-  factory QuestionResultEntity.fromJson(Map<String, dynamic> json) => _$QuestionResultEntityFromJson(json);
 }
 
 extension QuestionEntityExtension on QuestionEntity {

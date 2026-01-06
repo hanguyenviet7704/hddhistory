@@ -41,6 +41,15 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     selectCourseIndex(courseIndex);
   }
 
+  void selectCourseFromCourseId(String courseId) {
+    SkillsetEntity skillset = state.skillsets.firstWhere((s) => s.courses.any((c) => c.id == courseId));
+    if (skillset.id.isEmpty) return;
+    selectSkillset(skillset);
+    int courseIndex = skillset.courses.indexWhere((c) => c.id == courseId);
+    if (courseIndex == -1) return;
+    selectCourseIndex(courseIndex);
+  }
+
   Future<void> loadAllSkillsets({
     bool isInit = false,
   }) async {

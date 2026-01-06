@@ -18,7 +18,7 @@ class CourseRoadmapContent extends StatelessWidget {
               itemCount: roadmap.levels.length,
               itemBuilder: (context, index) {
                 return CourseLevelContent(
-                  level: roadmap.levels[index],
+                  roadmapLevel: roadmap.levels[index],
                   usingAppProgressLessons: roadmap.usingAppProgressLessons(index),
                 );
               },

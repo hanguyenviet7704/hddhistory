@@ -150,6 +150,16 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
         _handleRecordingError('Recording file could not be saved');
         return false;
       }
+      final recordedFile = File(resolvedPath);
+      if (!await recordedFile.exists()) {
+        _handleRecordingError('Recording file not found');
+        return false;
+      }
+      final fileLength = await recordedFile.length();
+      if (fileLength == 0) {
+        _handleRecordingError('Recording file is empty');
+        return false;
+      }
       if (mounted) {
         _cubit.finishRecordingSession(resolvedPath);
       }

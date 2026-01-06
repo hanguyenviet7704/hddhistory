@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:percent_indicator/percent_indicator.dart';
 //* Single project import
 import 'package:meup/meup.dart';
 import 'package:retrofit/retrofit.dart';
@@ -33,13 +34,19 @@ part 'presentation/cubits/profile/profile_state.dart';
 part 'presentation/cubits/upload/upload_cubit.dart';
 part 'presentation/cubits/upload/upload_state.dart';
 //* Presentation Layer - Pages
+part 'presentation/pages/profile_info_page.dart';
 part 'presentation/pages/profile_page.dart';
 //* Presentation Layer - Widgets
-part 'presentation/widgets/profile_header.dart';
-part 'presentation/widgets/profile_field.dart';
-part 'presentation/widgets/profile_delete_button.dart';
-part 'presentation/widgets/profile_delete_dialog.dart';
-
+part 'presentation/widgets/profile/profile_delete_button.dart';
+part 'presentation/widgets/profile/profile_delete_dialog.dart';
+part 'presentation/widgets/profile/profile_field.dart';
+part 'presentation/widgets/profile/profile_header.dart';
+part 'presentation/widgets/user_achievement/user_achievement_bottom_sheet.dart';
+part 'presentation/widgets/user_achievement/user_achievement_card.dart';
+part 'presentation/widgets/user_achievement/user_achievement_course_item.dart';
+part 'presentation/widgets/user_achievement/user_achievement_detail_card.dart';
+part 'presentation/widgets/user_achievement/user_achievement_list.dart';
+part 'presentation/widgets/user_achievement/user_achievement_progress_bar.dart';
 //* Parts for generated files
 part 'profile.freezed.dart';
 part 'profile.g.dart';

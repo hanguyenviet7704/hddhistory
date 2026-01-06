@@ -40,7 +40,11 @@ class RoleplayExerciseOverlayInteractive extends StatefulWidget {
 }
 
 class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOverlayInteractive> with SingleTickerProviderStateMixin {
+  static const double _dragThreshold = 18;
+  static const double _velocityThreshold = 500;
+
   bool _isExpanded = false;
+  double _dragDistance = 0;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
@@ -59,8 +63,43 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   }
 
   void _expand() {
-    if (_isExpanded) return;
-    setState(() => _isExpanded = true);
+    _setExpanded(true);
+  }
+
+  void _collapse() {
+    _setExpanded(false);
+  }
+
+  void _setExpanded(bool value) {
+    if (_isExpanded == value) return;
+    setState(() => _isExpanded = value);
+  }
+
+  void _handleDragStart(DragStartDetails details) {
+    _dragDistance = 0;
+  }
+
+  void _handleDragUpdate(DragUpdateDetails details) {
+    _dragDistance += details.delta.dy;
+    if (_dragDistance <= -_dragThreshold) {
+      _expand();
+      _dragDistance = 0;
+      return;
+    }
+    if (_dragDistance >= _dragThreshold) {
+      _collapse();
+      _dragDistance = 0;
+    }
+  }
+
+  void _handleDragEnd(DragEndDetails details) {
+    final double velocity = details.primaryVelocity ?? 0;
+    if (velocity <= -_velocityThreshold) {
+      _expand();
+    } else if (velocity >= _velocityThreshold) {
+      _collapse();
+    }
+    _dragDistance = 0;
   }
 
   @override
@@ -71,28 +110,32 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
 
   @override
   Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: _fadeAnimation,
-      child: SlideTransition(
-        position: _slideAnimation,
-        child: MultiBlocProvider(
-          providers: [
-            BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-            BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
-            BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
-            BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
-            BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
-            BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
-            BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
-            BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
-            // BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
-            // BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
-          ],
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
+        // BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+        // BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+      ],
+      child: FadeTransition(
+        opacity: _fadeAnimation,
+        child: SlideTransition(
+          position: _slideAnimation,
           child: RoleplayExerciseOverlay(
             exercise: widget.exercise,
             isExpanded: _isExpanded,
             onTapToAnswer: _expand,
             onCheckPressed: widget.onCheckPressed,
+            onTapOutside: _collapse,
+            onDragStart: _handleDragStart,
+            onDragUpdate: _handleDragUpdate,
+            onDragEnd: _handleDragEnd,
           ),
         ),
       ),
@@ -105,6 +148,10 @@ class RoleplayExerciseOverlay extends StatelessWidget {
   final bool isExpanded;
   final VoidCallback? onTapToAnswer;
   final VoidCallback? onCheckPressed;
+  final VoidCallback? onTapOutside;
+  final GestureDragStartCallback? onDragStart;
+  final GestureDragUpdateCallback? onDragUpdate;
+  final GestureDragEndCallback? onDragEnd;
 
   const RoleplayExerciseOverlay({
     super.key,
@@ -112,91 +159,122 @@ class RoleplayExerciseOverlay extends StatelessWidget {
     this.isExpanded = false,
     this.onTapToAnswer,
     this.onCheckPressed,
+    this.onTapOutside,
+    this.onDragStart,
+    this.onDragUpdate,
+    this.onDragEnd,
   });
 
   @override
   Widget build(BuildContext context) {
     final EdgeInsets viewPadding = MediaQuery.paddingOf(context);
+    final double maxOverlayHeight = MediaQuery.sizeOf(context).height * 0.75;
+    final double maxBodyHeight = (maxOverlayHeight - _dragHandleHeight() - viewPadding.bottom).clamp(0.0, maxOverlayHeight);
+    final Widget collapsedBody = _CollapsedExerciseBody(
+      questionText: exercise.questionText,
+      onTapToAnswer: onTapToAnswer,
+    );
+    final Widget expandedBody = ConstrainedBox(
+      constraints: BoxConstraints(maxHeight: maxBodyHeight),
+      child: _ExpandedExerciseBody(
+        exercise: exercise,
+        onCheckPressed: onCheckPressed,
+      ),
+    );
 
-    return Align(
-      alignment: Alignment.bottomCenter,
-      child: Container(
-        margin: EdgeInsets.only(bottom: viewPadding.bottom > 0 ? viewPadding.bottom / 4 : 8.h),
-        decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.circular(20.r),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.op(0.08),
-              offset: const Offset(0, -4),
-              blurRadius: 8,
+    return Stack(
+      children: [
+        if (isExpanded)
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onTap: onTapOutside,
+              child: const SizedBox.expand(),
             ),
-          ],
-        ),
-        child: SafeArea(
-          top: false,
-          // minimum: EdgeInsets.only(bottom: viewPadding.bottom > 0 ? viewPadding.bottom / 2 : 12.h),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _DragHandle(),
-              AnimatedSwitcher(
-                duration: const Duration(milliseconds: 220),
-                switchInCurve: Curves.easeOutCubic,
-                switchOutCurve: Curves.easeInCubic,
-                transitionBuilder: (child, animation) {
-                  final curved = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
-                  final fade = Tween<double>(begin: 0, end: 1).animate(curved);
-                  final slide = Tween<Offset>(begin: const Offset(0, 0.06), end: Offset.zero).animate(curved);
-                  return SizeTransition(
-                    sizeFactor: curved,
-                    axisAlignment: -1,
-                    child: FadeTransition(
-                      opacity: fade,
-                      child: SlideTransition(position: slide, child: child),
-                    ),
-                  );
-                },
-                child: isExpanded
-                    ? KeyedSubtree(
-                        key: const ValueKey('expanded'),
-                        child: _ExpandedExerciseBody(
-                          exercise: exercise,
-                          onCheckPressed: onCheckPressed,
-                        ),
-                      )
-                    : KeyedSubtree(
-                        key: const ValueKey('collapsed'),
-                        child: _CollapsedExerciseBody(
-                          questionText: exercise.questionText,
-                          onTapToAnswer: onTapToAnswer,
-                        ),
-                      ),
+          ),
+        Align(
+          alignment: Alignment.bottomCenter,
+          child: Container(
+            margin: EdgeInsets.only(bottom: viewPadding.bottom > 0 ? viewPadding.bottom / 4 : 8.h),
+            decoration: BoxDecoration(
+              color: AppCustomColor.backgroundWhite,
+              borderRadius: BorderRadius.circular(20.r),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.op(0.08),
+                  offset: const Offset(0, -4),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: SafeArea(
+              top: false,
+              // minimum: EdgeInsets.only(bottom: viewPadding.bottom > 0 ? viewPadding.bottom / 2 : 12.h),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _DragHandle(
+                    onDragStart: onDragStart,
+                    onDragUpdate: onDragUpdate,
+                    onDragEnd: onDragEnd,
+                  ),
+                  AnimatedCrossFade(
+                    duration: const Duration(milliseconds: 240),
+                    firstCurve: Curves.easeOutCubic,
+                    secondCurve: Curves.easeInCubic,
+                    sizeCurve: Curves.easeOutCubic,
+                    alignment: Alignment.topCenter,
+                    crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                    firstChild: collapsedBody,
+                    secondChild: expandedBody,
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
-      ),
+      ],
     );
   }
 }
 
 class _DragHandle extends StatelessWidget {
+  final GestureDragStartCallback? onDragStart;
+  final GestureDragUpdateCallback? onDragUpdate;
+  final GestureDragEndCallback? onDragEnd;
+
+  const _DragHandle({
+    this.onDragStart,
+    this.onDragUpdate,
+    this.onDragEnd,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 12.h, 24.w, 0),
-      child: Center(
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onVerticalDragStart: onDragStart,
+      onVerticalDragUpdate: onDragUpdate,
+      onVerticalDragEnd: onDragEnd,
+      child: SizedBox(
+        height: 20.h,
+        width: double.infinity,
         child: Container(
-          width: 48.w,
-          height: 4.h,
-          decoration: BoxDecoration(
-            color: AppCustomColor.borderSecondary,
-            borderRadius: BorderRadius.circular(30.r),
+          padding: EdgeInsets.fromLTRB(20.w, 12.h, 24.w, 0),
+          alignment: Alignment.topCenter,
+          child: Container(
+            width: 48.w,
+            height: 4.h,
+            decoration: BoxDecoration(
+              color: AppCustomColor.borderSecondary,
+              borderRadius: BorderRadius.circular(30.r),
+            ),
           ),
         ),
       ),
     );
   }
 }
+
+double _dragHandleHeight() => 12.h + 4.h;

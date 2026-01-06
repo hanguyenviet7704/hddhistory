@@ -1,4 +1,4 @@
-part of '../../profile.dart';
+part of '../../../profile.dart';
 
 class ProfileFieldDisplay extends StatelessWidget {
   const ProfileFieldDisplay({super.key, required this.label, required this.value});

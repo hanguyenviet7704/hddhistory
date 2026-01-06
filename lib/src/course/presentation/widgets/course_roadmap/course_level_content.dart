@@ -1,11 +1,11 @@
 part of '../../../course.dart';
 
 class CourseLevelContent extends StatelessWidget {
-  final RoadmapLevelEntity level;
+  final RoadmapLevelEntity roadmapLevel;
   final bool usingAppProgressLessons;
   const CourseLevelContent({
     super.key,
-    required this.level,
+    required this.roadmapLevel,
     this.usingAppProgressLessons = false,
   });
 
@@ -13,9 +13,12 @@ class CourseLevelContent extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CourseRoadmapHeaderCard(level: level),
+        CourseRoadmapHeaderCard(roadmapLevel: roadmapLevel),
         20.verticalSpace,
-        CourseRoadmapTimeline(lessons: level.appProgressLessons(usingAppProgressLessons)),
+        CourseRoadmapTimeline(
+          lessons: roadmapLevel.appProgressLessons(usingAppProgressLessons),
+          courseLevel: roadmapLevel.level,
+        ),
       ],
     );
   }

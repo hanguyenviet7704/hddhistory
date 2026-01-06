@@ -4,12 +4,14 @@ class LessonCard extends StatelessWidget {
   final LessonEntity lesson;
   final LessonEntity lessonRolePlay;
   final bool premiumLesson;
+  final CourseLevel courseLevel;
 
   const LessonCard({
     super.key,
     required this.lesson,
     required this.lessonRolePlay,
     required this.premiumLesson,
+    required this.courseLevel,
   });
 
   Color get _backgroundColor {
@@ -54,11 +56,16 @@ class LessonCard extends StatelessWidget {
 
     switch (lesson.type) {
       case LessonType.lesson:
-        context.read<ProgressCubit>().loadUserProgressLesson(lessonId: lessonRolePlay.id);
+        if(lessonRolePlay.id.isNotEmpty) {
+          context.read<ProgressCubit>().loadUserProgressLesson(lessonId: lessonRolePlay.id);
+        }
         context.read<CourseLessonCubit>()
           ..reset()
           ..loadLesson(lesson.id);
         LessonListRoute().go(context);
+        context.read<CourseRoadmapCubit>()
+          ..setCurrentCourseLevel(courseLevel)
+          ..setCurrentLesson(lesson);
         break;
 
       case LessonType.roleplay:

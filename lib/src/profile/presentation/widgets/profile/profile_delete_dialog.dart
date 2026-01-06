@@ -1,4 +1,4 @@
-part of '../../profile.dart';
+part of '../../../profile.dart';
 
 class ProfileDeleteDialog {
   static Future<void> show(

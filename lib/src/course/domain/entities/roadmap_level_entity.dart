@@ -25,6 +25,7 @@ extension RoadmapLevelEntityExtension on RoadmapLevelEntity {
 
   List<LessonEntity> appProgressLessons(bool usingAppProgressLessons) {
     if (!usingAppProgressLessons) return lessonList;
+    if (lessonList.isEmpty) return [];
     LessonEntity lesson = lessonList.elementAt(0);
     if (lesson.progess == ProcessEnum.notStarted) {
       lesson = lesson.copyWith(progess: ProcessEnum.inProgress);

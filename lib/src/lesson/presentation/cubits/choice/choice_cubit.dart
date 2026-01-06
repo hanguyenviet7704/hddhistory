@@ -88,4 +88,113 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   void toggleExplanation() {
     emit(state.copyWith(showExplanation: !state.showExplanation));
   }
+
+  ExerciseResultEntity toExerciseResult() {
+    final question = state.question;
+    final isMultiple = question.type == QuestionTypeEnum.multipleChoice;
+
+    final List<OptionEntity> multipleAnswer = isMultiple
+        ? (state.selectedAnswersIndices.toList()..sort())
+            .where((index) => index >= 0 && index < question.options.length)
+            .map((index) => question.options[index])
+            .toList()
+        : const [];
+
+    final OptionEntity singleAnswer = !isMultiple && state.selectedAnswerIndex >= 0 && state.selectedAnswerIndex < question.options.length
+        ? question.options[state.selectedAnswerIndex]
+        : const OptionEntity();
+
+    return ExerciseResultEntity(
+      exerciseId: question.id.toString(),
+      type: question.type,
+      form: question.form,
+      multipleAnswer: multipleAnswer,
+      singleAnswer: singleAnswer,
+    );
+  }
+
+  void applyExerciseResult(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.id == 0) return;
+
+    if (question.type == QuestionTypeEnum.multipleChoice) {
+      final selectedIndices = <int>{};
+      final usedIndices = <int>{};
+
+      for (final answer in result.multipleAnswer) {
+        final index = _findOptionIndex(question, answer, usedIndices);
+        if (index >= 0) {
+          selectedIndices.add(index);
+          usedIndices.add(index);
+        }
+      }
+
+      final isCorrect = _isMultipleCorrect(question, selectedIndices);
+
+      emit(
+        state.copyWith(
+          selectedAnswersIndices: selectedIndices,
+          selectedAnswerIndex: -1,
+          hasChecked: true,
+          isCorrect: isCorrect,
+          showExplanation: false,
+        ),
+      );
+      return;
+    }
+
+    final selectedIndex = _findOptionIndex(question, result.singleAnswer, <int>{});
+    final isCorrect = _isSingleCorrect(question, selectedIndex);
+
+    emit(
+      state.copyWith(
+        selectedAnswerIndex: selectedIndex,
+        selectedAnswersIndices: const <int>{},
+        hasChecked: true,
+        isCorrect: isCorrect,
+        showExplanation: false,
+      ),
+    );
+  }
+}
+
+int _findOptionIndex(QuestionEntity question, OptionEntity answer, Set<int> usedIndices) {
+  if (answer.id != 0) {
+    for (int i = 0; i < question.options.length; i++) {
+      if (usedIndices.contains(i)) continue;
+      if (question.options[i].id == answer.id) return i;
+    }
+  }
+
+  final answerText = answer.labelText;
+  if (answerText.isNotEmpty) {
+    for (int i = 0; i < question.options.length; i++) {
+      if (usedIndices.contains(i)) continue;
+      final option = question.options[i];
+      final optionText = option.labelText;
+      if (optionText == answerText) return i;
+    }
+  }
+
+  return -1;
+}
+
+bool _isMultipleCorrect(QuestionEntity question, Set<int> selectedIndices) {
+  if (selectedIndices.isEmpty) return false;
+
+  final correctIndices = <int>{};
+  for (int i = 0; i < question.options.length; i++) {
+    if (question.options[i].isCorrect) correctIndices.add(i);
+  }
+
+  return correctIndices.every((index) => selectedIndices.contains(index));
+}
+
+bool _isSingleCorrect(QuestionEntity question, int selectedIndex) {
+  if (selectedIndex < 0) return false;
+
+  final correctIndex = question.options.indexWhere((option) => option.isCorrect);
+  if (correctIndex == -1) return false;
+
+  return selectedIndex == correctIndex;
 }

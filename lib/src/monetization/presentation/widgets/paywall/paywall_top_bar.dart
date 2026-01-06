@@ -10,14 +10,18 @@ class PaywallTopBar extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        SizedBox(width: 24.w),
+        SizedBox(width: 40.w),
         PremiumPill(),
-        GestureDetector(
+        InkWell(
           onTap: onClose,
-          child: Icon(
-            Icons.close,
-            color: AppCustomColor.textTertiary,
-            size: 24.w,
+          child: SizedBox(
+            width: 40.w,
+            height: 40.w,
+            child: Icon(
+              Icons.close_rounded,
+              color: AppCustomColor.textTertiary,
+              size: 24.w,
+            ),
           ),
         ),
       ],

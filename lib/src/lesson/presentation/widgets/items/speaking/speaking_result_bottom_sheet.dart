@@ -54,6 +54,7 @@ class SpeakingExplanationContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final maxHeight = MediaQuery.of(context).size.height * 0.75;
+    final isRemoteAudio = audioFilePath.startsWith('http://') || audioFilePath.startsWith('https://');
     return ConstrainedBox(
       constraints: BoxConstraints(maxHeight: maxHeight),
       child: SingleChildScrollView(
@@ -93,7 +94,9 @@ class SpeakingExplanationContent extends StatelessWidget {
                     border: Border.all(color: AppCustomColor.borderDefault, width: 2.w),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: AudioPlayerWidget(filePath: audioFilePath),
+                  child: isRemoteAudio
+                      ? AudioPlayerUrlWidget(audioUrl: audioFilePath)
+                      : AudioPlayerFileWidget(filePath: audioFilePath),
                 ),
               SpeakingGoodPointsSection(points: goodPoints),
               SpeakingImprovementSection(points: improvementPoints),

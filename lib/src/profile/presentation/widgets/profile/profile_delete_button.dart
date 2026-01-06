@@ -1,4 +1,4 @@
-part of '../../profile.dart';
+part of '../../../profile.dart';
 
 class ProfileDeleteButton extends StatelessWidget {
   const ProfileDeleteButton({super.key, required this.onTap});

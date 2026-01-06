@@ -1,4 +1,4 @@
-part of '../../progress.dart';
+part of '../../../progress.dart';
 
 @lazySingleton
 class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<ProgressState> {
@@ -200,6 +200,10 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         _courseLessonCubit.loadLesson(courseLessonState.selectedLesson.id);
         _courseRoadmapCubit.loadRoadmap(courseId: courseId);
         loadUserProgressMyCourses(isInit: true, recent: true);
+
+        AppDI.injector.get<AchievenmentProgressCubit>()
+          ..loadCourseLevelProgress(courseId)
+          ..loadAllAchievenmentResponses();
       },
     );
   }

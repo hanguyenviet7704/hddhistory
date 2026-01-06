@@ -78,4 +78,81 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
   void reset() {
     emit(MarkStressWordState.initial());
   }
+
+  ExerciseResultEntity toExerciseResult() {
+    final question = state.question;
+    final indices = state.selectedWordIndices.toList()..sort();
+    final words = state.words;
+
+    final dragDropAnswer = indices
+        .where((index) => index >= 0 && index < words.length)
+        .map(
+          (index) {
+            final word = words[index];
+            return OptionEntity(
+              id: index,
+              text: BaseMultiLanguage(en: word, vi: word, zh: word),
+              value: BaseMultiLanguage(en: word, vi: word, zh: word),
+            );
+          },
+        )
+        .toList();
+
+    return ExerciseResultEntity(
+      exerciseId: question.id.toString(),
+      type: question.type,
+      form: question.form,
+      dragDropAnswer: dragDropAnswer,
+    );
+  }
+
+  void applyExerciseResult(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.id == 0) return;
+
+    final words = state.words;
+    final selectedIndices = <int>{};
+    final usedIndices = <int>{};
+
+    for (final answer in result.dragDropAnswer) {
+      if (answer.id >= 0 && answer.id < words.length) {
+        selectedIndices.add(answer.id);
+        usedIndices.add(answer.id);
+        continue;
+      }
+
+      final label = answer.labelText;
+      if (label.isEmpty) continue;
+
+      for (int i = 0; i < words.length; i++) {
+        if (usedIndices.contains(i)) continue;
+        if (words[i] == label) {
+          selectedIndices.add(i);
+          usedIndices.add(i);
+          break;
+        }
+      }
+    }
+
+    final isCorrect = _stressWordIsCorrect(question, selectedIndices);
+
+    emit(
+      state.copyWith(
+        selectedWordIndices: selectedIndices,
+        hasChecked: true,
+        isCorrect: isCorrect,
+        showExplanation: false,
+      ),
+    );
+  }
+}
+
+bool _stressWordIsCorrect(QuestionEntity question, Set<int> selectedIndices) {
+  final correctIndices = question.answer
+      .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
+      .where((index) => index > 0)
+      .map((index) => index - 1)
+      .toSet();
+
+  return selectedIndices.length == correctIndices.length && selectedIndices.every((index) => correctIndices.contains(index));
 }

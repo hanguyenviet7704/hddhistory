@@ -1,10 +1,10 @@
 part of '../../../course.dart';
 
 class CourseRoadmapHeaderCard extends StatelessWidget {
-  final RoadmapLevelEntity level;
+  final RoadmapLevelEntity roadmapLevel;
   const CourseRoadmapHeaderCard({
     super.key,
-    required this.level,
+    required this.roadmapLevel,
   });
 
   @override
@@ -67,7 +67,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
             child: Row(
               children: [
                 AppText(
-                  level.level.name.toUpperCase(),
+                  roadmapLevel.level.name.toUpperCase(),
                   style: AppStyle.textBold12.copyWith(color: AppCustomColor.textTertiary),
                   maxLines: 1,
                 ),
@@ -88,7 +88,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                       animationDuration: 500,
                       animateFromLastPercent: true,
                       lineHeight: 10.h,
-                      percent: level.progress,
+                      percent: roadmapLevel.progress,
                       backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
                       progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
                       barRadius: Radius.circular(30.r),
@@ -100,8 +100,8 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                 // Lesson count
                 AppText(
                   context.text.courseroadmap.lessonsProgress(
-                    completed: level.completedLessons,
-                    total: level.totalLessons,
+                    completed: roadmapLevel.completedLessons,
+                    total: roadmapLevel.totalLessons,
                   ),
                   style: AppStyle.text14.copyWith(
                     color: AppCustomColor.textTertiary,

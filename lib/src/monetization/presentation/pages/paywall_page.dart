@@ -26,11 +26,21 @@ class _PaywallPageState extends State<PaywallPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundBrand,
-      body: Column(
-        children: [
-          const PaywallPageDecoration(),
-          const PaywallHighlightPackageInfo()
-        ],
+      body: BlocListener<IapCubit, IapState>(
+        listenWhen: (previous, current) => previous.status != current.status && current.status == MonetizationStatus.purchaseSuccess,
+        listener: (context, state) async {
+          if (state.lastAction != PurchaseAction.purchase || state.lastOrigin != PurchaseOrigin.paywall) return;
+          await PaywallSuccessPurchasePopup.show(context);
+          if (!context.mounted) return;
+          context.read<IapCubit>().consumePurchaseSuccess();
+          context.back();
+        },
+        child: Column(
+          children: [
+            const PaywallPageDecoration(),
+            const PaywallHighlightPackageInfo()
+          ],
+        ),
       ),
     );
   }

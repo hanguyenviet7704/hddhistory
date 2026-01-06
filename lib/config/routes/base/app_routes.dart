@@ -50,6 +50,7 @@ mixin RoutePath {
   static const String reviewTime = 'review-time';
   static const String lessonComplete = 'lesson-complete';
   static const String keypointComplete = 'keypoint-complete';
+  static const String badgeComplete = 'badge-complete';
   static const String exerciseResultPopup = 'exercise-result-popup';
 
   //? Course - Roleplay
@@ -59,13 +60,15 @@ mixin RoutePath {
   static const String roleplayFeedback = 'roleplay-feedback';
   static const String roleplayComplete = 'roleplay-complete';
 
-  //* Setting
-  static const String setting = '/setting';
-  static const String profile = 'profile';
+  //* Setting - Profile
+  static const String profile = '/profile';
+  static const String setting = 'setting';
+  static const String profileInfo = 'profile-info';
   static const String notification = 'notification';
   static const String changeLanguage = 'change-language';
   static const String manageSubscription = 'manage-subscription';
   static const String profileDeleteDialog = 'profile-delete-dialog';
+  static const String userAchievementBottomSheet = 'user-achievement-bottom-sheet';
 }
 
 mixin RouteNamed {
@@ -118,6 +121,7 @@ mixin RouteNamed {
   static const String reviewTime = 'Review Time';
   static const String lessonComplete = 'Lesson Complete';
   static const String keypointComplete = 'Keypoint Complete';
+  static const String badgeComplete = 'Badge Complete';
   static const String exerciseResultPopup = 'Exercise Result Popup';
 
   //? Course - Roleplay
@@ -127,11 +131,13 @@ mixin RouteNamed {
   static const String roleplayFeedback = 'Roleplay Feedback';
   static const String roleplayComplete = 'Roleplay Complete';
 
-  //* Setting
+  //* Setting - Profile
   static const String setting = 'Setting';
   static const String profile = 'Profile';
+  static const String profileInfo = 'Profile Info';
   static const String notification = 'Notification';
   static const String changeLanguage = 'Change Language';
   static const String manageSubscription = 'Manage Subscription';
   static const String profileDeleteDialog = 'Profile Delete Dialog';
+  static const String userAchievementBottomSheet = 'User Achievement Bottom Sheet';
 }

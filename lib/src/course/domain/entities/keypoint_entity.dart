@@ -8,7 +8,7 @@ abstract class KeypointEntity with _$KeypointEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default(0) int index,
-    @Default(StrengthLevel.optionalPractice) StrengthLevel strengthLevelData,
+    @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevelData,
     @Default([]) List<LearningItemEntity> learningItems,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
 

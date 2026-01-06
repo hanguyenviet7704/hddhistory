@@ -16,6 +16,19 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
 
   void reset() => emit(CourseRoadmapState.initial());
 
+  void setCurrentLevelProgress(List<CourseLevelProgressEntity> courseLevelProgresses) async {
+    if (state.roadmap.levels.isEmpty) return;
+    final CourseLevelProgressEntity currentLevelProgress = courseLevelProgresses.firstWhere(
+      (progress) => progress.level == state.currentCourseLevel && progress.courseId == state.roadmap.courseId,
+      orElse: () => CourseLevelProgressEntity(),
+    );
+    emit(state.copyWith(currentLevelProgress: currentLevelProgress));
+  }
+
+  void setCurrentCourseLevel(CourseLevel level) => emit(state.copyWith(currentCourseLevel: level));
+
+  void setCurrentLesson(LessonEntity lesson) => emit(state.copyWith(currentLesson: lesson));
+
   void loadRoadmap({String courseId = ''}) async {
     if (courseId.isEmpty) {
       courseId = state.roadmap.courseId;

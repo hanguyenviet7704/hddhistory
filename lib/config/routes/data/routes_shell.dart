@@ -24,6 +24,7 @@ part of '../routes.dart';
                 TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
                 TypedGoRoute<KeypointCompleteRoute>(path: RoutePath.keypointComplete, name: RouteNamed.keypointComplete),
                 TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
+                TypedGoRoute<BadgeCompleteRoute>(path: RoutePath.badgeComplete, name: RouteNamed.badgeComplete),
               ],
             ),
             TypedGoRoute<RoleplayIntroRoute>(
@@ -41,14 +42,20 @@ part of '../routes.dart';
     ),
     TypedStatefulShellBranch<SettingShellBranchData>(
       routes: [
-        TypedGoRoute<SettingRoute>(
-          path: RoutePath.setting,
-          name: RouteNamed.setting,
+        TypedGoRoute<ProfileRoute>(
+          path: RoutePath.profile,
+          name: RouteNamed.profile,
           routes: [
-            TypedGoRoute<ProfileRoute>(path: RoutePath.profile, name: RouteNamed.profile),
-            TypedGoRoute<NotificationRoute>(path: RoutePath.notification, name: RouteNamed.notification),
-            TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage), 
-            TypedGoRoute<ManageSubscriptionRoute>(path: RoutePath.manageSubscription, name: RouteNamed.manageSubscription),
+            TypedGoRoute<ProfileInfoRoute>(path: RoutePath.profileInfo, name: RouteNamed.profileInfo),
+            TypedGoRoute<SettingRoute>(
+              path: RoutePath.setting,
+              name: RouteNamed.setting,
+              routes: [
+                TypedGoRoute<NotificationRoute>(path: RoutePath.notification, name: RouteNamed.notification),
+                TypedGoRoute<ChangeLanguageRoute>(path: RoutePath.changeLanguage, name: RouteNamed.changeLanguage),
+                TypedGoRoute<ManageSubscriptionRoute>(path: RoutePath.manageSubscription, name: RouteNamed.manageSubscription),
+              ],
+            ),
           ],
         ),
       ],

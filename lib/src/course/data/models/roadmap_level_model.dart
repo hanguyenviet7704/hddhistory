@@ -16,7 +16,14 @@ enum CourseLevel {
   @JsonValue('level 1')
   level1,
   @JsonValue('level 2')
-  level2,
+  level2;
+
+  String get name => switch (this) {
+    level1 => 'Level 1',
+    level2 => 'Level 2',
+  };
+
+  String get number => name.split(' ').last;
 }
 
 extension RoadmapLevelModelExtension on RoadmapLevelModel {

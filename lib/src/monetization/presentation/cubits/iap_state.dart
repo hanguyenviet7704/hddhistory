@@ -1,6 +1,10 @@
-part of '../../../monetization.dart';
+part of '../../monetization.dart';
 
 enum MonetizationStatus { initial, loading, restoring, purchasing, purchaseSuccess, success, failure }
+
+enum PurchaseAction { none, purchase, restore }
+
+enum PurchaseOrigin { none, paywall, other }
 
 @freezed
 abstract class IapState with _$IapState {
@@ -9,6 +13,8 @@ abstract class IapState with _$IapState {
     @Default(false) bool isAvailable,
     @Default([]) List<IapProductEntity> iapProducts,
     @Default('') String selectedProductId,
+    @Default(PurchaseAction.none) PurchaseAction lastAction,
+    @Default(PurchaseOrigin.none) PurchaseOrigin lastOrigin,
     String? errorMessage,
   }) = _IapState;
 
