@@ -3,6 +3,7 @@ import {
   PaymentEnvironment,
   PaymentPlatform,
   PurchaseEventType,
+  PurchaseHistorySource,
   PurchaseStatus,
 } from "../../enum/payment.enum";
 import { BaseQuery } from "../common.interface";
@@ -88,4 +89,10 @@ export interface RevenueStatisticsResponse {
   totalRevenue: number;
   refundedRevenue: number;
   totalPurchases: number;
+}
+
+export interface PurchaseHistory {
+  at: string;
+  status: PurchaseStatus;
+  source: PurchaseHistorySource;
 }

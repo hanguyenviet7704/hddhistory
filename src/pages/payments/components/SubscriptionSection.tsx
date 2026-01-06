@@ -263,10 +263,11 @@ const SubscriptionSection: React.FC = () => {
           "";
         let derivedProductId = sub.productId || product?.productId || "";
 
-        if (!raw && sub.anchorId) {
+        const subscriptionId = getSubscriptionId(sub);
+        if (!raw && subscriptionId) {
           try {
             const purchases = normalizePurchases(
-              await purchaseService.findByAnchor(sub.anchorId)
+              await purchaseService.findBySubscriptionId(subscriptionId)
             );
             if (purchases.length) {
               const latest = purchases[0];
@@ -327,13 +328,14 @@ const SubscriptionSection: React.FC = () => {
       setSelectedSub(subscription);
       setRelatedPurchases([]);
       setDetailError(null);
-      if (!subscription.anchorId) {
-        setDetailError("Subscription không có anchorId để tra cứu giao dịch");
+      const subscriptionId = getSubscriptionId(subscription);
+      if (!subscriptionId) {
+        setDetailError("Subscription không có id để tra cứu giao dịch");
         return;
       }
       setDetailLoading(true);
       try {
-        const res = await purchaseService.findByAnchor(subscription.anchorId);
+        const res = await purchaseService.findBySubscriptionId(subscriptionId);
         const normalized = normalizePurchases(res);
         const sorted = normalized.sort((a, b) => {
           const aTime = a.purchaseTime ? new Date(a.purchaseTime).getTime() : 0;
@@ -342,7 +344,7 @@ const SubscriptionSection: React.FC = () => {
         });
         setRelatedPurchases(sorted);
       } catch (err: any) {
-        console.error("Failed to fetch purchases by anchor", err);
+        console.error("Failed to fetch purchases by subscription", err);
         setDetailError(
           err?.response?.data?.message ||
             "Không thể tải purchase liên quan đến subscription này"
