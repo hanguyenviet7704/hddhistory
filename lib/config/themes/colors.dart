@@ -51,6 +51,8 @@ mixin AppCustomColor {
   static const Color iconPrimary = Color(0xFF344054);
   static const Color contentTertiary = Color(0xFFF1EDE5);
   static const Color surfaceMuted = Color(0xFFEFF3FA);
+  static const Color neutral300 = Color(0xFFCDD5DF);
+  static const Color roleplayAnswerBackground = Color(0xFFDFEEFB);
 
   // Strength indicator colors
   static const Color successGreen = Color(0xFF41AE8C);

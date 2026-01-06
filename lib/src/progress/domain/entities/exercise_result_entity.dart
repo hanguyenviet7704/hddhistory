@@ -20,3 +20,7 @@ abstract class ExerciseResultEntity with _$ExerciseResultEntity {
 
   factory ExerciseResultEntity.fromJson(Map<String, dynamic> json) => _$ExerciseResultEntityFromJson(json);
 }
+
+extension ExerciseResultEntityExtension on ExerciseResultEntity {
+  bool get isCorrect => false;
+}

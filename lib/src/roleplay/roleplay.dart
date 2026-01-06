@@ -1,5 +1,6 @@
 library;
 
+import 'dart:async';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
 
@@ -51,6 +52,7 @@ part 'presentation/pages/roleplay_complete_page.dart';
 part 'presentation/pages/roleplay_feedback_page.dart';
 part 'presentation/pages/roleplay_intro_page.dart';
 part 'presentation/pages/roleplay_page.dart';
+part 'presentation/widgets/roleplay/exercise/roleplay_audio_answer_player.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_colapsed_exercise_body.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_answer.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_content_widget.dart';

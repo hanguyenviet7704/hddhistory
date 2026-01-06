@@ -42,6 +42,7 @@ class RoleplayIntroMissions extends StatelessWidget {
                   AppText(
                     mission.content.text,
                     expandFlex: 1,
+                    maxLines: 10,
                     style: AppStyle.text16.copyWith(
                       fontWeight: FontWeight.w400,
                       color: AppCustomColor.textWhite.withValues(alpha: 0.8),
