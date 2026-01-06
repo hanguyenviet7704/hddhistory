@@ -48,23 +48,6 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final t = Translations.of(context);
-    final bool isSpeaking = exercise.type == QuestionTypeEnum.speaking;
-    final Color labelColor = AppCustomColor.successGreen;
-    final String label = isSpeaking ? t.exercise.exerciseYourAnswer : t.exercise.exerciseFeedbackCorrectAnswer;
-    final QuestionEntity? roleplayExercise = context.select<RoleplayCubit, QuestionEntity?>(
-      (cubit) {
-        for (final content in cubit.state.currentRoleplay.contents) {
-          if (content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id) {
-            return content.exercise;
-          }
-        }
-        return null;
-      },
-    );
-    final String recordText = roleplayExercise?.result.recordAnswer.review ?? '';
-    final String recordAudio = roleplayExercise?.result.recordAnswer.record ?? '';
-
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
@@ -85,15 +68,24 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
           ),
           8.verticalSpace,
           AppText(
-            label,
+            exercise.type == QuestionTypeEnum.speaking ? t.exercise.exerciseYourAnswer : t.exercise.exerciseFeedbackCorrectAnswer,
             style: AppStyle.text14.copyWith(
-              color: labelColor,
+              color: AppCustomColor.successGreen,
               fontWeight: FontWeight.w600,
               height: 1.5,
             ),
           ),
           8.verticalSpace,
-          _buildAnswerBody(context, recordText: recordText, recordAudio: recordAudio),
+          BlocSelector<RoleplayCubit, RoleplayState, AnswerEntity>(
+            selector: (state) => state.currentRoleplay.contents
+                .firstWhere((content) => content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id)
+                .exercise
+                .result
+                .recordAnswer,
+            builder: (context, state) {
+              return _buildAnswerBody(context, recordText: state.review, recordAudio: state.record);
+            },
+          ),
         ],
       ),
     );
@@ -218,6 +210,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
 
   Widget _buildSpeakingAnswer({String? recordText, String? recordAudio}) {
     if (recordAudio != null && recordAudio.isNotEmpty) {
+      final isRemoteAudio = recordAudio.startsWith('http://') || recordAudio.startsWith('https://');
       return Container(
         width: double.infinity,
         padding: EdgeInsets.all(12.w),
@@ -225,7 +218,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
           color: AppCustomColor.backgroundGray,
           borderRadius: BorderRadius.circular(12.r),
         ),
-        child: AudioPlayerWidget(audioUrl: recordAudio),
+        child: isRemoteAudio ? AudioPlayerUrlWidget(audioUrl: recordAudio) : AudioPlayerFileWidget(filePath: recordAudio),
       );
     }
 

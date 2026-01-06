@@ -14,7 +14,7 @@ class DocumentMediaWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(16.r),
         fit: BoxFit.cover,
       ),
-      ContentDocumentType.audio => AudioPlayerWidget(audioUrl: url),
+      ContentDocumentType.audio => AudioPlayerUrlWidget(audioUrl: url),
       _ => const SizedBox.shrink(),
     };
   }

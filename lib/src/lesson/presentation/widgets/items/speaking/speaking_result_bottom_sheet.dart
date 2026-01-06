@@ -94,10 +94,9 @@ class SpeakingExplanationContent extends StatelessWidget {
                     border: Border.all(color: AppCustomColor.borderDefault, width: 2.w),
                     borderRadius: BorderRadius.circular(16.r),
                   ),
-                  child: AudioPlayerWidget(
-                    audioUrl: isRemoteAudio ? audioFilePath : null,
-                    filePath: isRemoteAudio ? null : audioFilePath,
-                  ),
+                  child: isRemoteAudio
+                      ? AudioPlayerUrlWidget(audioUrl: audioFilePath)
+                      : AudioPlayerFileWidget(filePath: audioFilePath),
                 ),
               SpeakingGoodPointsSection(points: goodPoints),
               SpeakingImprovementSection(points: improvementPoints),

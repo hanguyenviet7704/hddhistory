@@ -1,28 +1,55 @@
 part of '../../../../lesson.dart';
 
-class AudioPlayerWidget extends StatefulWidget {
-  final String? audioUrl;
-  final String? filePath;
+class AudioPlayerUrlWidget extends StatelessWidget {
+  final String audioUrl;
 
-  const AudioPlayerWidget({
-    super.key,
-    this.audioUrl,
-    this.filePath,
-  }) : assert(
-          audioUrl != null || filePath != null,
-          'AudioPlayerWidget requires either an audioUrl or filePath',
-        );
+  const AudioPlayerUrlWidget({super.key, required this.audioUrl});
 
   @override
-  State<AudioPlayerWidget> createState() => _AudioPlayerWidgetState();
+  Widget build(BuildContext context) {
+    if (audioUrl.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return _AudioPlayerBase(
+      source: audioUrl,
+      kind: _AudioSourceKind.url,
+    );
+  }
 }
 
-class _LocalAudioException implements Exception {
-  final String message;
-  const _LocalAudioException(this.message);
+class AudioPlayerFileWidget extends StatelessWidget {
+  final String filePath;
+
+  const AudioPlayerFileWidget({super.key, required this.filePath});
+
+  @override
+  Widget build(BuildContext context) {
+    if (filePath.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
+    return _AudioPlayerBase(
+      source: filePath,
+      kind: _AudioSourceKind.file,
+    );
+  }
 }
 
-class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
+enum _AudioSourceKind { url, file }
+
+class _AudioPlayerBase extends StatefulWidget {
+  final String source;
+  final _AudioSourceKind kind;
+
+  const _AudioPlayerBase({
+    required this.source,
+    required this.kind,
+  });
+
+  @override
+  State<_AudioPlayerBase> createState() => _AudioPlayerBaseState();
+}
+
+class _AudioPlayerBaseState extends State<_AudioPlayerBase> {
   late final just_audio.AudioPlayer _audioPlayer;
 
   late final ValueNotifier<bool> _isPlayingNotifier;
@@ -38,42 +65,24 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
   Duration? _duration;
   static const int _maxRetries = 3;
 
-  String? get _effectiveFilePath {
-    final rawPath = widget.filePath?.trim();
-    if (rawPath == null || rawPath.isEmpty) return null;
-    final uri = Uri.tryParse(rawPath);
-    if (uri == null) return rawPath;
-    if (uri.scheme == 'file') {
-      return uri.toFilePath();
-    }
-    if (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'content') {
-      return null;
-    }
-    return rawPath;
-  }
-
-  String? get _effectiveUrl {
-    final rawUrl = widget.audioUrl?.trim();
-    if (rawUrl != null && rawUrl.isNotEmpty) {
-      return rawUrl;
-    }
-    final rawPath = widget.filePath?.trim();
-    if (rawPath == null || rawPath.isEmpty) return null;
-    final uri = Uri.tryParse(rawPath);
-    if (uri != null && (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'content')) {
-      return uri.toString();
-    }
-    return null;
-  }
-
-  bool get _isLocalSource => _effectiveFilePath != null;
-  bool get _hasRemoteSource => _effectiveUrl != null;
-
   // Stream subscriptions for proper disposal
   StreamSubscription? _playerStateSubscription;
   StreamSubscription<Duration>? _positionSubscription;
   StreamSubscription<Duration?>? _durationSubscription;
   StreamSubscription? _processingStateSubscription;
+
+  bool get _isFileSource => widget.kind == _AudioSourceKind.file;
+
+  String get _source => widget.source.trim();
+
+  String get _normalizedFilePath {
+    if (_source.startsWith('file://')) {
+      return _source.replaceFirst('file://', '');
+    }
+    return _source;
+  }
+
+  bool get _isContentUri => _normalizedFilePath.startsWith('content://');
 
   @override
   void initState() {
@@ -90,15 +99,23 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     _initializePlayer();
   }
 
+  @override
+  void didUpdateWidget(covariant _AudioPlayerBase oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.source != widget.source || oldWidget.kind != widget.kind) {
+      _retryCountNotifier.value = 0;
+      _initializePlayer();
+    }
+  }
+
   Future<void> _initializePlayer() async {
-    if (!_isLocalSource && !_hasRemoteSource) {
-      _errorNotifier.value = 'Audio is unavailable.';
+    if (_source.isEmpty) {
+      _resetPlaybackState();
       return;
     }
 
     // Cancel existing subscriptions before creating new ones
     await _cancelSubscriptions();
-    await _audioPlayer.stop();
 
     _isLoadingNotifier.value = true;
     _errorNotifier.value = '';
@@ -145,15 +162,15 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         }
       });
 
-      if (_isLocalSource) {
-        final filePath = _effectiveFilePath!;
-        final file = File(filePath);
-        if (!await file.exists()) {
-          throw const _LocalAudioException('Audio file not found');
+      if (_isFileSource) {
+        await _prepareLocalFile(_normalizedFilePath);
+        if (_isContentUri) {
+          await _audioPlayer.setAudioSource(just_audio.AudioSource.uri(Uri.parse(_normalizedFilePath)));
+        } else {
+          await _audioPlayer.setFilePath(_normalizedFilePath);
         }
-        await _audioPlayer.setFilePath(filePath);
       } else {
-        await _audioPlayer.setUrl(_effectiveUrl!);
+        await _audioPlayer.setUrl(_source);
       }
 
       if (mounted) {
@@ -161,19 +178,14 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
         _retryCountNotifier.value = 0; // Reset retry count on success
         _isLoadingNotifier.value = false;
       }
-    } on _LocalAudioException catch (e) {
-      if (!mounted) return;
-
-      _isLoadingNotifier.value = false;
-      _errorNotifier.value = e.message;
     } catch (e) {
       if (!mounted) return;
 
       _isLoadingNotifier.value = false;
 
       // Handle errors with retry logic
-      if (!_isLocalSource && _retryCountNotifier.value < _maxRetries) {
-        _errorNotifier.value = 'Failed to load audio. Retrying... (${_retryCountNotifier.value + 1}/$_maxRetries)';
+      if (_retryCountNotifier.value < _maxRetries) {
+        _errorNotifier.value = _buildRetryMessage(e);
         _retryCountNotifier.value++;
 
         // Retry after a short delay
@@ -182,11 +194,62 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
           await _initializePlayer();
         }
       } else {
-        _errorNotifier.value = _isLocalSource
-            ? 'Unable to play this audio file.'
-            : 'Failed to load audio. Please check the URL and your internet connection.';
+        _errorNotifier.value = _buildFinalErrorMessage(e);
       }
     }
+  }
+
+  Future<void> _prepareLocalFile(String path) async {
+    if (path.isEmpty) {
+      throw const _LocalAudioException('Recording file path is empty');
+    }
+    if (_isContentUri) {
+      return;
+    }
+
+    final file = File(path);
+    for (var attempt = 0; attempt < _maxRetries; attempt++) {
+      final exists = await file.exists();
+      if (exists) {
+        final length = await file.length();
+        if (length > 0) {
+          return;
+        }
+      }
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
+
+    if (!await file.exists()) {
+      throw const _LocalAudioException('Recording file not found');
+    }
+    throw const _LocalAudioException('Recording file is empty');
+  }
+
+  void _resetPlaybackState() {
+    _isInitialized = false;
+    _isPlayingNotifier.value = false;
+    _progressNotifier.value = 0.0;
+    _currentTimeNotifier.value = '00:00';
+    _remainingTimeNotifier.value = '-00:00';
+    _isLoadingNotifier.value = false;
+    _errorNotifier.value = '';
+    _duration = null;
+  }
+
+  String _buildRetryMessage(Object error) {
+    final detail = error is _LocalAudioException ? error.message : '';
+    final prefix = detail.isNotEmpty ? detail : 'Failed to load audio';
+    return '$prefix. Retrying... (${_retryCountNotifier.value + 1}/$_maxRetries)';
+  }
+
+  String _buildFinalErrorMessage(Object error) {
+    if (error is _LocalAudioException) {
+      return error.message;
+    }
+    if (_isFileSource) {
+      return 'Failed to load audio. Please check the file path.';
+    }
+    return 'Failed to load audio. Please check the URL and your internet connection.';
   }
 
   Future<void> _cancelSubscriptions() async {
@@ -198,35 +261,6 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
     _positionSubscription = null;
     _durationSubscription = null;
     _processingStateSubscription = null;
-  }
-
-  @override
-  void didUpdateWidget(covariant AudioPlayerWidget oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final previousSource = _normalizeSource(oldWidget);
-    final currentSource = _normalizeSource(widget);
-    if (previousSource != currentSource) {
-      _initializePlayer();
-    }
-  }
-
-  String? _normalizeSource(AudioPlayerWidget widget) {
-    final rawUrl = widget.audioUrl?.trim();
-    if (rawUrl != null && rawUrl.isNotEmpty) {
-      return rawUrl;
-    }
-    final rawPath = widget.filePath?.trim();
-    if (rawPath == null || rawPath.isEmpty) return null;
-    final uri = Uri.tryParse(rawPath);
-    if (uri != null) {
-      if (uri.scheme == 'file') {
-        return uri.toFilePath();
-      }
-      if (uri.scheme == 'http' || uri.scheme == 'https' || uri.scheme == 'content') {
-        return uri.toString();
-      }
-    }
-    return rawPath;
   }
 
   String _formatDuration(Duration duration) {
@@ -344,12 +378,12 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
                                   fontSize: 12,
                                 ),
                               ),
-                                  GestureDetector(
-                                    onTap: () {
-                                      _retryCountNotifier.value = 0;
-                                      _errorNotifier.value = '';
-                                      _initializePlayer();
-                                    },
+                              GestureDetector(
+                                onTap: () {
+                                  _retryCountNotifier.value = 0;
+                                  _errorNotifier.value = '';
+                                  _initializePlayer();
+                                },
                                 child: Container(
                                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                   decoration: BoxDecoration(
@@ -490,4 +524,13 @@ class _AudioPlayerWidgetState extends State<AudioPlayerWidget> {
       ],
     );
   }
+}
+
+class _LocalAudioException implements Exception {
+  final String message;
+
+  const _LocalAudioException(this.message);
+
+  @override
+  String toString() => message;
 }

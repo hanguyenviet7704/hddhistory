@@ -144,6 +144,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
           questionId: state.question.id,
           recordPath: result.url,
         );
+        emit(state.copyWith(audioFilePath: result.url));
         getVoiceFeedback(url: result.url);
         getScoreRecord(audioUrl: result.url);
       },
