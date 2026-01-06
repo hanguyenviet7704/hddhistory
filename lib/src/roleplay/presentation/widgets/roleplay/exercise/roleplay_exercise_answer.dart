@@ -47,30 +47,28 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
   }
 
   TextStyle get _questionTextStyle => AppStyle.text14.copyWith(
-        color: AppCustomColor.textSecondary,
-        fontWeight: FontWeight.w700,
-        height: 1.75,
-      );
+    color: AppCustomColor.textSecondary,
+    fontWeight: FontWeight.w700,
+    height: 1.75,
+  );
 
   TextStyle get _labelTextStyle => AppStyle.text12.copyWith(
-        color: AppCustomColor.textTertiary,
-        fontWeight: FontWeight.w500,
-        height: 1.5,
-      );
+    color: AppCustomColor.textTertiary,
+    fontWeight: FontWeight.w500,
+    height: 1.5,
+  );
 
   TextStyle get _answerTextStyle => AppStyle.text14.copyWith(
-        color: AppCustomColor.textPrimary,
-        fontWeight: FontWeight.w500,
-        height: 1.75,
-      );
+    color: AppCustomColor.textPrimary,
+    fontWeight: FontWeight.w500,
+    height: 1.75,
+  );
 
   @override
   Widget build(BuildContext context) {
     return BlocSelector<RoleplayCubit, RoleplayState, ExerciseResultEntity>(
-      selector: (state) => state.currentRoleplay.contents
-          .firstWhere((content) => content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id)
-          .exercise
-          .result,
+      selector: (state) =>
+          state.currentRoleplay.contents.firstWhere((content) => content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id).exercise.result,
       builder: (context, result) {
         return Container(
           width: double.infinity,
@@ -105,7 +103,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                _buildStatusRow(context, isCorrect),
+                RoleplayStatusRow(isCorrect: isCorrect),
                 _buildChevron(size: 18.w),
               ],
             ),
@@ -136,31 +134,6 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
           _buildChevron(size: 24.w),
         ],
       ),
-    );
-  }
-
-  Widget _buildStatusRow(BuildContext context, bool isCorrect) {
-    final Color statusColor = isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
-    final String statusText = isCorrect ? t.exercise.exerciseFeedbackRight : t.exercise.exerciseFeedbackNotTrue;
-    final Widget icon = isCorrect
-        ? AppAsset.icons.app.icTick.image(width: 18.w, height: 18.w)
-        : AppAsset.icons.app.icDanger.image(width: 18.w, height: 18.w);
-
-    return Row(
-      children: [
-        icon,
-        8.horizontalSpace,
-        AppText(
-          statusText,
-          maxLines: 1,
-          overflow: TextOverflow.visible,
-          style: AppStyle.text14.copyWith(
-            color: statusColor,
-            fontWeight: FontWeight.w700,
-            height: 1.75,
-          ),
-        ),
-      ],
     );
   }
 
@@ -208,115 +181,55 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
   Widget _buildAnswerBody(BuildContext context, ExerciseResultEntity result) {
     switch (exercise.type) {
       case QuestionTypeEnum.singleChoice:
-        return _buildAnswerLines([_correctOptions.firstOrNull ?? '']);
+        return RoleplayAnswerLines(items: [_correctOptions.firstOrNull ?? ''], style: _answerTextStyle);
       case QuestionTypeEnum.multipleChoice:
-        return _buildAnswerLines(_correctOptions);
+        return RoleplayAnswerLines(items: _correctOptions, style: _answerTextStyle);
       case QuestionTypeEnum.dragAndDrop:
-        return _buildGapFillingSentence();
+        return RoleplayGapFillingAnswer(
+          template: exercise.targetArea.text,
+          answers: exercise.answer.isNotEmpty ? exercise.answer.map((a) => a.correctAnswer.text).toList() : _correctOptions,
+          baseStyle: _answerTextStyle,
+          highlightStyle: _answerTextStyle.copyWith(
+            color: AppCustomColor.successGreen,
+            fontWeight: FontWeight.w700,
+          ),
+        );
       case QuestionTypeEnum.arrangeTheSequence:
-        return _buildNumberedList(_sequenceAnswers);
+        return RoleplaySequenceAnswerList(items: _sequenceAnswers, style: _answerTextStyle);
       case QuestionTypeEnum.stressPlacement:
       case QuestionTypeEnum.cuesPlacement:
         return const SizedBox.shrink();
       case QuestionTypeEnum.speaking:
-        return _buildSpeakingAnswer(result.recordAnswer);
+        return RoleplaySpeakingAnswer(recordAnswer: result.recordAnswer, textStyle: _answerTextStyle);
     }
   }
+}
 
-  Widget _buildAnswerLines(List<String> items) {
-    final lines = items.where((e) => e.isNotEmpty).toList();
-    if (lines.isEmpty) return const SizedBox.shrink();
+class RoleplayStatusRow extends StatelessWidget {
+  final bool isCorrect;
+  const RoleplayStatusRow({super.key, required this.isCorrect});
 
-    return AppText(
-      lines.join('\n'),
-      maxLines: 10,
-      overflow: TextOverflow.visible,
-      style: _answerTextStyle,
+  Color get statusColor => isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
+  String get statusText => isCorrect ? t.exercise.exerciseFeedbackRight : t.exercise.exerciseFeedbackNotTrue;
+  Widget get icon => isCorrect ? AppAsset.icons.app.icTick.image(width: 18.w, height: 18.w) : AppAsset.icons.app.icDanger.image(width: 18.w, height: 18.w);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        icon,
+        8.horizontalSpace,
+        AppText(
+          statusText,
+          maxLines: 1,
+          overflow: TextOverflow.visible,
+          style: AppStyle.text14.copyWith(
+            color: statusColor,
+            fontWeight: FontWeight.w700,
+            height: 1.75,
+          ),
+        ),
+      ],
     );
-  }
-
-  Widget _buildNumberedList(List<String> items) {
-    final lines = items.where((e) => e.isNotEmpty).toList();
-    if (lines.isEmpty) return const SizedBox.shrink();
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: lines.asMap().entries.map((entry) {
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            SizedBox(
-              width: 21.w,
-              child: AppText(
-                '${entry.key + 1}.',
-                maxLines: 1,
-                overflow: TextOverflow.visible,
-                style: _answerTextStyle,
-              ),
-            ),
-            Expanded(
-              child: AppText(
-                entry.value,
-                maxLines: 6,
-                overflow: TextOverflow.visible,
-                style: _answerTextStyle,
-              ),
-            ),
-          ],
-        );
-      }).toList(),
-    );
-  }
-
-  Widget _buildParagraph(String text) {
-    return AppText(
-      text,
-      maxLines: 8,
-      overflow: TextOverflow.visible,
-      style: _answerTextStyle,
-    );
-  }
-
-  Widget _buildGapFillingSentence() {
-    final template = exercise.targetArea.text;
-    if (template.isEmpty) return const SizedBox.shrink();
-
-    final answers = exercise.answer.isNotEmpty ? exercise.answer.map((a) => a.correctAnswer.text).toList() : _correctOptions;
-
-    final parts = template.split('___');
-    final spans = <InlineSpan>[];
-    final baseStyle = _answerTextStyle;
-    final highlightStyle = _answerTextStyle.copyWith(
-      color: AppCustomColor.successGreen,
-      fontWeight: FontWeight.w700,
-    );
-
-    for (int i = 0; i < parts.length; i++) {
-      final part = parts[i];
-      if (part.isNotEmpty) {
-        spans.add(TextSpan(text: part, style: baseStyle));
-      }
-
-      if (i < answers.length) {
-        final answer = answers[i].replaceAll('"', '').replaceAll('“', '').replaceAll('”', '').trim();
-        spans.add(TextSpan(text: answer, style: highlightStyle));
-      }
-    }
-
-    return RichText(
-      text: TextSpan(children: spans),
-    );
-  }
-
-  Widget _buildSpeakingAnswer(AnswerEntity recordAnswer) {
-    if (recordAnswer.record.isNotEmpty) {
-      return RoleplayAudioAnswerPlayer(source: recordAnswer.record);
-    }
-
-    if (recordAnswer.review.isNotEmpty) {
-      return _buildParagraph(recordAnswer.review);
-    }
-
-    return const SizedBox.shrink();
   }
 }
