@@ -23,8 +23,8 @@ export const purchaseService = {
     return res.data;
   },
 
-  async findByAnchor(anchorId: string) {
-    const res = await axiosClient.get(`/payment/purchases/anchors/${anchorId}`);
+  async findBySubscriptionId(id: string) {
+    const res = await axiosClient.get(`/payment/purchases/subscriptions/${id}`);
     return res.data;
   },
 
