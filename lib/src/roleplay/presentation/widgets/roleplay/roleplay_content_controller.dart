@@ -31,7 +31,6 @@ class RoleplayContentController extends ChangeNotifier {
   final Map<int, RoleplayAudioController> _audioControllers = {};
   final List<int> _visibleIndexes = [];
   final Set<int> _completedExerciseIndexes = {};
-  List<RoleplayContentEntity> _displayableContents = [];
 
   Completer<void>? _pendingExerciseCompleter;
   int? _pendingExerciseContentIndex;
@@ -42,7 +41,7 @@ class RoleplayContentController extends ChangeNotifier {
   bool _isOverlayVisible = false;
   static const double _autoScrollThreshold = 80;
 
-  List<RoleplayContentEntity> get displayableContents => _displayableContents;
+  List<RoleplayContentEntity> get displayableContents => _currentContents();
   List<int> get visibleIndexes => _visibleIndexes;
   bool get isOverlayVisible => _isOverlayVisible;
 
@@ -71,26 +70,24 @@ class RoleplayContentController extends ChangeNotifier {
     _isAutoScrolling = value;
   }
 
-  void configure(List<RoleplayContentEntity> contents) {
+  void configure() {
     _cancelPendingExercise();
     _completedExerciseIndexes.clear();
-    _displayableContents = contents.toList();
     _shouldAutoScroll = true;
-    _prepareAudioControllers();
+    _prepareAudioControllers(_currentContents());
     _visibleIndexes.clear();
-    _updateSectionCompletion(_displayableContents.isEmpty);
+    _updateSectionCompletion(_currentContents().isEmpty);
     notifyListeners();
   }
 
-  Future<void> reset(List<RoleplayContentEntity> contents) async {
+  Future<void> reset() async {
     _cancelPendingExercise();
     await _disposeControllers();
-    _displayableContents = contents.toList();
     _visibleIndexes.clear();
     _completedExerciseIndexes.clear();
     _shouldAutoScroll = true;
-    _prepareAudioControllers();
-    _updateSectionCompletion(_displayableContents.isEmpty);
+    _prepareAudioControllers(_currentContents());
+    _updateSectionCompletion(_currentContents().isEmpty);
     notifyListeners();
   }
 
@@ -99,7 +96,7 @@ class RoleplayContentController extends ChangeNotifier {
     _isSequencing = true;
 
     try {
-      while (!_isDisposing && _visibleIndexes.length < _displayableContents.length) {
+      while (!_isDisposing && _visibleIndexes.length < _currentContents().length) {
         final bool shouldWaitForLastCompletion = _appendNextIndex();
         await _waitBeforeNext();
         if (_isDisposing) return;
@@ -123,9 +120,10 @@ class RoleplayContentController extends ChangeNotifier {
     if (_visibleIndexes.isEmpty) return;
 
     final int currentIndex = _visibleIndexes.last;
-    if (currentIndex < 0 || currentIndex >= _displayableContents.length) return;
+    final contents = _currentContents();
+    if (currentIndex < 0 || currentIndex >= contents.length) return;
 
-    final content = _displayableContents[currentIndex];
+    final content = contents[currentIndex];
     final RoleplayAudioController? controller = _audioControllers[currentIndex];
 
     switch (content.type) {
@@ -154,18 +152,19 @@ class RoleplayContentController extends ChangeNotifier {
 
   bool _appendNextIndex() {
     final newIndex = _visibleIndexes.length;
-    if (newIndex >= _displayableContents.length) return false;
+    final contents = _currentContents();
+    if (newIndex >= contents.length) return false;
     _visibleIndexes.add(newIndex);
     _onInsertItem(newIndex);
     _requestAutoScroll();
     notifyListeners();
 
-    if (_visibleIndexes.length != _displayableContents.length) {
+    if (_visibleIndexes.length != contents.length) {
       return false;
     }
 
     final RoleplayAudioController? lastController = _audioControllers[newIndex];
-    final lastContent = _displayableContents[newIndex];
+    final lastContent = contents[newIndex];
 
     if (lastContent.type == RoleplayContentType.exercise && !isExerciseCompleted(newIndex, lastContent.exercise)) {
       return true;
@@ -243,11 +242,15 @@ class RoleplayContentController extends ChangeNotifier {
     }
   }
 
-  void _prepareAudioControllers() {
+  List<RoleplayContentEntity> _currentContents() {
+    return AppDI.injector.get<RoleplayCubit>().state.currentRoleplay.contents.toList();
+  }
+
+  void _prepareAudioControllers(List<RoleplayContentEntity> contents) {
     _audioControllers.clear();
 
-    for (var i = 0; i < _displayableContents.length; i++) {
-      final content = _displayableContents[i];
+    for (var i = 0; i < contents.length; i++) {
+      final content = contents[i];
       final String audioUrl = switch (content.type) {
         RoleplayContentType.conversation => content.conversation.audio.text,
         RoleplayContentType.leadingText => content.leadingText.audio.text,

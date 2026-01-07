@@ -31,13 +31,13 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         context.read<RoleplayCubit>().setCurrentSectionRevealed(isCompleted);
       },
     );
-    _controller.configure(_currentContents());
+    _controller.configure();
     WidgetsBinding.instance.addPostFrameCallback((_) => _controller.startSequence());
   }
 
   Future<void> _resetForNewSection() async {
     if (!mounted) return;
-    await _controller.reset(_currentContents());
+    await _controller.reset();
     if (!mounted) return;
     setState(() => _listKey = GlobalKey<AnimatedListState>());
     WidgetsBinding.instance.addPostFrameCallback((_) => _controller.startSequence());
@@ -98,14 +98,15 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     return nextConversation.avatar.id == conversation.avatar.id;
   }
 
-  double _getBottomPadding(int index, int contentIndex) {
+  double _getBottomPadding(int index, int contentIndex, List<RoleplayContentEntity> contents) {
     if (index == _controller.visibleIndexes.length - 1) return 0;
-    final content = _controller.displayableContents[contentIndex];
+    if (contentIndex < 0 || contentIndex >= contents.length) return 0;
+    final content = contents[contentIndex];
     if (content.type == RoleplayContentType.exercise && !_controller.isExerciseCompleted(contentIndex, content.exercise)) {
       return 0;
     }
     if (content.type != RoleplayContentType.conversation) return 16.h;
-    final nextConversation = contentIndex < _controller.displayableContents.length - 1 ? _controller.displayableContents[contentIndex + 1].conversation : null;
+    final nextConversation = contentIndex < contents.length - 1 ? contents[contentIndex + 1].conversation : null;
     if (_isSamePerson(content.conversation, nextConversation)) return 0;
     return 16.h;
   }
@@ -115,10 +116,14 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     return BlocListener<RoleplayCubit, RoleplayState>(
       listenWhen: (previous, current) => previous.currentRoleplay.id != current.currentRoleplay.id,
       listener: (context, state) => unawaited(_resetForNewSection()),
-      child: AnimatedBuilder(
-        animation: _controller,
-        builder: (context, _) {
-          if (_controller.displayableContents.isEmpty) {
+      child: BlocBuilder<RoleplayCubit, RoleplayState>(
+        buildWhen: (previous, current) => previous.currentRoleplay != current.currentRoleplay,
+        builder: (context, state) {
+          final contents = state.currentRoleplay.contents.toList();
+          return AnimatedBuilder(
+            animation: _controller,
+            builder: (context, _) {
+              if (contents.isEmpty) {
             return ListView(
               controller: _scrollController,
               physics: const BouncingScrollPhysics(),
@@ -138,9 +143,9 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
               );
               if (index >= _controller.visibleIndexes.length) return const SizedBox.shrink();
               final contentIndex = _controller.visibleIndexes[index];
-              if (contentIndex >= _controller.displayableContents.length) return const SizedBox.shrink();
-              final content = _controller.displayableContents[contentIndex];
-              final previousConversation = contentIndex > 0 ? _controller.displayableContents[contentIndex - 1].conversation : null;
+              if (contentIndex >= contents.length) return const SizedBox.shrink();
+              final content = contents[contentIndex];
+              final previousConversation = contentIndex > 0 ? contents[contentIndex - 1].conversation : null;
               final audioController = _controller.audioControllerAt(contentIndex);
 
               final Widget child = switch (content.type) {
@@ -156,7 +161,6 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
                 RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
                 RoleplayContentType.exercise => RoleplayExerciseContentWidget(
                   exercise: content.exercise,
-                  contentIndex: contentIndex,
                   isCompleted: _controller.isExerciseCompleted(contentIndex, content.exercise),
                 ),
               };
@@ -166,11 +170,13 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
                 child: FadeTransition(
                   opacity: curvedAnimation,
                   child: Padding(
-                    padding: EdgeInsets.only(bottom: _getBottomPadding(index, contentIndex)),
+                    padding: EdgeInsets.only(bottom: _getBottomPadding(index, contentIndex, contents)),
                     child: child,
                   ),
                 ),
               );
+            },
+          );
             },
           );
         },
@@ -187,10 +193,12 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     required QuestionEntity exercise,
     required VoidCallback onCheckPressed,
   }) {
+    final contents = _currentContents();
     RoleplayExerciseOverlayManager.show(
       context: context,
       builder: (_) => RoleplayExerciseOverlayInteractive(
         exercise: exercise,
+        contentId: contentIndex >= 0 && contentIndex < contents.length ? contents[contentIndex].id : 0,
         contentIndex: contentIndex,
         onCheckPressed: onCheckPressed,
       ),

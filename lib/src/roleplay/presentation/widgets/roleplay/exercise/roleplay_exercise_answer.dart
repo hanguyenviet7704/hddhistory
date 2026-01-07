@@ -2,12 +2,10 @@ part of '../../../../roleplay.dart';
 
 class RoleplayExerciseAnswerCard extends StatelessWidget {
   final QuestionEntity exercise;
-  final int? contentIndex;
 
   const RoleplayExerciseAnswerCard({
     super.key,
     required this.exercise,
-    this.contentIndex,
   });
 
   TextStyle get _questionTextStyle => AppStyle.text14.copyWith(
@@ -34,41 +32,22 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<RoleplayCubit, RoleplayState, ExerciseResultEntity>(
-      selector: (state) {
-        final contents = state.currentRoleplay.contents;
-        if (contentIndex != null && contentIndex! >= 0 && contentIndex! < contents.length) {
-          final content = contents[contentIndex!];
-          if (content.type == RoleplayContentType.exercise) {
-            return content.exercise.result;
-          }
-        }
-
-        final fallback = contents.firstWhere(
-          (content) => content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id,
-          orElse: () => const RoleplayContentEntity(),
-        );
-        return fallback.exercise.result;
-      },
-      builder: (context, result) {
-        return Container(
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: AppCustomColor.roleplayAnswerBackground,
-            borderRadius: BorderRadius.circular(16.r),
+    return Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: AppCustomColor.roleplayAnswerBackground,
+        borderRadius: BorderRadius.circular(16.r),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeader(exercise.isCompleted),
+          Padding(
+            padding: EdgeInsets.fromLTRB(8.w, 12.h, 8.w, 8.h),
+            child: _buildAnswerCard(exercise.result),
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildHeader(result.isCorrect),
-              Padding(
-                padding: EdgeInsets.fromLTRB(8.w, 12.h, 8.w, 8.h),
-                child: _buildAnswerCard(result),
-              ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 

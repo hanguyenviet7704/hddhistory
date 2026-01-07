@@ -27,12 +27,14 @@ class RoleplayExerciseOverlayManager {
 
 class RoleplayExerciseOverlayInteractive extends StatefulWidget {
   final QuestionEntity exercise;
+  final int contentId;
   final int contentIndex;
   final VoidCallback onCheckPressed;
 
   const RoleplayExerciseOverlayInteractive({
     super.key,
     required this.exercise,
+    required this.contentId,
     required this.contentIndex,
     required this.onCheckPressed,
   });
@@ -142,6 +144,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
           position: _slideAnimation,
           child: RoleplayExerciseOverlay(
             exercise: widget.exercise,
+            contentId: widget.contentId,
             contentIndex: widget.contentIndex,
             isExpanded: _isExpanded,
             showResult: _showResult,
@@ -162,6 +165,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
 
 class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;
+  final int contentId;
   final int contentIndex;
   final bool isExpanded;
   final bool showResult;
@@ -177,6 +181,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
   const RoleplayExerciseOverlay({
     super.key,
     required this.exercise,
+    required this.contentId,
     required this.contentIndex,
     this.isExpanded = false,
     this.showResult = false,
@@ -203,6 +208,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: maxBodyHeight),
       child: _ExpandedExerciseBody(
         exercise: exercise,
+        contentId: contentId,
         contentIndex: contentIndex,
         onAnswerChecked: onAnswerChecked,
         showResult: showResult,

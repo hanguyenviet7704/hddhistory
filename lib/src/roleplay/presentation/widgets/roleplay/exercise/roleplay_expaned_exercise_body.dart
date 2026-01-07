@@ -2,6 +2,7 @@ part of '../../../../roleplay.dart';
 
 class _ExpandedExerciseBody extends StatelessWidget {
   final QuestionEntity exercise;
+  final int contentId;
   final int contentIndex;
   final ValueChanged<bool>? onAnswerChecked;
   final bool showResult;
@@ -10,6 +11,7 @@ class _ExpandedExerciseBody extends StatelessWidget {
 
   const _ExpandedExerciseBody({
     required this.exercise,
+    required this.contentId,
     required this.contentIndex,
     this.onAnswerChecked,
     this.showResult = false,
@@ -34,6 +36,7 @@ class _ExpandedExerciseBody extends StatelessWidget {
     };
 
     context.read<RoleplayCubit>().setExerciseResult(
+      contentId: contentId,
       contentIndex: contentIndex,
       result: baseResult.copyWith(passed: isCorrect),
     );

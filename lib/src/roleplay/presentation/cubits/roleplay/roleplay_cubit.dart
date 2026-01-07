@@ -38,19 +38,36 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
   }
 
   void setExerciseResult({
+    required int contentId,
     required int contentIndex,
     required ExerciseResultEntity result,
   }) {
     final contents = state.currentRoleplay.contents;
     if (contents.isEmpty) return;
-    if (contentIndex < 0 || contentIndex >= contents.length) return;
+    int? targetIndex;
 
-    final content = contents[contentIndex];
-    if (content.type != RoleplayContentType.exercise) return;
+    if (contentId > 0) {
+      final matchedIndices = <int>[];
+      for (int i = 0; i < contents.length; i++) {
+        final content = contents[i];
+        if (content.id == contentId && content.type == RoleplayContentType.exercise) {
+          matchedIndices.add(i);
+        }
+      }
+      if (matchedIndices.length == 1) {
+        targetIndex = matchedIndices.first;
+      }
+    }
+
+    if (targetIndex == null) {
+      if (contentIndex < 0 || contentIndex >= contents.length) return;
+      if (contents[contentIndex].type != RoleplayContentType.exercise) return;
+      targetIndex = contentIndex;
+    }
 
     final updatedContents = contents.toList();
-    updatedContents[contentIndex] = content.copyWith(
-      exercise: content.exercise.copyWith(result: result),
+    updatedContents[targetIndex] = contents[targetIndex].copyWith(
+      exercise: contents[targetIndex].exercise.copyWith(result: result),
     );
 
     emit(
