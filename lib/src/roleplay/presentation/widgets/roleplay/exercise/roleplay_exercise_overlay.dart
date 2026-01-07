@@ -30,6 +30,8 @@ class RoleplayExerciseOverlayInteractive extends StatefulWidget {
   final int contentId;
   final int contentIndex;
   final VoidCallback onCheckPressed;
+  final bool readOnly;
+  final ExerciseResultEntity? result;
 
   const RoleplayExerciseOverlayInteractive({
     super.key,
@@ -37,6 +39,8 @@ class RoleplayExerciseOverlayInteractive extends StatefulWidget {
     required this.contentId,
     required this.contentIndex,
     required this.onCheckPressed,
+    this.readOnly = false,
+    this.result,
   });
 
   @override
@@ -51,6 +55,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   bool _showResult = false;
   bool _isCorrect = false;
   double _dragDistance = 0;
+  bool _isClosing = false;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
@@ -58,9 +63,16 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   @override
   void initState() {
     super.initState();
+    if (widget.readOnly && widget.result != null) {
+      _showResult = true;
+      _isExpanded = true;
+      _isCorrect = widget.result!.passed;
+      _applyReadOnlyResult(widget.result!);
+    }
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 240),
+      reverseDuration: const Duration(milliseconds: 300),
     );
     final curved = CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic);
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(curved);
@@ -86,6 +98,14 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
+    if (widget.readOnly || _showResult) {
+      _dragDistance += details.delta.dy;
+      if (_dragDistance >= _dragThreshold) {
+        _closeOverlay();
+        _dragDistance = 0;
+      }
+      return;
+    }
     _dragDistance += details.delta.dy;
     if (_dragDistance <= -_dragThreshold) {
       _expand();
@@ -99,6 +119,14 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   }
 
   void _handleDragEnd(DragEndDetails details) {
+    if (widget.readOnly || _showResult) {
+      final double velocity = details.primaryVelocity ?? 0;
+      if (velocity >= _velocityThreshold) {
+        _closeOverlay();
+      }
+      _dragDistance = 0;
+      return;
+    }
     final double velocity = details.primaryVelocity ?? 0;
     if (velocity <= -_velocityThreshold) {
       _expand();
@@ -114,6 +142,61 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
       _isCorrect = isCorrect;
       _isExpanded = true;
     });
+  }
+
+  void _closeOverlay() {
+    if (_isClosing) return;
+    _isClosing = true;
+    unawaited(_dismissOverlay());
+  }
+
+  Future<void> _dismissOverlay() async {
+    await _animationController.reverse();
+    if (!mounted) return;
+
+    if (widget.readOnly) {
+      RoleplayExerciseOverlayManager.hide();
+      return;
+    }
+
+    if (_showResult) {
+      widget.onCheckPressed();
+      return;
+    }
+
+    RoleplayExerciseOverlayManager.hide();
+  }
+
+  void _applyReadOnlyResult(ExerciseResultEntity result) {
+    final ExerciseCubit exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    exerciseCubit.setRoleplayQuestions(
+      LearningItemEntity(
+        type: LearningItemType.roleplay,
+        mainQuestions: [widget.exercise],
+      ),
+    );
+
+    switch (widget.exercise.type) {
+      case QuestionTypeEnum.singleChoice:
+      case QuestionTypeEnum.multipleChoice:
+        AppDI.injector.get<ChoiceCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.dragAndDrop:
+        AppDI.injector.get<DragAndDropCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.arrangeTheSequence:
+        AppDI.injector.get<ArrangeTheSequenceCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.cuesPlacement:
+        AppDI.injector.get<CuesPlacementCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.stressPlacement:
+        AppDI.injector.get<MarkStressWordCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.speaking:
+        AppDI.injector.get<SpeakingCubit>().applyExerciseResult(result);
+        break;
+    }
   }
 
   @override
@@ -146,13 +229,14 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
             exercise: widget.exercise,
             contentId: widget.contentId,
             contentIndex: widget.contentIndex,
+            readOnly: widget.readOnly,
             isExpanded: _isExpanded,
             showResult: _showResult,
             isCorrect: _isCorrect,
             onTapToAnswer: _expand,
             onCheckPressed: widget.onCheckPressed,
-            onAnswerChecked: _handleAnswerChecked,
-            onTapOutside: _collapse,
+            onAnswerChecked: widget.readOnly ? null : _handleAnswerChecked,
+            onTapOutside: widget.readOnly || _showResult ? _closeOverlay : _collapse,
             onDragStart: _handleDragStart,
             onDragUpdate: _handleDragUpdate,
             onDragEnd: _handleDragEnd,
@@ -167,6 +251,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;
   final int contentId;
   final int contentIndex;
+  final bool readOnly;
   final bool isExpanded;
   final bool showResult;
   final bool isCorrect;
@@ -183,6 +268,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
     required this.exercise,
     required this.contentId,
     required this.contentIndex,
+    this.readOnly = false,
     this.isExpanded = false,
     this.showResult = false,
     this.isCorrect = false,
@@ -210,6 +296,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
         exercise: exercise,
         contentId: contentId,
         contentIndex: contentIndex,
+        readOnly: readOnly,
         onAnswerChecked: onAnswerChecked,
         showResult: showResult,
         isCorrect: isCorrect,
@@ -220,7 +307,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
 
     return Stack(
       children: [
-        if (isExpanded && !showResult)
+        if (isExpanded)
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -251,9 +338,9 @@ class RoleplayExerciseOverlay extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _DragHandle(
-                    onDragStart: showResult ? null : onDragStart,
-                    onDragUpdate: showResult ? null : onDragUpdate,
-                    onDragEnd: showResult ? null : onDragEnd,
+                    onDragStart: onDragStart,
+                    onDragUpdate: onDragUpdate,
+                    onDragEnd: onDragEnd,
                   ),
                   AnimatedCrossFade(
                     duration: const Duration(milliseconds: 240),

@@ -166,6 +166,9 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
                       child: RoleplayExerciseContentWidget(
                         exercise: content.exercise,
                         isCompleted: _controller.isExerciseCompleted(contentIndex, content.exercise),
+                        onTapResult: _controller.isExerciseCompleted(contentIndex, content.exercise)
+                            ? () => _showResultOverlay(contentIndex, content.exercise)
+                            : null,
                       ),
                     ),
                   };
@@ -215,5 +218,29 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         AppDI.injector.get<ExerciseCubit>().setRoleplayQuestions(learningItem);
       },
     );
+  }
+
+  void _showResultOverlay(int contentIndex, QuestionEntity exercise) {
+    if (_controller.isOverlayVisible) return;
+    _controller.stopAllAudio();
+
+    RoleplayExerciseOverlayManager.show(
+      context: context,
+      builder: (_) => RoleplayExerciseOverlayInteractive(
+        exercise: exercise,
+        contentId: _currentContentId(contentIndex),
+        contentIndex: contentIndex,
+        readOnly: true,
+        result: exercise.result,
+        onCheckPressed: () => RoleplayExerciseOverlayManager.hide(),
+      ),
+      onOverlayShown: () {},
+    );
+  }
+
+  int _currentContentId(int contentIndex) {
+    final contents = _currentContents();
+    if (contentIndex < 0 || contentIndex >= contents.length) return 0;
+    return contents[contentIndex].id;
   }
 }

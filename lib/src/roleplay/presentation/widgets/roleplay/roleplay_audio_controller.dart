@@ -15,6 +15,7 @@ class RoleplayAudioController {
   just_audio.AudioPlayer? _player;
   Future<void>? _initialization;
   bool _disposed = false;
+  Completer<void>? _stopSignal;
 
   bool get hasAudio => url.isNotEmpty && _player != null;
 
@@ -36,6 +37,14 @@ class RoleplayAudioController {
     if (!await _ensureReady() || _player == null) return;
     await _player!.seek(Duration.zero);
     await _player!.play();
+  }
+
+  Future<void> stop() async {
+    if (!await _ensureReady() || _player == null) return;
+    await _player!.pause();
+    await _player!.seek(Duration.zero);
+    _stopSignal?.complete();
+    _stopSignal = null;
   }
 
   Future<void> togglePlayPause() async {
@@ -74,9 +83,13 @@ class RoleplayAudioController {
     await replay();
 
     try {
-      await _player!.processingStateStream.firstWhere(
-        (state) => state == just_audio.ProcessingState.completed,
-      );
+      _stopSignal = Completer<void>();
+      await Future.any([
+        _player!.processingStateStream.firstWhere(
+          (state) => state == just_audio.ProcessingState.completed,
+        ),
+        _stopSignal!.future,
+      ]);
     } catch (_) {
       // If the stream completes early (e.g. controller disposed) we gracefully stop waiting.
     }
@@ -85,6 +98,8 @@ class RoleplayAudioController {
       await _player!.pause();
       await _player!.seek(Duration.zero);
     }
+
+    _stopSignal = null;
   }
 
   Future<void> dispose() async {

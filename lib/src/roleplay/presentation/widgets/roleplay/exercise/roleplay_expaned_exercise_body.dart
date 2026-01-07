@@ -4,6 +4,7 @@ class _ExpandedExerciseBody extends StatelessWidget {
   final QuestionEntity exercise;
   final int contentId;
   final int contentIndex;
+  final bool readOnly;
   final ValueChanged<bool>? onAnswerChecked;
   final bool showResult;
   final bool isCorrect;
@@ -13,6 +14,7 @@ class _ExpandedExerciseBody extends StatelessWidget {
     required this.exercise,
     required this.contentId,
     required this.contentIndex,
+    this.readOnly = false,
     this.onAnswerChecked,
     this.showResult = false,
     this.isCorrect = false,
@@ -43,27 +45,28 @@ class _ExpandedExerciseBody extends StatelessWidget {
   }
 
   Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {
+    final onChecked = readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
     return switch (questionType) {
       QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+        onAnswerChecked: onChecked,
       ),
       QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+        onAnswerChecked: onChecked,
       ),
       QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+        onAnswerChecked: onChecked,
       ),
       QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+        onAnswerChecked: onChecked,
       ),
       QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+        onAnswerChecked: onChecked,
       ),
       QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+        onAnswerChecked: onChecked,
       ),
       QuestionTypeEnum.speaking => SpeakingLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
+        onAnswerChecked: onChecked,
       ),
     };
   }
@@ -142,7 +145,10 @@ class _ExpandedExerciseBody extends StatelessWidget {
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Column(
                 children: [
-                  lessonBody,
+                  AbsorbPointer(
+                    absorbing: readOnly,
+                    child: lessonBody,
+                  ),
                   60.verticalSpace,
                 ],
               ),

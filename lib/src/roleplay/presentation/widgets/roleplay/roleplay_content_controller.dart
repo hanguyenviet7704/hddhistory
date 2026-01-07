@@ -46,6 +46,12 @@ class RoleplayContentController extends ChangeNotifier {
 
   RoleplayAudioController? audioControllerAt(int index) => _audioControllers[index];
 
+  void stopAllAudio() {
+    for (final controller in _audioControllers.values) {
+      unawaited(controller.stop());
+    }
+  }
+
   bool isExerciseCompleted(int contentIndex, QuestionEntity exercise) {
     return exercise.isCompleted || _completedExerciseIndexes.contains(contentIndex);
   }
@@ -212,6 +218,23 @@ class RoleplayContentController extends ChangeNotifier {
     _completedExerciseIndexes.add(contentIndex);
     notifyListeners();
     _requestAutoScroll();
+    _completePendingExerciseWithDelay(contentIndex);
+  }
+
+  void _completePendingExerciseWithDelay(int contentIndex) {
+    final bool shouldDelay = _visibleIndexes.length < _currentContents().length;
+    if (!shouldDelay) {
+      _completePendingExercise();
+      return;
+    }
+
+    unawaited(_delayAndComplete(contentIndex));
+  }
+
+  Future<void> _delayAndComplete(int contentIndex) async {
+    await Future.delayed(const Duration(seconds: 2));
+    if (_isDisposing) return;
+    if (_pendingExerciseContentIndex != contentIndex) return;
     _completePendingExercise();
   }
 
