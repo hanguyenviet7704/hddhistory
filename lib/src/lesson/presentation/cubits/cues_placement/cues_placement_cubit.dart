@@ -70,11 +70,16 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
       ),
     );
 
+    _updateUserProgressExercise();
+
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
   }
 
+  void _updateUserProgressExercise() {
+    // TODO: Update user progress exercise
+  }
   int pointCalculation() {
     /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
     /// Sai ko bị trừ điểm
@@ -152,11 +157,7 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
 
 bool _cuesPlacementIsCorrect(QuestionEntity question, Map<int, int> placedMarks) {
   final placedPositions = placedMarks.keys.toSet();
-  final correctPositions = question.answer
-      .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
-      .where((index) => index > 0)
-      .map((index) => index - 1)
-      .toSet();
+  final correctPositions = question.answer.map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
 
   return placedPositions.length == correctPositions.length && placedPositions.every((pos) => correctPositions.contains(pos));
 }

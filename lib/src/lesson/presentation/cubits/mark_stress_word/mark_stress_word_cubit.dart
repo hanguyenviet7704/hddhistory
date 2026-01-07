@@ -47,9 +47,15 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
       ),
     );
 
+    _updateUserProgressExercise();
+
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+  }
+
+  void _updateUserProgressExercise() {
+    // TODO: Update user progress exercise
   }
 
   int pointCalculation() {

@@ -88,9 +88,15 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
       ),
     );
 
+    _updateUserProgressExercise();
+
     if (!allCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+  }
+
+  void _updateUserProgressExercise() {
+    // TODO: Update user progress exercise
   }
 
   int pointCalculation() {

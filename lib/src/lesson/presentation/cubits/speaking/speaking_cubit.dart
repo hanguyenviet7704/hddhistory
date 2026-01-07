@@ -305,6 +305,10 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     return payload.trimRight();
   }
 
+  void updateUserProgressExercise() {
+    // TODO: Update user progress exercise
+  }
+
   // Toggle explanation visibility
   void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
 

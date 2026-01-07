@@ -47,27 +47,13 @@ class _ExpandedExerciseBody extends StatelessWidget {
   Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {
     final onChecked = readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
     return switch (questionType) {
-      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(
-        onAnswerChecked: onChecked,
-      ),
-      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(
-        onAnswerChecked: onChecked,
-      ),
-      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(
-        onAnswerChecked: onChecked,
-      ),
-      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(
-        onAnswerChecked: onChecked,
-      ),
-      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(
-        onAnswerChecked: onChecked,
-      ),
-      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(
-        onAnswerChecked: onChecked,
-      ),
-      QuestionTypeEnum.speaking => SpeakingLessonBody(
-        onAnswerChecked: onChecked,
-      ),
+      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: onChecked),
     };
   }
 
