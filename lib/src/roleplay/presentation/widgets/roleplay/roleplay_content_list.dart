@@ -24,7 +24,6 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
       onScheduleScrollToBottom: _scheduleScrollToBottom,
       onShowExerciseOverlay: _showExerciseOverlay,
       onHideOverlays: () {
-        RoleplayExerciseResultOverlayManager.hide();
         RoleplayExerciseOverlayManager.hide();
       },
       onSectionCompletionChanged: (isCompleted) {
@@ -187,7 +186,6 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     required QuestionEntity exercise,
     required VoidCallback onCheckPressed,
   }) {
-    RoleplayExerciseResultOverlayManager.hide();
     RoleplayExerciseOverlayManager.show(
       context: context,
       builder: (_) => RoleplayExerciseOverlayInteractive(

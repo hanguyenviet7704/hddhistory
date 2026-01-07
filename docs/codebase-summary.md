@@ -1,12 +1,10 @@
 # Codebase Summary
 
-_Last updated: 2025-12-24_
+_Last updated: 2026-01-07_
 
 ## Snapshot
 - **Tech stack**: Flutter 3/Dart 3.10+, Clean Architecture, BLoC/HydratedBloc, Dio + Retrofit + GraphQL, get_it + injectable, TaskEither via `fpdart`.
-- **Repo size (repomix 2025-12-24)**: 998 tracked files, ~3.4M characters (~809k tokens). Largest contributors are `pubspec.lock`, localization CLI scripts, and `lib/config/themes/theme_collection.dart`.
-- **Security exclusions**: `.info/key/*.p8`, `.info/key/*.json`, and `.info/distribution/test_password.txt` flagged and omitted from packs.
-- **Binary artifacts**: Mason hook `.dill` files excluded from compaction.
+- **Repo size**: See `git status` and `docs/` snapshots for current scope; avoid committing secrets from `.info/key/` or `.env/`.
 - **CI workflows**: `.github/workflows/android-ci-cd.yml`, `.github/workflows/tools-smoke.yml`.
 
 ## Architectural Layout
@@ -57,6 +55,5 @@ _Last updated: 2025-12-24_
 - Secrets: Sensitive signing/config files kept under `.info/key/` and excluded from version control + repomix outputs.
 
 ## Recommended Next Steps
-1. Keep repomix snapshot refreshed before major releases to detect large binary drift.
-2. Expand documentation coverage for API contracts per feature once domain models stabilize.
-3. Wire automated validation that `.info/` mirrors `tools` expectations (currently manual via scripts).
+1. Expand documentation coverage for API contracts per feature once domain models stabilize.
+2. Wire automated validation that `.info/` mirrors `tools` expectations (currently manual via scripts).

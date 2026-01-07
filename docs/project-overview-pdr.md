@@ -1,6 +1,6 @@
 # Project Overview & PDR
 
-_Last updated: 2025-12-24_
+_Last updated: 2026-01-07_
 
 ## 1. Product Summary
 Meup delivers interactive language-learning experiences that blend scripted lessons, AI-driven roleplay, and tracked progress. The Flutter app targets Android/iOS with a shared Clean Architecture core and heavy automation for builds, localization, and distribution.
@@ -56,7 +56,7 @@ Meup delivers interactive language-learning experiences that blend scripted less
 ## 9. Version History
 | Version | Date | Changes |
 | --- | --- | --- |
-| 0.1 | 2025-12-24 | Initial PDR seed covering architecture, requirements, tooling hand-offs. |
+| 0.2 | 2026-01-07 | Updated documentation timestamps and aligned requirements with current tooling/architecture.
 
 ## 10. Risks & Mitigations
 | Risk | Impact | Mitigation |

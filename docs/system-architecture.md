@@ -1,6 +1,6 @@
 # System Architecture
 
-_Last updated: 2025-12-24_
+_Last updated: 2026-01-07_
 
 ## 1. High-Level View
 - **Client**: Flutter app targeting Android, iOS, and desktop/web (build scripts focus on mobile) with Clean Architecture modules.
@@ -48,7 +48,8 @@ UI Widgets → Cubits/BLoCs → Use Cases → Repository Interfaces → Reposito
 1. Lesson page loads via `LessonRoute` defined in go_router.
 2. `ExerciseCubit` requests question payloads via `FetchExerciseUseCase`.
 3. Repository hits remote API and merges with local progress caches.
-4. Presentation layer renders overlays (recent commit focus) and tracks answers.
+4. Presentation layer renders overlays and tracks answers.
+5. Roleplay exercises may include audio answer playback with dedicated UI components.
 
 ## 5. Build & Deployment Architecture
 - **Flavor Entrypoints**: `main_dev.dart`, `main_stg.dart`, `main_prod.dart` configure `FlavorConfig` (env URLs, Firebase options, feature toggles).

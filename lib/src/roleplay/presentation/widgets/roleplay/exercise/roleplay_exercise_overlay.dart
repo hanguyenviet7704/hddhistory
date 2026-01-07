@@ -44,6 +44,8 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   static const double _velocityThreshold = 500;
 
   bool _isExpanded = false;
+  bool _showResult = false;
+  bool _isCorrect = false;
   double _dragDistance = 0;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
@@ -102,6 +104,14 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
     _dragDistance = 0;
   }
 
+  void _handleAnswerChecked(bool isCorrect) {
+    setState(() {
+      _showResult = true;
+      _isCorrect = isCorrect;
+      _isExpanded = true;
+    });
+  }
+
   @override
   void dispose() {
     _animationController.dispose();
@@ -130,8 +140,11 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
           child: RoleplayExerciseOverlay(
             exercise: widget.exercise,
             isExpanded: _isExpanded,
+            showResult: _showResult,
+            isCorrect: _isCorrect,
             onTapToAnswer: _expand,
             onCheckPressed: widget.onCheckPressed,
+            onAnswerChecked: _handleAnswerChecked,
             onTapOutside: _collapse,
             onDragStart: _handleDragStart,
             onDragUpdate: _handleDragUpdate,
@@ -146,8 +159,11 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
 class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;
   final bool isExpanded;
+  final bool showResult;
+  final bool isCorrect;
   final VoidCallback? onTapToAnswer;
   final VoidCallback? onCheckPressed;
+  final ValueChanged<bool>? onAnswerChecked;
   final VoidCallback? onTapOutside;
   final GestureDragStartCallback? onDragStart;
   final GestureDragUpdateCallback? onDragUpdate;
@@ -157,8 +173,11 @@ class RoleplayExerciseOverlay extends StatelessWidget {
     super.key,
     required this.exercise,
     this.isExpanded = false,
+    this.showResult = false,
+    this.isCorrect = false,
     this.onTapToAnswer,
     this.onCheckPressed,
+    this.onAnswerChecked,
     this.onTapOutside,
     this.onDragStart,
     this.onDragUpdate,
@@ -178,13 +197,17 @@ class RoleplayExerciseOverlay extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: maxBodyHeight),
       child: _ExpandedExerciseBody(
         exercise: exercise,
-        onCheckPressed: onCheckPressed,
+        onAnswerChecked: onAnswerChecked,
+        showResult: showResult,
+        isCorrect: isCorrect,
+        onContinue: onCheckPressed,
       ),
     );
+    final bool isForcedExpanded = showResult || isExpanded;
 
     return Stack(
       children: [
-        if (isExpanded)
+        if (isExpanded && !showResult)
           Positioned.fill(
             child: GestureDetector(
               behavior: HitTestBehavior.translucent,
@@ -215,9 +238,9 @@ class RoleplayExerciseOverlay extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   _DragHandle(
-                    onDragStart: onDragStart,
-                    onDragUpdate: onDragUpdate,
-                    onDragEnd: onDragEnd,
+                    onDragStart: showResult ? null : onDragStart,
+                    onDragUpdate: showResult ? null : onDragUpdate,
+                    onDragEnd: showResult ? null : onDragEnd,
                   ),
                   AnimatedCrossFade(
                     duration: const Duration(milliseconds: 240),
@@ -225,7 +248,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
                     secondCurve: Curves.easeInCubic,
                     sizeCurve: Curves.easeOutCubic,
                     alignment: Alignment.topCenter,
-                    crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                    crossFadeState: isForcedExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
                     firstChild: collapsedBody,
                     secondChild: expandedBody,
                   ),

@@ -1,6 +1,6 @@
 # Code Standards
 
-_Last updated: 2025-12-24_
+_Last updated: 2026-01-07_
 
 ## 1. Guiding Principles
 - **Clean Architecture adherence**: Presentation, domain, and data layers must remain isolated (no UI imports in domain/data; no HTTP/Dio exposure above data).

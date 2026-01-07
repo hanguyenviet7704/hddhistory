@@ -37,6 +37,21 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
   }
 
+  void setExerciseResult(ExerciseResultEntity result) {
+    if (state.currentRoleplay.contents.isEmpty) return;
+    final updatedContents = state.currentRoleplay.contents.map((content) {
+      if (content.type != RoleplayContentType.exercise || content.exercise.id.toString() != result.exerciseId) {
+        return content;
+      }
+      return content.copyWith(exercise: content.exercise.copyWith(result: result));
+    }).toList();
+    emit(
+      state.copyWith(
+        currentLearningItem: state.currentLearningItem.copyWith(roleplay: state.currentRoleplay.copyWith(contents: updatedContents)),
+      ),
+    );
+  }
+
   void setExerciseRecordAnswer({
     required int questionId,
     String? textAnswer,
