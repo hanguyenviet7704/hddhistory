@@ -108,6 +108,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       exerciseId: question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: state.isCorrect,
       multipleAnswer: multipleAnswer,
       singleAnswer: singleAnswer,
     );

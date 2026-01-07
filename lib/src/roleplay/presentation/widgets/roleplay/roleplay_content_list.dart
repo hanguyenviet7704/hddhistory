@@ -156,6 +156,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
                 RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
                 RoleplayContentType.exercise => RoleplayExerciseContentWidget(
                   exercise: content.exercise,
+                  contentIndex: contentIndex,
                   isCompleted: _controller.isExerciseCompleted(contentIndex, content.exercise),
                 ),
               };
@@ -190,6 +191,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
       context: context,
       builder: (_) => RoleplayExerciseOverlayInteractive(
         exercise: exercise,
+        contentIndex: contentIndex,
         onCheckPressed: onCheckPressed,
       ),
       onOverlayShown: () {

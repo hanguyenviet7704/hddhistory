@@ -22,5 +22,5 @@ abstract class ExerciseResultEntity with _$ExerciseResultEntity {
 }
 
 extension ExerciseResultEntityExtension on ExerciseResultEntity {
-  bool get isCorrect => false;
+  bool get isCorrect => passed;
 }

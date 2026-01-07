@@ -2,11 +2,13 @@ part of '../../../../roleplay.dart';
 
 class RoleplayExerciseContentWidget extends StatelessWidget {
   final QuestionEntity exercise;
+  final int contentIndex;
   final bool isCompleted;
 
   const RoleplayExerciseContentWidget({
     super.key,
     required this.exercise,
+    required this.contentIndex,
     this.isCompleted = false,
   });
 
@@ -28,6 +30,7 @@ class RoleplayExerciseContentWidget extends StatelessWidget {
           ? RoleplayExerciseAnswerCard(
               key: const ValueKey('completed'),
               exercise: exercise,
+              contentIndex: contentIndex,
             )
           : const SizedBox.shrink(key: ValueKey('empty')),
     );

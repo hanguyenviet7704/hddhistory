@@ -27,11 +27,13 @@ class RoleplayExerciseOverlayManager {
 
 class RoleplayExerciseOverlayInteractive extends StatefulWidget {
   final QuestionEntity exercise;
+  final int contentIndex;
   final VoidCallback onCheckPressed;
 
   const RoleplayExerciseOverlayInteractive({
     super.key,
     required this.exercise,
+    required this.contentIndex,
     required this.onCheckPressed,
   });
 
@@ -130,6 +132,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
         BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
         BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
         BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<RoleplayCubit>()),
         // BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
         // BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
       ],
@@ -139,6 +142,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
           position: _slideAnimation,
           child: RoleplayExerciseOverlay(
             exercise: widget.exercise,
+            contentIndex: widget.contentIndex,
             isExpanded: _isExpanded,
             showResult: _showResult,
             isCorrect: _isCorrect,
@@ -158,6 +162,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
 
 class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;
+  final int contentIndex;
   final bool isExpanded;
   final bool showResult;
   final bool isCorrect;
@@ -172,6 +177,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
   const RoleplayExerciseOverlay({
     super.key,
     required this.exercise,
+    required this.contentIndex,
     this.isExpanded = false,
     this.showResult = false,
     this.isCorrect = false,
@@ -197,6 +203,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: maxBodyHeight),
       child: _ExpandedExerciseBody(
         exercise: exercise,
+        contentIndex: contentIndex,
         onAnswerChecked: onAnswerChecked,
         showResult: showResult,
         isCorrect: isCorrect,

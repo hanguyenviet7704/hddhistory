@@ -2,10 +2,12 @@ part of '../../../../roleplay.dart';
 
 class RoleplayExerciseAnswerCard extends StatelessWidget {
   final QuestionEntity exercise;
+  final int? contentIndex;
 
   const RoleplayExerciseAnswerCard({
     super.key,
     required this.exercise,
+    this.contentIndex,
   });
 
   TextStyle get _questionTextStyle => AppStyle.text14.copyWith(
@@ -33,8 +35,21 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocSelector<RoleplayCubit, RoleplayState, ExerciseResultEntity>(
-      selector: (state) =>
-          state.currentRoleplay.contents.firstWhere((content) => content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id).exercise.result,
+      selector: (state) {
+        final contents = state.currentRoleplay.contents;
+        if (contentIndex != null && contentIndex! >= 0 && contentIndex! < contents.length) {
+          final content = contents[contentIndex!];
+          if (content.type == RoleplayContentType.exercise) {
+            return content.exercise.result;
+          }
+        }
+
+        final fallback = contents.firstWhere(
+          (content) => content.type == RoleplayContentType.exercise && content.exercise.id == exercise.id,
+          orElse: () => const RoleplayContentEntity(),
+        );
+        return fallback.exercise.result;
+      },
       builder: (context, result) {
         return Container(
           width: double.infinity,

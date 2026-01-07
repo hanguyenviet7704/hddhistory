@@ -105,6 +105,7 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
       exerciseId: question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: state.isCorrect,
       dragDropAnswer: dragDropAnswer,
     );
   }

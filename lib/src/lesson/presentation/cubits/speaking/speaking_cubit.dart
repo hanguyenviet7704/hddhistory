@@ -327,6 +327,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       exerciseId: question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: true,
       recordAnswer: recordAnswer,
     );
   }

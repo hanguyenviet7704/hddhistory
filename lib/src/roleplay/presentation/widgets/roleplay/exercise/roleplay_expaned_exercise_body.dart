@@ -2,6 +2,7 @@ part of '../../../../roleplay.dart';
 
 class _ExpandedExerciseBody extends StatelessWidget {
   final QuestionEntity exercise;
+  final int contentIndex;
   final ValueChanged<bool>? onAnswerChecked;
   final bool showResult;
   final bool isCorrect;
@@ -9,6 +10,7 @@ class _ExpandedExerciseBody extends StatelessWidget {
 
   const _ExpandedExerciseBody({
     required this.exercise,
+    required this.contentIndex,
     this.onAnswerChecked,
     this.showResult = false,
     this.isCorrect = false,
@@ -16,7 +18,25 @@ class _ExpandedExerciseBody extends StatelessWidget {
   });
 
   void _handleAnswerChecked(BuildContext context, bool isCorrect) {
+    _storeExerciseResult(context, isCorrect);
     onAnswerChecked?.call(isCorrect);
+  }
+
+  void _storeExerciseResult(BuildContext context, bool isCorrect) {
+    final ExerciseResultEntity baseResult = switch (exercise.type) {
+      QuestionTypeEnum.singleChoice => context.read<ChoiceCubit>().toExerciseResult(),
+      QuestionTypeEnum.multipleChoice => context.read<ChoiceCubit>().toExerciseResult(),
+      QuestionTypeEnum.dragAndDrop => context.read<DragAndDropCubit>().toExerciseResult(),
+      QuestionTypeEnum.arrangeTheSequence => context.read<ArrangeTheSequenceCubit>().toExerciseResult(),
+      QuestionTypeEnum.cuesPlacement => context.read<CuesPlacementCubit>().toExerciseResult(),
+      QuestionTypeEnum.stressPlacement => context.read<MarkStressWordCubit>().toExerciseResult(),
+      QuestionTypeEnum.speaking => context.read<SpeakingCubit>().toExerciseResult(),
+    };
+
+    context.read<RoleplayCubit>().setExerciseResult(
+      contentIndex: contentIndex,
+      result: baseResult.copyWith(passed: isCorrect),
+    );
   }
 
   Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {

@@ -102,6 +102,7 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
       exerciseId: question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: state.isCorrect,
       dragDropAnswer: dragDropAnswer,
     );
   }
