@@ -8,44 +8,6 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     required this.exercise,
   });
 
-  List<String> get _correctOptions {
-    final options = exercise.options.where((o) => o.isCorrect).toList();
-    if (options.isNotEmpty) {
-      return options.map((o) => o.value.text.isNotEmpty ? o.value.text : o.text.text).where((text) => text.isNotEmpty).toList();
-    }
-    return exercise.answer.map((a) => a.correctAnswer.text).toList();
-  }
-
-  List<String> get _sequenceAnswers {
-    // Primary source: ordered answers from backend
-    if (exercise.answer.isNotEmpty) {
-      return exercise.answer
-          .map((a) {
-            // Prefer explicit correctAnswer text
-            if (a.correctAnswer.text.isNotEmpty) return a.correctAnswer.text;
-
-            // Fallback: map by id to option text/value
-            final match = exercise.options.firstWhere(
-              (o) => o.id == a.id,
-              orElse: () => const OptionEntity(),
-            );
-            if (match.id != 0) {
-              if (match.text.text.isNotEmpty) return match.text.text;
-              if (match.value.text.isNotEmpty) return match.value.text;
-            }
-            return '';
-          })
-          .where((text) => text.isNotEmpty)
-          .toList();
-    }
-
-    // Fallback: use all options in their given order
-    final orderedOptions = exercise.options.map((o) => o.text.text.isNotEmpty ? o.text.text : o.value.text).where((text) => text.isNotEmpty).toList();
-    if (orderedOptions.isNotEmpty) return orderedOptions;
-
-    return _correctOptions;
-  }
-
   TextStyle get _questionTextStyle => AppStyle.text14.copyWith(
     color: AppCustomColor.textSecondary,
     fontWeight: FontWeight.w700,
@@ -64,6 +26,10 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     height: 1.75,
   );
 
+  bool get _showsStatusHeader => exercise.type != QuestionTypeEnum.speaking;
+
+  String get _answerLabel => exercise.type == QuestionTypeEnum.speaking ? t.exercise.exerciseYourAnswer : t.exercise.exerciseAnswer;
+
   @override
   Widget build(BuildContext context) {
     return BlocSelector<RoleplayCubit, RoleplayState, ExerciseResultEntity>(
@@ -79,10 +45,10 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildLeading(context, result.isCorrect),
+              _buildHeader(result.isCorrect),
               Padding(
                 padding: EdgeInsets.fromLTRB(8.w, 12.h, 8.w, 8.h),
-                child: _buildAnswerCard(context, result),
+                child: _buildAnswerCard(result),
               ),
             ],
           ),
@@ -91,10 +57,8 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     );
   }
 
-  Widget _buildLeading(BuildContext context, bool isCorrect) {
-    final bool showStatus = exercise.type != QuestionTypeEnum.speaking;
-
-    if (showStatus) {
+  Widget _buildHeader(bool isCorrect) {
+    if (_showsStatusHeader) {
       return Padding(
         padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 0),
         child: Column(
@@ -103,7 +67,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                RoleplayStatusRow(isCorrect: isCorrect),
+                _RoleplayStatusRow(isCorrect: isCorrect),
                 _buildChevron(size: 18.w),
               ],
             ),
@@ -145,9 +109,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     );
   }
 
-  Widget _buildAnswerCard(BuildContext context, ExerciseResultEntity result) {
-    final String label = exercise.type == QuestionTypeEnum.speaking ? t.exercise.exerciseYourAnswer : t.exercise.exerciseAnswer;
-
+  Widget _buildAnswerCard(ExerciseResultEntity result) {
     return Container(
       width: double.infinity,
       padding: EdgeInsets.all(16.w),
@@ -166,28 +128,35 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppText(
-            label.toUpperCase(),
+            _answerLabel.toUpperCase(),
             maxLines: 1,
             overflow: TextOverflow.visible,
             style: _labelTextStyle,
           ),
           4.verticalSpace,
-          _buildAnswerBody(context, result),
+          _buildAnswerBody(result),
         ],
       ),
     );
   }
 
-  Widget _buildAnswerBody(BuildContext context, ExerciseResultEntity result) {
+  Widget _buildAnswerBody(ExerciseResultEntity result) {
+    final correctOptions = _resolveCorrectOptionTexts();
+    final sequenceAnswers = _resolveSequenceAnswers(correctOptions);
+
     switch (exercise.type) {
       case QuestionTypeEnum.singleChoice:
-        return RoleplayAnswerLines(items: [_correctOptions.firstOrNull ?? ''], style: _answerTextStyle);
+        return RoleplayAnswerLines(
+          items: [correctOptions.firstOrNull ?? ''],
+          style: _answerTextStyle,
+        );
       case QuestionTypeEnum.multipleChoice:
-        return RoleplayAnswerLines(items: _correctOptions, style: _answerTextStyle);
+        return RoleplayAnswerLines(items: correctOptions, style: _answerTextStyle);
       case QuestionTypeEnum.dragAndDrop:
+        final gapAnswers = exercise.answer.isNotEmpty ? exercise.answer.map((answer) => answer.correctAnswer.text).toList() : correctOptions;
         return RoleplayGapFillingAnswer(
           template: exercise.targetArea.text,
-          answers: exercise.answer.isNotEmpty ? exercise.answer.map((a) => a.correctAnswer.text).toList() : _correctOptions,
+          answers: gapAnswers,
           baseStyle: _answerTextStyle,
           highlightStyle: _answerTextStyle.copyWith(
             color: AppCustomColor.successGreen,
@@ -195,7 +164,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
           ),
         );
       case QuestionTypeEnum.arrangeTheSequence:
-        return RoleplaySequenceAnswerList(items: _sequenceAnswers, style: _answerTextStyle);
+        return RoleplaySequenceAnswerList(items: sequenceAnswers, style: _answerTextStyle);
       case QuestionTypeEnum.stressPlacement:
       case QuestionTypeEnum.cuesPlacement:
         return const SizedBox.shrink();
@@ -203,11 +172,43 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
         return RoleplaySpeakingAnswer(recordAnswer: result.recordAnswer, textStyle: _answerTextStyle);
     }
   }
+
+  List<String> _resolveCorrectOptionTexts() {
+    final options = exercise.options.where((option) => option.isCorrect).toList();
+    if (options.isNotEmpty) {
+      return options.map((option) => option.textValue).where((text) => text.isNotEmpty).toList();
+    }
+    return exercise.answer.map((answer) => answer.correctAnswer.text).where((text) => text.isNotEmpty).toList();
+  }
+
+  List<String> _resolveSequenceAnswers(List<String> fallbackCorrectOptions) {
+    // Primary source: ordered answers from backend
+    if (exercise.answer.isNotEmpty) {
+      return exercise.answer.map(_sequenceAnswerText).where((text) => text.isNotEmpty).toList();
+    }
+
+    // Fallback: use all options in their given order
+    final orderedOptions = exercise.options.map((option) => option.textValue).where((text) => text.isNotEmpty).toList();
+    if (orderedOptions.isNotEmpty) return orderedOptions;
+
+    return fallbackCorrectOptions;
+  }
+
+  String _sequenceAnswerText(AnswerEntity answer) {
+    if (answer.correctAnswer.text.isNotEmpty) return answer.correctAnswer.text;
+
+    final match = exercise.options.firstWhere(
+      (option) => option.id == answer.id,
+      orElse: () => const OptionEntity(),
+    );
+
+    return match.textValue;
+  }
 }
 
-class RoleplayStatusRow extends StatelessWidget {
+class _RoleplayStatusRow extends StatelessWidget {
   final bool isCorrect;
-  const RoleplayStatusRow({super.key, required this.isCorrect});
+  const _RoleplayStatusRow({required this.isCorrect});
 
   Color get statusColor => isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
   String get statusText => isCorrect ? t.exercise.exerciseFeedbackRight : t.exercise.exerciseFeedbackNotTrue;

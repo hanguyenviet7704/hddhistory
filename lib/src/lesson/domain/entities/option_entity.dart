@@ -39,4 +39,9 @@ extension OptionEntityX on OptionEntity {
       isCorrect: isCorrect,
     );
   }
+
+  String get textValue {
+    if (text.text.isNotEmpty) return text.text;
+    return value.text;
+  }
 }
