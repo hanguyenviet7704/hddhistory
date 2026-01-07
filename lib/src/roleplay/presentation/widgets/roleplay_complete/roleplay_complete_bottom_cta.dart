@@ -15,7 +15,7 @@ class RoleplayCompleteBottomCTA extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + bottomPadding),
       child: GestureDetector(
         onTap: onPressed,
         child: Container(

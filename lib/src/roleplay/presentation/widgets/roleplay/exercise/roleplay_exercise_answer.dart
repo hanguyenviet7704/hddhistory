@@ -41,7 +41,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildHeader(exercise.isCompleted),
+          _buildHeader(exercise.result.isCorrect),
           Padding(
             padding: EdgeInsets.fromLTRB(8.w, 12.h, 8.w, 8.h),
             child: _buildAnswerCard(exercise.result),

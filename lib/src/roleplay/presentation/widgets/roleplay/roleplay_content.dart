@@ -18,10 +18,15 @@ class RoleplayContent extends StatelessWidget {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
               ),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h + MediaQuery.paddingOf(context).bottom),
+                padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
                 child: Column(
                   children: [
-                    Expanded(child: const RoleplayContentList()),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: MediaQuery.paddingOf(context).bottom),
+                        child: const RoleplayContentList(),
+                      ),
+                    ),
                     BlocSelector<RoleplayCubit, RoleplayState, bool>(
                       selector: (state) => state.isCurrentSectionRevealed,
                       builder: (context, isCompleted) {

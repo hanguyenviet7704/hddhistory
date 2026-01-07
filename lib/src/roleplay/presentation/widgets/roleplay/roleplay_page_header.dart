@@ -2,10 +2,12 @@ part of '../../../roleplay.dart';
 
 class RoleplayPageHeader extends StatelessWidget {
   final bool useLightContent;
+  final String title;
 
   const RoleplayPageHeader({
     super.key,
     required this.useLightContent,
+    required this.title,
   });
 
   @override
@@ -19,19 +21,14 @@ class RoleplayPageHeader extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _RoleplayBackButton(isLight: useLightContent),
-          BlocSelector<RoleplayCubit, RoleplayState, String>(
-            selector: (state) => state.currentLesson.title.text,
-            builder: (context, title) {
-              return AppText(
-                title,
-                maxLines: 2,
-                style: AppStyle.text20.copyWith(
-                  fontWeight: FontWeight.w700,
-                  color: textColor,
-                  height: 1.3,
-                ),
-              );
-            },
+          AppText(
+            title,
+            maxLines: 2,
+            style: AppStyle.text20.copyWith(
+              fontWeight: FontWeight.w700,
+              color: textColor,
+              height: 1.3,
+            ),
           ),
           SizedBox(width: 18.w),
         ],
@@ -47,13 +44,16 @@ class _RoleplayBackButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => context.pop(),
-      child: Icon(
+    return IconButton(
+      onPressed: () => context.pop(),
+      icon: Icon(
         FontAwesomeIcons.xmark,
         size: 18.w,
         color: isLight ? Colors.white : AppCustomColor.textPrimary,
       ),
+      padding: EdgeInsets.zero,
+      constraints: BoxConstraints(minWidth: 40.w, minHeight: 40.w),
+      splashRadius: 24.r,
     );
   }
 }

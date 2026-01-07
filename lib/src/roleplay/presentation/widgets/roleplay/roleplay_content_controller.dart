@@ -41,7 +41,6 @@ class RoleplayContentController extends ChangeNotifier {
   bool _isOverlayVisible = false;
   static const double _autoScrollThreshold = 80;
 
-  List<RoleplayContentEntity> get displayableContents => _currentContents();
   List<int> get visibleIndexes => _visibleIndexes;
   bool get isOverlayVisible => _isOverlayVisible;
 

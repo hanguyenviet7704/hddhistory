@@ -114,7 +114,9 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<RoleplayCubit, RoleplayState>(
-      listenWhen: (previous, current) => previous.currentRoleplay.id != current.currentRoleplay.id,
+      listenWhen: (previous, current) =>
+          previous.currentRoleplay.id != current.currentRoleplay.id ||
+          previous.currentRoleplay.contents.length != current.currentRoleplay.contents.length,
       listener: (context, state) => unawaited(_resetForNewSection()),
       child: BlocBuilder<RoleplayCubit, RoleplayState>(
         buildWhen: (previous, current) => previous.currentRoleplay != current.currentRoleplay,
@@ -124,59 +126,62 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
             animation: _controller,
             builder: (context, _) {
               if (contents.isEmpty) {
-            return ListView(
-              controller: _scrollController,
-              physics: const BouncingScrollPhysics(),
-            );
-          }
+                return ListView(
+                  controller: _scrollController,
+                  physics: const BouncingScrollPhysics(),
+                );
+              }
 
-          return AnimatedList(
-            key: _listKey,
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            padding: _controller.isOverlayVisible ? EdgeInsets.only(bottom: 175.h) : EdgeInsets.zero,
-            initialItemCount: _controller.visibleIndexes.length,
-            itemBuilder: (context, index, animation) {
-              final curvedAnimation = CurvedAnimation(
-                parent: animation,
-                curve: Curves.easeOutCubic,
+              return AnimatedList(
+                key: _listKey,
+                controller: _scrollController,
+                physics: const BouncingScrollPhysics(),
+                padding: _controller.isOverlayVisible ? EdgeInsets.only(bottom: 175.h) : EdgeInsets.zero,
+                initialItemCount: _controller.visibleIndexes.length,
+                itemBuilder: (context, index, animation) {
+                  final curvedAnimation = CurvedAnimation(
+                    parent: animation,
+                    curve: Curves.easeOutCubic,
+                  );
+                  if (index >= _controller.visibleIndexes.length) return const SizedBox.shrink();
+                  final contentIndex = _controller.visibleIndexes[index];
+                  if (contentIndex >= contents.length) return const SizedBox.shrink();
+                  final content = contents[contentIndex];
+                  final previousConversation = contentIndex > 0 ? contents[contentIndex - 1].conversation : null;
+                  final audioController = _controller.audioControllerAt(contentIndex);
+
+                  final Widget child = switch (content.type) {
+                    RoleplayContentType.conversation => RoleplayConversationBubble(
+                      conversation: content.conversation,
+                      previousConversation: previousConversation,
+                      audioController: audioController,
+                    ),
+                    RoleplayContentType.leadingText => RoleplayLeadingText(
+                      leadingText: content.leadingText,
+                      audioController: audioController,
+                    ),
+                    RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
+                    RoleplayContentType.exercise => KeyedSubtree(
+                      key: ValueKey('${contentIndex}_${content.exercise.result.hashCode}'),
+                      child: RoleplayExerciseContentWidget(
+                        exercise: content.exercise,
+                        isCompleted: _controller.isExerciseCompleted(contentIndex, content.exercise),
+                      ),
+                    ),
+                  };
+
+                  return SizeTransition(
+                    sizeFactor: curvedAnimation,
+                    child: FadeTransition(
+                      opacity: curvedAnimation,
+                      child: Padding(
+                        padding: EdgeInsets.only(bottom: _getBottomPadding(index, contentIndex, contents)),
+                        child: child,
+                      ),
+                    ),
+                  );
+                },
               );
-              if (index >= _controller.visibleIndexes.length) return const SizedBox.shrink();
-              final contentIndex = _controller.visibleIndexes[index];
-              if (contentIndex >= contents.length) return const SizedBox.shrink();
-              final content = contents[contentIndex];
-              final previousConversation = contentIndex > 0 ? contents[contentIndex - 1].conversation : null;
-              final audioController = _controller.audioControllerAt(contentIndex);
-
-              final Widget child = switch (content.type) {
-                RoleplayContentType.conversation => RoleplayConversationBubble(
-                  conversation: content.conversation,
-                  previousConversation: previousConversation,
-                  audioController: audioController,
-                ),
-                RoleplayContentType.leadingText => RoleplayLeadingText(
-                  leadingText: content.leadingText,
-                  audioController: audioController,
-                ),
-                RoleplayContentType.transition => RoleplayTransitionText(transition: content.transition),
-                RoleplayContentType.exercise => RoleplayExerciseContentWidget(
-                  exercise: content.exercise,
-                  isCompleted: _controller.isExerciseCompleted(contentIndex, content.exercise),
-                ),
-              };
-
-              return SizeTransition(
-                sizeFactor: curvedAnimation,
-                child: FadeTransition(
-                  opacity: curvedAnimation,
-                  child: Padding(
-                    padding: EdgeInsets.only(bottom: _getBottomPadding(index, contentIndex, contents)),
-                    child: child,
-                  ),
-                ),
-              );
-            },
-          );
             },
           );
         },
