@@ -682,6 +682,12 @@ const RevenueDashboard: React.FC = () => {
                           <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
                             Thời gian
                           </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                            Purchase time
+                          </th>
+                          <th className="px-4 py-3 text-left text-xs font-medium text-slate-600">
+                            Expiry time
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-100">
@@ -708,6 +714,12 @@ const RevenueDashboard: React.FC = () => {
                               </td>
                               <td className="px-4 py-3 text-sm text-slate-700">
                                 {formatDateTime(item.at)}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-slate-700">
+                                {formatDateTime(item.purchaseTime ?? undefined)}
+                              </td>
+                              <td className="px-4 py-3 text-sm text-slate-700">
+                                {formatDateTime(item.expiryTime ?? undefined)}
                               </td>
                             </tr>
                           );

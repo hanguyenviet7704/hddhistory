@@ -95,4 +95,6 @@ export interface PurchaseHistory {
   at: string;
   status: PurchaseStatus;
   source: PurchaseHistorySource;
+  purchaseTime?: string | null;
+  expiryTime?: string | null;
 }
