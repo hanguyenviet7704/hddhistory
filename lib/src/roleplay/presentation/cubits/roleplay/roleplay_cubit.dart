@@ -126,6 +126,47 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
       onSuccess: (item) {
         LearningItemEntity newItem = item.copyWith(estimateCompleTime: estimateCompleTime ?? item.estimateCompleTime);
         emit(state.copyWith(status: RoleplayStatus.success, currentLearningItem: newItem, isCurrentSectionRevealed: false));
+        _loadUserProgressExercise();
+      },
+    );
+  }
+
+  void _loadUserProgressExercise() async {
+    final lessonId = state.currentLesson.id;
+    final courseId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.courseId;
+    final userId = AppDI.injector.get<UserCubit>().state.user.id;
+    final currentRoleplayId = state.currentRoleplay.id;
+    AppDI.injector.get<ProgressCubit>().loadUserProgressLesson(
+      userId: userId,
+      courseId: courseId,
+      lessonId: lessonId,
+      onSuccess: (result) {
+        if (currentRoleplayId != state.currentRoleplay.id) return;
+        if (result.exercisesResult.isEmpty) return;
+
+        final Map<String, ExerciseResultEntity> resultsById = {
+          for (final exerciseResult in result.exercisesResult)
+            if (exerciseResult.exerciseId.isNotEmpty) exerciseResult.exerciseId: exerciseResult,
+        };
+
+        final updatedContents = state.currentRoleplay.contents.map((content) {
+          if (content.type != RoleplayContentType.exercise) return content;
+          final exerciseId = content.exercise.id.toString();
+          final matchedResult = resultsById[exerciseId];
+          if (matchedResult == null) return content;
+
+          return content.copyWith(
+            exercise: content.exercise.copyWith(result: matchedResult),
+          );
+        }).toList();
+
+        emit(
+          state.copyWith(
+            currentLearningItem: state.currentLearningItem.copyWith(
+              roleplay: state.currentRoleplay.copyWith(contents: updatedContents),
+            ),
+          ),
+        );
       },
     );
   }
