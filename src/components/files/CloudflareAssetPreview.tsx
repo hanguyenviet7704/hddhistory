@@ -163,7 +163,6 @@ const CloudflareAssetPreview: React.FC<CloudflareAssetPreviewProps> = ({
 
         if (!data && key) {
           try {
-            console.log(12343123223);
             const proxied = await cloudflareService.download(key);
             data = normalizeAnimationData(proxied);
           } catch (proxyErr) {
