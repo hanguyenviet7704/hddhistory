@@ -61,7 +61,38 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   }
 
   void _updateUserProgressExercise() {
-    // TODO: Update user progress exercise
+    final question = state.question;
+    if (question.id == 0) return;
+    final result = toExerciseResult();
+
+    final QuestionType progressType = switch (question.type) {
+      QuestionTypeEnum.singleChoice => QuestionType.singleChoice,
+      QuestionTypeEnum.multipleChoice => QuestionType.multipleChoice,
+      _ => QuestionType.singleChoice,
+    };
+
+    final data = UpdateUserProgressExerciseData(
+      exerciseId: question.id.toString(),
+      type: progressType,
+      passed: result.passed,
+      multipleAnswer: question.type == QuestionTypeEnum.multipleChoice ? _progressOptionList(result.multipleAnswer) : null,
+      singleAnswer: question.type == QuestionTypeEnum.singleChoice ? _progressSingleOption(result.singleAnswer) : null,
+    );
+
+    final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    final isRoleplay = exerciseCubit.state.currentLearningItem.type == LearningItemType.roleplay;
+    final LessonEntity lesson = isRoleplay ? AppDI.injector.get<RoleplayCubit>().state.currentLesson : AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    final String courseId = lesson.courseId.isNotEmpty ? lesson.courseId : AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+
+    final params = UpdateUserProgressExerciseParams(
+      userId: AppDI.injector.get<UserCubit>().state.user.id,
+      courseId: courseId,
+      lessonId: lesson.id,
+      keypointId: question.keypoint.id,
+      exercises: [data],
+    );
+
+    AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
   }
 
   int pointCalculation() {
