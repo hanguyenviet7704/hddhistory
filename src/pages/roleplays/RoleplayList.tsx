@@ -13,6 +13,7 @@ import { lessonService } from "../../services/lessonService";
 import { LessonStatus, LessonType } from "../../types/enum/lesson.enum";
 import { getTranslationValue } from "../../utils/translation";
 import { ITag } from "../../types/interface/tag.interface";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 export default function RoleplayList() {
   const [roleplays, setRoleplays] = useState<ILesson[]>([]);
@@ -267,11 +268,9 @@ export default function RoleplayList() {
                     >
                       {/* Image */}
                       <div className="relative h-48 overflow-hidden flex-shrink-0">
-                        <img
-                          src={
-                            roleplay.image ||
-                            "https://placehold.co/600x400?text=Roleplay+Lesson&font=roboto"
-                          }
+                        <CloudflareAssetPreview
+                          src={roleplay.image}
+                          fallbackSrc="https://placehold.co/600x400?text=Roleplay+Lesson&font=roboto"
                           alt={getTranslationValue(roleplay.title, lang)}
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
@@ -302,7 +301,7 @@ export default function RoleplayList() {
                         <div className="flex items-center justify-start mt-auto gap-8">
                           <div className="rounded flex items-start justify-center">
                             {(roleplay.icon as any)?.url && (
-                              <img
+                              <CloudflareAssetPreview
                                 src={(roleplay.icon as any).url}
                                 alt={getTranslationValue(
                                   (roleplay.icon as any)?.title,

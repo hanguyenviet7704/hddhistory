@@ -3,7 +3,8 @@ import axiosClient from "./axiosClient";
 
 export const cloudflareService = {
   async download(key: string) {
-    const res = await axiosClient.get(`/cloudflares/download/${key}`);
+    const encodedKey = encodeURIComponent(key);
+    const res = await axiosClient.get(`/cloudflares/download/${encodedKey}`);
     return res.data;
   },
 

@@ -11,6 +11,7 @@ import { RootState } from "../../store";
 import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTranslationValue } from "../../utils/translation";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 export default function CourseList() {
   const navigate = useNavigate();
@@ -262,11 +263,9 @@ export default function CourseList() {
                     >
                       {/* image */}
                       <div className="relative h-48 overflow-hidden flex-shrink-0">
-                        <img
-                          src={
-                            course.image ||
-                            "https://via.placeholder.com/400x600?text=Course"
-                          }
+                        <CloudflareAssetPreview
+                          src={course.image}
+                          fallbackSrc="https://via.placeholder.com/400x600?text=Course"
                           alt={getTranslationValue(course.title, lang)}
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />

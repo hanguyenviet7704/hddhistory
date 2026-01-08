@@ -32,6 +32,7 @@ import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import SkillsetModal from "../../components/skillsets/SkillsetModal";
 import SkillsetConfirm from "../../components/skillsets/SkillsetConfirm";
 import { getTranslationValue } from "../../utils/translation";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 // --- Component chính ---
 const SkillsetList: React.FC = () => {
@@ -317,7 +318,7 @@ const SkillsetList: React.FC = () => {
                                 mr: 2,
                               }}
                             >
-                              <img
+                              <CloudflareAssetPreview
                                 src={skillset.image}
                                 alt={getTranslationValue(skillset.title, lang)}
                                 style={{

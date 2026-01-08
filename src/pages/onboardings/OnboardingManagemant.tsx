@@ -29,9 +29,10 @@ import type { ITranslation } from "../../utils/translation";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 import {
   getTranslationValue,
   getCurrentTranslationValue,
@@ -81,6 +82,15 @@ const sanitizeHtml = (html: string) =>
   DOMPurify.sanitize(html, {
     ADD_ATTR: ["style"],
   });
+
+const ICON_ASSET_REGEX = /\.(png|jpe?g|gif|webp|svg|json|lottie)(\?|#|$)/i;
+
+const isIconAsset = (value: string) =>
+  value.startsWith("http") ||
+  value.startsWith("data:") ||
+  value.startsWith("blob:") ||
+  value.startsWith("/") ||
+  ICON_ASSET_REGEX.test(value);
 
 const FontSize = Extension.create({
   name: "fontSize",
@@ -995,7 +1005,9 @@ const OnboardingManagement: React.FC = () => {
   );
 
   const renderChipWithIcon = (item: ILablel) => {
-    if (item.icon && item.icon.startsWith("http")) {
+    const shouldRenderIcon = item.icon && isIconAsset(item.icon);
+
+    if (shouldRenderIcon) {
       return (
         <Box
           key={item.id}
@@ -1011,7 +1023,7 @@ const OnboardingManagement: React.FC = () => {
             "&:hover": { boxShadow: "0 4px 8px rgba(0,0,0,0.15)" },
           }}
         >
-          <img
+          <CloudflareAssetPreview
             src={item.icon}
             alt={getCurrentTranslationValue(item.label, lang)}
             style={{
@@ -1097,17 +1109,18 @@ const OnboardingManagement: React.FC = () => {
         </Box>
         <Box sx={{ display: "flex", gap: 3, alignItems: "center" }}>
           {motivation.image && (
-            <Box
-              component="img"
+            <CloudflareAssetPreview
               src={motivation.image}
               alt={title}
-              sx={{
+              style={{
                 width: 160,
                 height: 160,
                 objectFit: "cover",
-                borderRadius: 2,
+                borderRadius: 8,
                 boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+                overflow: "hidden",
               }}
+              errorText={`Không thể hiển thị preview cho ${title}`}
             />
           )}
           <Typography sx={{ lineHeight: 1.6, whiteSpace: "pre-wrap" }}>
@@ -1119,7 +1132,9 @@ const OnboardingManagement: React.FC = () => {
   };
 
   const renderChipWithIconAndTitle = (item: ILablel) => {
-    if (item.icon && item.icon.startsWith("http")) {
+    const shouldRenderIcon = item.icon && isIconAsset(item.icon);
+
+    if (shouldRenderIcon) {
       return (
         <Box
           key={item.id}
@@ -1135,7 +1150,7 @@ const OnboardingManagement: React.FC = () => {
             "&:hover": { boxShadow: "0 4px 8px rgba(0,0,0,0.15)" },
           }}
         >
-          <img
+          <CloudflareAssetPreview
             src={item.icon}
             alt={getCurrentTranslationValue(item.label, lang)}
             style={{
@@ -1268,7 +1283,7 @@ const OnboardingManagement: React.FC = () => {
                     <Box sx={{ display: "flex", gap: 3 }}>
                       <Box sx={{ flex: 1 }}>
                         {intro.image && (
-                          <img
+                          <CloudflareAssetPreview
                             src={intro.image}
                             alt={getCurrentTranslationValue(intro.title, lang)}
                             style={{
@@ -1276,7 +1291,9 @@ const OnboardingManagement: React.FC = () => {
                               height: 200,
                               objectFit: "cover",
                               borderRadius: 4,
+                              overflow: "hidden",
                             }}
+                            errorText="Không thể hiển thị preview cho intro này"
                           />
                         )}
                       </Box>
