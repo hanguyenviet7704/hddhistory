@@ -6,6 +6,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default(QuestionTypeEnum.singleChoice) QuestionTypeEnum type,
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
+    @Default('') String exerciseId,
     @Default(BaseMultiLanguage()) BaseMultiLanguage speechBubble,
     @Default(TagEntity()) TagEntity tag,
     @Default([]) List<ContentDocumentEntity> document,

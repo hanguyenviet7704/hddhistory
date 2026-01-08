@@ -6,6 +6,7 @@ abstract class QuestionModel with _$QuestionModel {
     @Default(QuestionType.singleChoice) QuestionType type,
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
+    @Default('') String exerciseId,
     @Default(BaseMultiLanguage()) BaseMultiLanguage speechBubble,
     @Default(TagModel()) TagModel tag,
     @Default([]) List<ContentDocumentModel> document,
@@ -76,6 +77,7 @@ extension QuestionModelExtension on QuestionModel {
   QuestionEntity toEntity() => QuestionEntity(
     type: type.toQuestionTypeEnum(form),
     id: id,
+    exerciseId: exerciseId,
     speechBubble: speechBubble,
     tag: tag.toEntity(),
     document: document.map((model) => model.toEntity()).toList(),

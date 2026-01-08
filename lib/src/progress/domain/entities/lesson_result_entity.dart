@@ -14,3 +14,6 @@ abstract class LessonResultEntity with _$LessonResultEntity {
   factory LessonResultEntity.fromJson(Map<String, dynamic> json) => _$LessonResultEntityFromJson(json);
 }
 
+extension LessonResultEntityExtension on LessonResultEntity {
+  List<ExerciseResultEntity> get exercisesResult => keypointsResult.expand((keypoint) => keypoint.exercisesResult).toList();
+}

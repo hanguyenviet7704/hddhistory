@@ -72,7 +72,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     };
 
     final data = UpdateUserProgressExerciseData(
-      exerciseId: question.id.toString(),
+      exerciseId: question.exerciseId,
       type: progressType,
       passed: result.passed,
       multipleAnswer: question.type == QuestionTypeEnum.multipleChoice ? _progressOptionList(result.multipleAnswer) : null,
