@@ -132,7 +132,7 @@ class _ExpandedExerciseBody extends StatelessWidget {
               child: Column(
                 children: [
                   AbsorbPointer(
-                    absorbing: readOnly,
+                    absorbing: readOnly && exercise.type != QuestionTypeEnum.speaking,
                     child: lessonBody,
                   ),
                   60.verticalSpace,

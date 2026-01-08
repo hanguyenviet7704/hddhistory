@@ -56,6 +56,14 @@ class SpeakingLessonBody extends StatelessWidget {
                 DocumentWidget(documents: currentQuestion.document),
                 16.verticalSpace,
               ],
+
+              _SpeakingAnswerCard(
+                question: currentQuestion,
+                audioFilePath: state.audioFilePath,
+                textInput: state.textInput,
+              ),
+
+              16.verticalSpace,
             ],
           );
         },
@@ -66,5 +74,59 @@ class SpeakingLessonBody extends StatelessWidget {
   /// Build the bottom button for speaking questions
   Widget buildBottomButton(BuildContext context) {
     return const SpeakingBottomAction();
+  }
+}
+
+class _SpeakingAnswerCard extends StatelessWidget {
+  final QuestionEntity question;
+  final String? audioFilePath;
+  final String textInput;
+
+  const _SpeakingAnswerCard({
+    required this.question,
+    required this.audioFilePath,
+    required this.textInput,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<ExerciseCubit, ExerciseState, bool>(
+      selector: (state) => state.currentLearningItem.type == LearningItemType.roleplay,
+      builder: (context, isRoleplay) {
+        if (!isRoleplay) return const SizedBox.shrink();
+        final resultRecordPath = question.result.recordAnswer.record.trim();
+        final fallbackRecordPath = audioFilePath?.trim() ?? '';
+        final recordPath = resultRecordPath.isNotEmpty ? resultRecordPath : fallbackRecordPath;
+
+        final resultReviewText = question.result.recordAnswer.review.trim();
+        final fallbackReviewText = textInput.trim();
+        final reviewText = resultReviewText.isNotEmpty ? resultReviewText : fallbackReviewText;
+
+        if (recordPath.isNotEmpty) {
+          final normalizedRecordPath = recordPath.startsWith('//') ? 'https:$recordPath' : recordPath;
+          final isRemoteAudio = normalizedRecordPath.startsWith('http://') || normalizedRecordPath.startsWith('https://');
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: isRemoteAudio
+                ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath)
+                : AudioPlayerFileWidget(filePath: normalizedRecordPath),
+          );
+        }
+
+        if (reviewText.isNotEmpty) {
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 20.w),
+            child: AppText(
+              reviewText,
+              maxLines: 8,
+              overflow: TextOverflow.visible,
+              style: AppStyle.text14,
+            ),
+          );
+        }
+
+        return const SizedBox.shrink();
+      },
+    );
   }
 }

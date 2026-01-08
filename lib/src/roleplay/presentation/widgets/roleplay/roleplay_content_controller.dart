@@ -34,6 +34,10 @@ class RoleplayContentController extends ChangeNotifier {
 
   Completer<void>? _pendingExerciseCompleter;
   int? _pendingExerciseContentIndex;
+  Completer<void>? _overlayHiddenCompleter;
+  int _delayToken = 0;
+  bool _isDelayPending = false;
+  bool _restartDelayAfterOverlay = false;
   bool _isSequencing = false;
   bool _isDisposing = false;
   bool _shouldAutoScroll = true;
@@ -54,6 +58,39 @@ class RoleplayContentController extends ChangeNotifier {
 
   bool isExerciseCompleted(int contentIndex, QuestionEntity exercise) {
     return exercise.isCompleted || _completedExerciseIndexes.contains(contentIndex);
+  }
+
+  void setOverlayVisible(bool isVisible) {
+    if (_isOverlayVisible == isVisible) return;
+    _isOverlayVisible = isVisible;
+    if (isVisible) {
+      _overlayHiddenCompleter ??= Completer<void>();
+      if (_isDelayPending) {
+        _delayToken++;
+        _isDelayPending = false;
+        _restartDelayAfterOverlay = true;
+      }
+    } else {
+      final completer = _overlayHiddenCompleter;
+      _overlayHiddenCompleter = null;
+      if (completer != null && !completer.isCompleted) {
+        completer.complete();
+      }
+      if (_restartDelayAfterOverlay) {
+        _restartDelayAfterOverlay = false;
+        final contentIndex = _pendingExerciseContentIndex;
+        if (contentIndex != null) {
+          _completePendingExerciseWithDelay(contentIndex);
+        }
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> waitForOverlayHidden() async {
+    if (!_isOverlayVisible) return;
+    _overlayHiddenCompleter ??= Completer<void>();
+    await _overlayHiddenCompleter!.future;
   }
 
   void handleScroll({
@@ -187,11 +224,14 @@ class RoleplayContentController extends ChangeNotifier {
     required int contentIndex,
     required QuestionEntity exercise,
   }) async {
+    if (_isOverlayVisible) {
+      await waitForOverlayHidden();
+      if (_isDisposing) return;
+    }
     _cancelPendingExercise();
     _pendingExerciseContentIndex = contentIndex;
     _pendingExerciseCompleter = Completer<void>();
-    _isOverlayVisible = true;
-    notifyListeners();
+    setOverlayVisible(true);
 
     _onShowExerciseOverlay(
       contentIndex: contentIndex,
@@ -214,9 +254,8 @@ class RoleplayContentController extends ChangeNotifier {
 
     AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);
     _onHideOverlays();
-    _isOverlayVisible = false;
     _completedExerciseIndexes.add(contentIndex);
-    notifyListeners();
+    setOverlayVisible(false);
     _requestAutoScroll();
     _completePendingExerciseWithDelay(contentIndex);
   }
@@ -228,13 +267,18 @@ class RoleplayContentController extends ChangeNotifier {
       return;
     }
 
-    unawaited(_delayAndComplete(contentIndex));
+    final int token = ++_delayToken;
+    _isDelayPending = true;
+    unawaited(_delayAndComplete(contentIndex, token));
   }
 
-  Future<void> _delayAndComplete(int contentIndex) async {
-    await Future.delayed(const Duration(seconds: 2));
+  Future<void> _delayAndComplete(int contentIndex, int token) async {
+    await Future.delayed(_defaultDelay);
     if (_isDisposing) return;
+    if (token != _delayToken) return;
     if (_pendingExerciseContentIndex != contentIndex) return;
+    if (_isOverlayVisible) return;
+    _isDelayPending = false;
     _completePendingExercise();
   }
 
@@ -242,6 +286,8 @@ class RoleplayContentController extends ChangeNotifier {
     final completer = _pendingExerciseCompleter;
     _pendingExerciseCompleter = null;
     _pendingExerciseContentIndex = null;
+    _isDelayPending = false;
+    _restartDelayAfterOverlay = false;
     if (completer != null && !completer.isCompleted) {
       completer.complete();
     }
@@ -249,7 +295,7 @@ class RoleplayContentController extends ChangeNotifier {
 
   void _cancelPendingExercise() {
     _onHideOverlays();
-    _isOverlayVisible = false;
+    setOverlayVisible(false);
     _completePendingExercise();
   }
 

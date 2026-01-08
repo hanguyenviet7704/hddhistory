@@ -96,10 +96,9 @@ class _RoleplayAudioAnswerPlayerState extends State<RoleplayAudioAnswerPlayer> {
       }
     } catch (_) {
       // Ignore audio init errors; UI will stay in a neutral state.
-    } finally {
-      if (!mounted) return;
-      _isLoadingNotifier.value = false;
     }
+    if (!mounted) return;
+    _isLoadingNotifier.value = false;
   }
 
   Future<void> _cancelSubscriptions() async {

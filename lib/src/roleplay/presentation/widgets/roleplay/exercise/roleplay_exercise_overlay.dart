@@ -32,6 +32,7 @@ class RoleplayExerciseOverlayInteractive extends StatefulWidget {
   final VoidCallback onCheckPressed;
   final bool readOnly;
   final ExerciseResultEntity? result;
+  final VoidCallback? onDismissed;
 
   const RoleplayExerciseOverlayInteractive({
     super.key,
@@ -41,6 +42,7 @@ class RoleplayExerciseOverlayInteractive extends StatefulWidget {
     required this.onCheckPressed,
     this.readOnly = false,
     this.result,
+    this.onDismissed,
   });
 
   @override
@@ -156,6 +158,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
 
     if (widget.readOnly) {
       RoleplayExerciseOverlayManager.hide();
+      widget.onDismissed?.call();
       return;
     }
 

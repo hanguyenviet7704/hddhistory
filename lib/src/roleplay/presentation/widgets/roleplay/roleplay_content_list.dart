@@ -223,6 +223,7 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   void _showResultOverlay(int contentIndex, QuestionEntity exercise) {
     if (_controller.isOverlayVisible) return;
     _controller.stopAllAudio();
+    _controller.setOverlayVisible(true);
 
     RoleplayExerciseOverlayManager.show(
       context: context,
@@ -232,7 +233,11 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
         contentIndex: contentIndex,
         readOnly: true,
         result: exercise.result,
-        onCheckPressed: () => RoleplayExerciseOverlayManager.hide(),
+        onDismissed: () => _controller.setOverlayVisible(false),
+        onCheckPressed: () {
+          RoleplayExerciseOverlayManager.hide();
+          _controller.setOverlayVisible(false);
+        },
       ),
       onOverlayShown: () {},
     );
