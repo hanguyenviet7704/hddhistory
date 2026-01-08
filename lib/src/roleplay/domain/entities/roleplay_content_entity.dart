@@ -13,3 +13,10 @@ abstract class RoleplayContentEntity with _$RoleplayContentEntity {
 
   factory RoleplayContentEntity.fromJson(Map<String, dynamic> json) => _$RoleplayContentEntityFromJson(json);
 }
+
+extension RoleplayContentEntityExtension on RoleplayContentEntity {
+  bool get finishedExercise {
+    if (type != RoleplayContentType.exercise) return false;
+    return exercise.hasResult || exercise.isCompleted;
+  }
+}

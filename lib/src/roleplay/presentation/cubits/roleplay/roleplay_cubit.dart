@@ -151,12 +151,13 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
 
         final updatedContents = state.currentRoleplay.contents.map((content) {
           if (content.type != RoleplayContentType.exercise) return content;
-          final exerciseId = content.exercise.id.toString();
-          final matchedResult = resultsById[exerciseId];
+          final exercise = content.exercise;
+          final String matchId = exercise.exerciseId.isNotEmpty ? exercise.exerciseId : exercise.id.toString();
+          final matchedResult = resultsById[matchId];
           if (matchedResult == null) return content;
 
           return content.copyWith(
-            exercise: content.exercise.copyWith(result: matchedResult),
+            exercise: exercise.copyWith(result: matchedResult),
           );
         }).toList();
 

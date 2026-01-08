@@ -53,6 +53,13 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     );
   }
 
+  bool _shouldResetForPrefill(RoleplayState current) {
+    final lastCompletedIndex = current.currentRoleplay.lastFinishedExerciseIndex;
+    if (lastCompletedIndex < 0) return false;
+    if (_controller.visibleIndexes.length >= lastCompletedIndex + 1) return false;
+    return true;
+  }
+
   void _scrollToBottom({bool animated = true}) {
     if (!_scrollController.hasClients) return;
     final double target = _scrollController.position.maxScrollExtent;
@@ -116,7 +123,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
     return BlocListener<RoleplayCubit, RoleplayState>(
       listenWhen: (previous, current) =>
           previous.currentRoleplay.id != current.currentRoleplay.id ||
-          previous.currentRoleplay.contents.length != current.currentRoleplay.contents.length,
+          previous.currentRoleplay.contents.length != current.currentRoleplay.contents.length ||
+          _shouldResetForPrefill(current),
       listener: (context, state) => unawaited(_resetForNewSection()),
       child: BlocBuilder<RoleplayCubit, RoleplayState>(
         buildWhen: (previous, current) => previous.currentRoleplay != current.currentRoleplay,

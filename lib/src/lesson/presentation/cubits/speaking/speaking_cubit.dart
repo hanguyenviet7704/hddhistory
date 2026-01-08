@@ -309,12 +309,12 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
   void updateUserProgressExercise() {
     final question = state.question;
-    if (question.id == 0) return;
+    if (question.exerciseId.isEmpty) return;
 
     final result = toExerciseResult();
 
     final data = UpdateUserProgressExerciseData(
-      exerciseId: question.id.toString(),
+      exerciseId: question.exerciseId.toString(),
       type: QuestionType.record,
       passed: result.passed,
       recordAnswer: _progressRecordAnswer(result.recordAnswer),

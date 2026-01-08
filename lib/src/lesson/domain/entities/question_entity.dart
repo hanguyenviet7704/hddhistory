@@ -48,6 +48,13 @@ enum QuestionTypeEnum {
 }
 
 extension QuestionEntityExtension on QuestionEntity {
+  bool get hasResult {
+    if (result.multipleAnswer.isNotEmpty || result.dragDropAnswer.isNotEmpty) return true;
+    if (result.singleAnswer.id != 0 || result.singleAnswer.labelText.isNotEmpty) return true;
+    if (result.recordAnswer.record.isNotEmpty || result.recordAnswer.review.isNotEmpty) return true;
+    return result.exerciseId.isNotEmpty;
+  }
+
   bool get isCompleted => false;
 
   String get questionText {

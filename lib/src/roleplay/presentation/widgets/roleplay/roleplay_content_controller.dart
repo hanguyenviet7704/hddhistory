@@ -31,6 +31,7 @@ class RoleplayContentController extends ChangeNotifier {
   final Map<int, RoleplayAudioController> _audioControllers = {};
   final List<int> _visibleIndexes = [];
   final Set<int> _completedExerciseIndexes = {};
+  int _sequenceToken = 0;
 
   Completer<void>? _pendingExerciseCompleter;
   int? _pendingExerciseContentIndex;
@@ -57,7 +58,7 @@ class RoleplayContentController extends ChangeNotifier {
   }
 
   bool isExerciseCompleted(int contentIndex, QuestionEntity exercise) {
-    return exercise.isCompleted || _completedExerciseIndexes.contains(contentIndex);
+    return exercise.hasResult || exercise.isCompleted || _completedExerciseIndexes.contains(contentIndex);
   }
 
   void setOverlayVisible(bool isVisible) {
@@ -114,40 +115,44 @@ class RoleplayContentController extends ChangeNotifier {
 
   void configure() {
     _cancelPendingExercise();
-    _completedExerciseIndexes.clear();
-    _shouldAutoScroll = true;
-    _prepareAudioControllers(_currentContents());
-    _visibleIndexes.clear();
-    _updateSectionCompletion(_currentContents().isEmpty);
-    notifyListeners();
+    _invalidateSequence();
+    _initializeForContents(_currentContents());
   }
 
   Future<void> reset() async {
     _cancelPendingExercise();
+    _invalidateSequence();
     await _disposeControllers();
+    _initializeForContents(_currentContents());
+  }
+
+  void _initializeForContents(List<RoleplayContentEntity> contents) {
     _visibleIndexes.clear();
     _completedExerciseIndexes.clear();
     _shouldAutoScroll = true;
-    _prepareAudioControllers(_currentContents());
-    _updateSectionCompletion(_currentContents().isEmpty);
+    _prepareAudioControllers(contents);
+    _applyPrefill(AppDI.injector.get<RoleplayCubit>().state.currentRoleplay);
     notifyListeners();
   }
 
   Future<void> startSequence() async {
     if (_isSequencing) return;
+    final int token = ++_sequenceToken;
     _isSequencing = true;
 
     try {
-      while (!_isDisposing && _visibleIndexes.length < _currentContents().length) {
+      while (!_isDisposing && token == _sequenceToken && _visibleIndexes.length < _currentContents().length) {
         final bool shouldWaitForLastCompletion = _appendNextIndex();
-        await _waitBeforeNext();
-        if (_isDisposing) return;
+        await _waitBeforeNext(token);
+        if (_isDisposing || token != _sequenceToken) return;
         if (shouldWaitForLastCompletion) {
           _updateSectionCompletion(true);
         }
       }
     } finally {
-      _isSequencing = false;
+      if (token == _sequenceToken) {
+        _isSequencing = false;
+      }
     }
   }
 
@@ -157,8 +162,9 @@ class RoleplayContentController extends ChangeNotifier {
     }
   }
 
-  Future<void> _waitBeforeNext() async {
+  Future<void> _waitBeforeNext(int token) async {
     if (_isDisposing) return;
+    if (token != _sequenceToken) return;
     if (_visibleIndexes.isEmpty) return;
 
     final int currentIndex = _visibleIndexes.last;
@@ -182,6 +188,7 @@ class RoleplayContentController extends ChangeNotifier {
       case RoleplayContentType.leadingText:
         if (controller != null && controller.hasAudio) {
           await controller.playAutoAndWait();
+          if (token != _sequenceToken) return;
           return;
         }
         break;
@@ -302,6 +309,49 @@ class RoleplayContentController extends ChangeNotifier {
   void _updateSectionCompletion(bool isCompleted) {
     if (_isDisposing) return;
     _onSectionCompletionChanged(isCompleted);
+  }
+
+  void _invalidateSequence() {
+    _sequenceToken++;
+    _isSequencing = false;
+  }
+
+  void _applyPrefill(RoleplayEntity roleplay) {
+    final contents = roleplay.contents;
+    if (contents.isEmpty) {
+      _updateSectionCompletion(true);
+      return;
+    }
+
+    for (var i = 0; i < contents.length; i++) {
+      final content = contents[i];
+      if (content.type == RoleplayContentType.exercise && content.exercise.hasResult) {
+        _completedExerciseIndexes.add(i);
+      }
+    }
+
+    final int lastCompletedIndex = roleplay.lastFinishedExerciseIndex;
+    if (lastCompletedIndex < 0) {
+      _updateSectionCompletion(false);
+      return;
+    }
+
+    for (var i = 0; i <= lastCompletedIndex && i < contents.length; i++) {
+      _visibleIndexes.add(i);
+    }
+
+    final bool allVisible = _visibleIndexes.length == contents.length;
+    _updateSectionCompletion(allVisible && _isLastContentCompleted(contents));
+  }
+
+  bool _isLastContentCompleted(List<RoleplayContentEntity> contents) {
+    if (contents.isEmpty) return true;
+    final lastIndex = contents.length - 1;
+    final lastContent = contents[lastIndex];
+    if (lastContent.type == RoleplayContentType.exercise) {
+      return isExerciseCompleted(lastIndex, lastContent.exercise);
+    }
+    return true;
   }
 
   void _requestAutoScroll() {

@@ -97,11 +97,11 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
 
   void _updateUserProgressExercise() {
     final question = state.question;
-    if (question.id == 0) return;
+    if (question.exerciseId.isEmpty) return;
     final result = toExerciseResult();
 
     final data = UpdateUserProgressExerciseData(
-      exerciseId: question.id.toString(),
+      exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
       type: QuestionType.dragAndDrop,
       form: question.form,
       passed: result.passed,
