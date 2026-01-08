@@ -170,25 +170,26 @@ export default function CloudflareFileUpload({
       try {
         let data: any = null;
 
-        // Prefer backend proxy to avoid CORS issues with R2
-        const key = extractKeyFromUrl(previewUrl) || previewUrl;
-        console.log(222, key);
-
-        try {
-          const proxied = await cloudflareService.download(key);
-          data = normalizeAnimationData(proxied);
-        } catch (proxyErr) {
-          console.error("Animation proxy error:", proxyErr);
+        if (previewUrl.startsWith("http")) {
+          try {
+            const res = await fetch(previewUrl, { mode: "cors" });
+            if (res.ok) {
+              data = await res.json();
+            }
+          } catch {
+            // Ignore fetch errors; fallback to proxy.
+          }
         }
 
-        // Fallback to direct fetch if proxy did not return usable data
-        try {
-          const res = await fetch(previewUrl, { mode: "cors" });
-          if (res.ok) {
-            data = await res.json();
+        // Fallback to backend proxy if direct fetch did not return usable data
+        if (!data) {
+          const key = extractKeyFromUrl(previewUrl) || previewUrl;
+          try {
+            const proxied = await cloudflareService.download(key);
+            data = normalizeAnimationData(proxied);
+          } catch (proxyErr) {
+            console.error("Animation proxy error:", proxyErr);
           }
-        } catch {
-          // Ignore fetch errors; we'll show a preview error instead
         }
 
         if (!data) {

@@ -150,23 +150,24 @@ const CloudflareAssetPreview: React.FC<CloudflareAssetPreviewProps> = ({
         let data: any = null;
         const key = extractKeyFromUrl(rawSrc);
 
-        if (key) {
-          try {
-            const proxied = await cloudflareService.download(key);
-            data = normalizeAnimationData(proxied);
-          } catch (proxyErr) {
-            console.error("Animation proxy error:", proxyErr);
-          }
-        }
-
-        if (!data) {
+        if (rawSrc.startsWith("http")) {
           try {
             const res = await fetch(displaySrc, { mode: "cors" });
             if (res.ok) {
               data = await res.json();
             }
           } catch {
-            // Ignore fetch errors; we'll show a preview error instead.
+            // Ignore fetch errors; fallback to proxy.
+          }
+        }
+
+        if (!data && key) {
+          try {
+            console.log(12343123223);
+            const proxied = await cloudflareService.download(key);
+            data = normalizeAnimationData(proxied);
+          } catch (proxyErr) {
+            console.error("Animation proxy error:", proxyErr);
           }
         }
 
@@ -194,12 +195,7 @@ const CloudflareAssetPreview: React.FC<CloudflareAssetPreviewProps> = ({
 
   if (!isAnimation) {
     return (
-      <img
-        src={displaySrc}
-        alt={alt}
-        className={className}
-        style={style}
-      />
+      <img src={displaySrc} alt={alt} className={className} style={style} />
     );
   }
 
