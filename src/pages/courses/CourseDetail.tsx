@@ -330,17 +330,14 @@ const RoadmapPage: React.FC = () => {
     const levelIndex = isCreatingNode.levelIndex;
     if (levelIndex < 0) return;
 
-    const entrance = entranceLessons[0] || null;
-    const output = outputLessons[0] || null;
-
     const newNode: IRoadmapNode = {
       title: updateTranslationValue(undefined, lang, newNodeTitle),
-      entranceId: entrance?._id || "",
+      entranceId: "",
       lessonIds: [],
-      outputId: output?._id || "",
-      entrance,
+      outputId: "",
+      entrance: null,
       lessons: [],
-      output,
+      output: null,
     };
 
     const newLevels = [...roadmap.levels];
@@ -744,7 +741,9 @@ const RoadmapPage: React.FC = () => {
                           ? level.lightBadge
                           : level.darkBadge;
                       const label =
-                        badgeType === "lightBadge" ? "Light Badge" : "Dark Badge";
+                        badgeType === "lightBadge"
+                          ? "Light Badge"
+                          : "Dark Badge";
                       const fallbackText =
                         badgeType === "lightBadge" ? "Light" : "Dark";
                       return (
@@ -764,22 +763,28 @@ const RoadmapPage: React.FC = () => {
                               </div>
                             )}
                           </label>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-700">{label}</p>
-                        {isUploading && (
-                          <p className="text-xs text-blue-600 mt-1">
-                            Đang tải lên...
-                          </p>
-                        )}
-                        <input
-                          id={inputId}
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          onChange={(e) => {
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-gray-700">
+                              {label}
+                            </p>
+                            {isUploading && (
+                              <p className="text-xs text-blue-600 mt-1">
+                                Đang tải lên...
+                              </p>
+                            )}
+                            <input
+                              id={inputId}
+                              type="file"
+                              accept="image/*"
+                              className="hidden"
+                              onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (!file) return;
-                                handleLevelBadgeUpload(levelIndex, badgeType, file);
+                                handleLevelBadgeUpload(
+                                  levelIndex,
+                                  badgeType,
+                                  file
+                                );
                                 e.target.value = "";
                               }}
                             />
