@@ -80,20 +80,40 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
   }
 
   void setExerciseRecordAnswer({
-    required int questionId,
+    String? exerciseId,
+    int? questionId,
     String? textAnswer,
     String? recordPath,
   }) {
     if (state.currentRoleplay.contents.isEmpty) return;
 
-    final updatedContents = state.currentRoleplay.contents.map((content) {
-      if (content.type != RoleplayContentType.exercise || content.exercise.id != questionId) {
-        return content;
-      }
+    final contents = state.currentRoleplay.contents;
+    final String? resolvedExerciseId = (exerciseId != null && exerciseId.isNotEmpty) ? exerciseId : null;
+    final List<int> matchedIndices = [];
 
+    for (int i = 0; i < contents.length; i++) {
+      final content = contents[i];
+      if (content.type != RoleplayContentType.exercise) continue;
+      if (resolvedExerciseId != null) {
+        if (content.exercise.exerciseId == resolvedExerciseId) {
+          matchedIndices.add(i);
+        }
+      } else if (questionId != null && content.exercise.id == questionId) {
+        matchedIndices.add(i);
+      }
+    }
+
+    if (matchedIndices.isEmpty) return;
+    if (resolvedExerciseId == null && matchedIndices.length != 1) return;
+
+    final updatedContents = contents.toList();
+    for (final index in matchedIndices) {
+      final content = updatedContents[index];
       final currentResult = content.exercise.result;
       final updatedResult = currentResult.copyWith(
-        exerciseId: currentResult.exerciseId.isNotEmpty ? currentResult.exerciseId : content.exercise.id.toString(),
+        exerciseId: content.exercise.exerciseId.isNotEmpty
+            ? content.exercise.exerciseId
+            : (currentResult.exerciseId.isNotEmpty ? currentResult.exerciseId : content.exercise.id.toString()),
         type: content.exercise.type,
         form: content.exercise.form,
         recordAnswer: AnswerEntity(
@@ -102,10 +122,10 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
         ),
       );
 
-      return content.copyWith(
+      updatedContents[index] = content.copyWith(
         exercise: content.exercise.copyWith(result: updatedResult),
       );
-    }).toList();
+    }
 
     emit(
       state.copyWith(

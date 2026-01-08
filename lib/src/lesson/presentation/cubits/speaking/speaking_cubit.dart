@@ -123,6 +123,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     if (state.textInput.isEmpty) return;
     emit(state.copyWith(status: SpeakingStatus.success));
     AppDI.injector.get<RoleplayCubit>().setExerciseRecordAnswer(
+      exerciseId: state.question.exerciseId,
       questionId: state.question.id,
       textAnswer: state.textInput,
     );
@@ -142,6 +143,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       ),
       onSuccess: (result) {
         AppDI.injector.get<RoleplayCubit>().setExerciseRecordAnswer(
+          exerciseId: state.question.exerciseId,
           questionId: state.question.id,
           recordPath: result.url,
         );
@@ -355,7 +357,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
 
     return ExerciseResultEntity(
-      exerciseId: question.id.toString(),
+      exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
       type: question.type,
       form: question.form,
       passed: true,
