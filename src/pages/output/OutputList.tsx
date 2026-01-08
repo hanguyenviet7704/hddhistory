@@ -11,6 +11,7 @@ import { ILesson } from "../../types/interface/lesson.interface";
 import { lessonService } from "../../services/lessonService";
 import { LessonStatus, LessonType } from "../../types/enum/lesson.enum";
 import { getTranslationValue } from "../../utils/translation";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 export default function LessonList() {
   const [outputs, setOutputs] = useState<ILesson[]>([]);
@@ -264,11 +265,9 @@ export default function LessonList() {
                     >
                       {/* Image */}
                       <div className="relative h-48 overflow-hidden flex-shrink-0">
-                        <img
-                          src={
-                            output.image ||
-                            "https://placehold.co/600x400?text=Output+Test&font=roboto"
-                          }
+                        <CloudflareAssetPreview
+                          src={output.image}
+                          fallbackSrc="https://placehold.co/600x400?text=Output+Test&font=roboto"
                           alt={getTranslationValue(output.title, lang)}
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
@@ -295,7 +294,7 @@ export default function LessonList() {
 
                         <div className="flex items-center justify-start mt-auto gap-8">
                           <div className="rounded flex items-start justify-center">
-                            <img
+                            <CloudflareAssetPreview
                               src={(output.icon as any)?.url}
                               alt={getTranslationValue(
                                 (output.icon as any)?.title,

@@ -11,6 +11,7 @@ import { Combobox } from "@headlessui/react";
 import { PlusIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTranslationValue } from "../../utils/translation";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 export default function LessonList() {
   const [lessons, setLessons] = useState<ILesson[]>([]);
@@ -260,11 +261,9 @@ export default function LessonList() {
                     >
                       {/* Image */}
                       <div className="relative h-48 overflow-hidden flex-shrink-0">
-                        <img
-                          src={
-                            lesson.image ||
-                            "https://placehold.co/600x400/?text=Lesson+Image&font=roboto"
-                          }
+                        <CloudflareAssetPreview
+                          src={lesson.image}
+                          fallbackSrc="https://placehold.co/600x400/?text=Lesson+Image&font=roboto"
                           alt={getTranslationValue(lesson.title, lang)}
                           className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
                         />
@@ -292,7 +291,7 @@ export default function LessonList() {
                         <div className="flex items-center justify-start mt-auto gap-8">
                           <div className="rounded flex items-start justify-center">
                             {(lesson.icon as any)?.url && (
-                              <img
+                              <CloudflareAssetPreview
                                 src={(lesson.icon as any).url}
                                 alt={getTranslationValue(
                                   (lesson.icon as any)?.title,

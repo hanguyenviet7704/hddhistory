@@ -11,6 +11,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { getTranslationValue } from "../../utils/translation";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 const ExerciseList: React.FC = () => {
   const navigate = useNavigate();
@@ -260,7 +261,7 @@ const ExerciseList: React.FC = () => {
                         {/* Image */}
                         {exercise.image && (
                           <div className="relative h-48 overflow-hidden flex-shrink-0">
-                            <img
+                            <CloudflareAssetPreview
                               src={exercise.image}
                               alt={getTranslationValue(exercise.title, lang)}
                               className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"

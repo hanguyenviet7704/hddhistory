@@ -39,11 +39,29 @@ export default function CloudflareFileUpload({
   const animationContainerRef = useRef<HTMLDivElement | null>(null);
   const animationInstanceRef = useRef<AnimationItem | null>(null);
   const extractKeyFromUrl = (url: string) => {
+    const clean = url.split("?")[0].split("#")[0];
+    if (!clean) return "";
     try {
-      const parsed = new URL(url);
-      return decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+      const parsed = new URL(clean);
+      const path = decodeURIComponent(parsed.pathname);
+      const marker = "/cloudflares/download/";
+      const idx = path.indexOf(marker);
+      if (idx >= 0) {
+        return path.slice(idx + marker.length).replace(/^\/+/, "");
+      }
+      const parts = path.split("/").filter(Boolean);
+      if (parts.length === 0) return "";
+      return parts.slice(-2).join("/");
     } catch {
-      return "";
+      const path = decodeURIComponent(clean);
+      const marker = "/cloudflares/download/";
+      const idx = path.indexOf(marker);
+      if (idx >= 0) {
+        return path.slice(idx + marker.length).replace(/^\/+/, "");
+      }
+      const parts = path.split("/").filter(Boolean);
+      if (parts.length === 0) return "";
+      return parts.slice(-2).join("/");
     }
   };
 
@@ -154,6 +172,8 @@ export default function CloudflareFileUpload({
 
         // Prefer backend proxy to avoid CORS issues with R2
         const key = extractKeyFromUrl(previewUrl) || previewUrl;
+        console.log(222, key);
+
         try {
           const proxied = await cloudflareService.download(key);
           data = normalizeAnimationData(proxied);
