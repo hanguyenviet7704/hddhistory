@@ -45,7 +45,7 @@ class _RoleplayBackButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return IconButton(
-      onPressed: () => context.pop(),
+      onPressed: () => CourseRoadmapRoute().go(context),
       icon: Icon(
         FontAwesomeIcons.xmark,
         size: 18.w,
