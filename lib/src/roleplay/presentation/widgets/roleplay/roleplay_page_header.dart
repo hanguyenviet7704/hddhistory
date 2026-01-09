@@ -17,20 +17,20 @@ class RoleplayPageHeader extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 8.h, horizontal: 20.w),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           _RoleplayBackButton(isLight: useLightContent),
+          12.horizontalSpace,
           AppText(
             title,
             maxLines: 2,
-            style: AppStyle.text20.copyWith(
+            style: AppStyle.text16.copyWith(
               fontWeight: FontWeight.w700,
               color: textColor,
               height: 1.3,
             ),
           ),
-          SizedBox(width: 18.w),
         ],
       ),
     );
@@ -52,8 +52,7 @@ class _RoleplayBackButton extends StatelessWidget {
         color: isLight ? Colors.white : AppCustomColor.textPrimary,
       ),
       padding: EdgeInsets.zero,
-      constraints: BoxConstraints(minWidth: 40.w, minHeight: 40.w),
-      splashRadius: 24.r,
+      splashRadius: 12.r,
     );
   }
 }
