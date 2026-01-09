@@ -56,7 +56,7 @@ class LessonCard extends StatelessWidget {
 
     switch (lesson.type) {
       case LessonType.lesson:
-        if(lessonRolePlay.id.isNotEmpty) {
+        if (lessonRolePlay.id.isNotEmpty) {
           context.read<ProgressCubit>().loadUserProgressLesson(lessonId: lessonRolePlay.id);
         }
         context.read<CourseLessonCubit>()
@@ -75,6 +75,7 @@ class LessonCard extends StatelessWidget {
           ..reset()
           ..setCurrentLesson(lesson)
           ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
+        context.read<RoleplayPointCubit>().reset();
         RoleplayIntroRoute().go(context);
         break;
 

@@ -6,6 +6,14 @@ class RoleplayPointCubit extends Cubit<RoleplayPointState> {
 
   void reset() => emit(RoleplayPointState.initial());
 
+  void setPoints(List<KeypointEntity> points) {
+    for (var point in points) {
+      LogDev.one('RoleplayPointCubit: setPoints: ${point.title}: ${point.point}');
+      setPoint(point);
+    }
+    emit(state.copyWith(points: points));
+  }
+
   void setPoint(KeypointEntity point) {
     List<KeypointEntity> points = List<KeypointEntity>.from(state.points);
     if (points.isEmpty) {

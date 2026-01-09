@@ -47,7 +47,6 @@ class _RoleplayIntroViewState extends State<_RoleplayIntroView> {
     final bool showMissions = _hasMissions && _stepNotifier.value == 1;
 
     if (showMissions || !_hasMissions) {
-      context.read<RoleplayPointCubit>().reset();
       RoleplayRoute().go(context);
       return;
     }

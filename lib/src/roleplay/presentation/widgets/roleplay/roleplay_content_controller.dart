@@ -259,7 +259,9 @@ class RoleplayContentController extends ChangeNotifier {
     if (_isDisposing) return;
     if (_pendingExerciseContentIndex != contentIndex) return;
 
-    AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);
+    if (exercise.type != QuestionTypeEnum.speaking) {
+      AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);
+    }
     _onHideOverlays();
     _completedExerciseIndexes.add(contentIndex);
     setOverlayVisible(false);

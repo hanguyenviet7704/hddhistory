@@ -81,12 +81,14 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     final question = state.question;
     if (question.exerciseId.isEmpty) return;
     final result = toExerciseResult();
+    final double score = pointCalculation().toDouble();
 
     final data = UpdateUserProgressExerciseData(
       exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
       type: QuestionType.dragAndDrop,
       form: question.form,
       passed: result.passed,
+      score: score,
       dragDropAnswer: _progressDragDropList(result.dragDropAnswer),
     );
 

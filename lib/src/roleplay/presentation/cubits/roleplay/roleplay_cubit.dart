@@ -188,8 +188,61 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
             ),
           ),
         );
+        _restoreRoleplayPointsFromResults(resultsById);
       },
     );
+  }
+
+  void _restoreRoleplayPointsFromResults(Map<String, ExerciseResultEntity> resultsById) {
+    if (resultsById.isEmpty) return;
+
+    final Map<String, KeypointEntity> keypointsById = {
+      for (final keypoint in state.currentLesson.keypoints) keypoint.id: keypoint,
+    };
+
+    for (final content in state.currentRoleplay.contents) {
+      if (content.type != RoleplayContentType.exercise) continue;
+      final keypoint = content.exercise.keypoint;
+      if (keypoint.id.isEmpty) continue;
+      keypointsById.putIfAbsent(keypoint.id, () => keypoint);
+    }
+
+    final Map<String, double> pointsByKeypoint = {};
+
+    for (final content in state.currentRoleplay.contents) {
+      if (content.type != RoleplayContentType.exercise) continue;
+      final exercise = content.exercise;
+      final String matchId = exercise.exerciseId.isNotEmpty ? exercise.exerciseId : exercise.id.toString();
+      final result = resultsById[matchId];
+      if (result == null) continue;
+      final keypointId = exercise.keypoint.id;
+      if (keypointId.isEmpty) continue;
+
+      double score = result.score;
+      if (score == 0 && result.passed && exercise.maxScore > 0) {
+        score = exercise.maxScore.toDouble();
+      }
+
+      pointsByKeypoint[keypointId] = (pointsByKeypoint[keypointId] ?? 0) + score;
+    }
+
+    final restoredPoints = <KeypointEntity>[];
+    for (final entry in pointsByKeypoint.entries) {
+      final keypoint = keypointsById[entry.key];
+      if (keypoint == null) continue;
+      restoredPoints.add(
+        keypoint.copyWith(
+          point: entry.value.round(),
+          isUseRoleplayModule: true,
+          isUseProgressData: true,
+        ),
+      );
+    }
+
+    if (restoredPoints.isEmpty) return;
+    restoredPoints.sort((a, b) => a.index.compareTo(b.index));
+
+    AppDI.injector.get<RoleplayPointCubit>().setPoints(restoredPoints);
   }
 
   void _sendFeedback() async {

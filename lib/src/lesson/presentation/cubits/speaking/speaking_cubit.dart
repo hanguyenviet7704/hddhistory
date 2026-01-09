@@ -129,7 +129,6 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
     getVoiceFeedback();
     getScoreRecord();
-    updateUserProgressExercise();
     emit(state.copyWith(status: SpeakingStatus.loading));
   }
 
@@ -150,7 +149,6 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
         emit(state.copyWith(audioFilePath: result.url));
         getVoiceFeedback(url: result.url);
         getScoreRecord(audioUrl: result.url);
-        updateUserProgressExercise();
       },
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
@@ -187,7 +185,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
       },
-      onSuccess: (result) => _questionScore = result.score,
+      onSuccess: (result) {
+        _questionScore = result.score;
+        updateUserProgressExercise();
+        AppDI.injector.get<ExerciseCubit>().setQuestionPoint(state.question);
+      },
     );
   }
 
@@ -314,11 +316,13 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     if (question.exerciseId.isEmpty) return;
 
     final result = toExerciseResult();
+    final double score = pointCalculation().toDouble();
 
     final data = UpdateUserProgressExerciseData(
       exerciseId: question.exerciseId.toString(),
       type: QuestionType.record,
       passed: result.passed,
+      score: score,
       recordAnswer: _progressRecordAnswer(result.recordAnswer),
     );
 

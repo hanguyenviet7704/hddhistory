@@ -64,6 +64,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     final question = state.question;
     if (question.id == 0) return;
     final result = toExerciseResult();
+    final double score = pointCalculation().toDouble();
 
     final QuestionType progressType = switch (question.type) {
       QuestionTypeEnum.singleChoice => QuestionType.singleChoice,
@@ -75,6 +76,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       exerciseId: question.exerciseId,
       type: progressType,
       passed: result.passed,
+      score: score,
       multipleAnswer: question.type == QuestionTypeEnum.multipleChoice ? _progressOptionList(result.multipleAnswer) : null,
       singleAnswer: question.type == QuestionTypeEnum.singleChoice ? _progressSingleOption(result.singleAnswer) : null,
     );

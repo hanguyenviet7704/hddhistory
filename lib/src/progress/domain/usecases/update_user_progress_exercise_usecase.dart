@@ -22,6 +22,7 @@ abstract class UpdateUserProgressExerciseData with _$UpdateUserProgressExerciseD
     QuestionType? type,
     FormDragDropType? form,
     bool? passed,
+    double? score,
     List<UpdateUserProgressExerciseOption>? multipleAnswer,
     UpdateUserProgressExerciseOption? singleAnswer,
     List<UpdateUserProgressExerciseDragDropOption>? dragDropAnswer,

@@ -42,6 +42,7 @@ class CourseRoadmapRoute extends BaseTransitionRouteData with $CourseRoadmapRout
       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
       BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<RoleplayPointCubit>()),
     ],
     child: const CourseRoadmapPage(),
   );
