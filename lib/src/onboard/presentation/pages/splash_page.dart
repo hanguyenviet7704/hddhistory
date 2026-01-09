@@ -90,7 +90,7 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
     bool isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
 
-    Future.delayed(const Duration(milliseconds: 3000), () async {
+    Future.delayed(const Duration(milliseconds: 1500), () async {
       if (!mounted) return;
 
       if (AppGlobalValue.accessToken.isEmpty) {
@@ -139,15 +139,53 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        top: false,
-        child: Center(
-          child: Image.asset(
-            AppAsset.images.common.mainIcon.path,
-            width: 100.w,
-          ).animate().fadeIn(duration: 0.8.seconds),
+    final double bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF5953EA),
+                Color(0xFF838AF2),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            bottom: false,
+            child: Column(
+              children: [
+                SizedBox(height: 60.h),
+                Expanded(
+                  child: Center(
+                    child: Image.asset(
+                      AppAsset.images.common.mainIconSplash.path,
+                      width: 80.w,
+                      height: 80.w,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 60.h + bottomInset),
+                  child: AppText(
+                    'Meup',
+                    style: AppStyle.text20.copyWith(
+                      color: AppCustomColor.textWhite,
+                      fontWeight: FontWeight.w700,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );
