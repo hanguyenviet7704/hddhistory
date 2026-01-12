@@ -1,5 +1,5 @@
 {
-  "cmake.sourceDirectory": "/Users/biendh/StudioProjects/meup-flutter/linux",
+  "cmake.sourceDirectory": "/Users/biendh/StudioProjects/meup/linux",
   "arb-editor.suppressedWarnings": [
     "missing_messages_from_template",
     "missing_metadata_for_key",

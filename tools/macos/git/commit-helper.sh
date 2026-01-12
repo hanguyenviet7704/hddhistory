@@ -96,51 +96,33 @@ echo ""
 
 if [[ -n "$TICKET_ID" ]]; then
     echo -e "${YELLOW}With ticket ID:${NC}"
-    echo "  $BRANCH_TYPE-$TICKET_ID: <description>"
-    
-    if [[ -n "$SCOPE" ]]; then
-        echo "  $BRANCH_TYPE($SCOPE)-$TICKET_ID: <description>"
-    fi
+    echo "  $BRANCH_TYPE/$TICKET_ID: <description>"
     echo ""
 fi
 
-echo -e "${YELLOW}With scope:${NC}"
-if [[ -n "$SCOPE" ]]; then
-    echo "  $BRANCH_TYPE($SCOPE): <description>"
-else
-    echo "  $BRANCH_TYPE(<scope>): <description>"
-fi
+echo -e "${YELLOW}Generic:${NC}"
+echo "  $BRANCH_TYPE: <description>"
 echo ""
 
 echo -e "${GREEN}📝 Examples based on your changes:${NC}"
 
 # Provide context-specific examples
 if echo "$(git diff --cached --name-only)" | grep -q "color_picker"; then
-    echo "  ${BRANCH_TYPE}-${TICKET_ID}: Implement color picker functionality"
-    echo "  ${BRANCH_TYPE}(gallery): Add color picker to gallery view"
+     echo "  ${BRANCH_TYPE}/${TICKET_ID}: add color picker"
 fi
 
 if echo "$(git diff --cached --name-only)" | grep -q "gallery"; then
-    echo "  ${BRANCH_TYPE}-${TICKET_ID}: Update gallery view components"
-    echo "  ${BRANCH_TYPE}(ui): Enhance gallery picture view"
+    echo "  ${BRANCH_TYPE}/${TICKET_ID}: update gallery view"
 fi
 
 if echo "$(git diff --cached --name-only)" | grep -q "route"; then
-    echo "  ${BRANCH_TYPE}-${TICKET_ID}: Add routing for color picker"
-    echo "  ${BRANCH_TYPE}(routing): Configure color picker routes"
-fi
-
-if echo "$(git diff --cached --name-only)" | grep -q "bloc\|cubit\|state"; then
-    echo "  ${BRANCH_TYPE}-${TICKET_ID}: Add state management for color picker"
-    echo "  ${BRANCH_TYPE}(bloc): Implement color picker cubit"
+    echo "  ${BRANCH_TYPE}/${TICKET_ID}: add routes"
 fi
 
 echo ""
 echo -e "${BLUE}📋 Remember:${NC}"
-echo "  • Use imperative mood: 'Add' not 'Added'"
-echo "  • Keep under 50 characters"
-echo "  • Be specific and descriptive"
-echo "  • No period at the end"
+echo "  • Use lowercase for description"
+echo "  • Keep it short and descriptive"
 echo ""
 
 # Interactive mode
@@ -148,11 +130,18 @@ echo -e "${GREEN}🎯 Generate commit message? (y/n)${NC}"
 read -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]]; then
-    echo -e "${YELLOW}Enter your commit description:${NC}"
+    echo -e "${YELLOW}Enter short description:${NC}"
     read -p "> " description
     
+    # Just lowercase the first letter or whole string if preferred, keeping spaces
+    # Assuming standard sentence-like but lowercase start is common in conventional commits, 
+    # though user example "add login" implies lowercase.
+    # Let's just lowercase the input to be safe/standard-ish.
+    # Actually user example was "add login" (lowercase).
+    # I won't force-slugify (no tr ' ' '-').
+    
     if [[ -n "$TICKET_ID" ]]; then
-        COMMIT_MSG="$BRANCH_TYPE-$TICKET_ID: $description"
+        COMMIT_MSG="$BRANCH_TYPE/$TICKET_ID: $description"
     else
         COMMIT_MSG="$BRANCH_TYPE: $description"
     fi

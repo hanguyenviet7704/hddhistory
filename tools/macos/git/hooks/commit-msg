@@ -17,31 +17,38 @@ NC='\033[0m' # No Color
 VALID_TYPES="feature|fix|hotfix|release|docs|style|refactor|test|chore"
 
 # Commit message pattern
-# Format: type(scope): subject
+# Format: type/TICKET-ID: description
 # Examples:
-#   feature(auth): Add social login
-#   fix(payment): Fix credit card validation
-#   feature-TG-123-login: Add OAuth integration
-PATTERN="^($VALID_TYPES)(\([a-zA-Z0-9-]+\))?(-[A-Z]+-[0-9]+)?(-[a-z0-9-]+)?: .+"
+#   feature/TG-123: add social login
+#   fix/TG-456: fix payment validation
+#   release/1.2.0: prepare release
+PATTERN="^($VALID_TYPES)/([A-Z]+-[0-9]+): .+$"
+# Release might follow pattern `release/1.2.0: msg` or maybe just `release/1.2.0`.
+# Adjusted to allow release tags as ID-like structure or just standard ID.
+# If version is used as ID: release/1.2.0: message
+PATTERN_RELEASE="^release/[0-9]+\.[0-9]+\.[0-9]+: .+$"
 
 # Check if commit message matches the pattern
-if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+IS_VALID=true
+if [[ "$COMMIT_MSG" =~ ^release ]]; then
+    if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN_RELEASE"; then
+         IS_VALID=false
+    fi
+else
+    if ! echo "$COMMIT_MSG" | grep -qE "$PATTERN"; then
+         IS_VALID=false
+    fi
+fi
+
+if [ "$IS_VALID" = false ]; then
     echo -e "${RED}❌ Invalid commit message format!${NC}"
     echo ""
     echo -e "${YELLOW}Commit message:${NC} $COMMIT_MSG"
     echo ""
-    echo -e "${GREEN}Valid format:${NC} type(scope): subject"
-    echo -e "${GREEN}Or with ticket:${NC} type-TICKET-ID-description: subject"
+    echo -e "${GREEN}Valid format:${NC} type/TICKET-ID: description"
+    echo -e "${GREEN}Example:${NC} feature/TG-123: add login button"
     echo ""
     echo -e "${GREEN}Valid types:${NC} $VALID_TYPES"
-    echo ""
-    echo -e "${GREEN}Examples:${NC}"
-    echo "  feature(auth): Add social login functionality"
-    echo "  fix(validation): Fix email regex pattern"
-    echo "  feature-ARTLEXIS-123-login: Implement OAuth2 authentication"
-    echo "  fix-TG-456: Resolve payment gateway timeout"
-    echo ""
-    echo -e "${YELLOW}💡 Tip:${NC} Use branch ticket ID in your commit for traceability"
     exit 1
 fi
 
@@ -49,7 +56,7 @@ fi
 SUBJECT_LENGTH=${#COMMIT_MSG}
 if [ $SUBJECT_LENGTH -gt 100 ]; then
     echo -e "${YELLOW}⚠️  Warning: Commit message is too long (${SUBJECT_LENGTH} chars)${NC}"
-    echo "Consider keeping it under 100 characters for better readability."
+    echo "Consider keeping it under 100 characters."
     echo ""
 fi
 

@@ -33,7 +33,7 @@
 
 ## Commit & Pull Request Guidelines
 - Branches: `feature/MEUP-123-description` (or `fix/…`, `chore/…`).
-- Commits: `type-MEUP-123: summary` (e.g., `feat-MEUP-123: add artwork cache`).
+- Commits: `type/MEUP-123: summary` (e.g., `feature/MEUP-123: add artwork cache`).
 - PR checklist: summary + ticket; UI screenshots/GIFs; `flutter analyze`, `flutter test`; note if `build_runner`/`slang` ran; flag flavor/env touched.
 
 ## Flavor & Environment Tips
