@@ -29,11 +29,9 @@ class _ProfilePageState extends State<ProfilePage> {
         transitionBackgroundColor: AppCustomColor.backgroundWhite,
         body: SafeBody(
           child: BlocBuilder<AchievenmentProgressCubit, AchievenmentProgressState>(
-            buildWhen: (previous, current) =>
-                previous.status != current.status || previous.achievenments != current.achievenments,
+            buildWhen: (previous, current) => previous.status != current.status || previous.achievenments != current.achievenments,
             builder: (context, state) {
-              final bool isLoading =
-                  state.status == AchievenmentProgressStatus.loading && state.achievenments.isEmpty;
+              final bool isLoading = state.status == AchievenmentProgressStatus.loading && state.achievenments.isEmpty;
               if (isLoading) {
                 return const Center(child: CircularProgressIndicator());
               }

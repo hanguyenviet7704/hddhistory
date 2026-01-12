@@ -254,7 +254,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   void _onPurchaseSuccess(PurchaseDetails purchaseDetail) {
     _restoreTimeout?.cancel();
     _finishTransaction(purchaseDetail);
-    AppDI.injector.get<ProfileCubit>().loadUser();
     if (state.lastOrigin != PurchaseOrigin.paywall) {
       AppConfig.instance.context?.back();
     }
@@ -262,6 +261,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
     Future.delayed(const Duration(seconds: 1), () async {
       bool hasSubscription = AppDI.injector.get<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
+      AppDI.injector.get<ProfileCubit>().loadUser();
       emit(state.copyWith(status: MonetizationStatus.purchaseSuccess));
       AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       if (hasSubscription) return;

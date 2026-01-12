@@ -12,6 +12,10 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   void setCurrentLearningItem(LearningItemEntity learningItem) {
     emit(state.copyWith(currentLearningItem: learningItem));
+    if (learningItem.questions.isEmpty) {
+      LogDev.error('ExerciseCubit: setCurrentLearningItem: learningItem.questions.isEmpty: ${learningItem.id}');
+      return;
+    }
     setQuestionData(learningItem.questions.first);
   }
 

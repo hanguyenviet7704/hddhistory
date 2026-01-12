@@ -34,6 +34,7 @@ class UserAchievementCourseItem extends StatelessWidget {
               AppText(
                 course.title,
                 maxLines: 2,
+                width: 100.w,
                 textAlign: TextAlign.center,
                 style: titleStyle,
               ),
