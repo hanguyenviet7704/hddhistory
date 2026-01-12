@@ -4174,7 +4174,21 @@ export default function RoleplayFromDetail({
               >
                 <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold">
-                    {modalOpen.content ? "Edit Content" : "New Content"}
+                    {modalOpen.content ? (
+                      <>
+                        Edit Content
+                        {modalOpen.content.id != null ? (
+                          <>
+                            {" "}
+                            <span className="text-black font-semibold">
+                              {modalOpen.content.id}
+                            </span>
+                          </>
+                        ) : null}
+                      </>
+                    ) : (
+                      "New Content"
+                    )}
                   </h2>
 
                   <button

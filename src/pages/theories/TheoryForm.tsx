@@ -1338,9 +1338,21 @@ export default function TheoryForm({
               >
                 <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold">
-                    {modalOpen.theoryDocument
-                      ? "Edit Document"
-                      : "New Document"}
+                    {modalOpen.theoryDocument ? (
+                      <>
+                        Edit Document
+                        {modalOpen.theoryDocument.id != null ? (
+                          <>
+                            {" "}
+                            <span className="text-black font-semibold">
+                              {modalOpen.theoryDocument.id}
+                            </span>
+                          </>
+                        ) : null}
+                      </>
+                    ) : (
+                      "New Document"
+                    )}
                   </h2>
                   <button
                     onClick={() => setModalOpen({ section: null })}

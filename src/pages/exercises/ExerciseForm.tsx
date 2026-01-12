@@ -2758,7 +2758,21 @@ export default function ExerciseForm({
               >
                 <div className="p-6 pt-6 border-b border-gray-200 flex justify-between items-center">
                   <h2 className="text-xl font-bold">
-                    {modalOpen.question ? "Edit Question" : "New Question"}
+                    {modalOpen.question ? (
+                      <>
+                        Edit Question
+                        {modalOpen.question.id != null ? (
+                          <>
+                            {" "}
+                            <span className="text-black font-semibold">
+                              {modalOpen.question.id}
+                            </span>
+                          </>
+                        ) : null}
+                      </>
+                    ) : (
+                      "New Question"
+                    )}
                   </h2>
 
                   <button
