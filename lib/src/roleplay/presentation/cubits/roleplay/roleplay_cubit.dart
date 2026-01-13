@@ -24,6 +24,12 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
   void endRoleplay() {
     AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
     _sendFeedback();
+    bool isCompleted = state.currentLesson.progess == ProcessEnum.done;
+    if (isCompleted) {
+      RoleplayFeedbackRoute().go(AppConfig.instance.context!);
+      return;
+    }
+    setLearningItemToLessonCubit();
     RoleplayCompleteRoute().go(AppConfig.instance.context!);
 
     // if (state.currentRoleplay.contents.last.type == RoleplayContentType.exercise) {
@@ -37,21 +43,83 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
     emit(state.copyWith(isCurrentSectionRevealed: isRevealed));
   }
 
+  void setExerciseResult({
+    required int contentId,
+    required int contentIndex,
+    required ExerciseResultEntity result,
+  }) {
+    final contents = state.currentRoleplay.contents;
+    if (contents.isEmpty) return;
+    int? targetIndex;
+
+    if (contentId > 0) {
+      final matchedIndices = <int>[];
+      for (int i = 0; i < contents.length; i++) {
+        final content = contents[i];
+        if (content.id == contentId && content.type == RoleplayContentType.exercise) {
+          matchedIndices.add(i);
+        }
+      }
+      if (matchedIndices.length == 1) {
+        targetIndex = matchedIndices.first;
+      }
+    }
+
+    if (targetIndex == null) {
+      if (contentIndex < 0 || contentIndex >= contents.length) return;
+      if (contents[contentIndex].type != RoleplayContentType.exercise) return;
+      targetIndex = contentIndex;
+    }
+
+    final updatedContents = contents.toList();
+    updatedContents[targetIndex] = contents[targetIndex].copyWith(
+      exercise: contents[targetIndex].exercise.copyWith(result: result),
+    );
+
+    emit(
+      state.copyWith(
+        currentLearningItem: state.currentLearningItem.copyWith(
+          roleplay: state.currentRoleplay.copyWith(contents: updatedContents),
+        ),
+      ),
+    );
+  }
+
   void setExerciseRecordAnswer({
-    required int questionId,
+    String? exerciseId,
+    int? questionId,
     String? textAnswer,
     String? recordPath,
   }) {
     if (state.currentRoleplay.contents.isEmpty) return;
 
-    final updatedContents = state.currentRoleplay.contents.map((content) {
-      if (content.type != RoleplayContentType.exercise || content.exercise.id != questionId) {
-        return content;
-      }
+    final contents = state.currentRoleplay.contents;
+    final String? resolvedExerciseId = (exerciseId != null && exerciseId.isNotEmpty) ? exerciseId : null;
+    final List<int> matchedIndices = [];
 
+    for (int i = 0; i < contents.length; i++) {
+      final content = contents[i];
+      if (content.type != RoleplayContentType.exercise) continue;
+      if (resolvedExerciseId != null) {
+        if (content.exercise.exerciseId == resolvedExerciseId) {
+          matchedIndices.add(i);
+        }
+      } else if (questionId != null && content.exercise.id == questionId) {
+        matchedIndices.add(i);
+      }
+    }
+
+    if (matchedIndices.isEmpty) return;
+    if (resolvedExerciseId == null && matchedIndices.length != 1) return;
+
+    final updatedContents = contents.toList();
+    for (final index in matchedIndices) {
+      final content = updatedContents[index];
       final currentResult = content.exercise.result;
       final updatedResult = currentResult.copyWith(
-        exerciseId: currentResult.exerciseId.isNotEmpty ? currentResult.exerciseId : content.exercise.id.toString(),
+        exerciseId: content.exercise.exerciseId.isNotEmpty
+            ? content.exercise.exerciseId
+            : (currentResult.exerciseId.isNotEmpty ? currentResult.exerciseId : content.exercise.id.toString()),
         type: content.exercise.type,
         form: content.exercise.form,
         recordAnswer: AnswerEntity(
@@ -60,10 +128,10 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
         ),
       );
 
-      return content.copyWith(
+      updatedContents[index] = content.copyWith(
         exercise: content.exercise.copyWith(result: updatedResult),
       );
-    }).toList();
+    }
 
     emit(
       state.copyWith(
@@ -84,8 +152,103 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
       onSuccess: (item) {
         LearningItemEntity newItem = item.copyWith(estimateCompleTime: estimateCompleTime ?? item.estimateCompleTime);
         emit(state.copyWith(status: RoleplayStatus.success, currentLearningItem: newItem, isCurrentSectionRevealed: false));
+        _loadUserProgressExercise();
       },
     );
+  }
+
+  void _loadUserProgressExercise() async {
+    final lessonId = state.currentLesson.id;
+    final courseId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.courseId;
+    final userId = AppDI.injector.get<UserCubit>().state.user.id;
+    final currentRoleplayId = state.currentRoleplay.id;
+    AppDI.injector.get<ProgressCubit>().loadUserProgressLesson(
+      userId: userId,
+      courseId: courseId,
+      lessonId: lessonId,
+      onSuccess: (result) {
+        if (currentRoleplayId != state.currentRoleplay.id) return;
+        if (result.exercisesResult.isEmpty) return;
+
+        final Map<String, ExerciseResultEntity> resultsById = {
+          for (final exerciseResult in result.exercisesResult)
+            if (exerciseResult.exerciseId.isNotEmpty) exerciseResult.exerciseId: exerciseResult,
+        };
+
+        final updatedContents = state.currentRoleplay.contents.map((content) {
+          if (content.type != RoleplayContentType.exercise) return content;
+          final exercise = content.exercise;
+          final String matchId = exercise.exerciseId.isNotEmpty ? exercise.exerciseId : exercise.id.toString();
+          final matchedResult = resultsById[matchId];
+          if (matchedResult == null) return content;
+
+          return content.copyWith(
+            exercise: exercise.copyWith(result: matchedResult),
+          );
+        }).toList();
+
+        emit(
+          state.copyWith(
+            currentLearningItem: state.currentLearningItem.copyWith(
+              roleplay: state.currentRoleplay.copyWith(contents: updatedContents),
+            ),
+          ),
+        );
+        _restoreRoleplayPointsFromResults(resultsById);
+      },
+    );
+  }
+
+  void _restoreRoleplayPointsFromResults(Map<String, ExerciseResultEntity> resultsById) {
+    if (resultsById.isEmpty) return;
+
+    final Map<String, KeypointEntity> keypointsById = {
+      for (final keypoint in state.currentLesson.keypoints) keypoint.id: keypoint,
+    };
+
+    for (final content in state.currentRoleplay.contents) {
+      if (content.type != RoleplayContentType.exercise) continue;
+      final keypoint = content.exercise.keypoint;
+      if (keypoint.id.isEmpty) continue;
+      keypointsById.putIfAbsent(keypoint.id, () => keypoint);
+    }
+
+    final Map<String, double> pointsByKeypoint = {};
+
+    for (final content in state.currentRoleplay.contents) {
+      if (content.type != RoleplayContentType.exercise) continue;
+      final exercise = content.exercise;
+      final String matchId = exercise.exerciseId.isNotEmpty ? exercise.exerciseId : exercise.id.toString();
+      final result = resultsById[matchId];
+      if (result == null) continue;
+      final keypointId = exercise.keypoint.id;
+      if (keypointId.isEmpty) continue;
+
+      double score = result.score;
+      if (score == 0 && result.passed && exercise.maxScore > 0) {
+        score = exercise.maxScore.toDouble();
+      }
+
+      pointsByKeypoint[keypointId] = (pointsByKeypoint[keypointId] ?? 0) + score;
+    }
+
+    final restoredPoints = <KeypointEntity>[];
+    for (final entry in pointsByKeypoint.entries) {
+      final keypoint = keypointsById[entry.key];
+      if (keypoint == null) continue;
+      restoredPoints.add(
+        keypoint.copyWith(
+          point: entry.value.round(),
+          isUseRoleplayModule: true,
+          isUseProgressData: true,
+        ),
+      );
+    }
+
+    if (restoredPoints.isEmpty) return;
+    restoredPoints.sort((a, b) => a.index.compareTo(b.index));
+
+    AppDI.injector.get<RoleplayPointCubit>().setPoints(restoredPoints);
   }
 
   void _sendFeedback() async {

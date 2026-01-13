@@ -27,12 +27,22 @@ class RoleplayExerciseOverlayManager {
 
 class RoleplayExerciseOverlayInteractive extends StatefulWidget {
   final QuestionEntity exercise;
+  final int contentId;
+  final int contentIndex;
   final VoidCallback onCheckPressed;
+  final bool readOnly;
+  final ExerciseResultEntity? result;
+  final VoidCallback? onDismissed;
 
   const RoleplayExerciseOverlayInteractive({
     super.key,
     required this.exercise,
+    required this.contentId,
+    required this.contentIndex,
     required this.onCheckPressed,
+    this.readOnly = false,
+    this.result,
+    this.onDismissed,
   });
 
   @override
@@ -44,7 +54,10 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   static const double _velocityThreshold = 500;
 
   bool _isExpanded = false;
+  bool _showResult = false;
+  bool _isCorrect = false;
   double _dragDistance = 0;
+  bool _isClosing = false;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
@@ -52,9 +65,16 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   @override
   void initState() {
     super.initState();
+    if (widget.readOnly && widget.result != null) {
+      _showResult = true;
+      _isExpanded = true;
+      _isCorrect = widget.result!.passed;
+      _applyReadOnlyResult(widget.result!);
+    }
     _animationController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 240),
+      reverseDuration: const Duration(milliseconds: 300),
     );
     final curved = CurvedAnimation(parent: _animationController, curve: Curves.easeOutCubic);
     _fadeAnimation = Tween<double>(begin: 0, end: 1).animate(curved);
@@ -80,6 +100,14 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   }
 
   void _handleDragUpdate(DragUpdateDetails details) {
+    if (widget.readOnly || _showResult) {
+      _dragDistance += details.delta.dy;
+      if (_dragDistance >= _dragThreshold) {
+        _closeOverlay();
+        _dragDistance = 0;
+      }
+      return;
+    }
     _dragDistance += details.delta.dy;
     if (_dragDistance <= -_dragThreshold) {
       _expand();
@@ -93,6 +121,14 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   }
 
   void _handleDragEnd(DragEndDetails details) {
+    if (widget.readOnly || _showResult) {
+      final double velocity = details.primaryVelocity ?? 0;
+      if (velocity >= _velocityThreshold) {
+        _closeOverlay();
+      }
+      _dragDistance = 0;
+      return;
+    }
     final double velocity = details.primaryVelocity ?? 0;
     if (velocity <= -_velocityThreshold) {
       _expand();
@@ -100,6 +136,70 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
       _collapse();
     }
     _dragDistance = 0;
+  }
+
+  void _handleAnswerChecked(bool isCorrect) {
+    setState(() {
+      _showResult = true;
+      _isCorrect = isCorrect;
+      _isExpanded = true;
+    });
+  }
+
+  void _closeOverlay() {
+    if (_isClosing) return;
+    _isClosing = true;
+    unawaited(_dismissOverlay());
+  }
+
+  Future<void> _dismissOverlay() async {
+    await _animationController.reverse();
+    if (!mounted) return;
+
+    if (widget.readOnly) {
+      RoleplayExerciseOverlayManager.hide();
+      widget.onDismissed?.call();
+      return;
+    }
+
+    if (_showResult) {
+      widget.onCheckPressed();
+      return;
+    }
+
+    RoleplayExerciseOverlayManager.hide();
+  }
+
+  void _applyReadOnlyResult(ExerciseResultEntity result) {
+    final ExerciseCubit exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    exerciseCubit.setRoleplayQuestions(
+      LearningItemEntity(
+        type: LearningItemType.roleplay,
+        mainQuestions: [widget.exercise],
+      ),
+    );
+
+    switch (widget.exercise.type) {
+      case QuestionTypeEnum.singleChoice:
+      case QuestionTypeEnum.multipleChoice:
+        AppDI.injector.get<ChoiceCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.dragAndDrop:
+        AppDI.injector.get<DragAndDropCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.arrangeTheSequence:
+        AppDI.injector.get<ArrangeTheSequenceCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.cuesPlacement:
+        AppDI.injector.get<CuesPlacementCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.stressPlacement:
+        AppDI.injector.get<MarkStressWordCubit>().applyExerciseResult(result);
+        break;
+      case QuestionTypeEnum.speaking:
+        AppDI.injector.get<SpeakingCubit>().applyExerciseResult(result);
+        break;
+    }
   }
 
   @override
@@ -120,6 +220,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
         BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
         BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
         BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
+        BlocProvider.value(value: AppDI.injector.get<RoleplayCubit>()),
         // BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
         // BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
       ],
@@ -129,10 +230,16 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
           position: _slideAnimation,
           child: RoleplayExerciseOverlay(
             exercise: widget.exercise,
+            contentId: widget.contentId,
+            contentIndex: widget.contentIndex,
+            readOnly: widget.readOnly,
             isExpanded: _isExpanded,
+            showResult: _showResult,
+            isCorrect: _isCorrect,
             onTapToAnswer: _expand,
             onCheckPressed: widget.onCheckPressed,
-            onTapOutside: _collapse,
+            onAnswerChecked: widget.readOnly ? null : _handleAnswerChecked,
+            onTapOutside: widget.readOnly || _showResult ? _closeOverlay : _collapse,
             onDragStart: _handleDragStart,
             onDragUpdate: _handleDragUpdate,
             onDragEnd: _handleDragEnd,
@@ -145,9 +252,15 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
 
 class RoleplayExerciseOverlay extends StatelessWidget {
   final QuestionEntity exercise;
+  final int contentId;
+  final int contentIndex;
+  final bool readOnly;
   final bool isExpanded;
+  final bool showResult;
+  final bool isCorrect;
   final VoidCallback? onTapToAnswer;
   final VoidCallback? onCheckPressed;
+  final ValueChanged<bool>? onAnswerChecked;
   final VoidCallback? onTapOutside;
   final GestureDragStartCallback? onDragStart;
   final GestureDragUpdateCallback? onDragUpdate;
@@ -156,9 +269,15 @@ class RoleplayExerciseOverlay extends StatelessWidget {
   const RoleplayExerciseOverlay({
     super.key,
     required this.exercise,
+    required this.contentId,
+    required this.contentIndex,
+    this.readOnly = false,
     this.isExpanded = false,
+    this.showResult = false,
+    this.isCorrect = false,
     this.onTapToAnswer,
     this.onCheckPressed,
+    this.onAnswerChecked,
     this.onTapOutside,
     this.onDragStart,
     this.onDragUpdate,
@@ -178,9 +297,16 @@ class RoleplayExerciseOverlay extends StatelessWidget {
       constraints: BoxConstraints(maxHeight: maxBodyHeight),
       child: _ExpandedExerciseBody(
         exercise: exercise,
-        onCheckPressed: onCheckPressed,
+        contentId: contentId,
+        contentIndex: contentIndex,
+        readOnly: readOnly,
+        onAnswerChecked: onAnswerChecked,
+        showResult: showResult,
+        isCorrect: isCorrect,
+        onContinue: onCheckPressed,
       ),
     );
+    final bool isForcedExpanded = showResult || isExpanded;
 
     return Stack(
       children: [
@@ -225,7 +351,7 @@ class RoleplayExerciseOverlay extends StatelessWidget {
                     secondCurve: Curves.easeInCubic,
                     sizeCurve: Curves.easeOutCubic,
                     alignment: Alignment.topCenter,
-                    crossFadeState: isExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
+                    crossFadeState: isForcedExpanded ? CrossFadeState.showSecond : CrossFadeState.showFirst,
                     firstChild: collapsedBody,
                     secondChild: expandedBody,
                   ),

@@ -47,10 +47,11 @@ extension LessonEntityListExtension on List<LessonEntity> {
   }
 
   // Check if a lesson at the given index is a premium lesson
-  bool isPremiumLessonAt(int lessonIndex) {
+  bool isPremiumLessonAt(int lessonIndex, int roadmapLevelIndex) {
     // int premiumIndex = premiumLessonIndex;
     // if (premiumIndex == -1) return false;
     int premiumIndex = 2;
+    if(roadmapLevelIndex > 0) return true;
     return lessonIndex >= premiumIndex;
   }
 }

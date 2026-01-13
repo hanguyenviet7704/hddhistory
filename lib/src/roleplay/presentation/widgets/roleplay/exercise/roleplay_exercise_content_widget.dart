@@ -3,11 +3,13 @@ part of '../../../../roleplay.dart';
 class RoleplayExerciseContentWidget extends StatelessWidget {
   final QuestionEntity exercise;
   final bool isCompleted;
+  final VoidCallback? onTapResult;
 
   const RoleplayExerciseContentWidget({
     super.key,
     required this.exercise,
     this.isCompleted = false,
+    this.onTapResult,
   });
 
   @override
@@ -25,9 +27,12 @@ class RoleplayExerciseContentWidget extends StatelessWidget {
         );
       },
       child: shouldShowCompleted
-          ? RoleplayExerciseAnswerCard(
-              key: const ValueKey('completed'),
-              exercise: exercise,
+          ? GestureDetector(
+              onTap: onTapResult,
+              child: RoleplayExerciseAnswerCard(
+                key: const ValueKey('completed'),
+                exercise: exercise,
+              ),
             )
           : const SizedBox.shrink(key: ValueKey('empty')),
     );

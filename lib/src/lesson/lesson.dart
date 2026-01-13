@@ -73,6 +73,7 @@ part 'presentation/cubits/lesson/lesson_cubit.dart';
 part 'presentation/cubits/lesson/lesson_state.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_state.dart';
+part 'presentation/cubits/progress_payload_helpers.dart';
 part 'presentation/cubits/speaking/speaking_cubit.dart';
 part 'presentation/cubits/speaking/speaking_state.dart';
 part 'presentation/cubits/theory/theory_cubit.dart';

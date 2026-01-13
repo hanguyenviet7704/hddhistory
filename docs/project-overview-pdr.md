@@ -1,6 +1,6 @@
 # Project Overview & PDR
 
-_Last updated: 2025-12-24_
+_Last updated: 2026-01-12_
 
 ## 1. Product Summary
 Meup delivers interactive language-learning experiences that blend scripted lessons, AI-driven roleplay, and tracked progress. The Flutter app targets Android/iOS with a shared Clean Architecture core and heavy automation for builds, localization, and distribution.
@@ -14,12 +14,16 @@ Meup delivers interactive language-learning experiences that blend scripted less
 ## 3. Functional Requirements
 | ID | Requirement | Acceptance Criteria |
 | --- | --- | --- |
-| FR-1 | Lesson consumption | Users can stream/download lessons with synchronized overlays; progress persisted per profile. |
-| FR-2 | Roleplay exercises | Roleplay overlay handles question branching and multi-step prompts with state recovery after app pause. |
-| FR-3 | Auth & profile | Support email/password + Google + Apple login; profile updates sync across sessions. |
-| FR-4 | Monetization | In-app purchases/subscriptions unlock premium content; entitlements refreshed on launch. |
-| FR-5 | Localization | Entire UI localizable; l10n strings pulled from Google Sheets and regenerated via `slang`. |
-| FR-6 | Notifications | Push notifications delivered via Firebase Messaging with deep links routing into specific lessons. |
+| FR-1 | Lesson consumption | Users can stream/download lessons with synchronized overlays; progress persisted per profile. 7 exercise types supported. |
+| FR-2 | Roleplay exercises | Roleplay overlay handles question branching and multi-step prompts with state recovery after app pause. AI-driven conversations. |
+| FR-3 | Course catalog | Browse courses, view roadmap with level indexing, track progress across lessons. |
+| FR-4 | Auth & profile | Support email/password + Google + Apple + Anonymous login; profile updates sync across sessions. Firebase Auth integration. |
+| FR-5 | Monetization | In-app purchases/subscriptions unlock premium content; entitlements refreshed on launch. |
+| FR-6 | Progress tracking | Track user progress across lessons, exercises, achievements; HydratedCubit persistence. |
+| FR-7 | Localization | Entire UI localizable (en/vi/zh); l10n strings pulled from Google Sheets and regenerated via `slang`. |
+| FR-8 | Notifications | Push notifications delivered via Firebase Messaging with deep links routing into specific lessons. |
+| FR-9 | Onboarding | Multi-step onboarding flow with data collection (9 steps). |
+| FR-10 | Settings | Theme switching, locale selection, app preferences persisted via HydratedBloc. |
 
 ## 4. Non-Functional Requirements
 | Category | Requirement |
@@ -56,7 +60,8 @@ Meup delivers interactive language-learning experiences that blend scripted less
 ## 9. Version History
 | Version | Date | Changes |
 | --- | --- | --- |
-| 0.1 | 2025-12-24 | Initial PDR seed covering architecture, requirements, tooling hand-offs. |
+| 0.3 | 2026-01-12 | Added all 13 feature modules, updated functional requirements, refined acceptance criteria with specific implementation details. |
+| 0.2 | 2026-01-07 | Updated documentation timestamps and aligned requirements with current tooling/architecture. |
 
 ## 10. Risks & Mitigations
 | Risk | Impact | Mitigation |

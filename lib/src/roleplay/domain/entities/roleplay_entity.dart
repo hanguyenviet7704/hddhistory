@@ -23,4 +23,14 @@ extension RoleplayEntityExtension on RoleplayEntity {
     }
     return questions;
   }
+
+  int get lastFinishedExerciseIndex {
+    for (var i = contents.length - 1; i >= 0; i--) {
+      final content = contents[i];
+      if (content.type == RoleplayContentType.exercise && content.finishedExercise) {
+        return i;
+      }
+    }
+    return -1;
+  }
 }

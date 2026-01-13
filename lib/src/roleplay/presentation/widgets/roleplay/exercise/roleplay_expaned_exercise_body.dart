@@ -2,51 +2,58 @@ part of '../../../../roleplay.dart';
 
 class _ExpandedExerciseBody extends StatelessWidget {
   final QuestionEntity exercise;
-  final VoidCallback? onCheckPressed;
+  final int contentId;
+  final int contentIndex;
+  final bool readOnly;
+  final ValueChanged<bool>? onAnswerChecked;
+  final bool showResult;
+  final bool isCorrect;
+  final VoidCallback? onContinue;
 
   const _ExpandedExerciseBody({
     required this.exercise,
-    this.onCheckPressed,
+    required this.contentId,
+    required this.contentIndex,
+    this.readOnly = false,
+    this.onAnswerChecked,
+    this.showResult = false,
+    this.isCorrect = false,
+    this.onContinue,
   });
 
   void _handleAnswerChecked(BuildContext context, bool isCorrect) {
-    RoleplayExerciseResultOverlayManager.show(
-      context: context,
-      questionType: exercise.type,
-      builder: (_) => RoleplayExerciseResultBottomSheet(
-        isCorrect: isCorrect,
-        questionType: exercise.type,
-        onContinue: () {
-          RoleplayExerciseResultOverlayManager.hide();
-          onCheckPressed?.call();
-        },
-      ),
+    _storeExerciseResult(context, isCorrect);
+    onAnswerChecked?.call(isCorrect);
+  }
+
+  void _storeExerciseResult(BuildContext context, bool isCorrect) {
+    final ExerciseResultEntity baseResult = switch (exercise.type) {
+      QuestionTypeEnum.singleChoice => context.read<ChoiceCubit>().toExerciseResult(),
+      QuestionTypeEnum.multipleChoice => context.read<ChoiceCubit>().toExerciseResult(),
+      QuestionTypeEnum.dragAndDrop => context.read<DragAndDropCubit>().toExerciseResult(),
+      QuestionTypeEnum.arrangeTheSequence => context.read<ArrangeTheSequenceCubit>().toExerciseResult(),
+      QuestionTypeEnum.cuesPlacement => context.read<CuesPlacementCubit>().toExerciseResult(),
+      QuestionTypeEnum.stressPlacement => context.read<MarkStressWordCubit>().toExerciseResult(),
+      QuestionTypeEnum.speaking => context.read<SpeakingCubit>().toExerciseResult(),
+    };
+
+    context.read<RoleplayCubit>().setExerciseResult(
+      contentId: contentId,
+      contentIndex: contentIndex,
+      result: baseResult.copyWith(passed: isCorrect),
     );
   }
 
   Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {
+    final onChecked = readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
     return switch (questionType) {
-      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
-      ),
-      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
-      ),
-      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
-      ),
-      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
-      ),
-      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
-      ),
-      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
-      ),
-      QuestionTypeEnum.speaking => SpeakingLessonBody(
-        onAnswerChecked: (isCorrect) => _handleAnswerChecked(context, isCorrect),
-      ),
+      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: onChecked),
     };
   }
 
@@ -64,10 +71,50 @@ class _ExpandedExerciseBody extends StatelessWidget {
     };
   }
 
+  Widget _buildContinueButton() {
+    final isSpeaking = exercise.type == QuestionTypeEnum.speaking;
+    final Color accentColor = isSpeaking || isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
+
+    return ExerciseContinueButton(
+      onPressed: onContinue,
+      text: t.exercise.exerciseSkipButton,
+      backgroundColor: accentColor,
+      textColor: AppCustomColor.textWhite,
+      isEnabled: true,
+    );
+  }
+
+  Widget _buildResultStatusRow() {
+    final isSpeaking = exercise.type == QuestionTypeEnum.speaking;
+    final Color accentColor = isSpeaking || isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
+    final String statusText = isSpeaking ? t.exercise.exerciseCompleteVoiceTask : (isCorrect ? t.exercise.exerciseFeedbackCorrectTitle : t.exercise.exerciseFeedbackIncorrectTitle);
+    final Widget icon = isSpeaking || isCorrect ? AppAsset.icons.app.icTick.image(width: 24.w, height: 24.w) : AppAsset.icons.app.icClose.image(width: 24.w, height: 24.w);
+
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 20.w),
+      child: Row(
+        children: [
+          icon,
+          8.horizontalSpace,
+          AppText(
+            statusText,
+            maxLines: 1,
+            overflow: TextOverflow.visible,
+            style: AppStyle.text16.copyWith(
+              color: accentColor,
+              fontWeight: FontWeight.w700,
+              height: 1.5,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget lessonBody = _buildExerciseLessonBody(context, exercise.type);
-    Widget bottomButton = _buildBottomButton(context, lessonBody);
+    Widget bottomButton = showResult ? _buildContinueButton() : _buildBottomButton(context, lessonBody);
     final viewInsets = MediaQuery.viewInsetsOf(context);
     return AnimatedPadding(
       duration: const Duration(milliseconds: 200),
@@ -75,12 +122,19 @@ class _ExpandedExerciseBody extends StatelessWidget {
       padding: EdgeInsets.only(bottom: viewInsets.bottom),
       child: Column(
         children: [
+          if (showResult) ...[
+            _buildResultStatusRow(),
+            8.verticalSpace,
+          ],
           Expanded(
             child: SingleChildScrollView(
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Column(
                 children: [
-                  lessonBody,
+                  AbsorbPointer(
+                    absorbing: readOnly && exercise.type != QuestionTypeEnum.speaking,
+                    child: lessonBody,
+                  ),
                   60.verticalSpace,
                 ],
               ),

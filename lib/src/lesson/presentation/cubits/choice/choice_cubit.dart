@@ -53,9 +53,48 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       ),
     );
 
+    _updateUserProgressExercise();
+
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+  }
+
+  void _updateUserProgressExercise() {
+    final question = state.question;
+    if (question.id == 0) return;
+    final result = toExerciseResult();
+    final double score = pointCalculation().toDouble();
+
+    final QuestionType progressType = switch (question.type) {
+      QuestionTypeEnum.singleChoice => QuestionType.singleChoice,
+      QuestionTypeEnum.multipleChoice => QuestionType.multipleChoice,
+      _ => QuestionType.singleChoice,
+    };
+
+    final data = UpdateUserProgressExerciseData(
+      exerciseId: question.exerciseId,
+      type: progressType,
+      passed: result.passed,
+      score: score,
+      multipleAnswer: question.type == QuestionTypeEnum.multipleChoice ? _progressOptionList(result.multipleAnswer) : null,
+      singleAnswer: question.type == QuestionTypeEnum.singleChoice ? _progressSingleOption(result.singleAnswer) : null,
+    );
+
+    final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    final isRoleplay = exerciseCubit.state.currentLearningItem.type == LearningItemType.roleplay;
+    final LessonEntity lesson = isRoleplay ? AppDI.injector.get<RoleplayCubit>().state.currentLesson : AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    final String courseId = lesson.courseId.isNotEmpty ? lesson.courseId : AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+
+    final params = UpdateUserProgressExerciseParams(
+      userId: AppDI.injector.get<UserCubit>().state.user.id,
+      courseId: courseId,
+      lessonId: lesson.id,
+      keypointId: question.keypoint.id,
+      exercises: [data],
+    );
+
+    AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
   }
 
   int pointCalculation() {
@@ -67,7 +106,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       final selectedIndexes = state.selectedAnswersIndices;
 
       if (selectedIndexes.isEmpty) return 0;
-      
+
       final correctCount = correctIndexes.length;
       final pointPerCorrect = state.question.maxScore / correctCount;
 
@@ -94,10 +133,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     final isMultiple = question.type == QuestionTypeEnum.multipleChoice;
 
     final List<OptionEntity> multipleAnswer = isMultiple
-        ? (state.selectedAnswersIndices.toList()..sort())
-            .where((index) => index >= 0 && index < question.options.length)
-            .map((index) => question.options[index])
-            .toList()
+        ? (state.selectedAnswersIndices.toList()..sort()).where((index) => index >= 0 && index < question.options.length).map((index) => question.options[index]).toList()
         : const [];
 
     final OptionEntity singleAnswer = !isMultiple && state.selectedAnswerIndex >= 0 && state.selectedAnswerIndex < question.options.length
@@ -108,6 +144,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       exerciseId: question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: state.isCorrect,
       multipleAnswer: multipleAnswer,
       singleAnswer: singleAnswer,
     );

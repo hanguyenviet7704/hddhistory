@@ -7,14 +7,20 @@ class RoleplayPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
-      body: BlocSelector<RoleplayCubit, RoleplayState, RoleplayStatus>(
-        selector: (state) => state.status,
-        builder: (context, status) {
-          return switch (status) {
-            RoleplayStatus.initial => const _RoleplayPageLoading(),
-            RoleplayStatus.loading => const _RoleplayPageLoading(),
-            RoleplayStatus.failure => const _RoleplayPageError(),
-            RoleplayStatus.success => _RoleplayPageView(),
+      body: BlocBuilder<RoleplayCubit, RoleplayState>(
+        buildWhen: (previous, current) =>
+            previous.status != current.status ||
+            previous.currentRoleplay.image != current.currentRoleplay.image ||
+            previous.currentLesson != current.currentLesson ||
+            previous.errorMessage != current.errorMessage,
+        builder: (context, state) {
+          return switch (state.status) {
+            RoleplayStatus.initial || RoleplayStatus.loading => const _RoleplayPageLoading(),
+            RoleplayStatus.failure => _RoleplayPageError(message: state.errorMessage),
+            RoleplayStatus.success => _RoleplayPageView(
+              heroImageUrl: state.currentRoleplay.image,
+              lessonTitle: state.currentLesson.title.text,
+            ),
           };
         },
       ),
@@ -23,30 +29,33 @@ class RoleplayPage extends StatelessWidget {
 }
 
 class _RoleplayPageView extends StatelessWidget {
-  const _RoleplayPageView();
+  final String heroImageUrl;
+  final String lessonTitle;
+
+  const _RoleplayPageView({
+    required this.heroImageUrl,
+    required this.lessonTitle,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final bool hasHeroImage = heroImageUrl.isNotEmpty;
     return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: context.read<RoleplayCubit>().state.currentRoleplay.image.isNotEmpty ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
+      value: hasHeroImage ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
       child: Stack(
         fit: StackFit.expand,
         children: [
-          RoleplayHeroBackground(),
+          RoleplayHeroBackground(imageUrl: heroImageUrl),
           SafeArea(
             bottom: false,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                BlocSelector<RoleplayCubit, RoleplayState, bool>(
-                  selector: (state) => state.currentRoleplay.image.isNotEmpty,
-                  builder: (context, hasHeroImage) {
-                    return RoleplayPageHeader(
-                      useLightContent: hasHeroImage,
-                    );
-                  },
+                RoleplayPageHeader(
+                  title: lessonTitle,
+                  useLightContent: hasHeroImage,
                 ),
-                RoleplayContent(),
+                const RoleplayContent(),
               ],
             ),
           ),
@@ -66,30 +75,33 @@ class _RoleplayPageLoading extends StatelessWidget {
 }
 
 class _RoleplayPageError extends StatelessWidget {
-  const _RoleplayPageError();
+  final String? message;
+
+  const _RoleplayPageError({
+    this.message,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final errorMessage = (message?.isNotEmpty ?? false)
+        ? message!
+        : context.text.common.errorOopsSomethingWentWrongWhileLoading;
+
     return Center(
       child: Padding(
         padding: EdgeInsets.symmetric(horizontal: 24.w),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            BlocSelector<RoleplayCubit, RoleplayState, String>(
-              selector: (state) => state.errorMessage ?? 'Something went wrong',
-              builder: (context, errorMessage) {
-                return AppText(
-                  errorMessage,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text18.copyWith(color: AppCustomColor.textPrimary),
-                );
-              },
+            AppText(
+              errorMessage,
+              textAlign: TextAlign.center,
+              style: AppStyle.text18.copyWith(color: AppCustomColor.textPrimary),
             ),
             16.verticalSpace,
             DButton(
               onPressed: () => context.pop(),
-              text: 'Close',
+              text: context.text.common.close,
               size: Size(180.w, 48.h),
               backgroundColor: AppCustomColor.brandPrimary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),

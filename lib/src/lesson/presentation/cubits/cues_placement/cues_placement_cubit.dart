@@ -70,11 +70,43 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
       ),
     );
 
+    _updateUserProgressExercise();
+
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
   }
 
+  void _updateUserProgressExercise() {
+    final question = state.question;
+    if (question.exerciseId.isEmpty) return;
+    final result = toExerciseResult();
+    final double score = pointCalculation().toDouble();
+
+    final data = UpdateUserProgressExerciseData(
+      exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
+      type: QuestionType.dragAndDrop,
+      form: question.form,
+      passed: result.passed,
+      score: score,
+      dragDropAnswer: _progressDragDropList(result.dragDropAnswer),
+    );
+
+    final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    final isRoleplay = exerciseCubit.state.currentLearningItem.type == LearningItemType.roleplay;
+    final LessonEntity lesson = isRoleplay ? AppDI.injector.get<RoleplayCubit>().state.currentLesson : AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    final String courseId = lesson.courseId.isNotEmpty ? lesson.courseId : AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+
+    final params = UpdateUserProgressExerciseParams(
+      userId: AppDI.injector.get<UserCubit>().state.user.id,
+      courseId: courseId,
+      lessonId: lesson.id,
+      keypointId: question.keypoint.id,
+      exercises: [data],
+    );
+
+    AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
+  }
   int pointCalculation() {
     /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
     /// Sai ko bị trừ điểm
@@ -120,6 +152,7 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
       exerciseId: question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: state.isCorrect,
       dragDropAnswer: dragDropAnswer,
     );
   }
@@ -151,11 +184,7 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
 
 bool _cuesPlacementIsCorrect(QuestionEntity question, Map<int, int> placedMarks) {
   final placedPositions = placedMarks.keys.toSet();
-  final correctPositions = question.answer
-      .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
-      .where((index) => index > 0)
-      .map((index) => index - 1)
-      .toSet();
+  final correctPositions = question.answer.map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
 
   return placedPositions.length == correctPositions.length && placedPositions.every((pos) => correctPositions.contains(pos));
 }

@@ -6,6 +6,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default(QuestionTypeEnum.singleChoice) QuestionTypeEnum type,
     @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
+    @Default('') String exerciseId,
     @Default(BaseMultiLanguage()) BaseMultiLanguage speechBubble,
     @Default(TagEntity()) TagEntity tag,
     @Default([]) List<ContentDocumentEntity> document,
@@ -47,6 +48,13 @@ enum QuestionTypeEnum {
 }
 
 extension QuestionEntityExtension on QuestionEntity {
+  bool get hasResult {
+    if (result.multipleAnswer.isNotEmpty || result.dragDropAnswer.isNotEmpty) return true;
+    if (result.singleAnswer.id != 0 || result.singleAnswer.labelText.isNotEmpty) return true;
+    if (result.recordAnswer.record.isNotEmpty || result.recordAnswer.review.isNotEmpty) return true;
+    return result.exerciseId.isNotEmpty;
+  }
+
   bool get isCompleted => false;
 
   String get questionText {

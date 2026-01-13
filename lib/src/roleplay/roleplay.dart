@@ -51,11 +51,15 @@ part 'presentation/pages/roleplay_complete_page.dart';
 part 'presentation/pages/roleplay_feedback_page.dart';
 part 'presentation/pages/roleplay_intro_page.dart';
 part 'presentation/pages/roleplay_page.dart';
+part 'presentation/widgets/roleplay/exercise/roleplay_audio_answer_player.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_colapsed_exercise_body.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_answer.dart';
+part 'presentation/widgets/roleplay/exercise/question_type/roleplay_answer_lines.dart';
+part 'presentation/widgets/roleplay/exercise/question_type/roleplay_gap_filling_answer.dart';
+part 'presentation/widgets/roleplay/exercise/question_type/roleplay_sequence_answer_list.dart';
+part 'presentation/widgets/roleplay/exercise/question_type/roleplay_speaking_answer.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_content_widget.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_overlay.dart';
-part 'presentation/widgets/roleplay/exercise/roleplay_exercise_result_overlay.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_expaned_exercise_body.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/roleplay/roleplay_audio_controller.dart';

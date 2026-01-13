@@ -60,7 +60,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void loadUserProgressLesson({String? userId, String? courseId, String? lessonId}) async {
+  void loadUserProgressLesson({String? userId, String? courseId, String? lessonId, void Function(LessonResultEntity)? onSuccess}) async {
     if (state.status == ProgressStatus.loading) return;
 
     final String requestUserId = userId ?? _userCubit.state.user.id;
@@ -81,6 +81,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ProgressStatus.success, currentLessonResult: item));
+        onSuccess?.call(item);
       },
     );
   }

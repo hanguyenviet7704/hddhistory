@@ -123,6 +123,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     if (state.textInput.isEmpty) return;
     emit(state.copyWith(status: SpeakingStatus.success));
     AppDI.injector.get<RoleplayCubit>().setExerciseRecordAnswer(
+      exerciseId: state.question.exerciseId,
       questionId: state.question.id,
       textAnswer: state.textInput,
     );
@@ -141,6 +142,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       ),
       onSuccess: (result) {
         AppDI.injector.get<RoleplayCubit>().setExerciseRecordAnswer(
+          exerciseId: state.question.exerciseId,
           questionId: state.question.id,
           recordPath: result.url,
         );
@@ -183,7 +185,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       onFailure: (error) {
         emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
       },
-      onSuccess: (result) => _questionScore = result.score,
+      onSuccess: (result) {
+        _questionScore = result.score;
+        updateUserProgressExercise();
+        AppDI.injector.get<ExerciseCubit>().setQuestionPoint(state.question);
+      },
     );
   }
 
@@ -305,6 +311,37 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     return payload.trimRight();
   }
 
+  void updateUserProgressExercise() {
+    final question = state.question;
+    if (question.exerciseId.isEmpty) return;
+
+    final result = toExerciseResult();
+    final double score = pointCalculation().toDouble();
+
+    final data = UpdateUserProgressExerciseData(
+      exerciseId: question.exerciseId.toString(),
+      type: QuestionType.record,
+      passed: result.passed,
+      score: score,
+      recordAnswer: _progressRecordAnswer(result.recordAnswer),
+    );
+
+    final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    final isRoleplay = exerciseCubit.state.currentLearningItem.type == LearningItemType.roleplay;
+    final LessonEntity lesson = isRoleplay ? AppDI.injector.get<RoleplayCubit>().state.currentLesson : AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    final String courseId = lesson.courseId.isNotEmpty ? lesson.courseId : AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+
+    final params = UpdateUserProgressExerciseParams(
+      userId: AppDI.injector.get<UserCubit>().state.user.id,
+      courseId: courseId,
+      lessonId: lesson.id,
+      keypointId: question.keypoint.id,
+      exercises: [data],
+    );
+
+    AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
+  }
+
   // Toggle explanation visibility
   void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
 
@@ -324,9 +361,10 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
 
     return ExerciseResultEntity(
-      exerciseId: question.id.toString(),
+      exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: true,
       recordAnswer: recordAnswer,
     );
   }

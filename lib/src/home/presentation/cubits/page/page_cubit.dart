@@ -14,9 +14,9 @@ class PageCubit extends Cubit<PageState> {
   void setCurrentRouteName(String routeName) => emit(state.copyWith(currentRouteName: routeName));
 
   void handleShellRouteNavigation(int index, StatefulNavigationShell navigationShell) {
-    if (index == 0 && state.currentRouteName == RouteNamed.home) return;
-    if (index == 1 && state.currentRouteName == RouteNamed.courseRoadmap) return;
-    if (index == 2 && state.currentRouteName == RouteNamed.profile) return;
+    if (index == state.currentIndex && index == 0 && state.currentRouteName == RouteNamed.home) return;
+    if (index == state.currentIndex && index == 1 && state.currentRouteName == RouteNamed.courseRoadmap) return;
+    if (index == state.currentIndex && index == 2 && state.currentRouteName == RouteNamed.profile) return;
 
     switch (index) {
       case 0:

@@ -47,6 +47,7 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _checkForUpdate() async {
     try {
       final shouldUpdate = await AppService.instance.firebaseRemoteConfigService.shouldForceUpdate();
+      if (!mounted) return;
 
       if (!shouldUpdate) {
         // Only proceed with normal flow if no update is needed
@@ -57,6 +58,7 @@ class _SplashPageState extends State<SplashPage> {
       _showUpdateDialog();
     } catch (e) {
       LogDev.error('Error checking for update: $e');
+      if (!mounted) return;
       // On error, proceed with normal flow
       WidgetsBinding.instance.addPostFrameCallback(_initScreen);
     }
@@ -79,6 +81,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _initScreen(_) async {
+    if (!mounted) return;
     AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
 
     bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
@@ -87,7 +90,7 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
     bool isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
 
-    Future.delayed(const Duration(milliseconds: 3000), () async {
+    Future.delayed(const Duration(milliseconds: 1500), () async {
       if (!mounted) return;
 
       if (AppGlobalValue.accessToken.isEmpty) {
@@ -101,23 +104,21 @@ class _SplashPageState extends State<SplashPage> {
       }
 
       String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
-      Future.delayed(const Duration(milliseconds: 3000), () async {
-        if (!mounted) return;
+      if (!mounted) return;
 
-        if (roadmapId.isEmpty) {
-          CourseRoute().go(context);
-          return;
-        }
+      if (roadmapId.isEmpty) {
+        CourseRoute().go(context);
+        return;
+      }
 
-        HomeRoute().go(context);
-      });
+      HomeRoute().go(context);
     });
   }
 
   void _handleUpdatePressed() async {
     try {
       final String appStoreUrl = Platform.isIOS
-          ? 'http://apps.apple.com/us/app/meup-up-your-skills/id6755175330' // Replace with your App Store ID
+          ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' // Replace with your App Store ID
           : 'https://play.google.com/store/apps/details?id=com.eup.meup'; // Replace with your package name
 
       appStoreUrl.launchURL();
@@ -138,15 +139,53 @@ class _SplashPageState extends State<SplashPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: SafeArea(
-        top: false,
-        child: Center(
-          child: Image.asset(
-            AppAsset.images.common.mainIcon.path,
-            width: 100.w,
-          ).animate().fadeIn(duration: 0.8.seconds),
+    final double bottomInset = MediaQuery.paddingOf(context).bottom;
+
+    return AnnotatedRegion<SystemUiOverlayStyle>(
+      value: SystemUiOverlayStyle.dark,
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Color(0xFF5953EA),
+                Color(0xFF838AF2),
+              ],
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            bottom: false,
+            child: Column(
+              children: [
+                SizedBox(height: 60.h),
+                Expanded(
+                  child: Center(
+                    child: Image.asset(
+                      AppAsset.images.common.mainIconSplash.path,
+                      width: 80.w,
+                      height: 80.w,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 60.h + bottomInset),
+                  child: AppText(
+                    'Meup',
+                    style: AppStyle.text20.copyWith(
+                      color: AppCustomColor.textWhite,
+                      fontWeight: FontWeight.w700,
+                      height: 1.5,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
       ),
     );

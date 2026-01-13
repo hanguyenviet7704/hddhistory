@@ -31,10 +31,14 @@ class RoleplayContentController extends ChangeNotifier {
   final Map<int, RoleplayAudioController> _audioControllers = {};
   final List<int> _visibleIndexes = [];
   final Set<int> _completedExerciseIndexes = {};
-  List<RoleplayContentEntity> _displayableContents = [];
+  int _sequenceToken = 0;
 
   Completer<void>? _pendingExerciseCompleter;
   int? _pendingExerciseContentIndex;
+  Completer<void>? _overlayHiddenCompleter;
+  int _delayToken = 0;
+  bool _isDelayPending = false;
+  bool _restartDelayAfterOverlay = false;
   bool _isSequencing = false;
   bool _isDisposing = false;
   bool _shouldAutoScroll = true;
@@ -42,14 +46,52 @@ class RoleplayContentController extends ChangeNotifier {
   bool _isOverlayVisible = false;
   static const double _autoScrollThreshold = 80;
 
-  List<RoleplayContentEntity> get displayableContents => _displayableContents;
   List<int> get visibleIndexes => _visibleIndexes;
   bool get isOverlayVisible => _isOverlayVisible;
 
   RoleplayAudioController? audioControllerAt(int index) => _audioControllers[index];
 
+  void stopAllAudio() {
+    for (final controller in _audioControllers.values) {
+      unawaited(controller.stop());
+    }
+  }
+
   bool isExerciseCompleted(int contentIndex, QuestionEntity exercise) {
-    return exercise.isCompleted || _completedExerciseIndexes.contains(contentIndex);
+    return exercise.hasResult || exercise.isCompleted || _completedExerciseIndexes.contains(contentIndex);
+  }
+
+  void setOverlayVisible(bool isVisible) {
+    if (_isOverlayVisible == isVisible) return;
+    _isOverlayVisible = isVisible;
+    if (isVisible) {
+      _overlayHiddenCompleter ??= Completer<void>();
+      if (_isDelayPending) {
+        _delayToken++;
+        _isDelayPending = false;
+        _restartDelayAfterOverlay = true;
+      }
+    } else {
+      final completer = _overlayHiddenCompleter;
+      _overlayHiddenCompleter = null;
+      if (completer != null && !completer.isCompleted) {
+        completer.complete();
+      }
+      if (_restartDelayAfterOverlay) {
+        _restartDelayAfterOverlay = false;
+        final contentIndex = _pendingExerciseContentIndex;
+        if (contentIndex != null) {
+          _completePendingExerciseWithDelay(contentIndex);
+        }
+      }
+    }
+    notifyListeners();
+  }
+
+  Future<void> waitForOverlayHidden() async {
+    if (!_isOverlayVisible) return;
+    _overlayHiddenCompleter ??= Completer<void>();
+    await _overlayHiddenCompleter!.future;
   }
 
   void handleScroll({
@@ -71,44 +113,46 @@ class RoleplayContentController extends ChangeNotifier {
     _isAutoScrolling = value;
   }
 
-  void configure(List<RoleplayContentEntity> contents) {
+  void configure() {
     _cancelPendingExercise();
-    _completedExerciseIndexes.clear();
-    _displayableContents = contents.toList();
-    _shouldAutoScroll = true;
-    _prepareAudioControllers();
-    _visibleIndexes.clear();
-    _updateSectionCompletion(_displayableContents.isEmpty);
-    notifyListeners();
+    _invalidateSequence();
+    _initializeForContents(_currentContents());
   }
 
-  Future<void> reset(List<RoleplayContentEntity> contents) async {
+  Future<void> reset() async {
     _cancelPendingExercise();
+    _invalidateSequence();
     await _disposeControllers();
-    _displayableContents = contents.toList();
+    _initializeForContents(_currentContents());
+  }
+
+  void _initializeForContents(List<RoleplayContentEntity> contents) {
     _visibleIndexes.clear();
     _completedExerciseIndexes.clear();
     _shouldAutoScroll = true;
-    _prepareAudioControllers();
-    _updateSectionCompletion(_displayableContents.isEmpty);
+    _prepareAudioControllers(contents);
+    _applyPrefill(AppDI.injector.get<RoleplayCubit>().state.currentRoleplay);
     notifyListeners();
   }
 
   Future<void> startSequence() async {
     if (_isSequencing) return;
+    final int token = ++_sequenceToken;
     _isSequencing = true;
 
     try {
-      while (!_isDisposing && _visibleIndexes.length < _displayableContents.length) {
+      while (!_isDisposing && token == _sequenceToken && _visibleIndexes.length < _currentContents().length) {
         final bool shouldWaitForLastCompletion = _appendNextIndex();
-        await _waitBeforeNext();
-        if (_isDisposing) return;
+        await _waitBeforeNext(token);
+        if (_isDisposing || token != _sequenceToken) return;
         if (shouldWaitForLastCompletion) {
           _updateSectionCompletion(true);
         }
       }
     } finally {
-      _isSequencing = false;
+      if (token == _sequenceToken) {
+        _isSequencing = false;
+      }
     }
   }
 
@@ -118,14 +162,16 @@ class RoleplayContentController extends ChangeNotifier {
     }
   }
 
-  Future<void> _waitBeforeNext() async {
+  Future<void> _waitBeforeNext(int token) async {
     if (_isDisposing) return;
+    if (token != _sequenceToken) return;
     if (_visibleIndexes.isEmpty) return;
 
     final int currentIndex = _visibleIndexes.last;
-    if (currentIndex < 0 || currentIndex >= _displayableContents.length) return;
+    final contents = _currentContents();
+    if (currentIndex < 0 || currentIndex >= contents.length) return;
 
-    final content = _displayableContents[currentIndex];
+    final content = contents[currentIndex];
     final RoleplayAudioController? controller = _audioControllers[currentIndex];
 
     switch (content.type) {
@@ -142,6 +188,7 @@ class RoleplayContentController extends ChangeNotifier {
       case RoleplayContentType.leadingText:
         if (controller != null && controller.hasAudio) {
           await controller.playAutoAndWait();
+          if (token != _sequenceToken) return;
           return;
         }
         break;
@@ -154,18 +201,19 @@ class RoleplayContentController extends ChangeNotifier {
 
   bool _appendNextIndex() {
     final newIndex = _visibleIndexes.length;
-    if (newIndex >= _displayableContents.length) return false;
+    final contents = _currentContents();
+    if (newIndex >= contents.length) return false;
     _visibleIndexes.add(newIndex);
     _onInsertItem(newIndex);
     _requestAutoScroll();
     notifyListeners();
 
-    if (_visibleIndexes.length != _displayableContents.length) {
+    if (_visibleIndexes.length != contents.length) {
       return false;
     }
 
     final RoleplayAudioController? lastController = _audioControllers[newIndex];
-    final lastContent = _displayableContents[newIndex];
+    final lastContent = contents[newIndex];
 
     if (lastContent.type == RoleplayContentType.exercise && !isExerciseCompleted(newIndex, lastContent.exercise)) {
       return true;
@@ -183,11 +231,14 @@ class RoleplayContentController extends ChangeNotifier {
     required int contentIndex,
     required QuestionEntity exercise,
   }) async {
+    if (_isOverlayVisible) {
+      await waitForOverlayHidden();
+      if (_isDisposing) return;
+    }
     _cancelPendingExercise();
     _pendingExerciseContentIndex = contentIndex;
     _pendingExerciseCompleter = Completer<void>();
-    _isOverlayVisible = true;
-    notifyListeners();
+    setOverlayVisible(true);
 
     _onShowExerciseOverlay(
       contentIndex: contentIndex,
@@ -208,12 +259,35 @@ class RoleplayContentController extends ChangeNotifier {
     if (_isDisposing) return;
     if (_pendingExerciseContentIndex != contentIndex) return;
 
-    AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);
+    if (exercise.type != QuestionTypeEnum.speaking) {
+      AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);
+    }
     _onHideOverlays();
-    _isOverlayVisible = false;
     _completedExerciseIndexes.add(contentIndex);
-    notifyListeners();
+    setOverlayVisible(false);
     _requestAutoScroll();
+    _completePendingExerciseWithDelay(contentIndex);
+  }
+
+  void _completePendingExerciseWithDelay(int contentIndex) {
+    final bool shouldDelay = _visibleIndexes.length < _currentContents().length;
+    if (!shouldDelay) {
+      _completePendingExercise();
+      return;
+    }
+
+    final int token = ++_delayToken;
+    _isDelayPending = true;
+    unawaited(_delayAndComplete(contentIndex, token));
+  }
+
+  Future<void> _delayAndComplete(int contentIndex, int token) async {
+    await Future.delayed(_defaultDelay);
+    if (_isDisposing) return;
+    if (token != _delayToken) return;
+    if (_pendingExerciseContentIndex != contentIndex) return;
+    if (_isOverlayVisible) return;
+    _isDelayPending = false;
     _completePendingExercise();
   }
 
@@ -221,6 +295,8 @@ class RoleplayContentController extends ChangeNotifier {
     final completer = _pendingExerciseCompleter;
     _pendingExerciseCompleter = null;
     _pendingExerciseContentIndex = null;
+    _isDelayPending = false;
+    _restartDelayAfterOverlay = false;
     if (completer != null && !completer.isCompleted) {
       completer.complete();
     }
@@ -228,7 +304,7 @@ class RoleplayContentController extends ChangeNotifier {
 
   void _cancelPendingExercise() {
     _onHideOverlays();
-    _isOverlayVisible = false;
+    setOverlayVisible(false);
     _completePendingExercise();
   }
 
@@ -237,17 +313,64 @@ class RoleplayContentController extends ChangeNotifier {
     _onSectionCompletionChanged(isCompleted);
   }
 
+  void _invalidateSequence() {
+    _sequenceToken++;
+    _isSequencing = false;
+  }
+
+  void _applyPrefill(RoleplayEntity roleplay) {
+    final contents = roleplay.contents;
+    if (contents.isEmpty) {
+      _updateSectionCompletion(true);
+      return;
+    }
+
+    for (var i = 0; i < contents.length; i++) {
+      final content = contents[i];
+      if (content.type == RoleplayContentType.exercise && content.exercise.hasResult) {
+        _completedExerciseIndexes.add(i);
+      }
+    }
+
+    final int lastCompletedIndex = roleplay.lastFinishedExerciseIndex;
+    if (lastCompletedIndex < 0) {
+      _updateSectionCompletion(false);
+      return;
+    }
+
+    for (var i = 0; i <= lastCompletedIndex && i < contents.length; i++) {
+      _visibleIndexes.add(i);
+    }
+
+    final bool allVisible = _visibleIndexes.length == contents.length;
+    _updateSectionCompletion(allVisible && _isLastContentCompleted(contents));
+  }
+
+  bool _isLastContentCompleted(List<RoleplayContentEntity> contents) {
+    if (contents.isEmpty) return true;
+    final lastIndex = contents.length - 1;
+    final lastContent = contents[lastIndex];
+    if (lastContent.type == RoleplayContentType.exercise) {
+      return isExerciseCompleted(lastIndex, lastContent.exercise);
+    }
+    return true;
+  }
+
   void _requestAutoScroll() {
     if (_shouldAutoScroll) {
       _onScheduleScrollToBottom();
     }
   }
 
-  void _prepareAudioControllers() {
+  List<RoleplayContentEntity> _currentContents() {
+    return AppDI.injector.get<RoleplayCubit>().state.currentRoleplay.contents.toList();
+  }
+
+  void _prepareAudioControllers(List<RoleplayContentEntity> contents) {
     _audioControllers.clear();
 
-    for (var i = 0; i < _displayableContents.length; i++) {
-      final content = _displayableContents[i];
+    for (var i = 0; i < contents.length; i++) {
+      final content = contents[i];
       final String audioUrl = switch (content.type) {
         RoleplayContentType.conversation => content.conversation.audio.text,
         RoleplayContentType.leadingText => content.leadingText.audio.text,

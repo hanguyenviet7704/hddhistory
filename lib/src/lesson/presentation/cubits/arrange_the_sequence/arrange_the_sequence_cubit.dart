@@ -50,9 +50,42 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
       ),
     );
 
+    _updateUserProgressExercise();
+
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
+  }
+
+  void _updateUserProgressExercise() {
+    final question = state.question;
+    if (question.exerciseId.isEmpty) return;
+    final result = toExerciseResult();
+    final double score = pointCalculation().toDouble();
+
+    final data = UpdateUserProgressExerciseData(
+      exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
+      type: QuestionType.dragAndDrop,
+      form: question.form,
+      passed: result.passed,
+      score: score,
+      dragDropAnswer: _progressDragDropList(result.dragDropAnswer),
+    );
+
+    final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    final isRoleplay = exerciseCubit.state.currentLearningItem.type == LearningItemType.roleplay;
+    final LessonEntity lesson = isRoleplay ? AppDI.injector.get<RoleplayCubit>().state.currentLesson : AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    final String courseId = lesson.courseId.isNotEmpty ? lesson.courseId : AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+
+    final params = UpdateUserProgressExerciseParams(
+      userId: AppDI.injector.get<UserCubit>().state.user.id,
+      courseId: courseId,
+      lessonId: lesson.id,
+      keypointId: question.keypoint.id,
+      exercises: [data],
+    );
+
+    AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
   }
 
   int pointCalculation() {
@@ -105,6 +138,7 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
       exerciseId: question.id.toString(),
       type: question.type,
       form: question.form,
+      passed: state.isCorrect,
       dragDropAnswer: dragDropAnswer,
     );
   }
