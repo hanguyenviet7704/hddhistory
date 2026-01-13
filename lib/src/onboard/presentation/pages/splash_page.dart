@@ -82,7 +82,7 @@ class _SplashPageState extends State<SplashPage> {
 
   void _initScreen(_) async {
     if (!mounted) return;
-    AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
+    // AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
 
     bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
     if (isInitialLink) return;

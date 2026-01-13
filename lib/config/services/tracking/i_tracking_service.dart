@@ -1,6 +1,13 @@
 part of '../services.dart';
 
 abstract interface class ITrackingService {
+  //* Base events - reused for all projects
+  Future<void> initialize();
+  Future<void> trackScreenView(String screenName);
+  Future<void> trackEvent(String eventName, {Map<String, dynamic>? parameters});
+  Future<void> trackError(dynamic exception, {StackTrace? stackTrace, Map<String, dynamic>? context, String? errorType});
+  Future<void> trackBreadcrumb(String message, {Map<String, dynamic>? data, String? category});
+
   //* Draw events
   Future<void> trackDrawRoadmapLoginReminder1View(BuildContext context);
   Future<void> trackDrawRoadmapLoginReminder1Click(BuildContext context, bool isClick);

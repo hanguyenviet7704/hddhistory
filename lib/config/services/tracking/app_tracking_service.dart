@@ -5,6 +5,33 @@ final class AppTrackingService extends ITrackingService {
   final BaseTrackingService _appTrackingService;
   AppTrackingService(@Named(DIKey.firebaseAnalyticsService) this._appTrackingService);
 
+
+  @override
+  Future<void> initialize() async {
+    _appTrackingService.initialize();
+  }
+
+  @override
+  Future<void> trackScreenView(String screenName) async {
+    _appTrackingService.trackScreenView(screenName);
+  }
+
+  @override
+  Future<void> trackEvent(String eventName, {Map<String, dynamic>? parameters}) async {
+    _appTrackingService.trackEvent(eventName, parameters: parameters);
+  }
+
+  @override
+  Future<void> trackError(dynamic exception, {StackTrace? stackTrace, Map<String, dynamic>? context, String? errorType}) async {
+    _appTrackingService.trackError(exception, stackTrace: stackTrace, context: context, errorType: errorType);
+  }
+
+  @override
+  Future<void> trackBreadcrumb(String message, {Map<String, dynamic>? data, String? category}) async {
+    _appTrackingService.addBreadcrumb(message, data: data, category: category);
+  }
+
+
   //* Draw events
   @override
   Future<void> trackDrawRoadmapLoginReminder1View(BuildContext context) async {

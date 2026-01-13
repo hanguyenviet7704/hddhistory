@@ -35,9 +35,7 @@ class AppService {
   static final AppService _instance = AppService._();
   static AppService get instance => _instance;
 
-  BaseTrackingService get appTrackingService => AppDI.injector.get<BaseTrackingService>(instanceName: DIKey.firebaseAnalyticsService);
-
-  ITrackingService get appTrackingServiceNew => AppDI.injector.get<ITrackingService>();
+  ITrackingService get appTrackingService => AppDI.injector.get<ITrackingService>();
 
   ILocalStoreService get localStoreService => AppDI.injector.get<ILocalStoreService>();
 

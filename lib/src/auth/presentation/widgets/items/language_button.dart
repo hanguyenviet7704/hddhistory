@@ -23,13 +23,13 @@ class LanguageBtn extends StatelessWidget {
                 .toList();
           },
           onSelected: (value) async {
-            AppService.instance.appTrackingServiceNew.trackProfileLanguageSelect(value.label);
+            AppService.instance.appTrackingService.trackProfileLanguageSelect(value.label);
             if (value == state) return;
             context.read<LocaleCubit>().setLocale(value);
             // context.read<HandfeelingCubit>().getBrushes();
             if (enableBack) context.back();
           },
-          onOpened: () => AppService.instance.appTrackingServiceNew.trackProfileLanguageView(),
+          onOpened: () => AppService.instance.appTrackingService.trackProfileLanguageView(),
           child: child,
         );
       },
