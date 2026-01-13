@@ -562,6 +562,23 @@ const LabelInput: React.FC<{
         />
       </Box>
     </Box>
+    <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      <Box sx={{ flex: 1 }}>
+        <TextField
+          label="Tracking Label"
+          value={item.trackingLabel || ""}
+          onChange={(e) =>
+            onChange(item.id, {
+              ...item,
+              trackingLabel: e.target.value,
+            })
+          }
+          fullWidth
+          size="small"
+          variant="outlined"
+        />
+      </Box>
+    </Box>
   </Box>
 );
 
@@ -668,6 +685,7 @@ const OnboardingManagement: React.FC = () => {
       icon: "",
       title: { [lang]: "" },
       label: { [lang]: "" },
+      trackingLabel: "",
     };
   };
 
@@ -751,6 +769,7 @@ const OnboardingManagement: React.FC = () => {
         id: l.id,
         icon: l.icon,
         label: cleanedLabel || {},
+        trackingLabel: l.trackingLabel || "",
       };
 
       if (requireTitle) {

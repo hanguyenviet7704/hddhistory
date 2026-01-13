@@ -16,6 +16,7 @@ export interface ILablel {
   icon: string;
   title: ITranslation;
   label: ITranslation;
+  trackingLabel: string;
 }
 
 export interface LablelPayload {
@@ -23,6 +24,7 @@ export interface LablelPayload {
   icon: string;
   title: ITranslation;
   label: ITranslation;
+  trackingLabel?: string;
 }
 
 export interface IMotivation {
