@@ -19,9 +19,8 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
 
   int _activeCategoryIndex = 0;
   bool _didInitialScroll = false;
-  bool _isProgrammaticScroll = false;
-  int? _programmaticTargetIndex;
-  int _scrollToken = 0;
+  int? _lockedCategoryIndex;
+  Timer? _scrollUnlockTimer;
 
   @override
   void initState() {
@@ -32,6 +31,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
 
   @override
   void dispose() {
+    _scrollUnlockTimer?.cancel();
     _sectionPositionsListener.itemPositions.removeListener(_handleSectionPositionsChanged);
     super.dispose();
   }
@@ -109,7 +109,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       return;
     }
 
-    _markProgrammaticScroll(index);
+    _lockCategoryDuringScroll(index);
     _sectionScrollController.scrollTo(
       index: index,
       duration: const Duration(milliseconds: 250),
@@ -144,12 +144,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       }
     }
 
-    if (_isProgrammaticScroll) {
-      if (_programmaticTargetIndex == null || bestIndex != _programmaticTargetIndex) {
-        return;
-      }
-      _isProgrammaticScroll = false;
-      _programmaticTargetIndex = null;
+    if (_lockedCategoryIndex != null) {
+      if (bestIndex != _lockedCategoryIndex) return;
+      _lockedCategoryIndex = null;
+      _scrollUnlockTimer?.cancel();
     }
 
     if (bestIndex != null && bestIndex != _activeCategoryIndex) {
@@ -165,17 +163,12 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     return visible > 0 ? visible : 0;
   }
 
-  void _markProgrammaticScroll(int index) {
-    _isProgrammaticScroll = true;
-    _programmaticTargetIndex = index;
-    _scrollToken += 1;
-    final currentToken = _scrollToken;
-
-    Future.delayed(const Duration(milliseconds: 350), () {
+  void _lockCategoryDuringScroll(int index) {
+    _lockedCategoryIndex = index;
+    _scrollUnlockTimer?.cancel();
+    _scrollUnlockTimer = Timer(const Duration(milliseconds: 350), () {
       if (!mounted) return;
-      if (_scrollToken != currentToken) return;
-      _isProgrammaticScroll = false;
-      _programmaticTargetIndex = null;
+      _lockedCategoryIndex = null;
     });
   }
 
