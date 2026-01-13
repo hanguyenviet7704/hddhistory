@@ -37,7 +37,6 @@ import {
 } from "../../types/interface/learning-item/document.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
-import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
 import {
   getTranslationValue,
@@ -110,6 +109,20 @@ const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
   thumbnail: "",
 });
 
+const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
+  id: 1,
+  type: DocumentType.TEXT,
+  data: createEmptyMediaDocument(currentLang),
+});
+
+const ensureDocumentList = (
+  documents: IDocument[] | undefined,
+  currentLang: LangCode
+) =>
+  documents && documents.length > 0
+    ? documents
+    : [createDefaultTextDocument(currentLang)];
+
 // Helper component để hiển thị văn bản với cắt bớt và tooltip
 const TextWithTooltip = ({
   text = "",
@@ -169,7 +182,6 @@ export default function TheoryForm({
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
     null
   );
-  const [allTags, setAllTags] = useState<ITag[]>([]);
   const [nextDocId, setNextDocId] = useState(1);
 
   const [currentTheory, setCurrentTheory] = useState<ILearningItem>(
@@ -242,23 +254,6 @@ export default function TheoryForm({
       active = false;
     };
   }, [keypointQuery]);
-
-  useEffect(() => {
-    let active = true;
-    const fetchAllTags = async () => {
-      try {
-        const res = await tagService.getList({ page: 1, take: 1000 });
-        const list: ITag[] = res.data.items || [];
-        if (active) setAllTags(list);
-      } catch (err) {
-        console.error("fetchAllTags", err);
-      }
-    };
-    fetchAllTags();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (currentTheory.keypointId) {
@@ -705,33 +700,36 @@ export default function TheoryForm({
     theoryDocument,
     onSave,
     onCancel,
-    availableTags,
     lang,
   }: {
     theoryDocument?: ITheoryDocument;
     onSave: (doc: ITheoryDocument) => void;
     onCancel: () => void;
-    availableTags: ITag[];
     lang: LangCode;
   }) => {
     const [formData, setFormData] = useState<DocumentFormState>(() => {
       if (theoryDocument) {
-        return { ...theoryDocument };
+        return {
+          ...theoryDocument,
+          document: ensureDocumentList(theoryDocument.document, lang),
+        };
       }
       return {
         id: nextDocId,
         tag: null,
-        document: [],
+        document: ensureDocumentList(undefined, lang),
       };
     });
 
-    const [tagQuery, setTagQuery] = useState("");
     const selectedTag = formData.tag;
 
     // Update formData when theoryDocument changes (for editing) or language changes
     useEffect(() => {
       if (theoryDocument) {
-        setFormData({ ...theoryDocument });
+        setFormData({
+          ...theoryDocument,
+          document: ensureDocumentList(theoryDocument.document, lang),
+        });
       }
     }, [theoryDocument]);
 
@@ -860,9 +858,6 @@ export default function TheoryForm({
       return null;
     };
 
-    const handleChange = (field: keyof DocumentFormState, value: any) => {
-      setFormData((prev) => ({ ...prev, [field]: value }));
-    };
     const handleDocumentChange = (
       index: number,
       field: keyof IDocument,
@@ -951,68 +946,8 @@ export default function TheoryForm({
       onSave(cleanedData);
     };
 
-    const filteredTags =
-      tagQuery === ""
-        ? availableTags
-        : availableTags.filter((tag) =>
-            getTranslationValue(tag.title, lang)
-              ?.toLowerCase()
-              .includes(tagQuery.toLowerCase())
-          );
-
     return (
       <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tag
-          </label>
-          <Combobox<ITag | null>
-            key={`tag-selector-${lang}`} // Force re-render when language changes
-            value={selectedTag}
-            onChange={(val: ITag | null) => {
-              handleChange("tag", val);
-              setTagQuery("");
-            }}
-          >
-            <div className="relative">
-              <Combobox.Input
-                displayValue={(tag: ITag | null) => {
-                  if (tagQuery) return tagQuery;
-                  return getTranslationValue(tag?.title, lang);
-                }}
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setTagQuery(e.target.value)
-                }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Search tag..."
-              />
-              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                {filteredTags.length > 0 ? (
-                  filteredTags.map((tag) => (
-                    <Combobox.Option
-                      key={tag._id}
-                      value={tag}
-                      className="cursor-pointer px-3 py-3 hover:bg-blue-50 flex items-center gap-2"
-                    >
-                      {tag.url && (
-                        <img
-                          src={tag.url}
-                          alt={
-                            getTranslationValue(tag.title, lang) || "Tag url"
-                          }
-                          className="w-6 h-6 object-contain flex-shrink-0"
-                        />
-                      )}
-                      <span>{getTranslationValue(tag.title, lang)}</span>
-                    </Combobox.Option>
-                  ))
-                ) : (
-                  <div className="px-3 py-3 text-gray-500">No tags found.</div>
-                )}
-              </Combobox.Options>
-            </div>
-          </Combobox>
-        </div>
         <div className="border-t pt-4">
           <div className="flex justify-between items-center mb-3">
             <h3 className="font-medium text-gray-800">Content Documents</h3>
@@ -1366,7 +1301,6 @@ export default function TheoryForm({
                     theoryDocument={modalOpen.theoryDocument}
                     onSave={handleSaveDocumentAndTheory}
                     onCancel={() => setModalOpen({ section: null })}
-                    availableTags={allTags}
                     lang={lang}
                   />
                 </div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -150,21 +150,28 @@ const RoadmapPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  const fetchLessonsByType = async (type: LessonType, search = "") => {
+  const fetchLessonsByType = useCallback(async (type: LessonType, search = "") => {
     try {
       setLoadingLessons(true);
-      const res = await lessonService.getList({ courseId, type, search });
+      const normalizedSearch = search.trim();
+      const res = await lessonService.getList({
+        courseId,
+        type,
+        search: normalizedSearch,
+      });
       const items: ILessonBrief[] = res.data?.items || [];
-      switch (type) {
-        case LessonType.ROLEPLAY:
-          setEntranceLessons(items);
-          break;
-        case LessonType.OUTPUT:
-          setOutputLessons(items);
-          break;
-        case LessonType.LESSON:
-          setLessonLessons(items);
-          break;
+      if (!normalizedSearch) {
+        switch (type) {
+          case LessonType.ROLEPLAY:
+            setEntranceLessons(items);
+            break;
+          case LessonType.OUTPUT:
+            setOutputLessons(items);
+            break;
+          case LessonType.LESSON:
+            setLessonLessons(items);
+            break;
+        }
       }
       return items;
     } catch (e) {
@@ -173,7 +180,58 @@ const RoadmapPage: React.FC = () => {
     } finally {
       setLoadingLessons(false);
     }
-  };
+  }, [courseId]);
+
+  const editingField = editingNode?.field;
+
+  useEffect(() => {
+    if (!editingField) return;
+    const normalizedSearch = searchTerm.trim();
+    const type =
+      editingField === "entrance"
+        ? LessonType.ROLEPLAY
+        : editingField === "output"
+        ? LessonType.OUTPUT
+        : LessonType.LESSON;
+    let isActive = true;
+    const timer = setTimeout(() => {
+      const applyList = (items: ILessonBrief[]) => {
+        if (!isActive) return;
+        setEditingNode((prev) =>
+          prev ? { ...prev, lessonList: items } : prev
+        );
+      };
+
+      if (!normalizedSearch) {
+        const cached =
+          editingField === "entrance"
+            ? entranceLessons
+            : editingField === "output"
+            ? outputLessons
+            : lessonLessons;
+        if (cached.length) {
+          applyList(cached);
+          return;
+        }
+        fetchLessonsByType(type).then(applyList);
+        return;
+      }
+
+      fetchLessonsByType(type, normalizedSearch).then(applyList);
+    }, 300);
+
+    return () => {
+      isActive = false;
+      clearTimeout(timer);
+    };
+  }, [
+    editingField,
+    searchTerm,
+    entranceLessons,
+    outputLessons,
+    lessonLessons,
+    fetchLessonsByType,
+  ]);
 
   // ---------- Level actions ----------
   const nextLevelId = useMemo(() => {
@@ -564,13 +622,7 @@ const RoadmapPage: React.FC = () => {
     const { field, lessonList } = editingNode;
     const isMultiple = field === "lessons";
 
-    const filtered = searchTerm
-      ? lessonList.filter((l) =>
-          getTranslationValue(l.title, lang)
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase())
-        )
-      : lessonList;
+    const filtered = lessonList;
 
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
