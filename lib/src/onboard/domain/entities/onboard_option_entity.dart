@@ -7,6 +7,7 @@ abstract class OnboardOptionEntity with _$OnboardOptionEntity {
     @Default('') String icon,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage label,
+    @Default('') String trackingLabel,
   }) = _OnboardOptionEntity;
 
   factory OnboardOptionEntity.fromJson(Map<String, dynamic> json) => _$OnboardOptionEntityFromJson(json);

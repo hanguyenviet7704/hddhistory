@@ -45,7 +45,10 @@ class SkillsetsWantToMasterBodyOptions extends StatelessWidget {
             return DataCollectOptionTile(
               option: topic,
               isSelected: state.selectedSkillsetsWantToMaster.contains(topic),
-              onTap: () => cubit.selectSkillsetWantToMaster(topic),
+              onTap: () {
+                AppService.instance.appTrackingService.trackObdSkillsetClick();
+                cubit.selectSkillsetWantToMaster(topic);
+              },
               type: DataCollectOptionType.checkbox,
             );
           },

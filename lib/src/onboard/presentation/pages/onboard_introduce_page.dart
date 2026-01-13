@@ -52,7 +52,6 @@ class _OnboardIntroduceViewState extends State<_OnboardIntroduceView> {
                 case OnboardStatus.success:
                   return _OnboardIntroduceContent(
                     intros: onboardState.onboardData.intro,
-                    currentPage: context.read<IntroCubit>().state.currentPage,
                     pageController: _pageController,
                   );
               }
@@ -64,22 +63,53 @@ class _OnboardIntroduceViewState extends State<_OnboardIntroduceView> {
   }
 }
 
-class _OnboardIntroduceContent extends StatelessWidget {
+class _OnboardIntroduceContent extends StatefulWidget {
   final List<OnboardIntroEntity> intros;
-  final int currentPage;
   final PageController pageController;
 
-  const _OnboardIntroduceContent({required this.intros, required this.currentPage, required this.pageController});
+  const _OnboardIntroduceContent({required this.intros, required this.pageController});
+
+  @override
+  State<_OnboardIntroduceContent> createState() => _OnboardIntroduceContentState();
+}
+
+class _OnboardIntroduceContentState extends State<_OnboardIntroduceContent> {
+  int? _lastTrackedPage;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackIntroView(context.read<IntroCubit>().state.currentPage);
+    });
+  }
+
+  void _trackIntroView(int page) {
+    if (_lastTrackedPage == page) return;
+    _lastTrackedPage = page;
+
+    if (page <= 0) {
+      AppService.instance.appTrackingService.trackObdIntro1ScrView();
+      return;
+    }
+    AppService.instance.appTrackingService.trackObdIntro2ScrView();
+  }
 
   void _onNext(IntroState state, BuildContext context) {
     final isLastPage = state.intros.isNotEmpty && state.currentPage == state.intros.length - 1;
 
     if (isLastPage) {
+      AppService.instance.appTrackingService.trackObdIntro2Click();
       DataCollectRoute().go(context);
       return;
     }
 
-    pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+    AppService.instance.appTrackingService.trackObdIntro1Continue();
+    widget.pageController.nextPage(duration: const Duration(milliseconds: 300), curve: Curves.easeInOut);
+  }
+
+  String _languageSourceForPage(int page) {
+    return page <= 0 ? 'intro1' : 'intro2';
   }
 
   @override
@@ -97,15 +127,19 @@ class _OnboardIntroduceContent extends StatelessWidget {
           children: [
             8.verticalSpace,
             IntroHeader(
-              onLanguageTap: () => IntroLanguageSheet.show(context),
+              onLanguageTap: () => IntroLanguageSheet.show(
+                context,
+                source: _languageSourceForPage(introState.currentPage),
+              ),
             ),
             16.verticalSpace,
             Expanded(
               child: BlocListener<IntroCubit, IntroState>(
                 listenWhen: (previous, current) => previous.currentPage != current.currentPage,
                 listener: (context, state) {
-                  if (state.currentPage != pageController.page?.round()) {
-                    pageController.animateToPage(
+                  _trackIntroView(state.currentPage);
+                  if (state.currentPage != widget.pageController.page?.round()) {
+                    widget.pageController.animateToPage(
                       state.currentPage,
                       duration: const Duration(milliseconds: 300),
                       curve: Curves.easeInOut,
@@ -115,7 +149,7 @@ class _OnboardIntroduceContent extends StatelessWidget {
                 child: BlocBuilder<LocaleCubit, AppLocale>(
                   builder: (context, _) {
                     return PageView.builder(
-                      controller: pageController,
+                      controller: widget.pageController,
                       itemCount: introState.intros.length,
                       onPageChanged: (index) => context.read<IntroCubit>().setPage(index),
                       physics: const ClampingScrollPhysics(),

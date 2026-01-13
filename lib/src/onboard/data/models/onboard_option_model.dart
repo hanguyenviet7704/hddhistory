@@ -7,6 +7,7 @@ abstract class OnboardOptionModel with _$OnboardOptionModel {
     @Default('') String icon,
     @Default(BaseMultiLanguage()) BaseMultiLanguage label,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+    @Default('') String trackingLabel,
   }) = _OnboardOptionModel;
 
   factory OnboardOptionModel.fromJson(Map<String, dynamic> json) => _$OnboardOptionModelFromJson(json);
@@ -18,5 +19,6 @@ extension OnboardOptionModelExtension on OnboardOptionModel {
     icon: icon,
     label: label,
     title: title,
+    trackingLabel: trackingLabel,
   );
 }

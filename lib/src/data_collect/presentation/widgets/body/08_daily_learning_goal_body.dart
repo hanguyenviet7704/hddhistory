@@ -46,7 +46,10 @@ class DailyLearningGoalOptions extends StatelessWidget {
             return DataCollectOptionTile(
               option: option,
               isSelected: isSelected,
-              onTap: () => cubit.selectDailyLearningGoal(option),
+              onTap: () {
+                AppService.instance.appTrackingService.trackObdDailyTimeClick();
+                cubit.selectDailyLearningGoal(option);
+              },
               type: DataCollectOptionType.radio,
             );
           },

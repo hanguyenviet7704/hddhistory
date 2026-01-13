@@ -45,7 +45,10 @@ class LearningStruggerOptions extends StatelessWidget {
               return DataCollectOptionTile(
                 option: struggle,
                 isSelected: isSelected,
-                onTap: () => cubit.selectLearningStruggles(struggle),
+                onTap: () {
+                  AppService.instance.appTrackingService.trackObdStrugglesClick();
+                  cubit.selectLearningStruggles(struggle);
+                },
                 type: DataCollectOptionType.checkbox,
               );
             },

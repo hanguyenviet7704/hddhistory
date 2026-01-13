@@ -3,7 +3,62 @@ part of '../constants.dart';
 mixin TrackingKey {
   //* Splash screen events
   static const String splashScrView = 'splash_scr_view';
-  static const String notiPermission = 'noti_permission';
+
+  //* Onboarding events
+  static const String obdIntro1ScrView = 'obd_intro1_scr_view';
+  static const String obdIntro1Continue = 'obd_intro1_continue';
+  static const String obdIntro2ScrView = 'obd_intro2_scr_view';
+  static const String obdIntro2Click = 'obd_intro2_click';
+  static const String obdLanguagePopupView = 'obd_language_popup_view';
+  static const String obdLanguageClick = 'obd_language_click';
+  static const String obdNameScrView = 'obd_name_scr_view';
+  static const String obdNameClick = 'obd_name_click';
+  static const String obdNameContinue = 'obd_name_continue';
+  static const String obdWelcomeScrView = 'obd_welcome_scr_view';
+  static const String obdWelcomeContinue = 'obd_welcome_continue';
+  static const String obdAgeScrView = 'obd_age_scr_view';
+  static const String obdAgeClick = 'obd_age_click';
+  static const String obdAgeContinue = 'obd_age_continue';
+  static const String obdAgeBack = 'obd_age_back';
+  static const String obdGenderScrView = 'obd_gender_scr_view';
+  static const String obdGenderClick = 'obd_gender_click';
+  static const String obdGenderContinue = 'obd_gender_continue';
+  static const String obdGenderBack = 'obd_gender_back';
+  static const String obdLearningGoalScrView = 'obd_learning_goal_scr_view';
+  static const String obdLearningGoalClick = 'obd_learning_goal_click';
+  static const String obdLearningGoalContinue = 'obd_learning_goal_continue';
+  static const String obdLearningGoalBack = 'obd_learning_goal_back';
+  static const String obdSkillsetScrView = 'obd_skillset_scr_view';
+  static const String obdSkillsetClick = 'obd_skillset_click';
+  static const String obdSkillsetContinue = 'obd_skillset_continue';
+  static const String obdSkillsetBack = 'obd_skillset_back';
+  static const String obdMotivation1ScrView = 'obd_motivation1_scr_view';
+  static const String obdMotivation1Continue = 'obd_motivation1_continue';
+  static const String obdStrugglesScrView = 'obd_struggles_scr_view';
+  static const String obdStrugglesClick = 'obd_struggles_click';
+  static const String obdStrugglesContinue = 'obd_struggles_continue';
+  static const String obdStrugglesBack = 'obd_struggles_back';
+  static const String obdMotivation2ScrView = 'obd_motivation2_scr_view';
+  static const String obdMotivation2Continue = 'obd_motivation2_continue';
+  static const String obdHowToLearnScrView = 'obd_how_to_learn_scr_view';
+  static const String obdHowToLearnSwipe = 'obd_how_to_learn_swipe';
+  static const String obdHowToLearnContinue = 'obd_how_to_learn_continue';
+  static const String obdHowToLearnBack = 'obd_how_to_learn_back';
+  static const String obdFeedbackScrView = 'obd_feedback_scr_view';
+  static const String obdFeedbackSwipe = 'obd_feedback_swipe';
+  static const String obdFeedbackContinue = 'obd_feedback_continue';
+  static const String obdDailyTimeScrView = 'obd_daily_time_scr_view';
+  static const String obdDailyTimeClick = 'obd_daily_time_click';
+  static const String obdDailyTimeContinue = 'obd_daily_time_continue';
+  static const String obdDailyTimeBack = 'obd_daily_time_back';
+  static const String obdLearningTimeScrView = 'obd_learning_time_scr_view';
+  static const String obdLearningTimeClick = 'obd_learning_time_click';
+  static const String obdLearningTimeContinue = 'obd_learning_time_continue';
+  static const String obdLearningTimeBack = 'obd_learning_time_back';
+  static const String obdMotivation3ScrView = 'obd_motivation3_scr_view';
+  static const String obdMotivation3Click = 'obd_motivation3_click';
+  static const String obdCompleteScrView = 'obd_complete_scr_view';
+  static const String obdCompleteClick = 'obd_complete_click';
 
   //* Draw welcome screen events
   static const String drawWelcomeScrView = 'draw_welcome_scr_view';

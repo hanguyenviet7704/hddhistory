@@ -47,7 +47,10 @@ class TimeOptions extends StatelessWidget {
             return DataCollectOptionTile(
               option: timeOption,
               isSelected: isSelected,
-              onTap: () => cubit.selectComfortableLearningTime(timeOption),
+              onTap: () {
+                AppService.instance.appTrackingService.trackObdLearningTimeClick();
+                cubit.selectComfortableLearningTime(timeOption);
+              },
               type: DataCollectOptionType.none,
               subtitle: subtitle,
               titleStyle: AppStyle.text14,

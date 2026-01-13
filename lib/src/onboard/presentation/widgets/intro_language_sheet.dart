@@ -10,7 +10,10 @@ class IntroLanguageSheet extends StatelessWidget {
     required this.onSelected,
   });
 
-  static Future<void> show(BuildContext context) async {
+  static Future<void> show(BuildContext context, {String? source}) async {
+    if (source != null && source.isNotEmpty) {
+      AppService.instance.appTrackingService.trackObdLanguagePopupView(source);
+    }
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.white,
@@ -75,7 +78,10 @@ class _LanguageTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () {
+        AppService.instance.appTrackingService.trackObdLanguageClick(locale.languageAISupport);
+        onTap();
+      },
       child: Container(
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
         decoration: BoxDecoration(

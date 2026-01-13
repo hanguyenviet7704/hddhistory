@@ -3,11 +3,22 @@ part of '../../../data_collect.dart';
 class ContinueButton extends StatelessWidget {
   const ContinueButton({super.key});
 
+  String _trackingLabelValue(OnboardOptionEntity? option) {
+    return option?.trackingLabel ?? '';
+  }
+
+  List<String> _trackingLabelValues(List<OnboardOptionEntity> options) {
+    return options.map((option) => option.trackingLabel).toList();
+  }
+
   void _onPressed(BuildContext context) {
     final state = context.read<DataCollectCubit>().state;
     if (!state.canContinue) return;
 
     if (state.isLastStep) {
+      AppService.instance.appTrackingService.trackObdLearningTimeContinue(
+        _trackingLabelValue(state.selectedComfortableLearningTime),
+      );
       context.read<DataCollectCubit>()
         ..startAnalysis()
         ..loginAnonymous();
@@ -16,23 +27,49 @@ class ContinueButton extends StatelessWidget {
     }
 
     if (state.currentStep == DataCollectStep.collectName) {
+      AppService.instance.appTrackingService.trackObdNameContinue();
       DataCollectMotivationStepRoute(step: 0).push(context); // Welcome
       return;
     }
 
     if (state.currentStep == DataCollectStep.collectSkillsetsWantToMaster) {
+      AppService.instance.appTrackingService.trackObdSkillsetContinue(
+        _trackingLabelValues(state.selectedSkillsetsWantToMaster),
+      );
       DataCollectMotivationStepRoute(step: 1).push(context); // Motivation 01
       return;
     }
 
     if (state.currentStep == DataCollectStep.collectLearningStrugger) {
+      AppService.instance.appTrackingService.trackObdStrugglesContinue(
+        _trackingLabelValues(state.selectedLearningStruggles),
+      );
       DataCollectMotivationStepRoute(step: 2).push(context); // Motivation 02
       return;
     }
 
     if (state.currentStep == DataCollectStep.motivateHowToLearn) {
+      AppService.instance.appTrackingService.trackObdHowToLearnContinue();
       DataCollectFeedbackRoute().push(context);
       return;
+    }
+
+    if (state.currentStep == DataCollectStep.collectAge) {
+      AppService.instance.appTrackingService.trackObdAgeContinue(
+        _trackingLabelValue(state.selectedAgeRange),
+      );
+    } else if (state.currentStep == DataCollectStep.collectGender) {
+      AppService.instance.appTrackingService.trackObdGenderContinue(
+        _trackingLabelValue(state.selectedGender),
+      );
+    } else if (state.currentStep == DataCollectStep.collectLearningGoal) {
+      AppService.instance.appTrackingService.trackObdLearningGoalContinue(
+        _trackingLabelValue(state.selectedLearningGoal),
+      );
+    } else if (state.currentStep == DataCollectStep.collectDailyLearningGoal) {
+      AppService.instance.appTrackingService.trackObdDailyTimeContinue(
+        _trackingLabelValue(state.selectedDailyLearningGoal),
+      );
     }
 
     context.read<DataCollectCubit>().goToNextStep();

@@ -45,7 +45,10 @@ class LearningGoalOptions extends StatelessWidget {
             return DataCollectOptionTile(
               option: goalOption,
               isSelected: selected,
-              onTap: () => cubit.selectLearningGoal(goalOption),
+              onTap: () {
+                AppService.instance.appTrackingService.trackObdLearningGoalClick();
+                cubit.selectLearningGoal(goalOption);
+              },
               type: DataCollectOptionType.radio,
               enableLeading: false,
             );

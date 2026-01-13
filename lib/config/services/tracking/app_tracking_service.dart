@@ -31,6 +31,336 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.addBreadcrumb(message, data: data, category: category);
   }
 
+  String _joinTrackingValues(List<String> values) {
+    return values.where((value) => value.isNotEmpty).join(',');
+  }
+
+  //* Splash & Onboarding events
+  @override
+  Future<void> trackSplashScrView({String? userId}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.splashScrView,
+      parameters: {
+        if (userId != null && userId.isNotEmpty) 'user_id': userId,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdIntro1ScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdIntro1ScrView);
+  }
+
+  @override
+  Future<void> trackObdIntro1Continue() async {
+    _appTrackingService.trackEvent(TrackingKey.obdIntro1Continue);
+  }
+
+  @override
+  Future<void> trackObdIntro2ScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdIntro2ScrView);
+  }
+
+  @override
+  Future<void> trackObdIntro2Click() async {
+    _appTrackingService.trackEvent(TrackingKey.obdIntro2Click);
+  }
+
+  @override
+  Future<void> trackObdLanguagePopupView(String source) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdLanguagePopupView,
+      parameters: {
+        'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdLanguageClick(String language) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdLanguageClick,
+      parameters: {
+        'language': language,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdNameScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNameScrView);
+  }
+
+  @override
+  Future<void> trackObdNameClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNameClick);
+  }
+
+  @override
+  Future<void> trackObdNameContinue() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNameContinue);
+  }
+
+  @override
+  Future<void> trackObdWelcomeScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdWelcomeScrView);
+  }
+
+  @override
+  Future<void> trackObdWelcomeContinue() async {
+    _appTrackingService.trackEvent(TrackingKey.obdWelcomeContinue);
+  }
+
+  @override
+  Future<void> trackObdAgeScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdAgeScrView);
+  }
+
+  @override
+  Future<void> trackObdAgeClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdAgeClick);
+  }
+
+  @override
+  Future<void> trackObdAgeContinue(String age) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdAgeContinue,
+      parameters: {
+        'age': age,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdAgeBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdAgeBack);
+  }
+
+  @override
+  Future<void> trackObdGenderScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdGenderScrView);
+  }
+
+  @override
+  Future<void> trackObdGenderClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdGenderClick);
+  }
+
+  @override
+  Future<void> trackObdGenderContinue(String gender) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdGenderContinue,
+      parameters: {
+        'gender': gender,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdGenderBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdGenderBack);
+  }
+
+  @override
+  Future<void> trackObdLearningGoalScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdLearningGoalScrView);
+  }
+
+  @override
+  Future<void> trackObdLearningGoalClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdLearningGoalClick);
+  }
+
+  @override
+  Future<void> trackObdLearningGoalContinue(String learningGoal) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdLearningGoalContinue,
+      parameters: {
+        'learning_goal': learningGoal,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdLearningGoalBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdLearningGoalBack);
+  }
+
+  @override
+  Future<void> trackObdSkillsetScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdSkillsetScrView);
+  }
+
+  @override
+  Future<void> trackObdSkillsetClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdSkillsetClick);
+  }
+
+  @override
+  Future<void> trackObdSkillsetContinue(List<String> skillsets) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdSkillsetContinue,
+      parameters: {
+        'skillset': _joinTrackingValues(skillsets),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdSkillsetBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdSkillsetBack);
+  }
+
+  @override
+  Future<void> trackObdMotivation1ScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdMotivation1ScrView);
+  }
+
+  @override
+  Future<void> trackObdMotivation1Continue() async {
+    _appTrackingService.trackEvent(TrackingKey.obdMotivation1Continue);
+  }
+
+  @override
+  Future<void> trackObdStrugglesScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdStrugglesScrView);
+  }
+
+  @override
+  Future<void> trackObdStrugglesClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdStrugglesClick);
+  }
+
+  @override
+  Future<void> trackObdStrugglesContinue(List<String> struggles) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdStrugglesContinue,
+      parameters: {
+        'struggles': _joinTrackingValues(struggles),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdStrugglesBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdStrugglesBack);
+  }
+
+  @override
+  Future<void> trackObdMotivation2ScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdMotivation2ScrView);
+  }
+
+  @override
+  Future<void> trackObdMotivation2Continue() async {
+    _appTrackingService.trackEvent(TrackingKey.obdMotivation2Continue);
+  }
+
+  @override
+  Future<void> trackObdHowToLearnScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdHowToLearnScrView);
+  }
+
+  @override
+  Future<void> trackObdHowToLearnSwipe() async {
+    _appTrackingService.trackEvent(TrackingKey.obdHowToLearnSwipe);
+  }
+
+  @override
+  Future<void> trackObdHowToLearnContinue() async {
+    _appTrackingService.trackEvent(TrackingKey.obdHowToLearnContinue);
+  }
+
+  @override
+  Future<void> trackObdHowToLearnBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdHowToLearnBack);
+  }
+
+  @override
+  Future<void> trackObdFeedbackScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdFeedbackScrView);
+  }
+
+  @override
+  Future<void> trackObdFeedbackSwipe() async {
+    _appTrackingService.trackEvent(TrackingKey.obdFeedbackSwipe);
+  }
+
+  @override
+  Future<void> trackObdFeedbackContinue() async {
+    _appTrackingService.trackEvent(TrackingKey.obdFeedbackContinue);
+  }
+
+  @override
+  Future<void> trackObdDailyTimeScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdDailyTimeScrView);
+  }
+
+  @override
+  Future<void> trackObdDailyTimeClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdDailyTimeClick);
+  }
+
+  @override
+  Future<void> trackObdDailyTimeContinue(String dailyTime) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdDailyTimeContinue,
+      parameters: {
+        'daily_time': dailyTime,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdDailyTimeBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdDailyTimeBack);
+  }
+
+  @override
+  Future<void> trackObdLearningTimeScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdLearningTimeScrView);
+  }
+
+  @override
+  Future<void> trackObdLearningTimeClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdLearningTimeClick);
+  }
+
+  @override
+  Future<void> trackObdLearningTimeContinue(String learningTime) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.obdLearningTimeContinue,
+      parameters: {
+        'learning_time': learningTime,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackObdLearningTimeBack() async {
+    _appTrackingService.trackEvent(TrackingKey.obdLearningTimeBack);
+  }
+
+  @override
+  Future<void> trackObdMotivation3ScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdMotivation3ScrView);
+  }
+
+  @override
+  Future<void> trackObdMotivation3Click() async {
+    _appTrackingService.trackEvent(TrackingKey.obdMotivation3Click);
+  }
+
+  @override
+  Future<void> trackObdCompleteScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdCompleteScrView);
+  }
+
+  @override
+  Future<void> trackObdCompleteClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdCompleteClick);
+  }
+
 
   //* Draw events
   @override
