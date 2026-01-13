@@ -27,21 +27,18 @@ const KeypointList: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
 
-  // Bộ lọc
-  const [search, setSearch] = useState("");
-
   // Fetch dữ liệu ban đầu
   useEffect(() => {
     resetAndFetch();
-  }, [search]);
+  }, []);
 
-  // Reset state khi filter thay đổi
-  const resetAndFetch = useCallback(() => {
+  // Reset state khi cần tải lại
+  const resetAndFetch = () => {
     setKeypoints([]);
     setPage(1);
     setHasMore(true);
     fetchKeypoints(1, false);
-  }, [search]);
+  };
 
   // Fetch dữ liệu
   const fetchKeypoints = async (pageNum = 1, isLoadMore = false) => {
@@ -56,7 +53,6 @@ const KeypointList: React.FC = () => {
     try {
       // Sử dụng KeypointListQuery để build params
       const query = new KeypointListQuery({
-        search,
         page: pageNum,
         take: 10,
       });
@@ -137,20 +133,11 @@ const KeypointList: React.FC = () => {
 
   return (
     <div className="p-6 max-w-7xl mx-auto">
-      {/* Header + Bộ lọc */}
+      {/* Header */}
       <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
         <h1 className="text-2xl font-bold">🎯 Keypoints</h1>
 
         <div className="flex flex-wrap items-center gap-3">
-          {/* Search */}
-          <input
-            type="text"
-            placeholder="Search keypoint..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="border rounded-lg px-3 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-
           {/* Nút tạo */}
           <button
             onClick={() => {
@@ -260,7 +247,7 @@ const KeypointList: React.FC = () => {
               No keypoints found
             </h3>
             <p className="mt-1 text-sm text-gray-500">
-              Try adjusting your search
+              Create a keypoint to get started
             </p>
           </div>
         )}

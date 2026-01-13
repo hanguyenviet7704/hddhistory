@@ -148,6 +148,7 @@ export default function CourseList() {
       setSelectedCourse(null);
     } catch (err) {
       console.error("Delete failed", err);
+      throw err;
     }
   };
 
@@ -401,9 +402,10 @@ export default function CourseList() {
           setIsConfirmOpen(false);
           setSelectedCourse(null);
         }}
-        onConfirm={() =>
-          selectedCourse && handleConfirmDelete(selectedCourse._id)
-        }
+        onConfirm={() => {
+          if (!selectedCourse) return Promise.resolve();
+          return handleConfirmDelete(selectedCourse._id);
+        }}
       />
     </div>
   );

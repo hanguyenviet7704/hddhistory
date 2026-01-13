@@ -1,7 +1,6 @@
 // src/components/courses/CourseConfirm.tsx
 import React, { useState } from "react";
 import { ICourse } from "../../types/interface/course.interface";
-import { courseService } from "../../services/courseService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -11,7 +10,7 @@ interface Props {
   isOpen: boolean;
   course?: ICourse;
   onClose: () => void;
-  onConfirm: () => void; // parent will refresh state as needed
+  onConfirm: () => Promise<void>; // parent will refresh state as needed
 }
 
 export default function CourseConfirm({
@@ -29,8 +28,7 @@ export default function CourseConfirm({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await courseService.remove(String(course._id));
-      onConfirm();
+      await onConfirm();
       onClose();
     } catch (err) {
       console.error("Delete failed", err);
