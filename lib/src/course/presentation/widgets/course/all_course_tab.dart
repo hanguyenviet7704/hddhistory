@@ -13,26 +13,19 @@ class AllCourseTab extends StatefulWidget {
 }
 
 class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClientMixin {
-  final ItemScrollController _sectionScrollController = ItemScrollController();
-  final ItemPositionsListener _sectionPositionsListener = ItemPositionsListener.create();
-  final ItemScrollController _categoryScrollController = ItemScrollController();
-
-  int _activeCategoryIndex = 0;
-  bool _didInitialScroll = false;
-  int? _lockedCategoryIndex;
-  Timer? _scrollUnlockTimer;
+  late final AllCourseTabController _controller;
 
   @override
   void initState() {
     super.initState();
-    _activeCategoryIndex = widget.initialCategoryIndex;
-    _sectionPositionsListener.itemPositions.addListener(_handleSectionPositionsChanged);
+    _controller = AllCourseTabController(
+      initialCategoryIndex: widget.initialCategoryIndex,
+    );
   }
 
   @override
   void dispose() {
-    _scrollUnlockTimer?.cancel();
-    _sectionPositionsListener.itemPositions.removeListener(_handleSectionPositionsChanged);
+    _controller.dispose();
     super.dispose();
   }
 
@@ -46,130 +39,45 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
           return const CourseEmptyState();
         }
 
-        _initScrollIfNeeded(skillsets.length);
+        _controller.ensureInitialized(skillsets.length);
         final progressState = context.watch<ProgressCubit>().state;
 
-        return Column(
-          children: [
-            CourseCategoryBar(
-              skillsets: skillsets,
-              activeCategoryIndex: _activeCategoryIndex,
-              onCategoryTap: _onCategoryTap,
-              categoryScrollController: _categoryScrollController,
-            ),
-            12.verticalSpace,
-            Expanded(
-              child: ScrollablePositionedList.builder(
-                itemCount: skillsets.length,
-                itemScrollController: _sectionScrollController,
-                itemPositionsListener: _sectionPositionsListener,
-                padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
-                itemBuilder: (context, index) {
-                  final skillset = skillsets[index];
-                  return _CourseSection(
-                    skillset: skillset,
-                    progressState: progressState,
-                    isSelected: (courseId) => homeState.isSelectedCourse(courseId),
-                    onTapCourse: (course, courseIndex) => _onTapCourse(context, skillset, course, courseIndex),
-                    showBottomSpacing: index < skillsets.length - 1,
-                  );
-                },
-              ),
-            ),
-          ],
+        return AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            return Column(
+              children: [
+                CourseCategoryBar(
+                  skillsets: skillsets,
+                  activeCategoryIndex: _controller.activeCategoryIndex,
+                  onCategoryTap: _controller.onCategoryTap,
+                  categoryScrollController: _controller.categoryScrollController,
+                ),
+                12.verticalSpace,
+                Expanded(
+                  child: ScrollablePositionedList.builder(
+                    itemCount: skillsets.length,
+                    itemScrollController: _controller.sectionScrollController,
+                    itemPositionsListener: _controller.sectionPositionsListener,
+                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+                    itemBuilder: (context, index) {
+                      final skillset = skillsets[index];
+                      return _CourseSection(
+                        skillset: skillset,
+                        progressState: progressState,
+                        isSelected: (courseId) => homeState.isSelectedCourse(courseId),
+                        onTapCourse: (course, courseIndex) => _onTapCourse(context, skillset, course, courseIndex),
+                        showBottomSpacing: index < skillsets.length - 1,
+                      );
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
-  }
-
-  void _initScrollIfNeeded(int totalSections) {
-    if (_didInitialScroll || totalSections == 0) return;
-
-    _didInitialScroll = true;
-    final clampedIndex = widget.initialCategoryIndex.clamp(0, totalSections - 1);
-    _activeCategoryIndex = clampedIndex;
-
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToSection(clampedIndex, jump: true);
-      _scrollCategoryTo(clampedIndex);
-    });
-  }
-
-  void _onCategoryTap(int index) {
-    setState(() => _activeCategoryIndex = index);
-    _scrollCategoryTo(index);
-    _scrollToSection(index);
-  }
-
-  void _scrollToSection(int index, {bool jump = false}) {
-    if (!_sectionScrollController.isAttached) return;
-
-    if (jump) {
-      _sectionScrollController.jumpTo(index: index, alignment: 0);
-      return;
-    }
-
-    _lockCategoryDuringScroll(index);
-    _sectionScrollController.scrollTo(
-      index: index,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOut,
-      alignment: 0,
-    );
-  }
-
-  void _scrollCategoryTo(int index) {
-    if (!_categoryScrollController.isAttached) return;
-
-    _categoryScrollController.scrollTo(
-      index: index,
-      duration: const Duration(milliseconds: 250),
-      curve: Curves.easeOut,
-      alignment: 0,
-    );
-  }
-
-  void _handleSectionPositionsChanged() {
-    final positions = _sectionPositionsListener.itemPositions.value;
-    if (positions.isEmpty) return;
-
-    int? bestIndex;
-    double bestVisibility = 0;
-
-    for (final position in positions) {
-      final visibility = _visibleFraction(position);
-      if (visibility > bestVisibility) {
-        bestVisibility = visibility;
-        bestIndex = position.index;
-      }
-    }
-
-    if (_lockedCategoryIndex != null) {
-      if (bestIndex != _lockedCategoryIndex) return;
-      _lockedCategoryIndex = null;
-      _scrollUnlockTimer?.cancel();
-    }
-
-    if (bestIndex != null && bestIndex != _activeCategoryIndex) {
-      setState(() => _activeCategoryIndex = bestIndex!);
-      _scrollCategoryTo(bestIndex);
-    }
-  }
-
-  double _visibleFraction(ItemPosition position) {
-    final visibleStart = math.max(0.0, position.itemLeadingEdge);
-    final visibleEnd = math.min(1.0, position.itemTrailingEdge);
-    final visible = visibleEnd - visibleStart;
-    return visible > 0 ? visible : 0;
-  }
-
-  void _lockCategoryDuringScroll(int index) {
-    _lockedCategoryIndex = index;
-    _scrollUnlockTimer?.cancel();
-    _scrollUnlockTimer = Timer(const Duration(milliseconds: 350), () {
-      if (!mounted) return;
-      _lockedCategoryIndex = null;
-    });
   }
 
   void _onTapCourse(

@@ -6,7 +6,6 @@ class CourseCategoryBar extends StatelessWidget {
   final Function(int) onCategoryTap;
   final ItemScrollController categoryScrollController;
 
-
   const CourseCategoryBar({
     super.key,
     required this.skillsets,
@@ -17,15 +16,16 @@ class CourseCategoryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    return Container(
       padding: EdgeInsets.only(top: 12.h),
+      margin: EdgeInsets.symmetric(horizontal: 20.w),
       child: SizedBox(
         height: 34.h,
         child: ScrollablePositionedList.builder(
           scrollDirection: Axis.horizontal,
           itemCount: skillsets.length,
           itemScrollController: categoryScrollController,
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          padding: EdgeInsets.zero,
           itemBuilder: (context, index) {
             return Padding(
               padding: EdgeInsets.only(
