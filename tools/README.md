@@ -153,6 +153,13 @@ nano .info/app/build.json
 
 All scripts support `-h` or `--help` for detailed usage information.
 
+### Tracking Commands
+
+| Command | Description | Usage |
+|---------|-------------|-------|
+| `tracking.sh` (macOS/Linux) | Run app + filter tracking logs | `./tools/<os>/tracking/tracking.sh run <dev\|stg\|prod> [--device <id>]` |
+| `tracking.bat` (Windows) | Run app + filter tracking logs | `tools\\windows\\tracking\\tracking.bat run <dev\|stg\|prod> [--device <id>]` |
+
 ## 🔄 Migrating to New Project
 
 ### Step 1: Copy Tools Directory
