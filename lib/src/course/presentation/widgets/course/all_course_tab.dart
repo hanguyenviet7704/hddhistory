@@ -19,6 +19,9 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
 
   int _activeCategoryIndex = 0;
   bool _didInitialScroll = false;
+  bool _isProgrammaticScroll = false;
+  int? _programmaticTargetIndex;
+  int _scrollToken = 0;
 
   @override
   void initState() {
@@ -48,7 +51,12 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
 
         return Column(
           children: [
-            _buildCategoryBar(skillsets),
+            CourseCategoryBar(
+              skillsets: skillsets,
+              activeCategoryIndex: _activeCategoryIndex,
+              onCategoryTap: _onCategoryTap,
+              categoryScrollController: _categoryScrollController,
+            ),
             12.verticalSpace,
             Expanded(
               child: ScrollablePositionedList.builder(
@@ -71,33 +79,6 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
           ],
         );
       },
-    );
-  }
-
-  Widget _buildCategoryBar(List<SkillsetEntity> skillsets) {
-    return Padding(
-      padding: EdgeInsets.only(top: 12.h),
-      child: SizedBox(
-        height: 34.h,
-        child: ScrollablePositionedList.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: skillsets.length,
-          itemScrollController: _categoryScrollController,
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: EdgeInsets.only(
-                right: index < skillsets.length - 1 ? 12.w : 0,
-              ),
-              child: CourseCategoryChip(
-                label: skillsets[index].title.text,
-                isSelected: _activeCategoryIndex == index,
-                onTap: () => _onCategoryTap(index),
-              ),
-            );
-          },
-        ),
-      ),
     );
   }
 
@@ -128,6 +109,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       return;
     }
 
+    _markProgrammaticScroll(index);
     _sectionScrollController.scrollTo(
       index: index,
       duration: const Duration(milliseconds: 250),
@@ -162,6 +144,14 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       }
     }
 
+    if (_isProgrammaticScroll) {
+      if (_programmaticTargetIndex == null || bestIndex != _programmaticTargetIndex) {
+        return;
+      }
+      _isProgrammaticScroll = false;
+      _programmaticTargetIndex = null;
+    }
+
     if (bestIndex != null && bestIndex != _activeCategoryIndex) {
       setState(() => _activeCategoryIndex = bestIndex!);
       _scrollCategoryTo(bestIndex);
@@ -173,6 +163,20 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     final visibleEnd = math.min(1.0, position.itemTrailingEdge);
     final visible = visibleEnd - visibleStart;
     return visible > 0 ? visible : 0;
+  }
+
+  void _markProgrammaticScroll(int index) {
+    _isProgrammaticScroll = true;
+    _programmaticTargetIndex = index;
+    _scrollToken += 1;
+    final currentToken = _scrollToken;
+
+    Future.delayed(const Duration(milliseconds: 350), () {
+      if (!mounted) return;
+      if (_scrollToken != currentToken) return;
+      _isProgrammaticScroll = false;
+      _programmaticTargetIndex = null;
+    });
   }
 
   void _onTapCourse(

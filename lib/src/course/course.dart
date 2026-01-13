@@ -59,6 +59,7 @@ part 'presentation/pages/course_roadmap_page.dart';
 part 'presentation/pages/lesson_list_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course/course_card.dart';
+part 'presentation/widgets/course/course_category_bar.dart';
 part 'presentation/widgets/course/course_category_chip.dart';
 part 'presentation/widgets/course/course_empty_state.dart';
 part 'presentation/widgets/course/course_header.dart';
