@@ -151,27 +151,26 @@ const SkillsetList: React.FC = () => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDeleteSkillset = () => {
+  const confirmDeleteSkillset = async () => {
     if (!currentSkillset) return;
-    skillsetService
-      .remove(currentSkillset._id)
-      .then(() => {
-        setNotification({
-          open: true,
-          message: "Skillset deleted successfully",
-          severity: "success",
-        });
-        setDeleteDialogOpen(false);
-        fetchSkillsets(pagination.page, debouncedSearchTerm);
-      })
-      .catch((err) => {
-        console.error(err);
-        setNotification({
-          open: true,
-          message: "Failed to delete skillset",
-          severity: "error",
-        });
+    try {
+      await skillsetService.remove(currentSkillset._id);
+      setNotification({
+        open: true,
+        message: "Skillset deleted successfully",
+        severity: "success",
       });
+      setDeleteDialogOpen(false);
+      await fetchSkillsets(pagination.page, debouncedSearchTerm);
+    } catch (err) {
+      console.error(err);
+      setNotification({
+        open: true,
+        message: "Failed to delete skillset",
+        severity: "error",
+      });
+      throw err;
+    }
   };
 
   const openEditDialog = (skillset: ISkillset) => {

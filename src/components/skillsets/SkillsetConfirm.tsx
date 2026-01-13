@@ -1,7 +1,6 @@
 // src/components/skillsets/SkillsetConfirm.tsx
 import React, { useState } from "react";
 import { ISkillset } from "../../types/interface/skillset.interface";
-import { skillsetService } from "../../services/skillsetService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -10,7 +9,7 @@ interface Props {
   isOpen: boolean;
   skillset?: ISkillset;
   onClose: () => void;
-  onConfirm: () => void; // parent will refresh state as needed
+  onConfirm: () => Promise<void>; // parent will refresh state as needed
 }
 
 export default function SkillsetConfirm({
@@ -28,8 +27,7 @@ export default function SkillsetConfirm({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await skillsetService.remove(String(skillset._id));
-      onConfirm();
+      await onConfirm();
       onClose();
     } catch (err) {
       console.error("Delete failed", err);
