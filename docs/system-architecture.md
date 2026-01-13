@@ -1,6 +1,6 @@
 # System Architecture
 
-_Last updated: 2026-01-07_
+_Last updated: 2026-01-12_
 
 ## 1. High-Level View
 - **Client**: Flutter app targeting Android, iOS, and desktop/web (build scripts focus on mobile) with Clean Architecture modules.
@@ -16,15 +16,18 @@ UI Widgets → Cubits/BLoCs → Use Cases → Repository Interfaces → Reposito
 ### Presentation
 - Located inside `lib/src/<feature>/presentation/` and `lib/config/routes/`.
 - Uses `flutter_bloc` / `hydrated_bloc` for stateful flows, `go_router` for navigation.
+- **CubitUseCaseHandlerMixin** reduces boilerplate with runUseCase/runUseCaseList/runUseCasePageBreak handlers.
 - UI components rely on `flutter_screenutil`, `AppTheme`, and generated assets.
 
 ### Domain
 - `lib/src/<feature>/domain/` defines entities, repositories, and use cases returning `TaskEither<AppException, T>`.
 - Pure Dart with no Flutter imports, enabling unit-test isolation.
+- **BasePageBreak<T>** pattern for paginated data with auto-merge support.
 
 ### Data
 - `lib/src/<feature>/data/` holds models, DTOs, repository implementations, and `datasources/apis` (Retrofit) or `datasources/graphql`.
 - JSON serialization via `json_serializable`/`freezed`; DI via `injectable`.
+- **Multi-Dio client architecture**: appDio (authenticated API), aiDio (AI services), thirdPartyDio (external APIs).
 - Shared helpers live in `lib/core/` (errors, http interceptors, caching, tokens).
 
 ## 3. Cross-Cutting Concerns
@@ -35,21 +38,27 @@ UI Widgets → Cubits/BLoCs → Use Cases → Repository Interfaces → Reposito
 | Localization | `lib/config/l10n`, `assets/i18n` | Google Sheets driven, regenerated via `slang` after localization pull. |
 | Theming | `lib/config/themes/` | `theme_collection.dart` centralizes light/dark palettes and typography. |
 | Error Handling | `lib/core/errors`, `AppException` hierarchy | Propagated through TaskEither, decoded from Dio/GraphQL responses.
-| Persistence | `hydrated_bloc`, local caches | Secure storage for secrets via `flutter_secure_storage`.
+| Persistence | `hydrated_bloc`, local caches | Secure storage for secrets via `flutter_secure_storage`. HydratedCubit used for: CourseRoadmapCubit, ProfileCubit. |
 
 ## 4. Data Flow Examples
 ### User Authentication
-1. UI triggers `AuthCubit.signIn()`.
-2. Cubit invokes `SignInUseCase`, returning `TaskEither<AppException, User>`.
-3. `AuthRepositoryImpl` delegates to REST API (`dio`/`retrofit`) and Firebase Auth SDK.
+1. UI triggers `AuthCubit.signIn()` (or social login methods).
+2. Cubit invokes `SignInUseCase` via `runUseCase` handler, returning `TaskEither<AppException, User>`.
+3. `AuthRepositoryImpl` delegates to REST API (appDio/retrofit) and Firebase Auth SDK.
 4. Results fold back to Cubit for success/error emission; hydrated storage persists tokens/settings.
 
 ### Lesson Exercise Flow
 1. Lesson page loads via `LessonRoute` defined in go_router.
-2. `ExerciseCubit` requests question payloads via `FetchExerciseUseCase`.
-3. Repository hits remote API and merges with local progress caches.
-4. Presentation layer renders overlays and tracks answers.
-5. Roleplay exercises may include audio answer playback with dedicated UI components.
+2. `ExerciseCubit` requests question payloads via `FetchExerciseUseCase` using `runUseCase`.
+3. Repository hits remote API (appDio) and merges with local progress caches.
+4. Presentation layer renders overlays (7 exercise types) and tracks answers.
+5. Roleplay exercises include audio answer playback with dedicated UI components and AI integration (aiDio).
+
+### Paginated Course Catalog
+1. `CourseCubit` loads courses via `runUseCasePageBreak<Course>`.
+2. `BasePageBreak<Course>` pattern auto-merges pages as user scrolls.
+3. Repository uses thirdPartyDio for external course APIs or appDio for internal catalog.
+4. Cubit emits states with merged course lists and pagination metadata.
 
 ## 5. Build & Deployment Architecture
 - **Flavor Entrypoints**: `main_dev.dart`, `main_stg.dart`, `main_prod.dart` configure `FlavorConfig` (env URLs, Firebase options, feature toggles).

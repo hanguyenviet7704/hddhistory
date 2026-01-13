@@ -1,6 +1,6 @@
 # Meup Flutter Application
 
-Meup is a multi-platform Flutter product that delivers interactive language-learning experiences using Clean Architecture, TaskEither-based use cases, and parity tooling across macOS/Linux/Windows. This README stays concise—treat the `docs/` directory as the canonical source of truth.
+Meup is a multi-platform Flutter product delivering interactive language-learning experiences with 13 feature modules using Clean Architecture, TaskEither-based use cases, and cross-platform tooling. This README stays concise—treat the `docs/` directory as the canonical source of truth.
 
 ## Quick Start
 1. **Bootstrap tooling**
@@ -37,8 +37,9 @@ Additional flows (builds, distribution, Firebase config) are documented inside `
 | Tooling & Configuration Reference | `tools/README.md`, `.info/README.md` |
 
 ## Architecture Highlights
-- Feature pods in `lib/src/<feature>/` split into presentation, domain (TaskEither use cases), and data (Retrofit/GraphQL repos).
+- 13 feature modules in `lib/src/<feature>/` split into presentation, domain (TaskEither use cases), and data (Retrofit/GraphQL repos).
 - `lib/config/di` bootstraps `get_it` + `injectable`; `lib/config/routes` uses `go_router` for typed navigation.
+- State management via BLoC/Cubit with `CubitUseCaseHandlerMixin` for boilerplate reduction.
 - Localization assets live under `assets/i18n/` and regenerate via `slang`.
 - Build scripts in `tools/<os>/build` honor `.env/.env.<flavor>` and `.info/app/*.json` for flavor-specific settings.
 

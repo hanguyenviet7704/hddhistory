@@ -1,6 +1,6 @@
 # Code Standards
 
-_Last updated: 2026-01-07_
+_Last updated: 2026-01-12_
 
 ## 1. Guiding Principles
 - **Clean Architecture adherence**: Presentation, domain, and data layers must remain isolated (no UI imports in domain/data; no HTTP/Dio exposure above data).
@@ -41,8 +41,13 @@ lib/
 
 ## 6. State Management Patterns
 - Cubits/Blocs should expose pure states; never mutate state fields directly.
-- Use `CubitUseCaseHandlerMixin` utilities (where available) to reduce boilerplate when invoking use cases.
-- Persist state with HydratedBloc only when required (theme, locale, auth session). Encrypt secrets via `flutter_secure_storage`.
+- **CubitUseCaseHandlerMixin** provides boilerplate reduction with three handler methods:
+  - `runUseCase<T>`: Execute single use case, emit loading/success/failure states
+  - `runUseCaseList<T>`: Execute use case returning lists
+  - `runUseCasePageBreak<T>`: Execute paginated use case with auto-merge support
+- **BasePageBreak<T>**: Pagination pattern with automatic data merging for list-based UIs
+- Use **HydratedCubit** only for persistent state (theme, locale, auth session, course roadmap, profile)
+- Encrypt secrets via `flutter_secure_storage`; never persist sensitive data in HydratedBloc storage
 
 ## 7. Testing Requirements
 - Minimum: unit tests for every use case and repository; widget tests for critical flows (auth, purchase, lesson player).

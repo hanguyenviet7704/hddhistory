@@ -25,6 +25,7 @@ mixin AppCustomColor {
 
   // New colors from Figma design
   static const Color neutral01 = Color(0xFF1A202C);
+  static const Color neutral100 = Color(0xFFEEF2F6);
   static const Color textPrimary = Color(0xFF0D121C);
   static const Color textSecondary = Color(0xFF364152);
   static const Color textTertiary = Color(0xFF7F8EA4);
@@ -35,6 +36,7 @@ mixin AppCustomColor {
   static const Color backgroundGray = Color(0xFFF5F7FB);
   static const Color backgroundError = Color(0xFFFDEAE7);
   static const Color backgroundSuccess = Color(0xFFEAFFEF);
+  static const Color backgroundBrandSoft = Color(0xFFF2F1FE);
   static const Color borderDefault = Color(0xFFEBF0F7);
   static const Color borderSecondary = Color(0xFFE3E8EF);
   static const Color greyC1 = Color(0xFFC1C5CD);

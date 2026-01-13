@@ -1,10 +1,10 @@
 # Codebase Summary
 
-_Last updated: 2026-01-07_
+_Last updated: 2026-01-12_
 
 ## Snapshot
 - **Tech stack**: Flutter 3/Dart 3.10+, Clean Architecture, BLoC/HydratedBloc, Dio + Retrofit + GraphQL, get_it + injectable, TaskEither via `fpdart`.
-- **Repo size**: See `git status` and `docs/` snapshots for current scope; avoid committing secrets from `.info/key/` or `.env/`.
+- **Repo size**: ~728K total LOC (~139K in lib/), 13 feature modules, ~29K config/core, ~18K tooling.
 - **CI workflows**: `.github/workflows/android-ci-cd.yml`, `.github/workflows/tools-smoke.yml`.
 
 ## Architectural Layout
@@ -22,10 +22,10 @@ _Last updated: 2026-01-07_
 
 ## Dependency Highlights (pubspec.yaml)
 - **UI/UX**: `flutter_svg`, `flutter_animate`, `flutter_screenutil`, `lottie`, `fl_chart`, `cached_network_image`.
-- **State/Data**: `bloc`, `flutter_bloc`, `hydrated_bloc`, `fpdart`, `freezed`, `json_serializable`.
-- **Networking**: `dio`, `retrofit`, `graphql_flutter`, `app_links`.
-- **Platform services**: Firebase suite (`firebase_core`, `firebase_auth`, `firebase_remote_config`, `firebase_messaging`, `firebase_crashlytics`, `firebase_analytics`), in-app purchases, notifications, storage, audio/video, connectivity.
-- **Tooling**: `build_runner`, `injectable_generator`, `go_router_builder`, `flutter_gen_runner`, `slang_build_runner`, `graphql_codegen`, `flutter_launcher_icons`, `flutter_flavorizr`.
+- **State/Data**: `flutter_bloc ^9.1.1`, `hydrated_bloc ^10.1.1`, `fpdart ^1.2.0`, `freezed`, `json_serializable`.
+- **Networking**: `dio ^5.9.0`, `retrofit ^4.9.2`, `graphql_flutter`, `app_links`.
+- **Platform services**: Firebase suite (`firebase_core`, `firebase_auth`, `firebase_remote_config`, `firebase_messaging`, `firebase_crashlytics`, `firebase_analytics`), `in_app_purchase ^3.2.3`, notifications, storage, audio/video, connectivity.
+- **Tooling**: `build_runner`, `injectable_generator ^2.7.1`, `go_router_builder`, `flutter_gen_runner`, `slang_build_runner`, `graphql_codegen`, `flutter_launcher_icons`, `flutter_flavorizr`.
 
 ## Testing & Quality Gates
 - Workflow: `dart run build_runner build`, `flutter analyze`, `flutter test` (or scoped suites), optional coverage runs.
@@ -38,15 +38,22 @@ _Last updated: 2026-01-07_
 - `.info/distribution/*.txt` extends Firebase distribution lists with per-build overrides (testers, groups, release notes, devices, passwords).
 - Scripts ensure Crashlytics symbol upload, Firebase app config sync, and parity across platforms except iOS-specific flows (macOS only).
 
-## Active Feature Pods
-| Feature | Notes |
-| --- | --- |
-| `auth` | Authentication flows, social login (Google/Apple) via Firebase + platform services |
-| `lesson` | Exercise delivery, question overlays (recent commits), audio/video integrations |
-| `roleplay` | Dialogue/roleplay scenarios with overlay management |
-| `monetization` | In-app purchases, entitlements, subscription UX |
-| `home`, `profile`, `progress`, `setting` | Core app surfaces for dashboards, account management, user prefs |
-| `data_collect`, `onboard`, `course` | Acquisition funnels, onboarding sequences, course catalogs |
+## Active Feature Modules (lib/src/)
+| Module | Files | LOC | Purpose |
+| --- | --- | --- | --- |
+| `common` | 43 | 28K | Shared utilities, error pages, common UI components |
+| `lesson` | 120 | 22K | 7 exercise types, learning content delivery, synchronized overlays |
+| `roleplay` | 66 | 10.5K | Conversation-based AI learning, dialogue scenarios |
+| `course` | 63 | 9K | Course catalog, roadmap with level indexing, course browser |
+| `progress` | 34 | 8K | User progress tracking, achievements, learning metrics |
+| `auth` | 48 | 5.6K | Firebase Auth + SSO (Google/Apple/Anonymous), session management |
+| `monetization` | 38 | 5.5K | In-app purchases, subscriptions, entitlement management |
+| `onboard` | 37 | 5.5K | Multi-step onboarding flow, user journey |
+| `profile` | 35 | 4.7K | User profile management (HydratedCubit), preferences |
+| `data_collect` | 45 | 4K | 9-step data collection workflow |
+| `home` | 22 | 2.6K | Home screen, skillset browser, navigation hub |
+| `achievement` | 15 | 2.3K | Achievements system, gamification |
+| `setting` | 14 | 1.4K | App settings (locale, theme), preferences UI |
 
 ## Observability & Security
 - Crash reporting: `firebase_crashlytics`, `sentry_flutter`.

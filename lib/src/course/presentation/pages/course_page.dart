@@ -8,63 +8,45 @@ class CoursePage extends StatefulWidget {
   State<CoursePage> createState() => _CoursePageState();
 }
 
-class _CoursePageState extends State<CoursePage> with SingleTickerProviderStateMixin {
-  late TabController _tabController;
+class _CoursePageState extends State<CoursePage> {
+  late final int _initialCategoryIndex;
 
   @override
   void initState() {
     super.initState();
-    _initializeTabController();
+    _initializeSelection();
   }
 
-  void _initializeTabController() {
+  void _initializeSelection() {
     HomeState homeState = context.read<HomeCubit>().state;
-    int skillsetCount = homeState.skillsets.length;
-    int selectedTabIndex = widget.selectedTabIndex ?? homeState.selectedSkillsetIndex;
-    _tabController = TabController(length: skillsetCount + 1, vsync: this);
-    _tabController.addListener(_onTabChanged);
-    WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      _tabController.animateTo(selectedTabIndex + 1);
-    });
-  }
-
-  @override
-  void dispose() {
-    _tabController.removeListener(_onTabChanged);
-    _tabController.dispose();
-    super.dispose();
-  }
-
-  void _onTabChanged() {
-    if (!_tabController.indexIsChanging) {
-      context.read<CourseCubit>().selectTab(_tabController.index);
-    }
+    _initialCategoryIndex = widget.selectedTabIndex ?? homeState.selectedSkillsetIndex;
+    context.read<CourseCubit>().selectTab(1);
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<CourseCubit, CourseState>(
-      listenWhen: (previous, current) => previous.selectedTabIndex != current.selectedTabIndex,
-      listener: (context, state) {
-        if (_tabController.index != state.selectedTabIndex) {
-          _tabController.animateTo(state.selectedTabIndex);
-        }
-      },
-      child: Scaffold(
-        backgroundColor: AppCustomColor.backgroundWhite,
-        body: SafeArea(
-          child: Column(
-            children: [
-              // Header
-              const CourseHeader(),
-              // Tab bar
-              CourseTabBar(tabController: _tabController),
-              // Course list with TabBarView
-              Expanded(
-                child: CourseTabBarView(tabController: _tabController),
+    return Scaffold(
+      backgroundColor: AppCustomColor.backgroundWhite,
+      body: SafeArea(
+        child: Column(
+          children: [
+            const CourseHeader(),
+            Expanded(
+              child: BlocBuilder<CourseCubit, CourseState>(
+                buildWhen: (previous, current) => previous.selectedTabIndex != current.selectedTabIndex,
+                builder: (context, state) {
+                  final selectedIndex = state.selectedTabIndex == 1 ? 1 : 0;
+                  return IndexedStack(
+                    index: selectedIndex,
+                    children: [
+                      const MyCourseTab(),
+                      AllCourseTab(initialCategoryIndex: _initialCategoryIndex),
+                    ],
+                  );
+                },
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
