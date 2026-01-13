@@ -41,7 +41,11 @@ import {
   IExerciseChoiceOption,
   IExerciseSingleChoice,
 } from "../../types/interface/learning-item/excercises/single-choice.interface";
-import { IExerciseDragDrop } from "../../types/interface/learning-item/excercises/drag-drop.interface";
+import {
+  IAnswer,
+  IExerciseDragDrop,
+  IOptions,
+} from "../../types/interface/learning-item/excercises/drag-drop.interface";
 import {
   IExerciseRecord,
   IScoringCriteria,
@@ -80,6 +84,12 @@ const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
   DocumentType.TITLE,
   DocumentType.CAPTION,
   DocumentType.TEXT,
+];
+
+const DEFAULT_LEVELS: KeypointLevel[] = [
+  KeypointLevel.WEAK_POINT,
+  KeypointLevel.MORE_PRACTICE,
+  KeypointLevel.OPTIONAL_PRACTICE,
 ];
 
 const isTextualDocumentType = (type: DocumentType) =>
@@ -137,6 +147,20 @@ const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
   url: { [currentLang]: "" },
   thumbnail: "",
 });
+
+const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
+  id: 1,
+  type: DocumentType.TEXT,
+  data: createEmptyMediaDocument(currentLang),
+});
+
+const createDefaultDocumentsForExercise = (
+  type: ExerciseType,
+  currentLang: LangCode
+): IDocument[] =>
+  type === ExerciseType.DRAG_DROP
+    ? []
+    : [createDefaultTextDocument(currentLang)];
 
 const distributeEvenlyIntegers = (slots: number, total: number) => {
   if (slots <= 0) return [];
@@ -1315,10 +1339,13 @@ export default function RoleplayFromDetail({
             type: ExerciseType.SINGLE_CHOICE,
             tag: null,
             keypointId: "",
-            document: [],
+            document: createDefaultDocumentsForExercise(
+              ExerciseType.SINGLE_CHOICE,
+              lang
+            ),
             explanation: { [lang]: "" },
             options: [] as IExerciseChoiceOption[],
-            level: [KeypointLevel.WEAK_POINT],
+            level: [...DEFAULT_LEVELS],
             maxScore: 10,
             mainQuestion: 0,
           } as IExerciseSingleChoice,
@@ -2232,6 +2259,7 @@ export default function RoleplayFromDetail({
     const [validationErrors, setValidationErrors] = useState<{
       [key: string]: string;
     }>({});
+    const [showEmptyDocuments, setShowEmptyDocuments] = useState(false);
 
     const [localNextOptionId, setLocalNextOptionId] = useState(nextOptionId);
     const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
@@ -2283,9 +2311,38 @@ export default function RoleplayFromDetail({
       return updated;
     };
 
+    const applyExerciseDefaults = (data: any) => {
+      if (!data?.exercise) return data;
+      const type = data.exercise.type;
+      const updatedExercise = { ...data.exercise };
+
+      if (
+        (type === ExerciseType.SINGLE_CHOICE ||
+          type === ExerciseType.MULTIPLE_CHOICE) &&
+        (!updatedExercise.options || updatedExercise.options.length === 0)
+      ) {
+        updatedExercise.options = [{ value: { [lang]: "" }, isCorrect: false }];
+      }
+
+      if (
+        type === ExerciseType.DRAG_DROP &&
+        (!updatedExercise.answer || updatedExercise.answer.length === 0)
+      ) {
+        const newId = localNextAnswerId;
+        updatedExercise.answer = [{ correctAnswer: { [lang]: "" }, id: newId }];
+        setLocalNextAnswerId(newId + 1);
+      }
+
+      return {
+        ...data,
+        exercise: updatedExercise,
+      };
+    };
+
     // Update local form data when formData prop changes
     useEffect(() => {
       const normalizedFormData = ensureLocalizedContent(formData);
+      let nextFormData = normalizedFormData;
       if (normalizedFormData?.exercise?.type === ExerciseType.RECORD) {
         const normalizedCriteria = rebalanceRecordScoringCriteria(
           normalizedFormData.exercise.scoringCriteria,
@@ -2294,18 +2351,18 @@ export default function RoleplayFromDetail({
             : undefined
         );
 
-        setLocalFormData({
+        nextFormData = {
           ...normalizedFormData,
           exercise: {
             ...normalizedFormData.exercise,
             scoringCriteria: normalizedCriteria,
           },
-        });
-      } else {
-        setLocalFormData(normalizedFormData);
+        };
       }
+      setLocalFormData(applyExerciseDefaults(nextFormData));
       // Clear errors when form data is reset (e.g., when opening a new content form)
       setValidationErrors({});
+      setShowEmptyDocuments(false);
     }, [formData]);
 
     // Ensure translation objects have current language key when language changes
@@ -2457,6 +2514,25 @@ export default function RoleplayFromDetail({
           ...prev.exercise,
           [field]: value,
         };
+
+        if (field === "type") {
+          if (
+            (value === ExerciseType.SINGLE_CHOICE ||
+              value === ExerciseType.MULTIPLE_CHOICE) &&
+            (!nextExercise.options || nextExercise.options.length === 0)
+          ) {
+            nextExercise.options = [{ value: { [lang]: "" }, isCorrect: false }];
+          }
+
+          if (
+            value === ExerciseType.DRAG_DROP &&
+            (!nextExercise.answer || nextExercise.answer.length === 0)
+          ) {
+            const newId = localNextAnswerId;
+            nextExercise.answer = [{ correctAnswer: { [lang]: "" }, id: newId }];
+            setLocalNextAnswerId(newId + 1);
+          }
+        }
 
         if (
           nextExercise.type === ExerciseType.RECORD &&
@@ -2672,26 +2748,36 @@ export default function RoleplayFromDetail({
       )
         return;
 
-      const currentMaxId = (localFormData.exercise.document || []).reduce(
-        (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
-        0
-      );
-      const newId = currentMaxId + 1;
+      setLocalFormData((prev: any) => {
+        const existingDocs = prev.exercise?.document || [];
+        const hasContent = cleanDocumentItems(existingDocs).length > 0;
+        const shouldDropEmpty =
+          prev.exercise?.type === ExerciseType.DRAG_DROP &&
+          !showEmptyDocuments &&
+          !hasContent;
+        const baseDocs = shouldDropEmpty ? [] : existingDocs;
+        const currentMaxId = baseDocs.reduce(
+          (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
+          0
+        );
+        const newId = currentMaxId + 1;
 
-      setLocalFormData((prev: any) => ({
-        ...prev,
-        exercise: {
-          ...prev.exercise,
-          document: [
-            ...(prev.exercise.document || []),
-            {
-              id: newId,
-              type: DocumentType.TEXT,
-              data: createEmptyMediaDocument(lang),
-            },
-          ],
-        },
-      }));
+        return {
+          ...prev,
+          exercise: {
+            ...prev.exercise,
+            document: [
+              ...baseDocs,
+              {
+                id: newId,
+                type: DocumentType.TEXT,
+                data: createEmptyMediaDocument(lang),
+              },
+            ],
+          },
+        };
+      });
+      setShowEmptyDocuments(true);
     };
 
     const removeDocument = (index: number) => {
@@ -2705,13 +2791,17 @@ export default function RoleplayFromDetail({
         if (!documents) {
           return prev;
         }
+        const updatedDocuments = documents.filter(
+          (_: IDocument, i: number) => i !== index
+        );
+        if (updatedDocuments.length === 0) {
+          setShowEmptyDocuments(false);
+        }
         return {
           ...prev,
           exercise: {
             ...prev.exercise,
-            document: documents.filter(
-              (_: IDocument, i: number) => i !== index
-            ),
+            document: updatedDocuments,
           },
         };
       });
@@ -2883,6 +2973,11 @@ export default function RoleplayFromDetail({
       const newAnswer = existingAnswers.filter(
         (_: any, i: number) => i !== index
       );
+      if (newAnswer.length === 0) {
+        const newId = localNextAnswerId;
+        setLocalNextAnswerId(newId + 1);
+        newAnswer.push({ correctAnswer: { [lang]: "" }, id: newId });
+      }
       handleExerciseChange("answer", newAnswer);
     };
 
@@ -2904,6 +2999,64 @@ export default function RoleplayFromDetail({
         correctAnswer: updatedTranslation,
       };
       handleExerciseChange("answer", newAnswer);
+    };
+
+    const normalizeDragDropText = (
+      value: ITranslation | string | undefined
+    ) => {
+      const raw =
+        typeof value === "string" ? value : getCurrentTranslationValue(value, lang);
+      return raw.trim().toLowerCase();
+    };
+
+    const shuffleArray = <T,>(items: T[]): T[] => {
+      const result = [...items];
+      for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    };
+
+    const handleShuffleOptions = () => {
+      if (
+        contentType !== RoleplayContentType.EXERCISE ||
+        localFormData.exercise?.type !== ExerciseType.DRAG_DROP
+      ) {
+        return;
+      }
+
+      const currentOptions = Array.isArray(localFormData.exercise.options)
+        ? localFormData.exercise.options
+        : [];
+      const currentAnswers = Array.isArray(localFormData.exercise.answer)
+        ? localFormData.exercise.answer
+        : [];
+
+      let nextId = localNextOptionId;
+      const existing = new Set(
+        currentOptions
+          .map((opt: IOptions) => normalizeDragDropText(opt.text))
+          .filter(Boolean)
+      );
+
+      const mergedOptions = [...currentOptions];
+      currentAnswers.forEach((ans: IAnswer) => {
+        const normalized = normalizeDragDropText(ans.correctAnswer);
+        if (!normalized || existing.has(normalized)) return;
+
+        const textValue =
+          typeof ans.correctAnswer === "string"
+            ? updateTranslationValue(undefined, lang, ans.correctAnswer)
+            : ans.correctAnswer;
+
+        mergedOptions.push({ id: nextId++, text: textValue });
+        existing.add(normalized);
+      });
+
+      const shuffled = shuffleArray(mergedOptions);
+      handleExerciseChange("options", shuffled);
+      if (nextId !== localNextOptionId) setLocalNextOptionId(nextId);
     };
 
     const handlePasteExerciseOptions = (
@@ -3132,6 +3285,20 @@ export default function RoleplayFromDetail({
           : 0;
       return sum + value;
     }, 0);
+
+    const effectiveDragDropForm =
+      localFormData.exercise?.form || FormDragDropType.TextGapFilling;
+    const showShuffleButton =
+      localFormData.exercise?.type === ExerciseType.DRAG_DROP &&
+      (effectiveDragDropForm === FormDragDropType.TextGapFilling ||
+        effectiveDragDropForm === FormDragDropType.ArrangeTheSequence);
+    const hasDocumentContent = cleanDocumentItems(
+      localFormData.exercise?.document || []
+    ).length;
+    const showDocumentItems =
+      localFormData.exercise?.type !== ExerciseType.DRAG_DROP ||
+      hasDocumentContent > 0 ||
+      showEmptyDocuments;
 
     return (
       <div className="space-y-4">
@@ -3387,58 +3554,59 @@ export default function RoleplayFromDetail({
                 <h3 className="font-medium text-gray-800">Content Documents</h3>
               </div>
 
-              {(localFormData.exercise.document || []).map(
-                (doc: IDocument, index: number) => (
-                  <div
-                    key={doc.id}
-                    className="border rounded-lg p-4 bg-white mb-3"
-                  >
-                    <div className="flex justify-between items-center mb-3">
-                      <h4 className="font-medium text-sky-400">
-                        Content {index + 1}
-                      </h4>
-                      <button
-                        type="button"
-                        onClick={() => removeDocument(index)}
-                        className="text-red-500 hover:text-red-700"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    <div className="space-y-3">
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Type
-                        </label>
-                        <select
-                          value={doc.type}
-                          onChange={(e) =>
-                            handleDocumentChange(
-                              index,
-                              "type",
-                              e.target.value as DocumentType
-                            )
-                          }
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              {showDocumentItems &&
+                (localFormData.exercise.document || []).map(
+                  (doc: IDocument, index: number) => (
+                    <div
+                      key={doc.id}
+                      className="border rounded-lg p-4 bg-white mb-3"
+                    >
+                      <div className="flex justify-between items-center mb-3">
+                        <h4 className="font-medium text-sky-400">
+                          Content {index + 1}
+                        </h4>
+                        <button
+                          type="button"
+                          onClick={() => removeDocument(index)}
+                          className="text-red-500 hover:text-red-700"
                         >
-                          <option value={DocumentType.TITLE}>Title</option>
-                          <option value={DocumentType.CAPTION}>Caption</option>
-                          <option value={DocumentType.TEXT}>Text</option>
-                          <option value={DocumentType.IMAGE}>Image</option>
-                          <option value={DocumentType.VIDEO}>Video</option>
-                          <option value={DocumentType.AUDIO}>Audio</option>
-                          <option value={DocumentType.ANIMATION}>
-                            Animation
-                          </option>
-                        </select>
+                          <TrashIcon className="h-4 w-4" />
+                        </button>
                       </div>
 
-                      {renderDocumentFields(doc, index)}
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Type
+                          </label>
+                          <select
+                            value={doc.type}
+                            onChange={(e) =>
+                              handleDocumentChange(
+                                index,
+                                "type",
+                                e.target.value as DocumentType
+                              )
+                            }
+                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          >
+                            <option value={DocumentType.TITLE}>Title</option>
+                            <option value={DocumentType.CAPTION}>Caption</option>
+                            <option value={DocumentType.TEXT}>Text</option>
+                            <option value={DocumentType.IMAGE}>Image</option>
+                            <option value={DocumentType.VIDEO}>Video</option>
+                            <option value={DocumentType.AUDIO}>Audio</option>
+                            <option value={DocumentType.ANIMATION}>
+                              Animation
+                            </option>
+                          </select>
+                        </div>
+
+                        {renderDocumentFields(doc, index)}
+                      </div>
                     </div>
-                  </div>
-                )
-              )}
+                  )
+                )}
 
               <div className="text-center">
                 <button
@@ -3589,47 +3757,6 @@ export default function RoleplayFromDetail({
             {localFormData.exercise.type === ExerciseType.DRAG_DROP && (
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Options
-                </label>
-                <div className="space-y-2">
-                  {localFormData.exercise.options.map(
-                    (opt: any, idx: number) => (
-                      <div key={opt.id} className="flex items-center">
-                        <input
-                          type="text"
-                          value={getCurrentTranslationValue(opt.text, lang)}
-                          onChange={(e) =>
-                            updateOptionValue(idx, e.target.value)
-                          }
-                          onPaste={(e) => handlePasteExerciseOptions(idx, e)}
-                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          placeholder={`Option ${idx + 1}`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeOption(idx)}
-                          className="ml-2 text-red-500 hover:text-red-700"
-                        >
-                          <TrashIcon className="h-5 w-5" />
-                        </button>
-                      </div>
-                    )
-                  )}
-                  <button
-                    type="button"
-                    onClick={addOption}
-                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-1" />
-                    Add Option
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {localFormData.exercise.type === ExerciseType.DRAG_DROP && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
                   Answer
                 </label>
                 <div className="space-y-2">
@@ -3666,6 +3793,58 @@ export default function RoleplayFromDetail({
                   >
                     <PlusIcon className="h-4 w-4 mr-1" />
                     Add Answer
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {localFormData.exercise.type === ExerciseType.DRAG_DROP && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Options
+                  </label>
+                  {showShuffleButton && (
+                    <button
+                      type="button"
+                      onClick={handleShuffleOptions}
+                      className="text-sm text-blue-600 hover:text-blue-700"
+                    >
+                      Shuffle
+                    </button>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  {localFormData.exercise.options.map(
+                    (opt: any, idx: number) => (
+                      <div key={opt.id} className="flex items-center">
+                        <input
+                          type="text"
+                          value={getCurrentTranslationValue(opt.text, lang)}
+                          onChange={(e) =>
+                            updateOptionValue(idx, e.target.value)
+                          }
+                          onPaste={(e) => handlePasteExerciseOptions(idx, e)}
+                          className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          placeholder={`Option ${idx + 1}`}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => removeOption(idx)}
+                          className="ml-2 text-red-500 hover:text-red-700"
+                        >
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+                    )
+                  )}
+                  <button
+                    type="button"
+                    onClick={addOption}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-1" />
+                    Add Option
                   </button>
                 </div>
               </div>

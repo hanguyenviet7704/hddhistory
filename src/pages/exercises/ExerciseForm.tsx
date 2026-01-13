@@ -45,7 +45,6 @@ import {
 } from "../../types/interface/learning-item/document.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
-import { tagService } from "../../services/tagService";
 import { ITranslation } from "../../utils/translate";
 import {
   getTranslationValue,
@@ -61,6 +60,12 @@ const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
   DocumentType.TITLE,
   DocumentType.CAPTION,
   DocumentType.TEXT,
+];
+
+const DEFAULT_LEVELS: KeypointLevel[] = [
+  KeypointLevel.WEAK_POINT,
+  KeypointLevel.MORE_PRACTICE,
+  KeypointLevel.OPTIONAL_PRACTICE,
 ];
 
 const isValidNumber = (value: unknown): value is number =>
@@ -167,6 +172,20 @@ const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
   thumbnail: "",
 });
 
+const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
+  id: 1,
+  type: DocumentType.TEXT,
+  data: createEmptyMediaDocument(currentLang),
+});
+
+const createDefaultDocumentsForQuestion = (
+  type: ExerciseType,
+  currentLang: LangCode
+): IDocument[] =>
+  type === ExerciseType.DRAG_DROP
+    ? []
+    : [createDefaultTextDocument(currentLang)];
+
 // Helper component to display text with truncation and tooltip
 const TextWithTooltip = ({
   text = "",
@@ -242,9 +261,6 @@ export default function ExerciseForm({
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
     null
   );
-
-  // State for all tags
-  const [allTags, setAllTags] = useState<ITag[]>([]);
 
   // State for question ID counters - separate for each section
   const [nextQuestionIdForQuestions, setNextQuestionIdForQuestions] =
@@ -385,24 +401,6 @@ export default function ExerciseForm({
       active = false;
     };
   }, [keypointQuery]);
-
-  // Fetch all tags
-  useEffect(() => {
-    let active = true;
-    const fetchAllTags = async () => {
-      try {
-        const res = await tagService.getList({ page: 1, take: 1000 });
-        const list: ITag[] = res.data.items || [];
-        if (active) setAllTags(list);
-      } catch (err) {
-        console.error("fetchAllTags", err);
-      }
-    };
-    fetchAllTags();
-    return () => {
-      active = false;
-    };
-  }, []);
 
   // Fetch selected keypoint details when keypointId changes
   useEffect(() => {
@@ -628,16 +626,20 @@ export default function ExerciseForm({
     id: number,
     currentLang: LangCode = lang
   ) => {
+    const defaultDocuments = createDefaultDocumentsForQuestion(
+      type,
+      currentLang
+    );
     switch (type) {
       case ExerciseType.SINGLE_CHOICE:
         return {
           id,
           type,
           tag: null,
-          document: [],
+          document: defaultDocuments,
           explanation: { [currentLang]: "" },
           options: [] as IExerciseChoiceOption[],
-          level: [KeypointLevel.WEAK_POINT],
+          level: [...DEFAULT_LEVELS],
           maxScore: 10,
           completionTime: 60,
           mainQuestion: 0,
@@ -647,10 +649,10 @@ export default function ExerciseForm({
           id,
           type,
           tag: null,
-          document: [],
+          document: defaultDocuments,
           explanation: { [currentLang]: "" },
           options: [] as IExerciseChoiceOption[],
-          level: [KeypointLevel.WEAK_POINT],
+          level: [...DEFAULT_LEVELS],
           maxScore: 10,
           completionTime: 60,
           mainQuestion: 0,
@@ -660,12 +662,12 @@ export default function ExerciseForm({
           id,
           type,
           tag: null,
-          document: [],
+          document: defaultDocuments,
           explanation: { [currentLang]: "" },
           targetArea: { [currentLang]: "" },
           answer: [] as IAnswer[],
           options: [] as IOptions[],
-          level: [KeypointLevel.WEAK_POINT],
+          level: [...DEFAULT_LEVELS],
           maxScore: 10,
           completionTime: 60,
           form: FormDragDropType.TextGapFilling,
@@ -676,12 +678,12 @@ export default function ExerciseForm({
           id,
           type,
           tag: null,
-          document: [],
+          document: defaultDocuments,
           explanation: { [currentLang]: "" },
           record: "",
           maxDuration: 30,
           scoringCriteria: [],
-          level: [KeypointLevel.WEAK_POINT],
+          level: [...DEFAULT_LEVELS],
           maxScore: 10,
           completionTime: 60,
           mainQuestion: 0,
@@ -1256,7 +1258,6 @@ export default function ExerciseForm({
     formData: any;
   }) => {
     const [localFormData, setLocalFormData] = useState<any>(formData);
-    const [tagQuery, setTagQuery] = useState("");
 
     const [localNextOptionId, setLocalNextOptionId] = useState(nextOptionId);
     const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
@@ -1368,6 +1369,31 @@ export default function ExerciseForm({
       handleChange("scoringCriteria", next);
     };
 
+    const applyQuestionDefaults = (data: any) => {
+      if (!data) return data;
+      const type = data.type || questionType;
+      const updated = { ...data };
+
+      if (
+        (type === ExerciseType.SINGLE_CHOICE ||
+          type === ExerciseType.MULTIPLE_CHOICE) &&
+        (!updated.options || updated.options.length === 0)
+      ) {
+        updated.options = [{ value: { [lang]: "" }, isCorrect: false }];
+      }
+
+      if (
+        type === ExerciseType.DRAG_DROP &&
+        (!updated.answer || updated.answer.length === 0)
+      ) {
+        const newId = localNextAnswerId;
+        updated.answer = [{ correctAnswer: { [lang]: "" }, id: newId }];
+        setLocalNextAnswerId(newId + 1);
+      }
+
+      return updated;
+    };
+
     // Update local form data when formData prop changes
     useEffect(() => {
       if (
@@ -1376,12 +1402,14 @@ export default function ExerciseForm({
         formData.mainQuestion !== ""
       ) {
         const parsed = parseInt(formData.mainQuestion, 10);
-        setLocalFormData({
+        setLocalFormData(
+          applyQuestionDefaults({
           ...formData,
           mainQuestion: Number.isNaN(parsed) ? undefined : parsed,
-        });
+        })
+        );
       } else {
-        setLocalFormData(formData);
+        setLocalFormData(applyQuestionDefaults(formData));
       }
     }, [formData]);
 
@@ -1729,6 +1757,11 @@ export default function ExerciseForm({
       const newAnswer = localFormData.answer.filter(
         (_: any, i: number) => i !== index
       );
+      if (newAnswer.length === 0) {
+        const newId = localNextAnswerId;
+        setLocalNextAnswerId(newId + 1);
+        newAnswer.push({ correctAnswer: { [lang]: "" }, id: newId });
+      }
       handleChange("answer", newAnswer);
     };
 
@@ -1746,6 +1779,59 @@ export default function ExerciseForm({
         correctAnswer: updatedTranslation,
       };
       handleChange("answer", newAnswer);
+    };
+
+    const normalizeDragDropText = (
+      value: ITranslation | string | undefined
+    ) => {
+      const raw =
+        typeof value === "string" ? value : getCurrentTranslationValue(value, lang);
+      return raw.trim().toLowerCase();
+    };
+
+    const shuffleArray = <T,>(items: T[]): T[] => {
+      const result = [...items];
+      for (let i = result.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+      }
+      return result;
+    };
+
+    const handleShuffleOptions = () => {
+      if (questionType !== ExerciseType.DRAG_DROP) return;
+
+      const currentOptions = Array.isArray(localFormData.options)
+        ? localFormData.options
+        : [];
+      const currentAnswers = Array.isArray(localFormData.answer)
+        ? localFormData.answer
+        : [];
+
+      let nextId = localNextOptionId;
+      const existing = new Set(
+        currentOptions
+          .map((opt: IOptions) => normalizeDragDropText(opt.text))
+          .filter(Boolean)
+      );
+
+      const mergedOptions = [...currentOptions];
+      currentAnswers.forEach((ans: IAnswer) => {
+        const normalized = normalizeDragDropText(ans.correctAnswer);
+        if (!normalized || existing.has(normalized)) return;
+
+        const textValue =
+          typeof ans.correctAnswer === "string"
+            ? updateTranslationValue(undefined, lang, ans.correctAnswer)
+            : ans.correctAnswer;
+
+        mergedOptions.push({ id: nextId++, text: textValue });
+        existing.add(normalized);
+      });
+
+      const shuffled = shuffleArray(mergedOptions);
+      setLocalFormData((prev: any) => ({ ...prev, options: shuffled }));
+      if (nextId !== localNextOptionId) setLocalNextOptionId(nextId);
     };
 
     const handlePasteOptions = (
@@ -1836,70 +1922,14 @@ export default function ExerciseForm({
       });
     };
 
-    // Filter tags based on query
-    const filteredTags =
-      tagQuery === ""
-        ? allTags
-        : allTags.filter((tag) =>
-            getTranslationValue(tag.title, lang)
-              ?.toLowerCase()
-              .includes(tagQuery.toLowerCase())
-          );
+    const showShuffleButton =
+      questionType === ExerciseType.DRAG_DROP &&
+      (localFormData.form === FormDragDropType.TextGapFilling ||
+        localFormData.form === FormDragDropType.ArrangeTheSequence);
 
     return (
       <div className="space-y-4">
         {/* Common fields */}
-        {/* Tag selection using Combobox */}
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Tag
-          </label>
-          <Combobox<ITag | null>
-            key={`tag-selector-${lang}`} // Force re-render when language changes
-            value={localFormData.tag}
-            onChange={(val: ITag | null) => {
-              handleChange("tag", val);
-              setTagQuery("");
-            }}
-          >
-            <div className="relative">
-              <Combobox.Input
-                displayValue={(tag: ITag | null) =>
-                  getTranslationValue(tag?.title, lang)
-                }
-                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                  setTagQuery(e.target.value)
-                }
-                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                placeholder="Search tag..."
-              />
-              <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
-                {filteredTags.length > 0 ? (
-                  filteredTags.map((tag) => (
-                    <Combobox.Option
-                      key={tag._id}
-                      value={tag}
-                      className="cursor-pointer px-3 py-3 hover:bg-blue-50 flex items-center gap-2"
-                    >
-                      {tag.url && (
-                        <img
-                          src={tag.url}
-                          alt={
-                            getTranslationValue(tag.title, lang) || "Tag url"
-                          }
-                          className="w-6 h-6 object-contain flex-shrink-0"
-                        />
-                      )}
-                      <span>{getTranslationValue(tag.title, lang)}</span>
-                    </Combobox.Option>
-                  ))
-                ) : (
-                  <div className="px-3 py-3 text-gray-500">No tags found.</div>
-                )}
-              </Combobox.Options>
-            </div>
-          </Combobox>
-        </div>
         {section === "subQuestions" && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -2117,43 +2147,6 @@ export default function ExerciseForm({
         {questionType === ExerciseType.DRAG_DROP && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Options
-            </label>
-            <div className="space-y-2">
-              {localFormData.options.map((opt: any, idx: number) => (
-                <div key={opt.id} className="flex items-center">
-                  <input
-                    type="text"
-                    value={getCurrentTranslationValue(opt.text, lang)}
-                    onChange={(e) => updateOptionValue(idx, e.target.value)}
-                    onPaste={(e) => handlePasteOptions(idx, e)}
-                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    placeholder={`Option ${idx + 1}`}
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeOption(idx)}
-                    className="ml-2 text-red-500 hover:text-red-700"
-                  >
-                    <TrashIcon className="h-5 w-5" />
-                  </button>
-                </div>
-              ))}
-              <button
-                type="button"
-                onClick={addOption}
-                className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
-              >
-                <PlusIcon className="h-4 w-4 mr-1" />
-                Add Option
-              </button>
-            </div>
-          </div>
-        )}
-
-        {questionType === ExerciseType.DRAG_DROP && (
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
               Answer
             </label>
             <div className="space-y-2">
@@ -2183,6 +2176,54 @@ export default function ExerciseForm({
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
                 Add Answer
+              </button>
+            </div>
+          </div>
+        )}
+
+        {questionType === ExerciseType.DRAG_DROP && (
+          <div>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-sm font-medium text-gray-700">
+                Options
+              </label>
+              {showShuffleButton && (
+                <button
+                  type="button"
+                  onClick={handleShuffleOptions}
+                  className="text-sm text-blue-600 hover:text-blue-700"
+                >
+                  Shuffle
+                </button>
+              )}
+            </div>
+            <div className="space-y-2">
+              {localFormData.options.map((opt: any, idx: number) => (
+                <div key={opt.id} className="flex items-center">
+                  <input
+                    type="text"
+                    value={getCurrentTranslationValue(opt.text, lang)}
+                    onChange={(e) => updateOptionValue(idx, e.target.value)}
+                    onPaste={(e) => handlePasteOptions(idx, e)}
+                    className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder={`Option ${idx + 1}`}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeOption(idx)}
+                    className="ml-2 text-red-500 hover:text-red-700"
+                  >
+                    <TrashIcon className="h-5 w-5" />
+                  </button>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addOption}
+                className="inline-flex items-center px-3 py-1 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Option
               </button>
             </div>
           </div>
