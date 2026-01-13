@@ -2333,6 +2333,16 @@ export default function RoleplayFromDetail({
         setLocalNextAnswerId(newId + 1);
       }
 
+      if (type === ExerciseType.DRAG_DROP && updatedExercise.options?.length) {
+        const hasContent = updatedExercise.options.some((opt: any) => {
+          const tokens = getTranslationTokens(opt.text || opt.value);
+          return tokens.size > 0;
+        });
+        if (!hasContent) {
+          updatedExercise.options = [];
+        }
+      }
+
       return {
         ...data,
         exercise: updatedExercise,
@@ -2531,6 +2541,16 @@ export default function RoleplayFromDetail({
             const newId = localNextAnswerId;
             nextExercise.answer = [{ correctAnswer: { [lang]: "" }, id: newId }];
             setLocalNextAnswerId(newId + 1);
+          }
+
+          if (value === ExerciseType.DRAG_DROP && nextExercise.options?.length) {
+            const hasContent = nextExercise.options.some((opt: any) => {
+              const tokens = getTranslationTokens(opt.text || opt.value);
+              return tokens.size > 0;
+            });
+            if (!hasContent) {
+              nextExercise.options = [];
+            }
           }
         }
 
@@ -3001,12 +3021,58 @@ export default function RoleplayFromDetail({
       handleExerciseChange("answer", newAnswer);
     };
 
-    const normalizeDragDropText = (
+    const getTranslationTokens = (
       value: ITranslation | string | undefined
-    ) => {
-      const raw =
-        typeof value === "string" ? value : getCurrentTranslationValue(value, lang);
-      return raw.trim().toLowerCase();
+    ): Set<string> => {
+      const tokens = new Set<string>();
+      if (!value) return tokens;
+
+      if (typeof value === "string") {
+        const normalized = value.trim().toLowerCase();
+        if (normalized) tokens.add(normalized);
+        return tokens;
+      }
+
+      Object.values(value).forEach((text) => {
+        if (!text) return;
+        const normalized = text.trim().toLowerCase();
+        if (normalized) tokens.add(normalized);
+      });
+
+      return tokens;
+    };
+
+    const ensureTranslation = (
+      value: ITranslation | string | undefined
+    ): ITranslation => {
+      if (!value) return { [lang]: "" };
+      if (typeof value === "string") {
+        return updateTranslationValue(undefined, lang, value);
+      }
+      return value;
+    };
+
+    const mergeTranslations = (
+      target: ITranslation | undefined,
+      source: ITranslation
+    ): ITranslation => {
+      const merged: ITranslation = { ...(target || {}) };
+      Object.entries(source).forEach(([code, text]) => {
+        if (!text || !text.trim()) return;
+        const existing = merged[code as LangCode];
+        if (!existing || !existing.trim()) {
+          merged[code as LangCode] = text;
+        }
+      });
+      return merged;
+    };
+
+    const hasOverlap = (a: Set<string>, b: Set<string>) => {
+      let found = false;
+      b.forEach((token) => {
+        if (a.has(token)) found = true;
+      });
+      return found;
     };
 
     const shuffleArray = <T,>(items: T[]): T[] => {
@@ -3034,24 +3100,33 @@ export default function RoleplayFromDetail({
         : [];
 
       let nextId = localNextOptionId;
-      const existing = new Set(
-        currentOptions
-          .map((opt: IOptions) => normalizeDragDropText(opt.text))
-          .filter(Boolean)
+      const mergedOptions = [...currentOptions];
+      const optionTokens = mergedOptions.map((opt: IOptions) =>
+        getTranslationTokens(opt.text)
       );
 
-      const mergedOptions = [...currentOptions];
       currentAnswers.forEach((ans: IAnswer) => {
-        const normalized = normalizeDragDropText(ans.correctAnswer);
-        if (!normalized || existing.has(normalized)) return;
+        const answerTranslation = ensureTranslation(ans.correctAnswer);
+        const answerTokens = getTranslationTokens(answerTranslation);
+        if (answerTokens.size === 0) return;
 
-        const textValue =
-          typeof ans.correctAnswer === "string"
-            ? updateTranslationValue(undefined, lang, ans.correctAnswer)
-            : ans.correctAnswer;
+        const matchIndex = optionTokens.findIndex((tokens) =>
+          hasOverlap(tokens, answerTokens)
+        );
 
-        mergedOptions.push({ id: nextId++, text: textValue });
-        existing.add(normalized);
+        if (matchIndex === -1) {
+          mergedOptions.push({ id: nextId++, text: answerTranslation });
+          optionTokens.push(getTranslationTokens(answerTranslation));
+          return;
+        }
+
+        const existingOption = mergedOptions[matchIndex];
+        const mergedText = mergeTranslations(
+          existingOption.text,
+          answerTranslation
+        );
+        mergedOptions[matchIndex] = { ...existingOption, text: mergedText };
+        optionTokens[matchIndex] = getTranslationTokens(mergedText);
       });
 
       const shuffled = shuffleArray(mergedOptions);
