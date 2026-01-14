@@ -30,17 +30,17 @@ Use the cross-platform tracking scripts to run and inspect logs.
 
 ### macOS/Linux
 - Run app:
-  - `./tools/macos/tracking/tracking.sh run <dev|stg|prod> [--device <id>]`
-  - `./tools/linux/tracking/tracking.sh run <dev|stg|prod> [--device <id>]`
+  - `./tools/macos/build/run_app.sh run <dev|stg|prod> [--device <id>]`
+  - `./tools/linux/build/run_app.sh run <dev|stg|prod> [--device <id>]`
 - View logs:
-  - `./tools/macos/tracking/tracking.sh logs [--device <id>] [--follow]`
-  - `./tools/linux/tracking/tracking.sh logs [--device <id>] [--follow]`
+  - `./tools/macos/build/run_app.sh logs [--device <id>] [--follow]`
+  - `./tools/linux/build/run_app.sh logs [--device <id>] [--follow]`
 
 ### Windows
 - Run app:
-  - `tools\windows\tracking\tracking.bat run <dev|stg|prod> [--device <id>]`
+  - `tools\windows\build\run_app.bat run <dev|stg|prod> [--device <id>]`
 - View logs:
-  - `tools\windows\tracking\tracking.bat logs [--device <id>] [--follow]`
+  - `tools\windows\build\run_app.bat logs [--device <id>] [--follow]`
 
 ### Manual fallback
 - Android: `adb logcat -d | rg "\[Tracking\]"`

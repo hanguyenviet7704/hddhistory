@@ -14,7 +14,7 @@ source "${SCRIPT_DIR}/../common/common.sh" || {
 
 usage() {
     cat <<'USAGE'
-Usage: tracking.sh [run|logs|devices|clear] [options]
+Usage: run_app.sh [run|logs|devices|clear] [options]
 
 Commands:
   run <dev|stg|prod> [--device <id>] [--target <path>] [--env <path>]
@@ -35,8 +35,8 @@ Options:
   -h, --help      Show this help
 
 Examples:
-  ./tracking.sh run prod --device R58M35FT1NR
-  ./tracking.sh logs --device R58M35FT1NR --follow
+  ./run_app.sh run prod --device R58M35FT1NR
+  ./run_app.sh logs --device R58M35FT1NR --follow
 USAGE
 }
 
