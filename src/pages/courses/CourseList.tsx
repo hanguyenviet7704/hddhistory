@@ -290,7 +290,7 @@ export default function CourseList() {
                         </div>
                       </div>
 
-                      {/* content */}
+                      {/* Content */}
                       <div className="p-5 flex flex-col flex-grow">
                         <h2
                           className="font-semibold text-lg mb-2 truncate cursor-pointer text-gray-900 hover:text-blue-600 transition-colors"

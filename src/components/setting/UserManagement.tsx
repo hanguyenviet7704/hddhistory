@@ -79,6 +79,13 @@ const formatDevicesValue = (devices?: IUser["devices"]) => {
   }`;
 };
 
+const formatCreatedAtValue = (createdAt?: IUser["createdAt"]) => {
+  if (!createdAt) return "-";
+  const parsedDate = new Date(createdAt);
+  if (Number.isNaN(parsedDate.getTime())) return "-";
+  return parsedDate.toLocaleString("vi-VN", { hour12: false });
+};
+
 const InfoField = ({ label, value }: { label: string; value: string }) => (
   <div className="p-3 rounded border border-gray-200 bg-gray-50">
     <div className="text-xs uppercase text-gray-500 font-semibold">{label}</div>
@@ -400,16 +407,19 @@ const UserManagement = () => {
                     Email
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Created At
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Role
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Provider
+                    Anonymous
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Anonymous
+                    Provider
                   </th>
                   <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider sticky right-0 z-20 bg-gray-50 min-w-[120px]">
                     Actions
@@ -435,6 +445,9 @@ const UserManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {user.email || "-"}
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {formatCreatedAtValue(user.createdAt)}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span
                           className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
@@ -454,10 +467,10 @@ const UserManagement = () => {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {user.provider || "-"}
+                        {user.anonymous ? "Yes" : "No"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
-                        {user.anonymous ? "Yes" : "No"}
+                        {user.provider || "-"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 sticky right-0 bg-white z-10 min-w-[120px]">
                         <button
