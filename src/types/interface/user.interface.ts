@@ -30,6 +30,7 @@ export interface IUser {
   enery?: string;
   onboarding?: IOnboarding;
   anonymous: boolean;
+  createdAt?: Date;
 }
 
 export interface DevicePayload {

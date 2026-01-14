@@ -22,7 +22,7 @@ const SettingsPage = () => {
 
   return (
     <div className="p-6 bg-gray-50 min-h-screen">
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Tab buttons */}
         <div className="flex flex-wrap space-x-2 mb-6">
           <button
