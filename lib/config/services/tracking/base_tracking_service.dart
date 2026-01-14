@@ -30,8 +30,12 @@ abstract class BaseTrackingService {
     String eventName, {
     Map<String, dynamic>? parameters,
   }) async {
-    LogDev.one('$trackingServiceName trackEvent: $eventName \n parameters: $parameters');
-    if (kDebugMode && (eventName.startsWith('obd_') || eventName.startsWith('splash_'))) {
+    LogDev.one('$trackingServiceName [Tracking] trackEvent: $eventName parameters: $parameters');
+    if (kDebugMode &&
+        (eventName.startsWith('obd_') ||
+            eventName.startsWith('splash_') ||
+            eventName.startsWith('home_') ||
+            eventName.startsWith('all_course_'))) {
       LogDev.info('[Tracking] $eventName params: $parameters');
     }
   }

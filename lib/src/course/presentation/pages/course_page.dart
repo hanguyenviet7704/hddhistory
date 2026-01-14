@@ -24,6 +24,11 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   @override
+  void dispose() {
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
@@ -40,7 +45,10 @@ class _CoursePageState extends State<CoursePage> {
                     index: selectedIndex,
                     children: [
                       const MyCourseTab(),
-                      AllCourseTab(initialCategoryIndex: _initialCategoryIndex),
+                      AllCourseTab(
+                        initialCategoryIndex: _initialCategoryIndex,
+                        isVisible: selectedIndex == 1,
+                      ),
                     ],
                   );
                 },

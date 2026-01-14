@@ -361,6 +361,84 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(TrackingKey.obdCompleteClick);
   }
 
+  //* Home events
+  @override
+  Future<void> trackHomeScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.homeScrView);
+  }
+
+  @override
+  Future<void> trackHomeTabSwitch(String tabType) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeTabSwitch,
+      parameters: {
+        'tab_type': tabType,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHomeSkillClick(String skillName) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeSkillClick,
+      parameters: {
+        'skill_name': skillName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackAllCourseScrView(String skillName) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.allCourseScrView,
+      parameters: {
+        'skill_name': skillName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackAllCourseSkillSwitch(String skillName) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.allCourseSkillSwitch,
+      parameters: {
+        'skill_name': skillName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackAllCourseCourseClick(String skillName, String courseId, String source) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.allCourseCourseClick,
+      parameters: {
+        'skill_name': skillName,
+        'course_id': courseId,
+        'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackAllCourseFirstCourseClick(String skillName, String courseId) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.allCourseFirstCourseClick,
+      parameters: {
+        'skill_name': skillName,
+        'course_id': courseId,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackAllCourseExit(String source) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.allCourseExit,
+      parameters: {
+        'source': source,
+      },
+    );
+  }
 
   //* Draw events
   @override

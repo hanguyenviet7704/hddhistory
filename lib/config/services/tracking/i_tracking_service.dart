@@ -65,6 +65,16 @@ abstract interface class ITrackingService {
   Future<void> trackObdCompleteScrView();
   Future<void> trackObdCompleteClick();
 
+  //* Home events
+  Future<void> trackHomeScrView();
+  Future<void> trackHomeTabSwitch(String tabType);
+  Future<void> trackHomeSkillClick(String skillName);
+  Future<void> trackAllCourseScrView(String skillName);
+  Future<void> trackAllCourseSkillSwitch(String skillName);
+  Future<void> trackAllCourseCourseClick(String skillName, String courseId, String source);
+  Future<void> trackAllCourseFirstCourseClick(String skillName, String courseId);
+  Future<void> trackAllCourseExit(String source);
+
   //* Draw events
   Future<void> trackDrawRoadmapLoginReminder1View(BuildContext context);
   Future<void> trackDrawRoadmapLoginReminder1Click(BuildContext context, bool isClick);

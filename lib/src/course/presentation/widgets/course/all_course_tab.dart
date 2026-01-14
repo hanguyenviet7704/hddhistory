@@ -2,10 +2,12 @@ part of '../../../course.dart';
 
 class AllCourseTab extends StatefulWidget {
   final int initialCategoryIndex;
+  final bool isVisible;
 
   const AllCourseTab({
     super.key,
     required this.initialCategoryIndex,
+    required this.isVisible,
   });
 
   @override
@@ -14,6 +16,8 @@ class AllCourseTab extends StatefulWidget {
 
 class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClientMixin {
   late final AllCourseTabController _controller;
+  int? _lastTrackedCategoryIndex;
+  bool _wasVisible = false;
 
   @override
   void initState() {
@@ -21,12 +25,22 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     _controller = AllCourseTabController(
       initialCategoryIndex: widget.initialCategoryIndex,
     );
+    _controller.addListener(_handleCategoryChanged);
   }
 
   @override
   void dispose() {
+    _controller.removeListener(_handleCategoryChanged);
     _controller.dispose();
     super.dispose();
+  }
+
+  @override
+  void didUpdateWidget(covariant AllCourseTab oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.isVisible && !widget.isVisible) {
+      _wasVisible = false;
+    }
   }
 
   @override
@@ -40,6 +54,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
         }
 
         _controller.ensureInitialized(skillsets.length);
+        _trackAllCourseScrViewIfNeeded(skillsets);
         final progressState = context.watch<ProgressCubit>().state;
 
         return AnimatedBuilder(
@@ -87,8 +102,13 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     int index,
   ) {
     final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
+    final skillName = _skillNameFromSkillset(skillset);
     if (isFirstTimeUserChooseCourse) {
-      CourseIntroPopup.show(context, onClose: () => _handleCourseTap(context, skillset, course, index));
+      AppService.instance.appTrackingService.trackAllCourseFirstCourseClick(skillName, course.id);
+      CourseIntroPopup.show(
+        context,
+        onClose: () => _handleCourseTap(context, skillset, course, index, trackClick: false),
+      );
       return;
     }
 
@@ -99,8 +119,14 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     BuildContext context,
     SkillsetEntity skillset,
     CourseEntity course,
-    int index,
-  ) {
+    int index, {
+    bool trackClick = true,
+  }) {
+    if (trackClick) {
+      final skillName = _skillNameFromSkillset(skillset);
+      final source = context.read<CourseCubit>().state.allCourseSource;
+      AppService.instance.appTrackingService.trackAllCourseCourseClick(skillName, course.id, source);
+    }
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
@@ -111,6 +137,40 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       ..selectCourseIndex(index);
     CourseRoadmapRoute().go(context);
     context.read<PageCubit>().setCurrentIndex(1);
+  }
+
+  void _trackAllCourseScrViewIfNeeded(List<SkillsetEntity> skillsets) {
+    if (!widget.isVisible || _wasVisible) return;
+    final skillName = _skillNameFromIndex(skillsets, _controller.activeCategoryIndex);
+    if (skillName.isEmpty) return;
+    AppService.instance.appTrackingService.trackAllCourseScrView(skillName);
+    _wasVisible = true;
+    _lastTrackedCategoryIndex = _controller.activeCategoryIndex;
+  }
+
+  void _handleCategoryChanged() {
+    if (!widget.isVisible) return;
+    final skillsets = context.read<HomeCubit>().state.skillsets;
+    if (skillsets.isEmpty) return;
+    final currentIndex = _controller.activeCategoryIndex;
+    if (_lastTrackedCategoryIndex == null) {
+      _lastTrackedCategoryIndex = currentIndex;
+      return;
+    }
+    if (currentIndex == _lastTrackedCategoryIndex) return;
+    final skillName = _skillNameFromIndex(skillsets, currentIndex);
+    if (skillName.isEmpty) return;
+    _lastTrackedCategoryIndex = currentIndex;
+    AppService.instance.appTrackingService.trackAllCourseSkillSwitch(skillName);
+  }
+
+  String _skillNameFromIndex(List<SkillsetEntity> skillsets, int index) {
+    final skillset = skillsets.elementAtOrNull(index);
+    return skillset?.title.en ?? '';
+  }
+
+  String _skillNameFromSkillset(SkillsetEntity skillset) {
+    return skillset.title.en;
   }
 
   @override

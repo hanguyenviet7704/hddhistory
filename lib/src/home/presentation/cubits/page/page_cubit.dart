@@ -18,6 +18,11 @@ class PageCubit extends Cubit<PageState> {
     if (index == state.currentIndex && index == 1 && state.currentRouteName == RouteNamed.courseRoadmap) return;
     if (index == state.currentIndex && index == 2 && state.currentRouteName == RouteNamed.profile) return;
 
+    final tabType = _tabTypeForIndex(index);
+    if (tabType != null) {
+      AppService.instance.appTrackingService.trackHomeTabSwitch(tabType);
+    }
+
     switch (index) {
       case 0:
         setCurrentRouteName(RouteNamed.home);
@@ -36,5 +41,18 @@ class PageCubit extends Cubit<PageState> {
   void _routeNavigationShell(int index, StatefulNavigationShell navigationShell) {
     setCurrentIndex(index);
     navigationShell.goBranch(index);
+  }
+
+  String? _tabTypeForIndex(int index) {
+    switch (index) {
+      case 0:
+        return 'home';
+      case 1:
+        return 'progress';
+      case 2:
+        return 'setting';
+      default:
+        return null;
+    }
   }
 }

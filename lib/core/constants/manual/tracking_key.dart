@@ -60,6 +60,16 @@ mixin TrackingKey {
   static const String obdCompleteScrView = 'obd_complete_scr_view';
   static const String obdCompleteClick = 'obd_complete_click';
 
+  //* Home events
+  static const String homeScrView = 'home_scr_view';
+  static const String homeTabSwitch = 'home_tab_switch';
+  static const String homeSkillClick = 'home_skill_click';
+  static const String allCourseScrView = 'all_course_scr_view';
+  static const String allCourseSkillSwitch = 'all_course_skill_switch';
+  static const String allCourseCourseClick = 'all_course_course_click';
+  static const String allCourseFirstCourseClick = 'all_course_1stcourse_click';
+  static const String allCourseExit = 'all_course_exit';
+
   //* Draw welcome screen events
   static const String drawWelcomeScrView = 'draw_welcome_scr_view';
   static const String drawWelcomeScrViewSkip = 'draw_welcome_scr_view_skip';

@@ -68,6 +68,7 @@ import '../../core/utils/utils.dart';
 import '../../src/auth/auth.dart';
 import '../../src/common/presentation/blocs/blocs.dart';
 import '../../src/common/presentation/widgets/widgets.dart';
+import '../../src/course/course.dart';
 import '../../src/home/home.dart';
 import '../../src/monetization/monetization.dart';
 import '../di/di.dart';
