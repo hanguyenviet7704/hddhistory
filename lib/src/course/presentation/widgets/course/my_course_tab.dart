@@ -6,7 +6,11 @@ class MyCourseTab extends StatelessWidget {
   void _onTapCourse(BuildContext context, CourseEntity course, int index) {
     bool isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
     if (isFirstTimeUserChooseCourse) {
-      CourseIntroPopup.show(context, onClose: () => _handleCourseTap(context, course, index));
+      CourseIntroPopup.show(
+        context,
+        course: course,
+        onClose: () => _handleCourseTap(context, course, index),
+      );
       return;
     }
 
@@ -14,7 +18,8 @@ class MyCourseTab extends StatelessWidget {
   }
 
   void _handleCourseTap(BuildContext context, CourseEntity course, int index) {
-    context.read<CourseRoadmapCubit>().loadRoadmap(courseId: course.id);
+    context.read<CourseRoadmapCubit>().setRoadmapSource('nav_course');
+    context.read<HomeCubit>().selectCourseFromCourseId(course.id);
     CourseRoadmapRoute().go(context);
     context.read<PageCubit>().setCurrentIndex(1);
   }

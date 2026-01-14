@@ -3,6 +3,29 @@ part of '../../../course.dart';
 class KeypointsSectionHeader extends StatelessWidget {
   const KeypointsSectionHeader({super.key});
 
+  LessonExplainTrackingData? _buildTrackingData(BuildContext context) {
+    final lesson = context.read<CourseLessonCubit>().state.selectedLesson;
+    if (lesson.id.isEmpty) return null;
+
+    final homeState = context.read<HomeCubit>().state;
+    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
+      lesson.courseId,
+      fallback: homeState.currentSkillset,
+    );
+    final course = homeState.skillsets.resolveCourseByCourseId(
+      lesson.courseId,
+      fallback: homeState.currentCourse,
+      skillsetFallback: homeState.currentSkillset,
+    );
+
+    return LessonExplainTrackingData(
+      skillset: skillset,
+      course: course,
+      lesson: lesson,
+      source: 'lesson_keypoint',
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -19,7 +42,18 @@ class KeypointsSectionHeader extends StatelessWidget {
 
         // "How it works" button (UI only, action to be added later)
         GestureDetector(
-          onTap: () => LessonExplainPopup.show(context),
+          onTap: () {
+            final trackingData = _buildTrackingData(context);
+            if (trackingData != null) {
+              AppService.instance.appTrackingService.trackHowItWorkClick(
+                skillset: trackingData.skillset,
+                course: trackingData.course,
+                lesson: trackingData.lesson,
+                source: trackingData.source,
+              );
+            }
+            LessonExplainPopup.show(context, trackingData: trackingData);
+          },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [

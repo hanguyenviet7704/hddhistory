@@ -22,4 +22,8 @@ extension CourseEntityExtension on CourseEntity {
     SkillsetEntity skillset = skillsets.firstWhere((skillset) => skillset.id == skillsetId, orElse: () => SkillsetEntity());
     return copyWith(skillset: skillset);
   }
+
+  String get trackingName => title.en;
+
+  String get trackingNameOrText => title.en.isNotEmpty ? title.en : title.text;
 }

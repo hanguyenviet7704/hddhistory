@@ -68,12 +68,68 @@ abstract interface class ITrackingService {
   //* Home events
   Future<void> trackHomeScrView();
   Future<void> trackHomeTabSwitch(String tabType);
-  Future<void> trackHomeSkillClick(String skillName);
-  Future<void> trackAllCourseScrView(String skillName);
-  Future<void> trackAllCourseSkillSwitch(String skillName);
-  Future<void> trackAllCourseCourseClick(String skillName, String courseId, String source);
-  Future<void> trackAllCourseFirstCourseClick(String skillName, String courseId);
+  Future<void> trackHomeSkillClick(SkillsetEntity skillset);
+  Future<void> trackAllCourseScrView(SkillsetEntity skillset);
+  Future<void> trackAllCourseSkillSwitch(SkillsetEntity skillset);
+  Future<void> trackAllCourseCourseClick(SkillsetEntity skillset, CourseEntity course, String source);
+  Future<void> trackAllCourseFirstCourseClick(SkillsetEntity skillset, CourseEntity course);
   Future<void> trackAllCourseExit(String source);
+
+  //* Course events
+  Future<void> trackPopupLearningIntroScrView(CourseEntity course);
+  Future<void> trackPopupLearningIntroContinue();
+  Future<void> trackPopupLearningIntroSwipe();
+  Future<void> trackRoadmapScrView({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required String roadmapSource,
+  });
+  Future<void> trackRoadmapItemClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String itemType,
+  });
+  Future<void> trackHowItWorkScrView({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  });
+  Future<void> trackHowItWorkDoneClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  });
+  Future<void> trackHowItWorkExitTap({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  });
+  Future<void> trackHowItWorkClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  });
+  Future<void> trackLessonKeypointScrView({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+  });
+  Future<void> trackLessonKeypointExit({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+  });
+  Future<void> trackLessonKeypointClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required KeypointEntity keypoint,
+  });
 
   //* Draw events
   Future<void> trackDrawRoadmapLoginReminder1View(BuildContext context);

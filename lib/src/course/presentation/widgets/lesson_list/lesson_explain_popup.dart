@@ -1,21 +1,58 @@
 part of '../../../course.dart';
 
+class LessonExplainTrackingData {
+  final SkillsetEntity skillset;
+  final CourseEntity course;
+  final LessonEntity lesson;
+  final String source;
+
+  const LessonExplainTrackingData({
+    required this.skillset,
+    required this.course,
+    required this.lesson,
+    required this.source,
+  });
+}
+
 class LessonExplainPopup {
-  static Future<void> show(BuildContext context, {bool showPoint = false}) {
+  static Future<void> show(
+    BuildContext context, {
+    bool showPoint = false,
+    LessonExplainTrackingData? trackingData,
+  }) {
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackHowItWorkScrView(
+        skillset: trackingData.skillset,
+        course: trackingData.course,
+        lesson: trackingData.lesson,
+        source: trackingData.source,
+      );
+    }
+
     return showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
       routeSettings: const RouteSettings(name: RouteNamed.lessonExplainPopup),
-      builder: (context) => _LessonExplainBottomSheet(showPoint: showPoint),
-    );
+      builder: (context) => _LessonExplainBottomSheet(showPoint: showPoint, trackingData: trackingData),
+    ).then((value) {
+      if (trackingData == null) return;
+      if (value == true) return;
+      AppService.instance.appTrackingService.trackHowItWorkExitTap(
+        skillset: trackingData.skillset,
+        course: trackingData.course,
+        lesson: trackingData.lesson,
+        source: trackingData.source,
+      );
+    });
   }
 }
 
 class _LessonExplainBottomSheet extends StatelessWidget {
   final bool showPoint;
-  const _LessonExplainBottomSheet({this.showPoint = false});
+  final LessonExplainTrackingData? trackingData;
+  const _LessonExplainBottomSheet({this.showPoint = false, this.trackingData});
 
   @override
   Widget build(BuildContext context) {
@@ -121,7 +158,17 @@ class _LessonExplainBottomSheet extends StatelessWidget {
 
                 // Done button
                 GestureDetector(
-                  onTap: () => Navigator.of(context).pop(),
+                  onTap: () {
+                    if (trackingData != null) {
+                      AppService.instance.appTrackingService.trackHowItWorkDoneClick(
+                        skillset: trackingData!.skillset,
+                        course: trackingData!.course,
+                        lesson: trackingData!.lesson,
+                        source: trackingData!.source,
+                      );
+                    }
+                    Navigator.of(context).pop(true);
+                  },
                   child: Container(
                     width: double.infinity,
                     height: 54.h,

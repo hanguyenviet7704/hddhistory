@@ -76,6 +76,7 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
 
   void _onGoToCourse(BuildContext context) {
     context.back();
+    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('setting_badge');
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
     CourseRoadmapRoute().go(context);
     AppDI.injector.get<PageCubit>().setCurrentIndex(1);

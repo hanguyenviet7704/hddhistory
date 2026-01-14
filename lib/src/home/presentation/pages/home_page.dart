@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
                             skillset: skillset,
                             onTap: () {
                               context.read<CourseCubit>().setAllCourseSource('home_skill');
-                              AppService.instance.appTrackingService.trackHomeSkillClick(skillset.title.en);
+                              AppService.instance.appTrackingService.trackHomeSkillClick(skillset);
                               CourseRoute(selectedTabIndex: index).push(context);
                             },
                           );

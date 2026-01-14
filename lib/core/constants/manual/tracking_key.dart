@@ -70,6 +70,20 @@ mixin TrackingKey {
   static const String allCourseFirstCourseClick = 'all_course_1stcourse_click';
   static const String allCourseExit = 'all_course_exit';
 
+  //* Course events
+  static const String popupLearningIntroScrView = 'popup_learning_intro_scr_view';
+  static const String popupLearningIntroContinue = 'popup_learning_intro_continue';
+  static const String popupLearningIntroSwipe = 'popup_learning_intro_swipe';
+  static const String roadmapScrView = 'roadmap_scr_view';
+  static const String roadmapItemClick = 'roadmap_item_click';
+  static const String howItWorkScrView = 'how_it_work_scr_view';
+  static const String howItWorkDoneClick = 'how_it_work_done_click';
+  static const String howItWorkExitTap = 'how_it_work_exit_tap';
+  static const String howItWorkClick = 'how_it_work_click';
+  static const String lessonKeypointScrView = 'lesson_keypoint_scr_view';
+  static const String lessonKeypointExit = 'lesson_keypoint_exit';
+  static const String lessonKeypointClick = 'lesson_keypoint_click';
+
   //* Draw welcome screen events
   static const String drawWelcomeScrView = 'draw_welcome_scr_view';
   static const String drawWelcomeScrViewSkip = 'draw_welcome_scr_view_skip';

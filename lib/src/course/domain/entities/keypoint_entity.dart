@@ -31,4 +31,8 @@ extension KeypointEntityExtension on KeypointEntity {
     if (point > 85 && point <= 100) return StrengthLevel.optionalPractice;
     return StrengthLevel.optionalPractice;
   }
+
+  String get trackingName => title.en;
+
+  String get trackingNameOrText => title.en.isNotEmpty ? title.en : title.text;
 }

@@ -28,6 +28,7 @@ class PageCubit extends Cubit<PageState> {
         setCurrentRouteName(RouteNamed.home);
         break;
       case 1:
+        AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
         setCurrentRouteName(RouteNamed.courseRoadmap);
         break;
       case 2:

@@ -62,4 +62,8 @@ extension LessonEntityExtension on LessonEntity {
     sortedKeypoints.sort((a, b) => a.strengthLevel.index.compareTo(b.strengthLevel.index));
     return sortedKeypoints;
   }
+
+  String get trackingName => title.en;
+
+  String get trackingNameOrText => title.en.isNotEmpty ? title.en : title.text;
 }

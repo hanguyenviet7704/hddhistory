@@ -102,11 +102,11 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     int index,
   ) {
     final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
-    final skillName = _skillNameFromSkillset(skillset);
     if (isFirstTimeUserChooseCourse) {
-      AppService.instance.appTrackingService.trackAllCourseFirstCourseClick(skillName, course.id);
+      AppService.instance.appTrackingService.trackAllCourseFirstCourseClick(skillset, course);
       CourseIntroPopup.show(
         context,
+        course: course,
         onClose: () => _handleCourseTap(context, skillset, course, index, trackClick: false),
       );
       return;
@@ -123,15 +123,15 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     bool trackClick = true,
   }) {
     if (trackClick) {
-      final skillName = _skillNameFromSkillset(skillset);
       final source = context.read<CourseCubit>().state.allCourseSource;
-      AppService.instance.appTrackingService.trackAllCourseCourseClick(skillName, course.id, source);
+      AppService.instance.appTrackingService.trackAllCourseCourseClick(skillset, course, source);
     }
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
     }
 
+    context.read<CourseRoadmapCubit>().setRoadmapSource('course_selection');
     context.read<HomeCubit>()
       ..selectSkillset(skillset)
       ..selectCourseIndex(index);
@@ -141,9 +141,9 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
 
   void _trackAllCourseScrViewIfNeeded(List<SkillsetEntity> skillsets) {
     if (!widget.isVisible || _wasVisible) return;
-    final skillName = _skillNameFromIndex(skillsets, _controller.activeCategoryIndex);
-    if (skillName.isEmpty) return;
-    AppService.instance.appTrackingService.trackAllCourseScrView(skillName);
+    final skillset = skillsets.skillsetFromIndex(_controller.activeCategoryIndex);
+    if (skillset == null || skillset.title.en.isEmpty) return;
+    AppService.instance.appTrackingService.trackAllCourseScrView(skillset);
     _wasVisible = true;
     _lastTrackedCategoryIndex = _controller.activeCategoryIndex;
   }
@@ -158,19 +158,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       return;
     }
     if (currentIndex == _lastTrackedCategoryIndex) return;
-    final skillName = _skillNameFromIndex(skillsets, currentIndex);
-    if (skillName.isEmpty) return;
+    final skillset = skillsets.skillsetFromIndex(currentIndex);
+    if (skillset == null || skillset.title.en.isEmpty) return;
     _lastTrackedCategoryIndex = currentIndex;
-    AppService.instance.appTrackingService.trackAllCourseSkillSwitch(skillName);
-  }
-
-  String _skillNameFromIndex(List<SkillsetEntity> skillsets, int index) {
-    final skillset = skillsets.elementAtOrNull(index);
-    return skillset?.title.en ?? '';
-  }
-
-  String _skillNameFromSkillset(SkillsetEntity skillset) {
-    return skillset.title.en;
+    AppService.instance.appTrackingService.trackAllCourseSkillSwitch(skillset);
   }
 
   @override

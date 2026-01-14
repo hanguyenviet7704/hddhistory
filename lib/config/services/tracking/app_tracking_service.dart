@@ -378,54 +378,54 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackHomeSkillClick(String skillName) async {
+  Future<void> trackHomeSkillClick(SkillsetEntity skillset) async {
     _appTrackingService.trackEvent(
       TrackingKey.homeSkillClick,
       parameters: {
-        'skill_name': skillName,
+        'skill_name': skillset.trackingName,
       },
     );
   }
 
   @override
-  Future<void> trackAllCourseScrView(String skillName) async {
+  Future<void> trackAllCourseScrView(SkillsetEntity skillset) async {
     _appTrackingService.trackEvent(
       TrackingKey.allCourseScrView,
       parameters: {
-        'skill_name': skillName,
+        'skill_name': skillset.trackingName,
       },
     );
   }
 
   @override
-  Future<void> trackAllCourseSkillSwitch(String skillName) async {
+  Future<void> trackAllCourseSkillSwitch(SkillsetEntity skillset) async {
     _appTrackingService.trackEvent(
       TrackingKey.allCourseSkillSwitch,
       parameters: {
-        'skill_name': skillName,
+        'skill_name': skillset.trackingName,
       },
     );
   }
 
   @override
-  Future<void> trackAllCourseCourseClick(String skillName, String courseId, String source) async {
+  Future<void> trackAllCourseCourseClick(SkillsetEntity skillset, CourseEntity course, String source) async {
     _appTrackingService.trackEvent(
       TrackingKey.allCourseCourseClick,
       parameters: {
-        'skill_name': skillName,
-        'course_id': courseId,
+        'skill_name': skillset.trackingName,
+        'course_id': course.id,
         'source': source,
       },
     );
   }
 
   @override
-  Future<void> trackAllCourseFirstCourseClick(String skillName, String courseId) async {
+  Future<void> trackAllCourseFirstCourseClick(SkillsetEntity skillset, CourseEntity course) async {
     _appTrackingService.trackEvent(
       TrackingKey.allCourseFirstCourseClick,
       parameters: {
-        'skill_name': skillName,
-        'course_id': courseId,
+        'skill_name': skillset.trackingName,
+        'course_id': course.id,
       },
     );
   }
@@ -436,6 +436,211 @@ final class AppTrackingService extends ITrackingService {
       TrackingKey.allCourseExit,
       parameters: {
         'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPopupLearningIntroScrView(CourseEntity course) async {
+    final courseName = course.trackingNameOrText;
+    _appTrackingService.trackEvent(
+      TrackingKey.popupLearningIntroScrView,
+      parameters: {
+        'course_id': course.id,
+        'course_name': courseName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPopupLearningIntroContinue() async {
+    _appTrackingService.trackEvent(TrackingKey.popupLearningIntroContinue);
+  }
+
+  @override
+  Future<void> trackPopupLearningIntroSwipe() async {
+    _appTrackingService.trackEvent(TrackingKey.popupLearningIntroSwipe);
+  }
+
+  @override
+  Future<void> trackRoadmapScrView({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required String roadmapSource,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roadmapScrView,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'roadmap_source': roadmapSource,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoadmapItemClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String itemType,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roadmapItemClick,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'item_type': itemType,
+        'item_id': lesson.id,
+        'item_name': lesson.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHowItWorkScrView({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.howItWorkScrView,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+        'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHowItWorkDoneClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.howItWorkDoneClick,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+        'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHowItWorkExitTap({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.howItWorkExitTap,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+        'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHowItWorkClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.howItWorkClick,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+        'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackLessonKeypointScrView({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.lessonKeypointScrView,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackLessonKeypointExit({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.lessonKeypointExit,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackLessonKeypointClick({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+    required KeypointEntity keypoint,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.lessonKeypointClick,
+      parameters: {
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+        'keypoint_id': keypoint.id,
+        'keypoint_name': keypoint.trackingName,
       },
     );
   }

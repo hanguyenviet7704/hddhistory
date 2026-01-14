@@ -45,8 +45,31 @@ class LessonCard extends StatelessWidget {
 
   bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
 
+  void _trackRoadmapItemClick(BuildContext context) {
+    final homeState = context.read<HomeCubit>().state;
+    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
+      lesson.courseId,
+      fallback: homeState.currentSkillset,
+    );
+    final course = homeState.skillsets.resolveCourseByCourseId(
+      lesson.courseId,
+      fallback: homeState.currentCourse,
+      skillsetFallback: homeState.currentSkillset,
+    );
+    AppService.instance.appTrackingService.trackRoadmapItemClick(
+      skillset: skillset,
+      course: course,
+      lesson: lesson,
+      itemType: 'lesson',
+    );
+  }
+
   void _onTap(BuildContext context) {
     if (lesson.progess == ProcessEnum.notStarted && !kDebugMode) return;
+
+    if (lesson.type == LessonType.lesson) {
+      _trackRoadmapItemClick(context);
+    }
 
     bool isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
     if (premiumLesson && !isUserPremium) {

@@ -12,6 +12,7 @@ class CourseCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
         context.read<HomeCubit>()
           ..selectSkillset(course.skillset)
           ..selectCourse(course);

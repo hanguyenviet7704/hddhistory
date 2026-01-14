@@ -29,6 +29,7 @@ class RoleplayFeedbackPage extends StatelessWidget {
               ),
               RoleplayFeedbackBottomCTA(
                 onPressed: () {
+                  context.read<CourseRoadmapCubit>().setRoadmapSource('nav_course');
                   CourseRoadmapRoute().go(context);
                   context.read<PageCubit>().setCurrentIndex(1);
                 },
