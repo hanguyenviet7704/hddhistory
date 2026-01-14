@@ -39,7 +39,8 @@ abstract class BaseTrackingService {
             eventName.startsWith('popup_learning_') ||
             eventName.startsWith('roadmap_') ||
             eventName.startsWith('how_it_work_') ||
-            eventName.startsWith('lesson_keypoint_'))) {
+            eventName.startsWith('lesson_keypoint_') ||
+            eventName.startsWith('keypoint_'))) {
       LogDev.info('[Tracking] $eventName params: $parameters');
     }
   }

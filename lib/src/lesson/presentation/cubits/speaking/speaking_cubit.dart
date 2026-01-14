@@ -31,8 +31,24 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
   // Toggle between recording and text input modes
   void toggleInputMode() {
-    final newMode = state.inputMode == SpeakingInputMode.recording ? SpeakingInputMode.text : SpeakingInputMode.recording;
+    final isRecordingMode = state.inputMode == SpeakingInputMode.recording;
+    final newMode = isRecordingMode ? SpeakingInputMode.text : SpeakingInputMode.recording;
     emit(state.copyWith(inputMode: newMode));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (isRecordingMode) {
+      AppService.instance.appTrackingService.trackKeypointExerciseRecordAnswer(
+        trackingData,
+        answerType: 'typing',
+      );
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseRecordTyping(
+      trackingData,
+      typingInteraction: 'switch_record',
+    );
   }
 
   // Update text input
@@ -343,7 +359,26 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   }
 
   // Toggle explanation visibility
-  void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
+  void toggleExplanation() {
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
+  }
 
   int pointCalculation() => _questionScore.toInt();
 

@@ -11,23 +11,9 @@ class _LessonListPageState extends State<LessonListPage> {
   bool _didTrackScrView = false;
 
   LessonExplainTrackingData? _buildTrackingData(LessonEntity lesson) {
-    if (lesson.id.isEmpty) return null;
-
-    final homeState = context.read<HomeCubit>().state;
-    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
-      lesson.courseId,
-      fallback: homeState.currentSkillset,
-    );
-    final course = homeState.skillsets.resolveCourseByCourseId(
-      lesson.courseId,
-      fallback: homeState.currentCourse,
-      skillsetFallback: homeState.currentSkillset,
-    );
-
-    return LessonExplainTrackingData(
-      skillset: skillset,
-      course: course,
-      lesson: lesson,
+    return LessonExplainTrackingData.fromLesson(
+      context,
+      lesson,
       source: 'lesson_keypoint',
     );
   }
@@ -36,31 +22,21 @@ class _LessonListPageState extends State<LessonListPage> {
     if (_didTrackScrView) return;
     final trackingData = _buildTrackingData(lesson);
     if (trackingData == null) return;
-    AppService.instance.appTrackingService.trackLessonKeypointScrView(
-      skillset: trackingData.skillset,
-      course: trackingData.course,
-      lesson: trackingData.lesson,
-    );
+    AppService.instance.appTrackingService.trackLessonKeypointScrView(trackingData);
     _didTrackScrView = true;
   }
 
   void _trackLessonKeypointExit(LessonEntity lesson) {
     final trackingData = _buildTrackingData(lesson);
     if (trackingData == null) return;
-    AppService.instance.appTrackingService.trackLessonKeypointExit(
-      skillset: trackingData.skillset,
-      course: trackingData.course,
-      lesson: trackingData.lesson,
-    );
+    AppService.instance.appTrackingService.trackLessonKeypointExit(trackingData);
   }
 
   void _trackLessonKeypointClick(LessonEntity lesson, KeypointEntity keypoint) {
     final trackingData = _buildTrackingData(lesson);
     if (trackingData == null) return;
     AppService.instance.appTrackingService.trackLessonKeypointClick(
-      skillset: trackingData.skillset,
-      course: trackingData.course,
-      lesson: trackingData.lesson,
+      trackingData,
       keypoint: keypoint,
     );
   }

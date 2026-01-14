@@ -9,6 +9,11 @@ class LessonProgressBar extends StatelessWidget {
     bool isShowResultOverlay = AppDI.injector.get<LessonCubit>().state.isShowResultOverlay;
     if (isShowResultOverlay) return;
 
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExitClick(trackingData);
+    }
+
     ClosePopupLesson.show(
       context,
       onQuit: () {

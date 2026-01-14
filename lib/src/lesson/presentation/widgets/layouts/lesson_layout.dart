@@ -1,15 +1,37 @@
 part of '../../../lesson.dart';
 
-class LessonLayout extends StatelessWidget {
+class LessonLayout extends StatefulWidget {
   final Widget body;
   final Widget? bottom;
   final bool isLoading;
+  final VoidCallback? onScroll;
   const LessonLayout({
     super.key,
     required this.body,
     this.bottom,
     this.isLoading = true,
+    this.onScroll,
   });
+
+  @override
+  State<LessonLayout> createState() => _LessonLayoutState();
+}
+
+class _LessonLayoutState extends State<LessonLayout> {
+  bool _didNotifyScroll = false;
+
+  bool _handleScroll(ScrollNotification notification) {
+    if (widget.onScroll == null) return false;
+    if (notification is UserScrollNotification) {
+      if (notification.direction == ScrollDirection.idle) {
+        _didNotifyScroll = false;
+      } else if (!_didNotifyScroll) {
+        _didNotifyScroll = true;
+        widget.onScroll?.call();
+      }
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,28 +50,31 @@ class LessonLayout extends StatelessWidget {
                       },
                     ),
                     Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            12.verticalSpace,
-                            LessonBadge(),
-                            ChatInformationWidget(),
-                            body,
-                            80.verticalSpace,
-                          ],
+                      child: NotificationListener<ScrollNotification>(
+                        onNotification: _handleScroll,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            children: [
+                              12.verticalSpace,
+                              LessonBadge(),
+                              ChatInformationWidget(),
+                              widget.body,
+                              80.verticalSpace,
+                            ],
+                          ),
                         ),
                       ),
                     ),
-                    if (bottom != null) bottom!,
+                    if (widget.bottom != null) widget.bottom!,
                   ],
                 ),
               ),
               Positioned.fill(
                 child: IgnorePointer(
-                  ignoring: !isLoading,
+                  ignoring: !widget.isLoading,
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 200),
-                    child: isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
+                    child: widget.isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
                   ),
                 ),
               ),

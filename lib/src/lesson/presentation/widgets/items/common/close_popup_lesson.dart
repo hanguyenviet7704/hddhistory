@@ -15,6 +15,10 @@ class ClosePopupLesson extends StatelessWidget {
     VoidCallback? onQuit,
     VoidCallback? onKeepLearning,
   }) {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExitPopupView(trackingData);
+    }
     showModalBottomSheet(
       context: context,
       builder: (context) => ClosePopupLesson(
@@ -69,7 +73,16 @@ class ClosePopupLesson extends StatelessWidget {
               // Quit button
               Expanded(
                 child: GestureDetector(
-                  onTap: onQuit,
+                  onTap: () {
+                    final trackingData = KeypointTrackingData.fromContext();
+                    if (trackingData != null) {
+                      AppService.instance.appTrackingService.trackKeypointExitPopupClick(
+                        trackingData,
+                        option: 'quit',
+                      );
+                    }
+                    onQuit?.call();
+                  },
                   child: Container(
                     height: 54.h,
                     decoration: BoxDecoration(
@@ -96,7 +109,16 @@ class ClosePopupLesson extends StatelessWidget {
               // Keep learning button
               Expanded(
                 child: GestureDetector(
-                  onTap: onKeepLearning,
+                  onTap: () {
+                    final trackingData = KeypointTrackingData.fromContext();
+                    if (trackingData != null) {
+                      AppService.instance.appTrackingService.trackKeypointExitPopupClick(
+                        trackingData,
+                        option: 'keep_learning',
+                      );
+                    }
+                    onKeepLearning?.call();
+                  },
                   child: Container(
                     height: 54.h,
                     decoration: BoxDecoration(

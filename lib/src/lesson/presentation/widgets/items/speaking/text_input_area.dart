@@ -94,6 +94,13 @@ class _TextInputAreaState extends State<TextInputArea> {
                   return GestureDetector(
                     onTap: () {
                       if (currentChars <= 0) return;
+                      final trackingData = KeypointTrackingData.fromContext();
+                      if (trackingData != null) {
+                        AppService.instance.appTrackingService.trackKeypointExerciseRecordTyping(
+                          trackingData,
+                          typingInteraction: 'send',
+                        );
+                      }
                       context.read<SpeakingCubit>().submitAnswer();
                       FocusScope.of(context).unfocus();
                     },

@@ -51,6 +51,12 @@ class SpeakingExplanationContent extends StatelessWidget {
     this.improvementPoints = const [],
   });
 
+  void _trackExplainReplay() {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainReplay(trackingData);
+  }
+
   @override
   Widget build(BuildContext context) {
     final maxHeight = MediaQuery.of(context).size.height * 0.75;
@@ -95,8 +101,14 @@ class SpeakingExplanationContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: isRemoteAudio
-                      ? AudioPlayerUrlWidget(audioUrl: audioFilePath)
-                      : AudioPlayerFileWidget(filePath: audioFilePath),
+                      ? AudioPlayerUrlWidget(
+                          audioUrl: audioFilePath,
+                          onPlayTap: _trackExplainReplay,
+                        )
+                      : AudioPlayerFileWidget(
+                          filePath: audioFilePath,
+                          onPlayTap: _trackExplainReplay,
+                        ),
                 ),
               SpeakingGoodPointsSection(points: goodPoints),
               SpeakingImprovementSection(points: improvementPoints),

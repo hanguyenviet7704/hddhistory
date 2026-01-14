@@ -9,6 +9,10 @@ class DragAndDropLessonBody extends StatelessWidget {
   });
 
   void _showResultOverlay(BuildContext context, ResultType type) {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
+    }
     context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
@@ -26,6 +30,9 @@ class DragAndDropLessonBody extends StatelessWidget {
               placedWords: state.placedWords,
               correctAnswers: state.question.answer.map((a) => a.correctAnswer.text).toList(),
               onContinue: () {
+                if (trackingData != null) {
+                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
+                }
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },

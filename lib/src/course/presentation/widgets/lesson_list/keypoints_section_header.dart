@@ -5,23 +5,9 @@ class KeypointsSectionHeader extends StatelessWidget {
 
   LessonExplainTrackingData? _buildTrackingData(BuildContext context) {
     final lesson = context.read<CourseLessonCubit>().state.selectedLesson;
-    if (lesson.id.isEmpty) return null;
-
-    final homeState = context.read<HomeCubit>().state;
-    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
-      lesson.courseId,
-      fallback: homeState.currentSkillset,
-    );
-    final course = homeState.skillsets.resolveCourseByCourseId(
-      lesson.courseId,
-      fallback: homeState.currentCourse,
-      skillsetFallback: homeState.currentSkillset,
-    );
-
-    return LessonExplainTrackingData(
-      skillset: skillset,
-      course: course,
-      lesson: lesson,
+    return LessonExplainTrackingData.fromLesson(
+      context,
+      lesson,
       source: 'lesson_keypoint',
     );
   }
@@ -46,9 +32,7 @@ class KeypointsSectionHeader extends StatelessWidget {
             final trackingData = _buildTrackingData(context);
             if (trackingData != null) {
               AppService.instance.appTrackingService.trackHowItWorkClick(
-                skillset: trackingData.skillset,
-                course: trackingData.course,
-                lesson: trackingData.lesson,
+                trackingData,
                 source: trackingData.source,
               );
             }

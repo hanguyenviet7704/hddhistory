@@ -84,6 +84,31 @@ mixin TrackingKey {
   static const String lessonKeypointExit = 'lesson_keypoint_exit';
   static const String lessonKeypointClick = 'lesson_keypoint_click';
 
+  //* Keypoint events
+  static const String keypointTheoryScrView = 'keypoint_theory_scr_view';
+  static const String keypointTheoryContinueClick = 'keypoint_theory_continue_click';
+  static const String keypointExerciseScrView = 'keypoint_exercise_scr_view';
+  static const String keypointExerciseClick = 'keypoint_exercise_click';
+  static const String keypointExerciseMultiClick = 'keypoint_exercise_multi_click';
+  static const String keypointExerciseDrag = 'keypoint_exercise_drag';
+  static const String keypointExerciseArrange = 'keypoint_exercise_arrange';
+  static const String keypointExerciseRecordAnswer = 'keypoint_exercise_record_answer';
+  static const String keypointExerciseRecordTyping = 'keypoint_exercise_record_typing';
+  static const String keypointExerciseRecordVoice = 'keypoint_exercise_record_voice';
+  static const String keypointExerciseCheckClick = 'keypoint_exercise_check_click';
+  static const String keypointExerciseResultView = 'keypoint_exercise_result_view';
+  static const String keypointExerciseExplainClick = 'keypoint_exercise_explain_click';
+  static const String keypointExerciseExplainView = 'keypoint_exercise_explain_view';
+  static const String keypointExerciseExplainReplay = 'keypoint_exercise_explain_replay';
+  static const String keypointExerciseScroll = 'keypoint_exercise_scroll';
+  static const String keypointExerciseContinue = 'keypoint_exercise_continue';
+  static const String keypointExerciseExplainClose = 'keypoint_exercise_explain_close';
+  static const String keypointFinishScrView = 'keypoint_finish_scr_view';
+  static const String lessonFinishScrView = 'lesson_finish_scr_view';
+  static const String keypointExitClick = 'keypoint_exit_click';
+  static const String keypointExitPopupView = 'keypoint_exit_popup_view';
+  static const String keypointExitPopupClick = 'keypoint_exit_popup_click';
+
   //* Draw welcome screen events
   static const String drawWelcomeScrView = 'draw_welcome_scr_view';
   static const String drawWelcomeScrViewSkip = 'draw_welcome_scr_view_skip';

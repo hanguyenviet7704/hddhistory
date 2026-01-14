@@ -24,6 +24,11 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     final updatedMarks = Map<int, int>.from(state.placedMarks);
     updatedMarks[afterWordIndex] = markOptionId;
 
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseDrag(trackingData);
+    }
+
     emit(state.copyWith(placedMarks: updatedMarks));
   }
 
@@ -49,6 +54,11 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     updatedMarks.remove(fromWordIndex);
     updatedMarks[toWordIndex] = markId;
 
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseDrag(trackingData);
+    }
+
     emit(state.copyWith(placedMarks: updatedMarks));
   }
 
@@ -69,6 +79,11 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
         isCorrect: isCorrect,
       ),
     );
+
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+    }
 
     _updateUserProgressExercise();
 
@@ -127,7 +142,24 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
   }
 
   void toggleExplanation() {
-    emit(state.copyWith(showExplanation: !state.showExplanation));
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
   }
 
   void reset() {

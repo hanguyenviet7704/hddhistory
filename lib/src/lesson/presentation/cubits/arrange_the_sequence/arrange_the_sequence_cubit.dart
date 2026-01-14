@@ -32,6 +32,11 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     final item = items.removeAt(oldIndex);
     items.insert(newIndex, item);
 
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseArrange(trackingData);
+    }
+
     emit(state.copyWith(currentItems: items));
   }
 
@@ -49,6 +54,11 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
         isCorrect: isCorrect,
       ),
     );
+
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+    }
 
     _updateUserProgressExercise();
 
@@ -115,7 +125,24 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
 
   /// Toggle the explanation visibility
   void toggleExplanation() {
-    emit(state.copyWith(showExplanation: !state.showExplanation));
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
   }
 
   /// Check if the user can submit an answer

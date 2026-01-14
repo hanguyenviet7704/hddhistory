@@ -14,6 +14,35 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
   void initState() {
     super.initState();
     _lottieController = AnimationController(vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final trackingData = KeypointTrackingData.fromContext();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackLessonFinishScrView(
+          skillset: trackingData.skillset,
+          course: trackingData.course,
+          lesson: trackingData.lesson,
+        );
+        return;
+      }
+
+      final lesson = AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+      if (lesson.id.isEmpty) return;
+      final homeState = AppDI.injector.get<HomeCubit>().state;
+      final skillset = homeState.skillsets.resolveSkillsetByCourseId(
+        lesson.courseId,
+        fallback: homeState.currentSkillset,
+      );
+      final course = homeState.skillsets.resolveCourseByCourseId(
+        lesson.courseId,
+        fallback: homeState.currentCourse,
+        skillsetFallback: homeState.currentSkillset,
+      );
+      AppService.instance.appTrackingService.trackLessonFinishScrView(
+        skillset: skillset,
+        course: course,
+        lesson: lesson,
+      );
+    });
   }
 
   @override

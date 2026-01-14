@@ -263,7 +263,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       bool hasSubscription = AppDI.injector.get<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
       AppDI.injector.get<ProfileCubit>().loadUser();
       emit(state.copyWith(status: MonetizationStatus.purchaseSuccess));
-      AppService.instance.appTrackingService.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       if (hasSubscription) return;
       DMessage.showMessage(
         message: AppConfig.instance.context?.text.monetization.subscriptionActiveToast ?? '',

@@ -9,6 +9,10 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
   });
 
   void _showResultOverlay(BuildContext context, ResultType type) {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
+    }
     context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
@@ -30,6 +34,9 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
               explanationText: state.question.explanation.text,
               arrangedAnswers: correctAnswers,
               onContinue: () {
+                if (trackingData != null) {
+                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
+                }
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },

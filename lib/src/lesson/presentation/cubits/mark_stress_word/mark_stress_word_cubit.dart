@@ -20,6 +20,11 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
   void selectWord(int index) {
     if (state.hasChecked) return;
 
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
+    }
+
     final updatedSelection = Set<int>.from(state.selectedWordIndices);
     if (updatedSelection.contains(index)) {
       updatedSelection.remove(index);
@@ -46,6 +51,11 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
         isCorrect: isCorrect,
       ),
     );
+
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+    }
 
     _updateUserProgressExercise();
 
@@ -105,7 +115,24 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
   }
 
   void toggleExplanation() {
-    emit(state.copyWith(showExplanation: !state.showExplanation));
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
   }
 
   void reset() {

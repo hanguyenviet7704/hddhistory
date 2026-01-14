@@ -46,20 +46,10 @@ class LessonCard extends StatelessWidget {
   bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
 
   void _trackRoadmapItemClick(BuildContext context) {
-    final homeState = context.read<HomeCubit>().state;
-    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
-      lesson.courseId,
-      fallback: homeState.currentSkillset,
-    );
-    final course = homeState.skillsets.resolveCourseByCourseId(
-      lesson.courseId,
-      fallback: homeState.currentCourse,
-      skillsetFallback: homeState.currentSkillset,
-    );
+    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
+    if (trackingData == null) return;
     AppService.instance.appTrackingService.trackRoadmapItemClick(
-      skillset: skillset,
-      course: course,
-      lesson: lesson,
+      trackingData,
       itemType: 'lesson',
     );
   }

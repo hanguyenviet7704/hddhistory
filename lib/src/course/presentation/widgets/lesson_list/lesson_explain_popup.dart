@@ -1,19 +1,5 @@
 part of '../../../course.dart';
 
-class LessonExplainTrackingData {
-  final SkillsetEntity skillset;
-  final CourseEntity course;
-  final LessonEntity lesson;
-  final String source;
-
-  const LessonExplainTrackingData({
-    required this.skillset,
-    required this.course,
-    required this.lesson,
-    required this.source,
-  });
-}
-
 class LessonExplainPopup {
   static Future<void> show(
     BuildContext context, {
@@ -22,9 +8,7 @@ class LessonExplainPopup {
   }) {
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackHowItWorkScrView(
-        skillset: trackingData.skillset,
-        course: trackingData.course,
-        lesson: trackingData.lesson,
+        trackingData,
         source: trackingData.source,
       );
     }
@@ -40,9 +24,7 @@ class LessonExplainPopup {
       if (trackingData == null) return;
       if (value == true) return;
       AppService.instance.appTrackingService.trackHowItWorkExitTap(
-        skillset: trackingData.skillset,
-        course: trackingData.course,
-        lesson: trackingData.lesson,
+        trackingData,
         source: trackingData.source,
       );
     });
@@ -161,9 +143,7 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                   onTap: () {
                     if (trackingData != null) {
                       AppService.instance.appTrackingService.trackHowItWorkDoneClick(
-                        skillset: trackingData!.skillset,
-                        course: trackingData!.course,
-                        lesson: trackingData!.lesson,
+                        trackingData!,
                         source: trackingData!.source,
                       );
                     }

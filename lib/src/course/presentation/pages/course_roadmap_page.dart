@@ -14,24 +14,14 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   void _trackRoadmapScrView() {
     if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
     if (context.read<PageCubit>().state.currentRouteName != RouteNamed.courseRoadmap) return;
-    final homeState = context.read<HomeCubit>().state;
     final roadmapState = context.read<CourseRoadmapCubit>().state;
     final courseId = roadmapState.roadmap.courseId;
     if (courseId.isEmpty) return;
     if (_hasTrackedForVisibility && _lastTrackedCourseId == courseId) return;
-    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
-      courseId,
-      fallback: homeState.currentSkillset,
-    );
-    final course = homeState.skillsets.resolveCourseByCourseId(
-      courseId,
-      fallback: homeState.currentCourse,
-      skillsetFallback: homeState.currentSkillset,
-    );
-
+    final trackingData = CourseTrackingData.fromCourseId(context, courseId);
+    if (trackingData == null) return;
     AppService.instance.appTrackingService.trackRoadmapScrView(
-      skillset: skillset,
-      course: course,
+      trackingData,
       roadmapSource: roadmapState.roadmapSource,
     );
     _lastTrackedCourseId = courseId;

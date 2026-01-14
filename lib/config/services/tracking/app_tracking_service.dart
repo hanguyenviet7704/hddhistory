@@ -35,6 +35,36 @@ final class AppTrackingService extends ITrackingService {
     return values.where((value) => value.isNotEmpty).join(',');
   }
 
+  Map<String, dynamic> _courseParams(CourseTrackingData trackingData) {
+    return {
+      'skill_name': trackingData.skillset.trackingName,
+      'skill_id': trackingData.skillset.id,
+      'course_id': trackingData.course.id,
+      'course_name': trackingData.course.trackingName,
+    };
+  }
+
+  Map<String, dynamic> _courseLessonParams(CourseLessonTrackingData trackingData) {
+    return {
+      ..._courseParams(trackingData),
+      'lesson_id': trackingData.lesson.id,
+      'lesson_name': trackingData.lesson.trackingName,
+    };
+  }
+
+  Map<String, dynamic> _keypointParams(KeypointTrackingData trackingData) {
+    return {
+      'skill_name': trackingData.skillset.trackingName,
+      'skill_id': trackingData.skillset.id,
+      'course_id': trackingData.course.id,
+      'course_name': trackingData.course.trackingName,
+      'lesson_id': trackingData.lesson.id,
+      'lesson_name': trackingData.lesson.trackingName,
+      'keypoint_id': trackingData.keypoint.id,
+      'keypoint_name': trackingData.keypoint.trackingName,
+    };
+  }
+
   //* Splash & Onboarding events
   @override
   Future<void> trackSplashScrView({String? userId}) async {
@@ -463,229 +493,338 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackRoadmapScrView({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
+  Future<void> trackRoadmapScrView(
+    CourseTrackingData trackingData, {
     required String roadmapSource,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.roadmapScrView,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
+        ..._courseParams(trackingData),
         'roadmap_source': roadmapSource,
       },
     );
   }
 
   @override
-  Future<void> trackRoadmapItemClick({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
+  Future<void> trackRoadmapItemClick(
+    CourseLessonTrackingData trackingData, {
     required String itemType,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.roadmapItemClick,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
+        ..._courseParams(trackingData),
         'item_type': itemType,
-        'item_id': lesson.id,
-        'item_name': lesson.trackingName,
+        'item_id': trackingData.lesson.id,
+        'item_name': trackingData.lesson.trackingName,
       },
     );
   }
 
   @override
-  Future<void> trackHowItWorkScrView({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
+  Future<void> trackHowItWorkScrView(
+    CourseLessonTrackingData trackingData, {
     required String source,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.howItWorkScrView,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
+        ..._courseLessonParams(trackingData),
         'source': source,
       },
     );
   }
 
   @override
-  Future<void> trackHowItWorkDoneClick({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
+  Future<void> trackHowItWorkDoneClick(
+    CourseLessonTrackingData trackingData, {
     required String source,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.howItWorkDoneClick,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
+        ..._courseLessonParams(trackingData),
         'source': source,
       },
     );
   }
 
   @override
-  Future<void> trackHowItWorkExitTap({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
+  Future<void> trackHowItWorkExitTap(
+    CourseLessonTrackingData trackingData, {
     required String source,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.howItWorkExitTap,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
+        ..._courseLessonParams(trackingData),
         'source': source,
       },
     );
   }
 
   @override
-  Future<void> trackHowItWorkClick({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
+  Future<void> trackHowItWorkClick(
+    CourseLessonTrackingData trackingData, {
     required String source,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.howItWorkClick,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
+        ..._courseLessonParams(trackingData),
         'source': source,
       },
     );
   }
 
   @override
-  Future<void> trackLessonKeypointScrView({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
-  }) async {
+  Future<void> trackLessonKeypointScrView(CourseLessonTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.lessonKeypointScrView,
-      parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
-      },
+      parameters: _courseLessonParams(trackingData),
     );
   }
 
   @override
-  Future<void> trackLessonKeypointExit({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
-  }) async {
+  Future<void> trackLessonKeypointExit(CourseLessonTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.lessonKeypointExit,
-      parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
-      },
+      parameters: _courseLessonParams(trackingData),
     );
   }
 
   @override
-  Future<void> trackLessonKeypointClick({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
+  Future<void> trackLessonKeypointClick(
+    CourseLessonTrackingData trackingData, {
     required KeypointEntity keypoint,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.lessonKeypointClick,
       parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
+        ..._courseLessonParams(trackingData),
         'keypoint_id': keypoint.id,
         'keypoint_name': keypoint.trackingName,
       },
     );
   }
 
-  //* Draw events
+  //* Keypoint events
   @override
-  Future<void> trackDrawRoadmapLoginReminder1View(BuildContext context) async {
+  Future<void> trackKeypointTheoryScrView(KeypointTrackingData trackingData) async {
     _appTrackingService.trackEvent(
-      TrackingKey.drawRoadmapLoginReminder1View,
+      TrackingKey.keypointTheoryScrView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointTheoryContinueClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointTheoryContinueClick,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseScrView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseScrView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseClick,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseMultiClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseMultiClick,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseDrag(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseDrag,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseArrange(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseArrange,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseRecordAnswer(
+    KeypointTrackingData trackingData, {
+    required String answerType,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseRecordAnswer,
       parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
+        ..._keypointParams(trackingData),
+        'answer_type': answerType,
       },
     );
   }
 
   @override
-  Future<void> trackDrawRoadmapLoginReminder1Click(BuildContext context, bool isClick) async {
-    String popupOption = isClick ? 'yes' : 'exit';
+  Future<void> trackKeypointExerciseRecordTyping(
+    KeypointTrackingData trackingData, {
+    required String typingInteraction,
+  }) async {
     _appTrackingService.trackEvent(
-      TrackingKey.drawRoadmapLoginReminder1Click,
+      TrackingKey.keypointExerciseRecordTyping,
       parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
-        'popup_option': popupOption,
+        ..._keypointParams(trackingData),
+        'typing_interaction': typingInteraction,
       },
     );
   }
 
   @override
-  Future<void> trackDrawRoadmapLoginReminder2View(BuildContext context) async {
+  Future<void> trackKeypointExerciseRecordVoice(
+    KeypointTrackingData trackingData, {
+    required String recordInteraction,
+  }) async {
     _appTrackingService.trackEvent(
-      TrackingKey.drawRoadmapLoginReminder2View,
+      TrackingKey.keypointExerciseRecordVoice,
       parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
+        ..._keypointParams(trackingData),
+        'record_interaction': recordInteraction,
       },
     );
   }
 
   @override
-  Future<void> trackDrawRoadmapLoginReminder2Click(BuildContext context, bool isClick) async {
-    String popupOption = isClick ? 'yes' : 'no';
+  Future<void> trackKeypointExerciseCheckClick(KeypointTrackingData trackingData) async {
     _appTrackingService.trackEvent(
-      TrackingKey.drawRoadmapLoginReminder2Click,
+      TrackingKey.keypointExerciseCheckClick,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseResultView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseResultView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseExplainClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseExplainClick,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseExplainView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseExplainView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseExplainReplay(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseExplainReplay,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseScroll(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseScroll,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseContinue(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseContinue,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExerciseExplainClose(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExerciseExplainClose,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointFinishScrView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointFinishScrView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackLessonFinishScrView({
+    required SkillsetEntity skillset,
+    required CourseEntity course,
+    required LessonEntity lesson,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.lessonFinishScrView,
       parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
-        'popup_option': popupOption,
+        'skill_name': skillset.trackingName,
+        'skill_id': skillset.id,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+        'lesson_id': lesson.id,
+        'lesson_name': lesson.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExitClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExitClick,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExitPopupView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExitPopupView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointExitPopupClick(
+    KeypointTrackingData trackingData, {
+    required String option,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointExitPopupClick,
+      parameters: {
+        ..._keypointParams(trackingData),
+        'popup_option': option,
       },
     );
   }

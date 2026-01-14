@@ -37,6 +37,11 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     // Place the word in the target drop zone
     newPlacedWords[index] = word;
 
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseDrag(trackingData);
+    }
+
     emit(
       state.copyWith(
         placedWords: newPlacedWords,
@@ -87,6 +92,11 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
         isCorrect: allCorrect,
       ),
     );
+
+    final trackingData = _trackingData();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+    }
 
     _updateUserProgressExercise();
 
@@ -155,7 +165,24 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
 
   /// Toggle explanation visibility
   void toggleExplanation() {
-    emit(state.copyWith(showExplanation: !state.showExplanation));
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
   }
 
   /// Reset the question state (for retry)

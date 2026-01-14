@@ -1,7 +1,22 @@
 part of '../../lesson.dart';
 
-class KeypointCompletePage extends StatelessWidget {
+class KeypointCompletePage extends StatefulWidget {
   const KeypointCompletePage({super.key});
+
+  @override
+  State<KeypointCompletePage> createState() => _KeypointCompletePageState();
+}
+
+class _KeypointCompletePageState extends State<KeypointCompletePage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final trackingData = KeypointTrackingData.fromContext();
+      if (trackingData == null) return;
+      AppService.instance.appTrackingService.trackKeypointFinishScrView(trackingData);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
