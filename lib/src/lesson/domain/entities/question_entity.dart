@@ -61,4 +61,11 @@ extension QuestionEntityExtension on QuestionEntity {
     if (document.isEmpty) return 'No question text';
     return document.first.data.content.text;
   }
+
+  String get keypointId {
+    if (keypoint.id.isNotEmpty) return keypoint.id;
+    LearningItemEntity currentLearningItem = AppDI.injector.get<LessonCubit>().state.currentLearningItem;
+    if (currentLearningItem.keypointId.isNotEmpty) return currentLearningItem.keypointId;
+    return '';
+  }
 }

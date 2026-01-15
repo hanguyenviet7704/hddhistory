@@ -227,7 +227,7 @@ PODS:
   - GoogleDataTransport (10.1.0):
     - nanopb (~> 3.30910.0)
     - PromisesObjC (~> 2.4)
-  - GoogleSignIn (9.0.0):
+  - GoogleSignIn (9.1.0):
     - AppAuth (~> 2.0)
     - AppCheckCore (~> 11.0)
     - GTMAppAuth (~> 5.0)
@@ -298,7 +298,7 @@ PODS:
     - SDWebImage/Core (= 5.21.5)
   - SDWebImage/Core (5.21.5)
   - Sentry/HybridSDK (8.56.2)
-  - sentry_flutter (9.9.1):
+  - sentry_flutter (9.9.2):
     - Flutter
     - FlutterMacOS
     - Sentry/HybridSDK (= 8.56.2)
@@ -502,11 +502,11 @@ SPEC CHECKSUMS:
   flutter_isolate: ca1a284bbb8dcfeb26c4764794e0206f58ffa984
   flutter_secure_storage_darwin: acdb3f316ed05a3e68f856e0353b133eec373a23
   gal: baecd024ebfd13c441269ca7404792a7152fde89
-  google_sign_in_ios: 00dfa94252eb10278b64828c81bcb7158a81a53a
+  google_sign_in_ios: 000870aa06da9b28d1d0bf7ef70ff0213059dd28
   GoogleAdsOnDeviceConversion: d68c69dd9581a0f5da02617b6f377e5be483970f
   GoogleAppMeasurement: 3bf40aff49a601af5da1c3345702fcb4991d35ee
   GoogleDataTransport: aae35b7ea0c09004c3797d53c8c41f66f219d6a7
-  GoogleSignIn: c7f09cfbc85a1abf69187be091997c317cc33b77
+  GoogleSignIn: fcee2257188d5eda57a5e2b6a715550ffff9206d
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   GTMAppAuth: 217a876b249c3c585a54fd6f73e6b58c4f5c4238
   GTMSessionFetcher: 5aea5ba6bd522a239e236100971f10cb71b96ab6
@@ -524,7 +524,7 @@ SPEC CHECKSUMS:
   record_ios: f75fa1d57f840012775c0e93a38a7f3ceea1a374
   SDWebImage: e9c98383c7572d713c1a0d7dd2783b10599b9838
   Sentry: b53951377b78e21a734f5dc8318e333dbfc682d7
-  sentry_flutter: 580133c878f86698e23bb5dd7217a3387c4b79b5
+  sentry_flutter: 5738b8324c46ffa43e5b68da4bbbf68803c2718d
   share_plus: 50da8cb520a8f0f65671c6c6a99b3617ed10a58a
   sign_in_with_apple: c5dcc141574c8c54d5ac99dd2163c0c72ad22418
   sqflite_darwin: 20b2a3a3b70e43edae938624ce550a3cbf66a3d0

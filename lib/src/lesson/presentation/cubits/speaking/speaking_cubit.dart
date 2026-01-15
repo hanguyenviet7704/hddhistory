@@ -351,7 +351,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       userId: AppDI.injector.get<UserCubit>().state.user.id,
       courseId: courseId,
       lessonId: lesson.id,
-      keypointId: question.keypoint.id,
+      keypointId: question.keypointId,
       exercises: [data],
     );
 
