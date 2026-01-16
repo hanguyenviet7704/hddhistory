@@ -33,7 +33,7 @@ export interface ManualSubscriptionPayload {
   rawPrice: number;
   currency: PaymentCurrency;
   purchaseTime?: string;
-  expiryTime?: string;
+  expiryTime?: string | null;
   environment: PaymentEnvironment;
 }
 

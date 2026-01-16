@@ -32,6 +32,7 @@ import {
   PaymentCurrency,
   PaymentEnvironment,
   PaymentPlatform,
+  ProductType,
   PurchaseEventType,
   PurchaseStatus,
   SubscriptionStatus,
@@ -186,7 +187,7 @@ const SubscriptionSection: React.FC = () => {
     expiryTime: toLocalDateTimeInput(
       new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
     ),
-    environment: defaultEnvironment,
+    environment: PaymentEnvironment.SANDBOX,
     confirmPassword: "",
   });
   const [page, setPage] = useState(1);
@@ -303,7 +304,7 @@ const SubscriptionSection: React.FC = () => {
               ? new Date(sub.currentPeriodEnd)
               : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
           ),
-          environment,
+          environment: PaymentEnvironment.SANDBOX,
           confirmPassword: "",
         }));
         setManualUserSelected({
@@ -320,7 +321,7 @@ const SubscriptionSection: React.FC = () => {
         setManualPrefillLoading(false);
       }
     },
-    [environment, manualProducts]
+    [manualProducts]
   );
 
   const handleOpenDetail = useCallback(
@@ -468,14 +469,8 @@ const SubscriptionSection: React.FC = () => {
       if (!manualProductsLoaded && !manualProductLoading) {
         fetchManualProducts();
       }
-      // keep modal environment in sync with filter when opening
-      setManualForm((prev) => ({
-        ...prev,
-        environment,
-      }));
     }
   }, [
-    environment,
     fetchManualProducts,
     manualOpen,
     manualProductLoading,
@@ -493,6 +488,11 @@ const SubscriptionSection: React.FC = () => {
   }, [subscriptions]);
 
   const filteredSubscriptions = useMemo(() => subscriptions, [subscriptions]);
+  const manualSelectedProduct = manualProducts.find(
+    (product) => product.productId === manualForm.productId
+  );
+  const isManualNonConsumable =
+    manualSelectedProduct?.type === ProductType.NON_CONSUMABLE;
 
   const resetManualForm = useCallback(() => {
     setManualForm({
@@ -503,7 +503,7 @@ const SubscriptionSection: React.FC = () => {
       expiryTime: toLocalDateTimeInput(
         new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       ),
-      environment,
+      environment: PaymentEnvironment.SANDBOX,
       confirmPassword: "",
     });
     setManualUserSelected(null);
@@ -511,7 +511,7 @@ const SubscriptionSection: React.FC = () => {
     setManualUserOptions([]);
     setManualError(null);
     setManualEditTarget(null);
-  }, [environment]);
+  }, []);
 
   const validateManualForm = () => {
     if (
@@ -531,15 +531,24 @@ const SubscriptionSection: React.FC = () => {
       setManualError("Giá rawPrice không hợp lệ.");
       return false;
     }
-    if (!manualForm.purchaseTime || !manualForm.expiryTime) {
+    if (
+      !manualForm.purchaseTime ||
+      (!isManualNonConsumable && !manualForm.expiryTime)
+    ) {
       setManualError("Vui lòng chọn thời gian purchase/expiry.");
       return false;
     }
     const purchaseDate = new Date(manualForm.purchaseTime);
-    const expiryDate = new Date(manualForm.expiryTime);
+    const expiryDate = manualForm.expiryTime
+      ? new Date(manualForm.expiryTime)
+      : null;
+    if (Number.isNaN(purchaseDate.getTime())) {
+      setManualError("Thời gian không hợp lệ.");
+      return false;
+    }
     if (
-      Number.isNaN(purchaseDate.getTime()) ||
-      Number.isNaN(expiryDate.getTime())
+      !isManualNonConsumable &&
+      (!expiryDate || Number.isNaN(expiryDate.getTime()))
     ) {
       setManualError("Thời gian không hợp lệ.");
       return false;
@@ -552,7 +561,11 @@ const SubscriptionSection: React.FC = () => {
         return false;
       }
     }
-    if (expiryDate.getTime() <= purchaseDate.getTime()) {
+    if (
+      !isManualNonConsumable &&
+      expiryDate &&
+      expiryDate.getTime() <= purchaseDate.getTime()
+    ) {
       setManualError("Expiry time phải lớn hơn purchase time.");
       return false;
     }
@@ -574,6 +587,21 @@ const SubscriptionSection: React.FC = () => {
         manualUserSelected?.id ||
         manualUserSelected?._id ||
         "";
+      let isNonConsumable = isManualNonConsumable;
+      try {
+        const query = new ProductListQuery({
+          search: manualForm.productId,
+          take: 50,
+        });
+        const res = await productService.getList(query);
+        const products = normalizeProducts(res);
+        const product = products.find(
+          (item) => item.productId === manualForm.productId
+        );
+        isNonConsumable = product?.type === ProductType.NON_CONSUMABLE;
+      } catch (err) {
+        console.error("Failed to fetch product for manual subscription", err);
+      }
       const payload: ManualSubscriptionPayload = {
         confirmPassword: manualForm.confirmPassword.trim(),
         userId,
@@ -583,20 +611,25 @@ const SubscriptionSection: React.FC = () => {
         rawPrice: Number(manualForm.rawPrice),
         currency: manualForm.currency,
         purchaseTime: new Date(manualForm.purchaseTime).toISOString(),
-        expiryTime: new Date(manualForm.expiryTime).toISOString(),
+        expiryTime: null,
         environment: manualForm.environment,
       };
+      if (!isNonConsumable) {
+        payload.expiryTime = new Date(manualForm.expiryTime).toISOString();
+      }
       if (manualEditTarget) {
         const targetId =
           manualEditTarget.id ||
           manualEditTarget._id ||
           manualEditTarget.anchorId;
         if (targetId) {
-          await subscriptionService.updateManual(targetId, {
+          const updatePayload: Partial<ManualSubscriptionPayload> = {
             confirmPassword: payload.confirmPassword,
             rawPrice: payload.rawPrice,
             expiryTime: payload.expiryTime,
-          });
+            environment: payload.environment,
+          };
+          await subscriptionService.updateManual(targetId, updatePayload);
         } else {
           throw new Error("Không tìm thấy ID subscription để cập nhật.");
         }
@@ -806,7 +839,8 @@ const SubscriptionSection: React.FC = () => {
                         key={product.id || product._id || product.productId}
                         value={product.productId}
                       >
-                        {product.title} - {product.productId}
+                        {product.title} - {product.productId} -{" "}
+                        {platformLabels[product.platform]}
                       </option>
                     ))}
                   </select>
@@ -887,22 +921,24 @@ const SubscriptionSection: React.FC = () => {
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <label className="text-xs font-medium text-slate-700">
-                    Expiry time
-                  </label>
-                  <input
-                    type="datetime-local"
-                    value={manualForm.expiryTime}
-                    onChange={(e) =>
-                      setManualForm((prev) => ({
-                        ...prev,
-                        expiryTime: e.target.value,
-                      }))
-                    }
-                    className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500"
-                  />
-                </div>
+                {!isManualNonConsumable && (
+                  <div className="space-y-2">
+                    <label className="text-xs font-medium text-slate-700">
+                      Expiry time
+                    </label>
+                    <input
+                      type="datetime-local"
+                      value={manualForm.expiryTime}
+                      onChange={(e) =>
+                        setManualForm((prev) => ({
+                          ...prev,
+                          expiryTime: e.target.value,
+                        }))
+                      }
+                      className="w-full h-10 px-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-teal-500"
+                    />
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <label className="text-xs font-medium text-slate-700">
@@ -917,7 +953,6 @@ const SubscriptionSection: React.FC = () => {
                       }))
                     }
                     className="w-full h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
-                    disabled={!!manualEditTarget}
                   >
                     <option value={PaymentEnvironment.PRODUCTION}>
                       Production
