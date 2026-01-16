@@ -11,12 +11,24 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   void selectAnswer(int index) {
     if (state.hasChecked) return;
 
-    final trackingData = _trackingData();
-    if (trackingData != null) {
-      if (state.question.type == QuestionTypeEnum.multipleChoice) {
-        AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
-      } else {
-        AppService.instance.appTrackingService.trackKeypointExerciseClick(trackingData);
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        if (state.question.type == QuestionTypeEnum.multipleChoice) {
+          AppService.instance.appTrackingService.trackRoleplayQuizMultiSelect(trackingData);
+        } else {
+          AppService.instance.appTrackingService.trackRoleplayQuizSingSelect(trackingData);
+        }
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        if (state.question.type == QuestionTypeEnum.multipleChoice) {
+          AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
+        } else {
+          AppService.instance.appTrackingService.trackKeypointExerciseClick(trackingData);
+        }
       }
     }
 
@@ -39,9 +51,17 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   void checkAnswer() {
     if (state.question.id == 0) return;
 
-    final trackingData = _trackingData();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizCheck(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+      }
     }
 
     bool isCorrect = false;
@@ -157,6 +177,12 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
     if (exerciseType != LearningItemType.exercise) return null;
     return KeypointTrackingData.fromContext();
+  }
+
+  RoleplayTrackingData? _roleplayTrackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.roleplay) return null;
+    return RoleplayTrackingData.fromContext();
   }
 
   ExerciseResultEntity toExerciseResult() {

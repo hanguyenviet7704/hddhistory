@@ -46,7 +46,11 @@ class _RoleplayBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
-        context.read<CourseRoadmapCubit>().setRoadmapSource('nav_course');
+        final trackingData = RoleplayTrackingData.fromContext();
+        if (trackingData != null) {
+          AppService.instance.appTrackingService.trackRoleplayConvExitClick(trackingData);
+        }
+        AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
         CourseRoadmapRoute().go(context);
       },
       icon: Icon(

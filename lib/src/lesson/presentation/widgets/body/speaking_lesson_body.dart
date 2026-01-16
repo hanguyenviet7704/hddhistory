@@ -2,10 +2,12 @@ part of '../../../lesson.dart';
 
 class SpeakingLessonBody extends StatelessWidget {
   final Function(bool) onAnswerChecked;
+  final VoidCallback? onRoleplayReplayTap;
 
   const SpeakingLessonBody({
     super.key,
     required this.onAnswerChecked,
+    this.onRoleplayReplayTap,
   });
 
   void _showResultOverlay(BuildContext context, ResultType type) {
@@ -68,6 +70,7 @@ class SpeakingLessonBody extends StatelessWidget {
                 question: currentQuestion,
                 audioFilePath: state.audioFilePath,
                 textInput: state.textInput,
+                onPlayTap: onRoleplayReplayTap,
               ),
 
               16.verticalSpace,
@@ -88,11 +91,13 @@ class _SpeakingAnswerCard extends StatelessWidget {
   final QuestionEntity question;
   final String? audioFilePath;
   final String textInput;
+  final VoidCallback? onPlayTap;
 
   const _SpeakingAnswerCard({
     required this.question,
     required this.audioFilePath,
     required this.textInput,
+    this.onPlayTap,
   });
 
   @override
@@ -115,8 +120,8 @@ class _SpeakingAnswerCard extends StatelessWidget {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: isRemoteAudio
-                ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath)
-                : AudioPlayerFileWidget(filePath: normalizedRecordPath),
+                ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath, onPlayTap: onPlayTap)
+                : AudioPlayerFileWidget(filePath: normalizedRecordPath, onPlayTap: onPlayTap),
           );
         }
 

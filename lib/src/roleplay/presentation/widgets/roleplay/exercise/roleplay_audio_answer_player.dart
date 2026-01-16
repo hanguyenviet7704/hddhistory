@@ -2,10 +2,12 @@ part of '../../../../roleplay.dart';
 
 class RoleplayAudioAnswerPlayer extends StatefulWidget {
   final String source;
+  final VoidCallback? onPlayTap;
 
   const RoleplayAudioAnswerPlayer({
     super.key,
     required this.source,
+    this.onPlayTap,
   });
 
   @override
@@ -131,6 +133,7 @@ class _RoleplayAudioAnswerPlayerState extends State<RoleplayAudioAnswerPlayer> {
       await _audioPlayer.seek(Duration.zero);
     }
 
+    widget.onPlayTap?.call();
     await _audioPlayer.play();
   }
 

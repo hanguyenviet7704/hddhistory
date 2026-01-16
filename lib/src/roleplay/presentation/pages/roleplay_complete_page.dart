@@ -1,7 +1,28 @@
 part of '../../roleplay.dart';
 
-class RoleplayCompletePage extends StatelessWidget {
+class RoleplayCompletePage extends StatefulWidget {
   const RoleplayCompletePage({super.key});
+
+  @override
+  State<RoleplayCompletePage> createState() => _RoleplayCompletePageState();
+}
+
+class _RoleplayCompletePageState extends State<RoleplayCompletePage> {
+  bool _hasTrackedView = false;
+
+  void _trackDoneScrView() {
+    if (_hasTrackedView) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayDoneScrView(trackingData);
+    _hasTrackedView = true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackDoneScrView());
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +53,13 @@ class RoleplayCompletePage extends StatelessWidget {
               ),
               RoleplayCompleteBottomCTA(
                 label: context.text.roleplay.rolePlayShowResultButton,
-                onPressed: () => const RoleplayFeedbackRoute().go(context),
+                onPressed: () {
+                  final trackingData = RoleplayTrackingData.fromContext();
+                  if (trackingData != null) {
+                    AppService.instance.appTrackingService.trackRoleplayDoneResultClick(trackingData);
+                  }
+                  const RoleplayFeedbackRoute().go(context);
+                },
                 bottomPadding: bottomPadding,
               ),
             ],

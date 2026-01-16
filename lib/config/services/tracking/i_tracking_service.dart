@@ -151,6 +151,65 @@ abstract interface class ITrackingService {
     required String option,
   });
 
+  //* Roleplay events
+  Future<void> trackRoleplayInfoScrView(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayInfoContinueClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayOverviewExitClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayOverviewScroll(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayMissionsView(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayMissionsScroll(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayStartClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayConvScrView(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayConvExitClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayConvScroll(
+    RoleplayTrackingData trackingData, {
+    required String haveQuiz,
+  });
+  Future<void> trackRoleplayVoiceInteraction(
+    RoleplayTrackingData trackingData, {
+    required String voiceAction,
+  });
+  Future<void> trackRoleplayQuizImp(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizExpandedView(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizExpandedClose(
+    RoleplayTrackingData trackingData, {
+    required String interactType,
+  });
+  Future<void> trackRoleplayQuizSingSelect(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizMultiSelect(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizDrag(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizArrange(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizRecordAns(
+    RoleplayTrackingData trackingData, {
+    required String answerType,
+  });
+  Future<void> trackRoleplayQuizRecordTyping(
+    RoleplayTrackingData trackingData, {
+    required String typingInteraction,
+  });
+  Future<void> trackRoleplayQuizRecordVoice(
+    RoleplayTrackingData trackingData, {
+    required String recordInteraction,
+  });
+  Future<void> trackRoleplayQuizCheck(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizResultView(
+    RoleplayTrackingData trackingData, {
+    required String source,
+  });
+  Future<void> trackRoleplayQuizResultScroll(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizContinue(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizReviewReplay(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizCollapsedClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayQuizCollapsedReplay(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayCompleteClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayDoneScrView(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayDoneResultClick(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayResultScrView(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayResultScroll(RoleplayTrackingData trackingData);
+  Future<void> trackRoleplayResultContinue(RoleplayTrackingData trackingData);
+  Future<void> trackBadgeCompleteScrView({RoleplayTrackingData? trackingData});
+
   //* Paywall events
   Future<void> trackPaywallScrView(BuildContext context);
   Future<void> trackPaywallPackageClick(BuildContext context, String packageId);

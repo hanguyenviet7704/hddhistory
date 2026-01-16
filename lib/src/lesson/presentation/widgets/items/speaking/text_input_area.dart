@@ -24,6 +24,30 @@ class _TextInputAreaState extends State<TextInputArea> {
     super.dispose();
   }
 
+  void _onTap(int currentChars) {
+    if (currentChars <= 0) return;
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = RoleplayTrackingData.fromContext();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizRecordTyping(
+          trackingData,
+          typingInteraction: 'send',
+        );
+      }
+    } else {
+      final trackingData = KeypointTrackingData.fromContext();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseRecordTyping(
+          trackingData,
+          typingInteraction: 'send',
+        );
+      }
+    }
+    context.read<SpeakingCubit>().submitAnswer();
+    FocusScope.of(context).unfocus();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -92,18 +116,7 @@ class _TextInputAreaState extends State<TextInputArea> {
                 selector: (state) => state.currentChars,
                 builder: (context, currentChars) {
                   return GestureDetector(
-                    onTap: () {
-                      if (currentChars <= 0) return;
-                      final trackingData = KeypointTrackingData.fromContext();
-                      if (trackingData != null) {
-                        AppService.instance.appTrackingService.trackKeypointExerciseRecordTyping(
-                          trackingData,
-                          typingInteraction: 'send',
-                        );
-                      }
-                      context.read<SpeakingCubit>().submitAnswer();
-                      FocusScope.of(context).unfocus();
-                    },
+                    onTap: () => _onTap(currentChars),
                     child: Container(
                       width: 32.w,
                       height: 32.w,

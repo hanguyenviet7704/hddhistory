@@ -39,22 +39,97 @@ class _RoleplayIntroView extends StatefulWidget {
 
 class _RoleplayIntroViewState extends State<_RoleplayIntroView> {
   late final ValueNotifier<int> _stepNotifier = ValueNotifier<int>(0);
+  late final ScrollController _scrollController = ScrollController();
+  bool _hasTrackedInfoView = false;
+  bool _hasTrackedMissionsView = false;
+  bool _hasTrackedInfoScroll = false;
+  bool _hasTrackedInfoScrollBottom = false;
+  bool _hasTrackedMissionsScroll = false;
+  bool _hasTrackedMissionsScrollBottom = false;
 
   RoleplayEntity get _roleplay => context.read<RoleplayCubit>().state.currentRoleplay;
   bool get _hasMissions => _roleplay.missions.isNotEmpty;
+  bool get _isMissionsStep => _hasMissions && _stepNotifier.value == 1;
 
   void _handleCta() {
     final bool showMissions = _hasMissions && _stepNotifier.value == 1;
+    final trackingData = RoleplayTrackingData.fromContext();
 
     if (showMissions || !_hasMissions) {
+      if (_stepNotifier.value == 0 && trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayInfoContinueClick(trackingData);
+      }
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayStartClick(trackingData);
+      }
       RoleplayRoute().go(context);
       return;
+    }
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackRoleplayInfoContinueClick(trackingData);
     }
     _stepNotifier.value = 1;
   }
 
+  void _handleStepChange() {
+    if (_stepNotifier.value != 1) return;
+    if (_hasTrackedMissionsView) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayMissionsView(trackingData);
+    _hasTrackedMissionsView = true;
+  }
+
+  void _trackInfoViewIfNeeded() {
+    if (_hasTrackedInfoView) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayInfoScrView(trackingData);
+    _hasTrackedInfoView = true;
+  }
+
+  void _trackScrollIfNeeded() {
+    if (!_scrollController.hasClients) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    final position = _scrollController.position;
+
+    if (_isMissionsStep) {
+      if (!_hasTrackedMissionsScroll && position.userScrollDirection != ScrollDirection.idle) {
+        AppService.instance.appTrackingService.trackRoleplayMissionsScroll(trackingData);
+        _hasTrackedMissionsScroll = true;
+      }
+      if (!_hasTrackedMissionsScrollBottom && position.pixels >= position.maxScrollExtent - 16) {
+        AppService.instance.appTrackingService.trackRoleplayMissionsScroll(trackingData);
+        _hasTrackedMissionsScrollBottom = true;
+      }
+      return;
+    }
+
+    if (!_hasTrackedInfoScroll && position.userScrollDirection != ScrollDirection.idle) {
+      AppService.instance.appTrackingService.trackRoleplayOverviewScroll(trackingData);
+      _hasTrackedInfoScroll = true;
+    }
+    if (!_hasTrackedInfoScrollBottom && position.pixels >= position.maxScrollExtent - 16) {
+      AppService.instance.appTrackingService.trackRoleplayOverviewScroll(trackingData);
+      _hasTrackedInfoScrollBottom = true;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_trackScrollIfNeeded);
+    _stepNotifier.addListener(_handleStepChange);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackInfoViewIfNeeded());
+  }
+
   @override
   void dispose() {
+    _scrollController
+      ..removeListener(_trackScrollIfNeeded)
+      ..dispose();
+    _stepNotifier.removeListener(_handleStepChange);
     _stepNotifier.dispose();
     super.dispose();
   }
@@ -76,6 +151,7 @@ class _RoleplayIntroViewState extends State<_RoleplayIntroView> {
               _RoleplayIntroHeader(onClose: () => context.pop()),
               Expanded(
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   padding: EdgeInsets.symmetric(horizontal: 20.w).copyWith(bottom: 24.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -145,7 +221,13 @@ class _RoleplayIntroHeader extends StatelessWidget {
         alignment: Alignment.centerLeft,
         child: GestureDetector(
           behavior: HitTestBehavior.translucent,
-          onTap: onClose,
+          onTap: () {
+            final trackingData = RoleplayTrackingData.fromContext();
+            if (trackingData != null) {
+              AppService.instance.appTrackingService.trackRoleplayOverviewExitClick(trackingData);
+            }
+            onClose();
+          },
           child: SvgPicture.asset(
             AppAsset.svg.app.icClose,
             width: 24.w,

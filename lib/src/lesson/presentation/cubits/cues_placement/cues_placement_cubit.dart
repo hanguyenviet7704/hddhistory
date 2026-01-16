@@ -24,9 +24,17 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     final updatedMarks = Map<int, int>.from(state.placedMarks);
     updatedMarks[afterWordIndex] = markOptionId;
 
-    final trackingData = _trackingData();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseDrag(trackingData);
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizDrag(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseDrag(trackingData);
+      }
     }
 
     emit(state.copyWith(placedMarks: updatedMarks));
@@ -54,9 +62,17 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     updatedMarks.remove(fromWordIndex);
     updatedMarks[toWordIndex] = markId;
 
-    final trackingData = _trackingData();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseDrag(trackingData);
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizDrag(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseDrag(trackingData);
+      }
     }
 
     emit(state.copyWith(placedMarks: updatedMarks));
@@ -80,9 +96,17 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
       ),
     );
 
-    final trackingData = _trackingData();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizCheck(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+      }
     }
 
     _updateUserProgressExercise();
@@ -160,6 +184,12 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
     final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
     if (exerciseType != LearningItemType.exercise) return null;
     return KeypointTrackingData.fromContext();
+  }
+
+  RoleplayTrackingData? _roleplayTrackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.roleplay) return null;
+    return RoleplayTrackingData.fromContext();
   }
 
   void reset() {

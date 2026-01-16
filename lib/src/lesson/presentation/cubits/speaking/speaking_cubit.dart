@@ -35,6 +35,29 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     final newMode = isRecordingMode ? SpeakingInputMode.text : SpeakingInputMode.recording;
     emit(state.copyWith(inputMode: newMode));
 
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = RoleplayTrackingData.fromContext();
+      if (trackingData == null) return;
+      if (isRecordingMode) {
+        AppService.instance.appTrackingService.trackRoleplayQuizRecordAns(
+          trackingData,
+          answerType: 'typing',
+        );
+        return;
+      }
+
+      AppService.instance.appTrackingService.trackRoleplayQuizRecordAns(
+        trackingData,
+        answerType: 'record',
+      );
+      AppService.instance.appTrackingService.trackRoleplayQuizRecordTyping(
+        trackingData,
+        typingInteraction: 'switch_record',
+      );
+      return;
+    }
+
     final trackingData = _trackingData();
     if (trackingData == null) return;
     if (isRecordingMode) {

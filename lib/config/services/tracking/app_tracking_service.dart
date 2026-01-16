@@ -65,6 +65,19 @@ final class AppTrackingService extends ITrackingService {
     };
   }
 
+  Map<String, dynamic> _roleplayParams(RoleplayTrackingData trackingData) {
+    final roleplayId = trackingData.learningItem.id.isNotEmpty ? trackingData.learningItem.id : trackingData.lesson.learningItemId;
+    final roleplayName = trackingData.learningItem.title.en.isNotEmpty ? trackingData.learningItem.title.en : trackingData.lesson.trackingName;
+    return {
+      'skill_name': trackingData.skillset.trackingName,
+      'skill_id': trackingData.skillset.id,
+      'course_id': trackingData.course.id,
+      'course_name': trackingData.course.trackingName,
+      'roleplay_id': roleplayId,
+      'roleplay_name': roleplayName,
+    };
+  }
+
   //* Splash & Onboarding events
   @override
   Future<void> trackSplashScrView({String? userId}) async {
@@ -826,6 +839,337 @@ final class AppTrackingService extends ITrackingService {
         ..._keypointParams(trackingData),
         'popup_option': option,
       },
+    );
+  }
+
+  //* Roleplay events
+  @override
+  Future<void> trackRoleplayInfoScrView(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayInfoScrView,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayInfoContinueClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayInfoContinueClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayOverviewExitClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayOverviewExitClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayOverviewScroll(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayOverviewScroll,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayMissionsView(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayMissionsView,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayMissionsScroll(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayMissionsScroll,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayStartClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayStartClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayConvScrView(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayConvScrView,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayConvExitClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayConvExitClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayConvScroll(
+    RoleplayTrackingData trackingData, {
+    required String haveQuiz,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayConvScroll,
+      parameters: {
+        ..._roleplayParams(trackingData),
+        'have_quiz': haveQuiz,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayVoiceInteraction(
+    RoleplayTrackingData trackingData, {
+    required String voiceAction,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayVoiceInteraction,
+      parameters: {
+        ..._roleplayParams(trackingData),
+        'voice_action': voiceAction,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizImp(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizImp,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizExpandedView(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizExpandedView,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizExpandedClose(
+    RoleplayTrackingData trackingData, {
+    required String interactType,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizExpandedClose,
+      parameters: {
+        ..._roleplayParams(trackingData),
+        'interact_type': interactType,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizSingSelect(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizSingSelect,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizMultiSelect(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizMultiSelect,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizDrag(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizDrag,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizArrange(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizArrange,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizRecordAns(
+    RoleplayTrackingData trackingData, {
+    required String answerType,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizRecordAns,
+      parameters: {
+        ..._roleplayParams(trackingData),
+        'answer_type': answerType,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizRecordTyping(
+    RoleplayTrackingData trackingData, {
+    required String typingInteraction,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizRecordTyping,
+      parameters: {
+        ..._roleplayParams(trackingData),
+        'typing_interaction': typingInteraction,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizRecordVoice(
+    RoleplayTrackingData trackingData, {
+    required String recordInteraction,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizRecordVoice,
+      parameters: {
+        ..._roleplayParams(trackingData),
+        'record_interaction': recordInteraction,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizCheck(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizCheck,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizResultView(
+    RoleplayTrackingData trackingData, {
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizResultView,
+      parameters: {
+        ..._roleplayParams(trackingData),
+        'source': source,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizResultScroll(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizResultScroll,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizContinue(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizContinue,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizReviewReplay(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizReviewReplay,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizCollapsedClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizCollapsedClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayQuizCollapsedReplay(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayQuizCollapsedReplay,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayCompleteClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayCompleteClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayDoneScrView(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayDoneScrView,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayDoneResultClick(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayDoneResultClick,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayResultScrView(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayResultScrView,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayResultScroll(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayResultScroll,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoleplayResultContinue(RoleplayTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roleplayResultContinue,
+      parameters: _roleplayParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackBadgeCompleteScrView({RoleplayTrackingData? trackingData}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.badgeCompleteScrView,
+      parameters: trackingData == null ? null : _roleplayParams(trackingData),
     );
   }
 

@@ -18,6 +18,7 @@ class RoleplayAudioController {
   Completer<void>? _stopSignal;
 
   bool get hasAudio => url.isNotEmpty && _player != null;
+  bool get isPlaying => _player?.playing ?? false;
 
   Stream<just_audio.PlayerState>? get _playerStateStream => _player?.playerStateStream;
 
@@ -132,6 +133,14 @@ class RoleplayAudioButton extends StatelessWidget {
 
     return InkWell(
       onTap: () {
+        final trackingData = RoleplayTrackingData.fromContext();
+        if (trackingData != null) {
+          final action = controller?.isPlaying == true ? 'stop' : 'play';
+          AppService.instance.appTrackingService.trackRoleplayVoiceInteraction(
+            trackingData,
+            voiceAction: action,
+          );
+        }
         controller?.togglePlayPause();
       },
       borderRadius: BorderRadius.circular(24.r),

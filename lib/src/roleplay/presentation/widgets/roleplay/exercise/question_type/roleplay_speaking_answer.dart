@@ -13,7 +13,15 @@ class RoleplaySpeakingAnswer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (recordAnswer.record.isNotEmpty) {
-      return RoleplayAudioAnswerPlayer(source: recordAnswer.record);
+      return RoleplayAudioAnswerPlayer(
+        source: recordAnswer.record,
+        onPlayTap: () {
+          final trackingData = RoleplayTrackingData.fromContext();
+          if (trackingData != null) {
+            AppService.instance.appTrackingService.trackRoleplayQuizCollapsedReplay(trackingData);
+          }
+        },
+      );
     }
 
     if (recordAnswer.review.isNotEmpty) {

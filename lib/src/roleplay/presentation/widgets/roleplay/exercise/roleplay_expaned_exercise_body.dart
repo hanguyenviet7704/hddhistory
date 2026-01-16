@@ -1,6 +1,6 @@
 part of '../../../../roleplay.dart';
 
-class _ExpandedExerciseBody extends StatelessWidget {
+class _ExpandedExerciseBody extends StatefulWidget {
   final QuestionEntity exercise;
   final int contentId;
   final int contentIndex;
@@ -21,13 +21,65 @@ class _ExpandedExerciseBody extends StatelessWidget {
     this.onContinue,
   });
 
+  @override
+  State<_ExpandedExerciseBody> createState() => _ExpandedExerciseBodyState();
+}
+
+class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasTrackedResultScroll = false;
+  bool _hasTrackedResultScrollBottom = false;
+
+  RoleplayTrackingData? _trackingData() => RoleplayTrackingData.fromContext();
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+  }
+
+  @override
+  void didUpdateWidget(covariant _ExpandedExerciseBody oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.showResult && !oldWidget.showResult) {
+      _hasTrackedResultScroll = false;
+      _hasTrackedResultScrollBottom = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  void _handleScroll() {
+    if (!widget.showResult) return;
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+
+    if (!_hasTrackedResultScroll && position.userScrollDirection != ScrollDirection.idle) {
+      AppService.instance.appTrackingService.trackRoleplayQuizResultScroll(trackingData);
+      _hasTrackedResultScroll = true;
+    }
+
+    if (!_hasTrackedResultScrollBottom && position.pixels >= position.maxScrollExtent - 16) {
+      AppService.instance.appTrackingService.trackRoleplayQuizResultScroll(trackingData);
+      _hasTrackedResultScrollBottom = true;
+    }
+  }
+
   void _handleAnswerChecked(BuildContext context, bool isCorrect) {
     _storeExerciseResult(context, isCorrect);
-    onAnswerChecked?.call(isCorrect);
+    widget.onAnswerChecked?.call(isCorrect);
   }
 
   void _storeExerciseResult(BuildContext context, bool isCorrect) {
-    final ExerciseResultEntity baseResult = switch (exercise.type) {
+    final ExerciseResultEntity baseResult = switch (widget.exercise.type) {
       QuestionTypeEnum.singleChoice => context.read<ChoiceCubit>().toExerciseResult(),
       QuestionTypeEnum.multipleChoice => context.read<ChoiceCubit>().toExerciseResult(),
       QuestionTypeEnum.dragAndDrop => context.read<DragAndDropCubit>().toExerciseResult(),
@@ -38,14 +90,14 @@ class _ExpandedExerciseBody extends StatelessWidget {
     };
 
     context.read<RoleplayCubit>().setExerciseResult(
-      contentId: contentId,
-      contentIndex: contentIndex,
+      contentId: widget.contentId,
+      contentIndex: widget.contentIndex,
       result: baseResult.copyWith(passed: isCorrect),
     );
   }
 
   Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {
-    final onChecked = readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
+    final onChecked = widget.readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
     return switch (questionType) {
       QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: onChecked),
       QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: onChecked),
@@ -53,7 +105,10 @@ class _ExpandedExerciseBody extends StatelessWidget {
       QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: onChecked),
       QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: onChecked),
       QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: onChecked),
-      QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.speaking => SpeakingLessonBody(
+        onAnswerChecked: onChecked,
+        onRoleplayReplayTap: widget.readOnly ? _trackReviewReplay : null,
+      ),
     };
   }
 
@@ -72,11 +127,19 @@ class _ExpandedExerciseBody extends StatelessWidget {
   }
 
   Widget _buildContinueButton() {
-    final isSpeaking = exercise.type == QuestionTypeEnum.speaking;
-    final Color accentColor = isSpeaking || isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
+    final isSpeaking = widget.exercise.type == QuestionTypeEnum.speaking;
+    final Color accentColor = isSpeaking || widget.isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
 
     return ExerciseContinueButton(
-      onPressed: onContinue,
+      onPressed: () {
+        if (!widget.readOnly) {
+          final trackingData = _trackingData();
+          if (trackingData != null) {
+            AppService.instance.appTrackingService.trackRoleplayQuizContinue(trackingData);
+          }
+        }
+        widget.onContinue?.call();
+      },
       text: t.exercise.exerciseSkipButton,
       backgroundColor: accentColor,
       textColor: AppCustomColor.textWhite,
@@ -85,10 +148,11 @@ class _ExpandedExerciseBody extends StatelessWidget {
   }
 
   Widget _buildResultStatusRow() {
-    final isSpeaking = exercise.type == QuestionTypeEnum.speaking;
-    final Color accentColor = isSpeaking || isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
-    final String statusText = isSpeaking ? t.exercise.exerciseCompleteVoiceTask : (isCorrect ? t.exercise.exerciseFeedbackCorrectTitle : t.exercise.exerciseFeedbackIncorrectTitle);
-    final Widget icon = isSpeaking || isCorrect ? AppAsset.icons.app.icTick.image(width: 24.w, height: 24.w) : AppAsset.icons.app.icClose.image(width: 24.w, height: 24.w);
+    final isSpeaking = widget.exercise.type == QuestionTypeEnum.speaking;
+    final Color accentColor = isSpeaking || widget.isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
+    final String statusText =
+        isSpeaking ? t.exercise.exerciseCompleteVoiceTask : (widget.isCorrect ? t.exercise.exerciseFeedbackCorrectTitle : t.exercise.exerciseFeedbackIncorrectTitle);
+    final Widget icon = isSpeaking || widget.isCorrect ? AppAsset.icons.app.icTick.image(width: 24.w, height: 24.w) : AppAsset.icons.app.icClose.image(width: 24.w, height: 24.w);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -113,8 +177,8 @@ class _ExpandedExerciseBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget lessonBody = _buildExerciseLessonBody(context, exercise.type);
-    Widget bottomButton = showResult ? _buildContinueButton() : _buildBottomButton(context, lessonBody);
+    Widget lessonBody = _buildExerciseLessonBody(context, widget.exercise.type);
+    Widget bottomButton = widget.showResult ? _buildContinueButton() : _buildBottomButton(context, lessonBody);
     final viewInsets = MediaQuery.viewInsetsOf(context);
     return AnimatedPadding(
       duration: const Duration(milliseconds: 200),
@@ -122,17 +186,18 @@ class _ExpandedExerciseBody extends StatelessWidget {
       padding: EdgeInsets.only(bottom: viewInsets.bottom),
       child: Column(
         children: [
-          if (showResult) ...[
+          if (widget.showResult) ...[
             _buildResultStatusRow(),
             8.verticalSpace,
           ],
           Expanded(
             child: SingleChildScrollView(
+              controller: _scrollController,
               keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
               child: Column(
                 children: [
                   AbsorbPointer(
-                    absorbing: readOnly && exercise.type != QuestionTypeEnum.speaking,
+                    absorbing: widget.readOnly && widget.exercise.type != QuestionTypeEnum.speaking,
                     child: lessonBody,
                   ),
                   60.verticalSpace,
@@ -145,5 +210,11 @@ class _ExpandedExerciseBody extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _trackReviewReplay() {
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayQuizReviewReplay(trackingData);
   }
 }

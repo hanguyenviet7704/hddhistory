@@ -109,6 +109,44 @@ mixin TrackingKey {
   static const String keypointExitPopupView = 'keypoint_exit_popup_view';
   static const String keypointExitPopupClick = 'keypoint_exit_popup_click';
 
+  //* Roleplay events
+  static const String roleplayInfoScrView = 'roleplay_info_scr_view';
+  static const String roleplayInfoContinueClick = 'roleplay_info_continue_click';
+  static const String roleplayOverviewExitClick = 'roleplay_overview_exit_click';
+  static const String roleplayOverviewScroll = 'roleplay_overview_scroll';
+  static const String roleplayMissionsView = 'roleplay_missions_view';
+  static const String roleplayMissionsScroll = 'roleplay_missions_scroll';
+  static const String roleplayStartClick = 'roleplay_start_click';
+  static const String roleplayConvScrView = 'roleplay_conv_scr_view';
+  static const String roleplayConvExitClick = 'roleplay_conv_exit_click';
+  static const String roleplayConvScroll = 'roleplay_conv_scroll';
+  static const String roleplayVoiceInteraction = 'roleplay_voice_interaction';
+  static const String roleplayQuizImp = 'roleplay_quiz_imp';
+  static const String roleplayQuizClick = 'roleplay_quiz_click';
+  static const String roleplayQuizExpandedView = 'roleplay_quiz_expanded_view';
+  static const String roleplayQuizExpandedClose = 'roleplay_quiz_expanded_close';
+  static const String roleplayQuizSingSelect = 'roleplay_quiz_sing_select';
+  static const String roleplayQuizMultiSelect = 'roleplay_quiz_multi_select';
+  static const String roleplayQuizDrag = 'roleplay_quiz_drag';
+  static const String roleplayQuizArrange = 'roleplay_quiz_arrange';
+  static const String roleplayQuizRecordAns = 'roleplay_quiz_record_ans';
+  static const String roleplayQuizRecordTyping = 'roleplay_quiz_record_typing';
+  static const String roleplayQuizRecordVoice = 'roleplay_quiz_record_voice';
+  static const String roleplayQuizCheck = 'roleplay_quiz_check';
+  static const String roleplayQuizResultView = 'roleplay_quiz_result_view';
+  static const String roleplayQuizResultScroll = 'roleplay_quiz_result_scroll';
+  static const String roleplayQuizContinue = 'roleplay_quiz_continue';
+  static const String roleplayQuizReviewReplay = 'roleplay_quiz_review_replay';
+  static const String roleplayQuizCollapsedClick = 'roleplay_quiz_collapsed_click';
+  static const String roleplayQuizCollapsedReplay = 'roleplay_quiz_collapsed_replay';
+  static const String roleplayCompleteClick = 'roleplay_complete_click';
+  static const String roleplayDoneScrView = 'roleplay_done_scr_view';
+  static const String roleplayDoneResultClick = 'roleplay_done_result_click';
+  static const String roleplayResultScrView = 'roleplay_result_scr_view';
+  static const String roleplayResultScroll = 'roleplay_result_scroll';
+  static const String roleplayResultContinue = 'roleplay_result_continue';
+  static const String badgeCompleteScrView = 'badge_complete_scr_view';
+
   //* Draw welcome screen events
   static const String drawWelcomeScrView = 'draw_welcome_scr_view';
   static const String drawWelcomeScrViewSkip = 'draw_welcome_scr_view_skip';

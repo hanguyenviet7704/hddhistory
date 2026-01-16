@@ -209,6 +209,17 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
   }
 
   void _trackRecordVoice(String interaction) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = RoleplayTrackingData.fromContext();
+      if (trackingData == null) return;
+      AppService.instance.appTrackingService.trackRoleplayQuizRecordVoice(
+        trackingData,
+        recordInteraction: interaction,
+      );
+      return;
+    }
+
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData == null) return;
     AppService.instance.appTrackingService.trackKeypointExerciseRecordVoice(

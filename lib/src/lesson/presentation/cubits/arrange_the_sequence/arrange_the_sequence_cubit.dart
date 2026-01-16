@@ -32,9 +32,17 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     final item = items.removeAt(oldIndex);
     items.insert(newIndex, item);
 
-    final trackingData = _trackingData();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseArrange(trackingData);
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizArrange(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseArrange(trackingData);
+      }
     }
 
     emit(state.copyWith(currentItems: items));
@@ -55,9 +63,17 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
       ),
     );
 
-    final trackingData = _trackingData();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizCheck(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+      }
     }
 
     _updateUserProgressExercise();
@@ -143,6 +159,12 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
     if (exerciseType != LearningItemType.exercise) return null;
     return KeypointTrackingData.fromContext();
+  }
+
+  RoleplayTrackingData? _roleplayTrackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.roleplay) return null;
+    return RoleplayTrackingData.fromContext();
   }
 
   /// Check if the user can submit an answer

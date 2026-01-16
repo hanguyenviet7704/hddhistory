@@ -31,18 +31,7 @@ abstract class BaseTrackingService {
     Map<String, dynamic>? parameters,
   }) async {
     LogDev.one('$trackingServiceName [Tracking] trackEvent: $eventName parameters: $parameters');
-    if (kDebugMode &&
-        (eventName.startsWith('obd_') ||
-            eventName.startsWith('splash_') ||
-            eventName.startsWith('home_') ||
-            eventName.startsWith('all_course_') ||
-            eventName.startsWith('popup_learning_') ||
-            eventName.startsWith('roadmap_') ||
-            eventName.startsWith('how_it_work_') ||
-            eventName.startsWith('lesson_keypoint_') ||
-            eventName.startsWith('keypoint_'))) {
-      LogDev.info('[Tracking] $eventName params: $parameters');
-    }
+    LogDev.info('[Tracking] $eventName params: $parameters');
   }
 
   /// Log when a screen is viewed
