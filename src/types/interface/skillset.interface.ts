@@ -10,6 +10,7 @@ export interface ISkillset {
   status: SkillsetStatus;
   image: string;
   courses?: ICourse[];
+  index?: number;
 }
 
 export interface SkillsetPayload {
@@ -18,6 +19,7 @@ export interface SkillsetPayload {
   status: SkillsetStatus;
   image: string;
   courses?: ICourse[];
+  index?: number;
 }
 
 export class SkillsetListQuery extends BaseQuery {

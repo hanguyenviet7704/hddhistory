@@ -42,6 +42,8 @@ const SkillsetList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<SkillsetStatus | "">("");
+  const [indexDrafts, setIndexDrafts] = useState<Record<string, string>>({});
+  const [indexSaving, setIndexSaving] = useState<Record<string, boolean>>({});
 
   const [pagination, setPagination] = useState({
     page: 1,
@@ -191,6 +193,86 @@ const SkillsetList: React.FC = () => {
     fetchSkillsets();
   }, []);
 
+  useEffect(() => {
+    const nextDrafts: Record<string, string> = {};
+    skillsets.forEach((skillset) => {
+      nextDrafts[skillset._id] =
+        skillset.index !== undefined && skillset.index !== null
+          ? String(skillset.index)
+          : "";
+    });
+    setIndexDrafts(nextDrafts);
+  }, [skillsets]);
+
+  const handleIndexChange = (id: string, value: string) => {
+    setIndexDrafts((prev) => ({ ...prev, [id]: value }));
+  };
+
+  const commitIndexChange = async (skillset: ISkillset) => {
+    const rawValue = indexDrafts[skillset._id] ?? "";
+    const trimmedValue = rawValue.trim();
+    const currentIndex =
+      skillset.index !== undefined && skillset.index !== null
+        ? skillset.index
+        : undefined;
+
+    if (trimmedValue === "") {
+      if (currentIndex === undefined) return;
+      setIndexDrafts((prev) => ({
+        ...prev,
+        [skillset._id]: String(currentIndex),
+      }));
+      return;
+    }
+
+    const parsedIndex = Number(trimmedValue);
+
+    if (Number.isNaN(parsedIndex)) {
+      setNotification({
+        open: true,
+        message: "Index must be a number",
+        severity: "error",
+      });
+      setIndexDrafts((prev) => ({
+        ...prev,
+        [skillset._id]:
+          skillset.index !== undefined && skillset.index !== null
+            ? String(skillset.index)
+            : "",
+      }));
+      return;
+    }
+
+    if (parsedIndex === currentIndex) return;
+
+    setIndexSaving((prev) => ({ ...prev, [skillset._id]: true }));
+    try {
+      await skillsetService.update(skillset._id, { index: parsedIndex });
+      setNotification({
+        open: true,
+        message: "Index updated successfully",
+        severity: "success",
+      });
+      await fetchSkillsets(pagination.page, debouncedSearchTerm, statusFilter);
+    } catch (err) {
+      console.error(err);
+      setNotification({
+        open: true,
+        message: "Failed to update index",
+        severity: "error",
+      });
+      setIndexDrafts((prev) => ({
+        ...prev,
+        [skillset._id]:
+          skillset.index !== undefined && skillset.index !== null
+            ? String(skillset.index)
+            : "",
+      }));
+    } finally {
+      setIndexSaving((prev) => ({ ...prev, [skillset._id]: false }));
+    }
+  };
+
   // --- Render giao diện ---
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
@@ -337,14 +419,52 @@ const SkillsetList: React.FC = () => {
                                 position: "relative",
                               }}
                             >
-                              <Typography
-                                variant="h6"
-                                component="div"
-                                sx={{ fontWeight: "bold" }}
-                                noWrap
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: 2,
+                                }}
                               >
-                                {getTranslationValue(skillset.title, lang)}
-                              </Typography>
+                                <Typography
+                                  variant="h6"
+                                  component="div"
+                                  sx={{
+                                    fontWeight: "bold",
+                                    flex: 1,
+                                    minWidth: 0,
+                                  }}
+                                  noWrap
+                                >
+                                  {getTranslationValue(skillset.title, lang)}
+                                </Typography>
+                                <div className="flex items-center gap-2">
+                                  <span className="text-xs text-gray-500">
+                                    Index
+                                  </span>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step={1}
+                                    value={indexDrafts[skillset._id] ?? ""}
+                                    onChange={(e) =>
+                                      handleIndexChange(
+                                        skillset._id,
+                                        e.target.value
+                                      )
+                                    }
+                                    onBlur={() => commitIndexChange(skillset)}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        (e.target as HTMLInputElement).blur();
+                                      }
+                                    }}
+                                    disabled={!!indexSaving[skillset._id]}
+                                    className="w-20 rounded-md border border-gray-300 px-2 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:opacity-60"
+                                  />
+                                </div>
+                              </Box>
                               <Typography
                                 variant="body2"
                                 color="text.secondary"
