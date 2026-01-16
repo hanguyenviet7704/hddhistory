@@ -69,7 +69,11 @@ const ProductSection: React.FC = () => {
       });
       if (platformFilter) query.platform = platformFilter as PaymentPlatform;
       if (typeFilter) query.type = typeFilter as ProductType;
-      if (statusFilter !== "all") query.isActive = statusFilter === "active";
+      if (statusFilter === "all") {
+        query.isAll = true;
+      } else {
+        query.isActive = statusFilter === "active";
+      }
 
       const res = await productService.getList(query);
       const normalized = normalizeProducts(res);

@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { TrashIcon } from "@heroicons/react/24/outline";
+import { ArrowPathIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { userProgressService } from "../../services/userProgressService";
@@ -202,12 +202,25 @@ export default function UserProgressDetail() {
               User: {userLabel || "-"} · Course: {courseTitle || "-"}
             </p>
           </div>
-          <button
-            onClick={() => navigate(-1)}
-            className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm shadow-sm"
-          >
-            Quay lại
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={fetchDetail}
+              disabled={loading}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50 text-sm shadow-sm disabled:opacity-70"
+              title="Làm mới"
+            >
+              <ArrowPathIcon
+                className={`h-4 w-4 ${loading ? "animate-spin" : ""}`}
+              />
+              Làm mới
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 text-sm shadow-sm"
+            >
+              Quay lại
+            </button>
+          </div>
         </div>
 
         {loading ? (
