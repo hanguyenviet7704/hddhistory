@@ -4,6 +4,7 @@ class PaywallAllPackageInfoBottomSheet extends StatelessWidget {
   const PaywallAllPackageInfoBottomSheet({super.key});
 
   static Future<void> show(BuildContext context) async {
+    AppService.instance.appTrackingService.trackPremiumAllpackScrView();
     await showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -193,7 +194,10 @@ class _BottomSheetContent extends StatelessWidget {
               return PaywallPlanOption(
                 product: product,
                 selected: selected,
-                onTap: () => onSelect(product.id),
+                onTap: () {
+                  AppService.instance.appTrackingService.trackPremiumAllpackPick(product.productId);
+                  onSelect(product.id);
+                },
               );
             },
           ),
@@ -211,6 +215,7 @@ class _BottomSheetContent extends StatelessWidget {
             child: InkWell(
               onTap: () {
                 Navigator.of(context).maybePop();
+                AppService.instance.appTrackingService.trackPremiumAllpackPurchase();
                 onPurchase();
               },
               borderRadius: BorderRadius.circular(1000.r),

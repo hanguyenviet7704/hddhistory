@@ -234,6 +234,39 @@ mixin TrackingKey {
   static const String profileUpgradeClick = 'profile_upgrade_click';
   static const String profileSettingClick = 'profile_setting_click';
 
+  //* Setting screen events
+  static const String settingScrView = 'setting_scr_view';
+  static const String settingScroll = 'setting_scroll';
+  static const String settingProfileClick = 'setting_profile_click';
+  static const String settingProfileEditClick = 'setting_profile_edit_click';
+  static const String settingProfileDoneClick = 'setting_profile_done_click';
+  static const String settingProfileDeleteClick = 'setting_profile_delete_click';
+  static const String profileDeleteScrView = 'profile_delete_scr_view';
+  static const String profileDeleteOptionClick = 'profile_delete_option_click';
+  static const String settingDetailClick = 'setting_detail_click';
+  static const String settingDetailScrView = 'setting_detail_scr_view';
+  static const String settingLanguageClick = 'setting_language_click';
+  static const String settingLanguageScrView = 'setting_language_scr_view';
+  static const String settingTermClick = 'setting_term_click';
+  static const String settingRestorePurcClick = 'setting_restore_purc_click';
+  static const String settingLogoutClick = 'setting_logout_click';
+  static const String settingPremiumClick = 'setting_premium_click';
+  static const String premiumScrView = 'premium_scr_view';
+  static const String premiumScroll = 'premium_scroll';
+  static const String premiumInforSwipe = 'premium_infor_swipe';
+  static const String premiumRestoreClick = 'premium_restore_click';
+  static const String premiumPurchase = 'premium_purchase';
+  static const String premiumScrExit = 'premium_scr_exit';
+  static const String premiumAllpackClick = 'premium_allpack_click';
+  static const String premiumAllpackScrView = 'premium_allpack_scr_view';
+  static const String premiumAllpackPick = 'premium_allpack_pick';
+  static const String premiumAllpackPurchase = 'premium_allpack_purchase';
+  static const String settingBadgeClick = 'setting_badge_click';
+  static const String settingBadgeSlide = 'setting_badge_slide';
+  static const String settingBadgeDetailView = 'setting_badge_detail_view';
+  static const String settingBadgeDetailSlide = 'setting_badge_detail_slide';
+  static const String settingBadgeGoCourse = 'setting_badge_go_course';
+
   //* Survey screen events
   static const String drawSurveyPopupView = 'draw_survey_popup_view';
   static const String drawSurveyPopupResponse = 'draw_survey_popup_response';

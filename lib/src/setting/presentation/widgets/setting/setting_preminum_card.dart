@@ -8,6 +8,15 @@ class SettingPreminumCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final text = context.text.setting;
+    void handleUpgrade() {
+      AppService.instance.appTrackingService.trackSettingPremiumClick();
+      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+      if (onUpgrade != null) {
+        onUpgrade!();
+        return;
+      }
+      const PaywallRoute().push(context);
+    }
 
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 18.h),
@@ -50,7 +59,7 @@ class SettingPreminumCard extends StatelessWidget {
           SizedBox(width: 16.w),
           _UpgradeButton(
             label: text.settingPremiumUpgradeCta,
-            onTap: onUpgrade ?? () => const PaywallRoute().push(context),
+            onTap: handleUpgrade,
           ),
         ],
       ),

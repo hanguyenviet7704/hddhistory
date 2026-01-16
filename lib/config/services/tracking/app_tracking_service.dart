@@ -78,6 +78,37 @@ final class AppTrackingService extends ITrackingService {
     };
   }
 
+  Map<String, dynamic> _premiumParams() {
+    try {
+      final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
+      return {
+        'source': entryPoint == PaywallEntryPoint.courseRoadmap ? 'course_roadmap' : 'setting_pre',
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
+  Map<String, dynamic> _courseParamsForPaywall() {
+    try {
+      final iapCubit = AppDI.injector.get<IapCubit>();
+      if (iapCubit.paywallEntryPoint != PaywallEntryPoint.courseRoadmap) return {};
+      final trackingData = iapCubit.paywallCourseTrackingData;
+      if (trackingData == null) return {};
+      final skillset = trackingData.skillset;
+      final course = trackingData.course;
+      if (skillset.id.isEmpty || course.id.isEmpty) return {};
+      return {
+        'skill_id': skillset.id,
+        'skill_name': skillset.trackingName,
+        'course_id': course.id,
+        'course_name': course.trackingName,
+      };
+    } catch (_) {
+      return {};
+    }
+  }
+
   //* Splash & Onboarding events
   @override
   Future<void> trackSplashScrView({String? userId}) async {
@@ -794,21 +825,10 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackLessonFinishScrView({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
-  }) async {
+  Future<void> trackLessonFinishScrView(CourseLessonTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.lessonFinishScrView,
-      parameters: {
-        'skill_name': skillset.trackingName,
-        'skill_id': skillset.id,
-        'course_id': course.id,
-        'course_name': course.trackingName,
-        'lesson_id': lesson.id,
-        'lesson_name': lesson.trackingName,
-      },
+      parameters: _courseLessonParams(trackingData),
     );
   }
 
@@ -1313,6 +1333,248 @@ final class AppTrackingService extends ITrackingService {
   @override
   Future<void> trackProfileSettingClick() async {
     _appTrackingService.trackEvent(TrackingKey.profileSettingClick);
+  }
+
+  //* Setting events
+  @override
+  Future<void> trackSettingScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.settingScrView);
+  }
+
+  @override
+  Future<void> trackSettingScroll() async {
+    _appTrackingService.trackEvent(TrackingKey.settingScroll);
+  }
+
+  @override
+  Future<void> trackSettingProfileClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingProfileClick);
+  }
+
+  @override
+  Future<void> trackSettingProfileEditClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingProfileEditClick);
+  }
+
+  @override
+  Future<void> trackSettingProfileDoneClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingProfileDoneClick);
+  }
+
+  @override
+  Future<void> trackSettingProfileDeleteClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingProfileDeleteClick);
+  }
+
+  @override
+  Future<void> trackProfileDeleteScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.profileDeleteScrView);
+  }
+
+  @override
+  Future<void> trackProfileDeleteOptionClick(String value) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.profileDeleteOptionClick,
+      parameters: {
+        'value': value,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackSettingDetailClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingDetailClick);
+  }
+
+  @override
+  Future<void> trackSettingDetailScrView() async {
+    _appTrackingService.trackEvent(TrackingKey.settingDetailScrView);
+  }
+
+  @override
+  Future<void> trackSettingLanguageClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingLanguageClick);
+  }
+
+  @override
+  Future<void> trackSettingLanguageScrView(String language) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingLanguageScrView,
+      parameters: {
+        'language': language,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackSettingTermClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingTermClick);
+  }
+
+  @override
+  Future<void> trackSettingRestorePurchClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingRestorePurcClick);
+  }
+
+  @override
+  Future<void> trackSettingLogoutClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingLogoutClick);
+  }
+
+  @override
+  Future<void> trackSettingPremiumClick() async {
+    _appTrackingService.trackEvent(TrackingKey.settingPremiumClick);
+  }
+
+  @override
+  Future<void> trackPremiumScrView() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumScrView,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumScroll() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumScroll,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumInforSwipe() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumInforSwipe,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumRestoreClick() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumRestoreClick,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumPurchase() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumPurchase,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumScrExit() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumScrExit,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumAllpackClick() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumAllpackClick,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumAllpackScrView() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumAllpackScrView,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumAllpackPick(String premiumId) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumAllpackPick,
+      parameters: {
+        'premium_id': premiumId,
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPremiumAllpackPurchase() async {
+    _appTrackingService.trackEvent(
+      TrackingKey.premiumAllpackPurchase,
+      parameters: {
+        ..._premiumParams(),
+        ..._courseParamsForPaywall(),
+      },
+    );
+  }
+
+  @override
+  Future<void> trackSettingBadgeClick(CourseTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingBadgeClick,
+      parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackSettingBadgeSlide(CourseTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingBadgeSlide,
+      parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackSettingBadgeDetailView(CourseTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingBadgeDetailView,
+      parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackSettingBadgeDetailSlide(CourseTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingBadgeDetailSlide,
+      parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackSettingBadgeGoCourse(CourseTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.settingBadgeGoCourse,
+      parameters: _courseParams(trackingData),
+    );
   }
 
   //* Feedback events

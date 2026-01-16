@@ -63,6 +63,11 @@ class LessonCard extends StatelessWidget {
 
     bool isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
     if (premiumLesson && !isUserPremium) {
+      final trackingData = CourseTrackingData.fromCourseId(context, lesson.courseId);
+      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
+        PaywallEntryPoint.courseRoadmap,
+        trackingData: trackingData,
+      );
       PaywallRoute().push(context);
       return;
     }

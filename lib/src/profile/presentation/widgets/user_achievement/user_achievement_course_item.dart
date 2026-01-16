@@ -3,19 +3,38 @@ part of '../../../profile.dart';
 class UserAchievementCourseItem extends StatelessWidget {
   final CourseLevelProgressEntity course;
   final TextStyle titleStyle;
+  final String skillsetId;
+  final String skillsetName;
 
   const UserAchievementCourseItem({
     super.key,
     required this.course,
     required this.titleStyle,
+    required this.skillsetId,
+    required this.skillsetName,
   });
 
+  String _resolveCourseName() {
+    final String name = course.courseTitle.en.trim();
+    if (name.isNotEmpty) return name;
+    return course.title;
+  }
+
   void _onTap(BuildContext context) {
+    final trackingData = CourseTrackingData.fromTrackingValues(
+      skillsetId: skillsetId,
+      skillsetName: skillsetName,
+      courseId: course.courseId,
+      courseName: _resolveCourseName(),
+    );
+    AppService.instance.appTrackingService.trackSettingBadgeClick(trackingData);
     context.read<AchievenmentProgressCubit>().loadCourseLevelProgress(course.courseId);
     UserAchievementBottomSheet.show(
       context,
       courseId: course.courseId,
       initialLevel: course.level,
+      skillsetId: skillsetId,
+      skillsetName: skillsetName,
     );
   }
 

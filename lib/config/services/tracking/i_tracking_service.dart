@@ -139,11 +139,7 @@ abstract interface class ITrackingService {
   Future<void> trackKeypointExerciseContinue(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseExplainClose(KeypointTrackingData trackingData);
   Future<void> trackKeypointFinishScrView(KeypointTrackingData trackingData);
-  Future<void> trackLessonFinishScrView({
-    required SkillsetEntity skillset,
-    required CourseEntity course,
-    required LessonEntity lesson,
-  });
+  Future<void> trackLessonFinishScrView(CourseLessonTrackingData trackingData);
   Future<void> trackKeypointExitClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointExitPopupView(KeypointTrackingData trackingData);
   Future<void> trackKeypointExitPopupClick(
@@ -231,6 +227,39 @@ abstract interface class ITrackingService {
   Future<void> trackProfileSignoutClick();
   Future<void> trackProfileUpgradeClick();
   Future<void> trackProfileSettingClick();
+
+  //* Setting events
+  Future<void> trackSettingScrView();
+  Future<void> trackSettingScroll();
+  Future<void> trackSettingProfileClick();
+  Future<void> trackSettingProfileEditClick();
+  Future<void> trackSettingProfileDoneClick();
+  Future<void> trackSettingProfileDeleteClick();
+  Future<void> trackProfileDeleteScrView();
+  Future<void> trackProfileDeleteOptionClick(String value);
+  Future<void> trackSettingDetailClick();
+  Future<void> trackSettingDetailScrView();
+  Future<void> trackSettingLanguageClick();
+  Future<void> trackSettingLanguageScrView(String language);
+  Future<void> trackSettingTermClick();
+  Future<void> trackSettingRestorePurchClick();
+  Future<void> trackSettingLogoutClick();
+  Future<void> trackSettingPremiumClick();
+  Future<void> trackPremiumScrView();
+  Future<void> trackPremiumScroll();
+  Future<void> trackPremiumInforSwipe();
+  Future<void> trackPremiumRestoreClick();
+  Future<void> trackPremiumPurchase();
+  Future<void> trackPremiumScrExit();
+  Future<void> trackPremiumAllpackClick();
+  Future<void> trackPremiumAllpackScrView();
+  Future<void> trackPremiumAllpackPick(String premiumId);
+  Future<void> trackPremiumAllpackPurchase();
+  Future<void> trackSettingBadgeClick(CourseTrackingData trackingData);
+  Future<void> trackSettingBadgeSlide(CourseTrackingData trackingData);
+  Future<void> trackSettingBadgeDetailView(CourseTrackingData trackingData);
+  Future<void> trackSettingBadgeDetailSlide(CourseTrackingData trackingData);
+  Future<void> trackSettingBadgeGoCourse(CourseTrackingData trackingData);
 
   //* Feedback events
   Future<void> feedback3ScrView(BuildContext context);

@@ -38,9 +38,11 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
 
   void _onToggleEdit() {
     if (_isEditingNotifier.value) {
+      AppService.instance.appTrackingService.trackSettingProfileDoneClick();
       _submitUpdate();
       return;
     }
+    AppService.instance.appTrackingService.trackSettingProfileEditClick();
     _isEditingNotifier.value = true;
   }
 
@@ -59,6 +61,7 @@ class _ProfileInfoViewState extends State<_ProfileInfoView> {
   }
 
   void _handleDeleteAccount(UserEntity user) {
+    AppService.instance.appTrackingService.trackSettingProfileDeleteClick();
     if (user.id.isEmpty) {
       DMessage.showMessage(
         message: context.text.setting.settingProfileDesstructiveButton,

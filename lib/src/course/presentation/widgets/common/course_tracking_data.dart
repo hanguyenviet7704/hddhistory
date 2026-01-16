@@ -26,6 +26,29 @@ class CourseTrackingData {
       course: course,
     );
   }
+
+  static CourseTrackingData fromTrackingValues({
+    required String skillsetId,
+    required String skillsetName,
+    required String courseId,
+    required String courseName,
+  }) {
+    final skillset = SkillsetEntity(
+      id: skillsetId,
+      title: BaseMultiLanguage(en: skillsetName),
+    );
+    final course = CourseEntity(
+      id: courseId,
+      title: BaseMultiLanguage(en: courseName),
+      skillsetId: skillsetId,
+      skillset: skillset,
+    );
+
+    return CourseTrackingData(
+      skillset: skillset,
+      course: course,
+    );
+  }
 }
 
 class CourseLessonTrackingData extends CourseTrackingData {

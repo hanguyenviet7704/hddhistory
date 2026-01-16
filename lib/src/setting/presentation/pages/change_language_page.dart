@@ -1,13 +1,33 @@
 part of '../../setting.dart';
 
-class ChangeLanguagePage extends StatelessWidget {
+class ChangeLanguagePage extends StatefulWidget {
   const ChangeLanguagePage({super.key});
 
+  @override
+  State<ChangeLanguagePage> createState() => _ChangeLanguagePageState();
+}
+
+class _ChangeLanguagePageState extends State<ChangeLanguagePage> {
   static const List<AppLocale> _displayLocales = [AppLocale.en, AppLocale.vi];
+  bool _hasTrackedView = false;
 
   void _handleSelectLanguage(BuildContext context, AppLocale locale) {
     context.read<LocaleCubit>().setLocale(locale);
     context.back();
+  }
+
+
+  void _trackView() {
+    if (_hasTrackedView) return;
+    final locale = context.read<LocaleCubit>().state;
+    AppService.instance.appTrackingService.trackSettingLanguageScrView(locale.languageAISupport);
+    _hasTrackedView = true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackView());
   }
 
   @override

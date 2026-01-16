@@ -1,11 +1,48 @@
 part of '../../setting.dart';
 
-class SettingPage extends StatelessWidget {
+class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  State<SettingPage> createState() => _SettingPageState();
+}
+
+class _SettingPageState extends State<SettingPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasTrackedScroll = false;
+  bool _hasTrackedView = false;
+
+  @override
+  void initState() {
+    super.initState();
     context.read<IapCubit>().loadIapProducts();
+    _scrollController.addListener(_handleScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackView());
+  }
+
+  void _trackView() {
+    if (_hasTrackedView) return;
+    AppService.instance.appTrackingService.trackSettingDetailScrView();
+    _hasTrackedView = true;
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients || _hasTrackedScroll) return;
+    if (_scrollController.position.pixels <= 0) return;
+    AppService.instance.appTrackingService.trackSettingScroll();
+    _hasTrackedScroll = true;
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundGray,
       body: CupertinoScaffold(
@@ -13,6 +50,7 @@ class SettingPage extends StatelessWidget {
         transitionBackgroundColor: AppCustomColor.backgroundWhite,
         body: SafePage(
           child: ListView(
+            controller: _scrollController,
             padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
             physics: const BouncingScrollPhysics(),
             children: [
@@ -28,20 +66,29 @@ class SettingPage extends StatelessWidget {
                         iconAsset: AppAsset.svg.app.icGlobe,
                         title: context.text.setting.settingRowLanguage,
                         trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
-                        onTap: () => const ChangeLanguageRoute().go(context),
+                        onTap: () {
+                          AppService.instance.appTrackingService.trackSettingLanguageClick();
+                          const ChangeLanguageRoute().go(context);
+                        },
                       ),
                       if (user.iapSubscriptions.isNotEmpty) ...[
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icCreditCard,
                           title: context.text.setting.settingRowUpgradePremium,
-                          onTap: () => const ManageSubscriptionRoute().go(context),
+                          onTap: () {
+                            AppService.instance.appTrackingService.trackSettingPremiumClick();
+                            const ManageSubscriptionRoute().go(context);
+                          },
                         ),
                       ],
                       if (user.iapSubscriptions.isEmpty) ...[
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icSet,
                           title: context.text.setting.settingRowRestorePurchase,
-                          onTap: () => context.read<IapCubit>().restorePurchases(),
+                          onTap: () {
+                            AppService.instance.appTrackingService.trackSettingRestorePurchClick();
+                            context.read<IapCubit>().restorePurchases();
+                          },
                         ),
                       ],
                     ],
@@ -58,7 +105,10 @@ class SettingPage extends StatelessWidget {
                       SettingOptionTile(
                         iconAsset: AppAsset.svg.app.icShieldPlus,
                         title: context.text.setting.settingAboutSectionTerm,
-                        onTap: 'https://meup.training/terms-and-conditions.html'.launchURL,
+                        onTap: () {
+                          AppService.instance.appTrackingService.trackSettingTermClick();
+                          'https://meup.training/terms-and-conditions.html'.launchURL();
+                        },
                       ),
                       if (!user.anonymous)
                         SettingOptionTile(
@@ -68,7 +118,10 @@ class SettingPage extends StatelessWidget {
                           iconColor: AppCustomColor.errorRed,
                           iconBackgroundColor: AppCustomColor.errorRed.op(.08),
                           showChevron: false,
-                          onTap: () => context.read<AuthBloc>().add(const AuthEvent.logout()),
+                          onTap: () {
+                            AppService.instance.appTrackingService.trackSettingLogoutClick();
+                            context.read<AuthBloc>().add(const AuthEvent.logout());
+                          },
                         ),
                     ],
                   );

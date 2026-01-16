@@ -4,15 +4,21 @@ class UserAchievementBottomSheet extends StatefulWidget {
   const UserAchievementBottomSheet({
     super.key,
     required this.courseId,
+    required this.skillsetId,
+    required this.skillsetName,
     this.initialLevel,
   });
 
   final String courseId;
+  final String skillsetId;
+  final String skillsetName;
   final CourseLevel? initialLevel;
 
   static Future<void> show(
     BuildContext context, {
     required String courseId,
+    required String skillsetId,
+    required String skillsetName,
     CourseLevel? initialLevel,
   }) {
     return showModalBottomSheet(
@@ -31,6 +37,8 @@ class UserAchievementBottomSheet extends StatefulWidget {
         child: UserAchievementBottomSheet(
           courseId: courseId,
           initialLevel: initialLevel,
+          skillsetId: skillsetId,
+          skillsetName: skillsetName,
         ),
       ),
     );
@@ -43,6 +51,8 @@ class UserAchievementBottomSheet extends StatefulWidget {
 class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet> {
   final PageController _pageController = PageController();
   bool _didJumpToInitial = false;
+  bool _hasTrackedView = false;
+  bool _skipNextSlideEvent = false;
 
   @override
   void initState() {
@@ -61,6 +71,22 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
     return filtered;
   }
 
+  String _resolveCourseName(List<CourseLevelProgressEntity> courses) {
+    if (courses.isEmpty) return '';
+    final String name = courses.first.courseTitle.en.trim();
+    if (name.isNotEmpty) return name;
+    return courses.first.title;
+  }
+
+  CourseTrackingData _buildTrackingData(String courseName) {
+    return CourseTrackingData.fromTrackingValues(
+      skillsetId: widget.skillsetId,
+      skillsetName: widget.skillsetName,
+      courseId: widget.courseId,
+      courseName: courseName,
+    );
+  }
+
   void _syncInitialPage(List<CourseLevelProgressEntity> courses) {
     if (_didJumpToInitial || courses.isEmpty || widget.initialLevel == null) return;
 
@@ -68,13 +94,29 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
     if (index < 0) return;
 
     _didJumpToInitial = true;
+    _skipNextSlideEvent = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _pageController.jumpToPage(index);
     });
   }
 
-  void _onGoToCourse(BuildContext context) {
+  void _trackDetailView(String courseName) {
+    if (_hasTrackedView) return;
+    AppService.instance.appTrackingService.trackSettingBadgeDetailView(_buildTrackingData(courseName));
+    _hasTrackedView = true;
+  }
+
+  void _handlePageChanged(int index, String courseName) {
+    if (_skipNextSlideEvent) {
+      _skipNextSlideEvent = false;
+      return;
+    }
+    AppService.instance.appTrackingService.trackSettingBadgeDetailSlide(_buildTrackingData(courseName));
+  }
+
+  void _onGoToCourse(BuildContext context, String courseName) {
+    AppService.instance.appTrackingService.trackSettingBadgeGoCourse(_buildTrackingData(courseName));
     context.back();
     AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('setting_badge');
     AppDI.injector.get<HomeCubit>().selectCourseFromCourseId(widget.courseId);
@@ -89,7 +131,9 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
     return BlocBuilder<AchievenmentProgressCubit, AchievenmentProgressState>(
       builder: (context, state) {
         final List<CourseLevelProgressEntity> courses = _filterCourses(state);
+        final String courseName = _resolveCourseName(courses);
         _syncInitialPage(courses);
+        WidgetsBinding.instance.addPostFrameCallback((_) => _trackDetailView(courseName));
         final bool isLoading = state.status == AchievenmentProgressStatus.loading && courses.isEmpty;
         if (isLoading) return const Center(child: CircularProgressIndicator());
         if (courses.isEmpty) return _UserAchievementEmptyState();
@@ -97,7 +141,8 @@ class _UserAchievementBottomSheetState extends State<UserAchievementBottomSheet>
         final Widget content = _UserAchievementSheetContent(
           courses: courses,
           controller: _pageController,
-          onGoToCourse: () => _onGoToCourse(context),
+          onPageChanged: (index) => _handlePageChanged(index, courseName),
+          onGoToCourse: () => _onGoToCourse(context, courseName),
         );
 
         return Container(
@@ -152,11 +197,13 @@ class _UserAchievementSheetHeader extends StatelessWidget {
 class _UserAchievementSheetContent extends StatelessWidget {
   final List<CourseLevelProgressEntity> courses;
   final PageController controller;
+  final ValueChanged<int> onPageChanged;
   final VoidCallback onGoToCourse;
 
   const _UserAchievementSheetContent({
     required this.courses,
     required this.controller,
+    required this.onPageChanged,
     required this.onGoToCourse,
   });
 
@@ -176,6 +223,7 @@ class _UserAchievementSheetContent extends StatelessWidget {
                   controller: controller,
                   itemCount: courses.length,
                   physics: const BouncingScrollPhysics(),
+                  onPageChanged: onPageChanged,
                   itemBuilder: (context, index) => UserAchievementDetailCard(course: courses[index]),
                 ),
               ),
