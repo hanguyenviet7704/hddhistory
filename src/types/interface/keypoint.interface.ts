@@ -16,6 +16,11 @@ export interface KeypointPayload {
   image: string;
 }
 
+export interface IKeypointBrief {
+  _id: string;
+  title?: ITranslation;
+}
+
 export class KeypointListQuery extends BaseQuery {
   constructor(init?: Partial<KeypointListQuery>) {
     super(init);

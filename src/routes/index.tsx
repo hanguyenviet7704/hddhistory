@@ -10,7 +10,8 @@ import LessonDetail from "../pages/lessons/LessonDetail";
 import LessonCreate from "../pages/lessons/LessonCreate";
 import CourseDetail from "../pages/courses/CourseDetail";
 import KeypointList from "../pages/keypoints/KeypointList";
-import UserProgressList from "../pages/user-progress/UserProgressList";
+import UserProgressSummaryList from "../pages/user-progress/UserProgressSummaryList";
+import UserProgressDetail from "../pages/user-progress/UserProgressDetail";
 import TheoryList from "../pages/theories/TheoryList";
 import RoleplayList from "../pages/roleplays/RoleplayList";
 import RoleplayCreate from "../pages/roleplays/RoleplayCreate";
@@ -73,7 +74,14 @@ export default function AppRouter() {
 
               <Route path="onboarding" element={<OnboardingManagement />} />
 
-              <Route path="progress" element={<UserProgressList />} />
+              <Route
+                path="progress/user/:userId"
+                element={<UserProgressSummaryList />}
+              />
+              <Route
+                path="progress/user/:userId/course/:courseId"
+                element={<UserProgressDetail />}
+              />
 
               <Route path="settings" element={<SettingsPage />} />
 

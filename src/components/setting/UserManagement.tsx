@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   ArrowPathIcon,
+  EyeIcon,
   PencilIcon,
   PlusIcon,
   TrashIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { Pagination } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import { IUser, UserListQuery } from "../../types/interface/user.interface";
 import { UserRole, UserStatus } from "../../types/enum/user.enum";
@@ -94,6 +96,7 @@ const InfoField = ({ label, value }: { label: string; value: string }) => (
 );
 
 const UserManagement = () => {
+  const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const [users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(false);
@@ -429,6 +432,7 @@ const UserManagement = () => {
               <tbody className="bg-white divide-y divide-gray-200">
                 {users.map((user) => {
                   const id = getUserId(user);
+                  const canNavigate = Boolean(id);
                   return (
                     <tr key={id || user.email}>
                       <td className="px-6 py-4 whitespace-nowrap sticky left-0 bg-white z-10 min-w-[120px]">
@@ -472,7 +476,21 @@ const UserManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
                         {user.provider || "-"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 sticky right-0 bg-white z-10 min-w-[120px]">
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 sticky right-0 bg-white z-10 min-w-[140px]">
+                        <button
+                          onClick={() => {
+                            if (id) navigate(`/progress/user/${id}`);
+                          }}
+                          disabled={!canNavigate}
+                          className={`inline-flex items-center ${
+                            canNavigate
+                              ? "text-slate-600 hover:text-slate-900"
+                              : "text-gray-300 cursor-not-allowed"
+                          }`}
+                          title="Xem tiến độ học"
+                        >
+                          <EyeIcon className="h-5 w-5" />
+                        </button>
                         <button
                           onClick={() => openEditForm(user)}
                           className="text-indigo-600 hover:text-indigo-900 inline-flex items-center"

@@ -1,7 +1,6 @@
 import {
   BookOpenIcon,
   ClipboardDocumentListIcon,
-  ChartBarIcon,
   PencilSquareIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
@@ -32,7 +31,6 @@ const menuItems = [
   { name: "Theory", icon: DocumentTextIcon, path: "/theory" },
   { name: "Exercise", icon: PencilSquareIcon, path: "/exercise" },
   { name: "Onboarding", icon: SparklesIcon, path: "/onboarding" },
-  { name: "Progress", icon: ChartBarIcon, path: "/progress" },
   { name: "Payment", icon: CreditCardIcon, path: "/payment" },
 ];
 
