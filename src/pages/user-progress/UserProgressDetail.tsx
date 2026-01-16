@@ -1,11 +1,13 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import { TrashIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { userProgressService } from "../../services/userProgressService";
 import { courseService } from "../../services/courseService";
 import { userService } from "../../services/userService";
 import { IUserProgressDetail } from "../../types/interface/user-progress.interface";
+import { GradeResultType } from "../../types/enum/user-progress.enum";
 import { LangCode } from "../../types/enum/common.enum";
 import { getTranslationValue } from "../../utils/translation";
 import { useNotification } from "../../utils/hooks/useNotification";
@@ -87,12 +89,19 @@ export default function UserProgressDetail() {
   const { userId = "", courseId = "" } = useParams();
   const navigate = useNavigate();
   const lang = useSelector((state: RootState) => state.lang.code);
-  const { showError } = useNotification();
+  const { showError, showSuccess } = useNotification();
 
   const [detail, setDetail] = useState<IUserProgressDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [userLabel, setUserLabel] = useState("");
   const [courseTitle, setCourseTitle] = useState("");
+  const [confirmState, setConfirmState] = useState<{
+    open: boolean;
+    type: GradeResultType;
+    lessonId?: string;
+    keypointId?: string;
+  }>({ open: false, type: GradeResultType.COURSE });
+  const [removing, setRemoving] = useState(false);
 
   const fetchDetail = useCallback(async () => {
     if (!userId || !courseId) {
@@ -147,6 +156,39 @@ export default function UserProgressDetail() {
   }, [courseId, lang, userId]);
 
   const lessons = useMemo(() => detail?.lessonsResult ?? [], [detail]);
+  const openConfirm = (payload: {
+    type: GradeResultType;
+    lessonId?: string;
+    keypointId?: string;
+  }) => {
+    setConfirmState({ open: true, ...payload });
+  };
+
+  const handleRemove = async () => {
+    if (!userId || !courseId) {
+      showError("Thiếu thông tin user/course để xoá");
+      return;
+    }
+    const { type, lessonId, keypointId } = confirmState;
+    try {
+      setRemoving(true);
+      await userProgressService.remove({
+        userId,
+        courseId,
+        grade: type,
+        lessonId,
+        keypointId,
+      });
+      showSuccess("Xoá tiến độ thành công");
+      setConfirmState({ open: false, type: GradeResultType.COURSE });
+      fetchDetail();
+    } catch (error) {
+      console.error("Failed to remove progress", error);
+      showError("Xoá tiến độ thất bại");
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -191,7 +233,8 @@ export default function UserProgressDetail() {
                     <div className="col-span-5">Item</div>
                     <div className="col-span-2">Passed</div>
                     <div className="col-span-2">Score</div>
-                    <div className="col-span-3">Reviews</div>
+                    <div className="col-span-2">Reviews</div>
+                    <div className="col-span-1 text-right">Action</div>
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-12 items-center gap-2 px-3 py-2 rounded-lg border border-slate-200 bg-slate-50">
@@ -214,8 +257,22 @@ export default function UserProgressDetail() {
                     <div className="col-span-1 md:col-span-2">
                       <ScoreBadge score={lesson.averageScore} />
                     </div>
-                    <div className="col-span-1 md:col-span-3 min-w-0 text-slate-600">
+                    <div className="col-span-1 md:col-span-2 min-w-0 text-slate-600">
                       <ReviewText value={lesson.reviews} />
+                    </div>
+                    <div className="col-span-1 md:col-span-1 flex justify-start md:justify-end">
+                      <button
+                        onClick={() =>
+                          openConfirm({
+                            type: GradeResultType.LESSON,
+                            lessonId: lesson.lessonId,
+                          })
+                        }
+                        className="text-rose-600 hover:text-rose-700"
+                        title="Xoá tiến độ bài học"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </div>
                   </div>
 
@@ -252,8 +309,23 @@ export default function UserProgressDetail() {
                             <div className="col-span-1 md:col-span-2">
                               <ScoreBadge score={keypoint.averageScore} />
                             </div>
-                            <div className="col-span-1 md:col-span-3 min-w-0 text-slate-600">
+                            <div className="col-span-1 md:col-span-2 min-w-0 text-slate-600">
                               <ReviewText value={keypoint.reviews} />
+                            </div>
+                            <div className="col-span-1 md:col-span-1 flex justify-start md:justify-end">
+                              <button
+                                onClick={() =>
+                                  openConfirm({
+                                    type: GradeResultType.KEYPOINT,
+                                    lessonId: lesson.lessonId,
+                                    keypointId: keypoint.keypointId,
+                                  })
+                                }
+                                className="text-rose-600 hover:text-rose-700"
+                                title="Xoá tiến độ keypoint"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
                             </div>
                           </div>
 
@@ -282,10 +354,13 @@ export default function UserProgressDetail() {
                                     <div className="col-span-1 md:col-span-2">
                                       <ScoreBadge score={score} />
                                     </div>
-                                    <div className="col-span-1 md:col-span-3 min-w-0 text-slate-600 text-xs">
+                                    <div className="col-span-1 md:col-span-2 min-w-0 text-slate-600 text-xs">
                                       <ReviewText
                                         value={(exercise as any).reviews}
                                       />
+                                    </div>
+                                    <div className="col-span-1 md:col-span-1 text-slate-400 text-xs">
+                                      -
                                     </div>
                                   </div>
                                 );
@@ -302,6 +377,41 @@ export default function UserProgressDetail() {
           </div>
         )}
       </div>
+
+      {confirmState.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+            <h3 className="text-lg font-semibold text-gray-900">
+              Xoá tiến độ?
+            </h3>
+            <p className="text-sm text-gray-600">
+              Hành động này sẽ xoá tiến độ{" "}
+              {confirmState.type === GradeResultType.KEYPOINT
+                ? "keypoint"
+                : "bài học"}
+              .
+            </p>
+            <div className="flex justify-end gap-2">
+              <button
+                onClick={() =>
+                  setConfirmState({ open: false, type: GradeResultType.COURSE })
+                }
+                disabled={removing}
+                className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+              >
+                Huỷ
+              </button>
+              <button
+                onClick={handleRemove}
+                disabled={removing}
+                className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-70"
+              >
+                {removing ? "Đang xoá..." : "Xoá"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

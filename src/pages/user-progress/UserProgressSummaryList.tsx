@@ -1,11 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import { EyeIcon } from "@heroicons/react/24/outline";
+import { EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { LangCode } from "../../types/enum/common.enum";
 import { LessonType } from "../../types/enum/lesson.enum";
+import { GradeResultType } from "../../types/enum/user-progress.enum";
 import { userProgressService } from "../../services/userProgressService";
 import {
   ICourseProgressSummary,
@@ -101,12 +102,14 @@ export default function UserProgressSummaryList() {
   const { userId = "" } = useParams();
   const navigate = useNavigate();
   const lang = useSelector((state: RootState) => state.lang.code);
-  const { showError } = useNotification();
+  const { showError, showSuccess } = useNotification();
 
   const [items, setItems] = useState<ICourseProgressSummary[]>([]);
   const [loading, setLoading] = useState(false);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [confirmCourseId, setConfirmCourseId] = useState<string | null>(null);
+  const [removing, setRemoving] = useState(false);
 
   const fetchProgress = useCallback(
     async (pageNumber: number) => {
@@ -144,6 +147,31 @@ export default function UserProgressSummaryList() {
   useEffect(() => {
     fetchProgress(page);
   }, [fetchProgress, page]);
+
+  const handleRemoveCourse = async () => {
+    if (!confirmCourseId) return;
+    if (!userId) {
+      showError("Thiếu thông tin user để xoá");
+      return;
+    }
+
+    try {
+      setRemoving(true);
+      await userProgressService.remove({
+        userId,
+        courseId: confirmCourseId,
+        grade: GradeResultType.COURSE,
+      });
+      showSuccess("Xoá tiến độ khoá học thành công");
+      setConfirmCourseId(null);
+      fetchProgress(page);
+    } catch (error) {
+      console.error("Failed to remove course progress", error);
+      showError("Xoá tiến độ khoá học thất bại");
+    } finally {
+      setRemoving(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
@@ -269,23 +297,37 @@ export default function UserProgressSummaryList() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-right text-sm">
-                          <button
-                            onClick={() => {
-                              if (!canNavigate) return;
-                              navigate(
-                                `/progress/user/${userId}/course/${courseId}`
-                              );
-                            }}
-                            disabled={!canNavigate}
-                            className={`inline-flex items-center gap-1 ${
-                              canNavigate
-                                ? "text-blue-600 hover:text-blue-800"
-                                : "text-gray-400 cursor-not-allowed"
-                            }`}
-                          >
-                            <EyeIcon className="h-4 w-4" />
-                            <span className="underline">see detail</span>
-                          </button>
+                          <div className="inline-flex items-center gap-3">
+                            <button
+                              onClick={() => {
+                                if (!canNavigate) return;
+                                navigate(
+                                  `/progress/user/${userId}/course/${courseId}`
+                                );
+                              }}
+                              disabled={!canNavigate}
+                              className={`inline-flex items-center gap-1 ${
+                                canNavigate
+                                  ? "text-blue-600 hover:text-blue-800"
+                                  : "text-gray-400 cursor-not-allowed"
+                              }`}
+                            >
+                              <EyeIcon className="h-4 w-4" />
+                              <span className="underline">see detail</span>
+                            </button>
+                            <button
+                              onClick={() => setConfirmCourseId(courseId)}
+                              disabled={!courseId}
+                              className={`inline-flex items-center ${
+                                courseId
+                                  ? "text-rose-600 hover:text-rose-700"
+                                  : "text-gray-300 cursor-not-allowed"
+                              }`}
+                              title="Xoá tiến độ khoá học"
+                            >
+                              <TrashIcon className="h-4 w-4" />
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     );
@@ -305,6 +347,35 @@ export default function UserProgressSummaryList() {
             />
           </div>
         </div>
+
+        {confirmCourseId && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Xoá tiến độ khoá học?
+              </h3>
+              <p className="text-sm text-gray-600">
+                Hành động này sẽ xoá toàn bộ tiến độ của khoá học này.
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setConfirmCourseId(null)}
+                  disabled={removing}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  Huỷ
+                </button>
+                <button
+                  onClick={handleRemoveCourse}
+                  disabled={removing}
+                  className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-70"
+                >
+                  {removing ? "Đang xoá..." : "Xoá"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
