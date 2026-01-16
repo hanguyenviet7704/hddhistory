@@ -36,6 +36,7 @@ export default function SkillsetModal({
   const [description, setDescription] = useState<ITranslation>({});
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<SkillsetStatus>(SkillsetStatus.DRAFT);
+  const [indexValue, setIndexValue] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -44,11 +45,17 @@ export default function SkillsetModal({
         setDescription(initial.description ?? {});
         setImage(initial.image ?? "");
         setStatus(initial.status ?? SkillsetStatus.DRAFT);
+        setIndexValue(
+          initial.index !== undefined && initial.index !== null
+            ? String(initial.index)
+            : ""
+        );
       } else {
         setTitle({});
         setDescription({});
         setImage("");
         setStatus(SkillsetStatus.DRAFT);
+        setIndexValue("");
       }
     }
   }, [initial, isOpen]);
@@ -67,11 +74,16 @@ export default function SkillsetModal({
     );
 
     // Create SkillsetPayload with cleaned translations
+    const trimmedIndex = indexValue.trim();
+    const parsedIndex =
+      trimmedIndex === "" ? undefined : Number(trimmedIndex);
     const payload: SkillsetPayload = {
       title: cleanedTitle || { [lang]: "" }, // Always include title
       ...(cleanedDescription && { description: cleanedDescription }),
       image,
       status,
+      ...(trimmedIndex !== "" &&
+        !Number.isNaN(parsedIndex) && { index: parsedIndex }),
     };
 
     await onSubmit(payload, initial?._id);
@@ -155,6 +167,22 @@ export default function SkillsetModal({
                   <option value={SkillsetStatus.DRAFT}>Draft</option>
                   <option value={SkillsetStatus.PUBLISHED}>Published</option>
                 </select>
+              </div>
+
+              {/* Index */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Index
+                </label>
+                <input
+                  type="number"
+                  min={0}
+                  step={1}
+                  value={indexValue}
+                  onChange={(e) => setIndexValue(e.target.value)}
+                  className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  placeholder="Optional"
+                />
               </div>
 
               {/* Image */}
