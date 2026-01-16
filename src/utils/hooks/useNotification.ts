@@ -1,3 +1,4 @@
+import { useCallback } from "react";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../store";
 import { showNotification } from "../../store/slices/notification.slice";
@@ -5,17 +6,26 @@ import { showNotification } from "../../store/slices/notification.slice";
 export const useNotification = () => {
   const dispatch = useDispatch<AppDispatch>();
 
-  const showSuccess = (message: string) => {
-    dispatch(showNotification({ message, type: "success" }));
-  };
+  const showSuccess = useCallback(
+    (message: string) => {
+      dispatch(showNotification({ message, type: "success" }));
+    },
+    [dispatch]
+  );
 
-  const showError = (message: string) => {
-    dispatch(showNotification({ message, type: "error" }));
-  };
+  const showError = useCallback(
+    (message: string) => {
+      dispatch(showNotification({ message, type: "error" }));
+    },
+    [dispatch]
+  );
 
-  const showInfo = (message: string) => {
-    dispatch(showNotification({ message, type: "info" }));
-  };
+  const showInfo = useCallback(
+    (message: string) => {
+      dispatch(showNotification({ message, type: "info" }));
+    },
+    [dispatch]
+  );
 
   return { showSuccess, showError, showInfo };
 };

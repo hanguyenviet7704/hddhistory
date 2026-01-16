@@ -39,6 +39,12 @@ export interface ILessonBrief {
   title: ITranslation;
 }
 
+export interface ILessonBrief2 {
+  _id: string;
+  title?: ITranslation;
+  type?: LessonType;
+}
+
 interface LessonIndex {
   id: string;
   index: number;

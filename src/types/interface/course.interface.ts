@@ -31,6 +31,12 @@ export interface CoursePayload {
   numberOfLesson?: number;
 }
 
+export interface ICourseBrief {
+  _id: string;
+  title?: ITranslation;
+  createdAt?: Date;
+}
+
 export class CourseListQuery extends BaseQuery {
   status?: CourseStatus;
   isAll?: boolean;

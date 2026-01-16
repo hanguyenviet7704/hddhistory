@@ -1,5 +1,18 @@
+import { ITranslation } from "../../utils/translate";
+import { LessonType } from "../enum/lesson.enum";
 import { GradeResultType } from "../enum/user-progress.enum";
 import { BaseQuery } from "./common.interface";
+
+export interface IStopAt {
+  lessonId: string;
+  keypointId?: string;
+}
+
+export interface IStopAtDetail extends IStopAt {
+  lessonTitle?: ITranslation;
+  lessonType?: LessonType;
+  keypointTitle?: ITranslation;
+}
 
 export interface IUserProgress {
   userId: string;
@@ -35,6 +48,37 @@ export interface IExcerciseResult {
   submittedAt?: Date;
 }
 
+// ====== Summary result ======
+export interface ICourseProgressSummary {
+  id: string;
+  title?: ITranslation;
+  createdAt?: Date;
+  lastTime?: Date;
+  stopAt?: IStopAtDetail;
+}
+
+export type ILessonResultDetail = Omit<ILessonResult, "keypointsResult"> & {
+  title?: ITranslation;
+  lessonType?: LessonType;
+  keypointsResult: IKeypointResultDetail[];
+};
+
+export type IUserProgressDetail = Omit<IUserProgress, "lessonsResult"> & {
+  lessonsResult: ILessonResultDetail[];
+};
+
+export interface IExerciseResultSummary {
+  exerciseId: string;
+  score: number;
+  passed?: boolean;
+  index: number;
+}
+
+export type IKeypointResultDetail = Omit<IKeypointResult, "exercisesResult"> & {
+  title?: ITranslation;
+  exercisesResult: IExerciseResultSummary[];
+};
+
 export class UserProgressListQuery extends BaseQuery {
   userId?: string;
   courseId: string;
@@ -63,6 +107,23 @@ export class UserProgressListQuery extends BaseQuery {
     if (this.lessonId) params.set("lessonId", this.lessonId);
     if (this.keypointId) params.set("keypointId", this.keypointId);
     if (this.exerciseId) params.set("exerciseId", this.exerciseId);
+    return params.toString();
+  }
+}
+
+export class ProgressOfUserQuery extends BaseQuery {
+  constructor(
+    init: {
+      courseId: string;
+      grade: GradeResultType;
+    } & Partial<UserProgressListQuery>
+  ) {
+    super(init);
+    Object.assign(this, init);
+  }
+
+  override toQueryParams(): string {
+    const params = new URLSearchParams(super.toQueryParams());
     return params.toString();
   }
 }
