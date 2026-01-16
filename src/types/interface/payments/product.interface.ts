@@ -24,6 +24,7 @@ export class ProductListQuery extends BaseQuery {
   platform?: PaymentPlatform;
   type?: ProductType;
   isActive?: boolean;
+  isAll?: boolean;
 
   constructor(init?: Partial<ProductListQuery>) {
     super(init);
@@ -36,6 +37,9 @@ export class ProductListQuery extends BaseQuery {
     if (this.type) params.set("type", this.type);
     if (typeof this.isActive === "boolean") {
       params.set("isActive", String(this.isActive));
+    }
+    if (typeof this.isAll === "boolean") {
+      params.set("isAll", String(this.isAll));
     }
 
     return params.toString();
