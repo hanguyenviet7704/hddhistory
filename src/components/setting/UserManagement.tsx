@@ -9,7 +9,7 @@ import {
   XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { Pagination } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import { IUser, UserListQuery } from "../../types/interface/user.interface";
 import { UserRole, UserStatus } from "../../types/enum/user.enum";
@@ -113,10 +113,16 @@ const triggerDownload = (url: string) => {
 
 const UserManagement = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { showSuccess, showError } = useNotification();
+  const initialPageParam = Number(searchParams.get("page") || 1);
+  const initialPage =
+    Number.isNaN(initialPageParam) || initialPageParam < 1
+      ? 1
+      : initialPageParam;
   const [users, setUsers] = useState<IUser[]>([]);
   const [loading, setLoading] = useState(false);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(initialPage);
   const [totalPagesCount, setTotalPagesCount] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
@@ -145,10 +151,23 @@ const UserManagement = () => {
     return () => clearTimeout(timer);
   }, [searchTerm]);
 
+  const initialLoadRef = useRef(true);
+
   useEffect(() => {
+    if (initialLoadRef.current) {
+      initialLoadRef.current = false;
+      fetchUsers(page);
+      return;
+    }
     fetchUsers(1);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch, roleFilter, statusFilter, anonymousFilter]);
+
+  const syncPageParam = (nextPage: number) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("page", String(nextPage));
+    setSearchParams(params, { replace: true });
+  };
 
   const fetchUsers = async (pageNumber: number) => {
     try {
@@ -210,7 +229,9 @@ const UserManagement = () => {
 
       setUsers(list);
       setTotalPagesCount(Number(computedTotalPages) || 1);
-      setPage(Number(currentPage) || pageNumber);
+      const nextPage = Number(currentPage) || pageNumber;
+      setPage(nextPage);
+      syncPageParam(nextPage);
     } catch (error) {
       console.error("Failed to fetch users", error);
       showError("Tải danh sách người dùng thất bại");
