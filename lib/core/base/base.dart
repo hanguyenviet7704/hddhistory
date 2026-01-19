@@ -16,7 +16,7 @@ import 'package:graphql_flutter/graphql_flutter.dart' show OperationException, Q
 import '../../config/di/di.dart';
 import '../../config/l10n/l10n.dart';
 import '../../config/services/services.dart';
-import '../../src/common/presentation/blocs/blocs.dart';
+import '../../src/common/common.dart';
 import '../helpers/helpers.dart';
 
 //* Import all base files here

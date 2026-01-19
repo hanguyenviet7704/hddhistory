@@ -1,20 +1,8 @@
 part of '../services.dart';
 
-abstract interface class IFirebaseRemoteConfigService {
-  String get latestAndroidVersion;
-  String get latestIosVersion;
-  bool get forceUserUpdate;
-  String get socialDiscordLink;
-  AppFunctionModel get appFunctionModel;
-  Future<void> initialize();
-  List<String> getCurriculums();
-  Future<bool> shouldForceUpdate();
-}
-
-@LazySingleton(as: IFirebaseRemoteConfigService)
-class FirebaseRemoteConfigService implements IFirebaseRemoteConfigService {
+@LazySingleton(as: IRemoteConfigService)
+class FirebaseRemoteConfigService implements IRemoteConfigService {
   late final FirebaseRemoteConfig _remoteConfig;
-
   final IPackageInfoService _packageInfoService;
 
   FirebaseRemoteConfigService(this._packageInfoService) {
@@ -56,35 +44,17 @@ class FirebaseRemoteConfigService implements IFirebaseRemoteConfigService {
   bool get forceUserUpdate => _remoteConfig.getBool(RemoteConfigKey.forceUserUpdate);
 
   @override
-  String get socialDiscordLink => _remoteConfig.getString(RemoteConfigKey.socialDiscordLink);
-
-  @override
-  AppFunctionModel get appFunctionModel {
+  AppFunctionEntity get appFunctionModel {
     try {
       final jsonString = _remoteConfig.getString(RemoteConfigKey.appFunction);
       if (jsonString.isEmpty) {
-        return AppFunctionModel();
+        return AppFunctionEntity();
       }
       final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      return AppFunctionModel.fromJson(jsonMap);
+      return AppFunctionEntity.fromJson(jsonMap);
     } catch (e) {
       LogDev.error('Error parsing AppFunctionModel from Remote Config: $e');
-      return AppFunctionModel();
-    }
-  }
-
-  @override
-  List<String> getCurriculums() {
-    final raw = _remoteConfig.getString(RemoteConfigKey.curriculum);
-    try {
-      final data = jsonDecode(raw) as Map<String, dynamic>;
-      if (!data.containsKey("curriculums")) return [];
-      final List<String> curriculums = data["curriculums"].map<String>((e) => e.toString()).toList();
-      if (curriculums.isEmpty) return [];
-      return curriculums;
-    } catch (e) {
-      LogDev.error('getCurriculums error: $e');
-      return [];
+      return AppFunctionEntity();
     }
   }
 

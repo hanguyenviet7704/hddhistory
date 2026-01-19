@@ -200,7 +200,7 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, BaseResponse<AppUser>> verifyOTP(Map<String, dynamic> body) {
+  TaskEither<AppException, BaseResponse<UserModel>> verifyOTP(Map<String, dynamic> body) {
     return callApi(apiCall: () => _authApi.verifyOTP(body));
   }
 

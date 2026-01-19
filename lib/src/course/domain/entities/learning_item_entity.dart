@@ -4,8 +4,8 @@ part of '../../../course/course.dart';
 abstract class LearningItemEntity with _$LearningItemEntity {
   const factory LearningItemEntity({
     @Default('') String id,
-    @Default(AppUser()) AppUser createdBy,
-    @Default(AppUser()) AppUser updatedBy,
+    @Default(UserEntity()) UserEntity createdBy,
+    @Default(UserEntity()) UserEntity updatedBy,
     @Default('') String keypointId,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage description,

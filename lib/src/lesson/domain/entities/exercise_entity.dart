@@ -4,8 +4,8 @@ part of '../../lesson.dart';
 abstract class ExerciseEntity with _$ExerciseEntity {
   const factory ExerciseEntity({
     @Default('') String id,
-    @Default(AppUser()) AppUser createdBy,
-    @Default(AppUser()) AppUser updatedBy,
+    @Default(UserEntity()) UserEntity createdBy,
+    @Default(UserEntity()) UserEntity updatedBy,
     @Default('') String keypointId,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default('') String image,

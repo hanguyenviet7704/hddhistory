@@ -30,7 +30,7 @@ import '../../config/di/di.dart';
 import '../../config/routes/routes.dart';
 import '../../config/services/services.dart';
 import '../../config/themes/themes.dart';
-import '../../src/common/presentation/blocs/blocs.dart';
+import '../../src/common/common.dart';
 import '../../src/home/home.dart';
 import '../constants/constants.dart';
 import '../helpers/helpers.dart';

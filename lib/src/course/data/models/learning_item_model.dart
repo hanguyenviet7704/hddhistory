@@ -4,8 +4,8 @@ part of '../../../course/course.dart';
 abstract class LearningItemModel with _$LearningItemModel {
   const factory LearningItemModel({
     @Default('') @JsonKey(name: '_id') String id,
-    @Default(AppUser()) AppUser createdBy,
-    @Default(AppUser()) AppUser updatedBy,
+    @Default(UserModel()) UserModel createdBy,
+    @Default(UserModel()) UserModel updatedBy,
     @Default('') String keypointId,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage description,
@@ -38,8 +38,8 @@ enum LearningItemType {
 extension LearningItemModelExtension on LearningItemModel {
   LearningItemEntity toEntity() => LearningItemEntity(
     id: id,
-    createdBy: createdBy,
-    updatedBy: updatedBy,
+    createdBy: createdBy.toEntity(),
+    updatedBy: updatedBy.toEntity(),
     keypointId: keypointId,
     title: title,
     description: description,

@@ -11,7 +11,7 @@ abstract interface class IAuthRepository {
   // TaskEither<AppException, BaseResponse<AuthEntity>> forgotPassword(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> resetPassword(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> resendOTP(String phone);
-  TaskEither<AppException, BaseResponse<AppUser>> verifyOTP(Map<String, dynamic> body);
+  TaskEither<AppException, BaseResponse<UserModel>> verifyOTP(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> updatePassword(Map<String, dynamic> body);
   TaskEither<AppException, BaseResponse> deletePermanentUser(String password);
   TaskEither<AppException, BaseResponse> deleteAccount();

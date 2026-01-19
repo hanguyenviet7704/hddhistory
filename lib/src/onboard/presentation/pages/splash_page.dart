@@ -52,7 +52,7 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _checkForUpdate() async {
     try {
-      final shouldUpdate = await AppService.instance.firebaseRemoteConfigService.shouldForceUpdate();
+      final shouldUpdate = await AppService.instance.remoteConfigService.shouldForceUpdate();
       if (!mounted) return;
 
       if (!shouldUpdate) {

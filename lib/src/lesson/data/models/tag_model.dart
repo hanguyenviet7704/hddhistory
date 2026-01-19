@@ -7,8 +7,8 @@ abstract class TagModel with _$TagModel {
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default('') String color,
     @Default('') String url,
-    @Default(AppUser()) AppUser createdBy,
-    @Default(AppUser()) AppUser updatedBy,
+    @Default(UserModel()) UserModel createdBy,
+    @Default(UserModel()) UserModel updatedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _TagModel;
@@ -19,8 +19,8 @@ abstract class TagModel with _$TagModel {
 extension TagModelExtension on TagModel {
   TagEntity toEntity() => TagEntity(
     id: id,
-    createdBy: createdBy,
-    updatedBy: updatedBy,
+    createdBy: createdBy.toEntity(),
+    updatedBy: updatedBy.toEntity(),
     title: title,
     color: color,
     url: url,
