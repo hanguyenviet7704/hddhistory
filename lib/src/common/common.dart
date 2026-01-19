@@ -15,6 +15,7 @@ import 'package:injectable/injectable.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/app_function_entity.dart';
 part 'domain/entities/app_version_config_entity.dart';
+part 'domain/entities/paywall_config_entity.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/connectivity/connectivity_cubit.dart';
@@ -34,4 +35,3 @@ part 'presentation/pages/server_error_page.dart';
 //* Parts for generated files
 part 'common.freezed.dart';
 part 'common.g.dart';
-

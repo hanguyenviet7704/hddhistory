@@ -14,9 +14,15 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
     try {
       // Set default values
       await _remoteConfig.setDefaults({
-        RemoteConfigKey.latestAndroidVersion: '1.0.0',
-        RemoteConfigKey.latestIosVersion: '1.0.0',
-        RemoteConfigKey.forceUserUpdate: false,
+        RemoteConfigKey.appVersionConfig: jsonEncode({
+          'forceUserUpdate': false,
+          'latestAndroidVersion': '1.0.0',
+          'latestIosVersion': '1.0.0',
+        }),
+        RemoteConfigKey.paywallConfig: jsonEncode({
+          'enableLessonLock': false,
+          'lessonLock': 5,
+        }),
       });
 
       // Set config settings
@@ -35,15 +41,6 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   }
 
   @override
-  String get latestAndroidVersion => _remoteConfig.getString(RemoteConfigKey.latestAndroidVersion);
-
-  @override
-  String get latestIosVersion => _remoteConfig.getString(RemoteConfigKey.latestIosVersion);
-
-  @override
-  bool get forceUserUpdate => _remoteConfig.getBool(RemoteConfigKey.forceUserUpdate);
-
-  @override
   AppFunctionEntity get appFunctionModel {
     try {
       final jsonString = _remoteConfig.getString(RemoteConfigKey.appFunction);
@@ -53,26 +50,63 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
       final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
       return AppFunctionEntity.fromJson(jsonMap);
     } catch (e) {
-      LogDev.error('Error parsing AppFunctionModel from Remote Config: $e');
+      LogDev.error('Error parsing AppFunctionEntity from Remote Config: $e');
       return AppFunctionEntity();
+    }
+  }
+
+  @override
+  AppVersionConfigEntity get appVersionConfigModel {
+    try {
+      final jsonString = _remoteConfig.getString(RemoteConfigKey.appVersionConfig);
+      if (jsonString.isEmpty) {
+        return AppVersionConfigEntity();
+      }
+      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      return AppVersionConfigEntity.fromJson(jsonMap);
+    } catch (e) {
+      LogDev.error('Error parsing AppVersionConfigEntity from Remote Config: $e');
+      return AppVersionConfigEntity();
+    }
+  }
+
+  @override
+  PaywallConfigEntity get paywallConfigModel {
+    try {
+      final jsonString = _remoteConfig.getString(RemoteConfigKey.paywallConfig);
+      if (jsonString.isEmpty) {
+        return PaywallConfigEntity();
+      }
+      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      return PaywallConfigEntity.fromJson(jsonMap);
+    } catch (e) {
+      LogDev.error('Error parsing PaywallConfigEntity from Remote Config: $e');
+      return PaywallConfigEntity();
     }
   }
 
   @override
   Future<bool> shouldForceUpdate() async {
     try {
-      if (!forceUserUpdate) {
+      final config = appVersionConfigModel;
+      if (!config.forceUserUpdate) {
         return false;
       }
 
-      final String minVersion = Platform.isAndroid ? latestAndroidVersion : latestIosVersion;
+      if (Platform.isAndroid) {
+        if (config.latestAndroidVersion.isEmpty) return false;
+        return _packageInfoService.isVersionLowerThan(config.latestAndroidVersion);
+      }
+      if (Platform.isIOS) {
+        if (config.latestIosVersion.isEmpty) return false;
+        return _packageInfoService.isVersionLowerThan(config.latestIosVersion);
+      }
 
-      return _packageInfoService.isVersionLowerThan(minVersion);
+      return false;
     } catch (e) {
       LogDev.error('Error checking app version: $e');
       return false;
     }
   }
 
-  // Method removed in favor of PackageInfoService.isVersionLowerThan
 }
