@@ -41,7 +41,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   }
 
   @override
-  AppFunctionEntity get appFunctionModel {
+  AppFunctionEntity get appFunction {
     try {
       final jsonString = _remoteConfig.getString(RemoteConfigKey.appFunction);
       if (jsonString.isEmpty) {
@@ -56,7 +56,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   }
 
   @override
-  AppVersionConfigEntity get appVersionConfigModel {
+  AppVersionConfigEntity get appVersionConfig {
     try {
       final jsonString = _remoteConfig.getString(RemoteConfigKey.appVersionConfig);
       if (jsonString.isEmpty) {
@@ -71,7 +71,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   }
 
   @override
-  PaywallConfigEntity get paywallConfigModel {
+  PaywallConfigEntity get paywallConfig {
     try {
       final jsonString = _remoteConfig.getString(RemoteConfigKey.paywallConfig);
       if (jsonString.isEmpty) {
@@ -88,7 +88,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   @override
   Future<bool> shouldForceUpdate() async {
     try {
-      final config = appVersionConfigModel;
+      final config = appVersionConfig;
       if (!config.forceUserUpdate) {
         return false;
       }
@@ -108,5 +108,4 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
       return false;
     }
   }
-
 }

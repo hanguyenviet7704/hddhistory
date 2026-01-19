@@ -26,4 +26,6 @@ extension RoadmapEntityExtension on RoadmapEntity {
     if (lastCompletedLevelIndex == -1) return false;
     return levelIndex <= lastCompletedLevelIndex;
   }
+
+  int get totalLessons => levels.fold(0, (sum, level) => sum + level.totalLessons);
 }
