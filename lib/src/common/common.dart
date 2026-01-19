@@ -15,6 +15,7 @@ import 'package:injectable/injectable.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/app_function_entity.dart';
 part 'domain/entities/app_version_config_entity.dart';
+part 'domain/entities/course_config_entity.dart';
 part 'domain/entities/paywall_config_entity.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs

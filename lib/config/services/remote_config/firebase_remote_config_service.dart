@@ -19,6 +19,10 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
           'latestAndroidVersion': '1.0.0',
           'latestIosVersion': '1.0.0',
         }),
+        RemoteConfigKey.courseConfig: jsonEncode({
+          'enable': true,
+          'finishOptionalKp': true,
+        }),
         RemoteConfigKey.paywallConfig: jsonEncode({
           'enableLessonLock': false,
           'lessonLock': 5,
@@ -52,6 +56,21 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
     } catch (e) {
       LogDev.error('Error parsing AppFunctionEntity from Remote Config: $e');
       return AppFunctionEntity();
+    }
+  }
+
+  @override
+  CourseConfigEntity get courseConfig {
+    try {
+      final jsonString = _remoteConfig.getString(RemoteConfigKey.courseConfig);
+      if (jsonString.isEmpty) {
+        return CourseConfigEntity();
+      }
+      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
+      return CourseConfigEntity.fromJson(jsonMap);
+    } catch (e) {
+      LogDev.error('Error parsing CourseConfigEntity from Remote Config: $e');
+      return CourseConfigEntity();
     }
   }
 

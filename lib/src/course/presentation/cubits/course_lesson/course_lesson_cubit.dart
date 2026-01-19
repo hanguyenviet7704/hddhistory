@@ -35,6 +35,8 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
   }
 
   void checkAndFinishOptionalKeypoints() {
+    final courseConfig = AppService.instance.remoteConfigService.courseConfig;
+    if (!courseConfig.finishOptionalKeypoints) return;
     if (state.selectedLesson.keypoints.isEmpty) return;
     final LessonResultEntity currentLessonResult = AppDI.injector.get<ProgressCubit>().state.currentLessonResult;
     final LessonEntity lesson = state.updateLessonWithResults(currentLessonResult);
