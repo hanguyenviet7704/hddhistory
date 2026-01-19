@@ -1,14 +1,11 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { ArrowPathIcon, TrashIcon } from "@heroicons/react/24/outline";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { userProgressService } from "../../services/userProgressService";
-import { courseService } from "../../services/courseService";
-import { userService } from "../../services/userService";
 import { IUserProgressDetail } from "../../types/interface/user-progress.interface";
 import { GradeResultType } from "../../types/enum/user-progress.enum";
-import { LangCode } from "../../types/enum/common.enum";
 import { getTranslationValue } from "../../utils/translation";
 import { useNotification } from "../../utils/hooks/useNotification";
 
@@ -68,33 +65,27 @@ const ScoreBadge = ({ score }: { score?: number }) => (
 const normalizeResponse = (payload: any) =>
   payload?.data?.data ?? payload?.data ?? payload ?? null;
 
-const getUserLabel = (payload: any) => {
-  const data = normalizeResponse(payload) || {};
-  return (
-    data.name ||
-    data.email ||
-    data.phone ||
-    data.username ||
-    data.fullName ||
-    ""
-  );
-};
-
-const getCourseTitle = (payload: any, lang: LangCode) => {
-  const data = normalizeResponse(payload) || {};
-  return getTranslationValue(data.title, lang) || "";
-};
-
 export default function UserProgressDetail() {
   const { userId = "", courseId = "" } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const lang = useSelector((state: RootState) => state.lang.code);
   const { showError, showSuccess } = useNotification();
+  const userLabel =
+    (
+      location.state as
+        | { userLabel?: string; courseTitle?: string }
+        | null
+    )?.userLabel ?? "";
+  const courseTitle =
+    (
+      location.state as
+        | { userLabel?: string; courseTitle?: string }
+        | null
+    )?.courseTitle ?? "";
 
   const [detail, setDetail] = useState<IUserProgressDetail | null>(null);
   const [loading, setLoading] = useState(false);
-  const [userLabel, setUserLabel] = useState("");
-  const [courseTitle, setCourseTitle] = useState("");
   const [confirmState, setConfirmState] = useState<{
     open: boolean;
     type: GradeResultType;
@@ -127,33 +118,6 @@ export default function UserProgressDetail() {
     fetchDetail();
   }, [fetchDetail]);
 
-  useEffect(() => {
-    if (!userId || !courseId) {
-      setUserLabel("");
-      setCourseTitle("");
-      return;
-    }
-
-    let mounted = true;
-    const fetchMeta = async () => {
-      try {
-        const [userRes, courseRes] = await Promise.all([
-          userService.getById(userId),
-          courseService.getById(courseId),
-        ]);
-        if (!mounted) return;
-        setUserLabel(getUserLabel(userRes));
-        setCourseTitle(getCourseTitle(courseRes, lang));
-      } catch (error) {
-        console.error("Failed to fetch progress meta", error);
-      }
-    };
-
-    fetchMeta();
-    return () => {
-      mounted = false;
-    };
-  }, [courseId, lang, userId]);
 
   const lessons = useMemo(() => detail?.lessonsResult ?? [], [detail]);
   const openConfirm = (payload: {
@@ -199,7 +163,7 @@ export default function UserProgressDetail() {
               User progress detail
             </h1>
             <p className="text-sm text-gray-500">
-              User: {userLabel || "-"} · Course: {courseTitle || "-"}
+              User: {userLabel} · Course: {courseTitle || "-"}
             </p>
           </div>
           <div className="flex items-center gap-2">
