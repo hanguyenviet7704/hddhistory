@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
 import { ArrowPathIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { LangCode } from "../../types/enum/common.enum";
@@ -101,8 +101,11 @@ const getStopAtLabel = (stopAt: IStopAtDetail | undefined, lang: LangCode) => {
 export default function UserProgressSummaryList() {
   const { userId = "" } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const lang = useSelector((state: RootState) => state.lang.code);
   const { showError, showSuccess } = useNotification();
+  const stateUserLabel =
+    (location.state as { userLabel?: string } | null)?.userLabel ?? "";
 
   const [items, setItems] = useState<ICourseProgressSummary[]>([]);
   const [loading, setLoading] = useState(false);
@@ -110,6 +113,7 @@ export default function UserProgressSummaryList() {
   const [totalPages, setTotalPages] = useState(1);
   const [confirmCourseId, setConfirmCourseId] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
+  const userLabel = stateUserLabel;
 
   const fetchProgress = useCallback(
     async (pageNumber: number) => {
@@ -148,6 +152,7 @@ export default function UserProgressSummaryList() {
     fetchProgress(page);
   }, [fetchProgress, page]);
 
+
   const handleRemoveCourse = async () => {
     if (!confirmCourseId) return;
     if (!userId) {
@@ -182,7 +187,7 @@ export default function UserProgressSummaryList() {
               User learn progress
             </h1>
             <p className="text-sm text-gray-500">
-              Danh sách tiến độ theo khoá học của người dùng.
+              {userLabel}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -240,10 +245,9 @@ export default function UserProgressSummaryList() {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {items.map((item) => {
                     const courseId = getCourseId(item);
-                    const title =
-                      getTranslationValue(item.title, lang) ||
-                      courseId ||
-                      "-";
+                    const courseTitle =
+                      getTranslationValue(item.title, lang) || "";
+                    const title = courseTitle || courseId || "-";
                     const stopAtLabel = getStopAtLabel(item.stopAt, lang);
                     const lessonTitle = getTranslationValue(
                       item.stopAt?.lessonTitle,
@@ -313,7 +317,8 @@ export default function UserProgressSummaryList() {
                               onClick={() => {
                                 if (!canNavigate) return;
                                 navigate(
-                                  `/progress/user/${userId}/course/${courseId}`
+                                  `/progress/user/${userId}/course/${courseId}`,
+                                  { state: { userLabel, courseTitle } }
                                 );
                               }}
                               disabled={!canNavigate}

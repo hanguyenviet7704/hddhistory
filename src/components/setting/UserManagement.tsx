@@ -59,6 +59,8 @@ const roleStyles: Record<UserRole, string> = {
 const getUserId = (user: Partial<IUser>) =>
   (user as any)._id || (user as any).id || "";
 
+const getUserLabel = (user: Partial<IUser>) => user.name || user.email || "";
+
 const formatLastActionValue = (lastAction?: IUser["lastAction"]) => {
   if (!lastAction) return "-";
   const timeText = lastAction.time
@@ -479,7 +481,10 @@ const UserManagement = () => {
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2 sticky right-0 bg-white z-10 min-w-[140px]">
                         <button
                           onClick={() => {
-                            if (id) navigate(`/progress/user/${id}`);
+                            if (!id) return;
+                            navigate(`/progress/user/${id}`, {
+                              state: { userLabel: getUserLabel(user) },
+                            });
                           }}
                           disabled={!canNavigate}
                           className={`inline-flex items-center ${
