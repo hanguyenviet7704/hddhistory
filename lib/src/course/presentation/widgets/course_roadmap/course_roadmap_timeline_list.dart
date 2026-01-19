@@ -3,12 +3,12 @@ part of '../../../course.dart';
 class CourseRoadmapTimeline extends StatelessWidget {
   final List<LessonEntity> lessons;
   final CourseLevel courseLevel;
-  final List<bool> lessonLocks;
+  final int lockedLessonStartIndex;
   const CourseRoadmapTimeline({
     super.key,
     required this.lessons,
     required this.courseLevel,
-    required this.lessonLocks,
+    required this.lockedLessonStartIndex,
   });
 
   @override
@@ -50,7 +50,7 @@ class CourseRoadmapTimeline extends StatelessWidget {
           final lesson = lessons[index];
           final isFirst = index == 0;
           final isLast = index == lessons.length - 1;
-          final isLocked = index < lessonLocks.length ? lessonLocks[index] : false;
+          final isLocked = lockedLessonStartIndex >= 0 && index >= lockedLessonStartIndex;
 
           return TimelineTile(
             isFirst: isFirst,

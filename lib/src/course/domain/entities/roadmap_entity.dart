@@ -14,26 +14,22 @@ abstract class RoadmapEntity with _$RoadmapEntity {
 }
 
 extension RoadmapEntityExtension on RoadmapEntity {
-  List<bool> lessonLocksForLevel({
+  int lockedLessonStartIndexForLevel({
     required PaywallConfigEntity paywallConfig,
     required int levelIndex,
   }) {
-    if (levelIndex < 0 || levelIndex >= levels.length) return const [];
+    if (levelIndex < 0 || levelIndex >= levels.length) return -1;
+    if (!paywallConfig.enableLessonLock) return -1;
 
     final totalLessonsInLevel = levels[levelIndex].totalLessons;
-    if (!paywallConfig.enableLessonLock) {
-      return List<bool>.filled(totalLessonsInLevel, false);
-    }
-
     int lessonOffset = 0;
     for (int i = 0; i < levelIndex; i++) {
       lessonOffset += levels[i].totalLessons;
     }
 
-    return List<bool>.generate(
-      totalLessonsInLevel,
-      (index) => lessonOffset + index >= paywallConfig.lessonLock,
-    );
+    if (paywallConfig.lessonLock <= lessonOffset) return 0;
+    if (paywallConfig.lessonLock >= lessonOffset + totalLessonsInLevel) return -1;
+    return paywallConfig.lessonLock - lessonOffset;
   }
 
   int get lastCompletedLevelIndex {
