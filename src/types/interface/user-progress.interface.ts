@@ -1,6 +1,9 @@
 import { ITranslation } from "../../utils/translate";
 import { LessonType } from "../enum/lesson.enum";
-import { GradeResultType } from "../enum/user-progress.enum";
+import {
+  GradeResultType,
+  UserProgressExportStatus,
+} from "../enum/user-progress.enum";
 import { BaseQuery } from "./common.interface";
 
 export interface IStopAt {
@@ -166,4 +169,14 @@ export class RemoveUserProgress {
 
     return params.toString();
   }
+}
+
+export interface ExportAllUserProgressResponse {
+  status: UserProgressExportStatus;
+  fileKey: string;
+  fileUrl: string;
+  requestedAt: Date;
+  startedAt: Date;
+  finishedAt: Date;
+  cooldownRemainingMs: number;
 }

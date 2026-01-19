@@ -1,5 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
+  ArrowDownTrayIcon,
   ArrowPathIcon,
   EyeIcon,
   PencilIcon,
@@ -14,6 +15,8 @@ import { IUser, UserListQuery } from "../../types/interface/user.interface";
 import { UserRole, UserStatus } from "../../types/enum/user.enum";
 import { userService } from "../../services/userService";
 import { useNotification } from "../../utils/hooks/useNotification";
+import { userProgressService } from "../../services/userProgressService";
+import { UserProgressExportStatus } from "../../types/enum/user-progress.enum";
 
 const PAGE_SIZE = 10;
 
@@ -97,6 +100,17 @@ const InfoField = ({ label, value }: { label: string; value: string }) => (
   </div>
 );
 
+const triggerDownload = (url: string) => {
+  const link = document.createElement("a");
+  link.href = url;
+  link.rel = "noopener";
+  link.target = "_blank";
+  link.download = "";
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+};
+
 const UserManagement = () => {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
@@ -111,6 +125,12 @@ const UserManagement = () => {
   const [anonymousFilter, setAnonymousFilter] = useState<"" | "true" | "false">(
     ""
   );
+  const [exporting, setExporting] = useState(false);
+  const [exportStatus, setExportStatus] =
+    useState<UserProgressExportStatus | null>(null);
+  const [exportFileUrl, setExportFileUrl] = useState("");
+  const exportPollRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const exportSessionRef = useRef(0);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [formData, setFormData] = useState<Partial<IUser>>(defaultUserForm);
@@ -286,6 +306,108 @@ const UserManagement = () => {
     }
   };
 
+  const clearExportPoll = () => {
+    if (exportPollRef.current) {
+      clearTimeout(exportPollRef.current);
+      exportPollRef.current = null;
+    }
+  };
+
+  const parseExportResponse = (res: any) => {
+    const data = res?.data?.data ?? res?.data ?? res ?? {};
+    const rawStatus = data.status ?? res?.status ?? res?.data?.status ?? null;
+    const status =
+      typeof rawStatus === "string" ? rawStatus.trim().toLowerCase() : rawStatus;
+    const fileUrl = data.fileUrl ?? res?.fileUrl ?? res?.data?.fileUrl ?? "";
+    return { status, fileUrl };
+  };
+
+  const scheduleExportPoll = (sessionId: number) => {
+    clearExportPoll();
+    exportPollRef.current = setTimeout(() => {
+      exportPollRef.current = null;
+      pollExportStatus(sessionId);
+    }, 5000);
+  };
+
+  const handleExportResponse = (sessionId: number, res: any) => {
+    if (sessionId !== exportSessionRef.current) return;
+    const { status, fileUrl } = parseExportResponse(res);
+
+    if (
+      status === UserProgressExportStatus.PENDING ||
+      status === UserProgressExportStatus.PROCESSING
+    ) {
+      setExportStatus(status);
+      scheduleExportPoll(sessionId);
+      return;
+    }
+
+    clearExportPoll();
+    setExportStatus(null);
+    setExporting(false);
+
+    if (status === UserProgressExportStatus.COMPLETED) {
+      if (!fileUrl) {
+        showError("Không tìm thấy file xuất tiến độ");
+        return;
+      }
+      setExportFileUrl(fileUrl);
+      triggerDownload(fileUrl);
+      return;
+    }
+
+    if (status === UserProgressExportStatus.FAILED) {
+      showError("Xuất tiến độ thất bại");
+    }
+  };
+
+  const pollExportStatus = async (sessionId: number) => {
+    if (sessionId !== exportSessionRef.current) return;
+    try {
+      const res = await userProgressService.exportAllUserProgress();
+      handleExportResponse(sessionId, res);
+    } catch (error) {
+      console.error("Export all user progress failed", error);
+      if (sessionId !== exportSessionRef.current) return;
+      clearExportPoll();
+      setExportStatus(null);
+      setExporting(false);
+      showError("Xuất tiến độ thất bại");
+    }
+  };
+
+  const handleExportAllProgress = async () => {
+    if (exporting) return;
+    exportSessionRef.current += 1;
+    const sessionId = exportSessionRef.current;
+    clearExportPoll();
+    setExporting(true);
+    setExportFileUrl("");
+    setExportStatus(UserProgressExportStatus.PROCESSING);
+    try {
+      const res = await userProgressService.exportAllUserProgress();
+      handleExportResponse(sessionId, res);
+    } catch (error) {
+      console.error("Export all user progress failed", error);
+      if (sessionId !== exportSessionRef.current) return;
+      clearExportPoll();
+      setExportStatus(null);
+      setExporting(false);
+      setExportFileUrl("");
+      showError("Xuất tiến độ thất bại");
+    }
+  };
+
+  useEffect(() => {
+    return () => {
+      if (exportPollRef.current) {
+        clearTimeout(exportPollRef.current);
+        exportPollRef.current = null;
+      }
+    };
+  }, []);
+
   const renderAvatar = (user: IUser) => {
     if (user.avatar) {
       return (
@@ -303,6 +425,23 @@ const UserManagement = () => {
         {fallback}
       </div>
     );
+  };
+
+  const isExportPending =
+    exportStatus === UserProgressExportStatus.PENDING ||
+    exportStatus === UserProgressExportStatus.PROCESSING;
+  const showExportSpinner = exporting || isExportPending;
+  const exportLabel = showExportSpinner
+    ? "Đang tổng hợp kết quả"
+    : exportFileUrl
+    ? "Tải file"
+    : "Tải tiến độ";
+  const handleExportAction = () => {
+    if (exportFileUrl) {
+      triggerDownload(exportFileUrl);
+      return;
+    }
+    handleExportAllProgress();
   };
 
   return (
@@ -324,6 +463,18 @@ const UserManagement = () => {
               className={`h-5 w-5 mr-2 ${loading ? "animate-spin" : ""}`}
             />
             Làm mới
+          </button>
+          <button
+            onClick={handleExportAction}
+            className="inline-flex items-center justify-center px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition-colors"
+            disabled={showExportSpinner}
+          >
+            {showExportSpinner ? (
+              <ArrowPathIcon className="h-5 w-5 mr-2 animate-spin" />
+            ) : (
+              <ArrowDownTrayIcon className="h-5 w-5 mr-2" />
+            )}
+            {exportLabel}
           </button>
           <button
             onClick={openCreateForm}
