@@ -7,15 +7,18 @@ class RoleplayAudioController {
     if (url.isNotEmpty) {
       _player = just_audio.AudioPlayer();
       _initialization = _player!.setUrl(url);
+      _instances.add(this);
     }
   }
+
+  static final Set<RoleplayAudioController> _instances = <RoleplayAudioController>{};
 
   final String url;
   final Duration _fallbackDelay;
   just_audio.AudioPlayer? _player;
   Future<void>? _initialization;
   bool _disposed = false;
-  Completer<void>? _stopSignal;
+  Completer<bool>? _stopSignal;
 
   bool get hasAudio => url.isNotEmpty && _player != null;
   bool get isPlaying => _player?.playing ?? false;
@@ -36,15 +39,16 @@ class RoleplayAudioController {
 
   Future<void> replay() async {
     if (!await _ensureReady() || _player == null) return;
+    _stopOtherControllers();
     await _player!.seek(Duration.zero);
     await _player!.play();
   }
 
   Future<void> stop() async {
     if (!await _ensureReady() || _player == null) return;
+    stopAutoWait();
     await _player!.pause();
     await _player!.seek(Duration.zero);
-    _stopSignal?.complete();
     _stopSignal = null;
   }
 
@@ -53,6 +57,7 @@ class RoleplayAudioController {
 
     final player = _player!;
     if (player.playing) {
+      stopAutoWait(delayAfter: true);
       await player.pause();
       return;
     }
@@ -67,6 +72,7 @@ class RoleplayAudioController {
       }
     }
 
+    _stopOtherControllers();
     await player.play();
   }
 
@@ -81,19 +87,11 @@ class RoleplayAudioController {
       return;
     }
 
+    stopAutoWait();
+    _stopSignal = Completer<bool>();
     await replay();
 
-    try {
-      _stopSignal = Completer<void>();
-      await Future.any([
-        _player!.processingStateStream.firstWhere(
-          (state) => state == just_audio.ProcessingState.completed,
-        ),
-        _stopSignal!.future,
-      ]);
-    } catch (_) {
-      // If the stream completes early (e.g. controller disposed) we gracefully stop waiting.
-    }
+    final bool shouldDelay = await _waitForAutoStopOrCompletion();
 
     if (_player != null) {
       await _player!.pause();
@@ -101,12 +99,50 @@ class RoleplayAudioController {
     }
 
     _stopSignal = null;
+
+    if (shouldDelay) {
+      await Future.delayed(_fallbackDelay);
+    }
   }
 
   Future<void> dispose() async {
     if (_disposed) return;
     _disposed = true;
     await _player?.dispose();
+    _instances.remove(this);
+  }
+
+  void stopAutoWait({bool delayAfter = false}) {
+    final stopSignal = _stopSignal;
+    if (stopSignal == null || stopSignal.isCompleted) return;
+    stopSignal.complete(delayAfter);
+  }
+
+  Future<bool> _waitForAutoStopOrCompletion() async {
+    try {
+      return await Future.any<bool>([
+        _player!.processingStateStream
+            .firstWhere((state) => state == just_audio.ProcessingState.completed)
+            .then((_) => false),
+        _stopSignal!.future,
+      ]);
+    } catch (_) {
+      // If the stream completes early (e.g. controller disposed) we gracefully stop waiting.
+      return false;
+    }
+  }
+
+  void _stopOtherControllers() {
+    for (final controller in _instances.toList()) {
+      if (controller == this) continue;
+      if (controller._disposed) {
+        _instances.remove(controller);
+        continue;
+      }
+      if (controller.isPlaying) {
+        unawaited(controller.stop());
+      }
+    }
   }
 }
 

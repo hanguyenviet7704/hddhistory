@@ -99,7 +99,7 @@ dependencies:
   # App Localizations
   flutter_localizations:
     sdk: flutter
-  slang_flutter: ^4.11.0
+  slang_flutter: ^4.12.0
 
   # App State Management
   bloc: ^9.2.0
@@ -259,8 +259,8 @@ dev_dependencies:
   freezed: ^3.2.4
   flutter_gen: ^5.12.0
   graphql_codegen: ^3.0.0
-  slang: ^4.11.2
-  slang_build_runner: ^4.11.0
+  slang: ^4.12.0
+  slang_build_runner: ^4.12.0
   mockito: ^5.6.3
 
   # App Change Info
