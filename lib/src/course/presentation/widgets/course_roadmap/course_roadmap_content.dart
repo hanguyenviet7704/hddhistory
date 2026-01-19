@@ -12,15 +12,20 @@ class CourseRoadmapContent extends StatelessWidget {
           selector: (state) => state.roadmap,
           builder: (context, roadmap) {
             if (roadmap.levels.isEmpty) return const CourseEmptyState();
+            final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
             return ListView.separated(
               padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
               separatorBuilder: (context, index) => 20.verticalSpace,
               itemCount: roadmap.levels.length,
               itemBuilder: (context, index) {
+                final lessonLocks = roadmap.lessonLocksForLevel(
+                  paywallConfig: paywallConfig,
+                  levelIndex: index,
+                );
                 return CourseLevelContent(
                   roadmapLevel: roadmap.levels[index],
                   usingAppProgressLessons: roadmap.usingAppProgressLessons(index),
-                  roadmapLevelIndex: index,
+                  lessonLocks: lessonLocks,
                 );
               },
             );

@@ -260,12 +260,4 @@ abstract interface class ITrackingService {
   Future<void> trackSettingBadgeDetailView(CourseTrackingData trackingData);
   Future<void> trackSettingBadgeDetailSlide(CourseTrackingData trackingData);
   Future<void> trackSettingBadgeGoCourse(CourseTrackingData trackingData);
-
-  //* Feedback events
-  Future<void> feedback3ScrView(BuildContext context);
-  Future<void> feedback3TagClick(BuildContext context, String tagName, String score);
-  Future<void> feedback3SubmitClick(BuildContext context, String feedback, List<String> tags, String score);
-  Future<void> feedback3RatingTypeClick(BuildContext context, String ratingType);
-  Future<void> feedback3TextClick();
-  Future<void> feedback3ExitClick();
 }
