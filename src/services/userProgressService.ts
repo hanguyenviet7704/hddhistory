@@ -1,4 +1,5 @@
 import {
+  ExportAllUserProgressResponse,
   ProgressOfUserQuery,
   RemoveUserProgress,
   UserProgressListQuery,
@@ -30,6 +31,11 @@ export const userProgressService = {
     const res = await axiosClient.get(
       `/courses-user-progress/users/${userId}/courses/${courseId}`
     );
+    return res.data;
+  },
+
+  async exportAllUserProgress(): Promise<ExportAllUserProgressResponse> {
+    const res = await axiosClient.post(`/courses-user-progress/export`);
     return res.data;
   },
 };
