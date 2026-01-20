@@ -19,6 +19,11 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   void reset() => emit(LessonState.initial());
   void setIsShowResultOverlay(bool value) => emit(state.copyWith(isShowResultOverlay: value));
 
+  void setBottomButtonVisible(bool value) {
+    if (state.isBottomButtonVisible == value) return;
+    emit(state.copyWith(isBottomButtonVisible: value));
+  }
+
   void setLearningItemFromRoleplay(LearningItemEntity learningItem) {
     emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem]), currentLearningItemIndex: 0));
     setCurrentLearningItem(learningItem);
@@ -97,10 +102,20 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     emit(state.copyWith(hasPendingAdvance: false));
   }
 
+  void setSuppressNextAutoScroll() {
+    if (state.suppressNextAutoScroll) return;
+    emit(state.copyWith(suppressNextAutoScroll: true));
+  }
+
+  void clearSuppressNextAutoScroll() {
+    if (!state.suppressNextAutoScroll) return;
+    emit(state.copyWith(suppressNextAutoScroll: false));
+  }
+
   void consumePendingAdvance() {
     if (!state.hasPendingAdvance) return;
     if (state.currentLearningItem.type != LearningItemType.exercise) return;
-    emit(state.copyWith(hasPendingAdvance: false));
+    emit(state.copyWith(hasPendingAdvance: false, suppressNextAutoScroll: true));
     AppDI.injector.get<ExerciseCubit>().nextQuestion();
   }
 

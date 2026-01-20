@@ -12,6 +12,8 @@ abstract class LessonState with _$LessonState {
     @Default([]) List<QuestionEntity> subQuestions,
     @Default(false) bool isShowResultOverlay,
     @Default(false) bool hasPendingAdvance,
+    @Default(false) bool suppressNextAutoScroll,
+    @Default(true) bool isBottomButtonVisible,
     String? errorMessage,
   }) = _LessonState;
 

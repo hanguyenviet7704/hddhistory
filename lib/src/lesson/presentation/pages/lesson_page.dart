@@ -8,7 +8,24 @@ class LessonPage extends StatefulWidget {
 }
 
 class _LessonPageState extends State<LessonPage> {
+  final ScrollController _scrollController = ScrollController();
+  final Map<int, GlobalKey> _itemKeys = {};
+  int _lastRenderedItemCount = 0;
+  bool _didNotifyExerciseScroll = false;
   String _lastExerciseScrollKey = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScrollPosition);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_handleScrollPosition);
+    _scrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +49,13 @@ class _LessonPageState extends State<LessonPage> {
         ),
       ],
       child: BlocBuilder<LessonCubit, LessonState>(
+        buildWhen: (previous, current) {
+          if (previous.isBottomButtonVisible != current.isBottomButtonVisible) {
+            final normalizedPrevious = previous.copyWith(isBottomButtonVisible: current.isBottomButtonVisible);
+            return normalizedPrevious != current;
+          }
+          return true;
+        },
         builder: (context, state) {
           final activeBody = _buildActiveBody(context, state);
           final lessonBody = _buildLessonListView(state, activeBody);
@@ -41,7 +65,6 @@ class _LessonPageState extends State<LessonPage> {
             body: lessonBody,
             bottom: bottomButton,
             isLoading: state.status == LessonStatus.loading,
-            onScroll: _trackKeypointExerciseScroll,
           );
         },
       ),
@@ -69,13 +92,40 @@ class _LessonPageState extends State<LessonPage> {
 
   Widget _buildLessonListView(LessonState state, Widget activeBody) {
     final items = _collectLessonItems(state, activeBody);
-    if (items.isEmpty) return const SizedBox.shrink();
+    if (items.isEmpty) {
+      _lastRenderedItemCount = 0;
+      _itemKeys.clear();
+      return const SizedBox.shrink();
+    }
 
-    return ListView.separated(
-      itemCount: items.length,
-      padding: EdgeInsets.only(bottom: 80.h),
-      separatorBuilder: (context, index) => 24.verticalSpace,
-      itemBuilder: (context, index) => items[index],
+    _handleAutoScroll(state, items.length);
+    _scheduleBottomButtonCheck();
+
+    return NotificationListener<UserScrollNotification>(
+      onNotification: _handleUserScroll,
+      child: ListView.separated(
+        controller: _scrollController,
+        itemCount: items.length,
+        padding: EdgeInsets.only(bottom: 160.h),
+        separatorBuilder: (context, index) => 40.verticalSpace,
+        itemBuilder: (context, index) {
+          _itemKeys.putIfAbsent(index, () => GlobalKey());
+          final bool isNewestItem = index == items.length - 1;
+          final double viewportHeight = _scrollController.hasClients
+              ? _scrollController.position.viewportDimension
+              : MediaQuery.sizeOf(context).height;
+          return KeyedSubtree(
+            key: _itemKeys[index],
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOutCubic,
+              alignment: Alignment.topCenter,
+              constraints: BoxConstraints(minHeight: isNewestItem ? viewportHeight : 0),
+              child: items[index],
+            ),
+          );
+        },
+      ),
     );
   }
 
@@ -288,5 +338,68 @@ class _LessonPageState extends State<LessonPage> {
     if (scrollKey == _lastExerciseScrollKey) return;
     _lastExerciseScrollKey = scrollKey;
     AppService.instance.appTrackingService.trackKeypointExerciseScroll(trackingData);
+  }
+
+  void _handleScrollPosition() {
+    _updateBottomButtonVisibility();
+  }
+
+  bool _handleUserScroll(UserScrollNotification notification) {
+    if (notification.direction == ScrollDirection.idle) {
+      _didNotifyExerciseScroll = false;
+    } else if (!_didNotifyExerciseScroll) {
+      _didNotifyExerciseScroll = true;
+      _trackKeypointExerciseScroll();
+    }
+    return false;
+  }
+
+  void _handleAutoScroll(LessonState state, int itemCount) {
+    final previousCount = _lastRenderedItemCount;
+    _lastRenderedItemCount = itemCount;
+    if (itemCount < previousCount) {
+      _itemKeys.clear();
+      return;
+    }
+    if (itemCount <= previousCount) return;
+
+    final shouldSuppress = state.suppressNextAutoScroll;
+    final targetIndex = itemCount - 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      if (shouldSuppress) {
+        context.read<LessonCubit>().clearSuppressNextAutoScroll();
+        return;
+      }
+      _scrollToIndex(targetIndex);
+    });
+  }
+
+  void _scrollToIndex(int index) {
+    if (!_scrollController.hasClients) return;
+    final key = _itemKeys[index];
+    final targetContext = key?.currentContext;
+    if (targetContext == null) return;
+    Scrollable.ensureVisible(
+      targetContext,
+      alignment: 0,
+      duration: const Duration(milliseconds: 320),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _scheduleBottomButtonCheck() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _updateBottomButtonVisibility();
+    });
+  }
+
+  void _updateBottomButtonVisibility() {
+    if (!_scrollController.hasClients) return;
+    final position = _scrollController.position;
+    const threshold = 0.5;
+    final shouldShow = position.extentAfter <= threshold;
+    context.read<LessonCubit>().setBottomButtonVisible(shouldShow);
   }
 }
