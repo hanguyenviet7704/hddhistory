@@ -73,7 +73,7 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
                       RoleplayFeedbackChart(),
                       RoleplayFeedbackBreakdownSection(),
                       24.verticalSpace,
-                      if (kDebugMode) RoleplayFeedbackSummarySection(),
+                      RoleplayFeedbackSummarySection(),
                     ],
                   ),
                 ),
