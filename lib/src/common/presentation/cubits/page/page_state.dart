@@ -1,4 +1,4 @@
-part of '../../../home.dart';
+part of '../../../common.dart';
 
 @freezed
 abstract class PageState with _$PageState {

@@ -1,4 +1,4 @@
-part of '../../../home.dart';
+part of '../../home.dart';
 
 enum HomeStatus { initial, loading, success, failure }
 

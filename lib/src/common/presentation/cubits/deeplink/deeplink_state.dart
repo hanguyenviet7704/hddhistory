@@ -1,4 +1,4 @@
-part of '../../../home.dart';
+part of '../../../common.dart';
 
 @freezed
 abstract class DeeplinkState with _$DeeplinkState {

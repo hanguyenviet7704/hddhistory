@@ -2,6 +2,7 @@ library;
 
 //* Single project import
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:darq/darq.dart';
 import 'package:meup/meup.dart';
 
 //* Package imports
@@ -21,6 +22,10 @@ part 'domain/entities/paywall_config_entity.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/connectivity/connectivity_cubit.dart';
 part 'presentation/cubits/connectivity/connectivity_state.dart';
+part 'presentation/cubits/deeplink/deeplink_cubit.dart';
+part 'presentation/cubits/deeplink/deeplink_state.dart';
+part 'presentation/cubits/page/page_cubit.dart';
+part 'presentation/cubits/page/page_state.dart';
 part 'presentation/cubits/setting/locale_cubit.dart';
 part 'presentation/cubits/setting/theme_cubit.dart';
 part 'presentation/cubits/setting/theme_mode_cubit.dart';

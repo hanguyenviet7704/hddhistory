@@ -1,4 +1,4 @@
-part of '../../../home.dart';
+part of '../../../common.dart';
 
 @lazySingleton
 class PageCubit extends Cubit<PageState> {
