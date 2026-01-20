@@ -1,6 +1,5 @@
 part of '../helpers.dart';
 
-
 class DefaultInt extends JsonConverter<int, dynamic> {
   const DefaultInt();
 
@@ -41,4 +40,22 @@ class DefaultString extends JsonConverter<String, dynamic> {
 
   @override
   String toJson(String object) => object;
+}
+
+class DefaultBool extends JsonConverter<bool, dynamic> {
+  const DefaultBool();
+
+  @override
+  bool fromJson(dynamic json) {
+    if (json is bool) return json;
+    if (json is num) return json != 0;
+    if (json is String) {
+      final normalized = json.trim().toLowerCase();
+      return normalized == 'true' || normalized == '1';
+    }
+    return false;
+  }
+
+  @override
+  bool toJson(bool object) => object;
 }
