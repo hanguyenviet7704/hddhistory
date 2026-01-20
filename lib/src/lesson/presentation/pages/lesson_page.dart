@@ -31,28 +31,16 @@ class _LessonPageState extends State<LessonPage> {
           listener: (context, state) => _trackKeypointExerciseScrView(state),
         ),
       ],
-      child: BlocSelector<LessonCubit, LessonState, ({LearningItemType type, LessonStatus status, bool hasItems})>(
-        selector: (state) => (type: state.currentLearningItem.type, status: state.status, hasItems: state.pageData.items.isNotEmpty),
-        builder: (context, selected) {
-          Widget lessonBody = const SizedBox.shrink();
-          Widget bottomButton = const SizedBox.shrink();
-
-          switch (selected.type) {
-            case LearningItemType.exercise || LearningItemType.roleplay:
-              final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
-              lessonBody = _buildExerciseLessonBody(question.type);
-              bottomButton = _buildBottomButton(context, lessonBody);
-              break;
-            case LearningItemType.theory:
-              lessonBody = TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
-              bottomButton = _buildBottomButton(context, lessonBody);
-              break;
-          }
+      child: BlocBuilder<LessonCubit, LessonState>(
+        builder: (context, state) {
+          final activeBody = _buildActiveBody(context, state);
+          final lessonBody = _buildLessonListView(state, activeBody);
+          final bottomButton = _buildBottomButton(context, activeBody);
 
           return LessonLayout(
             body: lessonBody,
             bottom: bottomButton,
-            isLoading: selected.status == LessonStatus.loading,
+            isLoading: state.status == LessonStatus.loading,
             onScroll: _trackKeypointExerciseScroll,
           );
         },
@@ -62,6 +50,81 @@ class _LessonPageState extends State<LessonPage> {
 
   void _handleAnswerChecked(bool isCorrect) {
     debugPrint('Answer is correct: $isCorrect');
+    final lessonState = context.read<LessonCubit>().state;
+    if (lessonState.currentLearningItem.type != LearningItemType.exercise) return;
+    context.read<LessonCubit>().markPendingAdvance();
+  }
+
+  Widget _buildActiveBody(BuildContext context, LessonState state) {
+    if (state.pageData.items.isEmpty) return const SizedBox.shrink();
+
+    switch (state.currentLearningItem.type) {
+      case LearningItemType.exercise || LearningItemType.roleplay:
+        final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
+        return _buildExerciseLessonBody(question.type);
+      case LearningItemType.theory:
+        return TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
+    }
+  }
+
+  Widget _buildLessonListView(LessonState state, Widget activeBody) {
+    final items = _collectLessonItems(state, activeBody);
+    if (items.isEmpty) return const SizedBox.shrink();
+
+    return ListView.separated(
+      itemCount: items.length,
+      padding: EdgeInsets.only(bottom: 80.h),
+      separatorBuilder: (context, index) => 24.verticalSpace,
+      itemBuilder: (context, index) => items[index],
+    );
+  }
+
+  List<Widget> _collectLessonItems(LessonState state, Widget activeBody) {
+    final items = <Widget>[];
+    if (state.pageData.items.isEmpty) return items;
+
+    final lastItemIndex = math.min(state.currentLearningItemIndex, state.pageData.items.length - 1);
+    if (lastItemIndex < 0) return items;
+
+    for (int itemIndex = 0; itemIndex <= lastItemIndex; itemIndex++) {
+      final learningItem = state.pageData.items[itemIndex];
+      final isCurrentItem = itemIndex == state.currentLearningItemIndex;
+
+      switch (learningItem.type) {
+        case LearningItemType.theory:
+          final documents = learningItem.documents;
+          if (documents.isEmpty) continue;
+          final activeDocIndex = isCurrentItem ? math.min(state.currentLessonIndex, documents.length - 1) : documents.length - 1;
+          final maxDocIndex = activeDocIndex;
+
+          for (int docIndex = 0; docIndex <= maxDocIndex; docIndex++) {
+            if (isCurrentItem && docIndex == activeDocIndex) {
+              items.add(activeBody);
+              continue;
+            }
+
+            items.add(DocumentWidget(documents: documents[docIndex].document));
+          }
+          break;
+        case LearningItemType.exercise || LearningItemType.roleplay:
+          final questions = learningItem.questions;
+          if (questions.isEmpty) continue;
+          final activeQuestionIndex = isCurrentItem ? math.min(state.currentLessonIndex, questions.length - 1) : questions.length - 1;
+          final maxQuestionIndex = activeQuestionIndex;
+
+          for (int questionIndex = 0; questionIndex <= maxQuestionIndex; questionIndex++) {
+            if (isCurrentItem && questionIndex == activeQuestionIndex) {
+              items.add(activeBody);
+              continue;
+            }
+
+            items.add(_buildReviewExerciseBody(questions[questionIndex]));
+          }
+          break;
+      }
+    }
+
+    return items;
   }
 
   Widget _buildExerciseLessonBody(QuestionTypeEnum questionType) {
@@ -74,6 +137,117 @@ class _LessonPageState extends State<LessonPage> {
       QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: _handleAnswerChecked),
       QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: _handleAnswerChecked),
     };
+  }
+
+  Widget _buildReviewExerciseBody(QuestionEntity question) {
+    return switch (question.type) {
+      QuestionTypeEnum.singleChoice => _buildChoiceReviewBody(question, isMultiple: false),
+      QuestionTypeEnum.multipleChoice => _buildChoiceReviewBody(question, isMultiple: true),
+      QuestionTypeEnum.dragAndDrop => _buildDragDropReviewBody(question),
+      QuestionTypeEnum.arrangeTheSequence => _buildArrangeSequenceReviewBody(question),
+      QuestionTypeEnum.cuesPlacement => _buildCuesPlacementReviewBody(question),
+      QuestionTypeEnum.stressPlacement => _buildStressPlacementReviewBody(question),
+      QuestionTypeEnum.speaking => _buildSpeakingReviewBody(question),
+    };
+  }
+
+  Widget _buildChoiceReviewBody(QuestionEntity question, {required bool isMultiple}) {
+    return BlocProvider<ChoiceCubit>(
+      create: (_) {
+        final cubit = ChoiceCubit();
+        cubit.setQuestion(question);
+        cubit.applyExerciseResult(question.result);
+        return cubit;
+      },
+      child: isMultiple
+          ? MultipleChoiceLessonBody(
+              onAnswerChecked: (_) {},
+              isReadOnly: true,
+            )
+          : SingleChoiceLessonBody(
+              onAnswerChecked: (_) {},
+              isReadOnly: true,
+            ),
+    );
+  }
+
+  Widget _buildDragDropReviewBody(QuestionEntity question) {
+    return BlocProvider<DragAndDropCubit>(
+      create: (_) {
+        final cubit = DragAndDropCubit();
+        cubit.setQuestion(question);
+        cubit.applyExerciseResult(question.result);
+        return cubit;
+      },
+      child: DragAndDropLessonBody(
+        onAnswerChecked: (_) {},
+        isReadOnly: true,
+      ),
+    );
+  }
+
+  Widget _buildArrangeSequenceReviewBody(QuestionEntity question) {
+    return BlocProvider<ArrangeTheSequenceCubit>(
+      create: (_) {
+        final cubit = ArrangeTheSequenceCubit();
+        cubit.setQuestion(question);
+        cubit.applyExerciseResult(question.result);
+        return cubit;
+      },
+      child: ArrangeTheSequenceLessonBody(
+        onAnswerChecked: (_) {},
+        isReadOnly: true,
+      ),
+    );
+  }
+
+  Widget _buildCuesPlacementReviewBody(QuestionEntity question) {
+    return BlocProvider<CuesPlacementCubit>(
+      create: (_) {
+        final cubit = CuesPlacementCubit();
+        cubit.setQuestion(question);
+        cubit.applyExerciseResult(question.result);
+        return cubit;
+      },
+      child: CuesPlacementLessonBody(
+        onAnswerChecked: (_) {},
+        isReadOnly: true,
+      ),
+    );
+  }
+
+  Widget _buildStressPlacementReviewBody(QuestionEntity question) {
+    return BlocProvider<MarkStressWordCubit>(
+      create: (_) {
+        final cubit = MarkStressWordCubit();
+        cubit.setQuestion(question);
+        cubit.applyExerciseResult(question.result);
+        return cubit;
+      },
+      child: MarkStressWordLessonBody(
+        onAnswerChecked: (_) {},
+        isReadOnly: true,
+      ),
+    );
+  }
+
+  Widget _buildSpeakingReviewBody(QuestionEntity question) {
+    return BlocProvider<SpeakingCubit>(
+      create: (_) {
+        final cubit = SpeakingCubit(
+          AppDI.injector.get<SendVoiceFeedbackStreamUseCase>(),
+          AppDI.injector.get<SendScoreRecordUseCase>(),
+          AppDI.injector.get<UploadCubit>(),
+          AppDI.injector.get<LocaleCubit>(),
+        );
+        cubit.setReviewResult(question, question.result);
+        return cubit;
+      },
+      child: SpeakingLessonBody(
+        onAnswerChecked: (_) {},
+        isReadOnly: true,
+      ),
+    );
   }
 
   Widget _buildBottomButton(BuildContext context, Widget lessonBody) {

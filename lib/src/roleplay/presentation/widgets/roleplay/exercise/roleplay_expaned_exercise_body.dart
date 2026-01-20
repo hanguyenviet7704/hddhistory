@@ -99,15 +99,16 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {
     final onChecked = widget.readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
     return switch (questionType) {
-      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: onChecked),
-      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: onChecked),
-      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: onChecked),
-      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: onChecked),
-      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: onChecked),
-      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: onChecked),
+      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
+      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
+      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
+      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
+      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
+      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
       QuestionTypeEnum.speaking => SpeakingLessonBody(
         onAnswerChecked: onChecked,
         onRoleplayReplayTap: widget.readOnly ? _trackReviewReplay : null,
+        isReadOnly: widget.readOnly,
       ),
     };
   }
@@ -150,8 +151,9 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   Widget _buildResultStatusRow() {
     final isSpeaking = widget.exercise.type == QuestionTypeEnum.speaking;
     final Color accentColor = isSpeaking || widget.isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
-    final String statusText =
-        isSpeaking ? t.exercise.exerciseCompleteVoiceTask : (widget.isCorrect ? t.exercise.exerciseFeedbackCorrectTitle : t.exercise.exerciseFeedbackIncorrectTitle);
+    final String statusText = isSpeaking
+        ? t.exercise.exerciseCompleteVoiceTask
+        : (widget.isCorrect ? t.exercise.exerciseFeedbackCorrectTitle : t.exercise.exerciseFeedbackIncorrectTitle);
     final Widget icon = isSpeaking || widget.isCorrect ? AppAsset.icons.app.icTick.image(width: 24.w, height: 24.w) : AppAsset.icons.app.icClose.image(width: 24.w, height: 24.w);
 
     return Padding(

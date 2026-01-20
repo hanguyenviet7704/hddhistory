@@ -3,14 +3,16 @@ part of '../../../lesson.dart';
 class SpeakingLessonBody extends StatelessWidget {
   final Function(bool) onAnswerChecked;
   final VoidCallback? onRoleplayReplayTap;
+  final bool isReadOnly;
 
   const SpeakingLessonBody({
     super.key,
     required this.onAnswerChecked,
     this.onRoleplayReplayTap,
+    this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type) {
+  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
@@ -18,11 +20,19 @@ class SpeakingLessonBody extends StatelessWidget {
     context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
-      builder: (_) => BlocProvider.value(
-        value: context.read<SpeakingCubit>(),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+        ],
         child: SpeakingResultBottomSheet(
           type: type,
           onContinue: () {
+            if (isReview) {
+              LessonResultOverlayManager.hide();
+              context.read<LessonCubit>().setIsShowResultOverlay(false);
+              return;
+            }
             if (trackingData != null) {
               AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
             }
@@ -56,8 +66,20 @@ class SpeakingLessonBody extends StatelessWidget {
       child: BlocBuilder<SpeakingCubit, SpeakingState>(
         builder: (context, state) {
           final currentQuestion = state.question;
+          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
+          final showExplainButton = isLessonExercise && state.status == SpeakingStatus.success;
 
-          return Column(
+          void handleExplainTap() {
+            if (isReadOnly) {
+              context.read<LessonCubit>().consumePendingAdvance();
+            }
+            if (!state.showExplanation) {
+              context.read<SpeakingCubit>().toggleExplanation();
+            }
+            _showResultOverlay(context, ResultType.correct, isReview: isReadOnly);
+          }
+
+          final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Display question document (images, audio, text, etc.)
@@ -74,6 +96,17 @@ class SpeakingLessonBody extends StatelessWidget {
               ),
 
               16.verticalSpace,
+            ],
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IgnorePointer(ignoring: isReadOnly, child: content),
+              if (showExplainButton) ...[
+                12.verticalSpace,
+                LessonExplainButton(onTap: handleExplainTap),
+              ],
             ],
           );
         },

@@ -60,6 +60,9 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
       ),
     );
 
+    final result = toExerciseResult();
+    _storeLessonResult(result);
+
     final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
     if (exerciseType == LearningItemType.roleplay) {
       final trackingData = _roleplayTrackingData();
@@ -73,17 +76,16 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
       }
     }
 
-    _updateUserProgressExercise();
+    _updateUserProgressExercise(result);
 
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
   }
 
-  void _updateUserProgressExercise() {
+  void _updateUserProgressExercise(ExerciseResultEntity result) {
     final question = state.question;
     if (question.exerciseId.isEmpty) return;
-    final result = toExerciseResult();
     final double score = pointCalculation().toDouble();
 
     final data = UpdateUserProgressExerciseData(
@@ -109,6 +111,12 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     );
 
     AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
+  }
+
+  void _storeLessonResult(ExerciseResultEntity result) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return;
+    AppDI.injector.get<LessonCubit>().storeExerciseResult(state.question, result);
   }
 
   int pointCalculation() {
@@ -166,19 +174,16 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
     final indices = state.selectedWordIndices.toList()..sort();
     final words = state.words;
 
-    final dragDropAnswer = indices
-        .where((index) => index >= 0 && index < words.length)
-        .map(
-          (index) {
-            final word = words[index];
-            return OptionEntity(
-              id: index,
-              text: BaseMultiLanguage(en: word, vi: word, zh: word),
-              value: BaseMultiLanguage(en: word, vi: word, zh: word),
-            );
-          },
-        )
-        .toList();
+    final dragDropAnswer = indices.where((index) => index >= 0 && index < words.length).map(
+      (index) {
+        final word = words[index];
+        return OptionEntity(
+          id: index,
+          text: BaseMultiLanguage(en: word, vi: word, zh: word),
+          value: BaseMultiLanguage(en: word, vi: word, zh: word),
+        );
+      },
+    ).toList();
 
     return ExerciseResultEntity(
       exerciseId: question.id.toString(),
@@ -231,11 +236,7 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
 }
 
 bool _stressWordIsCorrect(QuestionEntity question, Set<int> selectedIndices) {
-  final correctIndices = question.answer
-      .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
-      .where((index) => index > 0)
-      .map((index) => index - 1)
-      .toSet();
+  final correctIndices = question.answer.map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
 
   return selectedIndices.length == correctIndices.length && selectedIndices.every((index) => correctIndices.contains(index));
 }

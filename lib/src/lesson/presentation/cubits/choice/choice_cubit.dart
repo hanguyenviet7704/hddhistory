@@ -87,17 +87,18 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       ),
     );
 
-    _updateUserProgressExercise();
+    final result = toExerciseResult();
+    _storeLessonResult(result);
+    _updateUserProgressExercise(result);
 
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
   }
 
-  void _updateUserProgressExercise() {
+  void _updateUserProgressExercise(ExerciseResultEntity result) {
     final question = state.question;
     if (question.id == 0) return;
-    final result = toExerciseResult();
     final double score = pointCalculation().toDouble();
 
     final QuestionType progressType = switch (question.type) {
@@ -129,6 +130,12 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     );
 
     AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
+  }
+
+  void _storeLessonResult(ExerciseResultEntity result) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return;
+    AppDI.injector.get<LessonCubit>().storeExerciseResult(state.question, result);
   }
 
   int pointCalculation() {

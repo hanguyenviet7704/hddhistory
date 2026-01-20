@@ -2,13 +2,15 @@ part of '../../../lesson.dart';
 
 class MultipleChoiceLessonBody extends StatelessWidget {
   final Function(bool) onAnswerChecked;
+  final bool isReadOnly;
 
   const MultipleChoiceLessonBody({
     super.key,
     required this.onAnswerChecked,
+    this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type) {
+  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
@@ -16,8 +18,11 @@ class MultipleChoiceLessonBody extends StatelessWidget {
     context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
-      builder: (_) => BlocProvider.value(
-        value: context.read<ChoiceCubit>(),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+        ],
         child: BlocBuilder<ChoiceCubit, ChoiceState>(
           builder: (context, state) {
             final hasExplanation = state.question.explanation.text.isNotEmpty;
@@ -27,6 +32,11 @@ class MultipleChoiceLessonBody extends StatelessWidget {
               showExplanation: state.showExplanation,
               explanationText: state.question.explanation.text,
               onContinue: () {
+                if (isReview) {
+                  LessonResultOverlayManager.hide();
+                  context.read<LessonCubit>().setIsShowResultOverlay(false);
+                  return;
+                }
                 if (trackingData != null) {
                   AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
                 }
@@ -60,8 +70,25 @@ class MultipleChoiceLessonBody extends StatelessWidget {
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
+          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
+          final showExplainButton = isLessonExercise && state.hasChecked;
 
-          return Column(
+          void handleExplainTap() {
+            if (isReadOnly) {
+              context.read<LessonCubit>().consumePendingAdvance();
+            }
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
+            if (hasExplanation && !state.showExplanation) {
+              context.read<ChoiceCubit>().toggleExplanation();
+            }
+            _showResultOverlay(
+              context,
+              state.isCorrect ? ResultType.correct : ResultType.incorrect,
+              isReview: isReadOnly,
+            );
+          }
+
+          final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (currentQuestion.document.isNotEmpty) ...[
@@ -90,6 +117,17 @@ class MultipleChoiceLessonBody extends StatelessWidget {
                   );
                 },
               ),
+            ],
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IgnorePointer(ignoring: isReadOnly, child: content),
+              if (showExplainButton) ...[
+                12.verticalSpace,
+                LessonExplainButton(onTap: handleExplainTap),
+              ],
             ],
           );
         },

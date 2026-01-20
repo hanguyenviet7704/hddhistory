@@ -29,6 +29,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
   void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
 
+  void setReviewResult(QuestionEntity question, ExerciseResultEntity result) {
+    emit(state.copyWith(question: question, status: SpeakingStatus.success));
+    applyExerciseResult(result);
+  }
+
   // Toggle between recording and text input modes
   void toggleInputMode() {
     final isRecordingMode = state.inputMode == SpeakingInputMode.recording;
@@ -352,9 +357,9 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
   void updateUserProgressExercise() {
     final question = state.question;
-    if (question.exerciseId.isEmpty) return;
-
     final result = toExerciseResult();
+    _storeLessonResult(result);
+    if (question.exerciseId.isEmpty) return;
     final double score = pointCalculation().toDouble();
 
     final data = UpdateUserProgressExerciseData(
@@ -379,6 +384,12 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     );
 
     AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
+  }
+
+  void _storeLessonResult(ExerciseResultEntity result) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return;
+    AppDI.injector.get<LessonCubit>().storeExerciseResult(state.question, result);
   }
 
   // Toggle explanation visibility

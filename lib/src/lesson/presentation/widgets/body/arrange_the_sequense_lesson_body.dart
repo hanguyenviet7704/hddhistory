@@ -2,13 +2,15 @@ part of '../../../lesson.dart';
 
 class ArrangeTheSequenceLessonBody extends StatelessWidget {
   final Function(bool) onAnswerChecked;
+  final bool isReadOnly;
 
   const ArrangeTheSequenceLessonBody({
     super.key,
     required this.onAnswerChecked,
+    this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type) {
+  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
@@ -16,8 +18,11 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
     context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
-      builder: (_) => BlocProvider.value(
-        value: context.read<ArrangeTheSequenceCubit>(),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+        ],
         child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
           builder: (context, state) {
             final correctAnswers = state.question.answer.map((answer) {
@@ -34,6 +39,11 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
               explanationText: state.question.explanation.text,
               arrangedAnswers: correctAnswers,
               onContinue: () {
+                if (isReview) {
+                  LessonResultOverlayManager.hide();
+                  context.read<LessonCubit>().setIsShowResultOverlay(false);
+                  return;
+                }
                 if (trackingData != null) {
                   AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
                 }
@@ -67,8 +77,25 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
       child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
+          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
+          final showExplainButton = isLessonExercise && state.hasChecked;
 
-          return Column(
+          void handleExplainTap() {
+            if (isReadOnly) {
+              context.read<LessonCubit>().consumePendingAdvance();
+            }
+            final hasExplanation = state.question.explanation.text.isNotEmpty;
+            if (hasExplanation && !state.showExplanation) {
+              context.read<ArrangeTheSequenceCubit>().toggleExplanation();
+            }
+            _showResultOverlay(
+              context,
+              state.isCorrect ? ResultType.correct : ResultType.incorrect,
+              isReview: isReadOnly,
+            );
+          }
+
+          final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (currentQuestion.document.isNotEmpty) ...[
@@ -131,6 +158,17 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                   );
                 },
               ),
+            ],
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IgnorePointer(ignoring: isReadOnly, child: content),
+              if (showExplainButton) ...[
+                12.verticalSpace,
+                LessonExplainButton(onTap: handleExplainTap),
+              ],
             ],
           );
         },

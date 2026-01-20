@@ -52,16 +52,13 @@ class _LessonLayoutState extends State<LessonLayout> {
                     Expanded(
                       child: NotificationListener<ScrollNotification>(
                         onNotification: _handleScroll,
-                        child: SingleChildScrollView(
-                          child: Column(
-                            children: [
-                              12.verticalSpace,
-                              LessonBadge(),
-                              ChatInformationWidget(),
-                              widget.body,
-                              80.verticalSpace,
-                            ],
-                          ),
+                        child: Column(
+                          children: [
+                            12.verticalSpace,
+                            LessonBadge(),
+                            // ChatInformationWidget(),
+                            Expanded(child: widget.body),
+                          ],
                         ),
                       ),
                     ),

@@ -11,6 +11,7 @@ abstract class LessonState with _$LessonState {
     @Default(0) int currentLessonIndex,
     @Default([]) List<QuestionEntity> subQuestions,
     @Default(false) bool isShowResultOverlay,
+    @Default(false) bool hasPendingAdvance,
     String? errorMessage,
   }) = _LessonState;
 
@@ -43,14 +44,15 @@ extension LessonStateExtension on LessonState {
   String get currentLessonSpeechBubble {
     return switch (currentLearningItem.type) {
       LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble.text,
-      LearningItemType.exercise || LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble.text,
+      LearningItemType.exercise ||
+      LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble.text,
     };
   }
 
   int get totalLessonInAllItems {
     return pageData.items.fold(0, (sum, item) {
       if (!item.isPlayingMainQuestions) {
-        if(sum == 0) return item.questions.length;
+        if (sum == 0) return item.questions.length;
         return sum;
       }
 

@@ -31,6 +31,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
   }
 
   void nextQuestion() {
+    AppDI.injector.get<LessonCubit>().clearPendingAdvance();
     AppDI.injector.get<LessonCubit>().setIsShowResultOverlay(false);
     // setQuestionPoint(state.currentQuestion);
 
@@ -143,7 +144,7 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
         point = point.copyWith(point: score);
         break;
     }
-    
+
     AppDI.injector.get<RoleplayPointCubit>().setPoint(point);
   }
 }
