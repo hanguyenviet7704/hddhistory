@@ -9,20 +9,13 @@ class LessonPage extends StatefulWidget {
 
 class _LessonPageState extends State<LessonPage> {
   final ScrollController _scrollController = ScrollController();
-  final Map<int, GlobalKey> _itemKeys = {};
+  final GlobalKey _lastItemKey = GlobalKey();
   int _lastRenderedItemCount = 0;
   bool _didNotifyExerciseScroll = false;
   String _lastExerciseScrollKey = '';
 
   @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_handleScrollPosition);
-  }
-
-  @override
   void dispose() {
-    _scrollController.removeListener(_handleScrollPosition);
     _scrollController.dispose();
     super.dispose();
   }
@@ -94,12 +87,11 @@ class _LessonPageState extends State<LessonPage> {
     final items = _collectLessonItems(state, activeBody);
     if (items.isEmpty) {
       _lastRenderedItemCount = 0;
-      _itemKeys.clear();
+      _scheduleBottomButtonVisibilityUpdate();
       return const SizedBox.shrink();
     }
 
     _handleAutoScroll(state, items.length);
-    _scheduleBottomButtonCheck();
 
     return NotificationListener<UserScrollNotification>(
       onNotification: _handleUserScroll,
@@ -109,21 +101,13 @@ class _LessonPageState extends State<LessonPage> {
         padding: EdgeInsets.only(bottom: 160.h),
         separatorBuilder: (context, index) => 40.verticalSpace,
         itemBuilder: (context, index) {
-          _itemKeys.putIfAbsent(index, () => GlobalKey());
-          final bool isNewestItem = index == items.length - 1;
-          final double viewportHeight = _scrollController.hasClients
-              ? _scrollController.position.viewportDimension
-              : MediaQuery.sizeOf(context).height;
-          return KeyedSubtree(
-            key: _itemKeys[index],
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 250),
-              curve: Curves.easeOutCubic,
-              alignment: Alignment.topCenter,
-              constraints: BoxConstraints(minHeight: isNewestItem ? viewportHeight : 0),
+          if (index == items.length - 1) {
+            return KeyedSubtree(
+              key: _lastItemKey,
               child: items[index],
-            ),
-          );
+            );
+          }
+          return items[index];
         },
       ),
     );
@@ -340,10 +324,6 @@ class _LessonPageState extends State<LessonPage> {
     AppService.instance.appTrackingService.trackKeypointExerciseScroll(trackingData);
   }
 
-  void _handleScrollPosition() {
-    _updateBottomButtonVisibility();
-  }
-
   bool _handleUserScroll(UserScrollNotification notification) {
     if (notification.direction == ScrollDirection.idle) {
       _didNotifyExerciseScroll = false;
@@ -351,6 +331,7 @@ class _LessonPageState extends State<LessonPage> {
       _didNotifyExerciseScroll = true;
       _trackKeypointExerciseScroll();
     }
+    _updateBottomButtonVisibility();
     return false;
   }
 
@@ -358,37 +339,36 @@ class _LessonPageState extends State<LessonPage> {
     final previousCount = _lastRenderedItemCount;
     _lastRenderedItemCount = itemCount;
     if (itemCount < previousCount) {
-      _itemKeys.clear();
+      _scheduleBottomButtonVisibilityUpdate();
       return;
     }
     if (itemCount <= previousCount) return;
 
     final shouldSuppress = state.suppressNextAutoScroll;
-    final targetIndex = itemCount - 1;
+    _scheduleBottomButtonVisibilityUpdate();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       if (shouldSuppress) {
         context.read<LessonCubit>().clearSuppressNextAutoScroll();
         return;
       }
-      _scrollToIndex(targetIndex);
+      _scrollToLastItem();
     });
   }
 
-  void _scrollToIndex(int index) {
+  void _scrollToLastItem() {
     if (!_scrollController.hasClients) return;
-    final key = _itemKeys[index];
-    final targetContext = key?.currentContext;
+    final targetContext = _lastItemKey.currentContext;
     if (targetContext == null) return;
     Scrollable.ensureVisible(
       targetContext,
       alignment: 0,
       duration: const Duration(milliseconds: 320),
       curve: Curves.easeOutCubic,
-    );
+    ).whenComplete(_updateBottomButtonVisibility);
   }
 
-  void _scheduleBottomButtonCheck() {
+  void _scheduleBottomButtonVisibilityUpdate() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _updateBottomButtonVisibility();
@@ -397,9 +377,22 @@ class _LessonPageState extends State<LessonPage> {
 
   void _updateBottomButtonVisibility() {
     if (!_scrollController.hasClients) return;
-    final position = _scrollController.position;
-    const threshold = 0.5;
-    final shouldShow = position.extentAfter <= threshold;
-    context.read<LessonCubit>().setBottomButtonVisible(shouldShow);
+    final targetContext = _lastItemKey.currentContext;
+    if (targetContext == null) {
+      context.read<LessonCubit>().setBottomButtonVisible(false);
+      return;
+    }
+
+    final renderObject = targetContext.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.hasSize) return;
+    final viewport = RenderAbstractViewport.of(renderObject);
+    final offset = _scrollController.offset;
+    final reveal = viewport.getOffsetToReveal(renderObject, 0);
+    final itemTop = reveal.offset;
+    final itemBottom = itemTop + renderObject.size.height;
+    final viewportTop = offset;
+    final viewportBottom = offset + _scrollController.position.viewportDimension;
+    final isVisible = itemBottom > viewportTop && itemTop < viewportBottom;
+    context.read<LessonCubit>().setBottomButtonVisible(isVisible);
   }
 }
