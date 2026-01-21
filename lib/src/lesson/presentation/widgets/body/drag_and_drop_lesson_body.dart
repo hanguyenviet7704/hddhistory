@@ -20,17 +20,17 @@ class DragAndDropLessonBody extends StatelessWidget {
       context: context,
       builder: (_) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: AppDI.injector.get<DragAndDropCubit>()),
-          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+          BlocProvider.value(value: context.read<DragAndDropCubit>()),
+          BlocProvider.value(value: context.read<LessonCubit>()),
         ],
         child: BlocBuilder<DragAndDropCubit, DragAndDropState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
+            final hasExplanation = state.question.hasExplanation;
 
             return DragAndDropResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation.text,
+              explanationText: state.question.explanationText,
               targetArea: state.question.targetArea.text,
               placedWords: state.placedWords,
               correctAnswers: state.question.answer.map((a) => a.correctAnswer.text).toList(),
@@ -46,7 +46,16 @@ class DragAndDropLessonBody extends StatelessWidget {
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },
-              onExplain: hasExplanation ? () => context.read<DragAndDropCubit>().toggleExplanation() : null,
+              onExplain: hasExplanation
+                  ? () {
+                      if (state.showExplanation) {
+                        LessonResultOverlayManager.hide();
+                        context.read<LessonCubit>().setIsShowResultOverlay(false);
+                        return;
+                      }
+                      context.read<DragAndDropCubit>().toggleExplanation();
+                    }
+                  : null,
             );
           },
         ),
@@ -74,14 +83,13 @@ class DragAndDropLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked;
+          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
 
           void handleExplainTap() {
             if (isReadOnly) {
               context.read<LessonCubit>().consumePendingAdvance();
             }
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
-            if (hasExplanation && !state.showExplanation) {
+            if (currentQuestion.hasExplanation && !state.showExplanation) {
               context.read<DragAndDropCubit>().toggleExplanation();
             }
             (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultOverlay(
@@ -138,7 +146,10 @@ class DragAndDropLessonBody extends StatelessWidget {
               IgnorePointer(ignoring: isReadOnly, child: content),
               if (showExplainButton) ...[
                 12.verticalSpace,
-                LessonExplainButton(onTap: handleExplainTap),
+                LessonExplainButton(
+                  onTap: handleExplainTap,
+                  hasExplanation: currentQuestion.hasExplanation,
+                ),
               ],
             ],
           );

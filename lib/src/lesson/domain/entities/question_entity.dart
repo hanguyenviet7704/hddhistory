@@ -48,6 +48,8 @@ enum QuestionTypeEnum {
 }
 
 extension QuestionEntityExtension on QuestionEntity {
+  String get explanationText => explanation.text;
+
   bool get hasResult {
     if (result.multipleAnswer.isNotEmpty || result.dragDropAnswer.isNotEmpty) return true;
     if (result.singleAnswer.id != 0 || result.singleAnswer.labelText.isNotEmpty) return true;
@@ -68,4 +70,6 @@ extension QuestionEntityExtension on QuestionEntity {
     if (currentLearningItem.keypointId.isNotEmpty) return currentLearningItem.keypointId;
     return '';
   }
+
+  bool get hasExplanation => explanationText.isNotEmpty;
 }

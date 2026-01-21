@@ -22,8 +22,8 @@ class SpeakingLessonBody extends StatelessWidget {
       context: context,
       builder: (_) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
-          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+          BlocProvider.value(value: context.read<SpeakingCubit>()),
+          BlocProvider.value(value: context.read<LessonCubit>()),
         ],
         child: SpeakingResultBottomSheet(
           type: type,
@@ -67,13 +67,17 @@ class SpeakingLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.status == SpeakingStatus.success;
+          final hasExplainData = state.textInput.isNotEmpty ||
+              state.goodPoints.isNotEmpty ||
+              state.improvementPoints.isNotEmpty ||
+              (state.audioFilePath?.isNotEmpty ?? false);
+          final showExplainButton = isLessonExercise && state.status == SpeakingStatus.success && hasExplainData;
 
           void handleExplainTap() {
             if (isReadOnly) {
               context.read<LessonCubit>().consumePendingAdvance();
             }
-            if (!state.showExplanation) {
+            if (hasExplainData && !state.showExplanation) {
               context.read<SpeakingCubit>().toggleExplanation();
             }
             _showResultOverlay(context, ResultType.correct, isReview: isReadOnly);
@@ -105,7 +109,10 @@ class SpeakingLessonBody extends StatelessWidget {
               IgnorePointer(ignoring: isReadOnly, child: content),
               if (showExplainButton) ...[
                 12.verticalSpace,
-                LessonExplainButton(onTap: handleExplainTap),
+                LessonExplainButton(
+                  onTap: handleExplainTap,
+                  hasExplanation: hasExplainData,
+                ),
               ],
             ],
           );

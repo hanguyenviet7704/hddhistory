@@ -20,17 +20,17 @@ class CuesPlacementLessonBody extends StatelessWidget {
       context: context,
       builder: (_) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: AppDI.injector.get<CuesPlacementCubit>()),
-          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+          BlocProvider.value(value: context.read<CuesPlacementCubit>()),
+          BlocProvider.value(value: context.read<LessonCubit>()),
         ],
         child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
+            final hasExplanation = state.question.hasExplanation;
 
             return CuesPlacementResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation.text,
+              explanationText: state.question.explanationText,
               words: state.words,
               placedMarks: state.placedMarks,
               correctPositions: state.correctPositions,
@@ -49,7 +49,16 @@ class CuesPlacementLessonBody extends StatelessWidget {
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },
-              onExplain: hasExplanation ? () => context.read<CuesPlacementCubit>().toggleExplanation() : null,
+              onExplain: hasExplanation
+                  ? () {
+                      if (state.showExplanation) {
+                        LessonResultOverlayManager.hide();
+                        context.read<LessonCubit>().setIsShowResultOverlay(false);
+                        return;
+                      }
+                      context.read<CuesPlacementCubit>().toggleExplanation();
+                    }
+                  : null,
             );
           },
         ),
@@ -78,14 +87,13 @@ class CuesPlacementLessonBody extends StatelessWidget {
           final currentQuestion = state.question;
           final words = state.words;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked;
+          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
 
           void handleExplainTap() {
             if (isReadOnly) {
               context.read<LessonCubit>().consumePendingAdvance();
             }
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
-            if (hasExplanation && !state.showExplanation) {
+            if (currentQuestion.hasExplanation && !state.showExplanation) {
               context.read<CuesPlacementCubit>().toggleExplanation();
             }
             _showResultOverlay(
@@ -195,7 +203,10 @@ class CuesPlacementLessonBody extends StatelessWidget {
               IgnorePointer(ignoring: isReadOnly, child: content),
               if (showExplainButton) ...[
                 12.verticalSpace,
-                LessonExplainButton(onTap: handleExplainTap),
+                LessonExplainButton(
+                  onTap: handleExplainTap,
+                  hasExplanation: currentQuestion.hasExplanation,
+                ),
               ],
             ],
           );

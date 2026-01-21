@@ -20,8 +20,8 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
       context: context,
       builder: (_) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: AppDI.injector.get<ArrangeTheSequenceCubit>()),
-          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+          BlocProvider.value(value: context.read<ArrangeTheSequenceCubit>()),
+          BlocProvider.value(value: context.read<LessonCubit>()),
         ],
         child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
           builder: (context, state) {
@@ -31,12 +31,12 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 orElse: () => const OptionEntity(),
               );
             }).toList();
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
+            final hasExplanation = state.question.hasExplanation;
 
             return ArrangeSequenceResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation.text,
+              explanationText: state.question.explanationText,
               arrangedAnswers: correctAnswers,
               onContinue: () {
                 if (isReview) {
@@ -50,7 +50,16 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },
-              onExplain: hasExplanation ? () => context.read<ArrangeTheSequenceCubit>().toggleExplanation() : null,
+              onExplain: hasExplanation
+                  ? () {
+                      if (state.showExplanation) {
+                        LessonResultOverlayManager.hide();
+                        context.read<LessonCubit>().setIsShowResultOverlay(false);
+                        return;
+                      }
+                      context.read<ArrangeTheSequenceCubit>().toggleExplanation();
+                    }
+                  : null,
             );
           },
         ),
@@ -78,14 +87,13 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked;
+          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
 
           void handleExplainTap() {
             if (isReadOnly) {
               context.read<LessonCubit>().consumePendingAdvance();
             }
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
-            if (hasExplanation && !state.showExplanation) {
+            if (currentQuestion.hasExplanation && !state.showExplanation) {
               context.read<ArrangeTheSequenceCubit>().toggleExplanation();
             }
             _showResultOverlay(
@@ -167,7 +175,10 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
               IgnorePointer(ignoring: isReadOnly, child: content),
               if (showExplainButton) ...[
                 12.verticalSpace,
-                LessonExplainButton(onTap: handleExplainTap),
+                LessonExplainButton(
+                  onTap: handleExplainTap,
+                  hasExplanation: currentQuestion.hasExplanation,
+                ),
               ],
             ],
           );

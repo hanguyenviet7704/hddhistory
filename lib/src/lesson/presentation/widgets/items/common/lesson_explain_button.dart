@@ -2,14 +2,17 @@ part of '../../../../lesson.dart';
 
 class LessonExplainButton extends StatelessWidget {
   final VoidCallback onTap;
+  final bool hasExplanation;
 
   const LessonExplainButton({
     super.key,
     required this.onTap,
+    this.hasExplanation = false,
   });
 
   @override
   Widget build(BuildContext context) {
+    if (!hasExplanation) return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
       child: GestureDetector(

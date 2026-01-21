@@ -93,23 +93,31 @@ class _LessonPageState extends State<LessonPage> {
 
     _handleAutoScroll(state, items.length);
 
-    return NotificationListener<UserScrollNotification>(
-      onNotification: _handleUserScroll,
-      child: ListView.separated(
-        controller: _scrollController,
-        itemCount: items.length,
-        padding: EdgeInsets.only(bottom: 160.h),
-        separatorBuilder: (context, index) => 40.verticalSpace,
-        itemBuilder: (context, index) {
-          if (index == items.length - 1) {
-            return KeyedSubtree(
-              key: _lastItemKey,
-              child: items[index],
-            );
-          }
-          return items[index];
-        },
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final listHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0;
+        return NotificationListener<UserScrollNotification>(
+          onNotification: _handleUserScroll,
+          child: ListView.separated(
+            controller: _scrollController,
+            itemCount: items.length,
+            padding: EdgeInsets.only(bottom: 160.h),
+            separatorBuilder: (context, index) => 40.verticalSpace,
+            itemBuilder: (context, index) {
+              if (index == items.length - 1) {
+                return KeyedSubtree(
+                  key: _lastItemKey,
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(minHeight: listHeight),
+                    child: items[index],
+                  ),
+                );
+              }
+              return items[index];
+            },
+          ),
+        );
+      },
     );
   }
 

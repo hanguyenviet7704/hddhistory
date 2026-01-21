@@ -27,7 +27,14 @@ class SpeakingResultBottomSheet extends StatelessWidget {
           type: type,
           onContinue: onContinue,
           showExplanation: state.showExplanation,
-          onExplain: () => context.read<SpeakingCubit>().toggleExplanation(),
+          onExplain: () {
+            if (state.showExplanation) {
+              LessonResultOverlayManager.hide();
+              context.read<LessonCubit>().setIsShowResultOverlay(false);
+              return;
+            }
+            context.read<SpeakingCubit>().toggleExplanation();
+          },
           continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
           explainLabel: context.text.exercise.exerciseExplainButton,
           closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,

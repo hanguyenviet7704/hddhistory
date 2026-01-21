@@ -20,17 +20,17 @@ class MarkStressWordLessonBody extends StatelessWidget {
       context: context,
       builder: (_) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: AppDI.injector.get<MarkStressWordCubit>()),
-          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+          BlocProvider.value(value: context.read<MarkStressWordCubit>()),
+          BlocProvider.value(value: context.read<LessonCubit>()),
         ],
         child: BlocBuilder<MarkStressWordCubit, MarkStressWordState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
+            final hasExplanation = state.question.hasExplanation;
 
             return MarkStressWordResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation.text,
+              explanationText: state.question.explanationText,
               words: state.words,
               selectedIndices: state.selectedWordIndices,
               correctIndices: state.correctWordIndices,
@@ -46,7 +46,16 @@ class MarkStressWordLessonBody extends StatelessWidget {
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },
-              onExplain: hasExplanation ? () => context.read<MarkStressWordCubit>().toggleExplanation() : null,
+              onExplain: hasExplanation
+                  ? () {
+                      if (state.showExplanation) {
+                        LessonResultOverlayManager.hide();
+                        context.read<LessonCubit>().setIsShowResultOverlay(false);
+                        return;
+                      }
+                      context.read<MarkStressWordCubit>().toggleExplanation();
+                    }
+                  : null,
             );
           },
         ),
@@ -75,14 +84,13 @@ class MarkStressWordLessonBody extends StatelessWidget {
           final currentQuestion = state.question;
           final words = state.words;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked;
+          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
 
           void handleExplainTap() {
             if (isReadOnly) {
               context.read<LessonCubit>().consumePendingAdvance();
             }
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
-            if (hasExplanation && !state.showExplanation) {
+            if (currentQuestion.hasExplanation && !state.showExplanation) {
               context.read<MarkStressWordCubit>().toggleExplanation();
             }
             _showResultOverlay(
@@ -157,7 +165,10 @@ class MarkStressWordLessonBody extends StatelessWidget {
               IgnorePointer(ignoring: isReadOnly, child: content),
               if (showExplainButton) ...[
                 12.verticalSpace,
-                LessonExplainButton(onTap: handleExplainTap),
+                LessonExplainButton(
+                  onTap: handleExplainTap,
+                  hasExplanation: currentQuestion.hasExplanation,
+                ),
               ],
             ],
           );
