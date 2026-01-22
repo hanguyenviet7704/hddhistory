@@ -28,7 +28,7 @@ pipeline {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     echo "Building for develop branch"
-                    sshagent(['0a39231d-d882-4824-ae7f-0d892c489685']) {
+                    sshagent(['gitlab-ssh-key']) {
                        sh """ssh -o StrictHostKeyChecking=no ansible@188.166.208.109 << EOF
                             cd /home/ansible/resource/meup/admin-dev/
                             git checkout develop
@@ -48,7 +48,7 @@ pipeline {
             }
             steps {
                 echo "Deploying to develop environment"
-                sshagent(['0a39231d-d882-4824-ae7f-0d892c489685']) {
+                sshagent(['gitlab-ssh-key']) {
                     sh """ssh -o StrictHostKeyChecking=no ansible@192.168.10.35 << EOF
                         docker pull registry.gitlab.com/eup/meup/meup-admin:${env.GIT_COMMIT_ID}
                         exit
@@ -71,7 +71,7 @@ pipeline {
             steps {
                 timeout(time: 20, unit: 'MINUTES') {
                     echo "Building for production with tag: ${env.GIT_TAG_NAME}"
-                    sshagent(['0a39231d-d882-4824-ae7f-0d892c489685']) {
+                    sshagent(['gitlab-ssh-key']) {
                        sh """ssh -o StrictHostKeyChecking=no ansible@188.166.208.109 << EOF
                             cd /home/ansible/resource/meup/admin-prod/
                             git fetch --all --tags
@@ -91,7 +91,7 @@ pipeline {
             }
             steps {
                 echo "Deploying to production environment"
-                sshagent(['0a39231d-d882-4824-ae7f-0d892c489685']) {
+                sshagent(['gitlab-ssh-key']) {
                     sh """ssh -o StrictHostKeyChecking=no ansible@159.223.67.7 << EOF
                         docker pull registry.gitlab.com/eup/meup/meup-admin:${env.GIT_TAG_NAME}
                         exit
