@@ -16,6 +16,7 @@ export interface IRoleplayColorTemplate {
   conversation: IConversationColor;
   leadingText: IColorStyle;
   transition: IColorStyle;
+  resultsOfAnsweringTheQuestion: IColorStyle;
 }
 
 export class RoleplayColorTemplateListQuery extends BaseQuery {

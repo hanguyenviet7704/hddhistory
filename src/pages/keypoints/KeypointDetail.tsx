@@ -76,7 +76,9 @@ const KeypointDetail: React.FC = () => {
 
   // Cảm biến cho dnd-kit
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: { distance: 6 },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
@@ -169,6 +171,16 @@ const KeypointDetail: React.FC = () => {
       console.error("Failed to save order:", err);
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleLearningItemClick = (item: ILearningItemBrief) => {
+    if (item.type === LearningItemType.THEORY) {
+      navigate(`/theory/${item._id}`);
+      return;
+    }
+    if (item.type === LearningItemType.EXERCISE) {
+      navigate(`/exercise/${item._id}`);
     }
   };
 
@@ -277,7 +289,10 @@ const KeypointDetail: React.FC = () => {
                             </svg>
                           </div>
                           <div className="ml-4 flex-1">
-                            <h3 className="text-lg font-medium text-gray-900 line-clamp-2 overflow-hidden">
+                            <h3
+                              className="text-lg font-medium text-gray-900 line-clamp-2 overflow-hidden cursor-pointer hover:text-blue-600 transition-colors"
+                              onClick={() => handleLearningItemClick(item)}
+                            >
                               {getTranslationValue(item.title, lang) || ""}
                             </h3>
                             {item.type === LearningItemType.THEORY ? (

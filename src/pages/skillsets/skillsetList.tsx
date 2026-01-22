@@ -33,9 +33,11 @@ import SkillsetModal from "../../components/skillsets/SkillsetModal";
 import SkillsetConfirm from "../../components/skillsets/SkillsetConfirm";
 import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
+import { useNavigate } from "react-router-dom";
 
 // --- Component chính ---
 const SkillsetList: React.FC = () => {
+  const navigate = useNavigate();
   const lang = useSelector((state: RootState) => state.lang.code);
   const [skillsets, setSkillsets] = useState<ISkillset[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
@@ -544,7 +546,14 @@ const SkillsetList: React.FC = () => {
                                     <Typography
                                       variant="subtitle1"
                                       component="div"
-                                      sx={{ fontWeight: "bold" }}
+                                      sx={{
+                                        fontWeight: "bold",
+                                        cursor: "pointer",
+                                        "&:hover": { color: "primary.main" },
+                                      }}
+                                      onClick={() =>
+                                        navigate(`/course/${course._id}`)
+                                      }
                                     >
                                       {getTranslationValue(course.title, lang)}
                                     </Typography>

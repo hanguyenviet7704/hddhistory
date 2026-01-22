@@ -75,6 +75,10 @@ const RoleplayColorConfirm = ({
                 />
                 <ColorSwatch label="Leading Text" value={template.leadingText} />
                 <ColorSwatch label="Transition" value={template.transition} />
+                <ColorSwatch
+                  label="Results of answering the question"
+                  value={template.resultsOfAnsweringTheQuestion}
+                />
               </div>
             </div>
           )}

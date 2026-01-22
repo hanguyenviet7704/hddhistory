@@ -29,8 +29,6 @@ const KeypointModal: React.FC<Props> = ({
   const [image, setImage] = useState("");
   const [tag, setTag] = useState<string[]>([]);
 
-  const [newTag, setNewTag] = useState("");
-
   useEffect(() => {
     if (keypoint) {
       setTitle(keypoint.title ?? {});
@@ -38,27 +36,14 @@ const KeypointModal: React.FC<Props> = ({
       setEstimateCompleTime(keypoint.estimateCompleTime ?? {});
       setImage(keypoint.image ?? "");
       setTag(keypoint.tag || []);
-      setNewTag("");
     } else {
       setTitle({});
       setDescription({});
       setEstimateCompleTime({});
       setImage("");
       setTag([]);
-      setNewTag("");
     }
   }, [keypoint]);
-
-  const addTag = () => {
-    if (newTag.trim()) {
-      setTag((prev) => [...prev, newTag.trim()]);
-      setNewTag("");
-    }
-  };
-
-  const removeTag = (index: number) => {
-    setTag((prev) => prev.filter((_, i) => i !== index));
-  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,54 +125,6 @@ const KeypointModal: React.FC<Props> = ({
               )
             }
           />
-
-          {/* Tag */}
-          <label className="block text-sm font-medium mb-1">Tags</label>
-
-          {/* Hiển thị các tag hiện có */}
-          {tag && tag.length > 0 && (
-            <div className="flex flex-wrap gap-2 mb-2">
-              {tag.map((tagItem, index) => (
-                <div
-                  key={index}
-                  className="flex items-center bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm"
-                >
-                  <span>{tagItem}</span>
-                  <button
-                    type="button"
-                    className="ml-2 text-blue-600 hover:text-blue-800"
-                    onClick={() => removeTag(index)}
-                  >
-                    ×
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {/* Input để thêm tag mới */}
-          <div className="flex gap-2">
-            <input
-              type="text"
-              className="flex-1 border rounded-lg px-3 py-2"
-              placeholder="Add a tag"
-              value={newTag}
-              onChange={(e) => setNewTag(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  e.preventDefault();
-                  addTag();
-                }
-              }}
-            />
-            <button
-              type="button"
-              className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
-              onClick={addTag}
-            >
-              Add
-            </button>
-          </div>
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4">

@@ -29,6 +29,7 @@ const createEmptyTemplate = (): RoleplayColorTemplateForm => ({
   },
   leadingText: defaultStyle("#eef2ff", "#1e1b4b"),
   transition: defaultStyle("#fdf2f8", "#86198f"),
+  resultsOfAnsweringTheQuestion: defaultStyle("#ecfdf3", "#065f46"),
 });
 
 const ColorInput = ({
@@ -159,8 +160,8 @@ const RoleplayColorManagement: React.FC = () => {
       | "conversationLeft"
       | "conversationRight"
       | "leadingText"
-     
-      | "transition",
+      | "transition"
+      | "resultsOfAnsweringTheQuestion",
     field: keyof IColorStyle,
     value: string
   ) => {
@@ -173,6 +174,9 @@ const RoleplayColorManagement: React.FC = () => {
         },
         leadingText: cloneStyle(prev.leadingText),
         transition: cloneStyle(prev.transition),
+        resultsOfAnsweringTheQuestion: cloneStyle(
+          prev.resultsOfAnsweringTheQuestion
+        ),
       };
 
       const updateStyle = (style: IColorStyle) => ({
@@ -193,6 +197,11 @@ const RoleplayColorManagement: React.FC = () => {
         case "transition":
           next.transition = updateStyle(next.transition);
           break;
+        case "resultsOfAnsweringTheQuestion":
+          next.resultsOfAnsweringTheQuestion = updateStyle(
+            next.resultsOfAnsweringTheQuestion
+          );
+          break;
         default:
           break;
       }
@@ -211,6 +220,9 @@ const RoleplayColorManagement: React.FC = () => {
       },
       leadingText: cloneStyle(template.leadingText),
       transition: cloneStyle(template.transition),
+      resultsOfAnsweringTheQuestion: cloneStyle(
+        template.resultsOfAnsweringTheQuestion
+      ),
     });
     setShowForm(true);
     setTimeout(() => {
@@ -230,6 +242,7 @@ const RoleplayColorManagement: React.FC = () => {
       conversation: form.conversation,
       leadingText: form.leadingText,
       transition: form.transition,
+      resultsOfAnsweringTheQuestion: form.resultsOfAnsweringTheQuestion,
     };
 
     try {
@@ -339,6 +352,10 @@ const RoleplayColorManagement: React.FC = () => {
                 label="Transition"
                 style={cloneStyle(template.transition)}
               />
+              <ColorSwatchPreview
+                label="Results of answering the question"
+                style={cloneStyle(template.resultsOfAnsweringTheQuestion)}
+              />
             </div>
           </div>
         ))}
@@ -418,6 +435,18 @@ const RoleplayColorManagement: React.FC = () => {
                   value={form.transition}
                   onChange={(field, value) =>
                     handleStyleChange("transition", field, value)
+                  }
+                />
+
+                <ColorStyleField
+                  label="Results of answering the question"
+                  value={form.resultsOfAnsweringTheQuestion}
+                  onChange={(field, value) =>
+                    handleStyleChange(
+                      "resultsOfAnsweringTheQuestion",
+                      field,
+                      value
+                    )
                   }
                 />
               </div>

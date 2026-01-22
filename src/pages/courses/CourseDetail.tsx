@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { useNotification } from "../../utils/hooks/useNotification";
@@ -61,6 +61,7 @@ const RoadmapPage: React.FC = () => {
   const lang = useSelector((state: RootState) => state.lang.code);
   const { showSuccess, showError } = useNotification();
   const { courseId } = useParams<{ courseId: string }>();
+  const navigate = useNavigate();
 
   const [roadmap, setRoadmap] = useState<IRoadmap | null>(null);
   const [loading, setLoading] = useState(true);
@@ -589,7 +590,26 @@ const RoadmapPage: React.FC = () => {
   };
 
   // ---------- Render helpers ----------
-  const renderLessonBadge = (lesson: ILessonBrief | null | undefined) => {
+  const handleLessonNavigate = (
+    lesson: ILessonBrief | null | undefined
+  ) => {
+    if (!lesson?._id) return;
+    switch (lesson.type) {
+      case LessonType.ROLEPLAY:
+        navigate(`/roleplay/${lesson._id}`);
+        return;
+      case LessonType.OUTPUT:
+        navigate(`/output/${lesson._id}`);
+        return;
+      default:
+        navigate(`/lesson/${lesson._id}`);
+    }
+  };
+
+  const renderLessonBadge = (
+    lesson: ILessonBrief | null | undefined,
+    options: { clickable?: boolean } = {}
+  ) => {
     if (!lesson)
       return <div className="text-gray-500 italic">Chưa chọn bài học</div>;
     let icon = "";
@@ -609,8 +629,17 @@ const RoadmapPage: React.FC = () => {
     }
     const title =
       getTranslationValue(lesson.title, lang) || "(Không có tiêu đề)";
+    const clickable = options.clickable ?? false;
     return (
-      <div className={`flex items-center px-3 py-2 rounded-lg ${color} mb-2`}>
+      <div
+        className={`flex items-center px-3 py-2 rounded-lg ${color} mb-2 ${
+          clickable ? "cursor-pointer hover:opacity-80" : ""
+        }`}
+        onClick={() => {
+          if (!clickable) return;
+          handleLessonNavigate(lesson);
+        }}
+      >
         <span className="mr-2">{icon}</span>
         <span>{title}</span>
       </div>
@@ -666,7 +695,9 @@ const RoadmapPage: React.FC = () => {
                     onClick={() => handleLessonSelect(lesson._id)}
                   >
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1">{renderLessonBadge(lesson)}</div>
+                      <div className="flex-1">
+                        {renderLessonBadge(lesson, { clickable: false })}
+                      </div>
                       {isMultiple && isSelected && (
                         <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-700 text-sm font-semibold">
                           {orderIndex + 1}
@@ -964,7 +995,9 @@ const RoadmapPage: React.FC = () => {
                                       Chỉnh sửa
                                     </button>
                                   </div>
-                                  {renderLessonBadge(node.entrance)}
+                                  {renderLessonBadge(node.entrance, {
+                                    clickable: true,
+                                  })}
                                 </div>
 
                                 <div className="border-l-4 border-purple-500 pl-4">
@@ -990,7 +1023,10 @@ const RoadmapPage: React.FC = () => {
                                       {node.lessons.map((l) => (
                                         <li
                                           key={l._id}
-                                          className="flex items-center"
+                                          className="flex items-center cursor-pointer hover:text-blue-600 transition-colors"
+                                          onClick={() =>
+                                            handleLessonNavigate(l)
+                                          }
                                         >
                                           <span className="mr-2">📖</span>
                                           <span className="text-sm">
@@ -1027,7 +1063,9 @@ const RoadmapPage: React.FC = () => {
                                       Chỉnh sửa
                                     </button>
                                   </div>
-                                  {renderLessonBadge(node.output)}
+                                  {renderLessonBadge(node.output, {
+                                    clickable: true,
+                                  })}
                                 </div>
                               </div>
                             </div>
