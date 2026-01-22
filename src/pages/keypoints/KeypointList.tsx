@@ -167,62 +167,81 @@ const KeypointList: React.FC = () => {
 
       {/* Danh sách Keypoint */}
       <div className="space-y-4">
-        {keypoints.map((kp, index) => (
-          <div
-            key={kp._id}
-            ref={index === keypoints.length - 1 ? lastKeypointRef : null}
-            className="flex justify-between items-center bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-lg transition-all duration-200 transform"
-          >
-            <div className="flex items-center gap-4 w-full">
-              <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-md">
-                <PuzzlePieceIcon className="h-7 w-7 text-white" />
+        {keypoints.map((kp, index) => {
+          const estimateCompleTimeLabel = getTranslationValue(
+            kp.estimateCompleTime,
+            lang
+          );
+
+          return (
+            <div
+              key={kp._id}
+              ref={index === keypoints.length - 1 ? lastKeypointRef : null}
+              className="flex justify-between items-center bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-lg transition-all duration-200 transform"
+            >
+              <div className="flex items-center gap-4 w-full">
+                <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-md">
+                  <PuzzlePieceIcon className="h-7 w-7 text-white" />
+                </div>
+                <div className="flex-1">
+                  <h2
+                    className="text-xl font-semibold text-gray-800 cursor-pointer"
+                    onClick={() => {
+                      navigate(`/keypoint/${kp._id}`);
+                    }}
+                  >
+                    {getTranslationValue(kp.title, lang)}
+                  </h2>
+                  <p className="text-gray-600 mt-1.5 leading-relaxed">
+                    {getTranslationValue(kp.description, lang)}
+                  </p>
+                  {/* Hiển thị tag nếu có */}
+                  {kp.tag && kp.tag.length > 0 && (
+                    <div className="flex flex-wrap gap-2 mt-3">
+                      {kp.tag.map((t, index) => (
+                        <span
+                          key={index}
+                          className="inline-block px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full"
+                        >
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {estimateCompleTimeLabel && (
+                    <div className="flex items-center mt-3">
+                      <img
+                        src="https://z-cdn-media.chatglm.cn/files/622fee3c-3db8-4cfc-9572-36660e61711c_Screenshot%202025-10-24%20at%2017.06.11.png?auth_key=1792836409-e64e6ea69b684b4cb655a845bc553eff-0-1a2c8c30def151790672477fcca1f5ac"
+                        alt="Clock icon"
+                        className="w-5 h-5 mr-2"
+                      />
+                      <span className="text-sm text-gray-500">
+                        {estimateCompleTimeLabel}
+                      </span>
+                    </div>
+                  )}
+                </div>
               </div>
-              <div className="flex-1">
-                <h2
-                  className="text-xl font-semibold text-gray-800 cursor-pointer"
+              <div className="flex gap-2">
+                <button
+                  className="p-2.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 group"
                   onClick={() => {
-                    navigate(`/keypoint/${kp._id}`);
+                    setSelected(kp);
+                    setIsModalOpen(true);
                   }}
                 >
-                  {getTranslationValue(kp.title, lang)}
-                </h2>
-                <p className="text-gray-600 mt-1.5 leading-relaxed">
-                  {getTranslationValue(kp.description, lang)}
-                </p>
-                {/* Hiển thị tag nếu có */}
-                {kp.tag && kp.tag.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {kp.tag.map((t, index) => (
-                      <span
-                        key={index}
-                        className="inline-block px-3 py-1 text-xs font-medium bg-gradient-to-r from-blue-100 to-indigo-100 text-blue-800 rounded-full"
-                      >
-                        {t}
-                      </span>
-                    ))}
-                  </div>
-                )}
+                  <PencilIcon className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
+                </button>
+                <button
+                  className="p-2.5 bg-red-50 rounded-lg hover:bg-red-100 transition-all duration-200 group"
+                  onClick={() => openDelete(kp)}
+                >
+                  <TrashIcon className="w-5 h-5 text-red-600 group-hover:text-red-700" />
+                </button>
               </div>
             </div>
-            <div className="flex gap-2">
-              <button
-                className="p-2.5 bg-blue-50 rounded-lg hover:bg-blue-100 transition-all duration-200 group"
-                onClick={() => {
-                  setSelected(kp);
-                  setIsModalOpen(true);
-                }}
-              >
-                <PencilIcon className="w-5 h-5 text-blue-600 group-hover:text-blue-700" />
-              </button>
-              <button
-                className="p-2.5 bg-red-50 rounded-lg hover:bg-red-100 transition-all duration-200 group"
-                onClick={() => openDelete(kp)}
-              >
-                <TrashIcon className="w-5 h-5 text-red-600 group-hover:text-red-700" />
-              </button>
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         {/* Loading indicator for initial load */}
         {loading && keypoints.length === 0 && (

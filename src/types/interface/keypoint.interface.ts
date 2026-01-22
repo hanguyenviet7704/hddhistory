@@ -7,6 +7,7 @@ export interface IKeypoint {
   description: ITranslation;
   tag?: string[];
   image: string;
+  estimateCompleTime?: ITranslation;
 }
 
 export interface KeypointPayload {
@@ -14,6 +15,7 @@ export interface KeypointPayload {
   description?: ITranslation;
   tag?: string[];
   image: string;
+  estimateCompleTime?: ITranslation;
 }
 
 export interface IKeypointBrief {

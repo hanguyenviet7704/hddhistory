@@ -25,6 +25,7 @@ const KeypointModal: React.FC<Props> = ({
 
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
+  const [estimateCompleTime, setEstimateCompleTime] = useState<ITranslation>({});
   const [image, setImage] = useState("");
   const [tag, setTag] = useState<string[]>([]);
 
@@ -34,12 +35,14 @@ const KeypointModal: React.FC<Props> = ({
     if (keypoint) {
       setTitle(keypoint.title ?? {});
       setDescription(keypoint.description ?? {});
+      setEstimateCompleTime(keypoint.estimateCompleTime ?? {});
       setImage(keypoint.image ?? "");
       setTag(keypoint.tag || []);
       setNewTag("");
     } else {
       setTitle({});
       setDescription({});
+      setEstimateCompleTime({});
       setImage("");
       setTag([]);
       setNewTag("");
@@ -67,11 +70,21 @@ const KeypointModal: React.FC<Props> = ({
     const cleanedDescription = cleanTranslation(
       updateTranslationValue(description, lang, description[lang] || "")
     );
+    const cleanedEstimateCompleTime = cleanTranslation(
+      updateTranslationValue(
+        estimateCompleTime,
+        lang,
+        estimateCompleTime[lang] || ""
+      )
+    );
 
     // Create KeypointPayload with cleaned translations
     const payload: KeypointPayload = {
       title: cleanedTitle || { [lang]: "" }, // Always include title
       ...(cleanedDescription && { description: cleanedDescription }),
+      ...(cleanedEstimateCompleTime && {
+        estimateCompleTime: cleanedEstimateCompleTime,
+      }),
       image,
       tag,
     };
@@ -105,8 +118,27 @@ const KeypointModal: React.FC<Props> = ({
             className="w-full border rounded-lg px-3 py-2"
             placeholder="Description"
             value={description[lang] || ""}
-            onChange={(e) => setDescription((prev) => updateTranslationValue(prev, lang, e.target.value))}
+            onChange={(e) =>
+              setDescription((prev) =>
+                updateTranslationValue(prev, lang, e.target.value)
+              )
+            }
             rows={3}
+          />
+
+          {/* Time complete */}
+          <label className="block text-sm font-medium mb-1">
+            Time complete
+          </label>
+          <input
+            className="w-full border rounded-lg px-3 py-2"
+            placeholder="Keypoint estimate complete time..."
+            value={estimateCompleTime[lang] || ""}
+            onChange={(e) =>
+              setEstimateCompleTime((prev) =>
+                updateTranslationValue(prev, lang, e.target.value)
+              )
+            }
           />
 
           {/* Tag */}
