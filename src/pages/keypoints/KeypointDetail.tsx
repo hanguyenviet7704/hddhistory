@@ -69,6 +69,10 @@ const KeypointDetail: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const estimateCompleTimeLabel = getTranslationValue(
+    keypoint?.estimateCompleTime,
+    lang
+  );
 
   // Cảm biến cho dnd-kit
   const sensors = useSensors(
@@ -179,9 +183,21 @@ const KeypointDetail: React.FC = () => {
           >
             <ArrowLeftIcon className="w-5 h-5" />
           </button>
-          <h1 className="text-2xl font-bold">
-            {getTranslationValue(keypoint?.title, lang) || "Keypoint Details"}
-          </h1>
+          <div>
+            <h1 className="text-2xl font-bold">
+              {getTranslationValue(keypoint?.title, lang) || "Keypoint Details"}
+            </h1>
+            {estimateCompleTimeLabel && (
+              <div className="flex items-center mt-1 text-sm text-gray-500">
+                <img
+                  src="https://z-cdn-media.chatglm.cn/files/622fee3c-3db8-4cfc-9572-36660e61711c_Screenshot%202025-10-24%20at%2017.06.11.png?auth_key=1792836409-e64e6ea69b684b4cb655a845bc553eff-0-1a2c8c30def151790672477fcca1f5ac"
+                  alt="Clock icon"
+                  className="w-5 h-5 mr-2"
+                />
+                <span>{estimateCompleTimeLabel}</span>
+              </div>
+            )}
+          </div>
         </div>
 
         {hasChanges && (
