@@ -22,9 +22,7 @@ import '../helpers/helpers.dart';
 //* Import all base files here
 part 'base.freezed.dart';
 part 'base.g.dart';
-part 'bloc/bloc_action_handler.dart';
 part 'bloc/bloc_usecase_handler.dart';
-part 'bloc/cubit_action_handler.dart';
 part 'bloc/cubit_usecase_handler.dart';
 part 'error/app_exception.dart';
 part 'network/graphql_request.dart';

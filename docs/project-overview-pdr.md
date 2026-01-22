@@ -1,434 +1,355 @@
-# Meup Project Overview & Product Development Requirements
+# Meup: Project Overview & Product Development Requirements
 
-**Version:** 1.0
-**Last Updated:** 2026-01-13
-**Project Type:** Mobile Language Learning Platform
-**Platform:** Flutter (iOS + Android)
-**Scale:** ~140K LOC across 13 feature modules
+**Last Updated:** Jan 22, 2026
+**Project:** Meup Flutter Mobile Application
+**Status:** Active Development (feature/MEUP-574)
 
-## Product Vision
+---
 
-Meup delivers an interactive, gamified language-learning platform focused on practical conversation skills through roleplay scenarios, interactive exercises, and AI-powered feedback. The app combines structured course progression with personalized learning experiences to maximize user engagement and learning outcomes.
+## 1. Product Vision
 
-## Target Users
+**Meup** is an intelligent, interactive language-learning mobile application designed to make language acquisition engaging, personalized, and effective through AI-driven conversational practice combined with structured exercises.
 
-### Primary Personas
+**Mission:** Empower learners globally to master new languages through adaptive exercises, real-world conversational roleplay, and progress tracking.
 
-**1. Young Professionals (25-35 years)**
-- Goal: Career advancement through language skills
-- Usage: 15-30 min daily during commute
-- Motivation: Professional development, international opportunities
-- Pain points: Limited time, need practical conversation skills
+---
 
-**2. Students (18-24 years)**
-- Goal: Academic requirements + real-world fluency
-- Usage: 30-60 min daily, typically evening
-- Motivation: Exam preparation, study abroad preparation
-- Pain points: Traditional methods boring, need interactive content
+## 2. Target Users & Use Cases
 
-**3. Lifelong Learners (35-55 years)**
-- Goal: Personal enrichment, travel preparation
-- Usage: Flexible schedule, weekend focus
-- Motivation: Cultural interest, travel confidence
-- Pain points: Fear of speaking mistakes, need low-pressure environment
+### Primary User Segments
+| Segment | Profile | Use Case |
+|---------|---------|----------|
+| **Self-Learners** | Adults (18-45) learning for career/travel | Complete courses at own pace with daily practice |
+| **Career Professionals** | Non-native speakers improving work communication | Focused roleplay scenarios (business meetings, presentations) |
+| **Students** | Secondary/tertiary students | Structured courses aligned with curricula |
+| **Casual Learners** | Hobby language enthusiasts | Explore skillsets, achieve badges, gamified progress |
 
-### User Needs
-- Bite-sized lessons that fit busy schedules
-- Real-world conversation practice
-- Immediate feedback on pronunciation and grammar
-- Visual progress tracking and achievement recognition
-- Offline learning capability for commuters
-- Multi-device synchronization
+### Core Learning Journeys
+1. **Onboarding Flow:** Motivation questions → Language selection → Skills assessment → Goal setting
+2. **Daily Practice:** Select course → Theory → Exercises (choice, drag-drop, speaking) → Roleplay scenarios
+3. **Progress Tracking:** View course roadmap → Keypoint milestones → Achievement badges → Subscription insights
+4. **Social/Competitive:** Optional sharing, leaderboards, achievement visibility in profile
 
-## Core Features
+---
 
-### 1. Authentication & User Management
-**Module:** `auth`, `profile`
-**Priority:** P0 (Critical)
+## 3. Key Features & Modules
 
-**Capabilities:**
-- Email/password authentication
-- Social login (Google, Apple, Anonymous)
-- Token-based session management with auto-refresh
-- User profile with customizable settings
-- Account deletion and data privacy controls
+### Core Learning Features
+| Feature | Module | Purpose |
+|---------|--------|---------|
+| **Course Catalog** | `course` | Browse, enroll, roadmap visualization |
+| **Interactive Lessons** | `lesson` | Theory content + 8 exercise types (choice, drag-drop, cues, stress, speaking, sequence, etc.) |
+| **AI Roleplay** | `roleplay` | Contextual dialogue with ML feedback (grammar, pronunciation, vocabulary) |
+| **Progress Dashboard** | `progress` | Course completion %, keypoint mastery, achievement badges |
+| **User Profile** | `profile` | Profile editing, avatar upload, subscription status, achievements |
 
-**Success Metrics:**
-- 95% authentication success rate
-- \<2s token refresh time
-- Zero data leaks in security audits
+### Gamification & Engagement
+| Feature | Module | Purpose |
+|---------|--------|---------|
+| **Keypoints** | `lesson` | Sub-lesson learning objectives with mastery tracking |
+| **Achievements** | `achievement` | Badges for milestones (course completion, speed records) |
+| **Subscriptions** | `monetization` | Premium tiers, paywall, in-app purchase management |
+| **User Settings** | `setting` | Theme, language (EN/VI/ZH), notification preferences |
 
-### 2. Course Catalog & Learning Paths
-**Module:** `course`, `progress`
-**Priority:** P0 (Critical)
+### Platform Features
+| Feature | Purpose |
+|---------|---------|
+| **Multi-Language UI** | English, Vietnamese, Chinese (Google Sheets workflow) |
+| **Analytics** | Firebase, Sentry, custom event tracking |
+| **Push Notifications** | AwesomeNotifications, Firebase Cloud Messaging |
+| **Deep Linking** | App/web URL navigation, universal links |
+| **Offline Readiness** | Cached content, local storage fallback |
 
-**Capabilities:**
-- Multi-tab course browsing (All Courses, My Courses, Categories)
-- Visual roadmap showing learning progression
-- Course enrollment and tracking
-- Lesson strength indicators (weak/medium/strong)
-- Multi-level course structure (Course → Roadmap → Lessons → Keypoints → Exercises)
+---
 
-**Success Metrics:**
-- 70% course completion rate for enrolled users
-- Average 4+ lessons per session
-- 80% user engagement with roadmap feature
+## 4. Technical Architecture Overview
 
-### 3. Interactive Lesson System
-**Module:** `lesson`
-**Priority:** P0 (Critical)
+### Architectural Pattern: Clean Architecture + BLoC
+```
+Presentation (Pages, Widgets, Cubits)
+    ↓
+Domain (Entities, Repositories, Use Cases)
+    ↓
+Data (APIs, Local Storage, Models)
+```
 
-**Capabilities:**
-- 6 exercise types:
-  - Theory/reading content with document viewer
-  - Multiple choice questions
-  - Drag-and-drop sentence building
-  - Sequence arrangement
-  - Pause mark (cues) placement
-  - Stress word marking
-  - Speaking exercises with voice recording
-- Real-time voice feedback with waveform visualization
-- Exercise result scoring with detailed feedback
-- Progress tracking at keypoint and exercise levels
-- Lottie animations for engagement
-
-**Success Metrics:**
-- 85% exercise completion rate
-- Average score improvement 15% over 30 days
-- Voice feedback latency \<3s
-
-### 4. Roleplay Conversations
-**Module:** `roleplay`
-**Priority:** P1 (High)
-
-**Capabilities:**
-- Avatar-driven conversation scenarios
-- Mission-based roleplay progression
-- Real-time conversation feedback
-- Contextual responses with transitions
-- Scoring system for conversation quality
-
-**Success Metrics:**
-- 60% roleplay completion rate
-- Average 3+ roleplay sessions per week for active users
-- Positive feedback rating 80%+
-
-### 5. Progress Tracking & Analytics
-**Module:** `progress`, `achievement`
-**Priority:** P1 (High)
-
-**Capabilities:**
-- Granular progress tracking (course → lesson → keypoint → exercise)
-- Visual progress dashboard with charts
-- Achievement system with badges
-- Course-level progress indicators
-- Recent courses tracking
-- Learning streaks and milestones
-
-**Success Metrics:**
-- 90% data accuracy across all progress levels
-- \<1s dashboard load time
-- 50% users check progress weekly
-
-### 6. In-App Purchases & Subscriptions
-**Module:** `monetization`
-**Priority:** P1 (High)
-
-**Capabilities:**
-- Multi-tier subscription plans
-- Platform IAP integration (iOS/Android)
-- Server-side purchase verification
-- Transaction restoration
-- Subscription management and renewal
-- Premium feature gating
-
-**Success Metrics:**
-- 8-12% free-to-paid conversion
-- \<1% failed transaction rate
-- 70% subscription renewal rate (monthly)
-
-### 7. Onboarding & Personalization
-**Module:** `onboard`, `data_collect`
-**Priority:** P1 (High)
-
-**Capabilities:**
-- Multi-step onboarding wizard
-- Motivation and goal selection
-- Age and skill level assessment
-- Personalized course recommendations
-- Notification permission handling
-- First-time user experience optimization
-
-**Success Metrics:**
-- 80% onboarding completion rate
-- \<60s onboarding duration
-- 70% users engage with first recommended course
-
-### 8. Settings & Preferences
-**Module:** `setting`, `common`
-**Priority:** P2 (Medium)
-
-**Capabilities:**
-- Language selection (English, Vietnamese, Chinese)
-- Theme customization (light/dark mode)
-- Notification preferences
-- Account settings management
-- App information and legal documents
-
-**Success Metrics:**
-- 95% preference persistence accuracy
-- \<500ms settings page load time
-
-### 9. Home & Navigation
-**Module:** `home`
-**Priority:** P2 (Medium)
-
-**Capabilities:**
-- Bottom navigation (Home, Course, Profile tabs)
-- Skillset browsing and discovery
-- Deep linking support
-- Section-based content organization
-- Quick access to recent courses
-
-**Success Metrics:**
-- \<200ms tab switch time
-- 90% deep link resolution success
-- 50% users access features via home shortcuts
-
-## Technical Requirements
-
-### Performance
-- **Cold Start:** \<3s on mid-range devices (2020+)
-- **API Response:** P95 \<500ms for course/lesson data
-- **Voice Processing:** \<3s for feedback generation
-- **Frame Rate:** Sustained 60fps during lessons
-- **Memory:** \<200MB baseline, \<400MB peak during lessons
-
-### Scalability
-- Support 100K+ concurrent users
-- Handle 1M+ course enrollments
-- Process 500K+ daily lesson completions
-- Store 10M+ exercise results
-
-### Reliability
-- **Uptime:** 99.9% availability
-- **Error Rate:** \<0.1% for critical paths (auth, lesson loading)
-- **Crash-Free Sessions:** 99.5%+
-- **Data Loss:** Zero tolerance for user progress
-
-### Security
-- OAuth 2.0 + JWT for authentication
-- Token refresh with 15-min access token TTL
-- Encrypted local storage (flutter_secure_storage)
-- HTTPS-only communication
-- Server-side IAP receipt validation
-- GDPR/CCPA compliance for data privacy
+### Technology Stack
+| Layer | Technology |
+|-------|-----------|
+| **UI Framework** | Flutter 3.24.0 (Dart 3.10.0) |
+| **State Management** | BLoC/Cubit with flutter_bloc 9.1.1 |
+| **Networking** | Retrofit + Dio (REST), graphql_flutter (GraphQL) |
+| **Persistence** | Firebase, SharedPreferences, HydratedBloc |
+| **Error Handling** | fpdart TaskEither (functional programming) |
+| **DI Container** | GetIt + injectable |
+| **Navigation** | go_router with type-safe code generation |
+| **Localization** | slang_flutter with Google Sheets integration |
+| **Analytics** | Firebase Analytics, Sentry, custom tracking |
+| **Backend Auth** | Firebase Auth, optional Supabase |
 
 ### Platform Support
-- **iOS:** 12.0+ (deployment target)
-- **Android:** API 21+ (min SDK), API 34 (target SDK)
-- **Screen Sizes:** Phone-optimized, tablet responsive
-- **Orientations:** Portrait primary, landscape adaptive
-- **Offline Support:** Cached lessons, offline progress tracking
+- **Android:** minSdk 21, targetSdk 34, APK + App Bundle distributions
+- **iOS:** iOS 12+, IPA via Xcode, StoreKit in-app purchases
+- **Environments:** dev, stg, prod with environment-specific configs
 
-### Accessibility
-- VoiceOver/TalkBack support for core flows
-- Dynamic type/font scaling
-- Color contrast WCAG AA compliant
-- Touch target size ≥44x44pt
+---
 
-### Localization
-- 3 languages: English (base), Vietnamese, Chinese
-- RTL layout support (future)
-- Number/date formatting per locale
-- Google Sheets-based translation workflow
+## 5. Functional Requirements
 
-## Integration Requirements
+### F1: User Onboarding & Authentication
+- Email/password registration and login
+- OAuth login (Google, Apple)
+- Anonymous guest mode
+- OTP-based 2FA
+- Password recovery flow
 
-### Third-Party Services
+### F2: Course Management
+- Browse paginated course catalog (with filtering by skillset)
+- View course details, roadmap visualization, lesson list
+- Track course progress (completion %, current lesson)
+- Enroll/unenroll from courses
 
-**Firebase Suite:**
-- Authentication (email, Google, Apple)
-- Cloud Messaging (push notifications)
-- Crashlytics (error tracking)
-- Analytics (user behavior)
-- Remote Config (feature flags)
-- App Distribution (beta testing)
+### F3: Interactive Lessons
+- Display theory content (text, video, audio)
+- Support 8+ exercise types:
+  - Single/multiple choice
+  - Drag-and-drop sentence building
+  - Pronunciation cue placement
+  - Word stress marking
+  - Speaking (voice recording + ML evaluation)
+  - Sequence arrangement
+  - Gap-filling, custom exercises
+- Submit answers with immediate feedback
+- Track exercise results, retry capability
 
-**Analytics & Tracking:**
-- Firebase Analytics (primary)
-- Sentry (error monitoring)
-- Facebook App Events (attribution)
-- TikTok Events (marketing)
+### F4: AI-Driven Roleplay
+- Engage in dialogue scenarios with contextual narrative
+- Receive ML-scored feedback (grammar, pronunciation, vocabulary)
+- Embedded exercises within roleplay dialogue
+- Voice recording in roleplay sessions
 
-**Monetization:**
-- In-App Purchase (iOS/Android native)
-- Play Store Billing
-- App Store StoreKit
+### F5: Progress & Achievements
+- Dashboard showing enrolled courses with completion %
+- Keypoint milestones and mastery levels
+- Achievement badges for course/skill completion
+- Progress history and statistics
 
-**Backend APIs:**
-- REST API (Dio + Retrofit)
-- GraphQL API (graphql_flutter)
-- AI Service API (voice feedback, streaming)
+### F6: User Profile & Settings
+- Edit profile (name, email, avatar, age, gender, language, country)
+- Manage subscription status
+- View achievements and badges
+- Change language, theme, notification preferences
+- Account deletion
 
-### Platform Permissions
-- **Camera:** Profile photo upload, future AR features
-- **Microphone:** Speaking exercises
-- **Notifications:** Engagement reminders, streak notifications
-- **Network:** Data sync, API communication
-- **Storage:** Offline content, cache management
+### F7: Monetization
+- Display paywall with subscription tiers
+- In-app purchase integration (StoreKit iOS, Google Play Android)
+- Receipt verification via backend
+- Purchase history and restore functionality
 
-## Success Metrics & KPIs
+### F8: Analytics & Tracking
+- Screen view tracking
+- Event tracking (lesson start, completion, exercise submission)
+- Error/exception logging to Crashlytics
+- User session analytics
 
-### Engagement Metrics
-- **DAU/MAU Ratio:** Target 30%+
-- **Session Duration:** Average 20+ minutes
-- **Sessions per Week:** 4+ for active users
-- **Retention:**
-  - D1: 60%+
-  - D7: 40%+
-  - D30: 25%+
+---
 
-### Learning Metrics
-- **Course Completion:** 70%+ for enrolled courses
-- **Lesson Completion:** 85%+ per started lesson
-- **Exercise Accuracy:** 70%+ average score
-- **Voice Exercise Engagement:** 60%+ completion rate
+## 6. Non-Functional Requirements
 
-### Monetization Metrics
-- **Free-to-Paid Conversion:** 8-12%
-- **ARPU (Monthly):** Target based on pricing tiers
-- **Subscription Renewal:** 70%+ (monthly), 80%+ (annual)
-- **Churn Rate:** \<5% monthly
+### NFR1: Performance
+- Lesson load time: < 2s
+- Exercise result submission: < 3s
+- Page navigation: < 500ms
+- Minimize app startup time with lazy initialization
 
-### Quality Metrics
-- **Crash-Free Rate:** 99.5%+
-- **API Success Rate:** 99.9%+
-- **Load Time P95:** \<2s for critical screens
-- **User-Reported Bugs:** \<10 per 1000 DAU
+### NFR2: Reliability
+- Graceful offline handling with cache fallback
+- Retry logic for network requests (exponential backoff)
+- Error boundary pages for critical failures
+- Automatic error reporting to Sentry
 
-## Development Constraints
+### NFR3: Security
+- HTTPS/TLS for all API communication
+- Token-based authentication (JWT)
+- Secure local storage for auth tokens
+- Obfuscation enabled in release builds
+- Data encryption for sensitive user information
 
-### Technical Debt
-- Migrate legacy UseCase handlers (`executeUseCase` → `runUseCase`)
-- Consolidate deprecated `DText` widget to `AppText`
-- Optimize large files in `lesson` module (\>200 LOC)
-- Complete GraphQL schema documentation
+### NFR4: Scalability
+- Support 100K+ concurrent users
+- Pagination for large datasets (courses, lessons, exercises)
+- Efficient state management to prevent memory leaks
+- Async/await patterns for long-running operations
 
-### Resource Constraints
-- Mobile team: 3-5 engineers
-- Backend team: 2-3 engineers
-- QA: 1-2 testers
-- Release cycle: Bi-weekly sprints
+### NFR5: Maintainability
+- Code generation for boilerplate (freezed, retrofit, injectable)
+- Consistent Clean Architecture across all modules
+- Comprehensive error type definitions
+- Modular feature-based code organization
 
-### Compliance
-- App Store Review Guidelines
-- Google Play Store policies
-- COPPA (if targeting users \<13)
-- GDPR data protection requirements
+### NFR6: Localization
+- Support 3+ languages (EN, VI, ZH)
+- No hardcoded strings in code
+- Dynamic language switching without app restart
+- Right-to-left (RTL) support consideration
 
-## Roadmap & Milestones
+### NFR7: Testing
+- Unit test coverage for use cases and repositories
+- Widget tests for critical UI components
+- Integration tests for key user journeys
+- Mock services for offline testing
 
-### Phase 1: MVP (Completed)
-- Core authentication flow
-- Course catalog and enrollment
-- 6 exercise types implementation
-- Basic progress tracking
-- iOS/Android builds
+---
 
-### Phase 2: Enhancement (Current)
-- Roleplay system expansion
+## 7. System Constraints & Dependencies
+
+### Constraints
+- Minimum Flutter SDK: 3.24.0
+- Dart SDK: 3.10.0+
+- Requires internet for initial setup, feature flags, ML evaluation
+- Firebase project required for production
+- Apple/Google developer accounts for app store deployment
+
+### External Dependencies
+| Service | Purpose | Status |
+|---------|---------|--------|
+| Firebase | Auth, Analytics, Crashlytics, Remote Config | Required |
+| Google Cloud Speech-to-Text | Voice recording evaluation | Required |
+| Google Sheets API | Localization master data | Required |
+| Supabase (Optional) | Alternative backend | Optional |
+| Facebook Analytics | Event tracking | Optional |
+| TikTok Analytics | Cross-promotion tracking | Optional |
+| Sentry | Error tracking | Optional |
+
+### Platform Constraints
+- iOS: StoreKit 2 for in-app purchases
+- Android: Google Play Billing Library v7+
+- Both platforms require app store account for distribution
+
+---
+
+## 8. Success Metrics & KPIs
+
+### User Engagement
+- Daily Active Users (DAU)
+- Session length (target: 15-20 min)
+- Course completion rate (target: > 60%)
+- Lesson pass rate on first attempt (target: > 70%)
+
+### Retention
+- 7-day retention rate (target: > 40%)
+- 30-day retention rate (target: > 25%)
+- Churn rate (target: < 5% monthly)
+
+### Monetization
+- Conversion to paid (target: 5-10% of new users)
+- Average revenue per user (ARPU)
+- Subscription lifetime value
+- In-app purchase acceptance rate
+
+### Quality
+- Crash-free session rate (target: > 99%)
+- API error rate (target: < 0.5%)
+- User error reports (target: < 100/week)
+
+### Adoption
+- App store rating (target: > 4.5 stars)
+- Install-to-first-lesson ratio (target: > 80%)
+- Feature adoption (roleplay: > 50% of active users)
+
+---
+
+## 9. Roadmap & Phases
+
+### Phase 1: MVP Launch (Current)
+- Core auth, course catalog, basic exercises
+- User profile and progress tracking
+- Basic analytics and error tracking
+- iOS + Android build pipeline
+
+### Phase 2: Engagement (Next)
+- AI roleplay with voice feedback
+- Achievement system and gamification
+- Subscription model and paywall
 - Advanced analytics dashboard
-- Subscription optimization
-- Performance improvements
-- Localization expansion
 
-### Phase 3: Growth (Q1-Q2 2026)
-- Social features (friend progress, leaderboards)
-- Live tutoring integration
-- AR pronunciation guidance
-- Tablet-optimized UI
-- Web platform support
+### Phase 3: Scale (Future)
+- Community features (forums, leaderboards)
+- Adaptive course recommendations
+- Teacher/admin dashboard
+- Content marketplace
 
-### Phase 4: Scale (Q3-Q4 2026)
-- AI-powered personalization
-- Multi-language course expansion
-- Enterprise/education partnerships
-- Offline-first architecture
-- Advanced speech recognition
+### Phase 4: Expansion (Long-term)
+- Additional languages and courses
+- B2B licensing model
+- Offline-first mobile experience
+- Desktop/web companion apps
 
-## Risk Assessment
+---
 
-### High-Priority Risks
+## 10. Module Dependencies & Integration
 
-**1. Voice Feedback Performance**
-- Risk: AI service latency affects user experience
-- Mitigation: Caching, streaming responses, fallback mechanisms
-- Owner: Backend + Mobile teams
+### Module Dependency Graph
+```
+common (global state)
+    ↓
+auth (authentication)
+    ↓
+profile (user info)
+    ↓
+course → lesson → roleplay
+    ↓
+progress → achievement
+    ↓
+monetization
+    ↓
+setting (theme, language)
+```
 
-**2. Monetization Optimization**
-- Risk: Low conversion rates impact revenue
-- Mitigation: A/B testing, paywall optimization, value prop clarity
-- Owner: Product + Growth teams
+### Cross-Module Integrations
+- **Auth** → All modules require authenticated user context
+- **Monetization** → Integrates with Profile (subscription status)
+- **Progress** → Aggregates lesson, roleplay, keypoint results
+- **Common** → Provides global theme, locale, connectivity states
+- **Setting** → Theme/locale persist via HydratedCubit
 
-**3. User Retention Drop**
-- Risk: Post-onboarding engagement decline
-- Mitigation: Push notifications, streak gamification, content variety
-- Owner: Product + Analytics teams
+---
 
-**4. Platform-Specific Bugs**
-- Risk: iOS/Android parity issues
-- Mitigation: Platform-specific testing, device coverage
-- Owner: QA + Mobile teams
+## 11. Risk Assessment
 
-### Medium-Priority Risks
+| Risk | Probability | Impact | Mitigation |
+|------|-------------|--------|-----------|
+| API downtime → Poor UX | Medium | High | Offline cache, error graceful handling |
+| Voice recognition latency | Medium | Medium | Timeout limits, fallback text input |
+| Mobile platform policy changes | Medium | Medium | Proactive OS version updates, sandbox testing |
+| User churn due to difficulty | High | High | Adaptive difficulty, suggestion system |
+| Data privacy compliance | Low | Critical | Regular GDPR/CCPA audits, clear policies |
 
-**5. Backend Scalability**
-- Risk: Traffic spikes degrade performance
-- Mitigation: Load testing, auto-scaling, CDN caching
-- Owner: Backend + DevOps teams
+---
 
-**6. Third-Party Service Outages**
-- Risk: Firebase/Sentry downtime affects app
-- Mitigation: Graceful degradation, offline modes
-- Owner: Mobile + Backend teams
+## 12. Success Criteria & Definition of Done
 
-## Acceptance Criteria
+### Feature Complete When:
+✓ All use cases implemented and tested
+✓ UI matches design specifications
+✓ Error handling covers edge cases
+✓ Performance benchmarks met (< 3s for user actions)
+✓ Analytics events captured
+✓ Documentation updated
+✓ Code review approved
+✓ Integration tests passing
+✓ Deployed to staging environment
 
-### Feature Completeness
-- All P0/P1 features implemented and tested
-- Edge cases handled (network errors, auth failures)
-- Accessibility compliance verified
-- Localization complete for 3 languages
+### Release Ready When:
+✓ Feature complete + QA verified
+✓ Crash-free rate > 99%
+✓ No critical bugs
+✓ Performance profiled
+✓ Security audit passed
+✓ Deployment checklist completed
 
-### Quality Gates
-- Zero P0 bugs in production
-- \<5 P1 bugs per release
-- 80%+ unit test coverage for business logic
-- 60%+ integration test coverage for critical flows
+---
 
-### Performance Benchmarks
-- All performance targets met on reference devices
-- Memory leaks resolved
-- Battery consumption optimized
-
-### User Acceptance
-- Beta tester NPS ≥8/10
-- App store rating target 4.5+/5
-- Support ticket rate \<1% of DAU
-
-## Appendix
-
-### Glossary
-- **Keypoint:** Learning objective within a lesson
-- **Roadmap:** Visual course progression map
-- **Roleplay:** Interactive conversation scenario
-- **Skillset:** Group of related courses
-- **Exercise:** Single interactive learning activity
-- **Flavor:** Build variant (dev, stg, prod)
-
-### Related Documentation
-- `docs/system-architecture.md` - Technical architecture details
-- `docs/code-standards.md` - Development guidelines
-- `docs/codebase-summary.md` - Codebase overview
-- `CLAUDE.md` - AI assistant instructions
+**Document Maintained By:** Documentation Team
+**Next Review Date:** Feb 22, 2026

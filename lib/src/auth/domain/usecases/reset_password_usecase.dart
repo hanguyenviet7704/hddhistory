@@ -1,10 +1,10 @@
 part of '../../auth.dart';
 
 @lazySingleton
-class ResetPasswordUsecase implements UseCaseWithParams<Map<String, dynamic>, BaseResponse> {
+class ResetPasswordUsecase implements UseCaseWithParams<Map<String, dynamic>, Unit> {
   final IAuthRepository _authRepository;
   ResetPasswordUsecase(this._authRepository);
 
   @override
-  TaskEither<AppException, BaseResponse> call(Map<String, dynamic> params) => _authRepository.resetPassword(params);
+  TaskEither<AppException, Unit> call(Map<String, dynamic> params) => _authRepository.resetPassword(params);
 }

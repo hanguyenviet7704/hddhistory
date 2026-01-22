@@ -1,731 +1,765 @@
-# Meup Code Standards & Development Guidelines
+# Code Standards & Conventions
 
-**Version:** 1.0
-**Last Updated:** 2026-01-13
-**Applies To:** All Flutter code in Meup project
+**Last Updated:** Jan 22, 2026
+**Applies To:** All Dart/Flutter code in Meup project
 
-## Core Principles
+---
 
-**YAGNI (You Aren't Gonna Need It):** Implement only what's required now. Avoid speculative features.
+## 1. Architecture Pattern: Clean Architecture + BLoC
 
-**KISS (Keep It Simple, Stupid):** Favor simple solutions over complex ones. Readable code beats clever code.
-
-**DRY (Don't Repeat Yourself):** Extract common patterns into reusable components, mixins, or functions.
-
-## File Organization
-
-### Directory Structure
+### Layer Separation (Mandatory)
 ```
-lib/src/<feature>/
-├── <feature>.dart              # Barrel file (library declaration)
-├── <feature>.freezed.dart      # Generated Freezed code
-├── <feature>.g.dart            # Generated JSON serialization
-├── domain/
-│   ├── entities/               # Business models (@freezed)
-│   ├── repositories/           # Abstract interfaces (I<Name>Repository)
-│   └── usecases/               # Business logic (@lazySingleton)
-├── data/
-│   ├── datasources/
-│   │   ├── apis/              # @RestApi or GraphQL APIs
-│   │   └── local/             # Local storage/cache
-│   ├── models/                # DTOs with toEntity(), fromJson()
-│   └── repositories/          # Concrete implementations (@LazySingleton)
-└── presentation/
-    ├── cubits/ or blocs/      # State management (@lazySingleton)
-    ├── pages/                 # Screen widgets
-    └── widgets/               # Reusable UI components
-        ├── items/             # Small widgets (cards, buttons)
-        └── layouts/           # Layout compositions
+Presentation Layer (Pages, Widgets, Cubits)
+         ↓
+Domain Layer (Entities, Repository Interfaces, Use Cases)
+         ↓
+Data Layer (Models, APIs, Repository Implementations, Data Sources)
 ```
 
-### File Naming
-- **Files/directories:** `snake_case.dart`
-- **Types:** `PascalCase`
-- **Cubit/BLoC:** Suffix with `Cubit` or `Bloc` (e.g., `AuthCubit`, `AuthBloc`)
-- **Entities:** Suffix with `Entity` (e.g., `UserEntity`, `CourseEntity`)
-- **Models:** Suffix with `Model` (e.g., `UserModel`, `CourseModel`)
-- **Repositories:** Prefix interface with `I`, implementation matches (e.g., `IAuthRepository`, `AuthRepository`)
-- **Use Cases:** Descriptive name with `UseCase` suffix (e.g., `LoginUseCase`, `GetCoursesUseCase`)
+### Rules
+- **Never** import data types in presentation (no Dio, Retrofit, or Models)
+- **Never** import presentation types in domain/data
+- Domain layer must be **platform-agnostic** (no Flutter imports except for value types)
+- Repository interface lives in domain, implementation in data
 
-### File Size Management
-**Rule:** Keep individual code files under 200 lines.
+---
 
-**Rationale:** Improves context management for LLMs and human developers.
+## 2. State Management: BLoC/Cubit Pattern
 
-**Strategies:**
-- Split large widgets into smaller components
-- Extract utility functions into separate modules
-- Use composition over inheritance for complex widgets
-- Create dedicated service classes for business logic
-- Break large Cubits into multiple smaller Cubits
-
-**Example:**
+### Cubit Structure
 ```dart
-// Bad: 300-line LessonPage
-lib/src/lesson/presentation/pages/lesson_page.dart (300 LOC)
+class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin {
+  final GetCoursesUseCase _getCoursesUseCase;
 
-// Good: Split into components
-lib/src/lesson/presentation/pages/lesson_page.dart (80 LOC)
-lib/src/lesson/presentation/widgets/lesson_header.dart (40 LOC)
-lib/src/lesson/presentation/widgets/lesson_content.dart (60 LOC)
-lib/src/lesson/presentation/widgets/lesson_footer.dart (40 LOC)
-```
+  CourseCubit(this._getCoursesUseCase) : super(const CourseState.initial());
 
-## Clean Architecture Layers
-
-### Domain Layer (Business Logic)
-**Location:** `lib/src/<feature>/domain/`
-
-**Entities (`entities/`):**
-- Pure Dart objects representing business concepts
-- Immutable using `@freezed`
-- No external dependencies (except freezed_annotation)
-- No JSON serialization logic
-
-```dart
-@freezed
-abstract class UserEntity with _$UserEntity {
-  const factory UserEntity({
-    @Default('') String id,
-    @Default('') String email,
-    @Default('') String name,
-  }) = _UserEntity;
-}
-```
-
-**Repository Interfaces (`repositories/`):**
-- Abstract interfaces defining data contracts
-- All methods return `TaskEither<AppException, T>`
-- Prefix with `I` (e.g., `IAuthRepository`)
-
-```dart
-abstract interface class IAuthRepository {
-  TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body);
-  TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body);
-  TaskEither<AppException, void> logout();
-}
-```
-
-**Use Cases (`usecases/`):**
-- Single-responsibility business operations
-- Implement `UseCaseWithParams<Params, Result>` or `UseCaseWithoutParams<Result>`
-- Registered as `@lazySingleton`
-- Return `TaskEither<AppException, T>`
-
-```dart
-@lazySingleton
-class LoginUseCase implements UseCaseWithParams<LoginParams, AuthEntity> {
-  final IAuthRepository _repository;
-
-  LoginUseCase(this._repository);
-
-  @override
-  TaskEither<AppException, AuthEntity> call(LoginParams params) {
-    return _repository.login(params.toJson());
-  }
-}
-```
-
-### Data Layer (Data Sources)
-**Location:** `lib/src/<feature>/data/`
-
-**Models (`models/`):**
-- Extend or wrap domain entities
-- Include JSON serialization (`@JsonSerializable`)
-- Provide `toEntity()` method
-- Use `@freezed` for immutability
-
-```dart
-@freezed
-class UserModel with _$UserModel {
-  const UserModel._();
-
-  const factory UserModel({
-    @Default('') String id,
-    @Default('') String email,
-    @Default('') String name,
-  }) = _UserModel;
-
-  factory UserModel.fromJson(Map<String, dynamic> json) =>
-      _$UserModelFromJson(json);
-
-  UserEntity toEntity() => UserEntity(
-    id: id,
-    email: email,
-    name: name,
-  );
-}
-```
-
-**API Clients (`datasources/apis/`):**
-- Use `@RestApi` annotation for Retrofit
-- Return `Future<T>` (not `TaskEither`)
-- Code-generated with `retrofit_generator`
-
-```dart
-@RestApi()
-abstract class AuthApi {
-  factory AuthApi(Dio dio, {String baseUrl}) = _AuthApi;
-
-  @POST('/api/v1/users/login')
-  Future<BaseResponse<AuthModel>> login(@Body() Map<String, dynamic> body);
-}
-```
-
-**Repository Implementations (`repositories/`):**
-- Implement domain repository interfaces
-- Use `with RestfulRequestHandlerMixin` or `GraphQLRequestHandlerMixin`
-- Convert API responses to entities
-- Handle errors via mixins
-- Registered as `@LazySingleton(as: I<Name>Repository)`
-
-```dart
-@LazySingleton(as: IAuthRepository)
-class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository {
-  final AuthApi _authApi;
-
-  AuthRepository(this._authApi);
-
-  @override
-  TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body) {
-    return callApiWithTransform(
-      apiCall: () => _authApi.login(body),
-      transform: (response) => response.data?.toEntity() ?? AuthEntity(),
+  void loadCourses() {
+    runUseCase<List<CourseEntity>>(
+      useCase: () => _getCoursesUseCase(const PageBreakRequest()),
+      onSuccess: (courses) => emit(CourseState.success(courses: courses)),
     );
   }
 }
 ```
 
-### Presentation Layer (UI)
-**Location:** `lib/src/<feature>/presentation/`
-
-**Cubits/Blocs (`cubits/`, `blocs/`):**
-- Use `Cubit` for simple state, `Bloc` for complex event-driven flows
-- Use `with CubitUseCaseHandlerMixin` or `BlocUseCaseHandlerMixin`
-- States are `@freezed` classes
-- Registered as `@lazySingleton`
-
-```dart
-@lazySingleton
-class AuthCubit extends Cubit<AuthState> with CubitUseCaseHandlerMixin<AuthState> {
-  final LoginUseCase _loginUseCase;
-
-  AuthCubit(this._loginUseCase) : super(const AuthState.initial());
-
-  Future<void> login(LoginParams params) async {
-    await runUseCase<AuthEntity>(
-      useCase: () => _loginUseCase(params),
-      onSuccess: (auth) => emit(AuthState.authenticated(auth)),
-    );
-  }
-}
-
-@freezed
-sealed class AuthState with _$AuthState {
-  const factory AuthState.initial() = _Initial;
-  const factory AuthState.loading() = _Loading;
-  const factory AuthState.authenticated(AuthEntity auth) = _Authenticated;
-  const factory AuthState.error(AppException error) = _Error;
-}
-```
-
-**Pages (`pages/`):**
-- Stateless widgets when possible
-- Use `BlocProvider` for Cubit/BLoC injection
-- Extract complex UI to separate widgets
-- Name with `Page` suffix (e.g., `LoginPage`)
-
-```dart
-class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => getIt<AuthCubit>(),
-      child: Scaffold(
-        appBar: AppBar(title: const Text('Login')),
-        body: const LoginForm(),
-      ),
-    );
-  }
-}
-```
-
-**Widgets (`widgets/`):**
-- Reusable components
-- Organize by feature or type (items/, layouts/)
-- Keep under 100 LOC when possible
-
-## Naming Conventions
-
-### Code Naming
-| Type | Convention | Example |
-|------|------------|---------|
-| Classes | PascalCase | `UserEntity`, `AuthCubit` |
-| Functions/Methods | lowerCamelCase | `login()`, `getUserById()` |
-| Variables | lowerCamelCase | `userId`, `accessToken` |
-| Constants | lowerCamelCase | `maxRetries`, `defaultTimeout` |
-| Enums | PascalCase | `AuthStatus`, `PageBreakOrder` |
-| Enum values | lowerCamelCase | `authenticated`, `loading` |
-| Private members | _lowerCamelCase | `_authApi`, `_loginUseCase` |
-
-### Barrel File Pattern
-Each feature module has a single library file:
-
-```dart
-// lib/src/auth/auth.dart
-library auth;
-
-part 'domain/entities/auth_entity.dart';
-part 'domain/repositories/i_auth_repository.dart';
-part 'domain/usecases/login_usecase.dart';
-part 'data/models/auth_model.dart';
-part 'data/datasources/apis/auth_api.dart';
-part 'data/repositories/auth_repository.dart';
-part 'presentation/cubits/auth_cubit.dart';
-part 'presentation/pages/login_page.dart';
-
-// Internal files use part of:
-// domain/entities/auth_entity.dart
-part of '../../auth.dart';
-```
-
-**Import from other modules:**
-```dart
-import 'package:meup/src/auth/auth.dart';
-```
-
-## Error Handling
-
-### Functional Error Pattern
-**Rule:** All repository methods and use cases MUST return `TaskEither<AppException, T>` from fpdart.
-
-**Rationale:**
-- Type-safe error propagation
-- Eliminates try-catch boilerplate
-- Composable error flows
-- Railway-oriented programming
-
-**AppException Hierarchy:**
+### State Definition with Freezed
 ```dart
 @freezed
-sealed class AppException with _$AppException {
-  const factory AppException.generic([String? message]) = GenericException;
-  const factory AppException.server([String? message]) = ServerException;
-  const factory AppException.connection([String? message]) = ConnectionException;
-  const factory AppException.unauthorized([String? message]) = UnauthorizedException;
-  const factory AppException.notFound([String? message]) = NotFoundException;
-  // ... 13 total exception types
-}
-```
-
-**Usage in Repository:**
-```dart
-TaskEither<AppException, User> getUser(String id) {
-  return callApi(
-    request: () => userApi.getUser(id),
-    fromJson: User.fromJson,
-  );
-}
-```
-
-**Usage in Cubit:**
-```dart
-await runUseCase<User>(
-  useCase: () => getUserUseCase(userId),
-  onSuccess: (user) => emit(state.copyWith(user: user)),
-  // onError handled automatically by mixin
-);
-```
-
-### UseCase Handler Mixins
-**Preferred Methods (New):**
-- `runUseCase<T>()` - Execute UseCase with params
-- `runUseCaseList<T>()` - Execute UseCase returning lists
-- `runUseCaseVoid()` - Execute UseCase without result
-- `runUseCasePageBreak<T>()` - Execute paginated UseCase
-
-**Legacy Methods (Deprecated):**
-- `executeUseCase<T>()` - Manual state management
-- `executeListUseCase<T>()` - Legacy list execution
-- `executePageBreakUseCase<T>()` - Legacy pagination
-
-**Migration:**
-```dart
-// Old (Deprecated)
-await executeUseCase(
-  usecase: () => _loginUseCase(params),
-  onSuccess: (auth) => emit(state.copyWith(auth: auth)),
-  onError: (error) => emit(state.copyWith(error: error)),
-);
-
-// New (Preferred)
-await runUseCase<AuthEntity>(
-  useCase: () => _loginUseCase(params),
-  onSuccess: (auth) => emit(state.copyWith(auth: auth)),
-);
-```
-
-## State Management
-
-### BLoC vs Cubit
-**Use Cubit when:**
-- Simple state transformations
-- Direct state mutation
-- No complex event handling
-
-**Use BLoC when:**
-- Complex event-driven flows
-- Multiple events trigger same state
-- Event logging/debugging needed
-
-### State Classes
-**Rule:** All states MUST use `@freezed` sealed classes.
-
-```dart
-@freezed
-sealed class CourseState with _$CourseState {
+class CourseState with _$CourseState {
   const factory CourseState.initial() = _Initial;
   const factory CourseState.loading() = _Loading;
-  const factory CourseState.loaded(List<CourseEntity> courses) = _Loaded;
-  const factory CourseState.error(AppException error) = _Error;
+  const factory CourseState.success({required List<CourseEntity> courses}) = _Success;
+  const factory CourseState.failure({required String errorMessage}) = _Failure;
 }
 ```
 
-**Benefits:**
-- Exhaustive pattern matching
-- Immutable state with copyWith
-- Code generation reduces boilerplate
+### Cubit vs BLoC
+- **Use Cubit:** Simple states, single source of truth, function-driven
+- **Use BLoC:** Complex multi-event flows, multiple listeners (e.g., AuthBloc)
+- Prefer Cubits for new features
 
-### HydratedBloc for Persistence
-**Use for:**
-- Theme preferences (ThemeCubit, ThemeModeCubit)
-- Locale selection (LocaleCubit)
-- User preferences
-
+### HydratedCubit (Persistence)
 ```dart
-class ThemeModeCubit extends HydratedCubit<ThemeMode> {
-  ThemeModeCubit() : super(ThemeMode.system);
-
-  void setThemeMode(ThemeMode mode) => emit(mode);
+class ThemeCubit extends HydratedCubit<ThemeMode> {
+  @override
+  ThemeMode get initialState => ThemeMode.light;
 
   @override
   ThemeMode? fromJson(Map<String, dynamic> json) {
-    return ThemeMode.values[json['mode'] as int];
+    return ThemeMode.values[json['index'] as int];
   }
 
   @override
   Map<String, dynamic>? toJson(ThemeMode state) {
-    return {'mode': state.index};
+    return {'index': state.index};
   }
 }
 ```
 
-## Dependency Injection
+---
 
-### Registration Annotations
+## 3. Error Handling: Functional with TaskEither
+
+### Use Case Pattern
 ```dart
-// Singleton (shared instance)
-@lazySingleton
-class AuthCubit extends Cubit<AuthState> { ... }
+abstract class UseCase<Type, Params> {
+  TaskEither<AppException, Type> call(Params params);
+}
 
-// Factory (new instance per request)
-@injectable
-class LoginUseCase { ... }
+class GetUserUseCase extends UseCase<UserEntity, String> {
+  final UserRepository _repository;
 
-// Named instances
-@Named(DIKey.appDio)
-Dio appDio;
+  GetUserUseCase(this._repository);
 
-// Abstract interface implementation
-@LazySingleton(as: IAuthRepository)
-class AuthRepository implements IAuthRepository { ... }
+  @override
+  TaskEither<AppException, UserEntity> call(String userId) {
+    return _repository.getUserById(userId);
+  }
+}
 ```
 
-### Module-Based Registration
+### AppException Sealed Class
 ```dart
-@module
-abstract class NetworkModule {
-  @Named(DIKey.appDio)
-  @lazySingleton
-  Dio appDio(IRestfulService service) {
-    return service.createDio(
-      baseUrl: AppConfig.baseUrl,
-      interceptors: [AppInterceptor()],
+sealed class AppException {
+  // Generic errors
+  factory AppException.generic({String? message}) = _Generic;
+  factory AppException.server({String? statusCode}) = _Server;
+  factory AppException.connection() = _Connection;
+  factory AppException.database() = _Database;
+
+  // HTTP errors
+  factory AppException.notFound() = _NotFound;
+  factory AppException.unauthorized() = _Unauthorized;
+  factory AppException.invalidInput({String? field}) = _InvalidInput;
+
+  String get message; // Raw error message
+  String get displayMessage; // User-friendly message
+}
+```
+
+### Repository Implementation
+```dart
+class UserRepositoryImpl implements UserRepository {
+  final UserRemoteDataSource _remoteDataSource;
+
+  @override
+  TaskEither<AppException, UserEntity> getUserById(String userId) {
+    return TaskEither.tryCatch(
+      () async => (await _remoteDataSource.getUserById(userId)).toEntity(),
+      (error, stackTrace) => AppException.server(statusCode: '500'),
     );
   }
 }
 ```
 
-### Dependency Resolution
+### In Cubits (Using Mixin)
 ```dart
-// In widgets
-final cubit = getIt<AuthCubit>();
-
-// Named instances
-final dio = getIt<Dio>(instanceName: DIKey.appDio);
-
-// Constructor injection
-class AuthCubit {
-  final LoginUseCase _loginUseCase;
-
-  AuthCubit(this._loginUseCase); // Auto-injected by get_it
+void loadUser(String userId) {
+  runUseCase<UserEntity>(
+    useCase: () => _getUserUseCase(userId),
+    onSuccess: (user) {
+      emit(UserState.success(user: user));
+    },
+  );
+  // Mixin handles loading state, error display automatically
 }
 ```
 
-## Code Generation
+---
 
-### When to Run
-Run after changes to:
-- Freezed classes (entities, models, states)
-- JSON serialization annotations
-- Retrofit API clients
-- Routes (GoRouter)
-- GraphQL queries
-- DI registrations
+## 4. Naming Conventions
 
-### Command
+### Files
+| Item | Convention | Example |
+|------|-----------|---------|
+| Dart file | `snake_case` | `auth_bloc.dart`, `user_entity.dart` |
+| Page | `{name}_page.dart` | `login_page.dart`, `course_page.dart` |
+| Widget | `{name}_widget.dart` | `course_card.dart`, `lesson_item.dart` |
+| Service | `{name}_service.dart` | `auth_service.dart`, `tracking_service.dart` |
+| Use Case | `{name}_use_case.dart` | `login_use_case.dart`, `get_courses_use_case.dart` |
+| Repository | `{name}_repository_impl.dart` | `user_repository_impl.dart` |
+| Data Source | `{name}_data_source.dart` | `user_remote_data_source.dart` |
+
+### Classes & Types
+| Item | Convention | Example |
+|------|-----------|---------|
+| Class | `PascalCase` | `LoginPage`, `CourseEntity`, `UserCubit` |
+| Enum | `PascalCase` | `ExerciseType`, `UserRole` |
+| Typedef | `PascalCase` | `UserCallback`, `ResultHandler` |
+| Constant | `SCREAMING_SNAKE_CASE` | `API_BASE_URL`, `CACHE_KEY_USER` |
+
+### Cubit/BLoC
+| Item | Convention | Example |
+|------|-----------|---------|
+| Cubit | `{Name}Cubit` | `AuthCubit`, `CourseCubit` |
+| BLoC | `{Name}Bloc` | `AuthBloc` |
+| State | `{Name}State` | `AuthState`, `CourseState` |
+| Event | `{Name}Event` | `AuthEvent`, `CourseEvent` |
+
+### API & Endpoints
+| Item | Convention | Example |
+|------|-----------|---------|
+| API Class | `{Name}Api` | `UserApi`, `CourseApi` |
+| Endpoint | `/path/to/resource` | `/users/{id}`, `/courses?page=1` |
+| Model (API) | `{Name}Model` | `UserModel`, `CourseModel` |
+| Entity (Domain) | `{Name}Entity` | `UserEntity`, `CourseEntity` |
+
+### Variables & Functions
+```dart
+// Local variables: camelCase
+String firstName;
+int itemCount;
+
+// Private members: _camelCase prefix
+String _privateField;
+void _privateMethod() {}
+
+// Function/Method: camelCase
+void loadCourses() {}
+Future<UserEntity> fetchUserById(String id) {}
+
+// Callbacks: camelCase with Action/Callback suffix
+Function onSuccess;
+void Function(String) onError;
+VoidCallback onTap;
+```
+
+---
+
+## 5. Code Organization & File Structure
+
+### Feature Module Structure (Mandatory)
+```
+lib/src/feature_name/
+├── domain/
+│   ├── entities/
+│   │   ├── {entity}_entity.dart
+│   │   └── ...
+│   ├── repositories/
+│   │   └── {repository}_repository.dart
+│   └── use_cases/
+│       ├── {use_case}_use_case.dart
+│       └── ...
+├── data/
+│   ├── datasources/
+│   │   ├── apis/
+│   │   │   └── {name}_api.dart (Retrofit)
+│   │   ├── local/
+│   │   │   └── {name}_local_data_source.dart
+│   │   └── remote/
+│   │       └── {name}_remote_data_source.dart
+│   ├── models/
+│   │   ├── {model}_model.dart
+│   │   └── ...
+│   └── repositories/
+│       └── {repository}_repository_impl.dart
+└── presentation/
+    ├── cubits/
+    │   ├── {cubit}_cubit.dart
+    │   └── ...
+    ├── pages/
+    │   ├── {page}_page.dart
+    │   └── ...
+    └── widgets/
+        ├── {widget}_widget.dart
+        └── ...
+```
+
+### Maximums Per File (IMPORTANT)
+- **Max 200 lines per code file** (excluding generated code)
+- **Split when approaching limit:** Create focused sub-widgets or services
+- **Use composition over inheritance** for widgets
+- **Extract utilities into separate files** for reusability
+
+### Part File Usage (When Necessary)
+```dart
+// main_file.dart
+library auth;
+
+part 'auth_bloc.dart';
+part 'auth_state.dart';
+part 'auth_event.dart';
+```
+
+---
+
+## 6. Code Generation Workflow
+
+### Freezed (Immutable Classes)
+```dart
+import 'package:freezed_annotation/freezed_annotation.dart';
+
+part 'user_entity.freezed.dart';
+part 'user_entity.g.dart';
+
+@freezed
+class UserEntity with _$UserEntity {
+  const factory UserEntity({
+    required String id,
+    required String name,
+    String? email,
+  }) = _UserEntity;
+
+  factory UserEntity.fromJson(Map<String, dynamic> json) =>
+      _$UserEntityFromJson(json);
+}
+```
+
+**Usage:** Immutable, auto-equality, copyWith, pattern matching
+
+### Retrofit (REST API)
+```dart
+import 'package:retrofit/retrofit.dart';
+import 'package:dio/dio.dart';
+
+part 'user_api.g.dart';
+
+@RestApi(baseUrl: 'https://api.meup.com')
+abstract class UserApi {
+  factory UserApi(Dio dio, {String baseUrl}) = _UserApi;
+
+  @GET('/users/{id}')
+  Future<UserModel> getUser(@Path('id') String id);
+
+  @POST('/users')
+  Future<UserModel> createUser(@Body() UserModel user);
+
+  @GET('/users')
+  Future<List<UserModel>> listUsers(
+    @Query('page') int page,
+    @Query('limit') int limit,
+  );
+}
+```
+
+### Injectable (Dependency Injection)
+```dart
+@LazySingleton()
+class UserService {
+  final UserRepository _repository;
+
+  UserService(this._repository);
+}
+
+@factoryMethod
+Future<DatabaseConnection> provideDatabaseConnection() async {
+  return DatabaseConnection();
+}
+```
+
+### Go Router (Type-Safe Navigation)
+```dart
+@TypedGoRoute<CourseRoute>(
+  path: '/course/:id',
+  name: 'course',
+  routes: [
+    TypedGoRoute<LessonRoute>(
+      path: 'lesson/:lessonId',
+      name: 'lesson',
+    ),
+  ],
+)
+class CourseRoute extends GoRouteData {
+  final String id;
+
+  @override
+  Page<void> buildPage(BuildContext context, GoRouterState state) {
+    return CupertinoPage(
+      child: CoursePage(courseId: id),
+    );
+  }
+}
+```
+
+**Command to regenerate all:**
 ```bash
 dart run build_runner build --delete-conflicting-outputs
+dart run build_runner watch --delete-conflicting-outputs  # Development
 ```
 
-### Watch Mode (Development)
-```bash
-dart run build_runner watch --delete-conflicting-outputs
-```
+---
 
-### Generated Files
-**Never edit:**
-- `*.g.dart` - JSON serialization
-- `*.freezed.dart` - Freezed classes
-- `*.config.dart` - DI configuration
-- `routes.g.dart` - GoRouter routes
-- `*.graphql.dart` - GraphQL queries
+## 7. Testing Patterns
 
-## Testing
-
-### Test Structure
-```
-test/
-├── unit/
-│   └── <feature>/
-│       ├── domain/
-│       │   └── usecases/
-│       │       └── login_usecase_test.dart
-│       ├── data/
-│       │   └── repositories/
-│       │       └── auth_repository_test.dart
-│       └── presentation/
-│           └── cubits/
-│               └── auth_cubit_test.dart
-└── integration/
-    └── <feature>/
-        └── auth_flow_test.dart
-```
-
-### Test Naming
-- File: `<target>_test.dart`
-- Test group: `describe('<ClassName>')`
-- Test case: `it('should <expected behavior>')`
-
-### Mocking
+### Unit Test Structure
 ```dart
-@GenerateMocks([IAuthRepository, LoginUseCase])
 void main() {
-  late MockIAuthRepository mockRepository;
-  late AuthCubit cubit;
+  group('GetUserUseCase', () {
+    late GetUserUseCase useCase;
+    late MockUserRepository mockRepository;
 
-  setUp(() {
-    mockRepository = MockIAuthRepository();
-    cubit = AuthCubit(LoginUseCase(mockRepository));
-  });
+    setUp(() {
+      mockRepository = MockUserRepository();
+      useCase = GetUserUseCase(mockRepository);
+    });
 
-  test('should emit authenticated state on successful login', () async {
-    when(mockRepository.login(any))
-      .thenAnswer((_) => TaskEither.right(AuthEntity()));
+    test('returns UserEntity when repository succeeds', () async {
+      // Arrange
+      final user = UserEntity(id: '1', name: 'John');
+      when(mockRepository.getUserById('1'))
+          .thenAnswer((_) => TaskEither.right(user));
 
-    await cubit.login(LoginParams(email: 'test@example.com', password: 'password'));
+      // Act
+      final result = await useCase('1').run();
 
-    expect(cubit.state, isA<_Authenticated>());
+      // Assert
+      expect(result.isRight(), true);
+      expect(result.getOrElse((_) => null), user);
+    });
+
+    test('returns AppException on failure', () async {
+      // Arrange
+      when(mockRepository.getUserById('1'))
+          .thenAnswer((_) => TaskEither.left(AppException.notFound()));
+
+      // Act
+      final result = await useCase('1').run();
+
+      // Assert
+      expect(result.isLeft(), true);
+    });
   });
 }
 ```
 
-### Coverage Target
-- **Business Logic (Use Cases):** 80%+
-- **Repositories:** 70%+
-- **Cubits/Blocs:** 60%+
+### Cubit Test Structure
+```dart
+void main() {
+  group('CourseCubit', () {
+    late CourseCubit cubit;
+    late MockGetCoursesUseCase mockUseCase;
 
-## Git Workflow
+    setUp(() {
+      mockUseCase = MockGetCoursesUseCase();
+      cubit = CourseCubit(mockUseCase);
+    });
 
-### Branch Naming
-```
-<type>/<TICKET-ID>-<description>
-
-Types: feature, fix, hotfix, release
-Example: feature/MEUP-123-add-social-login
-```
-
-### Creating Branches
-```bash
-# Feature branch
-./tools/macos/git/feature.sh MEUP-123 "add social login"
-
-# Fix branch
-./tools/macos/git/fix.sh MEUP-456 "fix login error"
-
-# Hotfix branch
-./tools/macos/git/hotfix.sh MEUP-789 "critical auth bug"
-```
-
-### Commit Message Format
-```
-<type>-<TICKET-ID>: <subject>
-
-Types: feature, fix, refactor, style, docs, test, chore, perf
-Subject: Imperative mood, no period, max 72 chars
-
-Example: feature-MEUP-123: Add Google social login functionality
+    blocTest<CourseCubit, CourseState>(
+      'emits loading then success when courses loaded',
+      build: () {
+        final courses = [CourseEntity(id: '1', title: 'English')];
+        when(mockUseCase(...)).thenAnswer(
+          (_) => TaskEither.right(courses),
+        );
+        return cubit;
+      },
+      act: (cubit) => cubit.loadCourses(),
+      expect: () => [
+        isA<CourseState>().having(...),  // loading
+        isA<CourseState>().having(...),  // success
+      ],
+    );
+  });
+}
 ```
 
-### Commit Message Validation
-Pre-commit hook validates format automatically.
+### Mock Creation
+```dart
+import 'package:mockito/mockito.dart';
 
-**Valid:**
-```
-feature-MEUP-123: Add social login
-fix-MEUP-456: Fix token refresh bug
-refactor-MEUP-789: Extract login form widget
-```
+class MockUserRepository extends Mock implements UserRepository {}
+class MockGetUserUseCase extends Mock implements GetUserUseCase {}
 
-**Invalid:**
-```
-Added social login  // Missing type and ticket
-MEUP-123 login      // Wrong format
-feature: login      // Missing ticket ID
+// Or using Mockito generators (requires build_runner)
 ```
 
-### Pre-Push Hook
-Runs `flutter test` before push. Fix failing tests before pushing.
+---
 
-## Coding Conventions
+## 8. Commit Message Format
 
-### Key Rules
-- Prefer `const` constructors
-- Use trailing commas for formatting
-- Always use async/await over `.then()`
-- Use null-aware operators (`??`, `?.`)
-- Use string interpolation over concatenation
-- Use collection if/for for conditional/loop elements
+### Convention (Conventional Commits)
+```
+type-TICKET-ID: subject
+```
 
-## Localization
+### Structure
+- **Type:** `feature`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, `perf`
+- **TICKET-ID:** Extracted from branch (e.g., `MEUP-123`)
+- **Subject:** Imperative, lowercase, no period, max 50 chars
 
-### Key Naming
-- Use lowerCamelCase
-- Organize by module (auth, course, lesson, etc.)
-- No module prefix (module is namespace)
+### Examples
+```
+feature-MEUP-123: add course roadmap visualization
+fix-MEUP-456: resolve lesson loading timeout
+refactor-MEUP-789: simplify exercise state management
+docs-MEUP-101: update authentication guide
+test-MEUP-202: add unit tests for progress tracking
+```
+
+### Extraction
+From branch `feature/MEUP-123-add-login`:
+- Type: `feature`
+- Ticket ID: `MEUP-123`
+- Subject: Commit description
+
+---
+
+## 9. Code Quality Standards
+
+### Analyzer Configuration
+**File:** `analysis_options.yaml`
 
 ```yaml
-# assets/i18n/en/auth.yaml
-login: Login
-email: Email
-password: Password
-forgotPassword: Forgot Password?
-loginButton: Sign In
+linter:
+  rules:
+    - avoid_empty_else
+    - avoid_null_checks_in_equality_operators
+    - prefer_final_in_for_each
+    - prefer_single_quotes
+    - unnecessary_const
+    - unnecessary_constructor_name
 ```
 
-**Usage:**
-```dart
-import 'package:meup/config/l10n/l10n.dart';
+**Excluded files (auto-generated):**
+```yaml
+exclude:
+  - '**/*.g.dart'
+  - '**/*.freezed.dart'
+  - '**/*.graphql.dart'
+  - '**/config/routes/routes.g.dart'
+```
 
-Text(t.auth.loginButton);
+### Running Analysis
+```bash
+flutter analyze                     # Static analysis
+dart format lib/ test/              # Auto-format (180 char width)
+flutter test                        # Run all tests
+flutter test test/unit/             # Specific test directory
+```
+
+### Pre-Commit Checks (MANDATORY)
+1. Run `flutter analyze` - Fix linter warnings
+2. Run `dart format lib/ test/` - Auto-format code
+3. Run `flutter test` - Ensure all tests pass
+4. Verify no secrets in .env files (.gitignored)
+5. Commit with conventional message format
+
+---
+
+## 10. Anti-Patterns & Forbidden Practices
+
+### ❌ NEVER
+```dart
+// 1. Import data types in presentation
+import 'package:dio/dio.dart';  // ❌ FORBIDDEN in presentation layer
+import 'package:retrofit/retrofit.dart';  // ❌ FORBIDDEN
+
+// 2. Use try-catch in domain layer
+try {
+  return repository.getData();  // ❌ Should use TaskEither
+} catch (e) {
+  // ...
+}
+
+// 3. Hardcode strings in widgets
+Text('Hello World');  // ❌ Should use localization
+
+// 4. Large files (> 200 LOC)
+class MegaWidget extends StatefulWidget {
+  // ... 500 lines of code  // ❌ Split into smaller widgets
+}
+
+// 5. Widget state mutation
+_courses = courses;  // ❌ In immutable state, use freezed
+
+// 6. Bypass DI container
+final service = UserService();  // ❌ Use getIt<UserService>()
+
+// 7. Direct Dio/GraphQL in presentation
+final response = await dio.get('/users');  // ❌ Use repository
+
+// 8. Circular module imports
+// auth imports course, course imports auth  // ❌ Refactor
+
+// 9. Multiple responsibilities per Cubit
+// CourseCubit handles loading + filtering + sorting  // ❌ Create separate cubits
+
+// 10. Ignored test failures
+// flutter test  // Output: 3 tests failed  // ❌ ALWAYS fix
+```
+
+### ✅ DO
+
+```dart
+// 1. Proper layer separation
+// Presentation imports domain, domain stands alone
+import 'package:meup/src/course/domain/repositories/course_repository.dart';
+
+// 2. Use TaskEither in domain
+TaskEither<AppException, CourseEntity> getCourse(String id) {
+  return repository.getCourseById(id);
+}
+
+// 3. Use localization
+Text(context.l10n.courseTitle)
+
+// 4. Keep files under 200 LOC
+// Split large widgets into smaller, focused components
+
+// 5. Immutable states with freezed
+@freezed
+class CourseState with _$CourseState {
+  const factory CourseState.success({required List<CourseEntity> courses}) = _Success;
+}
+
+// 6. Use DI container
+final cubit = getIt<CourseCubit>();
+
+// 7. Access data via repository
+final course = await _courseRepository.getCourseById(id);
+
+// 8. Avoid circular dependencies
+// Use dependency injection to break cycles
+
+// 9. Single responsibility per Cubit
+// CourseCubit: loads & selects course
+// CourseFilterCubit: manages filters separately
+
+// 10. Fix all test failures before commit
+flutter test  // Must pass 100%
+```
+
+---
+
+## 11. Documentation Comments
+
+### Class Documentation
+```dart
+/// Manages user authentication and session lifecycle.
+///
+/// Handles login, logout, token refresh, and OAuth flows.
+/// Persists auth state via HydratedCubit for app restarts.
+class AuthCubit extends HydratedCubit<AuthState> {
+  // ...
+}
+```
+
+### Function Documentation
+```dart
+/// Loads courses from the backend with pagination.
+///
+/// Parameters:
+/// - [page] - Page number (1-indexed)
+/// - [limit] - Items per page
+///
+/// Returns:
+/// - Success: List of [CourseEntity] objects
+/// - Failure: [AppException] with error details
+///
+/// Throws:
+/// - No exceptions (uses TaskEither for error handling)
+Future<TaskEither<AppException, List<CourseEntity>>> loadCourses(
+  int page,
+  int limit,
+) async {
+  // ...
+}
+```
+
+### Complex Logic Comments
+```dart
+// Calculate completion percentage based on attempts and passes
+// Formula: (totalCorrectAnswers / totalAttempts) * 100
+final completionPercentage = (correctAnswers / totalAttempts) * 100;
+```
+
+---
+
+## 12. Localization Standards
+
+### Key Naming (camelCase, module as namespace)
+```yaml
+# assets/i18n/en/course.yaml
+courseCatalog: "Course Catalog"
+courseTitle: "Course Title"
+startLearning: "Start Learning"
+completeLesson: "Complete Lesson"
+```
+
+### In Code (NEVER hardcode)
+```dart
+// ✅ CORRECT
+Text(context.l10n.courseCatalog)
+
+// ❌ WRONG
+Text('Course Catalog')
 ```
 
 ### Workflow
-1. Edit YAML files in `assets/i18n/<locale>/<module>.yaml`
-2. Push to Google Sheets: `tools/macos/localization/localization.sh push`
-3. Pull from Google Sheets: `tools/macos/localization/localization.sh pull`
-4. Regenerate: `dart run slang`
+```bash
+# 1. Pull from Google Sheets
+tools/macos/localization/localization.sh pull
 
-## Performance Guidelines
+# 2. Generate Dart code
+dart run slang
 
-Use `const` constructors, `ListView.builder` for long lists, `CachedNetworkImage` for remote images, pagination for large datasets, and dispose controllers/streams in `dispose()`.
+# 3. Use in widgets
+Text(context.l10n.keyName)
+```
 
-## Security Best Practices
+---
 
-Never commit `.env` files or hardcode secrets. Use `flutter_secure_storage` for tokens. Always use HTTPS, validate inputs, and clear sensitive data on logout.
+## 13. Security Standards
 
-## Documentation
+### Secrets Management
+- **NEVER** commit `.env` files, API keys, keystores
+- **ALWAYS** use `.gitignore` for sensitive files
+- **USE** environment variables with `--dart-define-from-file`
+- **Store** secrets in `.info/key/` (git-ignored)
 
-Use doc comments (`///`) for public APIs. Update comments when code changes. Explain "why" not "what". Keep project README under 300 LOC and link to `docs/` for details.
+### Data Protection
+- Encrypt sensitive data in local storage
+- Use HTTPS for all API calls
+- Enable code obfuscation in release builds (`--obfuscate`)
+- Use secure token storage (system keychain when possible)
 
-## Linting & Formatting
+### Error Handling
+- Never expose sensitive info in error messages
+- Log errors to Crashlytics (stripped of PII)
+- Use generic error messages for users
 
-### Analysis Options
-- Base: `flutter_lints/flutter.yaml`
-- Line length: 180 characters (for LLM context)
-- Trailing commas: preserve
+---
 
-### Pre-Commit Checks
-1. Run `flutter analyze` (no errors allowed)
-2. Run `flutter test` (all tests pass)
-3. Format code: `dart format lib/ test/`
+## 14. Performance Guidelines
 
-### Ignored Lints
-- `invalid_annotation_target` (Freezed/JSON serialization)
-- `annotate_overrides` (code generation conflicts)
+### Widget Optimization
+```dart
+// ❌ INEFFICIENT: Rebuilds entire tree
+class CourseListPage extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CourseCubit, CourseState>(
+      builder: (context, state) {
+        return ListView.builder(
+          itemCount: courses.length,
+          itemBuilder: (context, index) => CourseCard(...),  // Rebuilds all
+        );
+      },
+    );
+  }
+}
 
-## Anti-Patterns to Avoid
+// ✅ EFFICIENT: Individual items rebuild on change
+class CourseCard extends StatelessWidget {
+  final CourseEntity course;
 
-### DON'T
-- ❌ Expose Dio/GraphQL types beyond data layer
-- ❌ Use `try-catch` instead of `TaskEither` in repositories
-- ❌ Put business logic in widgets or Cubits
-- ❌ Create "god" classes (large files with multiple responsibilities)
-- ❌ Ignore failing tests
-- ❌ Use `dynamic` types without documentation
-- ❌ Create circular dependencies between modules
-- ❌ Hardcode strings (use localization)
-- ❌ Commit generated files (exclude in .gitignore)
-- ❌ Skip code generation after schema changes
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CourseCardCubit, CourseCardState>(
+      builder: (context, state) {
+        return Card(child: ...);  // Only this item rebuilds
+      },
+    );
+  }
+}
+```
 
-### DO
-- ✅ Use mixins for cross-cutting concerns
-- ✅ Keep files under 200 LOC
-- ✅ Write tests for business logic
-- ✅ Use sealed classes for states and errors
-- ✅ Follow Clean Architecture layers
-- ✅ Use const constructors
-- ✅ Document public APIs
-- ✅ Run code generation after changes
-- ✅ Use TaskEither for error handling
-- ✅ Extract reusable widgets
+### Memory Management
+- Dispose controllers and listeners properly
+- Use `late` for lazy initialization
+- Avoid circular references in cubits
+- Profile with DevTools before claiming performance
 
-## Checklist for New Features
+---
 
-- [ ] Create feature branch with correct naming
-- [ ] Implement domain layer (entities, repository interface, use cases)
-- [ ] Implement data layer (models, API clients, repository)
-- [ ] Implement presentation layer (Cubit/BLoC, pages, widgets)
-- [ ] Register all classes in DI (`@lazySingleton`, `@injectable`)
-- [ ] Add routes in `lib/config/routes/data/`
-- [ ] Run code generation (`dart run build_runner build --delete-conflicting-outputs`)
-- [ ] Write unit tests (80%+ coverage for use cases)
-- [ ] Write integration tests for critical flows
-- [ ] Update localization files (`assets/i18n/<locale>/<module>.yaml`)
-- [ ] Run `flutter analyze` (zero errors)
-- [ ] Run `flutter test` (all pass)
-- [ ] Format code (`dart format lib/ test/`)
-- [ ] Commit with conventional format (`feature-MEUP-XXX: description`)
-- [ ] Create MR/PR with description and screenshots
+## 15. Branch Naming Conventions
 
-## Summary
+### Format
+```
+type/TICKET-ID-description
+```
 
-Following these standards ensures:
-- **Consistency:** Predictable code structure across features
-- **Maintainability:** Easy to understand and modify
-- **Testability:** Clean boundaries enable comprehensive testing
-- **Scalability:** Modular architecture supports growth
-- **Quality:** Automated checks catch issues early
-- **Collaboration:** Clear conventions reduce merge conflicts
+### Examples
+```
+feature/MEUP-123-add-course-roadmap
+fix/MEUP-456-lesson-loading-timeout
+refactor/MEUP-789-exercise-state
+docs/MEUP-101-update-readme
+```
+
+---
+
+**Enforcement:** Code review process validates adherence to standards.
+**Questions:** Refer to architecture team or review recent merged PRs for examples.
+
+Last updated: Jan 22, 2026

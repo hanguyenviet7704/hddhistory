@@ -171,12 +171,12 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   // }
 
   @override
-  TaskEither<AppException, BaseResponse> logout() {
+  TaskEither<AppException, Unit> logout() {
     // return callApi(apiCall: () => _authApi.logout());
     return TaskEither.tryCatch(
       () async {
         await _authService.signOut();
-        return BaseResponse(data: unit);
+        return unit;
       },
       (error, stackTrace) {
         return AppException.unexpected(error.toString());
@@ -185,32 +185,32 @@ class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository 
   }
 
   @override
-  TaskEither<AppException, BaseResponse> resendOTP(String phone) {
-    return callApi(apiCall: () => _authApi.resendOTP(phone));
+  TaskEither<AppException, Unit> resendOTP(String phone) {
+    return executeApiAction(apiCall: () => _authApi.resendOTP(phone));
   }
 
   @override
-  TaskEither<AppException, BaseResponse> resetPassword(Map<String, dynamic> body) {
-    return callApi(apiCall: () => _authApi.resetPassword(body));
+  TaskEither<AppException, Unit> resetPassword(Map<String, dynamic> body) {
+    return executeApiAction(apiCall: () => _authApi.resetPassword(body));
   }
 
   @override
-  TaskEither<AppException, BaseResponse> updatePassword(Map<String, dynamic> body) {
-    return callApi(apiCall: () => _authApi.updatePassword(body));
+  TaskEither<AppException, Unit> updatePassword(Map<String, dynamic> body) {
+    return executeApiAction(apiCall: () => _authApi.updatePassword(body));
   }
 
   @override
-  TaskEither<AppException, BaseResponse<UserModel>> verifyOTP(Map<String, dynamic> body) {
-    return callApi(apiCall: () => _authApi.verifyOTP(body));
+  TaskEither<AppException, UserEntity> verifyOTP(Map<String, dynamic> body) {
+    return callApiWithTransform(apiCall: () => _authApi.verifyOTP(body), transform: (response) => response.toEntity(), defaultValue: UserEntity());
   }
 
   @override
-  TaskEither<AppException, BaseResponse> deletePermanentUser(String userId) {
-    return callApi(apiCall: () => _authApi.deletePermanentUser(userId));
+  TaskEither<AppException, Unit> deletePermanentUser(String userId) {
+    return executeApiAction(apiCall: () => _authApi.deletePermanentUser(userId));
   }
 
   @override
-  TaskEither<AppException, BaseResponse> deleteAccount() {
-    return callApi(apiCall: () => _authApi.deleteAccount());
+  TaskEither<AppException, Unit> deleteAccount() {
+    return executeApiAction(apiCall: () => _authApi.deleteAccount());
   }
 }

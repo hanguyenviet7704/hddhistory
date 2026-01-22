@@ -1,10 +1,10 @@
 part of '../../auth.dart';
 
 @lazySingleton
-class LogoutUsecase implements UseCaseWithoutParams<BaseResponse> {
+class LogoutUsecase implements UseCaseWithoutParams<Unit> {
   final IAuthRepository _authRepository;
   LogoutUsecase(this._authRepository);
 
   @override
-  TaskEither<AppException, BaseResponse> call() => _authRepository.logout();
+  TaskEither<AppException, Unit> call() => _authRepository.logout();
 }

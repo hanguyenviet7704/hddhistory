@@ -1,609 +1,542 @@
-# Meup Codebase Summary
+# Meup Codebase Structure & Organization
 
-**Total LOC:** ~140,000 lines across 785 Dart files
-**Architecture:** Clean Architecture with 3-layer separation
-**Platform:** Flutter 3.24.0+
-**Last Updated:** 2026-01-13
+**Last Updated:** Jan 22, 2026
+**Total LOC:** ~86,000+ | **Dart Files:** 782 | **Architecture:** Clean Architecture
 
-## Directory Structure Overview
+---
+
+## 1. Project Root Structure
 
 ```
 meup/
 ├── lib/
-│   ├── main_dev.dart, main_stg.dart, main_prod.dart  # Entry points per flavor
-│   ├── config/                    # ~14.5K LOC - App-wide configuration
-│   │   ├── di/                    # Dependency injection (get_it + injectable)
-│   │   ├── routes/                # Type-safe routing (go_router)
-│   │   ├── themes/                # Material3 theming
-│   │   ├── l10n/                  # Generated localization (slang)
-│   │   ├── services/              # 22 app-level services
-│   │   └── share/                 # Global state
-│   ├── core/                      # ~14.5K LOC - Shared infrastructure
-│   │   ├── base/                  # Base classes (UseCase, BLoC mixins, errors)
-│   │   ├── constants/             # Generated and manual constants
-│   │   ├── helpers/               # Extensions, navigation, logging, popups
-│   │   └── utils/                 # UI components and utilities
-│   └── src/                       # ~110K LOC - 13 feature modules
-│       ├── auth/                  # ~6K LOC - Authentication
-│       ├── lesson/                # ~22K LOC - Interactive exercises (largest)
-│       ├── course/                # ~10K LOC - Course catalog
-│       ├── roleplay/              # ~10K LOC - Conversation roleplay
-│       ├── progress/              # ~8K LOC - Progress tracking
-│       ├── common/                # ~28K LOC - Shared components
-│       ├── monetization/          # ~6K LOC - In-app purchases
-│       ├── profile/               # ~5K LOC - User profile
-│       ├── onboard/               # ~5K LOC - Onboarding flow
-│       ├── data_collect/          # ~4K LOC - User data collection
-│       ├── home/                  # ~3K LOC - Home screen
-│       ├── achievement/           # ~2K LOC - Gamification
-│       └── setting/               # ~1K LOC - App settings
-├── tools/                         # 69 shell scripts for builds, distribution, git
-├── .info/                         # Centralized config (app.json, firebase.json, etc.)
-├── test/                          # Unit and integration tests
-└── assets/                        # Images, fonts, i18n YAML files
+│   ├── main_dev.dart           # Entry point (dev flavor)
+│   ├── main_stg.dart           # Entry point (stg flavor)
+│   ├── main_prod.dart          # Entry point (prod flavor)
+│   ├── main.dart               # Shared initialization
+│   ├── config/                 # App configuration (15K LOC)
+│   │   ├── di/                 # Dependency injection
+│   │   ├── services/           # Service implementations (51 files)
+│   │   ├── routes/             # Navigation routing
+│   │   ├── themes/             # UI themes & styling
+│   │   └── l10n/               # Localization (generated)
+│   ├── core/                   # Shared utilities & base classes (17K LOC)
+│   │   ├── base/               # Error, response models, use cases, BLoC mixins
+│   │   ├── constants/          # App-wide constants (manual, no generation)
+│   │   ├── helpers/            # Helpers & mixins
+│   │   └── utils/              # UI components & utilities
+│   └── src/                    # Feature modules (54K+ LOC, 13 modules)
+│       ├── auth/               # Authentication (40 files, 3.2K LOC)
+│       ├── course/             # Course management (67 files, 6.8K LOC)
+│       ├── lesson/             # Interactive exercises (122 files, 10.5K LOC)
+│       ├── roleplay/           # AI roleplay (67 files, 3.6K LOC)
+│       ├── monetization/       # In-app purchases (38 files, 5.6K LOC)
+│       ├── progress/           # Progress tracking (34 files, 8.2K LOC)
+│       ├── profile/            # User profile (35 files, 4.9K LOC)
+│       ├── onboard/            # Onboarding flow (37 files, 5.5K LOC)
+│       ├── data_collect/       # User survey (45 files, 4.1K LOC)
+│       ├── home/               # Dashboard (18 files, 2.0K LOC)
+│       ├── achievement/        # Badges system (15 files, 2.3K LOC)
+│       ├── setting/            # App settings (14 files, 1.5K LOC)
+│       └── common/             # Global state (20 files, 2.4K LOC)
+├── test/
+│   └── unit/                   # Feature-based unit tests
+├── assets/                     # Static resources
+│   ├── fonts/                  # Mulish font family
+│   ├── icons/                  # App & common icons
+│   ├── images/                 # Feature & common images
+│   ├── lottie/                 # Animation JSON files
+│   ├── texts/                  # Static text files
+│   └── i18n/                   # Localization YAML (en, vi, zh)
+├── .info/                      # Centralized configuration (git-ignored)
+│   ├── app/                    # App config: app.json, build.json, firebase.json
+│   ├── key/                    # Signing keys & service account JSON
+│   ├── distribution/           # Release notes, tester lists
+│   └── deeplink/               # Apple/Android universal links
+├── tools/                      # Cross-platform build scripts
+│   ├── macos/build/            # macOS build scripts
+│   ├── linux/build/            # Linux build scripts
+│   └── windows/build/          # Windows build scripts
+├── .github/workflows/          # CI/CD GitHub Actions
+├── .env/                       # Environment configs (git-ignored)
+│   ├── .env.dev
+│   ├── .env.stg
+│   └── .env.prod
+├── pubspec.yaml                # Flutter dependencies
+├── analysis_options.yaml       # Dart linter configuration
+├── CLAUDE.md                   # Development guidelines
+└── README.md                   # Project documentation
 ```
 
-## Feature Modules Summary
+---
 
-### Module Size Distribution
-| Module | LOC | Priority | Description |
-|--------|-----|----------|-------------|
-| Common | 28K | P0 | Shared infrastructure, GraphQL, connectivity, theme |
-| Lesson | 22K | P0 | 6 exercise types, voice feedback, document viewer |
-| Course | 10K | P0 | Catalog, roadmap, lesson list |
-| Roleplay | 10K | P1 | Conversation scenarios with avatars |
-| Progress | 8K | P1 | Granular tracking, analytics dashboard |
-| Auth | 6K | P0 | Email, SSO (Google, Apple), token management |
-| Monetization | 6K | P1 | IAP, subscriptions, verification |
-| Profile | 5K | P1 | User management, file upload |
-| Onboard | 5K | P1 | Multi-step wizard, motivation selection |
-| Data Collect | 4K | P2 | Personalization data gathering |
-| Home | 3K | P2 | Navigation hub, skillset browsing |
-| Achievement | 2K | P2 | Badges, gamification |
-| Setting | 1K | P2 | Language, theme, preferences |
+## 2. lib/config/ - Application Configuration (15K LOC)
 
-### Clean Architecture Pattern (All Modules)
+### 2.1 Dependency Injection (di/)
+**Files:** 7 | **LOC:** 1,050
 
-```
-lib/src/<feature>/
-├── <feature>.dart              # Barrel file exporting all parts
-├── <feature>.freezed.dart      # Generated Freezed code
-├── <feature>.g.dart            # Generated JSON serialization
-├── domain/
-│   ├── entities/               # Business models (@freezed)
-│   ├── repositories/           # Repository interfaces (I<Name>Repository)
-│   └── usecases/               # Business logic (@lazySingleton)
-├── data/
-│   ├── datasources/
-│   │   ├── apis/              # REST API clients (@RestApi with Retrofit)
-│   │   └── local/             # Local storage/cache
-│   ├── models/                # DTOs with toEntity() methods
-│   └── repositories/          # Repository implementations (@LazySingleton)
-└── presentation/
-    ├── cubits/ or blocs/      # State management (@lazySingleton)
-    ├── pages/                 # Screen widgets
-    └── widgets/               # Reusable UI components
-```
+| File | Purpose |
+|------|---------|
+| `app_di_config.dart` | @InjectableInit root, generates di.config.dart |
+| `di.dart` | AppDI mixin exposing injector interface |
+| `cache_di.dart` | Cache service registration (HydratedBloc) |
+| `network_di.dart` | Dio, Retrofit, GraphQL service setup |
+| `route_observer_di.dart` | Route observers for navigation tracking |
+| `supabase_di.dart` | Optional Supabase backend |
+| `tracking_di.dart` | Analytics service aggregators |
 
-## Technology Stack
-
-### State Management
-- **flutter_bloc 9.1.1:** BLoC pattern for complex flows
-- **bloc 9.2.0:** Cubit pattern for simple state
-- **hydrated_bloc 10.1.1:** Persistent state (theme, locale)
-- **Mixins:** `CubitUseCaseHandlerMixin`, `BlocUseCaseHandlerMixin` for boilerplate reduction
-
-### Networking
-- **dio 5.9.0:** HTTP client with 3 named instances (app, AI service, third-party)
-- **retrofit 4.9.2:** Type-safe REST API clients (code-generated)
-- **graphql_flutter 5.2.1:** GraphQL queries and mutations
-- **Functional Error Handling:** `fpdart` with `TaskEither<AppException, T>` pattern
-
-### Dependency Injection
-- **get_it 9.2.0:** Service locator
-- **injectable 2.7.1:** Code generation for DI registration
-- **Pattern:** `@LazySingleton`, `@factoryMethod`, named instances
-
-### Navigation
-- **go_router 17.0.1:** Declarative routing
-- **go_router_builder 4.1.3:** Type-safe route generation
-- **40+ routes** organized by feature with custom transitions
-
-### Localization
-- **slang_flutter 4.11.0:** Type-safe translations
-- **3 languages:** English (base), Vietnamese, Chinese
-- **Google Sheets integration** for translation workflow
-- **13 module namespaces** for organized keys
-
-### Firebase Suite
-- **firebase_core 4.3.0:** Base SDK
-- **firebase_auth 6.1.3:** Authentication (email, Google, Apple)
-- **firebase_messaging 16.1.0:** Push notifications
-- **firebase_crashlytics 5.0.6:** Crash reporting
-- **firebase_analytics 12.1.0:** User analytics
-- **firebase_remote_config 6.1.3:** Feature flags
-
-### Monetization
-- **in_app_purchase 3.2.3:** Cross-platform IAP
-- **in_app_purchase_storekit 0.4.7:** iOS StoreKit
-- **in_app_purchase_android 0.4.0+3:** Android Billing
-
-### Analytics & Tracking
-- **sentry_flutter 9.8.0:** Error monitoring
-- **facebook_app_events 0.24.0:** Attribution tracking
-- **app_tracking_transparency 2.0.6+1:** iOS ATT framework
-
-### Code Generation
-- **build_runner 2.10.4:** Build system
-- **retrofit_generator 10.2.1:** API client generation
-- **json_serializable 6.11.3:** JSON serialization
-- **freezed 3.2.4:** Immutable models and states
-- **injectable_generator 2.12.0:** DI code generation
-- **graphql_codegen 3.0.0:** GraphQL type-safe queries
-- **slang 4.11.1:** Localization code generation
-- **flutter_gen_runner:** Asset reference generation
-
-## Key Architectural Decisions
-
-### 1. Functional Error Handling
-**Decision:** Use `TaskEither<AppException, T>` from fpdart for all repository methods and use cases.
-
-**Rationale:**
-- Type-safe error propagation
-- Eliminates try-catch boilerplate
-- Railway-oriented programming
-- Composable error flows
-
-**Implementation:**
+**Usage Pattern:**
 ```dart
-// Repository
-TaskEither<AppException, User> login(LoginParams params) {
-  return callApi(
-    request: () => authApi.login(params),
-    fromJson: User.fromJson,
-  );
-}
+// Initialization
+await AppDI.initializeDependencies();
 
-// UseCase
-class LoginUseCase implements UseCaseWithParams<LoginParams, User> {
-  TaskEither<AppException, User> call(LoginParams params) =>
-    _repository.login(params);
-}
-
-// Cubit
-await runUseCase<User>(
-  useCase: () => _loginUseCase(params),
-  onSuccess: (user) => emit(state.copyWith(user: user)),
-);
+// Resolution
+getIt<CourseCubit>();
+AppDI.injector.get<AuthService>();
 ```
 
-### 2. Clean Architecture with Mixin-Based Network Layer
-**Decision:** Separate domain, data, and presentation layers with mixin-based network request handlers.
+### 2.2 Services (services/)
+**Files:** 51 | **LOC:** 7,697
 
-**Rationale:**
-- Testable business logic (pure domain entities)
-- Mockable interfaces for unit testing
-- Code reusability via mixins (`RestfulRequestHandlerMixin`, `GraphQLRequestHandlerMixin`)
-- Framework independence
+Organized by subdirectory:
 
-**Pattern:**
+| Service Category | Purpose |
+|-----------------|---------|
+| **Network** | `restful_service.dart` (Dio HTTP), `graphql_service.dart` (GraphQL client) |
+| **Auth** | `auth_service.dart` (Firebase/Supabase wrapper) |
+| **Analytics** | `app_tracking_service.dart` (Firebase, Sentry, custom), `app_event_service.dart` (Facebook, TikTok) |
+| **Notifications** | `notification_service.dart` (AwesomeNotifications) |
+| **Storage** | `cache_service.dart`, `local_store_service.dart` (SharedPrefs), `hydrated_service.dart` |
+| **Device** | `device_info_service.dart`, `package_info_service.dart` |
+| **Media** | `media_service.dart`, `file_service.dart` (file uploads) |
+| **Monetization** | `iap_service.dart` (StoreKit) |
+| **Deep Linking** | `deep_link_service.dart` (app_links) |
+| **Misc** | `remote_config_service.dart` (Firebase Remote Config) |
+
+**Key Pattern: Interceptors**
+- REST: BaseInterceptor → CustomInterceptor (auth token injection, error mapping)
+- GraphQL: GraphQL link pattern with performance tracking
+
+### 2.3 Routing (routes/)
+**Files:** 14 | **LOC:** 2,518
+
+Type-safe routing via `go_router` + `go_router_builder`:
+
+| File | Purpose |
+|------|---------|
+| `app_routes_config.dart` | GoRouter instance + shell routes |
+| `app_routes.dart` | Route path constants |
+| `app_pages.dart` | Page builders with transitions |
+| `routes_*_data.dart` (10 files) | Feature-specific route data classes (generated) |
+
+**Navigation Layers:**
+```
+ShellRoute (bottom nav) → Pages (Auth, Home, Course, Setting)
+    ↓
+Feature Routes (Course → Lesson → Roleplay)
+    ↓
+Common Routes (WebView, Image Viewer)
+```
+
+### 2.4 Themes (themes/)
+**Files:** 6 | **LOC:** 2,298
+
+| File | Purpose |
+|------|---------|
+| `colors.dart` | Color palette (primary, secondary, success, warning, error, neutral) |
+| `text_theme.dart` | Typography system (headings, body, captions) |
+| `material_theme.dart` | ThemeData builders (light/dark variants) |
+| `theme_collection.dart` | Theme switching logic |
+| `util_theme.dart` | Theme utilities & extensions |
+
+**Responsive Design:** flutter_screenutil integration for adaptive sizing
+
+### 2.5 Localization (l10n/)
+**Files:** 5 | **LOC:** 2,543
+
+Generated by `slang_flutter` from YAML sources:
+
+| File | Purpose |
+|------|---------|
+| `l10n.dart` | Library export |
+| `l10n.g.dart` | Base generated class |
+| `l10n_en.g.dart` | English translations |
+| `l10n_vi.g.dart` | Vietnamese translations |
+| `l10n_zh.g.dart` | Chinese translations |
+
+**Supported Languages:** English, Vietnamese, Chinese
+
+---
+
+## 3. lib/core/ - Shared Utilities (17K LOC)
+
+### 3.1 Base Classes (base/)
+**Files:** 17 | **LOC:** 5,191
+
+#### Error Handling (error/app_exception.dart)
 ```dart
-@LazySingleton(as: IAuthRepository)
-class AuthRepository with RestfulRequestHandlerMixin {
-  final AuthApi _authApi;
-
-  TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body) {
-    return callApiWithTransform(
-      apiCall: () => _authApi.login(body),
-      transform: (response) => response.toEntity(),
-    );
-  }
+sealed class AppException {
+  .generic, .server, .connection, .database, .cache,
+  .notFound, .unauthorized, .invalidInput,
+  .unexpected, .forbidden, .pending
 }
 ```
+Extensions: `message`, `displayMessage` (user-friendly fallback)
 
-### 3. Barrel File Export Pattern
-**Decision:** Each feature module exports through a single barrel file using `part of`.
+#### Network Models (request/, responses/)
+- `RestfulRequest`, `GraphQLRequest` - base request types
+- `BaseResponse<T>`, `BaseResponseList<T>` - response wrappers
+- `BasePageBreak<T>` - pagination (items, currentPage, totalPages)
+- `BaseMultiLanguage` - multi-language field support
 
-**Rationale:**
-- Encapsulation (internal files not directly importable)
-- Simplified imports for consumers
-- Cohesive module structure
-- Prevents circular dependencies
-
-**Structure:**
+#### Use Case Pattern (use_case/use_case.dart)
 ```dart
-// lib/src/auth/auth.dart
-library auth;
+abstract class UseCase<Type, Params> {
+  TaskEither<AppException, Type> call(Params params);
+}
+```
+Returns `TaskEither` for functional error handling (fpdart)
 
-part 'domain/entities/auth_entity.dart';
-part 'domain/repositories/i_auth_repository.dart';
-part 'data/repositories/auth_repository.dart';
-// ... all module files
+#### BLoC Mixins (Boilerplate Reduction)
+- **CubitUseCaseHandlerMixin** - Simplifies use case execution in Cubits
+- **BlocUseCaseHandlerMixin** - Simplifies use case execution in BLoCs
+- **CubitActionHandlerMixin** - Event/action dispatching without use cases
+- Methods: `runUseCase<T>()`, `runUseCaseList<T>()`, `runUseCasePageBreak<T>()`
 
-// External usage
-import 'package:meup/src/auth/auth.dart';
+### 3.2 Constants (constants/manual/)
+**Files:** 20 | **LOC:** 1,300
+
+All manually maintained (no auto-generation):
+
+| File | Purpose |
+|------|---------|
+| `app_path.dart` | App-level paths |
+| `base_url.dart` | API base URLs (dev/stg/prod) |
+| `cache_key.dart` | SharedPreferences keys |
+| `endpoint.dart` | API endpoint paths |
+| `env.dart` | Environment configuration |
+| `in_app_key.dart` | StoreKit product IDs |
+| `tracking_key.dart` | Analytics event names |
+| `notification_key.dart` | Notification channel IDs |
+
+### 3.3 Helpers (helpers/)
+**Files:** 10 | **LOC:** 1,649
+
+| Helper | Purpose |
+|--------|---------|
+| **DNavigator** | Route context methods (push, pop, replace) |
+| **DDialog** | Material dialogs (AlertDialog, ConfirmDialog) |
+| **DMessage** | Snackbars & toast messages |
+| **LogDev** | Development logging with prefix |
+| **Extension utilities** | DateTime, String, List, Map extensions |
+
+### 3.4 UI Utils (utils/)
+**Files:** 59 | **LOC:** 6,394
+
+Reusable Flutter widgets organized by category:
+
+| Category | Files | Purpose |
+|----------|-------|---------|
+| **Button** | 4 | Material, gradient, CTA buttons |
+| **Text** | 8 | Styled text, gradients, highlights, expandable |
+| **Image** | 6 | Cached images, avatars, containers, Lottie |
+| **Input** | 4 | TextField, Dropdown, Range slider, Search |
+| **Selection** | 2 | Checkbox, Radio button |
+| **Layout** | 4 | Landing, Scaffold, Error, SafeArea |
+| **Overlay** | 8 | Dialogs, Bottom sheets, Notifications |
+| **Navigation** | 3 | Bottom nav, nav items |
+| **Sliver** | 3 | SliverAppBar, child builders |
+| **Animation** | 4 | FadeUp, Expand, Transitions, Slide |
+| **Wrapper** | 5 | Loading overlay, Gradient borders |
+| **Specialty** | 5 | Video, WebView, SVG, Timer, Countdown |
+
+---
+
+## 4. lib/src/ - Feature Modules (54K+ LOC)
+
+Each feature follows Clean Architecture: **Data → Domain → Presentation**
+
+### 4.1 Auth Module (40 files, 3.2K LOC)
+**Purpose:** Authentication & session management
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 4 files | REST API, local storage, models |
+| Domain | 15 files | Entities, repository interface, 14 use cases |
+| Presentation | 20 files | AuthBloc (event-driven), UserCubit (persistent), pages, widgets |
+
+**Key Use Cases:** LoginUseCase, RegisterUseCase, LoginSSOGoogleUseCase, LoginSSOAppleUseCase, ForgotPasswordUseCase, VerifyOTPUseCase, RefreshTokenUseCase, LogoutUseCase, DeleteAccountUseCase
+
+### 4.2 Course Module (67 files, 6.8K LOC)
+**Purpose:** Course catalog & learning paths
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 6 files | 2 REST APIs, 2 local datasources, models |
+| Domain | 6 files | Entities, repository, 5 use cases |
+| Presentation | 40 files | 3 Cubits, 3 pages, 25+ widgets |
+
+**Key Entities:** CourseEntity, RoadmapEntity, RoadmapLevelEntity, RoadmapNodeEntity, KeypointEntity, LearningItemEntity
+
+**UI Highlights:** Course roadmap timeline, keypoint cards, course progress indicators
+
+### 4.3 Lesson Module (122 files, 10.5K LOC)
+**Purpose:** Interactive learning exercises (LARGEST MODULE)
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 3 files | REST API, local storage, 8+ models |
+| Domain | 9 files | Entities, repository, 4 use cases |
+| Presentation | 106 files | 9 Cubits (per exercise type), 3 pages, 80+ widgets |
+
+**9 Exercise-Type Cubits:**
+1. TheoryCubit - Document display
+2. ChoiceCubit - Single/multiple choice
+3. DragAndDropCubit - Sentence building
+4. CuesPlacementCubit - Pronunciation cues
+5. MarkStressWordCubit - Word stress marking
+6. SpeakingCubit - Voice recording
+7. ArrangeTheSequenceCubit - Reorder items
+8. ExerciseCubit - Master flow state
+9. LessonCubit - Overall progress
+
+**Key Widgets:** DocumentWidget, AudioPlayerWidget, ChoiceAnswerCard, SentenceBuilder, RecordingControlsArea, WaveformVisualizer
+
+### 4.4 Roleplay Module (67 files, 3.6K LOC)
+**Purpose:** AI-driven conversational practice
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 4 files | 2 REST APIs, local storage, 8 models |
+| Domain | 8 files | Entities, repository, 2 use cases |
+| Presentation | 55 files | 2 Cubits, 4 pages, 40+ widgets |
+
+**UI Components:** RoleplayBubbleWidget (dialogue), RoleplayTransitionWidget, RoleplayFeedbackChart, RoleplayContent (flow manager)
+
+**Feedback:** ML-scored breakdown (grammar, pronunciation, vocabulary)
+
+### 4.5 Monetization Module (38 files, 5.6K LOC)
+**Purpose:** In-app purchases & subscriptions
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 2 REST APIs | UserSubscriptionApi, MonetizationApi |
+| Domain | 5 use cases | GetPackagesUsecase, PurchaseUsecase, VerifyUsecase, RestoreUsecase |
+| Presentation | 1 Cubit | IapCubit |
+
+**Key UI:** PaywallPage (carousel, plan options), PaywallSuccessPurchasePopup, UserSubscriptionPage
+
+### 4.6 Progress Module (34 files, 8.2K LOC)
+**Purpose:** Track user progress across courses, lessons, keypoints
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 2 REST APIs | UserProgressApi, AchievenmentProgressApi |
+| Domain | 8+ use cases | GetUserProgressMyCoursesUsecase, UpdateUserProgressLessonUsecase, GetCourseLevelProgressUsecase |
+| Presentation | 2 Cubits | ProgressCubit, AchievenmentProgressCubit |
+
+**Cross-Module Coupling:** Depends on HomeCubit, CourseLessonCubit, CourseRoadmapCubit, UserCubit, RoleplayCubit
+
+### 4.7 Profile Module (35 files, 4.9K LOC)
+**Purpose:** User profile management & avatar upload
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 2 REST APIs | ProfileApi, UploadApi |
+| Domain | 3 use cases | GetUserUsecase, UpdateUserUsecase, UploadFileUsecase |
+| Presentation | 2 Cubits | ProfileCubit (HydratedCubit), UploadCubit |
+
+**Features:** Multipart file upload, profile editing, achievement display
+
+### 4.8 Onboard Module (37 files, 5.5K LOC)
+**Purpose:** Welcome flow, intro screens, motivation questionnaire
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Data | 1 REST API | OnboardApi |
+| Domain | 1 use case | GetAllOnboardsUsecase |
+| Presentation | 2 Cubits | OnboardCubit, IntroCubit |
+
+**UI:** SplashPage, OnboardPage (character dialogue), OnboardIntroducePage (carousel), IntroStepContent
+
+### 4.9 Data Collect Module (45 files, 4.1K LOC)
+**Purpose:** Comprehensive onboarding questionnaire (9-step stepper)
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Domain | 5 use cases | Create, Get, Update, Delete, GetAll for UserCollectDataEntity |
+| Presentation | 1 Cubit | DataCollectCubit |
+
+**Steps:** Name → Age → Gender → Learning Goal → Skills → Struggles → Learning Method → Daily Goal → Learning Time
+
+### 4.10 Home Module (18 files, 2.0K LOC)
+**Purpose:** Dashboard displaying skillsets & enrolled courses
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Domain | 2 use cases | GetAllSkillsetsUsecase, GetSkillsetUsecase |
+| Presentation | 1 Cubit | HomeCubit |
+
+**Features:** SkillsetCard, CourseCard with progress, HomeHeader
+
+### 4.11 Achievement Module (15 files, 2.3K LOC)
+**Purpose:** Display achievement badges
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Domain | 1 use case | GetAchievenmentResponseUsecase |
+| Presentation | 1 Cubit | AchievenmentCubit |
+
+### 4.12 Setting Module (14 files, 1.5K LOC)
+**Purpose:** App settings, language, theme configuration
+
+| Layer | Count | Files |
+|-------|-------|-------|
+| Presentation | 3 Cubits | SettingCubit, ThemeCubit (HydratedCubit), LocaleCubit (HydratedCubit) |
+
+**Features:** Language picker, theme switcher, premium info
+
+### 4.13 Common Module (20 files, 2.4K LOC)
+**Purpose:** Global state, shared entities, error pages
+
+| Cubits | Purpose |
+|--------|---------|
+| ThemeCubit | Dark mode persistence |
+| LocaleCubit | Language persistence |
+| ConnectivityCubit | Internet connection monitor |
+| DeeplinkCubit | Deep link navigation |
+| PageCubit | Current page state |
+
+**Error Pages:** ComingSoonPage, CommonErrorPage, NoInternetConnectionPage, ServerErrorPage
+
+---
+
+## 5. Module Dependency Graph
+
+```
+common (global state)
+    ↓
+auth (authentication)
+    ↓
+profile (user info)
+    ↓
+course → lesson → roleplay
+    ↓
+progress → achievement
+    ↓
+monetization (subscriptions)
+    ↓
+setting (theme, language)
+    ↓
+onboard → data_collect (onboarding)
+    ↓
+home (dashboard hub)
 ```
 
-### 4. Dual API Support (REST + GraphQL)
-**Decision:** Support both REST and GraphQL simultaneously with abstracted network layer.
+**Cross-Module Integration Points:**
+- **ProgressCubit** extensively depends on: HomeCubit, CourseLessonCubit, CourseRoadmapCubit, UserCubit, RoleplayCubit
+- **HomeCubit** orchestrates: ProgressCubit, ProfileCubit initialization
+- **ProfileCubit** integrates: IapSubscriptionEntity (monetization)
+- **OnboardCubit** populates: DataCollectCubit, IntroCubit (via AppDI.injector)
 
-**Rationale:**
-- Backend flexibility (gradual GraphQL migration)
-- Feature-specific optimization (GraphQL for complex queries, REST for simple CRUD)
-- Unified error handling
-- Protocol-agnostic business logic
+---
 
-**Implementation:**
-- REST via Dio + Retrofit with `RestfulRequestHandlerMixin`
-- GraphQL via graphql_flutter with `GraphQLRequestHandlerMixin`
-- Both return `TaskEither<AppException, T>` for consistency
+## 6. Code Generation Artifacts
 
-### 5. Multi-Flavor Architecture
-**Decision:** 3 build flavors (dev, stg, prod) with separate entry points and environment configs.
+All generated files follow naming pattern `*.g.dart`, `*.freezed.dart`, `*.graphql.dart`:
 
-**Rationale:**
-- Environment isolation (different APIs, Firebase projects)
-- Safe testing without affecting production
-- Feature flag testing in staging
-- Simplified deployment pipeline
+| Generator | Output | Files |
+|-----------|--------|-------|
+| freezed | `.freezed.dart`, `.g.dart` | All entities, states, models |
+| retrofit | `*.g.dart` | API client methods |
+| json_serializable | `.g.dart` | JSON serialization |
+| injectable | `di.config.dart` | DI container |
+| go_router_builder | `routes.g.dart` | Type-safe routes |
+| graphql_codegen | `.graphql.dart` | GraphQL clients |
+| flutter_gen | `assets.gen.dart` | Asset constants |
+| slang | `l10n_*.g.dart` | Translations |
 
-**Setup:**
-- Entry points: `main_dev.dart`, `main_stg.dart`, `main_prod.dart`
-- Env files: `.env/.env.{flavor}`
-- Build command: `--dart-define-from-file=.env/.env.{flavor}`
-
-### 6. UseCase Handler Mixins
-**Decision:** Provide mixins (`CubitUseCaseHandlerMixin`, `BlocUseCaseHandlerMixin`) for executing use cases with automatic loading/error handling.
-
-**Rationale:**
-- Reduce boilerplate (80% less code in Cubits)
-- Consistent loading state emission
-- Automatic error handling with toast messages
-- Standardized success/failure callbacks
-
-**Migration:** Legacy methods (`executeUseCase`) → New methods (`runUseCase`)
-
-## Config Directory (`lib/config/`)
-
-### Dependency Injection (`di/`)
-- **Framework:** get_it + injectable with code generation
-- **Entry Point:** `AppDI.initializeDependencies()`
-- **Modules:**
-  - `NetworkModule`: 3 Dio instances (app, AI, third-party), GraphQL client
-  - `CacheModule`: 4 cache managers (default, image, video, file)
-  - `TrackingModule`: Composite tracking service (Firebase + Sentry)
-  - `SupabaseModule`: Supabase client
-
-### Routing (`routes/`)
-- **40+ routes** organized by feature
-- **Type-safe parameters** via go_router_builder
-- **Custom transitions:** 14+ types (fade, slide, scale, flip, zoom, etc.)
-- **Base Classes:** `BaseRouteData`, `BaseTransitionRouteData`
-- **Shell Navigation:** Bottom nav with 3 tabs (home, course, profile)
-
-### Themes (`themes/`)
-- **Material3:** Light and dark themes
-- **Color System:**
-  - 67 M3 color tokens per theme
-  - Custom brand colors (gradients, semantic colors)
-  - Figma design system integration
-- **Font:** Mulish
-- **Dynamic Access:** `AppTheme` mixin (reactive via ThemeCubit)
-
-### Services (`services/`)
-22 app-level services organized by category:
-
-**Networking:**
-- `RestfulService`: 3 Dio clients with interceptors
-- `GraphQLService`: Custom link chain with auth/error handling
-
-**Analytics:**
-- `CompositeTrackingService`: Multi-provider (Firebase + Sentry)
-- `FirebaseAnalyticsService`, `SentryTrackingService`
-- `AppTrackingService` (iOS ATT)
-
-**Authentication:**
-- `AuthService`: Firebase Auth + social login (Google, Apple)
-
-**In-App Purchases:**
-- `IapService`: Platform IAP with server-side verification
-
-**Storage:**
-- `CacheService`: Cache management
-- `LocalStoreService`: Secure storage wrapper
-- `HydratedService`: HydratedBloc persistence
-
-**Device:**
-- `DeviceInfoService`, `PackageInfoService`
-- `MediaService`, `CameraService`
-
-**Notifications:**
-- `NotificationService`: FCM + AwesomeNotifications
-
-**Miscellaneous:**
-- `ConnectivityService`, `DeepLinkService`, `FileService`
-- `FirebaseRemoteConfigService`, `RouteObserverService`
-
-## Core Directory (`lib/core/`)
-
-### Base Classes (`base/`)
-
-**UseCase Interfaces:**
-- `UseCaseWithParams<Params, Result>`: Returns `TaskEither<AppException, Result>`
-- `UseCaseWithoutParams<Result>`: No parameters
-- `BasePageBreakUseCase<Params, Result>`: Paginated use cases
-
-**Error Handling:**
-- `AppException`: Sealed class with 13 error types
-  - Generic, Server, Connection, Database, Cache
-  - NotFound, Unauthorized, InvalidInput, Unexpected
-  - Forbidden, Pending, FromDioException, FromGraphQLError
-- Automatic conversion from Dio/GraphQL errors
-
-**BLoC/Cubit Mixins:**
-- `CubitUseCaseHandlerMixin`: Execute use cases with loading/success/error states
-  - New methods: `runUseCase`, `runUseCaseList`, `runUseCaseVoid`, `runUseCasePageBreak`
-  - Legacy methods: `executeUseCase`, `executeListUseCase`, `executePageBreakUseCase`
-- `BlocUseCaseHandlerMixin`: Event-driven variant
-
-**Network Request Handlers:**
-- `RestfulRequestHandlerMixin`: REST API calls with error handling, caching, retry
-  - Methods: `callApi`, `callApiList`, `callApiPageBreak`, `callApiWithTransform`
-- `GraphQLRequestHandlerMixin`: GraphQL queries/mutations with error handling
-  - Methods: `callGraphQL`, `callGraphQLList`, `callGraphQLMutation`, `callGraphQLSubscription`
-
-**Response Models:**
-- `BaseResponse<T>`: Generic API response wrapper
-- `BaseResponseList<T>`: List response wrapper
-- `BasePageBreak<T>`: Pagination model with extensions (`isLastPage`, `nextPage`, `hasItems`)
-
-**Request Models:**
-- `PageBreakRequest<T>`: Pagination request (page, limit, orderBy, order, search, filter)
-
-### Constants (`constants/`)
-
-**Generated (`gen/`):**
-- `assets.gen.dart`: Asset references (flutter_gen_runner)
-- `fonts.gen.dart`: Font family constants
-
-**Manual (`manual/`):**
-- `endpoint.dart`: 50+ API endpoint constants
-- `base_url.dart`: Environment URLs (dev, stg, prod)
-- `cache_key.dart`, `local_store_key.dart`: Storage keys
-- `tracking_key.dart`, `tracking_params.dart`: Analytics constants
-- `in_app_key.dart`, `notification_key.dart`, etc.
-
-### Helpers (`helpers/`)
-
-**Extensions (`extension/`):**
-- **String:** Validation (email, phone, URL, password), parsing, formatting, HTML handling
-- **DateTime:** Formatting, relative time, comparison, manipulation
-- **Number:** Currency, time, percentage, file size formatting
-- **Object:** Null-safety helpers (`let`, `also`, `takeIf`)
-
-**Popups (`popup/`):**
-- `DMessage`: Toast/snackbar (success, error, warning, info)
-- `DDialog`: Material dialogs (show, confirm, custom)
-- `DOverlay`: Loading overlays with progress
-
-**Navigation (`navigation/`):**
-- `DNavigator` mixin: GoRouter helpers
-- BuildContext extensions: `pop`, `push`, `pushNamed`, `goBack`
-
-**Logging (`log/`):**
-- `AppLogger`: Color-coded console logging (info, data, warning, error, fatal, trace)
-
-### Utils (`utils/`)
-UI components organized by category:
-- `text/`: `AppText` (HTML support), `DText` (deprecated)
-- `button/`: Custom button widgets
-- `input/`: Form inputs, text fields
-- `images/`: Image loading, caching
-- `layouts/`: Layout helpers, responsive utilities
-- `animation/`: Animation components
-- `decoration/`, `navbar/`, `overlay/`, `select/`, `sliver/`, `svg/`, `timer/`, `video/`, `webview/`, `wrap/`
-
-## Build System & Tooling
-
-### Multi-Flavor Build Process
-```
-1. Select flavor (dev/stg/prod)
-2. Load config from .info/app/*.json
-3. Read env vars from .env/.env.<flavor>
-4. Execute Flutter build:
-   - --release
-   - --flavor <flavor>
-   - --dart-define-from-file=.env/.env.<flavor>
-   - -t lib/main_<flavor>.dart
-   - --obfuscate
-   - --split-debug-info=.obfuscation
-5. Auto-upload debug symbols to Firebase Crashlytics
-6. (Optional) Distribute to Firebase App Distribution
-```
-
-### Build Commands
+**Command to regenerate:**
 ```bash
-# Android
-./tools/macos/build/build_apk.sh <flavor>           # APK
-./tools/macos/build/build_appbundle.sh <flavor>     # App Bundle
-
-# iOS (macOS only)
-./tools/macos/build/build_ios.sh <flavor>           # App
-./tools/macos/build/build_ipa.sh <flavor>           # IPA
-```
-
-### Code Generation
-```bash
-dart run build_runner build --delete-conflicting-outputs  # Generate all
-dart run build_runner watch --delete-conflicting-outputs  # Watch mode
-dart run build_runner clean                               # Clean
-```
-
-### Localization Workflow
-```bash
-tools/macos/localization/localization.sh pull  # Pull from Google Sheets
-dart run slang                                 # Regenerate translations
-```
-
-### Tools Directory
-69 shell scripts across macOS/Linux/Windows:
-- `build/`: APK, App Bundle, iOS, IPA builds
-- `config/`: Project setup, Firebase config, icon generation
-- `distribution/`: Firebase/Play Store distribution, tester management
-- `git/`: Branch creation, commit helpers, hooks
-- `localization/`: Google Sheets integration
-- `key/`: Keystore, PEM, SSH key generation
-
-### CI/CD Pipeline (GitLab CI)
-**Stages:** test → build → deploy
-
-**Build Jobs:**
-- `build:android:dev:apk` (develop branch)
-- `build:android:stg:apk` (main, release/*)
-- `build:android:prod:appbundle` (tags, prod/*)
-
-**Deploy Jobs:**
-- `deploy:firebase:dev` (Firebase App Distribution)
-- `deploy:firebase:stg` (Firebase App Distribution)
-- `deploy:playstore:prod` (Google Play Internal Track)
-
-**Docker Image:** `cirrusci/flutter:3.24.0` with Android SDK 34
-
-## Code Quality & Standards
-
-### Linting
-- Base: `package:flutter_lints/flutter.yaml`
-- Line length: 180 characters
-- Excludes: `*.g.dart`, `*.freezed.dart`, `*.graphql.dart`
-
-### Testing
-- Unit tests: `test/unit/` (mirrors feature structure)
-- Integration tests: `test/integration/`
-- Coverage target: 80% for business logic
-- Pre-push hook runs tests
-
-### Commit Message Format
-```
-<type>-<TICKET-ID>: <subject>
-
-Types: feature, fix, refactor, style, docs, test, chore, perf
-Example: feature-MEUP-123: Add social login functionality
-```
-
-### Branch Naming
-```
-<type>/<TICKET-ID>-<description>
-
-Example: feature/MEUP-123-add-login
-```
-
-## Performance Characteristics
-
-### Metrics (Mid-Range Devices)
-- **Cold Start:** \<3s
-- **API Response P95:** \<500ms
-- **Voice Feedback:** \<3s
-- **Frame Rate:** 60fps sustained
-- **Memory:** \<200MB baseline, \<400MB peak
-
-### Optimizations
-- Code obfuscation in release builds
-- Tree shaking icons (`--no-tree-shake-icons` opt-out)
-- Image/video/file caching with TTL
-- Lazy loading for non-base locales
-- HydratedBloc for persistent state (reduces API calls)
-
-## Security
-
-### Authentication
-- OAuth 2.0 + JWT
-- 15-min access token TTL
-- Auto token refresh
-- Secure storage for tokens (flutter_secure_storage)
-
-### Data Protection
-- HTTPS-only communication
-- Server-side IAP receipt validation
-- Firebase Auth for identity management
-- GDPR/CCPA compliance
-
-### Build Security
-- Code obfuscation in release
-- Debug symbols upload to Crashlytics
-- Keystore/provisioning not committed to Git
-- Environment variables in CI/CD
-
-## Key Statistics
-
-| Metric | Count |
-|--------|-------|
-| Total LOC | ~140K |
-| Dart Files | 785 |
-| Feature Modules | 13 |
-| Domain Entities | 60+ |
-| Repository Interfaces | 15 |
-| Use Cases | 60+ |
-| API Clients | 20 |
-| Cubits/Blocs | 33 |
-| Pages/Screens | 40+ |
-| Shell Scripts | 69 |
-| Routes | 40+ |
-| Supported Languages | 3 |
-| Platforms | iOS + Android |
-
-## Dependencies Summary
-
-### Core Dependencies (20+)
-- **State:** flutter_bloc, bloc, hydrated_bloc
-- **Network:** dio, retrofit, graphql_flutter
-- **Navigation:** go_router
-- **DI:** get_it, injectable
-- **Localization:** slang_flutter, intl
-- **Firebase:** core, auth, messaging, crashlytics, analytics, remote_config
-- **Monetization:** in_app_purchase (iOS + Android)
-- **Tracking:** sentry_flutter, facebook_app_events
-
-### Dev Dependencies (10+)
-- **Code Gen:** build_runner, retrofit_generator, json_serializable, freezed, injectable_generator, go_router_builder, graphql_codegen, slang, flutter_gen_runner
-- **Testing:** mockito, flutter_test
-- **Flavors:** flutter_flavorizr
-
-## Unresolved Technical Debt
-
-1. **UseCase Handler Migration:** Complete transition from `executeUseCase` → `runUseCase`
-2. **Widget Consolidation:** Migrate `DText` → `AppText` across all modules
-3. **Large File Optimization:** Split lesson module files \>200 LOC
-4. **Common Module Size:** Consider splitting 28K LOC into domain/infrastructure/ui
-5. **GraphQL Schema Documentation:** Document handfeeling and other custom schemas
-6. **Setting Module Data Layer:** Evaluate if remote settings management needed
-
-## Next Steps for Developers
-
-### Onboarding
-1. Read `docs/project-overview-pdr.md` for product context
-2. Read `docs/system-architecture.md` for technical architecture
-3. Read `docs/code-standards.md` for development guidelines
-4. Run `tools/macos/config/setup_project.sh` to bootstrap environment
-
-### Adding a New Feature
-1. Create feature branch: `./tools/macos/git/feature.sh MEUP-XXX "description"`
-2. Create module in `lib/src/<feature>/` following Clean Architecture
-3. Implement domain → data → presentation layers
-4. Register in DI (`@LazySingleton`, `@injectable`)
-5. Add routes in `lib/config/routes/data/`
-6. Generate code: `dart run build_runner build --delete-conflicting-outputs`
-7. Write tests in `test/unit/<feature>/`
-8. Commit: `feature-MEUP-XXX: Add feature description`
-
-### Running the App
-```bash
-# Generate code
 dart run build_runner build --delete-conflicting-outputs
-
-# Pull translations
-tools/macos/localization/localization.sh pull
-dart run slang
-
-# Run flavor
-flutter run --flavor dev -t lib/main_dev.dart
 ```
+
+---
+
+## 7. Testing Structure
+
+```
+test/
+├── unit/
+│   ├── auth/
+│   ├── course/
+│   ├── lesson/
+│   ├── roleplay/
+│   ├── monetization/
+│   ├── progress/
+│   ├── profile/
+│   ├── onboard/
+│   ├── data_collect/
+│   ├── home/
+│   ├── achievement/
+│   ├── setting/
+│   └── common/
+```
+
+**Pattern:** `{target}_test.dart` mirrors feature structure
+**Mock Strategy:** Inject mocked services and repositories
+
+---
+
+## 8. File Naming Conventions
+
+| Item | Convention | Example |
+|------|-----------|---------|
+| Files | snake_case | `auth_service.dart` |
+| Classes | PascalCase | `AuthService`, `LoginUseCase` |
+| Cubits | `{Name}Cubit` | `CourseCubit`, `UserCubit` |
+| BLoCs | `{Name}Bloc` | `AuthBloc` |
+| Pages | `{Name}Page` | `LoginPage`, `CoursePage` |
+| Widgets | `{Name}Widget` | `CourseCard`, `LessonCard` |
+| Constants | SCREAMING_SNAKE_CASE | `API_BASE_URL`, `CACHE_KEY_USER` |
+
+---
+
+## 9. Key Metrics Summary
+
+| Aspect | Count |
+|--------|-------|
+| **Total LOC** | ~86,000+ |
+| **Dart Files** | 782 |
+| **Feature Modules** | 13 |
+| **Entities** | 50+ |
+| **Use Cases** | 60+ |
+| **Pages** | 40+ |
+| **Cubits/BLoCs** | 35+ |
+| **Widgets** | 200+ |
+| **Services** | 15+ |
+
+---
+
+## 10. Quick File Location Reference
+
+| Item | Path |
+|------|------|
+| DI Container | `lib/config/di/` |
+| Services | `lib/config/services/` |
+| Routes | `lib/config/routes/` |
+| Theme | `lib/config/themes/` |
+| Error Handling | `lib/core/base/error/` |
+| Use Case Base | `lib/core/base/use_case/` |
+| UI Components | `lib/core/utils/` |
+| Feature Modules | `lib/src/{feature}/` |
+| Localization | `lib/config/l10n/` or `assets/i18n/` |
+| Constants | `lib/core/constants/manual/` |
+| Tests | `test/unit/{feature}/` |
+| Build Config | `.info/app/` |
+| Environment Vars | `.env/.env.{flavor}` |
+
+---
+
+**Document Maintained By:** Architecture Team
+**Next Review Date:** Mar 22, 2026
