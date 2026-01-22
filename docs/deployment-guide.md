@@ -534,9 +534,11 @@ flutter build apk --flavor {flavor} --dart-define-from-file=.env/.env.{flavor}
 - [ ] Monitor user reviews in Play Store
 - [ ] Check for ANRs (Application Not Responding)
 - [ ] Verify API endpoints responding normally
+- [ ] Validate Firebase Remote Config fetched successfully (app version, course, paywall configs)
 - [ ] No critical bugs reported
-- [ ] Analytics events flowing correctly
+- [ ] Analytics events flowing correctly (check FirebaseAnalytics console)
 - [ ] Logs aggregated in Sentry (if applicable)
+- [ ] Deep links resolving correctly to intended pages
 
 ### Rollback Plan
 - [ ] Have previous version APK/IPA ready

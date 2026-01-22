@@ -104,14 +104,14 @@ Organized by subdirectory:
 |-----------------|---------|
 | **Network** | `restful_service.dart` (Dio HTTP), `graphql_service.dart` (GraphQL client) |
 | **Auth** | `auth_service.dart` (Firebase/Supabase wrapper) |
-| **Analytics** | `app_tracking_service.dart` (Firebase, Sentry, custom), `app_event_service.dart` (Facebook, TikTok) |
+| **Analytics** | `app_tracking_service.dart` (170+ events: Firebase, Sentry, custom), `app_event_service.dart` (Facebook, TikTok) |
+| **Remote Config** | `firebase_remote_config_service.dart` (AppVersionConfig, CourseConfig, PaywallConfig entities) |
 | **Notifications** | `notification_service.dart` (AwesomeNotifications) |
 | **Storage** | `cache_service.dart`, `local_store_service.dart` (SharedPrefs), `hydrated_service.dart` |
 | **Device** | `device_info_service.dart`, `package_info_service.dart` |
 | **Media** | `media_service.dart`, `file_service.dart` (file uploads) |
 | **Monetization** | `iap_service.dart` (StoreKit) |
-| **Deep Linking** | `deep_link_service.dart` (app_links) |
-| **Misc** | `remote_config_service.dart` (Firebase Remote Config) |
+| **Deep Linking** | `deep_link_service.dart` (app_links integration) |
 
 **Key Pattern: Interceptors**
 - REST: BaseInterceptor → CustomInterceptor (auth token injection, error mapping)
@@ -216,7 +216,8 @@ All manually maintained (no auto-generation):
 | `endpoint.dart` | API endpoint paths |
 | `env.dart` | Environment configuration |
 | `in_app_key.dart` | StoreKit product IDs |
-| `tracking_key.dart` | Analytics event names |
+| `tracking_key.dart` | 170+ analytics event names (onboarding, course, lesson, roleplay, progress, payment events) |
+| `remote_config_key.dart` | Firebase Remote Config keys (appVersionConfig, courseConfig, paywallConfig) |
 | `notification_key.dart` | Notification channel IDs |
 
 ### 3.3 Helpers (helpers/)
@@ -301,6 +302,8 @@ Each feature follows Clean Architecture: **Data → Domain → Presentation**
 9. LessonCubit - Overall progress
 
 **Key Widgets:** DocumentWidget, AudioPlayerWidget, ChoiceAnswerCard, SentenceBuilder, RecordingControlsArea, WaveformVisualizer
+
+**Entity Extensions:** QuestionEntity with `explanationText`, `hasExplanation` properties for answer explanation display
 
 ### 4.4 Roleplay Module (67 files, 3.6K LOC)
 **Purpose:** AI-driven conversational practice

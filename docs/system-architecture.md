@@ -35,7 +35,9 @@ CROSS-LAYER SERVICES:
 │  DI Container (GetIt) → Service Locator Pattern            │
 │  Config (theme, locale, settings) → App-wide state        │
 │  Error Handling (AppException) → Centralized exceptions   │
-│  Tracking (Analytics, Sentry) → Observability            │
+│  Tracking (Analytics, Sentry) → Observability             │
+│  Remote Config (Firebase) → Feature toggles & versions    │
+│  Deep Linking (app_links) → Universal link navigation     │
 └────────────────────────────────────────────────────────────┘
 ```
 

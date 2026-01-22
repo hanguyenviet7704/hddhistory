@@ -272,12 +272,48 @@ CourseCubit providesCourseCubit(GetCoursesUseCase useCase) => CourseCubit(useCas
 
 ---
 
+## 4.5 Remote Configuration Strategy
+
+**Purpose:** Centralize feature toggles, version requirements, and business logic rules.
+
+```dart
+// Access remote config
+final remoteConfig = getIt<IRemoteConfigService>();
+
+// Check app version requirements
+final appVersion = remoteConfig.appVersionConfig;
+if (appVersion.forceUserUpdate) {
+  showForceUpdateDialog();
+}
+
+// Check course/lesson configurations
+final courseConfig = remoteConfig.courseConfig;
+if (!courseConfig.enable) {
+  showCourseLocked();
+}
+
+// Check paywall settings
+final paywallConfig = remoteConfig.paywallConfig;
+final lessonLocked = paywallConfig.enableLessonLock &&
+                     lessonNumber >= paywallConfig.lessonLock;
+```
+
+**Entities Provided:**
+- **AppVersionConfigEntity** - Version checks (forceUserUpdate, latestAndroidVersion, latestIosVersion)
+- **CourseConfigEntity** - Course feature toggles (enable, finishOptionalKp)
+- **PaywallConfigEntity** - Monetization rules (enableLessonLock, lessonLock limit)
+
+**Storage:** Firebase Remote Config with JSON fallback defaults
+**Update Frequency:** Fetched on app launch, cached locally
+
+---
+
 ## 5. Analytics & Tracking Architecture
 
 ### Multi-Provider Tracking
 
 ```
-                    TrackingService (Composite)
+                    AppTrackingService (ITrackingService)
                             ↓
         ┌───────────────────┼───────────────────┐
         ↓                   ↓                   ↓
@@ -287,29 +323,56 @@ CourseCubit providesCourseCubit(GetCoursesUseCase useCase) => CourseCubit(useCas
 
 ### Event Tracking Pattern
 
+**170+ events organized by category:** onboarding, course, lesson, roleplay, progress, settings, payments
+
 ```dart
-void _onLessonCompleted(LessonEntity lesson, int score) {
-  getIt<TrackingService>().trackEvent(
-    'lesson_completed',
-    parameters: {
-      'lesson_id': lesson.id,
-      'course_id': lesson.courseId,
-      'score': score,
-      'duration_seconds': exerciseDuration,
-    },
-  );
-  // Sent to Firebase Analytics, Sentry, Custom backend
-}
+// Onboarding events (obd_* prefix)
+trackEvent(TrackingKey.obdNameContinue, parameters: {...});
+
+// Course events (course_select_*, roadmap_*, lesson_* prefix)
+trackEvent(TrackingKey.roadmapItemClick, parameters: {
+  'skill_id': skillId,
+  'course_id': courseId,
+  'course_name': courseName,
+});
+
+// Lesson/Keypoint events (keypoint_exercise_* prefix)
+trackEvent(TrackingKey.keypointExerciseCheckClick, parameters: {
+  ..._keypointParams(trackingData),
+  'exercise_type': 'multiple_choice',
+  'is_correct': true,
+});
+
+// Roleplay events (roleplay_* prefix)
+trackEvent(TrackingKey.roleplayVoiceInteraction, parameters: {
+  'roleplay_id': roleplayId,
+  'feedback_score': score,
+});
+
+// Premium events (premium_*, paywall_* prefix)
+trackEvent(TrackingKey.paywallPackageClick, parameters: {
+  'source': entryPoint.name,
+  'package_id': packageId,
+});
 ```
+
+**Helper Methods for Parameter Building:**
+- `_courseParams()` - Basic course tracking data
+- `_courseLessonParams()` - Course + lesson context
+- `_keypointParams()` - Full lesson hierarchy
+- `_roleplayParams()` - Roleplay-specific data
+- `_premiumParams()` - Paywall entry point
+- `_courseParamsForPaywall()` - Course context in paywall
 
 ### Error Tracking
 
 ```dart
 repository.getCourse(id).fold(
   (error) {
-    getIt<TrackingService>().logException(
+    getIt<ITrackingService>().trackError(
       error,
-      extra: {'course_id': id, 'cubit': 'CourseCubit', 'user_id': currentUserId},
+      context: {'course_id': id, 'cubit': 'CourseCubit'},
+      errorType: 'repository_error',
     );
     // Sent to Crashlytics automatically
   },

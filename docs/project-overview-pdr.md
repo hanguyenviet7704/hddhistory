@@ -148,10 +148,16 @@ Data (APIs, Local Storage, Models)
 - Purchase history and restore functionality
 
 ### F8: Analytics & Tracking
-- Screen view tracking
-- Event tracking (lesson start, completion, exercise submission)
-- Error/exception logging to Crashlytics
-- User session analytics
+- Screen view tracking and session analytics
+- 170+ comprehensive event tracking categorized by user journey:
+  - Onboarding (motivation questions, goal setting, language selection)
+  - Course selection (browsing, enrollment, category filtering)
+  - Lesson/keypoint (theory view, exercise type interactions, results)
+  - Roleplay (dialogue engagement, feedback, performance scoring)
+  - Progress (completion %, milestone achievements)
+  - Premium/paywall (viewing, package selection, purchase events)
+- Error/exception logging to Crashlytics and Sentry
+- Automatic parameter enrichment (course, lesson, skill context)
 
 ---
 

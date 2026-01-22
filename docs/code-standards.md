@@ -742,7 +742,31 @@ class CourseCard extends StatelessWidget {
 
 ---
 
-## 15. Branch Naming Conventions
+## 15. Service Patterns: Tracking & Remote Config
+
+### Tracking Service (ITrackingService)
+- **170+ event types** categorized: onboarding, course, lesson, roleplay, progress, payments
+- Helper methods: `_courseParams()`, `_courseLessonParams()`, `_roleplayParams()` reduce parameter duplication
+- Events sent to Firebase Analytics, Sentry, custom backends
+- See `lib/core/constants/manual/tracking_key.dart` for complete event catalog
+
+### Remote Config Service (IRemoteConfigService)
+- **AppVersionConfigEntity** - forceUserUpdate, latestAndroidVersion, latestIosVersion
+- **CourseConfigEntity** - enable, finishOptionalKp toggles
+- **PaywallConfigEntity** - enableLessonLock, lessonLock threshold
+- Auto-fetched on app launch from Firebase Remote Config
+
+### Entity Extensions
+Use for computed properties (avoid extra fields). Example:
+```dart
+extension QuestionExtension on QuestionEntity {
+  bool get hasExplanation => explanation != null && explanation!.text.isNotEmpty;
+}
+```
+
+---
+
+## 16. Branch Naming Conventions
 
 ### Format
 ```
