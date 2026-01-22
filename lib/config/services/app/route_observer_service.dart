@@ -92,7 +92,6 @@ class AppRouterObserver extends BaseRouterObserver {
     super.onPopRoute(route);
     if (route?.settings.name != RouteNamed.course) return;
     final courseCubit = AppDI.injector.get<CourseCubit>();
-    AppService.instance.appTrackingService.trackAllCourseExit(courseCubit.state.allCourseSource);
     courseCubit.setAllCourseSource('unknown');
   }
 }

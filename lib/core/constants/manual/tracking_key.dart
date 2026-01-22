@@ -64,11 +64,15 @@ mixin TrackingKey {
   static const String homeScrView = 'home_scr_view';
   static const String homeTabSwitch = 'home_tab_switch';
   static const String homeSkillClick = 'home_skill_click';
-  static const String allCourseScrView = 'all_course_scr_view';
-  static const String allCourseSkillSwitch = 'all_course_skill_switch';
-  static const String allCourseCourseClick = 'all_course_course_click';
-  static const String allCourseFirstCourseClick = 'all_course_1stcourse_click';
-  static const String allCourseExit = 'all_course_exit';
+
+  //* Course selection events
+  static const String courseSelectAllCourseView = 'course_select_all_course_view';
+  static const String courseSelectMyCourseView = 'course_select_my_course_view';
+  static const String courseSelectCategorySlide = 'course_select_category_slide';
+  static const String courseSelectCategoryClick = 'course_select_category_click';
+  static const String courseSelectFirstCourseClick = 'course_select_1stcourse_click';
+  static const String courseSelectExit = 'course_select_exit';
+  static const String courseSelectAllCourseScroll = 'course_select_all_course_scroll';
 
   //* Course events
   static const String popupLearningIntroScrView = 'popup_learning_intro_scr_view';

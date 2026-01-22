@@ -16,8 +16,9 @@ class AllCourseTab extends StatefulWidget {
 
 class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClientMixin {
   late final AllCourseTabController _controller;
-  int? _lastTrackedCategoryIndex;
   bool _wasVisible = false;
+  bool _isUserScrolling = false;
+  int? _scrollStartCategoryIndex;
 
   @override
   void initState() {
@@ -25,12 +26,10 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     _controller = AllCourseTabController(
       initialCategoryIndex: widget.initialCategoryIndex,
     );
-    _controller.addListener(_handleCategoryChanged);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_handleCategoryChanged);
     _controller.dispose();
     super.dispose();
   }
@@ -54,7 +53,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
         }
 
         _controller.ensureInitialized(skillsets.length);
-        _trackAllCourseScrViewIfNeeded(skillsets);
+        _trackAllCourseScrViewIfNeeded();
         final progressState = context.watch<ProgressCubit>().state;
 
         return AnimatedBuilder(
@@ -65,26 +64,30 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
                 CourseCategoryBar(
                   skillsets: skillsets,
                   activeCategoryIndex: _controller.activeCategoryIndex,
-                  onCategoryTap: _controller.onCategoryTap,
+                  onCategoryTap: (index) => _handleCategoryTap(skillsets, index),
                   categoryScrollController: _controller.categoryScrollController,
+                  onCategorySlide: _handleCategorySlide,
                 ),
                 12.verticalSpace,
                 Expanded(
-                  child: ScrollablePositionedList.builder(
-                    itemCount: skillsets.length,
-                    itemScrollController: _controller.sectionScrollController,
-                    itemPositionsListener: _controller.sectionPositionsListener,
-                    padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
-                    itemBuilder: (context, index) {
-                      final skillset = skillsets[index];
-                      return _CourseSection(
-                        skillset: skillset,
-                        progressState: progressState,
-                        isSelected: (courseId) => homeState.isSelectedCourse(courseId),
-                        onTapCourse: (course, courseIndex) => _onTapCourse(context, skillset, course, courseIndex),
-                        showBottomSpacing: index < skillsets.length - 1,
-                      );
-                    },
+                  child: NotificationListener<ScrollNotification>(
+                    onNotification: _handleListScrollNotification,
+                    child: ScrollablePositionedList.builder(
+                      itemCount: skillsets.length,
+                      itemScrollController: _controller.sectionScrollController,
+                      itemPositionsListener: _controller.sectionPositionsListener,
+                      padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 20.h),
+                      itemBuilder: (context, index) {
+                        final skillset = skillsets[index];
+                        return _CourseSection(
+                          skillset: skillset,
+                          progressState: progressState,
+                          isSelected: (courseId) => homeState.isSelectedCourse(courseId),
+                          onTapCourse: (course, courseIndex) => _onTapCourse(context, skillset, course, courseIndex),
+                          showBottomSpacing: index < skillsets.length - 1,
+                        );
+                      },
+                    ),
                   ),
                 ),
               ],
@@ -103,11 +106,11 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
   ) {
     final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
     if (isFirstTimeUserChooseCourse) {
-      AppService.instance.appTrackingService.trackAllCourseFirstCourseClick(skillset, course);
+      AppService.instance.appTrackingService.trackCourseSelectFirstCourseClick(skillset, course);
       CourseIntroPopup.show(
         context,
         course: course,
-        onClose: () => _handleCourseTap(context, skillset, course, index, trackClick: false),
+        onClose: () => _handleCourseTap(context, skillset, course, index),
       );
       return;
     }
@@ -119,13 +122,8 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     BuildContext context,
     SkillsetEntity skillset,
     CourseEntity course,
-    int index, {
-    bool trackClick = true,
-  }) {
-    if (trackClick) {
-      final source = context.read<CourseCubit>().state.allCourseSource;
-      AppService.instance.appTrackingService.trackAllCourseCourseClick(skillset, course, source);
-    }
+    int index,
+  ) {
     if (course.numberOfLesson == 0) {
       CourseLessonEmptyNotiPopup.show(context);
       return;
@@ -139,29 +137,58 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     context.read<PageCubit>().setCurrentIndex(1);
   }
 
-  void _trackAllCourseScrViewIfNeeded(List<SkillsetEntity> skillsets) {
+  void _trackAllCourseScrViewIfNeeded() {
     if (!widget.isVisible || _wasVisible) return;
-    final skillset = skillsets.skillsetFromIndex(_controller.activeCategoryIndex);
-    if (skillset == null || skillset.title.en.isEmpty) return;
-    AppService.instance.appTrackingService.trackAllCourseScrView(skillset);
+    final source = context.read<CourseCubit>().state.allCourseSource;
+    AppService.instance.appTrackingService.trackCourseSelectAllCourseView(source: source);
     _wasVisible = true;
-    _lastTrackedCategoryIndex = _controller.activeCategoryIndex;
   }
 
-  void _handleCategoryChanged() {
-    if (!widget.isVisible) return;
-    final skillsets = context.read<HomeCubit>().state.skillsets;
-    if (skillsets.isEmpty) return;
+  void _handleCategoryTap(List<SkillsetEntity> skillsets, int index) {
     final currentIndex = _controller.activeCategoryIndex;
-    if (_lastTrackedCategoryIndex == null) {
-      _lastTrackedCategoryIndex = currentIndex;
+    if (index != currentIndex) {
+      final skillset = skillsets.skillsetFromIndex(index);
+      if (skillset != null && skillset.id.isNotEmpty) {
+        AppService.instance.appTrackingService.trackCourseSelectCategoryClick(
+          skillset,
+          isRightDirection: index > currentIndex,
+        );
+      }
+    }
+    _controller.onCategoryTap(index);
+  }
+
+  void _handleCategorySlide() {
+    if (!widget.isVisible) return;
+    AppService.instance.appTrackingService.trackCourseSelectCategorySlide();
+  }
+
+  bool _handleListScrollNotification(ScrollNotification notification) {
+    if (!widget.isVisible || notification.metrics.axis != Axis.vertical) return false;
+    if (notification is ScrollStartNotification && notification.dragDetails != null) {
+      _isUserScrolling = true;
+      _scrollStartCategoryIndex = _controller.activeCategoryIndex;
+    } else if (notification is ScrollEndNotification) {
+      _trackAllCourseScroll();
+    }
+    return false;
+  }
+
+  void _trackAllCourseScroll() {
+    if (!_isUserScrolling) return;
+    final startIndex = _scrollStartCategoryIndex;
+    if (startIndex == null) {
+      _resetScrollTracking();
       return;
     }
-    if (currentIndex == _lastTrackedCategoryIndex) return;
-    final skillset = skillsets.skillsetFromIndex(currentIndex);
-    if (skillset == null || skillset.title.en.isEmpty) return;
-    _lastTrackedCategoryIndex = currentIndex;
-    AppService.instance.appTrackingService.trackAllCourseSkillSwitch(skillset);
+    final isSameCategory = startIndex == _controller.activeCategoryIndex;
+    AppService.instance.appTrackingService.trackCourseSelectAllCourseScroll(isSameCategory: isSameCategory);
+    _resetScrollTracking();
+  }
+
+  void _resetScrollTracking() {
+    _isUserScrolling = false;
+    _scrollStartCategoryIndex = null;
   }
 
   @override

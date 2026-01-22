@@ -11,7 +11,7 @@ class TopProgressBar extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
       child: GestureDetector(
         onTap: () {
-          AppDI.injector.get<CourseCubit>().setAllCourseSource('roadmap');
+          AppDI.injector.get<CourseCubit>().setAllCourseSource('course_switch');
           CourseRoute().push(context);
         },
         child: Container(

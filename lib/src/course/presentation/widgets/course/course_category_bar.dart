@@ -5,6 +5,7 @@ class CourseCategoryBar extends StatelessWidget {
   final int activeCategoryIndex;
   final Function(int) onCategoryTap;
   final ItemScrollController categoryScrollController;
+  final VoidCallback? onCategorySlide;
 
   const CourseCategoryBar({
     super.key,
@@ -12,6 +13,7 @@ class CourseCategoryBar extends StatelessWidget {
     required this.activeCategoryIndex,
     required this.onCategoryTap,
     required this.categoryScrollController,
+    this.onCategorySlide,
   });
 
   @override
@@ -21,23 +23,32 @@ class CourseCategoryBar extends StatelessWidget {
       margin: EdgeInsets.symmetric(horizontal: 20.w),
       child: SizedBox(
         height: 34.h,
-        child: ScrollablePositionedList.builder(
-          scrollDirection: Axis.horizontal,
-          itemCount: skillsets.length,
-          itemScrollController: categoryScrollController,
-          padding: EdgeInsets.zero,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: EdgeInsets.only(
-                right: index < skillsets.length - 1 ? 12.w : 0,
-              ),
-              child: CourseCategoryChip(
-                label: skillsets[index].title.text,
-                isSelected: activeCategoryIndex == index,
-                onTap: () => onCategoryTap(index),
-              ),
-            );
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification.metrics.axis != Axis.horizontal) return false;
+            if (notification is ScrollStartNotification && notification.dragDetails != null) {
+              onCategorySlide?.call();
+            }
+            return false;
           },
+          child: ScrollablePositionedList.builder(
+            scrollDirection: Axis.horizontal,
+            itemCount: skillsets.length,
+            itemScrollController: categoryScrollController,
+            padding: EdgeInsets.zero,
+            itemBuilder: (context, index) {
+              return Padding(
+                padding: EdgeInsets.only(
+                  right: index < skillsets.length - 1 ? 12.w : 0,
+                ),
+                child: CourseCategoryChip(
+                  label: skillsets[index].title.text,
+                  isSelected: activeCategoryIndex == index,
+                  onTap: () => onCategoryTap(index),
+                ),
+              );
+            },
+          ),
         ),
       ),
     );

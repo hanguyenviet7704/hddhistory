@@ -69,11 +69,15 @@ abstract interface class ITrackingService {
   Future<void> trackHomeScrView();
   Future<void> trackHomeTabSwitch(String tabType);
   Future<void> trackHomeSkillClick(SkillsetEntity skillset);
-  Future<void> trackAllCourseScrView(SkillsetEntity skillset);
-  Future<void> trackAllCourseSkillSwitch(SkillsetEntity skillset);
-  Future<void> trackAllCourseCourseClick(SkillsetEntity skillset, CourseEntity course, String source);
-  Future<void> trackAllCourseFirstCourseClick(SkillsetEntity skillset, CourseEntity course);
-  Future<void> trackAllCourseExit(String source);
+
+  //* Course selection events
+  Future<void> trackCourseSelectAllCourseView({required String source});
+  Future<void> trackCourseSelectMyCourseView({required String source});
+  Future<void> trackCourseSelectCategorySlide();
+  Future<void> trackCourseSelectCategoryClick(SkillsetEntity skillset, {required bool isRightDirection});
+  Future<void> trackCourseSelectFirstCourseClick(SkillsetEntity skillset, CourseEntity course);
+  Future<void> trackCourseSelectExit();
+  Future<void> trackCourseSelectAllCourseScroll({required bool isSameCategory});
 
   //* Course events
   Future<void> trackPopupLearningIntroScrView(CourseEntity course);

@@ -50,7 +50,7 @@ dependencies:
   just_audio: ^0.10.5
 #  camera: ^0.11.1
   lottie: ^3.3.2
-  syncfusion_flutter_datepicker: ^32.1.19
+  syncfusion_flutter_datepicker: ^32.1.24
 #  flutter_polyline_points: ^2.1.0
   flutter_screenutil: ^5.9.3
 #  pin_code_fields: ^8.0.1

@@ -86,7 +86,7 @@ class _HomePageState extends State<HomePage> {
                     title: context.text.home.homeRecommendCourse,
                     actionText: context.text.home.homeSeeAllLearningListButton,
                     onActionTap: () {
-                      context.read<CourseCubit>().setAllCourseSource('see_all');
+                      context.read<CourseCubit>().setAllCourseSource('home_skill_view');
                       CourseRoute().push(context);
                     },
                   ),
@@ -112,7 +112,7 @@ class _HomePageState extends State<HomePage> {
                           return SkillsetCardWidget(
                             skillset: skillset,
                             onTap: () {
-                              context.read<CourseCubit>().setAllCourseSource('home_skill');
+                              context.read<CourseCubit>().setAllCourseSource('home_skill_view');
                               AppService.instance.appTrackingService.trackHomeSkillClick(skillset);
                               CourseRoute(selectedTabIndex: index).push(context);
                             },

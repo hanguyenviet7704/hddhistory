@@ -462,54 +462,65 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackAllCourseScrView(SkillsetEntity skillset) async {
+  Future<void> trackCourseSelectAllCourseView({required String source}) async {
     _appTrackingService.trackEvent(
-      TrackingKey.allCourseScrView,
+      TrackingKey.courseSelectAllCourseView,
       parameters: {
-        'skill_name': skillset.trackingName,
+        'source': source,
       },
     );
   }
 
   @override
-  Future<void> trackAllCourseSkillSwitch(SkillsetEntity skillset) async {
+  Future<void> trackCourseSelectMyCourseView({required String source}) async {
     _appTrackingService.trackEvent(
-      TrackingKey.allCourseSkillSwitch,
+      TrackingKey.courseSelectMyCourseView,
       parameters: {
-        'skill_name': skillset.trackingName,
-      },
-    );
-  }
-
-  @override
-  Future<void> trackAllCourseCourseClick(SkillsetEntity skillset, CourseEntity course, String source) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.allCourseCourseClick,
-      parameters: {
-        'skill_name': skillset.trackingName,
-        'course_id': course.id,
         'source': source,
       },
     );
   }
 
   @override
-  Future<void> trackAllCourseFirstCourseClick(SkillsetEntity skillset, CourseEntity course) async {
+  Future<void> trackCourseSelectCategorySlide() async {
+    _appTrackingService.trackEvent(TrackingKey.courseSelectCategorySlide);
+  }
+
+  @override
+  Future<void> trackCourseSelectCategoryClick(
+    SkillsetEntity skillset, {
+    required bool isRightDirection,
+  }) async {
     _appTrackingService.trackEvent(
-      TrackingKey.allCourseFirstCourseClick,
+      TrackingKey.courseSelectCategoryClick,
       parameters: {
         'skill_name': skillset.trackingName,
-        'course_id': course.id,
+        'skill_id': skillset.id,
+        'is_right_direction': isRightDirection ? 'yes' : 'no',
       },
     );
   }
 
   @override
-  Future<void> trackAllCourseExit(String source) async {
+  Future<void> trackCourseSelectFirstCourseClick(SkillsetEntity skillset, CourseEntity course) async {
+    final trackingData = CourseTrackingData(skillset: skillset, course: course);
     _appTrackingService.trackEvent(
-      TrackingKey.allCourseExit,
+      TrackingKey.courseSelectFirstCourseClick,
+      parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackCourseSelectExit() async {
+    _appTrackingService.trackEvent(TrackingKey.courseSelectExit);
+  }
+
+  @override
+  Future<void> trackCourseSelectAllCourseScroll({required bool isSameCategory}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.courseSelectAllCourseScroll,
       parameters: {
-        'source': source,
+        'is_same_category': isSameCategory ? 'yes' : 'no',
       },
     );
   }
