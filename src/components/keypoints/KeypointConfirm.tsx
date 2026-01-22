@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { XMarkIcon } from "@heroicons/react/24/outline";
-import { keypointService } from "../../services/keypointService";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
@@ -9,7 +8,7 @@ interface Props {
   isOpen: boolean;
   keypoint?: IKeypoint;
   onClose: () => void;
-  onConfirm: () => void; // parent will refresh state as needed
+  onConfirm: () => Promise<void> | void; // parent will handle deletion + refresh
 }
 
 export default function KeypointConfirm({
@@ -26,8 +25,7 @@ export default function KeypointConfirm({
   const handleDelete = async () => {
     setLoading(true);
     try {
-      await keypointService.remove(String(keypoint._id));
-      onConfirm();
+      await Promise.resolve(onConfirm());
       onClose();
     } catch (err) {
       console.error("Delete failed", err);

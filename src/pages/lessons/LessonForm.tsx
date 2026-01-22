@@ -435,6 +435,10 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white border rounded-lg mb-3 cursor-pointer hover:shadow-md transition-all duration-300"
+                      onClick={() => {
+                        if (!itemId) return;
+                        navigate(`/keypoint/${itemId}`);
+                      }}
                     >
                       {/* {itemObj.image && (
                         <img

@@ -310,7 +310,10 @@ const KeypointList: React.FC = () => {
           setIsConfirmOpen(false);
           setSelected(null);
         }}
-        onConfirm={() => selected && handleConfirmDelete(selected._id)}
+        onConfirm={async () => {
+          if (!selected) return;
+          await handleConfirmDelete(selected._id);
+        }}
       />
     </div>
   );
