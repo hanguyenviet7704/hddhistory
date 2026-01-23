@@ -8,6 +8,13 @@ cd "${ROOT_DIR}" || {
     exit 1
 }
 
+# Load centralized configuration helpers if available
+COMMON_SH="${ROOT_DIR}/tools/macos/common/common.sh"
+if [[ -f "$COMMON_SH" ]]; then
+    # shellcheck source=/dev/null
+    source "$COMMON_SH"
+fi
+
 # Display a colorful header
 echo -e "\033[1;34m"
 echo "🔍 Firebase Crashlytics Debug Symbols Checker 🔍"
@@ -39,39 +46,74 @@ fi
 # Set environment-specific configurations
 CONFIG_FILE=""
 BUNDLE_ID=""
-PROJECT_ID="meup-bf64f"
+PROJECT_ID=""
+
+if command -v get_firebase_project_id >/dev/null 2>&1; then
+    PROJECT_ID=$(get_firebase_project_id "$1")
+fi
+
+if [[ -z "$PROJECT_ID" || "$PROJECT_ID" == "null" ]]; then
+    FIREBASE_JSON="${ROOT_DIR}/.info/app/firebase.json"
+    if [[ -f "$FIREBASE_JSON" ]] && command -v jq >/dev/null 2>&1; then
+        PROJECT_ID=$(jq -r ".projects.${1} // .projectId // empty" "$FIREBASE_JSON" 2>/dev/null)
+    fi
+fi
 
 if [[ "$PLATFORM" == "android" ]]; then
     # Android configuration
-    if [[ "$1" == "dev" ]]; then
-        CONFIG_FILE="android/app/src/dev/google-services.json"
-        BUNDLE_ID="com.eup.artlexis.dev"
-    elif [[ "$1" == "stg" ]]; then
-        CONFIG_FILE="android/app/src/stg/google-services.json"
-        BUNDLE_ID="com.eup.artlexis.stg"
-    elif [[ "$1" == "prod" ]]; then
-        CONFIG_FILE="android/app/src/prod/google-services.json"
-        BUNDLE_ID="com.eup.artlexis"
+    CONFIG_FILE="android/app/src/${1}/google-services.json"
+
+    if command -v get_android_package_name >/dev/null 2>&1; then
+        BUNDLE_ID=$(get_android_package_name "$1")
+    fi
+
+    if [[ -z "$BUNDLE_ID" || "$BUNDLE_ID" == "null" ]]; then
+        if [[ -f "$CONFIG_FILE" ]]; then
+            if command -v jq >/dev/null 2>&1; then
+                BUNDLE_ID=$(jq -r '.client[0].client_info.android_client_info.package_name // empty' "$CONFIG_FILE" 2>/dev/null)
+            else
+                BUNDLE_ID=$(grep -m 1 "\"package_name\"" "$CONFIG_FILE" | sed 's/.*"package_name": "\([^"]*\)".*/\1/')
+            fi
+        fi
     fi
 else
     # iOS configuration
-    if [[ "$1" == "dev" ]]; then
-        CONFIG_FILE="ios/Runner/dev/GoogleService-Info.plist"
-        BUNDLE_ID="com.eup.artlexis.dev"
-    elif [[ "$1" == "stg" ]]; then
-        CONFIG_FILE="ios/Runner/stg/GoogleService-Info.plist"
-        BUNDLE_ID="com.eup.artlexis.stg"
-    elif [[ "$1" == "prod" ]]; then
+    CONFIG_FILE="ios/Runner/${1}/GoogleService-Info.plist"
+    if [[ ! -f "$CONFIG_FILE" ]]; then
         CONFIG_FILE="ios/Runner/GoogleService-Info.plist"
-        BUNDLE_ID="com.eup.artlexis"
     fi
+
+    if command -v get_ios_bundle_id >/dev/null 2>&1; then
+        BUNDLE_ID=$(get_ios_bundle_id "$1")
+    fi
+
+    if [[ -z "$BUNDLE_ID" || "$BUNDLE_ID" == "null" ]]; then
+        if [[ -f "$CONFIG_FILE" ]]; then
+            if command -v plutil &> /dev/null; then
+                BUNDLE_ID=$(plutil -extract "BUNDLE_ID" xml1 -o - "$CONFIG_FILE" | sed -n "s/.*<string>\(.*\)<\/string>.*/\1/p")
+            else
+                BUNDLE_ID=$(grep -A 1 "BUNDLE_ID" "$CONFIG_FILE" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
+            fi
+        fi
+    fi
+fi
+
+if [[ -z "$CONFIG_FILE" || ! -f "$CONFIG_FILE" ]]; then
+    echo -e "\033[1;31mError: Config file not found for $PLATFORM/$1.\033[0m"
+    echo "Expected path: $CONFIG_FILE"
+    exit 1
 fi
 
 echo -e "\033[1;36mChecking Firebase Crashlytics configuration for:\033[0m"
 echo "• Environment: $1"
 echo "• Platform: $PLATFORM"
-echo "• Bundle ID: $BUNDLE_ID"
+echo "• Bundle ID: ${BUNDLE_ID:-'(unknown)'}"
 echo "• Config file: $CONFIG_FILE"
+if [[ -n "$PROJECT_ID" ]]; then
+    echo "• Firebase Project: $PROJECT_ID"
+else
+    echo "• Firebase Project: (unknown)"
+fi
 echo ""
 
 # Check if Firebase CLI is installed
@@ -92,14 +134,27 @@ fi
 echo "Extracting Firebase App ID..."
 FIREBASE_APP_ID=""
 
+if command -v get_firebase_app_id >/dev/null 2>&1; then
+    FIREBASE_APP_ID=$(get_firebase_app_id "$PLATFORM" "$1")
+fi
+
+if [[ -z "$FIREBASE_APP_ID" || "$FIREBASE_APP_ID" == "null" ]]; then
 if [[ "$PLATFORM" == "android" ]]; then
     # Android - Extract mobilesdk_app_id from google-services.json
     if command -v jq &> /dev/null; then
         echo "Using jq to parse JSON..."
-        FIREBASE_APP_ID=$(jq -r --arg pkg "$BUNDLE_ID" '.client[] | select(.client_info.android_client_info.package_name == $pkg) | .client_info.mobilesdk_app_id' "$CONFIG_FILE")
+        if [[ -n "$BUNDLE_ID" ]]; then
+            FIREBASE_APP_ID=$(jq -r --arg pkg "$BUNDLE_ID" '.client[] | select(.client_info.android_client_info.package_name == $pkg) | .client_info.mobilesdk_app_id' "$CONFIG_FILE")
+        else
+            FIREBASE_APP_ID=$(jq -r '.client[0].client_info.mobilesdk_app_id // empty' "$CONFIG_FILE")
+        fi
     else
         echo "jq not found, using grep/sed method..."
-        FIREBASE_APP_ID=$(grep -A 10 "\"package_name\": \"$BUNDLE_ID\"" "$CONFIG_FILE" | grep -B 10 "mobilesdk_app_id" | grep "mobilesdk_app_id" | head -1 | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
+        if [[ -n "$BUNDLE_ID" ]]; then
+            FIREBASE_APP_ID=$(grep -A 10 "\"package_name\": \"$BUNDLE_ID\"" "$CONFIG_FILE" | grep -B 10 "mobilesdk_app_id" | grep "mobilesdk_app_id" | head -1 | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
+        else
+            FIREBASE_APP_ID=$(grep -m 1 "\"mobilesdk_app_id\"" "$CONFIG_FILE" | sed 's/.*"mobilesdk_app_id": "\([^"]*\)".*/\1/')
+        fi
     fi
 else
     # iOS - Extract GOOGLE_APP_ID from GoogleService-Info.plist
@@ -110,6 +165,7 @@ else
         echo "plutil not found, using grep/sed method..."
         FIREBASE_APP_ID=$(grep -A 1 "GOOGLE_APP_ID" "$CONFIG_FILE" | grep "<string>" | sed 's/.*<string>\(.*\)<\/string>.*/\1/')
     fi
+fi
 fi
 
 # Validate that we found the Firebase App ID
@@ -199,18 +255,22 @@ echo ""
 
 # Display useful links and console URLs
 echo -e "\033[1;36mFirebase Console Links:\033[0m"
-echo "• Project Overview:"
-echo "  https://console.firebase.google.com/project/$PROJECT_ID"
-echo ""
-echo "• Crashlytics Dashboard:"
-echo "  https://console.firebase.google.com/project/$PROJECT_ID/crashlytics/issues?state=open&time=last-seven-days&tag=all"
-echo ""
-if [[ "$PLATFORM" == "android" ]]; then
-    echo "• Android App Crashlytics:"
-    echo "  https://console.firebase.google.com/project/$PROJECT_ID/crashlytics/app/android:$BUNDLE_ID"
+if [[ -n "$PROJECT_ID" ]]; then
+    echo "• Project Overview:"
+    echo "  https://console.firebase.google.com/project/$PROJECT_ID"
+    echo ""
+    echo "• Crashlytics Dashboard:"
+    echo "  https://console.firebase.google.com/project/$PROJECT_ID/crashlytics/issues?state=open&time=last-seven-days&tag=all"
+    echo ""
+    if [[ "$PLATFORM" == "android" ]]; then
+        echo "• Android App Crashlytics:"
+        echo "  https://console.firebase.google.com/project/$PROJECT_ID/crashlytics/app/android:${BUNDLE_ID:-unknown}"
+    else
+        echo "• iOS App Crashlytics:"
+        echo "  https://console.firebase.google.com/project/$PROJECT_ID/crashlytics/app/ios:${BUNDLE_ID:-unknown}"
+    fi
 else
-    echo "• iOS App Crashlytics:"
-    echo "  https://console.firebase.google.com/project/$PROJECT_ID/crashlytics/app/ios:$BUNDLE_ID"
+    echo "• Firebase project id not found in config."
 fi
 echo ""
 

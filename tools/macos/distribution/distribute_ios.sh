@@ -197,6 +197,108 @@ distribute_to_testflight() {
     return 0
 }
 
+# Resolve GoogleService-Info.plist for a flavor (fallback to default)
+get_ios_gsp_path() {
+    local flavor="$1"
+    local flavored_path="ios/Runner/${flavor}/GoogleService-Info.plist"
+    local default_path="ios/Runner/GoogleService-Info.plist"
+
+    if [[ -f "$flavored_path" ]]; then
+        echo "$flavored_path"
+        return 0
+    fi
+
+    if [[ -f "$default_path" ]]; then
+        echo "$default_path"
+        return 0
+    fi
+
+    return 1
+}
+
+# Find a directory containing dSYM files for iOS
+find_ios_dsym_dir() {
+    local archive_dir
+    local ipa_dir
+    local app_dir
+    local search_dirs=()
+
+    archive_dir=$(get_output_path "ios" "archive" 2>/dev/null)
+    [[ -z "$archive_dir" ]] && archive_dir="build/ios/archive"
+
+    ipa_dir=$(get_output_path "ios" "ipa" 2>/dev/null)
+    [[ -z "$ipa_dir" ]] && ipa_dir="build/ios/ipa"
+
+    app_dir=$(get_output_path "ios" "app" 2>/dev/null)
+    [[ -z "$app_dir" ]] && app_dir="build/ios/iphoneos"
+
+    # Prefer the archive dSYMs folder if available
+    if [[ -d "$archive_dir/Runner.xcarchive/dSYMs" ]]; then
+        echo "$archive_dir/Runner.xcarchive/dSYMs"
+        return 0
+    fi
+
+    # Build a safe search list
+    for dir in "$archive_dir" "$ipa_dir" "$app_dir" "build/ios"; do
+        if [[ -d "$dir" ]]; then
+            search_dirs+=("$dir")
+        fi
+    done
+
+    if [[ ${#search_dirs[@]} -eq 0 ]]; then
+        return 1
+    fi
+
+    local dsym_path
+    dsym_path=$(find "${search_dirs[@]}" -name "Runner.app.dSYM" -type d 2>/dev/null | head -n 1)
+    if [[ -n "$dsym_path" ]]; then
+        dirname "$dsym_path"
+        return 0
+    fi
+
+    dsym_path=$(find "${search_dirs[@]}" -name "*.dSYM" -type d 2>/dev/null | head -n 1)
+    if [[ -n "$dsym_path" ]]; then
+        dirname "$dsym_path"
+        return 0
+    fi
+
+    return 1
+}
+
+# Upload iOS dSYM files to Crashlytics (explicit fallback)
+upload_ios_symbols() {
+    local flavor="$1"
+    local upload_script="ios/Pods/FirebaseCrashlytics/upload-symbols"
+    local gsp_path
+    local dsym_dir
+
+    if ! dsym_dir=$(find_ios_dsym_dir); then
+        log_warning "No iOS dSYM files found; skipping Crashlytics symbol upload."
+        return 0
+    fi
+
+    if ! gsp_path=$(get_ios_gsp_path "$flavor"); then
+        log_warning "GoogleService-Info.plist not found; skipping Crashlytics symbol upload."
+        return 0
+    fi
+
+    if [[ ! -f "$upload_script" ]]; then
+        log_warning "Crashlytics upload-symbols script not found at: $upload_script"
+        log_info "Run 'pod install' in ios/ to generate it."
+        return 0
+    fi
+
+    log_step "Uploading iOS dSYM files to Crashlytics..."
+    log_info "dSYM path: $dsym_dir"
+    log_info "GoogleService-Info.plist: $gsp_path"
+
+    if "$upload_script" -gsp "$gsp_path" -p ios "$dsym_dir"; then
+        log_success "Crashlytics dSYM upload completed."
+    else
+        log_warning "Crashlytics dSYM upload failed. You can retry manually."
+    fi
+}
+
 # Main function
 main() {
     log_info "🚀 iOS App Distribution"
@@ -304,6 +406,8 @@ main() {
                     log_error "Firebase build failed!"
                     exit 1
                 fi
+
+                upload_ios_symbols "$flavor"
                 
                 # Save the ad-hoc IPA path
                 local ipa_output_dir=$(get_output_path "ios" "ipa" 2>/dev/null || echo "build/ios/ipa")
@@ -327,6 +431,8 @@ main() {
                 log_error "Build failed!"
                 exit 1
             fi
+
+            upload_ios_symbols "$flavor"
         fi
     fi
     
