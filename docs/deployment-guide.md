@@ -347,7 +347,7 @@ tools\windows\localization\localization.bat pull
 
 ```bash
 # After pulling YAML translations
-dart run slang
+tools/<os>/localization/localization.sh slang
 ```
 
 ### Push Translations Back
@@ -364,9 +364,11 @@ tools/macos/localization/localization.sh push --apply
 ```
 1. Developers/translators update Google Sheets
 2. Pull YAML to assets/i18n/
-3. Run 'dart run slang' to generate Dart code
-4. Commit both YAML + generated code
-5. UI uses context.l10n.keyName (auto-generated)
+3. Push YAML updates back with `tools/<os>/localization/localization.sh push --apply`
+4. Pull YAML again to refresh
+5. Run `tools/<os>/localization/localization.sh slang` to generate Dart code
+6. Commit both YAML + generated code
+7. UI uses context.text.module.keyName (auto-generated)
 ```
 
 ---

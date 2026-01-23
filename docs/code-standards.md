@@ -156,7 +156,7 @@ void loadUser(String userId) {
 | Page | `{name}_page.dart` | `login_page.dart`, `course_page.dart` |
 | Widget | `{name}_widget.dart` | `course_card.dart`, `lesson_item.dart` |
 | Service | `{name}_service.dart` | `auth_service.dart`, `tracking_service.dart` |
-| Use Case | `{name}_use_case.dart` | `login_use_case.dart`, `get_courses_use_case.dart` |
+| Use Case | `{name}_usecase.dart` | `login_usecase.dart`, `get_courses_usecase.dart` |
 | Repository | `{name}_repository_impl.dart` | `user_repository_impl.dart` |
 | Data Source | `{name}_data_source.dart` | `user_remote_data_source.dart` |
 
@@ -217,22 +217,20 @@ lib/src/feature_name/
 │   │   └── ...
 │   ├── repositories/
 │   │   └── {repository}_repository.dart
-│   └── use_cases/
-│       ├── {use_case}_use_case.dart
+│   └── usecases/
+│       ├── {usecase}_usecase.dart
 │       └── ...
 ├── data/
 │   ├── datasources/
-│   │   ├── apis/
+│   │   ├── remote/
 │   │   │   └── {name}_api.dart (Retrofit)
-│   │   ├── local/
-│   │   │   └── {name}_local_data_source.dart
-│   │   └── remote/
-│   │       └── {name}_remote_data_source.dart
+│   │   └── local/
+│   │       └── {name}_local_data_source.dart
 │   ├── models/
 │   │   ├── {model}_model.dart
 │   │   └── ...
 │   └── repositories/
-│       └── {repository}_repository_impl.dart
+│       └── {repository}_repository.dart
 └── presentation/
     ├── cubits/
     │   ├── {cubit}_cubit.dart
@@ -449,7 +447,7 @@ class MockGetUserUseCase extends Mock implements GetUserUseCase {}
 
 ### Convention (Conventional Commits)
 ```
-type-TICKET-ID: subject
+type/TICKET-ID: subject
 ```
 
 ### Structure
@@ -459,11 +457,11 @@ type-TICKET-ID: subject
 
 ### Examples
 ```
-feature-MEUP-123: add course roadmap visualization
-fix-MEUP-456: resolve lesson loading timeout
-refactor-MEUP-789: simplify exercise state management
-docs-MEUP-101: update authentication guide
-test-MEUP-202: add unit tests for progress tracking
+feature/MEUP-123: add course roadmap visualization
+fix/MEUP-456: resolve lesson loading timeout
+refactor/MEUP-789: simplify exercise state management
+docs/MEUP-101: update authentication guide
+test/MEUP-202: add unit tests for progress tracking
 ```
 
 ### Extraction
@@ -571,7 +569,7 @@ TaskEither<AppException, CourseEntity> getCourse(String id) {
 }
 
 // 3. Use localization
-Text(context.l10n.courseTitle)
+Text(context.text.course.courseTitle)
 
 // 4. Keep files under 200 LOC
 // Split large widgets into smaller, focused components
@@ -659,7 +657,7 @@ completeLesson: "Complete Lesson"
 ### In Code (NEVER hardcode)
 ```dart
 // ✅ CORRECT
-Text(context.l10n.courseCatalog)
+Text(context.text.course.courseCatalog)
 
 // ❌ WRONG
 Text('Course Catalog')
@@ -668,13 +666,21 @@ Text('Course Catalog')
 ### Workflow
 ```bash
 # 1. Pull from Google Sheets
-tools/macos/localization/localization.sh pull
+tools/<os>/localization/localization.sh pull
 
-# 2. Generate Dart code
-dart run slang
+# 2. Edit YAML in assets/i18n/
 
-# 3. Use in widgets
-Text(context.l10n.keyName)
+# 3. Push changes and apply
+tools/<os>/localization/localization.sh push --apply
+
+# 4. Pull to refresh
+tools/<os>/localization/localization.sh pull
+
+# 5. Generate Dart code
+tools/<os>/localization/localization.sh slang
+
+# 6. Use in widgets
+Text(context.text.module.keyName)
 ```
 
 ---
