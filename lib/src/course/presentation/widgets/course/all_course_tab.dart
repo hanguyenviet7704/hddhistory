@@ -104,6 +104,11 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     CourseEntity course,
     int index,
   ) {
+    if (course.numberOfLesson == 0) {
+      CourseLessonEmptyNotiPopup.show(context);
+      return;
+    }
+
     final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
     if (isFirstTimeUserChooseCourse) {
       AppService.instance.appTrackingService.trackCourseSelectFirstCourseClick(skillset, course);
@@ -124,11 +129,6 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     CourseEntity course,
     int index,
   ) {
-    if (course.numberOfLesson == 0) {
-      CourseLessonEmptyNotiPopup.show(context);
-      return;
-    }
-
     context.read<CourseRoadmapCubit>().setRoadmapSource('course_selection');
     context.read<HomeCubit>()
       ..selectSkillset(skillset)

@@ -9,6 +9,9 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   void _loadIapProducts(BuildContext context) {
+    AppDI.injector.get<UserCubit>()
+      ..setIsFirstTimeUserChooseCourse(true)
+      ..setIsFirstTimeLessonNavigationGuide(true);
     List<IapProductEntity> iapProducts = context.read<IapCubit>().state.iapProducts;
     if (iapProducts.isNotEmpty) return;
     context.read<IapCubit>().loadIapProducts();
