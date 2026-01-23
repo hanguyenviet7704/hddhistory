@@ -45,7 +45,10 @@ class AgeOptions extends StatelessWidget {
             return DataCollectOptionTile(
               option: option,
               isSelected: selected,
-              onTap: () => cubit.selectAgeRange(option),
+              onTap: () {
+                AppService.instance.appTrackingService.trackObdAgeClick();
+                cubit.selectAgeRange(option);
+              },
               enableLeading: false,
             );
           },

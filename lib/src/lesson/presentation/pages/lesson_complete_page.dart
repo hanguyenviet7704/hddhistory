@@ -9,11 +9,32 @@ class LessonCompletePage extends StatefulWidget {
 
 class _LessonCompletePageState extends State<LessonCompletePage> with SingleTickerProviderStateMixin {
   late final AnimationController _lottieController;
+  CourseLessonTrackingData? _trackingData;
 
   @override
   void initState() {
     super.initState();
     _lottieController = AnimationController(vsync: this);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackingData ??= _resolveTrackingData();
+      if (_trackingData == null) return;
+      AppService.instance.appTrackingService.trackLessonFinishScrView(_trackingData!);
+    });
+  }
+
+  CourseLessonTrackingData? _resolveTrackingData() {
+    final keypointTracking = KeypointTrackingData.fromContext();
+    if (keypointTracking != null) {
+      return CourseLessonTrackingData(
+        skillset: keypointTracking.skillset,
+        course: keypointTracking.course,
+        lesson: keypointTracking.lesson,
+      );
+    }
+
+    final lesson = AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    if (lesson.id.isEmpty) return null;
+    return CourseLessonTrackingData.fromLesson(context, lesson);
   }
 
   @override

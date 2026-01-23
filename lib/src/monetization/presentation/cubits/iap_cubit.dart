@@ -12,6 +12,9 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   final IPackageInfoService _packageInfoService;
 
+  PaywallEntryPoint _paywallEntryPoint = PaywallEntryPoint.other;
+  CourseTrackingData? _paywallCourseTrackingData;
+
   IapCubit(
     this._iapRepository,
     this._iapService,
@@ -22,6 +25,21 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     this._verifyUsecase,
     this._packageInfoService,
   ) : super(IapState.initial());
+
+  PaywallEntryPoint get paywallEntryPoint => _paywallEntryPoint;
+  CourseTrackingData? get paywallCourseTrackingData => _paywallCourseTrackingData;
+
+  void setPaywallEntryPoint(
+    PaywallEntryPoint entryPoint, {
+    CourseTrackingData? trackingData,
+  }) {
+    _paywallEntryPoint = entryPoint;
+    if (entryPoint == PaywallEntryPoint.courseRoadmap) {
+      _paywallCourseTrackingData = trackingData;
+    } else {
+      _paywallCourseTrackingData = null;
+    }
+  }
 
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
   final Set<String> _processedTransactionIds = {};
@@ -263,7 +281,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       bool hasSubscription = AppDI.injector.get<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
       AppDI.injector.get<ProfileCubit>().loadUser();
       emit(state.copyWith(status: MonetizationStatus.purchaseSuccess));
-      AppService.instance.appTrackingServiceNew.trackDrawRoadmapLoginReminder2Click(AppConfig.instance.context!, true);
       if (hasSubscription) return;
       DMessage.showMessage(
         message: AppConfig.instance.context?.text.monetization.subscriptionActiveToast ?? '',

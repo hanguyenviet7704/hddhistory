@@ -17,8 +17,8 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.5+1 # ios
-# version: 1.0.5+15 # android
+version: 1.0.7+1 # ios
+# version: 1.0.8+18 # android
 
 environment:
   sdk: ">=3.10.0 <4.0.0"
@@ -50,7 +50,7 @@ dependencies:
   just_audio: ^0.10.5
 #  camera: ^0.11.1
   lottie: ^3.3.2
-  syncfusion_flutter_datepicker: ^32.1.19
+  syncfusion_flutter_datepicker: ^32.1.24
 #  flutter_polyline_points: ^2.1.0
   flutter_screenutil: ^5.9.3
 #  pin_code_fields: ^8.0.1
@@ -99,7 +99,7 @@ dependencies:
   # App Localizations
   flutter_localizations:
     sdk: flutter
-  slang_flutter: ^4.11.0
+  slang_flutter: ^4.12.0
 
   # App State Management
   bloc: ^9.2.0
@@ -146,16 +146,16 @@ dependencies:
 #  geocoding: ^3.0.0
 
   # App Firebase Services
-  firebase_core: ^4.3.0
-  firebase_auth: ^6.1.3
-  firebase_remote_config: ^6.1.3
+  firebase_core: ^4.4.0
+  firebase_auth: ^6.1.4
+  firebase_remote_config: ^6.1.4
 
   # SSO Auth
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^7.0.1
 
   # App Notification Services
-  firebase_messaging: ^16.1.0
+  firebase_messaging: ^16.1.1
   awesome_notifications: ^0.10.1
 
   # App Models and Utils
@@ -185,8 +185,8 @@ dependencies:
 
   # App Tracking Services
   sentry_flutter: ^9.8.0
-  firebase_crashlytics: ^5.0.6
-  firebase_analytics: ^12.1.0
+  firebase_crashlytics: ^5.0.7
+  firebase_analytics: ^12.1.1
 
   # ffmpeg_kit_flutter_new: ^1.1.0
 
@@ -251,17 +251,17 @@ dev_dependencies:
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
   retrofit_generator: ^10.2.1
-  build_runner: ^2.10.4
+  build_runner: ^2.10.5
   flutter_gen_runner: ^5.12.0
-  json_serializable: ^6.11.3
+  json_serializable: ^6.11.4
   injectable_generator: ^2.12.0
   go_router_builder: ^4.1.3
   freezed: ^3.2.4
   flutter_gen: ^5.12.0
   graphql_codegen: ^3.0.0
-  slang: ^4.11.1
-  slang_build_runner: ^4.11.0
-  mockito: ^5.6.1
+  slang: ^4.12.0
+  slang_build_runner: ^4.12.0
+  mockito: ^5.6.3
 
   # App Change Info
 

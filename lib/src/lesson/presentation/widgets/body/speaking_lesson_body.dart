@@ -2,21 +2,40 @@ part of '../../../lesson.dart';
 
 class SpeakingLessonBody extends StatelessWidget {
   final Function(bool) onAnswerChecked;
+  final VoidCallback? onRoleplayReplayTap;
+  final bool isReadOnly;
 
   const SpeakingLessonBody({
     super.key,
     required this.onAnswerChecked,
+    this.onRoleplayReplayTap,
+    this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type) {
+  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
+    }
     context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
-      builder: (_) => BlocProvider.value(
-        value: context.read<SpeakingCubit>(),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<SpeakingCubit>()),
+          BlocProvider.value(value: context.read<LessonCubit>()),
+        ],
         child: SpeakingResultBottomSheet(
           type: type,
           onContinue: () {
+            if (isReview) {
+              LessonResultOverlayManager.hide();
+              context.read<LessonCubit>().setIsShowResultOverlay(false);
+              return;
+            }
+            if (trackingData != null) {
+              AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
+            }
             LessonResultOverlayManager.hide();
             AppDI.injector.get<ExerciseCubit>().nextQuestion();
           },
@@ -47,8 +66,24 @@ class SpeakingLessonBody extends StatelessWidget {
       child: BlocBuilder<SpeakingCubit, SpeakingState>(
         builder: (context, state) {
           final currentQuestion = state.question;
+          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
+          final hasExplainData = state.textInput.isNotEmpty ||
+              state.goodPoints.isNotEmpty ||
+              state.improvementPoints.isNotEmpty ||
+              (state.audioFilePath?.isNotEmpty ?? false);
+          final showExplainButton = isLessonExercise && state.status == SpeakingStatus.success && hasExplainData;
 
-          return Column(
+          void handleExplainTap() {
+            if (isReadOnly) {
+              context.read<LessonCubit>().consumePendingAdvance();
+            }
+            if (hasExplainData && !state.showExplanation) {
+              context.read<SpeakingCubit>().toggleExplanation();
+            }
+            _showResultOverlay(context, ResultType.correct, isReview: isReadOnly);
+          }
+
+          final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Display question document (images, audio, text, etc.)
@@ -61,9 +96,24 @@ class SpeakingLessonBody extends StatelessWidget {
                 question: currentQuestion,
                 audioFilePath: state.audioFilePath,
                 textInput: state.textInput,
+                onPlayTap: onRoleplayReplayTap,
               ),
 
               16.verticalSpace,
+            ],
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IgnorePointer(ignoring: isReadOnly, child: content),
+              if (showExplainButton) ...[
+                12.verticalSpace,
+                LessonExplainButton(
+                  onTap: handleExplainTap,
+                  hasExplanation: hasExplainData,
+                ),
+              ],
             ],
           );
         },
@@ -81,11 +131,13 @@ class _SpeakingAnswerCard extends StatelessWidget {
   final QuestionEntity question;
   final String? audioFilePath;
   final String textInput;
+  final VoidCallback? onPlayTap;
 
   const _SpeakingAnswerCard({
     required this.question,
     required this.audioFilePath,
     required this.textInput,
+    this.onPlayTap,
   });
 
   @override
@@ -108,8 +160,8 @@ class _SpeakingAnswerCard extends StatelessWidget {
           return Padding(
             padding: EdgeInsets.symmetric(horizontal: 20.w),
             child: isRemoteAudio
-                ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath)
-                : AudioPlayerFileWidget(filePath: normalizedRecordPath),
+                ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath, onPlayTap: onPlayTap)
+                : AudioPlayerFileWidget(filePath: normalizedRecordPath, onPlayTap: onPlayTap),
           );
         }
 

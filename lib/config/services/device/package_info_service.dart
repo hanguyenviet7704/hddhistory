@@ -59,8 +59,12 @@ class PackageInfoService implements IPackageInfoService {
 
   /// Check if app version is lower than specified version
   bool isVersionLowerThan(String targetVersion) {
-    final List<int> current = version.split('.').map(int.parse).toList();
-    final List<int> target = targetVersion.split('.').map(int.parse).toList();
+    final List<int> current = _parseVersionParts(version);
+    final List<int> target = _parseVersionParts(targetVersion);
+
+    if (current.isEmpty || target.isEmpty) {
+      return false;
+    }
 
     // Compare major, minor, patch versions
     for (int i = 0; i < 3; i++) {
@@ -72,6 +76,12 @@ class PackageInfoService implements IPackageInfoService {
     }
 
     return false; // Equal versions
+  }
+
+  List<int> _parseVersionParts(String value) {
+    final matches = RegExp(r'\\d+').allMatches(value);
+    if (matches.isEmpty) return [];
+    return matches.map((match) => int.tryParse(match.group(0)!) ?? 0).toList();
   }
 
   /// Get app info as a map

@@ -7,8 +7,8 @@ abstract class TagEntity with _$TagEntity {
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage title,
     @Default('') String color,
     @Default('') String url,
-    @Default(AppUser()) AppUser createdBy,
-    @Default(AppUser()) AppUser updatedBy,
+    @Default(UserEntity()) UserEntity createdBy,
+    @Default(UserEntity()) UserEntity updatedBy,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _TagEntity;

@@ -8,16 +8,43 @@ class ProfilePage extends StatefulWidget {
 }
 
 class _ProfilePageState extends State<ProfilePage> {
+  bool _hasTrackedView = false;
+  final ScrollController _scrollController = ScrollController();
+  bool _hasTrackedScroll = false;
+
   @override
   void initState() {
     super.initState();
     context.read<IapCubit>().loadIapProducts();
     context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
+    _scrollController.addListener(_handleScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackView());
+  }
+
+  void _trackView() {
+    if (_hasTrackedView) return;
+    AppService.instance.appTrackingService.trackSettingScrView();
+    _hasTrackedView = true;
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients || _hasTrackedScroll) return;
+    if (_scrollController.position.pixels <= 0) return;
+    AppService.instance.appTrackingService.trackSettingScroll();
+    _hasTrackedScroll = true;
   }
 
   Future<void> _onRefresh() async {
     context.read<ProfileCubit>().loadUser();
     context.read<AchievenmentProgressCubit>().loadAllAchievenmentResponses();
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
   }
 
   @override
@@ -39,6 +66,7 @@ class _ProfilePageState extends State<ProfilePage> {
               return RefreshIndicator(
                 onRefresh: _onRefresh,
                 child: ListView(
+                  controller: _scrollController,
                   padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 48.h),
                   physics: const BouncingScrollPhysics(),
                   children: [
@@ -50,7 +78,10 @@ class _ProfilePageState extends State<ProfilePage> {
                         if (user.iapSubscriptions.isNotEmpty) return SizedBox.shrink();
 
                         return SettingPreminumCard(
-                          onUpgrade: () => const PaywallRoute().push(context),
+                          onUpgrade: () {
+                            AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+                            const PaywallRoute().push(context);
+                          },
                         );
                       },
                     ),

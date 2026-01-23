@@ -45,11 +45,29 @@ class LessonCard extends StatelessWidget {
 
   bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
 
+  void _trackRoadmapItemClick(BuildContext context) {
+    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoadmapItemClick(
+      trackingData,
+      itemType: 'lesson',
+    );
+  }
+
   void _onTap(BuildContext context) {
     if (lesson.progess == ProcessEnum.notStarted && !kDebugMode) return;
 
+    if (lesson.type == LessonType.lesson) {
+      _trackRoadmapItemClick(context);
+    }
+
     bool isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
     if (premiumLesson && !isUserPremium) {
+      final trackingData = CourseTrackingData.fromCourseId(context, lesson.courseId);
+      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
+        PaywallEntryPoint.courseRoadmap,
+        trackingData: trackingData,
+      );
       PaywallRoute().push(context);
       return;
     }

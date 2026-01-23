@@ -34,7 +34,13 @@ class _CollapsedExerciseBody extends StatelessWidget {
             child: AppText(
               t.roleplay.rolePlayExerciseTapToAnswer,
               maxLines: 2,
-              onTap: onTapToAnswer,
+              onTap: () {
+                final trackingData = RoleplayTrackingData.fromContext();
+                if (trackingData != null) {
+                  AppService.instance.appTrackingService.trackRoleplayQuizClick(trackingData);
+                }
+                onTapToAnswer?.call();
+              },
               textAlign: TextAlign.center,
               style: AppStyle.text16.copyWith(
                 color: AppCustomColor.brandPrimary,

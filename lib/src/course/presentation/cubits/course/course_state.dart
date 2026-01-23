@@ -8,6 +8,7 @@ abstract class CourseState with _$CourseState {
     @Default(CourseStatus.initial) CourseStatus status,
     @Default([]) List<CourseEntity> courses,
     @Default(0) int selectedTabIndex,
+    @Default('unknown') String allCourseSource,
     CourseEntity? selectedItem,
     String? errorMessage,
   }) = _CourseState;

@@ -2,8 +2,13 @@ part of '../../../../lesson.dart';
 
 class AudioPlayerUrlWidget extends StatelessWidget {
   final String audioUrl;
+  final VoidCallback? onPlayTap;
 
-  const AudioPlayerUrlWidget({super.key, required this.audioUrl});
+  const AudioPlayerUrlWidget({
+    super.key,
+    required this.audioUrl,
+    this.onPlayTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -13,14 +18,20 @@ class AudioPlayerUrlWidget extends StatelessWidget {
     return _AudioPlayerBase(
       source: audioUrl,
       kind: _AudioSourceKind.url,
+      onPlayTap: onPlayTap,
     );
   }
 }
 
 class AudioPlayerFileWidget extends StatelessWidget {
   final String filePath;
+  final VoidCallback? onPlayTap;
 
-  const AudioPlayerFileWidget({super.key, required this.filePath});
+  const AudioPlayerFileWidget({
+    super.key,
+    required this.filePath,
+    this.onPlayTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +41,7 @@ class AudioPlayerFileWidget extends StatelessWidget {
     return _AudioPlayerBase(
       source: filePath,
       kind: _AudioSourceKind.file,
+      onPlayTap: onPlayTap,
     );
   }
 }
@@ -39,10 +51,12 @@ enum _AudioSourceKind { url, file }
 class _AudioPlayerBase extends StatefulWidget {
   final String source;
   final _AudioSourceKind kind;
+  final VoidCallback? onPlayTap;
 
   const _AudioPlayerBase({
     required this.source,
     required this.kind,
+    this.onPlayTap,
   });
 
   @override
@@ -277,6 +291,7 @@ class _AudioPlayerBaseState extends State<_AudioPlayerBase> {
       if (_audioPlayer.playing) {
         await _audioPlayer.pause();
       } else {
+        widget.onPlayTap?.call();
         await _audioPlayer.play();
       }
     } catch (e) {

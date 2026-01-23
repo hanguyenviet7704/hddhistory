@@ -45,7 +45,13 @@ class RoleplayContent extends StatelessWidget {
                               ? RoleplayCompleteBottomCTA(
                                   key: const ValueKey('roleplay-complete-cta'),
                                   label: label,
-                                  onPressed: () => context.read<RoleplayCubit>().endRoleplay(),
+                                  onPressed: () {
+                                    final trackingData = RoleplayTrackingData.fromContext();
+                                    if (trackingData != null) {
+                                      AppService.instance.appTrackingService.trackRoleplayCompleteClick(trackingData);
+                                    }
+                                    context.read<RoleplayCubit>().endRoleplay();
+                                  },
                                   bottomPadding: MediaQuery.paddingOf(context).bottom,
                                 )
                               : const SizedBox.shrink(),

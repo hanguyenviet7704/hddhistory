@@ -27,7 +27,14 @@ class SpeakingResultBottomSheet extends StatelessWidget {
           type: type,
           onContinue: onContinue,
           showExplanation: state.showExplanation,
-          onExplain: () => context.read<SpeakingCubit>().toggleExplanation(),
+          onExplain: () {
+            if (state.showExplanation) {
+              LessonResultOverlayManager.hide();
+              context.read<LessonCubit>().setIsShowResultOverlay(false);
+              return;
+            }
+            context.read<SpeakingCubit>().toggleExplanation();
+          },
           continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
           explainLabel: context.text.exercise.exerciseExplainButton,
           closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
@@ -50,6 +57,12 @@ class SpeakingExplanationContent extends StatelessWidget {
     this.goodPoints = const [],
     this.improvementPoints = const [],
   });
+
+  void _trackExplainReplay() {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainReplay(trackingData);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -95,8 +108,14 @@ class SpeakingExplanationContent extends StatelessWidget {
                     borderRadius: BorderRadius.circular(16.r),
                   ),
                   child: isRemoteAudio
-                      ? AudioPlayerUrlWidget(audioUrl: audioFilePath)
-                      : AudioPlayerFileWidget(filePath: audioFilePath),
+                      ? AudioPlayerUrlWidget(
+                          audioUrl: audioFilePath,
+                          onPlayTap: _trackExplainReplay,
+                        )
+                      : AudioPlayerFileWidget(
+                          filePath: audioFilePath,
+                          onPlayTap: _trackExplainReplay,
+                        ),
                 ),
               SpeakingGoodPointsSection(points: goodPoints),
               SpeakingImprovementSection(points: improvementPoints),

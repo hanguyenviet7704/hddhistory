@@ -11,6 +11,8 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
   late GlobalKey<AnimatedListState> _listKey;
   final ScrollController _scrollController = ScrollController();
   late final RoleplayContentController _controller;
+  bool _hasTrackedConvScroll = false;
+  bool _hasTrackedConvScrollBottom = false;
 
   @override
   void initState() {
@@ -51,6 +53,34 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
       distanceFromBottom: distanceFromBottom,
       direction: position.userScrollDirection,
     );
+    _trackConversationScroll(position);
+  }
+
+  void _trackConversationScroll(ScrollPosition position) {
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    final haveQuiz = _hasQuiz() ? 'yes' : 'no';
+
+    if (!_hasTrackedConvScroll && position.userScrollDirection != ScrollDirection.idle) {
+      AppService.instance.appTrackingService.trackRoleplayConvScroll(
+        trackingData,
+        haveQuiz: haveQuiz,
+      );
+      _hasTrackedConvScroll = true;
+    }
+
+    if (!_hasTrackedConvScrollBottom && position.pixels >= position.maxScrollExtent - 16) {
+      AppService.instance.appTrackingService.trackRoleplayConvScroll(
+        trackingData,
+        haveQuiz: haveQuiz,
+      );
+      _hasTrackedConvScrollBottom = true;
+    }
+  }
+
+  bool _hasQuiz() {
+    final contents = context.read<RoleplayCubit>().state.currentRoleplay.contents;
+    return contents.any((content) => content.type == RoleplayContentType.exercise);
   }
 
   bool _shouldResetForPrefill(RoleplayState current) {
@@ -125,7 +155,11 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
           previous.currentRoleplay.id != current.currentRoleplay.id ||
           previous.currentRoleplay.contents.length != current.currentRoleplay.contents.length ||
           _shouldResetForPrefill(current),
-      listener: (context, state) => unawaited(_resetForNewSection()),
+      listener: (context, state) {
+        _hasTrackedConvScroll = false;
+        _hasTrackedConvScrollBottom = false;
+        unawaited(_resetForNewSection());
+      },
       child: BlocBuilder<RoleplayCubit, RoleplayState>(
         buildWhen: (previous, current) => previous.currentRoleplay != current.currentRoleplay,
         builder: (context, state) {

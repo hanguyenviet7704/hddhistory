@@ -11,12 +11,18 @@ class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
     // _requestTrackingPermission();
+    _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
     _setTrackingUser();
     _getAppData();
     _checkForUpdate();
     super.initState();
+  }
+
+  void _trackSplashView() {
+    final userId = context.read<UserCubit>().state.user.id;
+    AppService.instance.appTrackingService.trackSplashScrView(userId: userId);
   }
 
   // void _requestTrackingPermission() {
@@ -46,7 +52,7 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _checkForUpdate() async {
     try {
-      final shouldUpdate = await AppService.instance.firebaseRemoteConfigService.shouldForceUpdate();
+      final shouldUpdate = await AppService.instance.remoteConfigService.shouldForceUpdate();
       if (!mounted) return;
 
       if (!shouldUpdate) {
@@ -82,7 +88,6 @@ class _SplashPageState extends State<SplashPage> {
 
   void _initScreen(_) async {
     if (!mounted) return;
-    AppService.instance.appTrackingService.trackEvent(TrackingKey.splashScrView);
 
     bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
     if (isInitialLink) return;

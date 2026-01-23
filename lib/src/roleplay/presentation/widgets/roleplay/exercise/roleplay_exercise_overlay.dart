@@ -58,9 +58,44 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   bool _isCorrect = false;
   double _dragDistance = 0;
   bool _isClosing = false;
+  bool _hasTrackedExpandedView = false;
   late final AnimationController _animationController;
   late final Animation<double> _fadeAnimation;
   late final Animation<Offset> _slideAnimation;
+
+  RoleplayTrackingData? _trackingData() => RoleplayTrackingData.fromContext();
+
+  void _trackQuizImp() {
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayQuizImp(trackingData);
+  }
+
+  void _trackQuizExpandedView() {
+    if (_hasTrackedExpandedView) return;
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayQuizExpandedView(trackingData);
+    _hasTrackedExpandedView = true;
+  }
+
+  void _trackQuizExpandedClose(String interactType) {
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayQuizExpandedClose(
+      trackingData,
+      interactType: interactType,
+    );
+  }
+
+  void _trackQuizResultView(String source) {
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayQuizResultView(
+      trackingData,
+      source: source,
+    );
+  }
 
   @override
   void initState() {
@@ -70,6 +105,10 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
       _isExpanded = true;
       _isCorrect = widget.result!.passed;
       _applyReadOnlyResult(widget.result!);
+      _trackQuizExpandedView();
+      _trackQuizResultView('review');
+    } else {
+      _trackQuizImp();
     }
     _animationController = AnimationController(
       vsync: this,
@@ -83,10 +122,19 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
   }
 
   void _expand() {
+    _trackQuizExpandedView();
     _setExpanded(true);
   }
 
-  void _collapse() {
+  void _collapseByTap() {
+    if (!_isExpanded) return;
+    _trackQuizExpandedClose('tap');
+    _setExpanded(false);
+  }
+
+  void _collapseBySwipe() {
+    if (!_isExpanded) return;
+    _trackQuizExpandedClose('swipe');
     _setExpanded(false);
   }
 
@@ -103,6 +151,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
     if (widget.readOnly || _showResult) {
       _dragDistance += details.delta.dy;
       if (_dragDistance >= _dragThreshold) {
+        _trackQuizExpandedClose('swipe');
         _closeOverlay();
         _dragDistance = 0;
       }
@@ -115,7 +164,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
       return;
     }
     if (_dragDistance >= _dragThreshold) {
-      _collapse();
+      _collapseBySwipe();
       _dragDistance = 0;
     }
   }
@@ -124,6 +173,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
     if (widget.readOnly || _showResult) {
       final double velocity = details.primaryVelocity ?? 0;
       if (velocity >= _velocityThreshold) {
+        _trackQuizExpandedClose('swipe');
         _closeOverlay();
       }
       _dragDistance = 0;
@@ -133,7 +183,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
     if (velocity <= -_velocityThreshold) {
       _expand();
     } else if (velocity >= _velocityThreshold) {
-      _collapse();
+      _collapseBySwipe();
     }
     _dragDistance = 0;
   }
@@ -144,6 +194,8 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
       _isCorrect = isCorrect;
       _isExpanded = true;
     });
+    _trackQuizExpandedView();
+    _trackQuizResultView('answer');
   }
 
   void _closeOverlay() {
@@ -239,7 +291,12 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
             onTapToAnswer: _expand,
             onCheckPressed: widget.onCheckPressed,
             onAnswerChecked: widget.readOnly ? null : _handleAnswerChecked,
-            onTapOutside: widget.readOnly || _showResult ? _closeOverlay : _collapse,
+            onTapOutside: widget.readOnly || _showResult
+                ? () {
+                    _trackQuizExpandedClose('tap');
+                    _closeOverlay();
+                  }
+                : _collapseByTap,
             onDragStart: _handleDragStart,
             onDragUpdate: _handleDragUpdate,
             onDragEnd: _handleDragEnd,

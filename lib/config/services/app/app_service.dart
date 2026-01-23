@@ -35,9 +35,7 @@ class AppService {
   static final AppService _instance = AppService._();
   static AppService get instance => _instance;
 
-  BaseTrackingService get appTrackingService => AppDI.injector.get<BaseTrackingService>(instanceName: DIKey.firebaseAnalyticsService);
-
-  ITrackingService get appTrackingServiceNew => AppDI.injector.get<ITrackingService>();
+  ITrackingService get appTrackingService => AppDI.injector.get<ITrackingService>();
 
   ILocalStoreService get localStoreService => AppDI.injector.get<ILocalStoreService>();
 
@@ -45,7 +43,7 @@ class AppService {
 
   IPackageInfoService get packageInfoService => AppDI.injector.get<IPackageInfoService>();
 
-  IFirebaseRemoteConfigService get firebaseRemoteConfigService => AppDI.injector.get<IFirebaseRemoteConfigService>();
+  IRemoteConfigService get remoteConfigService => AppDI.injector.get<IRemoteConfigService>();
 
   AppEventService get appEventService => AppEventService.instance;
 
@@ -89,9 +87,9 @@ class AppService {
     appTrackingService.initialize();
 
     // Initialize app event services early - they now handle tracking permission internally
-    await appEventService.initialize();
+    // await appEventService.initialize();
 
-    await firebaseRemoteConfigService.initialize();
+    await remoteConfigService.initialize();
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();
     // DeepLinkService.init();

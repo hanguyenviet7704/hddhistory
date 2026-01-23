@@ -41,7 +41,13 @@ class TheoryLessonBody extends StatelessWidget {
     return BlocBuilder<TheoryCubit, TheoryState>(
       builder: (context, state) {
         return ExerciseContinueButton(
-          onPressed: () => context.read<TheoryCubit>().nextDocument(),
+          onPressed: () {
+            final trackingData = KeypointTrackingData.fromContext();
+            if (trackingData != null) {
+              AppService.instance.appTrackingService.trackKeypointTheoryContinueClick(trackingData);
+            }
+            context.read<TheoryCubit>().nextDocument();
+          },
           text: context.text.common.kContinue,
           isEnabled: true,
         );

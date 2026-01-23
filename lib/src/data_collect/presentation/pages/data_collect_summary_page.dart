@@ -17,6 +17,9 @@ class _DataCollectSummaryPageState extends State<DataCollectSummaryPage> {
     super.initState();
     _requestTrackingPermission();
     _showStartButtonNotifier = ValueNotifier<bool>(false);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppService.instance.appTrackingService.trackObdCompleteScrView();
+    });
   }
 
   void _requestTrackingPermission() {

@@ -18,7 +18,9 @@ class HowToLearnBody extends StatelessWidget {
             20.verticalSpace,
 
             // Banner carousel reusing paywall decor logic
-            const PaywallBannerCarousel(),
+            PaywallBannerCarousel(
+              onIndexChanged: (_) => AppService.instance.appTrackingService.trackObdHowToLearnSwipe(),
+            ),
           ],
         );
       },

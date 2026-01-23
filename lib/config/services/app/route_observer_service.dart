@@ -86,6 +86,14 @@ class AppRouterObserver extends BaseRouterObserver {
   AppRouterObserver(
     PageCubit pageCubit,
   ) : super('AppRouterObserver', pageCubit);
+
+  @override
+  void onPopRoute(Route<dynamic>? route) {
+    super.onPopRoute(route);
+    if (route?.settings.name != RouteNamed.course) return;
+    final courseCubit = AppDI.injector.get<CourseCubit>();
+    courseCubit.setAllCourseSource('unknown');
+  }
 }
 
 @LazySingleton(as: NavigatorObserver)

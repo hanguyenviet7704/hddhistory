@@ -25,7 +25,11 @@ dart format lib/ test/          # Format code (180 char line width)
 tools/macos/localization/localization.sh pull
 # Windows: tools\windows\localization\localization.bat pull
 
-dart run slang                  # Regenerate translations after pull
+# If you edited YAML locally, push + re-pull before slang
+tools/<os>/localization/localization.sh push --apply
+tools/<os>/localization/localization.sh pull
+
+tools/<os>/localization/localization.sh slang  # Regenerate translations after pull
 ```
 
 ### Building
@@ -71,7 +75,7 @@ Widget → Cubit/BLoC → UseCase → Repository Interface → Data Source
 Do not expose `dio`/`graphql` types beyond data layer.
 
 ### Networking
-- **REST**: Dio + Retrofit (code-generated API clients in `data/datasources/apis/`)
+- **REST**: Dio + Retrofit (code-generated API clients in `data/datasources/remote/`)
 - **GraphQL**: graphql_flutter (templates in `data/datasources/graphql/template/`, generated in `gen/`)
 - **Error Handling**: Functional with `fpdart` (`TaskEither<AppException, T>`)
 
@@ -118,10 +122,10 @@ Never edit generated files (`*.g.dart`, `*.config.dart`, `*.freezed.dart`). Reru
 - Cubit/BLoC: suffix with `Cubit`/`Bloc`
 
 ### Commit Messages
-Format: `type-TICKET-ID: subject`
+Format: `type/TICKET-ID: subject`
 - Extract ticket ID from branch (e.g., `feature/MEUP-123-desc` → `MEUP-123`)
 - Types: `feature`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, `perf`
-- Example: `feature-MEUP-123: Add social login functionality`
+- Example: `feature/MEUP-123: add social login functionality`
 
 ### Branch Naming
 `type/TICKET-ID-description` (e.g., `feature/MEUP-123-add-login`)

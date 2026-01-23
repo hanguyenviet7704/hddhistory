@@ -16,15 +16,13 @@ import 'package:graphql_flutter/graphql_flutter.dart' show OperationException, Q
 import '../../config/di/di.dart';
 import '../../config/l10n/l10n.dart';
 import '../../config/services/services.dart';
-import '../../src/common/presentation/blocs/blocs.dart';
+import '../../src/common/common.dart';
 import '../helpers/helpers.dart';
 
 //* Import all base files here
 part 'base.freezed.dart';
 part 'base.g.dart';
-part 'bloc/bloc_action_handler.dart';
 part 'bloc/bloc_usecase_handler.dart';
-part 'bloc/cubit_action_handler.dart';
 part 'bloc/cubit_usecase_handler.dart';
 part 'error/app_exception.dart';
 part 'network/graphql_request.dart';

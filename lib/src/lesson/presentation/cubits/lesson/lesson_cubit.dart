@@ -16,10 +16,14 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     this._theoryCubit,
   ) : super(LessonState.initial());
 
-
   void reset() => emit(LessonState.initial());
   void setIsShowResultOverlay(bool value) => emit(state.copyWith(isShowResultOverlay: value));
-  
+
+  void setBottomButtonVisible(bool value) {
+    if (state.isBottomButtonVisible == value) return;
+    emit(state.copyWith(isBottomButtonVisible: value));
+  }
+
   void setLearningItemFromRoleplay(LearningItemEntity learningItem) {
     emit(state.copyWith(pageData: state.pageData.copyWith(items: [learningItem]), currentLearningItemIndex: 0));
     setCurrentLearningItem(learningItem);
@@ -86,6 +90,69 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
   void setCurrentLessonIndex(int index) => emit(state.copyWith(currentLessonIndex: index));
 
   void addSubQuestion(QuestionEntity question) => emit(state.copyWith(subQuestions: [...state.subQuestions, question]));
+
+  void markPendingAdvance() {
+    if (state.hasPendingAdvance) return;
+    if (state.currentLearningItem.type != LearningItemType.exercise) return;
+    emit(state.copyWith(hasPendingAdvance: true));
+  }
+
+  void clearPendingAdvance() {
+    if (!state.hasPendingAdvance) return;
+    emit(state.copyWith(hasPendingAdvance: false));
+  }
+
+  void setSuppressNextAutoScroll() {
+    if (state.suppressNextAutoScroll) return;
+    emit(state.copyWith(suppressNextAutoScroll: true));
+  }
+
+  void clearSuppressNextAutoScroll() {
+    if (!state.suppressNextAutoScroll) return;
+    emit(state.copyWith(suppressNextAutoScroll: false));
+  }
+
+  void consumePendingAdvance() {
+    if (!state.hasPendingAdvance) return;
+    if (state.currentLearningItem.type != LearningItemType.exercise) return;
+    emit(state.copyWith(hasPendingAdvance: false, suppressNextAutoScroll: true));
+    AppDI.injector.get<ExerciseCubit>().nextQuestion();
+  }
+
+  void storeExerciseResult(QuestionEntity question, ExerciseResultEntity result) {
+    if (state.currentLearningItem.type != LearningItemType.exercise) return;
+    if (state.pageData.items.isEmpty) return;
+    if (state.currentLearningItemIndex < 0 || state.currentLearningItemIndex >= state.pageData.items.length) return;
+
+    final currentItem = state.pageData.items[state.currentLearningItemIndex];
+    final questions = currentItem.questions;
+    if (questions.isEmpty) return;
+
+    final targetIndex = _resolveQuestionIndex(questions, question);
+    if (targetIndex < 0 || targetIndex >= questions.length) return;
+
+    final updatedQuestions = List<QuestionEntity>.from(questions);
+    updatedQuestions[targetIndex] = updatedQuestions[targetIndex].copyWith(result: result);
+
+    final updatedItem = currentItem.copyWith(mainQuestions: updatedQuestions);
+    final updatedItems = List<LearningItemEntity>.from(state.pageData.items);
+    updatedItems[state.currentLearningItemIndex] = updatedItem;
+
+    emit(state.copyWith(pageData: state.pageData.copyWith(items: updatedItems)));
+  }
+
+  int _resolveQuestionIndex(List<QuestionEntity> questions, QuestionEntity question) {
+    if (question.id != 0) {
+      final index = questions.indexWhere((item) => item.id == question.id);
+      if (index != -1) return index;
+    }
+
+    if (state.currentLessonIndex >= 0 && state.currentLessonIndex < questions.length) {
+      return state.currentLessonIndex;
+    }
+
+    return -1;
+  }
 
   void reviewDone() {
     if (state.subQuestions.isEmpty) {

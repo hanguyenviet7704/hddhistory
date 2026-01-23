@@ -21,7 +21,10 @@ class CourseHeader extends StatelessWidget {
                   if (!context.canPop()) return const SizedBox.shrink();
 
                   return GestureDetector(
-                    onTap: () => context.back(),
+                    onTap: () {
+                      AppService.instance.appTrackingService.trackCourseSelectExit();
+                      context.back();
+                    },
                     child: Icon(
                       Icons.close,
                       size: 24.w,

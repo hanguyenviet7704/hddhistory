@@ -28,7 +28,13 @@ class RoleplayExerciseContentWidget extends StatelessWidget {
       },
       child: shouldShowCompleted
           ? GestureDetector(
-              onTap: onTapResult,
+              onTap: () {
+                final trackingData = RoleplayTrackingData.fromContext();
+                if (trackingData != null) {
+                  AppService.instance.appTrackingService.trackRoleplayQuizCollapsedClick(trackingData);
+                }
+                onTapResult?.call();
+              },
               child: RoleplayExerciseAnswerCard(
                 key: const ValueKey('completed'),
                 exercise: exercise,

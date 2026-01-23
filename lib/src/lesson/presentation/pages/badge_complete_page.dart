@@ -11,11 +11,13 @@ class _BadgeCompletePageState extends State<BadgeCompletePage> {
   static const Duration _autoCloseDelay = Duration(seconds: 3);
   Timer? _autoCloseTimer;
   bool _hasExited = false;
+  bool _hasTrackedView = false;
 
   @override
   void initState() {
     super.initState();
     _autoCloseTimer = Timer(_autoCloseDelay, _handleExit);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackBadgeCompleteView());
   }
 
   @override
@@ -29,6 +31,13 @@ class _BadgeCompletePageState extends State<BadgeCompletePage> {
     _hasExited = true;
     if (!mounted) return;
     context.back();
+  }
+
+  void _trackBadgeCompleteView() {
+    if (_hasTrackedView) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    AppService.instance.appTrackingService.trackBadgeCompleteScrView(trackingData: trackingData);
+    _hasTrackedView = true;
   }
 
   @override

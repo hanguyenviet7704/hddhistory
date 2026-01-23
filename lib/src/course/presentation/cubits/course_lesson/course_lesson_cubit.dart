@@ -3,9 +3,11 @@ part of '../../../course.dart';
 @lazySingleton
 class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandlerMixin<CourseLessonState> {
   final GetCourseLessonUseCase _getCourseLessonUseCase;
+  final IRemoteConfigService _remoteConfigService;
 
   CourseLessonCubit(
     this._getCourseLessonUseCase,
+    this._remoteConfigService,
   ) : super(CourseLessonState.initial());
 
   void reset() => emit(CourseLessonState.initial());
@@ -35,6 +37,8 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
   }
 
   void checkAndFinishOptionalKeypoints() {
+    final courseConfig = _remoteConfigService.courseConfig;
+    if (!courseConfig.enableFinishOptionalKeypoints) return;
     if (state.selectedLesson.keypoints.isEmpty) return;
     final LessonResultEntity currentLessonResult = AppDI.injector.get<ProgressCubit>().state.currentLessonResult;
     final LessonEntity lesson = state.updateLessonWithResults(currentLessonResult);

@@ -46,6 +46,8 @@ class UserAchievementCard extends StatelessWidget {
           12.verticalSpace,
           _UserAchievementCourseRow(
             courses: achievement.courses,
+            skillsetId: achievement.skillsetId,
+            skillsetName: achievement.skillsetTitle.en.isNotEmpty ? achievement.skillsetTitle.en : achievement.skillsetTitle.text,
             itemTitleStyle: AppStyle.text10.copyWith(
               color: AppCustomColor.textPrimary,
               fontWeight: FontWeight.w600,
@@ -96,28 +98,94 @@ class _UserAchievementHeader extends StatelessWidget {
 class _UserAchievementCourseRow extends StatelessWidget {
   final List<CourseLevelProgressEntity> courses;
   final TextStyle itemTitleStyle;
+  final String skillsetId;
+  final String skillsetName;
 
   const _UserAchievementCourseRow({
     required this.courses,
     required this.itemTitleStyle,
+    required this.skillsetId,
+    required this.skillsetName,
   });
 
   @override
   Widget build(BuildContext context) {
     if (courses.isEmpty) return const SizedBox.shrink();
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      physics: const BouncingScrollPhysics(),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: List.generate(
-          courses.length,
-          (index) => Padding(
-            padding: EdgeInsets.only(right: index == courses.length - 1 ? 0 : 24.w),
-            child: UserAchievementCourseItem(
-              course: courses[index],
-              titleStyle: itemTitleStyle,
+    return _UserAchievementCourseRowBody(
+      courses: courses,
+      skillsetId: skillsetId,
+      skillsetName: skillsetName,
+      itemTitleStyle: itemTitleStyle,
+    );
+  }
+}
+
+class _UserAchievementCourseRowBody extends StatefulWidget {
+  final List<CourseLevelProgressEntity> courses;
+  final TextStyle itemTitleStyle;
+  final String skillsetId;
+  final String skillsetName;
+
+  const _UserAchievementCourseRowBody({
+    required this.courses,
+    required this.itemTitleStyle,
+    required this.skillsetId,
+    required this.skillsetName,
+  });
+
+  @override
+  State<_UserAchievementCourseRowBody> createState() => _UserAchievementCourseRowBodyState();
+}
+
+class _UserAchievementCourseRowBodyState extends State<_UserAchievementCourseRowBody> {
+  bool _hasTrackedSlide = false;
+
+  String _resolveCourseName(CourseLevelProgressEntity course) {
+    final String name = course.courseTitle.en.trim();
+    if (name.isNotEmpty) return name;
+    return course.title;
+  }
+
+  CourseTrackingData _buildTrackingData(CourseLevelProgressEntity course) {
+    return CourseTrackingData.fromTrackingValues(
+      skillsetId: widget.skillsetId,
+      skillsetName: widget.skillsetName,
+      courseId: course.courseId,
+      courseName: _resolveCourseName(course),
+    );
+  }
+
+  bool _handleScroll(ScrollNotification notification) {
+    if (_hasTrackedSlide) return false;
+    if (notification.metrics.axis != Axis.horizontal) return false;
+    if (notification is ScrollUpdateNotification && notification.metrics.pixels != notification.metrics.minScrollExtent) {
+      if (widget.courses.isEmpty) return false;
+      AppService.instance.appTrackingService.trackSettingBadgeSlide(_buildTrackingData(widget.courses.first));
+      _hasTrackedSlide = true;
+    }
+    return false;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return NotificationListener<ScrollNotification>(
+      onNotification: _handleScroll,
+      child: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        physics: const BouncingScrollPhysics(),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(
+            widget.courses.length,
+            (index) => Padding(
+              padding: EdgeInsets.only(right: index == widget.courses.length - 1 ? 0 : 24.w),
+              child: UserAchievementCourseItem(
+                course: widget.courses[index],
+                titleStyle: widget.itemTitleStyle,
+                skillsetId: widget.skillsetId,
+                skillsetName: widget.skillsetName,
+              ),
             ),
           ),
         ),

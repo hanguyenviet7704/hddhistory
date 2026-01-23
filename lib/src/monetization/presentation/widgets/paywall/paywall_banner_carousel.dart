@@ -1,8 +1,9 @@
 part of '../../../monetization.dart';
 
 class PaywallBannerCarousel extends StatefulWidget {
+  final ValueChanged<int>? onIndexChanged;
 
-  const PaywallBannerCarousel({super.key});
+  const PaywallBannerCarousel({super.key, this.onIndexChanged});
 
   @override
   State<PaywallBannerCarousel> createState() => _PaywallBannerCarouselState();
@@ -55,6 +56,7 @@ class _PaywallBannerCarouselState extends State<PaywallBannerCarousel> {
               final int index = (notification.metrics.pixels / extent).round().clamp(0, bannerDecorations.length - 1);
               if (index != _current) {
                 setState(() => _current = index);
+                widget.onIndexChanged?.call(index);
               }
               return false;
             },

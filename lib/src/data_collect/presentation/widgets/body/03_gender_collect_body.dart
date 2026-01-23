@@ -44,7 +44,10 @@ class GenderOptions extends StatelessWidget {
             return DataCollectOptionTile(
               option: option,
               isSelected: selected,
-              onTap: () => cubit.selectGender(option),
+              onTap: () {
+                AppService.instance.appTrackingService.trackObdGenderClick();
+                cubit.selectGender(option);
+              },
               type: DataCollectOptionType.radio,
               enableLeading: true,
             );

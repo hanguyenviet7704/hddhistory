@@ -30,7 +30,8 @@ abstract class BaseTrackingService {
     String eventName, {
     Map<String, dynamic>? parameters,
   }) async {
-    LogDev.one('$trackingServiceName trackEvent: $eventName \n parameters: $parameters');
+    LogDev.one('$trackingServiceName [Tracking] trackEvent: $eventName parameters: $parameters');
+    LogDev.info('[Tracking] $eventName params: $parameters');
   }
 
   /// Log when a screen is viewed

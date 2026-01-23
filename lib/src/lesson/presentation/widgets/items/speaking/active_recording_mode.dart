@@ -180,6 +180,7 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
   Future<void> _handleControlTap() async {
     final recordingState = _cubit.state.recordingState;
     if (recordingState == SpeakingRecordingState.recording) {
+      _trackRecordVoice('pause');
       await _pauseRecording();
     } else if (recordingState == SpeakingRecordingState.paused) {
       await _resumeRecording();
@@ -187,12 +188,14 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
   }
 
   Future<void> _handleCancel() async {
+    _trackRecordVoice('out');
     await _stopRecordingSession(saveRecording: false);
     if (!mounted) return;
     _cubit.cancelRecordingSession();
   }
 
   Future<void> _handleSubmit() async {
+    _trackRecordVoice('send');
     final currentState = _cubit.state;
     if (currentState.recordingState == SpeakingRecordingState.recording || currentState.recordingState == SpeakingRecordingState.paused) {
       final success = await _stopRecordingSession();
@@ -203,6 +206,26 @@ class _ActiveRecordingModeState extends State<ActiveRecordingMode> {
     final updatedState = _cubit.state;
     if (updatedState.audioFilePath == null) return;
     await _cubit.submitAnswer();
+  }
+
+  void _trackRecordVoice(String interaction) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = RoleplayTrackingData.fromContext();
+      if (trackingData == null) return;
+      AppService.instance.appTrackingService.trackRoleplayQuizRecordVoice(
+        trackingData,
+        recordInteraction: interaction,
+      );
+      return;
+    }
+
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackKeypointExerciseRecordVoice(
+      trackingData,
+      recordInteraction: interaction,
+    );
   }
 
   @override

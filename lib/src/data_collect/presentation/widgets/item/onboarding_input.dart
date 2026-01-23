@@ -5,6 +5,7 @@ class OnboardingInput extends StatelessWidget {
   final TextEditingController? controller;
   final Function(String)? onChanged;
   final Function(String)? onSubmitted;
+  final VoidCallback? onTap;
   final TextInputType? keyboardType;
   final bool obscureText;
   final int maxLines;
@@ -15,6 +16,7 @@ class OnboardingInput extends StatelessWidget {
     this.controller,
     this.onChanged,
     this.onSubmitted,
+    this.onTap,
     this.keyboardType,
     this.obscureText = false,
     this.maxLines = 1,
@@ -28,6 +30,7 @@ class OnboardingInput extends StatelessWidget {
       controller: controller,
       onChanged: onChanged,
       onFieldSubmitted: onSubmitted,
+      onTap: onTap,
       keyboardType: effectiveKeyboardType,
       obscureText: obscureText,
       maxLines: maxLines,

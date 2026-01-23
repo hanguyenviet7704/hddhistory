@@ -82,6 +82,7 @@ part 'presentation/widgets/course_roadmap/lesson_card.dart';
 part 'presentation/widgets/course_roadmap/lesson_metadata.dart';
 part 'presentation/widgets/course_roadmap/timeline_indicator.dart';
 part 'presentation/widgets/course_roadmap/top_progress_bar.dart';
+part 'presentation/widgets/common/course_tracking_data.dart';
 part 'presentation/widgets/lesson_list/completion_check_icon.dart';
 part 'presentation/widgets/lesson_list/keypoint_card.dart';
 part 'presentation/widgets/lesson_list/keypoints_section_header.dart';

@@ -30,6 +30,14 @@
           }
         },
         {
+          "client_id": "116378588635-ba04f8kvshhhs59pga1bdfolaa73j5fs.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.eup.meup",
+            "certificate_hash": "40fc04463b594b86eaeedf6820aff8ac280600d3"
+          }
+        },
+        {
           "client_id": "116378588635-jvkfogesivqoak8c0ec27if1ckar6trq.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

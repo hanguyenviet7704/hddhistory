@@ -5,7 +5,8 @@ class ProfileDeleteDialog {
     BuildContext context, {
     required VoidCallback onConfirm,
   }) {
-    return showGeneralDialog<void>(
+    AppService.instance.appTrackingService.trackProfileDeleteScrView();
+    return showGeneralDialog<String>(
       context: context,
       barrierDismissible: true,
       barrierLabel: 'profileDelete',
@@ -23,7 +24,10 @@ class ProfileDeleteDialog {
           ),
         );
       },
-    );
+    ).then((value) {
+      final result = value ?? 'exit';
+      AppService.instance.appTrackingService.trackProfileDeleteOptionClick(result);
+    });
   }
 }
 
@@ -75,7 +79,7 @@ class _DialogBody extends StatelessWidget {
                 borderColor: AppCustomColor.borderDefault,
                 backgroundColor: AppCustomColor.backgroundWhite,
                 onTap: () {
-                  context.back();
+                  Navigator.of(context).pop('yes');
                   onConfirm();
                 },
               ),
@@ -84,7 +88,7 @@ class _DialogBody extends StatelessWidget {
                 text: context.text.setting.settingProfileDestructiveNoButton,
                 textColor: AppCustomColor.textWhite,
                 backgroundColor: AppCustomColor.brandPrimary,
-                onTap: () => context.back(),
+                onTap: () => Navigator.of(context).pop('no'),
               ),
             ],
           ),

@@ -32,14 +32,20 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
             return _HighlightEmpty(onRetry: cubit.loadIapProducts);
           }
 
-          return _HighlightCard(
-            product: state.bestDealProduct,
-            onPurchase: () => cubit.purchaseProduct(isHighlight: true),
-            onSeeAllPlans: () => PaywallAllPackageInfoBottomSheet.show(context),
-          );
-        },
-      ),
-    );
+        return _HighlightCard(
+          product: state.bestDealProduct,
+          onPurchase: () {
+            AppService.instance.appTrackingService.trackPremiumPurchase();
+            cubit.purchaseProduct(isHighlight: true);
+          },
+          onSeeAllPlans: () {
+            AppService.instance.appTrackingService.trackPremiumAllpackClick();
+            PaywallAllPackageInfoBottomSheet.show(context);
+          },
+        );
+      },
+    ),
+  );
   }
 }
 

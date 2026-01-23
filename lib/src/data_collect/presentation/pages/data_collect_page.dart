@@ -1,29 +1,85 @@
 part of '../../data_collect.dart';
 
-class DataCollectPage extends StatelessWidget {
+class DataCollectPage extends StatefulWidget {
   const DataCollectPage({super.key});
 
   @override
+  State<DataCollectPage> createState() => _DataCollectPageState();
+}
+
+class _DataCollectPageState extends State<DataCollectPage> {
+  DataCollectStep? _lastTrackedStep;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackStepView(context.read<DataCollectCubit>().state.currentStep);
+    });
+  }
+
+  void _trackStepView(DataCollectStep step) {
+    if (_lastTrackedStep == step) return;
+    _lastTrackedStep = step;
+
+    switch (step) {
+      case DataCollectStep.collectName:
+        AppService.instance.appTrackingService.trackObdNameScrView();
+        break;
+      case DataCollectStep.collectAge:
+        AppService.instance.appTrackingService.trackObdAgeScrView();
+        break;
+      case DataCollectStep.collectGender:
+        AppService.instance.appTrackingService.trackObdGenderScrView();
+        break;
+      case DataCollectStep.collectLearningGoal:
+        AppService.instance.appTrackingService.trackObdLearningGoalScrView();
+        break;
+      case DataCollectStep.collectSkillsetsWantToMaster:
+        AppService.instance.appTrackingService.trackObdSkillsetScrView();
+        break;
+      case DataCollectStep.collectLearningStrugger:
+        AppService.instance.appTrackingService.trackObdStrugglesScrView();
+        break;
+      case DataCollectStep.motivateHowToLearn:
+        AppService.instance.appTrackingService.trackObdHowToLearnScrView();
+        break;
+      case DataCollectStep.collectDailyLearningGoal:
+        AppService.instance.appTrackingService.trackObdDailyTimeScrView();
+        break;
+      case DataCollectStep.collectComfortableLearningTime:
+        AppService.instance.appTrackingService.trackObdLearningTimeScrView();
+        break;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Progress Bar
-            ProgressBar(),
+    return BlocListener<DataCollectCubit, DataCollectState>(
+      listenWhen: (previous, current) => previous.currentStep != current.currentStep,
+      listener: (context, state) {
+        _trackStepView(state.currentStep);
+      },
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        body: SafeArea(
+          child: Column(
+            children: [
+              // Progress Bar
+              ProgressBar(),
 
-            // Content
-            Expanded(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: const StepBody(),
+              // Content
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: const StepBody(),
+                ),
               ),
-            ),
 
-            // Bottom CTA Button
-            const ContinueButton(),
-          ],
+              // Bottom CTA Button
+              const ContinueButton(),
+            ],
+          ),
         ),
       ),
     );

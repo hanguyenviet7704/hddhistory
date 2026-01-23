@@ -1,7 +1,57 @@
 part of '../../roleplay.dart';
 
-class RoleplayFeedbackPage extends StatelessWidget {
+class RoleplayFeedbackPage extends StatefulWidget {
   const RoleplayFeedbackPage({super.key});
+
+  @override
+  State<RoleplayFeedbackPage> createState() => _RoleplayFeedbackPageState();
+}
+
+class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
+  final ScrollController _scrollController = ScrollController();
+  bool _hasTrackedView = false;
+  bool _hasTrackedScroll = false;
+  bool _hasTrackedScrollBottom = false;
+
+  void _trackResultView() {
+    if (_hasTrackedView) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackRoleplayResultScrView(trackingData);
+    _hasTrackedView = true;
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    final position = _scrollController.position;
+
+    if (!_hasTrackedScroll && position.userScrollDirection != ScrollDirection.idle) {
+      AppService.instance.appTrackingService.trackRoleplayResultScroll(trackingData);
+      _hasTrackedScroll = true;
+    }
+
+    if (!_hasTrackedScrollBottom && position.pixels >= position.maxScrollExtent - 16) {
+      AppService.instance.appTrackingService.trackRoleplayResultScroll(trackingData);
+      _hasTrackedScrollBottom = true;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_handleScroll);
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackResultView());
+  }
+
+  @override
+  void dispose() {
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -14,6 +64,7 @@ class RoleplayFeedbackPage extends StatelessWidget {
             children: [
               Expanded(
                 child: SingleChildScrollView(
+                  controller: _scrollController,
                   physics: const BouncingScrollPhysics(),
                   padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                   child: Column(
@@ -22,15 +73,20 @@ class RoleplayFeedbackPage extends StatelessWidget {
                       RoleplayFeedbackChart(),
                       RoleplayFeedbackBreakdownSection(),
                       24.verticalSpace,
-                      if (kDebugMode) RoleplayFeedbackSummarySection(),
+                      RoleplayFeedbackSummarySection(),
                     ],
                   ),
                 ),
               ),
               RoleplayFeedbackBottomCTA(
                 onPressed: () {
+                  final trackingData = RoleplayTrackingData.fromContext();
+                  if (trackingData != null) {
+                    AppService.instance.appTrackingService.trackRoleplayResultContinue(trackingData);
+                  }
+                  AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
                   CourseRoadmapRoute().go(context);
-                  context.read<PageCubit>().setCurrentIndex(1);
+                  AppDI.injector.get<PageCubit>().setCurrentIndex(1);
                 },
                 label: context.text.roleplay.rolePlayResultStartLearningButton,
                 helperText: context.text.roleplay.rolePlayHelperTextStartLearnButton,

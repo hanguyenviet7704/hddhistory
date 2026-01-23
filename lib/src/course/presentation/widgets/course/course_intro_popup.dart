@@ -1,8 +1,9 @@
 part of '../../../course.dart';
 
 class CourseIntroPopup extends StatefulWidget {
+  final CourseEntity course;
   final void Function()? onClose;
-  const CourseIntroPopup({super.key, this.onClose});
+  const CourseIntroPopup({super.key, required this.course, this.onClose});
 
   static final List<BaseMultiLanguage> _introDecorations = [
     BaseMultiLanguage(
@@ -19,7 +20,12 @@ class CourseIntroPopup extends StatefulWidget {
     ),
   ];
 
-  static void show(BuildContext context, {void Function()? onClose}) {
+  static void show(
+    BuildContext context, {
+    required CourseEntity course,
+    void Function()? onClose,
+  }) {
+    AppService.instance.appTrackingService.trackPopupLearningIntroScrView(course);
     showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -34,7 +40,7 @@ class CourseIntroPopup extends StatefulWidget {
           opacity: animation,
           child: ScaleTransition(
             scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            child: CourseIntroPopup(onClose: onClose ?? () => context.pop()),
+            child: CourseIntroPopup(course: course, onClose: onClose ?? () => context.pop()),
           ),
         );
       },
@@ -48,6 +54,7 @@ class CourseIntroPopup extends StatefulWidget {
 class _CourseIntroPopupState extends State<CourseIntroPopup> {
   late final PageController _pageController;
   int _currentPage = 0;
+  bool _isTapAdvance = false;
 
   @override
   void initState() {
@@ -99,7 +106,14 @@ class _CourseIntroPopupState extends State<CourseIntroPopup> {
                             child: PageView.builder(
                               controller: _pageController,
                               itemCount: steps.length,
-                              onPageChanged: (index) => setState(() => _currentPage = index),
+                              onPageChanged: (index) {
+                                if (_isTapAdvance) {
+                                  _isTapAdvance = false;
+                                } else {
+                                  AppService.instance.appTrackingService.trackPopupLearningIntroSwipe();
+                                }
+                                setState(() => _currentPage = index);
+                              },
                               itemBuilder: (context, index) => _IntroStepContent(
                                 step: steps[index],
                                 controller: _pageController,
@@ -142,7 +156,9 @@ class _CourseIntroPopupState extends State<CourseIntroPopup> {
   }
 
   void _handleTap(int total) {
+    AppService.instance.appTrackingService.trackPopupLearningIntroContinue();
     if (_currentPage < total - 1) {
+      _isTapAdvance = true;
       _pageController.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeOut);
       return;
     }

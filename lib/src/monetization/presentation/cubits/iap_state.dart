@@ -6,6 +6,8 @@ enum PurchaseAction { none, purchase, restore }
 
 enum PurchaseOrigin { none, paywall, other }
 
+enum PaywallEntryPoint { courseRoadmap, other }
+
 @freezed
 abstract class IapState with _$IapState {
   const factory IapState({

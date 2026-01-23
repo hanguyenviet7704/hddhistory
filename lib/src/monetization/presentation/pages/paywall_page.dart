@@ -8,6 +8,8 @@ class PaywallPage extends StatefulWidget {
 }
 
 class _PaywallPageState extends State<PaywallPage> {
+  bool _hasTrackedView = false;
+
   @override
   void initState() {
     super.initState();
@@ -15,10 +17,18 @@ class _PaywallPageState extends State<PaywallPage> {
     final cubit = context.read<IapCubit>();
     cubit.init();
     cubit.loadIapProducts();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackView());
+  }
+
+  void _trackView() {
+    if (_hasTrackedView) return;
+    AppService.instance.appTrackingService.trackPremiumScrView();
+    _hasTrackedView = true;
   }
 
   @override
   void dispose() {
+    AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
     super.dispose();
   }
 

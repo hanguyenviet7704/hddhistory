@@ -32,7 +32,10 @@ class _UserSubcriptionPageState extends State<UserSubcriptionPage> {
                   12.verticalSpace,
                   _CurrentPlanRow(
                     actionLabel: hasSubscription ? t.monetization.manageChangeCta : t.monetization.manageUpgradeCta,
-                    onAction: () => const PaywallRoute().replace(context),
+                    onAction: () {
+                      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+                      const PaywallRoute().replace(context);
+                    },
                   ),
                   12.verticalSpace,
                   hasSubscription ? UserSubscriptionActiveCard(subscription: subscription!) : const UserSubscriptionEmptyState(),

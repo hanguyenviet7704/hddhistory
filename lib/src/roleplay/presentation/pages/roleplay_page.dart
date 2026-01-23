@@ -1,28 +1,62 @@
 part of '../../roleplay.dart';
 
-class RoleplayPage extends StatelessWidget {
+class RoleplayPage extends StatefulWidget {
   const RoleplayPage({super.key});
 
   @override
+  State<RoleplayPage> createState() => _RoleplayPageState();
+}
+
+class _RoleplayPageState extends State<RoleplayPage> {
+  bool _hasTrackedForVisibility = false;
+  int _lastTrackedRoleplayId = 0;
+
+  void _trackRoleplayConvScrView() {
+    if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
+    final trackingData = RoleplayTrackingData.fromContext();
+    if (trackingData == null) return;
+    final roleplayId = trackingData.roleplay.id;
+    if (_hasTrackedForVisibility && _lastTrackedRoleplayId == roleplayId) return;
+    AppService.instance.appTrackingService.trackRoleplayConvScrView(trackingData);
+    _lastTrackedRoleplayId = roleplayId;
+    _hasTrackedForVisibility = true;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _trackRoleplayConvScrView());
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppCustomColor.backgroundWhite,
-      body: BlocBuilder<RoleplayCubit, RoleplayState>(
-        buildWhen: (previous, current) =>
-            previous.status != current.status ||
-            previous.currentRoleplay.image != current.currentRoleplay.image ||
-            previous.currentLesson != current.currentLesson ||
-            previous.errorMessage != current.errorMessage,
-        builder: (context, state) {
-          return switch (state.status) {
-            RoleplayStatus.initial || RoleplayStatus.loading => const _RoleplayPageLoading(),
-            RoleplayStatus.failure => _RoleplayPageError(message: state.errorMessage),
-            RoleplayStatus.success => _RoleplayPageView(
-              heroImageUrl: state.currentRoleplay.image,
-              lessonTitle: state.currentLesson.title.text,
-            ),
-          };
-        },
+    return BlocListener<RoleplayCubit, RoleplayState>(
+      listenWhen: (previous, current) =>
+          previous.status != current.status || previous.currentRoleplay.id != current.currentRoleplay.id,
+      listener: (context, state) {
+        if (state.status == RoleplayStatus.success) {
+          _trackRoleplayConvScrView();
+        }
+      },
+      child: Scaffold(
+        backgroundColor: AppCustomColor.backgroundWhite,
+        body: BlocBuilder<RoleplayCubit, RoleplayState>(
+          buildWhen: (previous, current) =>
+              previous.status != current.status ||
+              previous.currentRoleplay.image != current.currentRoleplay.image ||
+              previous.currentLesson != current.currentLesson ||
+              previous.errorMessage != current.errorMessage,
+          builder: (context, state) {
+            return switch (state.status) {
+              RoleplayStatus.initial || RoleplayStatus.loading => const _RoleplayPageLoading(),
+              RoleplayStatus.failure => _RoleplayPageError(message: state.errorMessage),
+              RoleplayStatus.success => _RoleplayPageView(
+                heroImageUrl: state.currentRoleplay.image,
+                lessonTitle: state.currentLesson.title.text,
+              ),
+            };
+          },
+        ),
       ),
     );
   }

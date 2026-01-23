@@ -70,6 +70,7 @@ part 'presentation/widgets/roleplay/roleplay_content.dart';
 part 'presentation/widgets/roleplay/roleplay_content_list.dart';
 part 'presentation/widgets/roleplay/roleplay_leadingtext_widget.dart';
 part 'presentation/widgets/roleplay/roleplay_page_header.dart';
+part 'presentation/widgets/roleplay/roleplay_tracking_data.dart';
 part 'presentation/widgets/roleplay/roleplay_transition_widget.dart';
 part 'presentation/widgets/roleplay_complete/roleplay_complete_bottom_cta.dart';
 part 'presentation/widgets/roleplay_complete/roleplay_complete_title.dart';

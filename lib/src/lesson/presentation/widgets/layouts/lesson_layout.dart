@@ -28,20 +28,28 @@ class LessonLayout extends StatelessWidget {
                       },
                     ),
                     Expanded(
-                      child: SingleChildScrollView(
-                        child: Column(
-                          children: [
-                            12.verticalSpace,
-                            LessonBadge(),
-                            ChatInformationWidget(),
-                            body,
-                            80.verticalSpace,
-                          ],
-                        ),
+                      child: Column(
+                        children: [
+                          12.verticalSpace,
+                          LessonBadge(),
+                          // ChatInformationWidget(),
+                          Expanded(child: body),
+                        ],
                       ),
                     ),
-                    if (bottom != null) bottom!,
                   ],
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: BlocSelector<LessonCubit, LessonState, bool>(
+                  selector: (state) => state.isBottomButtonVisible,
+                  builder: (context, isVisible) {
+                    if (bottom == null || !isVisible) return const SizedBox.shrink();
+                    return bottom!;
+                  },
                 ),
               ),
               Positioned.fill(

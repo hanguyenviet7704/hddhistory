@@ -33,7 +33,40 @@ class ProgressBar extends StatelessWidget {
           children: [
             10.horizontalSpace,
             InkWell(
-              onTap: () => context.read<DataCollectCubit>().goToPreviousStep(),
+              onTap: () {
+                final step = context.read<DataCollectCubit>().state.currentStep;
+                final trackingService = AppService.instance.appTrackingService;
+                switch (step) {
+                  case DataCollectStep.collectAge:
+                    trackingService.trackObdAgeBack();
+                    break;
+                  case DataCollectStep.collectGender:
+                    trackingService.trackObdGenderBack();
+                    break;
+                  case DataCollectStep.collectLearningGoal:
+                    trackingService.trackObdLearningGoalBack();
+                    break;
+                  case DataCollectStep.collectSkillsetsWantToMaster:
+                    trackingService.trackObdSkillsetBack();
+                    break;
+                  case DataCollectStep.collectLearningStrugger:
+                    trackingService.trackObdStrugglesBack();
+                    break;
+                  case DataCollectStep.motivateHowToLearn:
+                    trackingService.trackObdHowToLearnBack();
+                    break;
+                  case DataCollectStep.collectDailyLearningGoal:
+                    trackingService.trackObdDailyTimeBack();
+                    break;
+                  case DataCollectStep.collectComfortableLearningTime:
+                    trackingService.trackObdLearningTimeBack();
+                    break;
+                  case DataCollectStep.collectName:
+                    break;
+                }
+
+                context.read<DataCollectCubit>().goToPreviousStep();
+              },
               child: Icon(
                 Icons.arrow_back_rounded,
                 color: const Color(0xFF0D121C), // Brand/Brand/Primary/300

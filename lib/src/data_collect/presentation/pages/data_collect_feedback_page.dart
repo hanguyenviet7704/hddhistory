@@ -1,11 +1,37 @@
 part of '../../data_collect.dart';
 
-class DataCollectFeedbackPage extends StatelessWidget {
+class DataCollectFeedbackPage extends StatefulWidget {
   const DataCollectFeedbackPage({super.key});
 
+  @override
+  State<DataCollectFeedbackPage> createState() => _DataCollectFeedbackPageState();
+}
+
+class _DataCollectFeedbackPageState extends State<DataCollectFeedbackPage> {
+  bool _didTrackSwipe = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      AppService.instance.appTrackingService.trackObdFeedbackScrView();
+    });
+  }
+
   void _onPressed(BuildContext context) {
+    AppService.instance.appTrackingService.trackObdFeedbackContinue();
     context.read<DataCollectCubit>().goToNextStep();
     context.back();
+  }
+
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (_didTrackSwipe) return false;
+    if (notification.metrics.axis != Axis.horizontal) return false;
+    if (notification is ScrollStartNotification) {
+      _didTrackSwipe = true;
+      AppService.instance.appTrackingService.trackObdFeedbackSwipe();
+    }
+    return false;
   }
 
   @override
@@ -56,7 +82,10 @@ class DataCollectFeedbackPage extends StatelessWidget {
                   ),
                 ),
                 Spacer(),
-                const PaywallFeedbackList(),
+                NotificationListener<ScrollNotification>(
+                  onNotification: _onScrollNotification,
+                  child: const PaywallFeedbackList(),
+                ),
                 Spacer(),
                 _FeedbackContinueButton(
                   onPressed: () => _onPressed(context),

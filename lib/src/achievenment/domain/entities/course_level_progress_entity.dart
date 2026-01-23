@@ -43,4 +43,10 @@ extension CourseLevelProgressEntityExtension on CourseLevelProgressEntity {
   bool get hideProgress {
     return isCompleted || (completedKeypoints >= totalKeypoints);
   }
+
+  String get trackingName {
+    final String name = courseTitle.en.trim();
+    if (name.isNotEmpty) return name;
+    return title;
+  }
 }

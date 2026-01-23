@@ -7,12 +7,12 @@ abstract interface class IAuthRepository {
   TaskEither<AppException, AuthEntity> loginSSOApple();
   TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body);
   TaskEither<AppException, AuthEntity> refreshToken(Map<String, dynamic> body);
-  TaskEither<AppException, BaseResponse> logout();
+  TaskEither<AppException, Unit> logout();
   // TaskEither<AppException, BaseResponse<AuthEntity>> forgotPassword(Map<String, dynamic> body);
-  TaskEither<AppException, BaseResponse> resetPassword(Map<String, dynamic> body);
-  TaskEither<AppException, BaseResponse> resendOTP(String phone);
-  TaskEither<AppException, BaseResponse<AppUser>> verifyOTP(Map<String, dynamic> body);
-  TaskEither<AppException, BaseResponse> updatePassword(Map<String, dynamic> body);
-  TaskEither<AppException, BaseResponse> deletePermanentUser(String password);
-  TaskEither<AppException, BaseResponse> deleteAccount();
+  TaskEither<AppException, Unit> resetPassword(Map<String, dynamic> body);
+  TaskEither<AppException, Unit> resendOTP(String phone);
+  TaskEither<AppException, UserEntity> verifyOTP(Map<String, dynamic> body);
+  TaskEither<AppException, Unit> updatePassword(Map<String, dynamic> body);
+  TaskEither<AppException, Unit> deletePermanentUser(String password);
+  TaskEither<AppException, Unit> deleteAccount();
 }

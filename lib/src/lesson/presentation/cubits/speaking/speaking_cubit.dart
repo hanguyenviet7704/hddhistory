@@ -29,10 +29,54 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
   void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
 
+  void setReviewResult(QuestionEntity question, ExerciseResultEntity result) {
+    emit(state.copyWith(question: question, status: SpeakingStatus.success));
+    applyExerciseResult(result);
+  }
+
   // Toggle between recording and text input modes
   void toggleInputMode() {
-    final newMode = state.inputMode == SpeakingInputMode.recording ? SpeakingInputMode.text : SpeakingInputMode.recording;
+    final isRecordingMode = state.inputMode == SpeakingInputMode.recording;
+    final newMode = isRecordingMode ? SpeakingInputMode.text : SpeakingInputMode.recording;
     emit(state.copyWith(inputMode: newMode));
+
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = RoleplayTrackingData.fromContext();
+      if (trackingData == null) return;
+      if (isRecordingMode) {
+        AppService.instance.appTrackingService.trackRoleplayQuizRecordAns(
+          trackingData,
+          answerType: 'typing',
+        );
+        return;
+      }
+
+      AppService.instance.appTrackingService.trackRoleplayQuizRecordAns(
+        trackingData,
+        answerType: 'record',
+      );
+      AppService.instance.appTrackingService.trackRoleplayQuizRecordTyping(
+        trackingData,
+        typingInteraction: 'switch_record',
+      );
+      return;
+    }
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (isRecordingMode) {
+      AppService.instance.appTrackingService.trackKeypointExerciseRecordAnswer(
+        trackingData,
+        answerType: 'typing',
+      );
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseRecordTyping(
+      trackingData,
+      typingInteraction: 'switch_record',
+    );
   }
 
   // Update text input
@@ -313,9 +357,9 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
   void updateUserProgressExercise() {
     final question = state.question;
-    if (question.exerciseId.isEmpty) return;
-
     final result = toExerciseResult();
+    _storeLessonResult(result);
+    if (question.exerciseId.isEmpty) return;
     final double score = pointCalculation().toDouble();
 
     final data = UpdateUserProgressExerciseData(
@@ -335,15 +379,40 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       userId: AppDI.injector.get<UserCubit>().state.user.id,
       courseId: courseId,
       lessonId: lesson.id,
-      keypointId: question.keypoint.id,
+      keypointId: question.keypointId,
       exercises: [data],
     );
 
     AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
   }
 
+  void _storeLessonResult(ExerciseResultEntity result) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return;
+    AppDI.injector.get<LessonCubit>().storeExerciseResult(state.question, result);
+  }
+
   // Toggle explanation visibility
-  void toggleExplanation() => emit(state.copyWith(showExplanation: !state.showExplanation));
+  void toggleExplanation() {
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
+  }
 
   int pointCalculation() => _questionScore.toInt();
 

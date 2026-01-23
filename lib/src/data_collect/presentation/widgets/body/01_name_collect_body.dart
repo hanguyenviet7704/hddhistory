@@ -27,6 +27,7 @@ class NameCollectBody extends StatelessWidget {
           hintText: context.text.onboarding.onboardingUserNamePlaceholder,
           controller: context.read<DataCollectCubit>().nameController,
           onChanged: (value) => context.read<DataCollectCubit>().updateUserName(value),
+          onTap: () => AppService.instance.appTrackingService.trackObdNameClick(),
         ),
         Spacer(),
       ],

@@ -11,6 +11,27 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   void selectAnswer(int index) {
     if (state.hasChecked) return;
 
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        if (state.question.type == QuestionTypeEnum.multipleChoice) {
+          AppService.instance.appTrackingService.trackRoleplayQuizMultiSelect(trackingData);
+        } else {
+          AppService.instance.appTrackingService.trackRoleplayQuizSingSelect(trackingData);
+        }
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        if (state.question.type == QuestionTypeEnum.multipleChoice) {
+          AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
+        } else {
+          AppService.instance.appTrackingService.trackKeypointExerciseClick(trackingData);
+        }
+      }
+    }
+
     if (state.question.type == QuestionTypeEnum.multipleChoice) {
       // Handle multiple choice
       final Set<int> newSelectedAnswers = Set<int>.from(state.selectedAnswersIndices);
@@ -29,6 +50,19 @@ class ChoiceCubit extends Cubit<ChoiceState> {
 
   void checkAnswer() {
     if (state.question.id == 0) return;
+
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizCheck(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+      }
+    }
 
     bool isCorrect = false;
 
@@ -53,17 +87,18 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       ),
     );
 
-    _updateUserProgressExercise();
+    final result = toExerciseResult();
+    _storeLessonResult(result);
+    _updateUserProgressExercise(result);
 
     if (!isCorrect) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
   }
 
-  void _updateUserProgressExercise() {
+  void _updateUserProgressExercise(ExerciseResultEntity result) {
     final question = state.question;
     if (question.id == 0) return;
-    final result = toExerciseResult();
     final double score = pointCalculation().toDouble();
 
     final QuestionType progressType = switch (question.type) {
@@ -90,11 +125,17 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       userId: AppDI.injector.get<UserCubit>().state.user.id,
       courseId: courseId,
       lessonId: lesson.id,
-      keypointId: question.keypoint.id,
+      keypointId: question.keypointId,
       exercises: [data],
     );
 
     AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
+  }
+
+  void _storeLessonResult(ExerciseResultEntity result) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return;
+    AppDI.injector.get<LessonCubit>().storeExerciseResult(state.question, result);
   }
 
   int pointCalculation() {
@@ -125,7 +166,30 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   }
 
   void toggleExplanation() {
-    emit(state.copyWith(showExplanation: !state.showExplanation));
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
+  }
+
+  RoleplayTrackingData? _roleplayTrackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.roleplay) return null;
+    return RoleplayTrackingData.fromContext();
   }
 
   ExerciseResultEntity toExerciseResult() {

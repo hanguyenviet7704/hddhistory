@@ -34,7 +34,7 @@ abstract class AuthApi {
   Future<BaseResponse> resendOTP(@Part(name: 'phone') String phone);
 
   @POST(AppEndpoint.verifyOTP)
-  Future<BaseResponse<AppUser>> verifyOTP(@Body() Map<String, dynamic> data);
+  Future<BaseResponse<UserModel>> verifyOTP(@Body() Map<String, dynamic> data);
 
   @POST(AppEndpoint.updatePassword)
   Future<BaseResponse> updatePassword(@Body() Map<String, dynamic> data);

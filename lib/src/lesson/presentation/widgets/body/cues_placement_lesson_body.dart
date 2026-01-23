@@ -2,26 +2,35 @@ part of '../../../lesson.dart';
 
 class CuesPlacementLessonBody extends StatelessWidget {
   final Function(bool) onAnswerChecked;
+  final bool isReadOnly;
 
   const CuesPlacementLessonBody({
     super.key,
     required this.onAnswerChecked,
+    this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type) {
+  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
+    }
     context.read<LessonCubit>().setIsShowResultOverlay(true);
     LessonResultOverlayManager.show(
       context: context,
-      builder: (_) => BlocProvider.value(
-        value: context.read<CuesPlacementCubit>(),
+      builder: (_) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: context.read<CuesPlacementCubit>()),
+          BlocProvider.value(value: context.read<LessonCubit>()),
+        ],
         child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
           builder: (context, state) {
-            final hasExplanation = state.question.explanation.text.isNotEmpty;
+            final hasExplanation = state.question.hasExplanation;
 
             return CuesPlacementResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
-              explanationText: state.question.explanation.text,
+              explanationText: state.question.explanationText,
               words: state.words,
               placedMarks: state.placedMarks,
               correctPositions: state.correctPositions,
@@ -29,10 +38,27 @@ class CuesPlacementLessonBody extends StatelessWidget {
                 for (var option in state.question.options) option.id: option,
               },
               onContinue: () {
+                if (isReview) {
+                  LessonResultOverlayManager.hide();
+                  context.read<LessonCubit>().setIsShowResultOverlay(false);
+                  return;
+                }
+                if (trackingData != null) {
+                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
+                }
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },
-              onExplain: hasExplanation ? () => context.read<CuesPlacementCubit>().toggleExplanation() : null,
+              onExplain: hasExplanation
+                  ? () {
+                      if (state.showExplanation) {
+                        LessonResultOverlayManager.hide();
+                        context.read<LessonCubit>().setIsShowResultOverlay(false);
+                        return;
+                      }
+                      context.read<CuesPlacementCubit>().toggleExplanation();
+                    }
+                  : null,
             );
           },
         ),
@@ -60,8 +86,24 @@ class CuesPlacementLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final words = state.words;
+          final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
+          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
 
-          return Column(
+          void handleExplainTap() {
+            if (isReadOnly) {
+              context.read<LessonCubit>().consumePendingAdvance();
+            }
+            if (currentQuestion.hasExplanation && !state.showExplanation) {
+              context.read<CuesPlacementCubit>().toggleExplanation();
+            }
+            _showResultOverlay(
+              context,
+              state.isCorrect ? ResultType.correct : ResultType.incorrect,
+              isReview: isReadOnly,
+            );
+          }
+
+          final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
@@ -152,6 +194,20 @@ class CuesPlacementLessonBody extends StatelessWidget {
                 ),
               ),
               20.verticalSpace,
+            ],
+          );
+
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              IgnorePointer(ignoring: isReadOnly, child: content),
+              if (showExplainButton) ...[
+                12.verticalSpace,
+                LessonExplainButton(
+                  onTap: handleExplainTap,
+                  hasExplanation: currentQuestion.hasExplanation,
+                ),
+              ],
             ],
           );
         },
