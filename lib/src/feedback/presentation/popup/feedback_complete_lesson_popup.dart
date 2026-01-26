@@ -19,9 +19,9 @@ class FeedbackCompleteLessonPopup extends StatefulWidget {
     );
     return showGeneralDialog<void>(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       barrierLabel: 'feedbackCompleteLessonPopup',
-      barrierColor: Colors.transparent,
+      barrierColor: AppCustomColor.scrimOverlay,
       transitionDuration: const Duration(milliseconds: 500),
       pageBuilder: (_, _, _) => const SizedBox.shrink(),
       routeSettings: const RouteSettings(name: RouteNamed.feedbackCompleteLessonPopup),

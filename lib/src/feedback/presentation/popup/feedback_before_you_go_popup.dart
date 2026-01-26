@@ -8,7 +8,7 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'feedbackBeforeYouGoPopup',
-      barrierColor: Colors.transparent,
+      barrierColor: AppCustomColor.scrimOverlay,
       transitionDuration: const Duration(milliseconds: 500),
       pageBuilder: (_, _, _) => const SizedBox.shrink(),
       useRootNavigator: false,
@@ -22,7 +22,10 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
           ),
         );
       },
-    );
+    ).then((value) {
+      String pageRouteName = AppDI.injector.get<FeedbackCubit>().state.pageRouteName;
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(pageRouteName);
+    });
   }
 
   @override

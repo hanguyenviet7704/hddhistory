@@ -29,8 +29,8 @@ class FeedbackThankYouBody extends StatelessWidget {
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20.r),
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
                 colors: [
                   AppCustomColor.feedbackThankYouOverlay,
                   AppCustomColor.feedbackThankYouTint,

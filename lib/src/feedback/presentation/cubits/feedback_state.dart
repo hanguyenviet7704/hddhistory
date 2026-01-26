@@ -33,4 +33,10 @@ extension FeedbackStateExtension on FeedbackState {
   bool get canSubmit {
     return draftOverallRating > 0 && draftContentRating > 0 && draftExperienceRating > 0 && !isLoading;
   }
+
+  String get pageRouteName {
+    if (activeType == FeedbackType.incomplete) return RouteNamed.courseRoadmap;
+    if (activeEntry == FeedbackEntry.roleplay) return RouteNamed.roleplayFeedback;
+    return RouteNamed.lessonComplete;
+  }
 }

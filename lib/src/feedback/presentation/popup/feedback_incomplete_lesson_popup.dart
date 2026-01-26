@@ -21,7 +21,7 @@ class FeedbackIncompleteLessonPopup extends StatefulWidget {
       context: context,
       barrierDismissible: true,
       barrierLabel: 'feedbackIncompleteLessonPopup',
-      barrierColor: Colors.transparent,
+      barrierColor: AppCustomColor.scrimOverlay,
       transitionDuration: const Duration(milliseconds: 500),
       pageBuilder: (_, _, _) => const SizedBox.shrink(),
       routeSettings: const RouteSettings(name: RouteNamed.feedbackIncompleteLessonPopup),

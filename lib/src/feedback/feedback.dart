@@ -2,7 +2,6 @@ library;
 
 //* Single project import
 import 'package:meup/meup.dart';
-import 'dart:ui' as ui;
 
 //* Package imports
 import 'package:dio/dio.dart';

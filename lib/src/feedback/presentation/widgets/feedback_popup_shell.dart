@@ -12,30 +12,8 @@ class FeedbackPopupShell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: AppCustomColor.scrimOverlay,
-      child: SizedBox.expand(
-        child: Stack(
-          children: [
-            GestureDetector(
-              behavior: HitTestBehavior.opaque,
-              onTap: onTapOutside,
-              child: ColoredBox(color: AppCustomColor.scrimOverlay),
-            ),
-            ClipRect(
-              child: BackdropFilter(
-                filter: ui.ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                child: Center(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 24.w),
-                    child: Unfocused(child: child),
-                  ),
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
+    return Dialog(
+      child: Unfocused(child: child),
     );
   }
 }
