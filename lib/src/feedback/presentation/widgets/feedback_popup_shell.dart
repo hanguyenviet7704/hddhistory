@@ -27,8 +27,7 @@ class FeedbackPopupShell extends StatelessWidget {
               child: Center(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 24.w),
-                  child: GestureDetector(
-                    onTap: () {},
+                  child: Unfocused(
                     child: child,
                   ),
                 ),

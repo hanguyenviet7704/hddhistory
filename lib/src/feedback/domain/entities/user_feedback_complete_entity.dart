@@ -9,6 +9,7 @@ abstract class UserFeedbackCompleteEntity with _$UserFeedbackCompleteEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage lessonTitle,
     @Default('') String keypointId,
     @Default(BaseMultiLanguage()) BaseMultiLanguage keypointTitle,
+    @Default(0) int overallRating,
     @Default(0) int contentRating,
     @Default(0) int experienceRating,
     @Default('') String comment,

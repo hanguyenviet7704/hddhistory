@@ -6,10 +6,16 @@ class FeedbackIncompleteLessonPopup extends StatelessWidget {
   static Future<void> show(
     BuildContext context, {
     FeedbackEntry entry = FeedbackEntry.roleplay,
+    required String courseId,
+    required String lessonId,
+    required String keypointId,
   }) {
     context.read<FeedbackCubit>().setActiveFeedback(
       type: FeedbackType.incomplete,
       entry: entry,
+      courseId: courseId,
+      lessonId: lessonId,
+      keypointId: keypointId,
     );
     return showGeneralDialog<void>(
       context: context,
@@ -23,7 +29,10 @@ class FeedbackIncompleteLessonPopup extends StatelessWidget {
           opacity: animation,
           child: ScaleTransition(
             scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            child: const FeedbackIncompleteLessonPopup(),
+            child: BlocProvider.value(
+              value: AppDI.injector.get<FeedbackCubit>(),
+              child: const FeedbackIncompleteLessonPopup(),
+            ),
           ),
         );
       },

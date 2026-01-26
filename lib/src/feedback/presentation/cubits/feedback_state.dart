@@ -9,6 +9,10 @@ abstract class FeedbackState with _$FeedbackState {
     @Default(UserFeedbackEntity()) UserFeedbackEntity userFeedback,
     @Default(FeedbackType.complete) FeedbackType activeType,
     @Default(FeedbackEntry.roleplay) FeedbackEntry activeEntry,
+    @Default('') String activeCourseId,
+    @Default('') String activeLessonId,
+    @Default('') String activeKeypointId,
+    @Default(0) int draftOverallRating,
     @Default(0) int draftContentRating,
     @Default(0) int draftExperienceRating,
     @Default([]) List<IncompleteFeedbackReason> draftReasons,
@@ -19,4 +23,14 @@ abstract class FeedbackState with _$FeedbackState {
   factory FeedbackState.initial() => FeedbackState();
 
   factory FeedbackState.fromJson(Map<String, dynamic> json) => _$FeedbackStateFromJson(json);
+}
+
+extension FeedbackStateExtension on FeedbackState {
+  bool get isLoading {
+    return status == FeedbackStatus.loading;
+  }
+
+  bool get canSubmit {
+    return draftOverallRating > 0 && draftContentRating > 0 && draftExperienceRating > 0 && !isLoading;
+  }
 }

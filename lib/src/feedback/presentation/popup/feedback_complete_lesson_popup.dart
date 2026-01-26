@@ -6,10 +6,16 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
   static Future<void> show(
     BuildContext context, {
     FeedbackEntry entry = FeedbackEntry.roleplay,
+    required String courseId,
+    required String lessonId,
+    required String keypointId,
   }) {
     context.read<FeedbackCubit>().setActiveFeedback(
       type: FeedbackType.complete,
       entry: entry,
+      courseId: courseId,
+      lessonId: lessonId,
+      keypointId: keypointId,
     );
     return showGeneralDialog<void>(
       context: context,
@@ -18,12 +24,16 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
       barrierColor: Colors.transparent,
       transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (_, _, _) => const SizedBox.shrink(),
+      routeSettings: const RouteSettings(name: RouteNamed.feedbackCompleteLessonPopup),
       transitionBuilder: (context, animation, _, _) {
         return FadeTransition(
           opacity: animation,
           child: ScaleTransition(
             scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            child: const FeedbackCompleteLessonPopup(),
+            child: BlocProvider.value(
+              value: AppDI.injector.get<FeedbackCubit>(),
+              child: const FeedbackCompleteLessonPopup(),
+            ),
           ),
         );
       },
@@ -34,23 +44,13 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FeedbackCubit, FeedbackState>(
       builder: (context, state) {
-        final cubit = context.read<FeedbackCubit>();
-        final overallRating = _calculateOverallRating(
-          state.draftContentRating,
-          state.draftExperienceRating,
-        );
-        final isLoading = state.status == FeedbackStatus.loading;
-        final canSubmit = state.draftContentRating > 0 && state.draftExperienceRating > 0 && !isLoading;
-
         return FeedbackPopupShell(
-          onTapOutside: () => context.pop(),
           child: Container(
-            width: 327.w,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20.r),
               gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
+                begin: Alignment.bottomCenter,
+                end: Alignment.topCenter,
                 colors: [
                   AppCustomColor.backgroundWhite,
                   AppCustomColor.feedbackGradientMid,
@@ -69,10 +69,11 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
                       FeedbackHeader(title: context.text.feedback.completeTitle),
                       12.verticalSpace,
                       FeedbackRatingRow(
-                        rating: overallRating,
+                        rating: state.draftOverallRating,
                         starSize: 36,
                         spacing: 6,
                         alignment: MainAxisAlignment.center,
+                        onRatingChanged: context.read<FeedbackCubit>().updateOverallRating,
                       ),
                     ],
                   ),
@@ -91,7 +92,7 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
                         FeedbackRatingRow(
                           label: context.text.feedback.contentLabel,
                           rating: state.draftContentRating,
-                          onRatingChanged: cubit.updateContentRating,
+                          onRatingChanged: context.read<FeedbackCubit>().updateContentRating,
                           starSize: 24,
                           spacing: 4,
                         ),
@@ -99,7 +100,7 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
                         FeedbackRatingRow(
                           label: context.text.feedback.experienceLabel,
                           rating: state.draftExperienceRating,
-                          onRatingChanged: cubit.updateExperienceRating,
+                          onRatingChanged: context.read<FeedbackCubit>().updateExperienceRating,
                           starSize: 24,
                           spacing: 4,
                         ),
@@ -107,13 +108,13 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
                         FeedbackCommentField(
                           value: state.draftComment,
                           hint: context.text.feedback.commentHint,
-                          onChanged: cubit.updateComment,
+                          onChanged: context.read<FeedbackCubit>().updateComment,
                         ),
                         24.verticalSpace,
                         FeedbackPrimaryButton(
                           title: context.text.feedback.sendFeedback,
-                          enabled: canSubmit,
-                          onTap: cubit.submitFeedback,
+                          enabled: state.canSubmit,
+                          onTap: context.read<FeedbackCubit>().submitFeedback,
                         ),
                       ],
                     ),
@@ -125,13 +126,5 @@ class FeedbackCompleteLessonPopup extends StatelessWidget {
         );
       },
     );
-  }
-
-  int _calculateOverallRating(int contentRating, int experienceRating) {
-    if (contentRating == 0 || experienceRating == 0) {
-      return 0;
-    }
-    final average = (contentRating + experienceRating) / 2;
-    return average.round();
   }
 }

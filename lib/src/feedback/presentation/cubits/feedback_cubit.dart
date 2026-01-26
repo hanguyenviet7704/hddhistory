@@ -31,6 +31,9 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
   void setActiveFeedback({
     required FeedbackType type,
     required FeedbackEntry entry,
+    required String courseId,
+    required String lessonId,
+    required String keypointId,
   }) {
     final complete = _getCompleteFeedback(entry);
     final incomplete = _getIncompleteFeedback(entry);
@@ -38,6 +41,10 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
       state.copyWith(
         activeType: type,
         activeEntry: entry,
+        activeCourseId: courseId,
+        activeLessonId: lessonId,
+        activeKeypointId: keypointId,
+        draftOverallRating: type == FeedbackType.complete ? complete.overallRating : 0,
         draftContentRating: type == FeedbackType.complete ? complete.contentRating : 0,
         draftExperienceRating: type == FeedbackType.complete ? complete.experienceRating : 0,
         draftReasons: type == FeedbackType.incomplete ? List.of(incomplete.reasons) : const [],
@@ -46,13 +53,11 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
     );
   }
 
-  void updateContentRating(int rating) {
-    emit(state.copyWith(draftContentRating: rating));
-  }
+  void updateOverallRating(int rating) => emit(state.copyWith(draftOverallRating: rating));
 
-  void updateExperienceRating(int rating) {
-    emit(state.copyWith(draftExperienceRating: rating));
-  }
+  void updateContentRating(int rating) => emit(state.copyWith(draftContentRating: rating));
+
+  void updateExperienceRating(int rating) => emit(state.copyWith(draftExperienceRating: rating));
 
   void toggleReason(IncompleteFeedbackReason reason) {
     final updated = [...state.draftReasons];
@@ -97,11 +102,9 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
   }
 
   UserFeedbackSubmissionEntity _buildSubmission() {
-    final complete = _getCompleteFeedback(state.activeEntry);
-    final incomplete = _getIncompleteFeedback(state.activeEntry);
-    final courseId = state.activeType == FeedbackType.complete ? complete.courseId : incomplete.courseId;
-    final lessonId = state.activeType == FeedbackType.complete ? complete.lessonId : incomplete.lessonId;
-    final keypointId = state.activeType == FeedbackType.complete ? complete.keypointId : incomplete.keypointId;
+    final courseId = state.activeCourseId;
+    final lessonId = state.activeLessonId;
+    final keypointId = state.activeKeypointId;
 
     return UserFeedbackSubmissionEntity(
       userId: state.userFeedback.userId,
@@ -110,6 +113,7 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
       keypointId: keypointId,
       type: state.activeType,
       entry: state.activeEntry,
+      overallRating: state.activeType == FeedbackType.complete ? state.draftOverallRating : 0,
       contentRating: state.activeType == FeedbackType.complete ? state.draftContentRating : 0,
       experienceRating: state.activeType == FeedbackType.complete ? state.draftExperienceRating : 0,
       reasons: state.activeType == FeedbackType.incomplete ? state.draftReasons : const [],
@@ -131,6 +135,7 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
             courseId: submission.courseId,
             lessonId: submission.lessonId,
             keypointId: submission.keypointId,
+            overallRating: submission.overallRating,
             contentRating: submission.contentRating,
             experienceRating: submission.experienceRating,
             comment: submission.comment,
@@ -159,6 +164,7 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
           courseId: submission.courseId,
           lessonId: submission.lessonId,
           keypointId: submission.keypointId,
+          overallRating: submission.overallRating,
           contentRating: submission.contentRating,
           experienceRating: submission.experienceRating,
           comment: submission.comment,

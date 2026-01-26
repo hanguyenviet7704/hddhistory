@@ -9,6 +9,7 @@ abstract class UserFeedbackSubmissionEntity with _$UserFeedbackSubmissionEntity 
     @Default('') String keypointId,
     @Default(FeedbackType.complete) FeedbackType type,
     @Default(FeedbackEntry.roleplay) FeedbackEntry entry,
+    @Default(0) int overallRating,
     @Default(0) int contentRating,
     @Default(0) int experienceRating,
     @Default([]) List<IncompleteFeedbackReason> reasons,

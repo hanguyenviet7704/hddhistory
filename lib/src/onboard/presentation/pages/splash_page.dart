@@ -47,7 +47,7 @@ class _SplashPageState extends State<SplashPage> {
     bool isAppEventConfigured = context.read<UserCubit>().state.isAppEventConfigured;
     if (!isAppEventConfigured) return;
     context.read<UserCubit>().setIsAppEventConfigured(false);
-    AppService.instance.appEventService.logAppInstall();
+    // AppService.instance.appEventService.logAppInstall();
   }
 
   Future<void> _checkForUpdate() async {
