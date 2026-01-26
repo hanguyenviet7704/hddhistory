@@ -73,6 +73,10 @@ mixin AppEndpoint {
   static const String coursesTags = '/api/v1/courses-tags';
   static const String coursesTagsById = '/api/v1/courses-tags/{id}';
 
+  //* Courses Feedback API
+  static const String coursesFeedbacks = '/api/v1/courses-feedback';
+  static const String coursesFeedbacksOfUser = '/api/v1/courses-feedback/me';
+
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/{lessonId}';
