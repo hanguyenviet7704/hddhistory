@@ -70,6 +70,12 @@ mixin AppCustomColor {
   static const Color bottomSheetScrim = Color(0x80151123);
   static const Color borderBrand = Color(0xFFC7C5FA);
   static const Color roleplayIntroDotInactive = Color(0xFFF2F1FE);
+  static const Color feedbackGradientMid = Color(0xFF7667F3);
+  static const Color feedbackGradientEnd = Color(0xFF5E5ACB);
+  static const Color feedbackStarActive = Color(0xFFF7C52B);
+  static const Color feedbackStarInactive = Color(0xFFE3E8EF);
+  static const Color feedbackThankYouOverlay = Color(0xB3FFFFFF);
+  static const Color feedbackThankYouTint = Color(0xB3E5DEFC);
 }
 
 mixin AppTheme {

@@ -1,0 +1,37 @@
+part of '../../feedback.dart';
+
+class FeedbackBeforeYouGoPopup extends StatelessWidget {
+  const FeedbackBeforeYouGoPopup({super.key});
+
+  static Future<void> show(BuildContext context) {
+    return showGeneralDialog<void>(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'feedbackBeforeYouGoPopup',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (_, _, _) => const SizedBox.shrink(),
+      transitionBuilder: (context, animation, _, _) {
+        return FadeTransition(
+          opacity: animation,
+          child: ScaleTransition(
+            scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            child: const FeedbackBeforeYouGoPopup(),
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FeedbackPopupShell(
+      onTapOutside: () => context.pop(),
+      child: FeedbackThankYouBody(
+        titleLine1: context.text.feedback.thankYouTitleLine1,
+        titleLine2: context.text.feedback.thankYouTitleLine2,
+        subtitle: context.text.feedback.thankYouSubtitle,
+      ),
+    );
+  }
+}

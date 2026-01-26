@@ -33,6 +33,7 @@ class FeedbackLocalDataSourceImpl implements FeedbackLocalDataSource {
         value: model.toJson(),
       );
     } catch (e) {
+      LogDev.error('Error caching user feedback: $e');
     }
   }
 
@@ -41,6 +42,7 @@ class FeedbackLocalDataSourceImpl implements FeedbackLocalDataSource {
     try {
       await _localStoreService.remove(key: _cacheKey);
     } catch (e) {
+      LogDev.error('Error clearing user feedback cache: $e');
     }
   }
 }
