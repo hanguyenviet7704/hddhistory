@@ -55,6 +55,7 @@ logs/
 **.freezed.dart
 **.config.dart
 **.graphql.dart
+.ruff_cache
 
 # Localization files
 assets/arb/
