@@ -134,6 +134,7 @@ mixin RouteNamed {
   //? Feedback
   static const String feedbackCompleteLessonPopup = 'Feedback Complete Lesson Popup';
   static const String feedbackIncompleteLessonPopup = 'Feedback Incomplete Lesson Popup';
+  static const String feedbackBeforeYouGoPopup = 'Feedback Before You Go Popup';
 
   //* Setting - Profile
   static const String setting = 'Setting';

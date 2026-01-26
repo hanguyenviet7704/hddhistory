@@ -9,8 +9,10 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
       barrierDismissible: true,
       barrierLabel: 'feedbackBeforeYouGoPopup',
       barrierColor: Colors.transparent,
-      transitionDuration: const Duration(milliseconds: 200),
+      transitionDuration: const Duration(milliseconds: 500),
       pageBuilder: (_, _, _) => const SizedBox.shrink(),
+      useRootNavigator: false,
+      routeSettings: const RouteSettings(name: RouteNamed.feedbackBeforeYouGoPopup),
       transitionBuilder: (context, animation, _, _) {
         return FadeTransition(
           opacity: animation,
@@ -26,11 +28,14 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return FeedbackPopupShell(
-      onTapOutside: () => context.pop(),
-      child: FeedbackThankYouBody(
-        titleLine1: context.text.feedback.thankYouTitleLine1,
-        titleLine2: context.text.feedback.thankYouTitleLine2,
-        subtitle: context.text.feedback.thankYouSubtitle,
+      onTapOutside: () => context.back(),
+      child: GestureDetector(
+        onTap: () => context.back(),
+        child: FeedbackThankYouBody(
+          titleLine1: context.text.feedback.thankYouTitleLine1,
+          titleLine2: context.text.feedback.thankYouTitleLine2,
+          subtitle: context.text.feedback.thankYouSubtitle,
+        ),
       ),
     );
   }
