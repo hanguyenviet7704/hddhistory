@@ -28,7 +28,6 @@ export class RoleplayColorTemplateListQuery extends BaseQuery {
 
   override toQueryParams(): string {
     const params = new URLSearchParams(super.toQueryParams());
-
     return params.toString();
   }
 }
