@@ -1,8 +1,7 @@
 part of '../../feedback.dart';
 
 @lazySingleton
-class FeedbackCubit extends Cubit<FeedbackState>
-    with CubitUseCaseHandlerMixin<FeedbackState> {
+class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<FeedbackState> {
   final GetUserFeedbacksUseCase _getUserFeedbacksUseCase;
   final UpdateUserFeedbackUseCase _updateUserFeedbackUseCase;
 
@@ -16,16 +15,15 @@ class FeedbackCubit extends Cubit<FeedbackState>
       usecase: () => _getUserFeedbacksUseCase(),
       buildLoadingState: () => state.copyWith(status: FeedbackStatus.loading),
       onFailure: (error) {
-        emit(state.copyWith(
-          status: FeedbackStatus.failure,
-          errorMessage: error,
-        ));
+        emit(state.copyWith(status: FeedbackStatus.failure, errorMessage: error));
       },
       onSuccess: (item) {
-        emit(state.copyWith(
-          status: FeedbackStatus.success,
-          userFeedback: item,
-        ));
+        emit(
+          state.copyWith(
+            status: FeedbackStatus.success,
+            userFeedback: item,
+          ),
+        );
       },
     );
   }
@@ -35,19 +33,16 @@ class FeedbackCubit extends Cubit<FeedbackState>
       usecase: () => _updateUserFeedbackUseCase(entity),
       buildLoadingState: () => state.copyWith(status: FeedbackStatus.loading),
       onFailure: (error) {
-        emit(state.copyWith(
-          status: FeedbackStatus.failure,
-          errorMessage: error,
-        ));
+        emit(state.copyWith(status: FeedbackStatus.failure, errorMessage: error));
       },
       onSuccess: (_) {
-        emit(state.copyWith(
-          status: FeedbackStatus.success,
-          userFeedback: entity,
-        ));
+        emit(
+          state.copyWith(
+            status: FeedbackStatus.success,
+            userFeedback: entity,
+          ),
+        );
       },
     );
   }
 }
-
-

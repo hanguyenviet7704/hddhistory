@@ -12,7 +12,5 @@ abstract class FeedbackState with _$FeedbackState {
 
   factory FeedbackState.initial() => FeedbackState();
 
-  factory FeedbackState.fromJson(Map<String, dynamic> json) =>
-      _$FeedbackStateFromJson(json);
+  factory FeedbackState.fromJson(Map<String, dynamic> json) => _$FeedbackStateFromJson(json);
 }
-
