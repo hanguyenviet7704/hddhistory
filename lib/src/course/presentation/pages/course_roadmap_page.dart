@@ -34,7 +34,6 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.read<PageCubit>().state.currentRouteName == RouteNamed.courseRoadmap) {
         _trackRoadmapScrView();
-        _tryShowRoleplayIncompleteFeedback(context.read<FeedbackCubit>().state);
       }
     });
   }
@@ -83,16 +82,9 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
           listener: (context, state) {
             if (state.currentRouteName == RouteNamed.courseRoadmap) {
               _trackRoadmapScrView();
-              _tryShowRoleplayIncompleteFeedback(context.read<FeedbackCubit>().state);
               return;
             }
             _hasTrackedForVisibility = false;
-          },
-        ),
-        BlocListener<FeedbackCubit, FeedbackState>(
-          listenWhen: (previous, current) => previous.pendingFeedbackIncompletePrompt != current.pendingFeedbackIncompletePrompt || previous.status != current.status,
-          listener: (context, state) {
-            _tryShowRoleplayIncompleteFeedback(state);
           },
         ),
         BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
@@ -100,6 +92,12 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
           listener: (context, state) {
             _hasTrackedForVisibility = false;
             _trackRoadmapScrView();
+          },
+        ),
+        BlocListener<FeedbackCubit, FeedbackState>(
+          listenWhen: (previous, current) => previous.pendingFeedbackIncompletePrompt != current.pendingFeedbackIncompletePrompt || previous.status != current.status,
+          listener: (context, state) {
+            _tryShowRoleplayIncompleteFeedback(state);
           },
         ),
       ],

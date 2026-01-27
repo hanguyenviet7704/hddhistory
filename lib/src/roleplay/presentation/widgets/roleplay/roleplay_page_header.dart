@@ -46,21 +46,22 @@ class _RoleplayBackButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return IconButton(
       onPressed: () {
+        final roleplayState = AppDI.injector.get<RoleplayCubit>().state;
         final trackingData = RoleplayTrackingData.fromContext();
+        AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
         if (trackingData != null) {
           AppService.instance.appTrackingService.trackRoleplayConvExitClick(trackingData);
-          context.read<FeedbackCubit>().setIncompleteFeedbackPrompt(
-            entry: FeedbackEntry.roleplay,
-            courseId: trackingData.course.id,
-            lessonId: trackingData.lesson.id,
-            keypointId: trackingData.learningItem.keypointId,
-          );
-          context.read<FeedbackCubit>()
-            ..setActiveEntry(FeedbackEntry.roleplay)
-            ..loadUserFeedbacks();
         }
-        AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
+        final courseId = trackingData?.course.id ?? roleplayState.currentLesson.courseId;
+        final lessonId = trackingData?.lesson.id ?? roleplayState.currentLesson.id;
+        context.read<FeedbackCubit>().setIncompleteFeedbackPrompt(
+          entry: FeedbackEntry.roleplay,
+          courseId: courseId,
+          lessonId: lessonId,
+        );
+
         CourseRoadmapRoute().go(context);
+        context.read<FeedbackCubit>().loadUserFeedbacks();
       },
       icon: Icon(
         FontAwesomeIcons.xmark,

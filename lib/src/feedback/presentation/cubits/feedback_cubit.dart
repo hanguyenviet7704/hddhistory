@@ -80,9 +80,9 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
     required FeedbackEntry entry,
     required String courseId,
     required String lessonId,
-    required String keypointId,
+    String keypointId = '',
   }) {
-    if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
+    if (courseId.isEmpty || lessonId.isEmpty) return;
     emit(
       state.copyWith(
         activeCourseId: courseId,
