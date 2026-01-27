@@ -879,6 +879,22 @@ final class AppTrackingService extends ITrackingService {
     );
   }
 
+  @override
+  Future<void> trackKeypointPopupNavView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointPopupNavView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointPopupNavContinue(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointPopupNavContinue,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
   //* Roleplay events
   @override
   Future<void> trackRoleplayInfoScrView(RoleplayTrackingData trackingData) async {

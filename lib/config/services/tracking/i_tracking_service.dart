@@ -150,6 +150,8 @@ abstract interface class ITrackingService {
     KeypointTrackingData trackingData, {
     required String option,
   });
+  Future<void> trackKeypointPopupNavView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointPopupNavContinue(KeypointTrackingData trackingData);
 
   //* Roleplay events
   Future<void> trackRoleplayInfoScrView(RoleplayTrackingData trackingData);

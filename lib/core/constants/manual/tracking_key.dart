@@ -112,6 +112,8 @@ mixin TrackingKey {
   static const String keypointExitClick = 'keypoint_exit_click';
   static const String keypointExitPopupView = 'keypoint_exit_popup_view';
   static const String keypointExitPopupClick = 'keypoint_exit_popup_click';
+  static const String keypointPopupNavView = 'keypoint_popup_nav_view';
+  static const String keypointPopupNavContinue = 'keypoint_popup_nav_continue';
 
   //* Roleplay events
   static const String roleplayInfoScrView = 'roleplay_info_scr_view';
