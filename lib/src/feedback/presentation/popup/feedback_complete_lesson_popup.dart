@@ -37,8 +37,11 @@ class FeedbackCompleteLessonPopup extends StatefulWidget {
           opacity: animation,
           child: ScaleTransition(
             scale: CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
-            child: BlocProvider.value(
-              value: AppDI.injector.get<FeedbackCubit>(),
+            child: MultiBlocProvider(
+              providers: [
+                BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
+                BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+              ],
               child: const FeedbackCompleteLessonPopup(),
             ),
           ),

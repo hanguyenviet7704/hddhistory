@@ -57,6 +57,7 @@ class RoleplayFeedbackRoute extends BaseTransitionRouteData with $RoleplayFeedba
     providers: [
       BlocProvider.value(value: AppDI.injector.get<RoleplayCubit>()),
       BlocProvider.value(value: AppDI.injector.get<RoleplayPointCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
       BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
     ],
     child: const RoleplayFeedbackPage(),

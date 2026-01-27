@@ -36,7 +36,7 @@ extension FeedbackStateExtension on FeedbackState {
   }
 
   bool get feedbackIncompleteCanSubmit {
-    return draftReasons.isNotEmpty && draftComment.isNotEmpty && !isLoading;
+    return (draftReasons.isNotEmpty || draftComment.trim().isNotEmpty) && !isLoading;
   }
 
   String get pageRouteName {

@@ -70,6 +70,8 @@ class KeypointCompleteRoute extends BaseTransitionRouteData with $KeypointComple
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
     ],
     child: const KeypointCompletePage(),
   );
@@ -88,6 +90,7 @@ class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRo
       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
       BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
     ],
     child: const LessonCompletePage(),
   );
