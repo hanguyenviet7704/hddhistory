@@ -210,6 +210,24 @@ abstract interface class ITrackingService {
   Future<void> trackRoleplayResultContinue(RoleplayTrackingData trackingData);
   Future<void> trackBadgeCompleteScrView({RoleplayTrackingData? trackingData});
 
+  //* Feedback events
+  Future<void> trackFeedbackCompleteLessonView(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
+  Future<void> trackFeedbackCompleteLessonSend(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
+  Future<void> trackFeedbackIncompleteLessonView(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
+  Future<void> trackFeedbackIncompleteLessonSend(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
+
   //* Paywall events
   Future<void> trackPaywallScrView(BuildContext context);
   Future<void> trackPaywallPackageClick(BuildContext context, String packageId);

@@ -17,6 +17,13 @@ class FeedbackCompleteLessonPopup extends StatefulWidget {
       lessonId: lessonId,
       keypointId: keypointId,
     );
+    final trackingData = _feedbackCourseTrackingData(context, courseId);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackFeedbackCompleteLessonView(
+        trackingData,
+        source: _feedbackSourceFromEntry(entry),
+      );
+    }
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: false,
@@ -137,6 +144,13 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                             onTap: () {
                               if (!state.canSubmit) return;
 
+                              final trackingData = _feedbackCourseTrackingData(context, state.activeCourseId);
+                              if (trackingData != null) {
+                                AppService.instance.appTrackingService.trackFeedbackCompleteLessonSend(
+                                  trackingData,
+                                  source: _feedbackSourceFromEntry(state.activeEntry),
+                                );
+                              }
                               _submitted = true;
                               context.read<FeedbackCubit>().submitFeedback();
                             },
@@ -153,4 +167,13 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
       ),
     );
   }
+}
+
+CourseTrackingData? _feedbackCourseTrackingData(BuildContext context, String courseId) {
+  if (courseId.isEmpty) return null;
+  return CourseTrackingData.fromCourseId(context, courseId);
+}
+
+String _feedbackSourceFromEntry(FeedbackEntry entry) {
+  return entry == FeedbackEntry.roleplay ? 'roleplay' : 'keypoint';
 }

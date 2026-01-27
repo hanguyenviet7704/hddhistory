@@ -17,6 +17,13 @@ class FeedbackIncompleteLessonPopup extends StatefulWidget {
       lessonId: lessonId,
       keypointId: keypointId,
     );
+    final trackingData = _feedbackCourseTrackingData(context, courseId);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackFeedbackIncompleteLessonView(
+        trackingData,
+        source: _feedbackSourceFromEntry(entry),
+      );
+    }
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -133,6 +140,13 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                             enabled: canSubmit,
                             onTap: () {
                               if (!canSubmit) return;
+                              final trackingData = _feedbackCourseTrackingData(context, state.activeCourseId);
+                              if (trackingData != null) {
+                                AppService.instance.appTrackingService.trackFeedbackIncompleteLessonSend(
+                                  trackingData,
+                                  source: _feedbackSourceFromEntry(state.activeEntry),
+                                );
+                              }
                               _submitted = true;
                               cubit.submitFeedback();
                             },

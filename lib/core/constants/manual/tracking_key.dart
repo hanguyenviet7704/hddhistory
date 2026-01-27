@@ -151,6 +151,12 @@ mixin TrackingKey {
   static const String roleplayResultContinue = 'roleplay_result_continue';
   static const String badgeCompleteScrView = 'badge_complete_scr_view';
 
+  //* Feedback events
+  static const String feedbackCompleteLessonView = 'feedback_complete_lesson_view';
+  static const String feedbackCompleteLessonSend = 'feedback_complete_lesson_send';
+  static const String feedbackIncompleteLessonView = 'feedback_incomplete_lesson_view';
+  static const String feedbackIncompleteLessonSend = 'feedback_incomplete_lesson_send';
+
   //* Profile screen events
   static const String profileView = 'profile_view';
   static const String profileLanguageView = 'profile_language_view';
