@@ -8,10 +8,16 @@ import { LangCode } from "../../types/enum/common.enum";
 import { LessonType } from "../../types/enum/lesson.enum";
 import { GradeResultType } from "../../types/enum/user-progress.enum";
 import { userProgressService } from "../../services/userProgressService";
+import { userFeedbackService } from "../../services/userFeedbackService";
 import {
   ICourseProgressSummary,
   IStopAtDetail,
 } from "../../types/interface/user-progress.interface";
+import {
+  IUserFeedback,
+  IUserFeedbackComplete,
+  IUserFeedbackIncomplete,
+} from "../../types/interface/user-feedback.interface";
 import { getTranslationValue } from "../../utils/translation";
 import { useNotification } from "../../utils/hooks/useNotification";
 
@@ -98,6 +104,136 @@ const getStopAtLabel = (stopAt: IStopAtDetail | undefined, lang: LangCode) => {
   return parts.length ? parts.join(" - ") : "-";
 };
 
+const renderStars = (value?: number) => {
+  if (value === undefined || value === null) return "-";
+  const safe = Math.max(0, Math.min(5, Math.round(value)));
+  return "★".repeat(safe) + "☆".repeat(5 - safe);
+};
+
+const renderFeedbackDetail = (
+  label: string,
+  lang: LangCode,
+  feedback?: IUserFeedbackComplete | IUserFeedbackIncomplete,
+  type: "complete" | "incomplete" = "complete"
+) => {
+  if (!feedback) return null;
+  const lessonTitle = getTranslationValue(feedback.lessonTitle, lang);
+  const keypointTitle = getTranslationValue(feedback.keypointTitle, lang);
+  const isComplete = type === "complete";
+  const complete = feedback as IUserFeedbackComplete;
+  const incomplete = feedback as IUserFeedbackIncomplete;
+
+  return (
+    <div className="border border-gray-100 rounded-lg p-3 bg-gray-50/60">
+      <div className="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-2">
+        {label}
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-xs text-gray-700">
+        <div className="flex items-start gap-2">
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold uppercase tracking-wide">
+            Course
+          </span>
+          <span className="font-medium text-gray-900">
+            {getTranslationValue(feedback.courseTitle, lang) ||
+              feedback.courseId ||
+              "-"}
+          </span>
+        </div>
+        <div className="flex items-start gap-2">
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold uppercase tracking-wide">
+            Lesson
+          </span>
+          <span className="font-medium text-gray-900">
+            {lessonTitle || feedback.lessonId || "-"}
+          </span>
+        </div>
+        <div className="flex items-start gap-2">
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold uppercase tracking-wide">
+            Keypoint
+          </span>
+          <span className="font-medium text-gray-900">
+            {keypointTitle || feedback.keypointId || "-"}
+          </span>
+        </div>
+        <div className="flex items-start gap-2">
+          <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold uppercase tracking-wide">
+            Submitted
+          </span>
+          <span className="font-medium text-gray-900">
+            {formatDate(feedback.submittedAt)}
+          </span>
+        </div>
+        {isComplete ? (
+          <>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold uppercase tracking-wide">
+                Overall
+              </span>
+              <span className="font-medium text-gray-900">
+                {renderStars(complete.overallRating)}
+              </span>
+              <span className="text-gray-400">
+                ({complete.overallRating ?? "-"})
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold uppercase tracking-wide">
+                Content
+              </span>
+              <span className="font-medium text-gray-900">
+                {renderStars(complete.contentRating)}
+              </span>
+              <span className="text-gray-400">
+                ({complete.contentRating ?? "-"})
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-semibold uppercase tracking-wide">
+                Experience
+              </span>
+              <span className="font-medium text-gray-900">
+                {renderStars(complete.experienceRating)}
+              </span>
+              <span className="text-gray-400">
+                ({complete.experienceRating ?? "-"})
+              </span>
+            </div>
+            <div className="flex items-start gap-2 md:col-span-2">
+              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold uppercase tracking-wide">
+                Comment
+              </span>
+              <span className="font-medium text-gray-900">
+                {complete.comment || "-"}
+              </span>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="flex items-start gap-2 md:col-span-2">
+              <span className="px-2 py-0.5 rounded-full bg-rose-100 text-rose-700 text-[10px] font-semibold uppercase tracking-wide">
+                Reasons
+              </span>
+              <span className="font-medium text-gray-900">
+                {incomplete.reasons?.length
+                  ? incomplete.reasons.join(", ")
+                  : "-"}
+              </span>
+            </div>
+            <div className="flex items-start gap-2 md:col-span-2">
+              <span className="px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-semibold uppercase tracking-wide">
+                Comment
+              </span>
+              <span className="font-medium text-gray-900">
+                {incomplete.comment || "-"}
+              </span>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
 export default function UserProgressSummaryList() {
   const { userId = "" } = useParams();
   const navigate = useNavigate();
@@ -109,6 +245,8 @@ export default function UserProgressSummaryList() {
 
   const [items, setItems] = useState<ICourseProgressSummary[]>([]);
   const [loading, setLoading] = useState(false);
+  const [feedbackLoading, setFeedbackLoading] = useState(false);
+  const [feedbackList, setFeedbackList] = useState<IUserFeedback[]>([]);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [confirmCourseId, setConfirmCourseId] = useState<string | null>(null);
@@ -148,10 +286,63 @@ export default function UserProgressSummaryList() {
     [showError, userId]
   );
 
+  const fetchFeedback = useCallback(async () => {
+    if (!userId) {
+      setFeedbackList([]);
+      return;
+    }
+    setFeedbackLoading(true);
+    try {
+      const res = await userFeedbackService.getByUserId(userId);
+      const payload = (res as any)?.data ?? res;
+      const list = Array.isArray(payload) ? payload : payload ? [payload] : [];
+      setFeedbackList(list);
+    } catch (error) {
+      console.error("Failed to fetch user feedback", error);
+      showError("Không tải được feedback");
+      setFeedbackList([]);
+    } finally {
+      setFeedbackLoading(false);
+    }
+  }, [showError, userId]);
+
+  const feedbackByCourse = React.useMemo(() => {
+    const map = new Map<string, IUserFeedback>();
+    const upsert = (
+      courseId: string | undefined,
+      userIdValue: string | undefined,
+      patch: Partial<IUserFeedback>
+    ) => {
+      if (!courseId) return;
+      const current = map.get(courseId) || { userId: userIdValue || "" };
+      map.set(courseId, { ...current, ...patch });
+    };
+
+    feedbackList.forEach((fb) => {
+      upsert(fb.roleplayComplete?.courseId, fb.userId, {
+        roleplayComplete: fb.roleplayComplete,
+      });
+      upsert(fb.roleplayIncomplete?.courseId, fb.userId, {
+        roleplayIncomplete: fb.roleplayIncomplete,
+      });
+      upsert(fb.keypointComplete?.courseId, fb.userId, {
+        keypointComplete: fb.keypointComplete,
+      });
+      upsert(fb.keypointIncomplete?.courseId, fb.userId, {
+        keypointIncomplete: fb.keypointIncomplete,
+      });
+    });
+
+    return map;
+  }, [feedbackList]);
+
   useEffect(() => {
     fetchProgress(page);
   }, [fetchProgress, page]);
 
+  useEffect(() => {
+    fetchFeedback();
+  }, [fetchFeedback]);
 
   const handleRemoveCourse = async () => {
     if (!confirmCourseId) return;
@@ -362,6 +553,79 @@ export default function UserProgressSummaryList() {
               shape="rounded"
             />
           </div>
+        </div>
+
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+          <h2 className="text-lg font-semibold text-gray-900 mb-3">
+            Feedback
+          </h2>
+          {feedbackLoading ? (
+            <div className="py-6 text-center text-gray-500">
+              Đang tải feedback...
+            </div>
+          ) : feedbackByCourse.size === 0 ? (
+            <div className="py-6 text-center text-gray-500">
+              Chưa có feedback.
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {Array.from(feedbackByCourse.entries()).map(
+                ([courseId, feedback]) => {
+                  const courseTitle =
+                    feedback.roleplayComplete?.courseTitle ||
+                    feedback.roleplayIncomplete?.courseTitle ||
+                    feedback.keypointComplete?.courseTitle ||
+                    feedback.keypointIncomplete?.courseTitle;
+                  const title =
+                    getTranslationValue(courseTitle, lang) ||
+                    courseId ||
+                    "-";
+                  return (
+                    <div
+                      key={courseId}
+                      className="border border-gray-200 rounded-lg p-4"
+                    >
+                      <div className="flex flex-col gap-1 mb-2">
+                        <div
+                          className="font-semibold text-gray-900 truncate"
+                          title={title}
+                        >
+                          {title}
+                        </div>
+                        <div className="text-xs text-gray-400">{courseId}</div>
+                      </div>
+                      <div className="space-y-1">
+                        {renderFeedbackDetail(
+                          "Roleplay hoàn thành",
+                          lang,
+                          feedback.roleplayComplete,
+                          "complete"
+                        )}
+                        {renderFeedbackDetail(
+                          "Roleplay bỏ dở",
+                          lang,
+                          feedback.roleplayIncomplete,
+                          "incomplete"
+                        )}
+                        {renderFeedbackDetail(
+                          "Keypoint hoàn thành",
+                          lang,
+                          feedback.keypointComplete,
+                          "complete"
+                        )}
+                        {renderFeedbackDetail(
+                          "Keypoint bỏ dở",
+                          lang,
+                          feedback.keypointIncomplete,
+                          "incomplete"
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          )}
         </div>
 
         {confirmCourseId && (

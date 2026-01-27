@@ -16,6 +16,7 @@ import { LessonType } from "../../types/enum/lesson.enum";
 import { CourseLevel } from "../../types/enum/course.enum";
 import {
   getTranslationValue,
+  getCurrentTranslationValue,
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
@@ -37,7 +38,7 @@ const levelBadgeClass = (level: CourseLevel) => {
   }
 };
 
-type FieldKey = "entrance" | "lessons" | "output";
+type FieldKey = "roleplay" | "lessons" | "output";
 
 // Reusable icon-only button
 const IconButton: React.FC<
@@ -77,7 +78,7 @@ const RoadmapPage: React.FC = () => {
     Record<number, string>
   >({});
   const [newBadgeTitleError, setNewBadgeTitleError] = useState<string | null>(
-    null
+    null,
   );
   const [badgeUploading, setBadgeUploading] = useState<{
     levelIndex: number;
@@ -93,6 +94,7 @@ const RoadmapPage: React.FC = () => {
     levelIndex: number;
   }>({ on: false, levelIndex: -1 });
   const [newNodeTitle, setNewNodeTitle] = useState("");
+  const [newNodeDescription, setNewNodeDescription] = useState("");
   const [titleError, setTitleError] = useState("");
 
   // Modal edit for picking lessons
@@ -138,6 +140,10 @@ const RoadmapPage: React.FC = () => {
           lightBadge: level.lightBadge || (level as any).badge || "",
           darkBadge: level.darkBadge || "",
           titleBadge: level.titleBadge || {},
+          nodes: (level.nodes || []).map((node) => ({
+            ...node,
+            roleplay: node.roleplay ?? (node as any).entrance ?? null,
+          })),
         }));
         setRoadmap({ ...data, levels: normalizedLevels });
       } catch (e) {
@@ -151,37 +157,40 @@ const RoadmapPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [courseId]);
 
-  const fetchLessonsByType = useCallback(async (type: LessonType, search = "") => {
-    try {
-      setLoadingLessons(true);
-      const normalizedSearch = search.trim();
-      const res = await lessonService.getList({
-        courseId,
-        type,
-        search: normalizedSearch,
-      });
-      const items: ILessonBrief[] = res.data?.items || [];
-      if (!normalizedSearch) {
-        switch (type) {
-          case LessonType.ROLEPLAY:
-            setEntranceLessons(items);
-            break;
-          case LessonType.OUTPUT:
-            setOutputLessons(items);
-            break;
-          case LessonType.LESSON:
-            setLessonLessons(items);
-            break;
+  const fetchLessonsByType = useCallback(
+    async (type: LessonType, search = "") => {
+      try {
+        setLoadingLessons(true);
+        const normalizedSearch = search.trim();
+        const res = await lessonService.getList({
+          courseId,
+          type,
+          search: normalizedSearch,
+        });
+        const items: ILessonBrief[] = res.data?.items || [];
+        if (!normalizedSearch) {
+          switch (type) {
+            case LessonType.ROLEPLAY:
+              setEntranceLessons(items);
+              break;
+            case LessonType.OUTPUT:
+              setOutputLessons(items);
+              break;
+            case LessonType.LESSON:
+              setLessonLessons(items);
+              break;
+          }
         }
+        return items;
+      } catch (e) {
+        console.error(e);
+        return [];
+      } finally {
+        setLoadingLessons(false);
       }
-      return items;
-    } catch (e) {
-      console.error(e);
-      return [];
-    } finally {
-      setLoadingLessons(false);
-    }
-  }, [courseId]);
+    },
+    [courseId],
+  );
 
   const editingField = editingNode?.field;
 
@@ -189,27 +198,27 @@ const RoadmapPage: React.FC = () => {
     if (!editingField) return;
     const normalizedSearch = searchTerm.trim();
     const type =
-      editingField === "entrance"
+      editingField === "roleplay"
         ? LessonType.ROLEPLAY
         : editingField === "output"
-        ? LessonType.OUTPUT
-        : LessonType.LESSON;
+          ? LessonType.OUTPUT
+          : LessonType.LESSON;
     let isActive = true;
     const timer = setTimeout(() => {
       const applyList = (items: ILessonBrief[]) => {
         if (!isActive) return;
         setEditingNode((prev) =>
-          prev ? { ...prev, lessonList: items } : prev
+          prev ? { ...prev, lessonList: items } : prev,
         );
       };
 
       if (!normalizedSearch) {
         const cached =
-          editingField === "entrance"
+          editingField === "roleplay"
             ? entranceLessons
             : editingField === "output"
-            ? outputLessons
-            : lessonLessons;
+              ? outputLessons
+              : lessonLessons;
         if (cached.length) {
           applyList(cached);
           return;
@@ -242,7 +251,7 @@ const RoadmapPage: React.FC = () => {
 
   const usedLevels = useMemo(
     () => new Set(roadmap?.levels?.map((lvl) => lvl.level) || []),
-    [roadmap]
+    [roadmap],
   );
 
   const handleCreateLevel = () => {
@@ -284,7 +293,7 @@ const RoadmapPage: React.FC = () => {
   const handleDeleteLevel = () => {
     if (!roadmap || deleteLevel.levelIndex < 0) return;
     const newLevels = roadmap.levels.filter(
-      (_, idx) => idx !== deleteLevel.levelIndex
+      (_, idx) => idx !== deleteLevel.levelIndex,
     );
     setRoadmap({ ...roadmap, levels: newLevels });
     setDeleteLevel({ show: false, levelIndex: -1 });
@@ -293,11 +302,11 @@ const RoadmapPage: React.FC = () => {
   const handleLevelBadgeChange = (
     levelIndex: number,
     badgeType: "lightBadge" | "darkBadge",
-    url: string
+    url: string,
   ) => {
     if (!roadmap) return;
     const updatedLevels = roadmap.levels.map((level, idx) =>
-      idx === levelIndex ? { ...level, [badgeType]: url } : level
+      idx === levelIndex ? { ...level, [badgeType]: url } : level,
     );
     setRoadmap({ ...roadmap, levels: updatedLevels });
   };
@@ -310,7 +319,7 @@ const RoadmapPage: React.FC = () => {
             ...level,
             titleBadge: updateTranslationValue(level.titleBadge, lang, value),
           }
-        : level
+        : level,
     );
     setRoadmap({ ...roadmap, levels: updatedLevels });
     if (value?.trim()) {
@@ -325,7 +334,7 @@ const RoadmapPage: React.FC = () => {
   const handleLevelBadgeUpload = async (
     levelIndex: number,
     badgeType: "lightBadge" | "darkBadge",
-    file: File
+    file: File,
   ) => {
     try {
       setBadgeUploading({ levelIndex, badgeType });
@@ -339,7 +348,7 @@ const RoadmapPage: React.FC = () => {
     } catch (e: any) {
       console.error(e);
       showError(
-        e?.response?.data?.message || "Tải badge thất bại, vui lòng thử lại."
+        e?.response?.data?.message || "Tải badge thất bại, vui lòng thử lại.",
       );
     } finally {
       setBadgeUploading(null);
@@ -348,7 +357,7 @@ const RoadmapPage: React.FC = () => {
 
   const handleNewLevelBadgeUpload = async (
     badgeType: "lightBadge" | "darkBadge",
-    file: File
+    file: File,
   ) => {
     try {
       setNewBadgeUploading(badgeType);
@@ -363,7 +372,7 @@ const RoadmapPage: React.FC = () => {
     } catch (e: any) {
       console.error(e);
       showError(
-        e?.response?.data?.message || "Tải badge thất bại, vui lòng thử lại."
+        e?.response?.data?.message || "Tải badge thất bại, vui lòng thử lại.",
       );
     } finally {
       setNewBadgeUploading(null);
@@ -373,6 +382,7 @@ const RoadmapPage: React.FC = () => {
   // ---------- Node actions ----------
   const openCreateNode = async (levelIndex: number) => {
     setTitleError("");
+    setNewNodeDescription("");
     if (!entranceLessons.length) await fetchLessonsByType(LessonType.ROLEPLAY);
     if (!outputLessons.length) await fetchLessonsByType(LessonType.OUTPUT);
     setIsCreatingNode({ on: true, levelIndex });
@@ -391,10 +401,13 @@ const RoadmapPage: React.FC = () => {
 
     const newNode: IRoadmapNode = {
       title: updateTranslationValue(undefined, lang, newNodeTitle),
-      entranceId: "",
+      description: newNodeDescription.trim()
+        ? updateTranslationValue(undefined, lang, newNodeDescription)
+        : undefined,
+      roleplayId: "",
       lessonIds: [],
       outputId: "",
-      entrance: null,
+      roleplay: null,
       lessons: [],
       output: null,
     };
@@ -408,6 +421,7 @@ const RoadmapPage: React.FC = () => {
     setRoadmap({ ...roadmap, levels: newLevels });
     setIsCreatingNode({ on: false, levelIndex: -1 });
     setNewNodeTitle("");
+    setNewNodeDescription("");
   };
 
   const confirmDeleteNode = () => {
@@ -425,10 +439,10 @@ const RoadmapPage: React.FC = () => {
   const handleEditClick = async (
     levelIndex: number,
     nodeIndex: number,
-    field: FieldKey
+    field: FieldKey,
   ) => {
     let lessonList: ILessonBrief[] = [];
-    if (field === "entrance") {
+    if (field === "roleplay") {
       lessonList = entranceLessons.length
         ? entranceLessons
         : await fetchLessonsByType(LessonType.ROLEPLAY);
@@ -454,16 +468,16 @@ const RoadmapPage: React.FC = () => {
       currentValues:
         field === "lessons"
           ? [...(node.lessonIds || [])]
-          : field === "entrance"
-          ? node.entranceId
-          : node.outputId,
+          : field === "roleplay"
+            ? node.roleplayId
+            : node.outputId,
     });
   };
 
   const applyNodeUpdate = (
     levelIndex: number,
     nodeIndex: number,
-    updater: (node: IRoadmapNode) => IRoadmapNode
+    updater: (node: IRoadmapNode) => IRoadmapNode,
   ) => {
     if (!roadmap) return;
     const newLevels = [...roadmap.levels];
@@ -503,12 +517,17 @@ const RoadmapPage: React.FC = () => {
           .filter(Boolean) as ILessonBrief[],
       }));
     } else {
-      const selected = lessonList.find((l) => l._id === lessonId) || null;
-      if (field === "entrance") {
+      const selected =
+        lessonList.find((l) => l._id === lessonId) ||
+        (field === "roleplay"
+          ? entranceLessons.find((l) => l._id === lessonId)
+          : outputLessons.find((l) => l._id === lessonId)) ||
+        null;
+      if (field === "roleplay") {
         applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
           ...node,
-          entranceId: selected?._id || "",
-          entrance: selected,
+          roleplayId: selected?._id || "",
+          roleplay: selected,
         }));
       } else if (field === "output") {
         applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
@@ -536,7 +555,7 @@ const RoadmapPage: React.FC = () => {
     const hasDuplicateLevel = new Set(levelLabels).size !== levelLabels.length;
     if (hasDuplicateLevel) {
       showError(
-        "Roadmap đang có level trùng nhau. Vui lòng điều chỉnh trước khi lưu."
+        "Roadmap đang có level trùng nhau. Vui lòng điều chỉnh trước khi lưu.",
       );
       return;
     }
@@ -564,8 +583,9 @@ const RoadmapPage: React.FC = () => {
         titleBadge: cleanTranslation(level.titleBadge),
         nodes: level.nodes.map((n) => {
           const cleanedTitle = cleanTranslation(n.title);
+          const cleanedDescription = cleanTranslation(n.description);
           const nodePayload: any = {
-            entranceId: n.entranceId || "",
+            roleplayId: n.roleplayId || "",
             lessonIds: n.lessonIds || [],
             outputId: n.outputId || "",
           };
@@ -573,6 +593,9 @@ const RoadmapPage: React.FC = () => {
           // Only include title if it has values
           if (cleanedTitle) {
             nodePayload.title = cleanedTitle;
+          }
+          if (cleanedDescription) {
+            nodePayload.description = cleanedDescription;
           }
 
           return nodePayload;
@@ -590,9 +613,7 @@ const RoadmapPage: React.FC = () => {
   };
 
   // ---------- Render helpers ----------
-  const handleLessonNavigate = (
-    lesson: ILessonBrief | null | undefined
-  ) => {
+  const handleLessonNavigate = (lesson: ILessonBrief | null | undefined) => {
     if (!lesson?._id) return;
     switch (lesson.type) {
       case LessonType.ROLEPLAY:
@@ -608,7 +629,7 @@ const RoadmapPage: React.FC = () => {
 
   const renderLessonBadge = (
     lesson: ILessonBrief | null | undefined,
-    options: { clickable?: boolean } = {}
+    options: { clickable?: boolean } = {},
   ) => {
     if (!lesson)
       return <div className="text-gray-500 italic">Chưa chọn bài học</div>;
@@ -657,11 +678,11 @@ const RoadmapPage: React.FC = () => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
           <h3 className="text-xl font-bold mb-4">
-            {field === "entrance"
+            {field === "roleplay"
               ? "Chọn Bài Đầu Vào"
               : field === "output"
-              ? "Chọn Bài Kết Thúc"
-              : "Chọn Bài Học"}
+                ? "Chọn Bài Kết Thúc"
+                : "Chọn Bài Học"}
           </h3>
           <div className="mb-4">
             <input
@@ -866,7 +887,7 @@ const RoadmapPage: React.FC = () => {
                                 handleLevelBadgeUpload(
                                   levelIndex,
                                   badgeType,
-                                  file
+                                  file,
                                 );
                                 e.target.value = "";
                               }}
@@ -914,9 +935,32 @@ const RoadmapPage: React.FC = () => {
                   ) : (
                     level.nodes.map((node, nodeIndex) => {
                       const isLeft = nodeIndex % 2 === 0;
-                      const nodeTitle =
-                        getTranslationValue(node.title, lang) ||
-                        "Node chưa đặt tên";
+                      const nodeTitleValue = getCurrentTranslationValue(
+                        node.title,
+                        lang,
+                      );
+                      const nodeTitleTooltip =
+                        nodeTitleValue.length > 80 ? nodeTitleValue : "";
+                      const nodeDescriptionValue = getCurrentTranslationValue(
+                        node.description,
+                        lang,
+                      );
+                      const nodeDescriptionTooltip =
+                        nodeDescriptionValue.length > 80
+                          ? nodeDescriptionValue
+                          : "";
+                      const nodeRoleplay =
+                        node.roleplay ||
+                        entranceLessons.find(
+                          (lesson) => lesson._id === node.roleplayId,
+                        ) ||
+                        null;
+                      const nodeOutput =
+                        node.output ||
+                        outputLessons.find(
+                          (lesson) => lesson._id === node.outputId,
+                        ) ||
+                        null;
                       return (
                         <div
                           key={`node-${levelIndex}-${nodeIndex}`}
@@ -941,10 +985,33 @@ const RoadmapPage: React.FC = () => {
                                 isLeft ? "mr-auto" : "ml-auto"
                               }`}
                             >
-                              <div className="flex justify-between items-start mb-4">
-                                <h3 className="text-lg font-semibold">
-                                  {nodeTitle}
-                                </h3>
+                              <h2 className="block text-sm font-medium text-gray-700 mb-1">
+                                Node
+                              </h2>
+                              <div className="flex items-start gap-3 mb-4">
+                                <div className="flex-1">
+                                  <input
+                                    type="text"
+                                    className="w-full px-3 py-2 border rounded-lg text-sm"
+                                    placeholder="Nhập tiêu đề node"
+                                    value={nodeTitleValue}
+                                    title={nodeTitleTooltip}
+                                    onChange={(e) =>
+                                      applyNodeUpdate(
+                                        levelIndex,
+                                        nodeIndex,
+                                        (current) => ({
+                                          ...current,
+                                          title: updateTranslationValue(
+                                            current.title,
+                                            lang,
+                                            e.target.value,
+                                          ),
+                                        }),
+                                      )
+                                    }
+                                  />
+                                </div>
                                 {/* Delete node - icon only */}
                                 <IconButton
                                   onClick={() =>
@@ -977,6 +1044,29 @@ const RoadmapPage: React.FC = () => {
                               </div>
 
                               <div className="space-y-4">
+                                <div>
+                                  <textarea
+                                    rows={2}
+                                    className="w-full px-3 py-2 border rounded-lg text-sm resize-none"
+                                    placeholder="Nhập mô tả node"
+                                    value={nodeDescriptionValue}
+                                    title={nodeDescriptionTooltip}
+                                    onChange={(e) =>
+                                      applyNodeUpdate(
+                                        levelIndex,
+                                        nodeIndex,
+                                        (current) => ({
+                                          ...current,
+                                          description: updateTranslationValue(
+                                            current.description,
+                                            lang,
+                                            e.target.value,
+                                          ),
+                                        }),
+                                      )
+                                    }
+                                  />
+                                </div>
                                 <div className="border-l-4 border-blue-500 pl-4">
                                   <div className="flex justify-between items-center mb-2">
                                     <h4 className="font-medium text-gray-700">
@@ -988,14 +1078,14 @@ const RoadmapPage: React.FC = () => {
                                         handleEditClick(
                                           levelIndex,
                                           nodeIndex,
-                                          "entrance"
+                                          "roleplay",
                                         )
                                       }
                                     >
                                       Chỉnh sửa
                                     </button>
                                   </div>
-                                  {renderLessonBadge(node.entrance, {
+                                  {renderLessonBadge(nodeRoleplay, {
                                     clickable: true,
                                   })}
                                 </div>
@@ -1011,7 +1101,7 @@ const RoadmapPage: React.FC = () => {
                                         handleEditClick(
                                           levelIndex,
                                           nodeIndex,
-                                          "lessons"
+                                          "lessons",
                                         )
                                       }
                                     >
@@ -1032,7 +1122,7 @@ const RoadmapPage: React.FC = () => {
                                           <span className="text-sm">
                                             {getTranslationValue(
                                               l.title,
-                                              lang
+                                              lang,
                                             ) || "Bài học chưa đặt tên"}
                                           </span>
                                         </li>
@@ -1056,14 +1146,14 @@ const RoadmapPage: React.FC = () => {
                                         handleEditClick(
                                           levelIndex,
                                           nodeIndex,
-                                          "output"
+                                          "output",
                                         )
                                       }
                                     >
                                       Chỉnh sửa
                                     </button>
                                   </div>
-                                  {renderLessonBadge(node.output, {
+                                  {renderLessonBadge(nodeOutput, {
                                     clickable: true,
                                   })}
                                 </div>
@@ -1122,6 +1212,7 @@ const RoadmapPage: React.FC = () => {
                           value={newNodeTitle}
                           onChange={(e) => setNewNodeTitle(e.target.value)}
                           placeholder="Nhập tiêu đề node"
+                          title={newNodeTitle.length > 80 ? newNodeTitle : ""}
                         />
                         {titleError && (
                           <p className="text-red-500 text-sm mt-1">
@@ -1129,12 +1220,32 @@ const RoadmapPage: React.FC = () => {
                           </p>
                         )}
                       </div>
+                      <div className="mb-3">
+                        <label className="block text-gray-700 mb-2">
+                          Mô tả node
+                        </label>
+                        <textarea
+                          rows={2}
+                          className="w-full px-3 py-2 border rounded-lg resize-none"
+                          value={newNodeDescription}
+                          onChange={(e) =>
+                            setNewNodeDescription(e.target.value)
+                          }
+                          placeholder="Nhập mô tả node"
+                          title={
+                            newNodeDescription.length > 80
+                              ? newNodeDescription
+                              : ""
+                          }
+                        />
+                      </div>
                       <div className="flex justify-end">
                         <button
                           className="px-4 py-2 bg-gray-200 rounded-lg mr-2"
                           onClick={() => {
                             setIsCreatingNode({ on: false, levelIndex: -1 });
                             setTitleError("");
+                            setNewNodeDescription("");
                           }}
                         >
                           Hủy
@@ -1165,7 +1276,7 @@ const RoadmapPage: React.FC = () => {
               setNewBadgeTitleError(null);
               const availableLevel =
                 [CourseLevel.LEVEL1, CourseLevel.LEVEL2].find(
-                  (lvl) => !usedLevels.has(lvl)
+                  (lvl) => !usedLevels.has(lvl),
                 ) || CourseLevel.LEVEL1;
               setNewLevel(availableLevel);
             }}

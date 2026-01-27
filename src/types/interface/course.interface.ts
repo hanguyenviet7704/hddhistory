@@ -57,10 +57,11 @@ export class CourseListQuery extends BaseQuery {
 
 export interface IRoadmapNode {
   title: ITranslation;
-  entranceId: string;
+  description?: ITranslation;
+  roleplayId: string;
   lessonIds: string[];
   outputId: string;
-  entrance?: ILessonBrief | null;
+  roleplay?: ILessonBrief | null;
   lessons?: ILessonBrief[] | null;
   output?: ILessonBrief | null;
 }
@@ -81,7 +82,8 @@ export interface IRoadmap {
 
 export interface RoadmapNodePayload {
   title: ITranslation;
-  entranceId: string;
+  description?: ITranslation;
+  roleplayId: string;
   lessonIds: string[];
   outputId: string;
 }
