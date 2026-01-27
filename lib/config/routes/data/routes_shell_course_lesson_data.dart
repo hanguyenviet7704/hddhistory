@@ -39,6 +39,7 @@ class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
       BlocProvider.value(value: AppDI.injector.get<SpeakingCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
     ],
     child: const LessonPage(),
   );
@@ -86,6 +87,7 @@ class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRo
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
     ],
     child: const LessonCompletePage(),
   );

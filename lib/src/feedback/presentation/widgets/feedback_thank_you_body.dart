@@ -64,6 +64,7 @@ class FeedbackThankYouBody extends StatelessWidget {
                 AppText(
                   subtitle,
                   textAlign: TextAlign.center,
+                  maxLines: 2,
                   style: AppStyle.text12.copyWith(
                     color: AppCustomColor.textTertiary,
                     height: 1.75,

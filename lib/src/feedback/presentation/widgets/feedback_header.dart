@@ -17,6 +17,7 @@ class FeedbackHeader extends StatelessWidget {
         AppText(
           title,
           textAlign: TextAlign.center,
+          enableFitScaleDown: true,
           style: AppStyle.text20.copyWith(
             fontWeight: FontWeight.w700,
             color: AppCustomColor.textWhite,
@@ -28,6 +29,7 @@ class FeedbackHeader extends StatelessWidget {
           AppText(
             subtitle!,
             textAlign: TextAlign.center,
+            enableFitScaleDown: true,
             style: AppStyle.text12.copyWith(
               color: AppCustomColor.textWhite.op(0.7),
               height: 1.75,

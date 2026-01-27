@@ -70,14 +70,13 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
           final canSubmit = (state.draftReasons.isNotEmpty || state.draftComment.trim().isNotEmpty) && !isLoading;
 
           return FeedbackPopupShell(
-            onTapOutside: () => context.pop(),
+            onTapOutside: () => context.back(),
             child: Container(
-              width: 327.w,
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20.r),
                 gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+                  begin: Alignment.bottomCenter,
+                  end: Alignment.topCenter,
                   colors: [
                     AppCustomColor.backgroundWhite,
                     AppCustomColor.feedbackGradientMid,

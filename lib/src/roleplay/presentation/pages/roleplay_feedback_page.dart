@@ -63,18 +63,17 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
       listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
       listener: (context, state) {
         if (_hasShownFeedbackPopup) return;
-        if (!state.userFeedback.userHasRoleplayFeedbackComplete) {
-          final trackingData = RoleplayTrackingData.fromContext();
-          if (trackingData == null) return;
-          _hasShownFeedbackPopup = true;
-          FeedbackCompleteLessonPopup.show(
-            context,
-            entry: FeedbackEntry.roleplay,
-            courseId: trackingData.course.id,
-            lessonId: trackingData.lesson.id,
-            keypointId: trackingData.learningItem.keypointId,
-          );
-        }
+        if (state.userFeedback.userHasRoleplayFeedbackComplete) return;
+        final trackingData = RoleplayTrackingData.fromContext();
+        if (trackingData == null) return;
+        _hasShownFeedbackPopup = true;
+        FeedbackCompleteLessonPopup.show(
+          context,
+          entry: FeedbackEntry.roleplay,
+          courseId: trackingData.course.id,
+          lessonId: trackingData.lesson.id,
+          keypointId: trackingData.learningItem.keypointId,
+        );
       },
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,

@@ -52,7 +52,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
       listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
       listener: (context, state) {
         if (_hasShownFeedbackPopup) return;
-        if (state.userFeedback.userHasRoleplayFeedbackComplete) return;
+        if (state.userFeedback.userHasKeypointFeedbackComplete) return;
 
         final keypointTracking = KeypointTrackingData.fromContext();
         String courseId = '';
@@ -73,7 +73,7 @@ class _LessonCompletePageState extends State<LessonCompletePage> with SingleTick
         _hasShownFeedbackPopup = true;
         FeedbackCompleteLessonPopup.show(
           context,
-          entry: FeedbackEntry.roleplay,
+          entry: FeedbackEntry.keypoint,
           courseId: courseId,
           lessonId: lessonId,
           keypointId: keypointId,

@@ -12,6 +12,7 @@ abstract class FeedbackState with _$FeedbackState {
     @Default('') String activeCourseId,
     @Default('') String activeLessonId,
     @Default('') String activeKeypointId,
+    FeedbackEntry? pendingFeedbackIncompletePrompt,
     @Default(0) int draftOverallRating,
     @Default(0) int draftContentRating,
     @Default(0) int draftExperienceRating,

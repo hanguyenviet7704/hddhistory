@@ -30,17 +30,18 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
 
   void setActiveFeedback({
     required FeedbackType type,
-    required FeedbackEntry entry,
+    FeedbackEntry? entry,
     required String courseId,
     required String lessonId,
     required String keypointId,
   }) {
-    final complete = _getCompleteFeedback(entry);
-    final incomplete = _getIncompleteFeedback(entry);
+    FeedbackEntry activeEntry = entry ?? state.activeEntry;
+    final complete = _getCompleteFeedback(activeEntry);
+    final incomplete = _getIncompleteFeedback(activeEntry);
     emit(
       state.copyWith(
         activeType: type,
-        activeEntry: entry,
+        activeEntry: activeEntry,
         activeCourseId: courseId,
         activeLessonId: lessonId,
         activeKeypointId: keypointId,
@@ -52,6 +53,8 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
       ),
     );
   }
+
+  void setActiveEntry(FeedbackEntry entry) => emit(state.copyWith(activeEntry: entry));
 
   void updateOverallRating(int rating) => emit(state.copyWith(draftOverallRating: rating));
 
@@ -71,6 +74,31 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
 
   void updateComment(String comment) {
     emit(state.copyWith(draftComment: comment));
+  }
+
+  void setIncompleteFeedbackPrompt({
+    required FeedbackEntry entry,
+    required String courseId,
+    required String lessonId,
+    required String keypointId,
+  }) {
+    if (courseId.isEmpty || lessonId.isEmpty || keypointId.isEmpty) return;
+    emit(
+      state.copyWith(
+        activeCourseId: courseId,
+        activeLessonId: lessonId,
+        activeKeypointId: keypointId,
+        pendingFeedbackIncompletePrompt: entry,
+      ),
+    );
+  }
+
+  void clearIncompleteFeedbackPrompt() {
+    emit(
+      state.copyWith(
+        pendingFeedbackIncompletePrompt: null,
+      ),
+    );
   }
 
   void submitFeedback() async {

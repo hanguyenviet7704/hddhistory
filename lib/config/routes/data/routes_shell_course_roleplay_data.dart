@@ -24,8 +24,11 @@ class RoleplayRoute extends BaseTransitionRouteData with $RoleplayRoute {
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => BlocProvider.value(
-    value: AppDI.injector.get<RoleplayCubit>(),
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<RoleplayCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
+    ],
     child: const RoleplayPage(),
   );
 }

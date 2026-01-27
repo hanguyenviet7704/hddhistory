@@ -34,49 +34,96 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.read<PageCubit>().state.currentRouteName == RouteNamed.courseRoadmap) {
         _trackRoadmapScrView();
+        _tryShowRoleplayIncompleteFeedback(context.read<FeedbackCubit>().state);
       }
+    });
+  }
+
+  void _tryShowRoleplayIncompleteFeedback(FeedbackState state) {
+    final pendingEntry = state.pendingFeedbackIncompletePrompt;
+    if (pendingEntry == null) return;
+    if (state.status != FeedbackStatus.success) return;
+    if (pendingEntry == FeedbackEntry.roleplay && state.userFeedback.userHasRoleplayFeedbackIncomplete) {
+      context.read<FeedbackCubit>().clearIncompleteFeedbackPrompt();
+      return;
+    }
+    if (pendingEntry == FeedbackEntry.keypoint && state.userFeedback.userHasKeypointFeedbackIncomplete) {
+      context.read<FeedbackCubit>().clearIncompleteFeedbackPrompt();
+      return;
+    }
+
+    final courseId = state.activeCourseId;
+    final lessonId = state.activeLessonId;
+    final keypointId = state.activeKeypointId;
+    if (courseId.isEmpty && lessonId.isEmpty && keypointId.isEmpty) {
+      context.read<FeedbackCubit>().clearIncompleteFeedbackPrompt();
+      return;
+    }
+
+    context.read<FeedbackCubit>().clearIncompleteFeedbackPrompt();
+    Future.delayed(const Duration(seconds: 1), () {
+      if (!mounted) return;
+      if (context.read<PageCubit>().state.currentRouteName != RouteNamed.courseRoadmap) return;
+      FeedbackIncompleteLessonPopup.show(
+        context,
+        entry: pendingEntry,
+        courseId: courseId,
+        lessonId: lessonId,
+        keypointId: keypointId,
+      );
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<PageCubit, PageState>(
-      listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName,
-      listener: (context, state) {
-        if (state.currentRouteName == RouteNamed.courseRoadmap) {
-          _trackRoadmapScrView();
-          return;
-        }
-        _hasTrackedForVisibility = false;
-      },
-      child: BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
-        listenWhen: (previous, current) => previous.roadmap.courseId != current.roadmap.courseId,
-        listener: (context, state) {
-          _hasTrackedForVisibility = false;
-          _trackRoadmapScrView();
-        },
-        child: Scaffold(
-          backgroundColor: AppCustomColor.backgroundGray,
-          body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
-            selector: (state) => state.status == CourseRoadmapStatus.loading && state.roadmap.levels.isEmpty,
-            builder: (context, isLoading) {
-              if (isLoading) {
-                return const Center(
-                  child: CircularProgressIndicator(
-                    color: AppCustomColor.brandPrimary,
-                  ),
-                );
-              }
-              return SafeBody(
-                child: Column(
-                  children: [
-                    TopProgressBar(),
-                    CourseRoadmapContent(),
-                  ],
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<PageCubit, PageState>(
+          listenWhen: (previous, current) => previous.currentRouteName != current.currentRouteName,
+          listener: (context, state) {
+            if (state.currentRouteName == RouteNamed.courseRoadmap) {
+              _trackRoadmapScrView();
+              _tryShowRoleplayIncompleteFeedback(context.read<FeedbackCubit>().state);
+              return;
+            }
+            _hasTrackedForVisibility = false;
+          },
+        ),
+        BlocListener<FeedbackCubit, FeedbackState>(
+          listenWhen: (previous, current) => previous.pendingFeedbackIncompletePrompt != current.pendingFeedbackIncompletePrompt || previous.status != current.status,
+          listener: (context, state) {
+            _tryShowRoleplayIncompleteFeedback(state);
+          },
+        ),
+        BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
+          listenWhen: (previous, current) => previous.roadmap.courseId != current.roadmap.courseId,
+          listener: (context, state) {
+            _hasTrackedForVisibility = false;
+            _trackRoadmapScrView();
+          },
+        ),
+      ],
+      child: Scaffold(
+        backgroundColor: AppCustomColor.backgroundGray,
+        body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
+          selector: (state) => state.status == CourseRoadmapStatus.loading && state.roadmap.levels.isEmpty,
+          builder: (context, isLoading) {
+            if (isLoading) {
+              return const Center(
+                child: CircularProgressIndicator(
+                  color: AppCustomColor.brandPrimary,
                 ),
               );
-            },
-          ),
+            }
+            return SafeBody(
+              child: Column(
+                children: [
+                  TopProgressBar(),
+                  CourseRoadmapContent(),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
