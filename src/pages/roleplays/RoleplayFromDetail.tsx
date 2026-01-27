@@ -1860,6 +1860,17 @@ export default function RoleplayFromDetail({
                       content.type === RoleplayContentType.EXERCISE
                         ? getExerciseTypeLabel(content.exercise.type)
                         : "";
+                    const exerciseExplanation =
+                      content.type === RoleplayContentType.EXERCISE
+                        ? getTranslationValue(
+                            content.exercise.explanation,
+                            lang
+                          ) ||
+                          getCurrentTranslationValue(
+                            content.exercise.explanation,
+                            lang
+                          )
+                        : "";
                     const dragDropFormLabel =
                       content.type === RoleplayContentType.EXERCISE &&
                       content.exercise?.type === ExerciseType.DRAG_DROP
@@ -2083,6 +2094,20 @@ export default function RoleplayFromDetail({
                                       </div>
                                     </div>
                                   )}
+                                {exerciseExplanation?.trim() && (
+                                  <div className="text-xs text-gray-600">
+                                    <span className="font-semibold text-gray-700">
+                                      Explanation:
+                                    </span>
+                                    <div className="pl-2">
+                                      <TextWithTooltip
+                                        text={content.exercise.explanation}
+                                        maxLength={120}
+                                        lang={lang}
+                                      />
+                                    </div>
+                                  </div>
+                                )}
                                 {"options" in content.exercise &&
                                   Array.isArray(content.exercise.options) &&
                                   content.exercise.options.length > 0 && (
@@ -3710,6 +3735,31 @@ export default function RoleplayFromDetail({
                 }}
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                 placeholder="Enter max score"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Explanation
+              </label>
+              <textarea
+                rows={3}
+                value={getCurrentTranslationValue(
+                  localFormData.exercise.explanation,
+                  lang
+                )}
+                onChange={(e) =>
+                  handleExerciseChange(
+                    "explanation",
+                    updateTranslationValue(
+                      localFormData.exercise.explanation || {},
+                      lang,
+                      e.target.value
+                    )
+                  )
+                }
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
+                placeholder="Enter explanation"
               />
             </div>
 
