@@ -73,8 +73,6 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
         builder: (context, state) {
           final cubit = context.read<FeedbackCubit>();
           final labels = _buildReasonLabels(context);
-          final isLoading = state.status == FeedbackStatus.loading;
-          final canSubmit = (state.draftReasons.isNotEmpty || state.draftComment.trim().isNotEmpty) && !isLoading;
 
           return FeedbackPopupShell(
             onTapOutside: () => context.back(),
@@ -137,9 +135,9 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                           32.verticalSpace,
                           FeedbackPrimaryButton(
                             title: context.text.feedback.sendFeedback,
-                            enabled: canSubmit,
+                            enabled: state.feedbackIncompleteCanSubmit,
                             onTap: () {
-                              if (!canSubmit) return;
+                              if (!state.feedbackIncompleteCanSubmit) return;
                               final trackingData = _feedbackCourseTrackingData(context, state.activeCourseId);
                               if (trackingData != null) {
                                 AppService.instance.appTrackingService.trackFeedbackIncompleteLessonSend(

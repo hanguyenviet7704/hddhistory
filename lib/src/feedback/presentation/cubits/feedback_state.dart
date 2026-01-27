@@ -31,8 +31,12 @@ extension FeedbackStateExtension on FeedbackState {
     return status == FeedbackStatus.loading;
   }
 
-  bool get canSubmit {
-    return draftOverallRating > 0 && draftContentRating > 0 && draftExperienceRating > 0 && !isLoading;
+  bool get feedbackCompleteCanSubmit {
+    return draftOverallRating > 0 && draftContentRating > 0 && draftExperienceRating > 0 && draftComment.isNotEmpty && !isLoading;
+  }
+
+  bool get feedbackIncompleteCanSubmit {
+    return draftReasons.isNotEmpty && draftComment.isNotEmpty && !isLoading;
   }
 
   String get pageRouteName {

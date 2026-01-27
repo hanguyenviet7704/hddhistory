@@ -140,9 +140,9 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                           24.verticalSpace,
                           FeedbackPrimaryButton(
                             title: context.text.feedback.sendFeedback,
-                            enabled: state.canSubmit,
+                            enabled: state.feedbackCompleteCanSubmit,
                             onTap: () {
-                              if (!state.canSubmit) return;
+                              if (!state.feedbackCompleteCanSubmit) return;
 
                               final trackingData = _feedbackCourseTrackingData(context, state.activeCourseId);
                               if (trackingData != null) {
