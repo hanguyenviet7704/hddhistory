@@ -251,6 +251,8 @@ export default function UserProgressSummaryList() {
   const [totalPages, setTotalPages] = useState(1);
   const [confirmCourseId, setConfirmCourseId] = useState<string | null>(null);
   const [removing, setRemoving] = useState(false);
+  const [confirmFeedbackRemove, setConfirmFeedbackRemove] = useState(false);
+  const [removingFeedback, setRemovingFeedback] = useState(false);
   const userLabel = stateUserLabel;
 
   const fetchProgress = useCallback(
@@ -366,6 +368,26 @@ export default function UserProgressSummaryList() {
       showError("Xoá tiến độ khoá học thất bại");
     } finally {
       setRemoving(false);
+    }
+  };
+
+  const handleRemoveFeedback = async () => {
+    if (!userId) {
+      showError("Thiếu thông tin user để xoá feedback");
+      return;
+    }
+
+    try {
+      setRemovingFeedback(true);
+      await userFeedbackService.remove(userId);
+      showSuccess("Xoá feedback thành công");
+      setConfirmFeedbackRemove(false);
+      fetchFeedback();
+    } catch (error) {
+      console.error("Failed to remove user feedback", error);
+      showError("Xoá feedback thất bại");
+    } finally {
+      setRemovingFeedback(false);
     }
   };
 
@@ -556,9 +578,22 @@ export default function UserProgressSummaryList() {
         </div>
 
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-          <h2 className="text-lg font-semibold text-gray-900 mb-3">
-            Feedback
-          </h2>
+          <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between mb-3">
+            <h2 className="text-lg font-semibold text-gray-900">Feedback</h2>
+            <button
+              onClick={() => setConfirmFeedbackRemove(true)}
+              disabled={feedbackByCourse.size === 0 || feedbackLoading}
+              className={`inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm border ${
+                feedbackByCourse.size > 0 && !feedbackLoading
+                  ? "text-rose-600 border-rose-200 hover:bg-rose-50"
+                  : "text-gray-300 border-gray-200 cursor-not-allowed"
+              }`}
+              title="Xoá feedback của user"
+            >
+              <TrashIcon className="h-4 w-4" />
+              Xoá feedback
+            </button>
+          </div>
           {feedbackLoading ? (
             <div className="py-6 text-center text-gray-500">
               Đang tải feedback...
@@ -651,6 +686,35 @@ export default function UserProgressSummaryList() {
                   className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-70"
                 >
                   {removing ? "Đang xoá..." : "Xoá"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {confirmFeedbackRemove && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4">
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-md p-6 space-y-4">
+              <h3 className="text-lg font-semibold text-gray-900">
+                Xoá feedback của user?
+              </h3>
+              <p className="text-sm text-gray-600">
+                Hành động này sẽ xoá toàn bộ feedback của user này.
+              </p>
+              <div className="flex justify-end gap-2">
+                <button
+                  onClick={() => setConfirmFeedbackRemove(false)}
+                  disabled={removingFeedback}
+                  className="px-4 py-2 rounded-lg border border-gray-200 text-gray-700 hover:bg-gray-50"
+                >
+                  Huỷ
+                </button>
+                <button
+                  onClick={handleRemoveFeedback}
+                  disabled={removingFeedback}
+                  className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700 disabled:opacity-70"
+                >
+                  {removingFeedback ? "Đang xoá..." : "Xoá"}
                 </button>
               </div>
             </div>
