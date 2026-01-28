@@ -16,6 +16,7 @@ export interface ILesson {
   keypoints: IKeypoint[];
   estimateCompleTime: ITranslation;
   icon: ITag | null;
+  lightIcon: ITag | null;
   index: number;
 }
 
@@ -30,6 +31,7 @@ export interface LessonPayload {
   keypoints: string[];
   estimateCompleTime?: ITranslation;
   icon: string;
+  lightIcon: string;
   index: number;
 }
 

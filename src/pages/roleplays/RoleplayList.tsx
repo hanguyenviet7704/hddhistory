@@ -299,31 +299,39 @@ export default function RoleplayList() {
                         </p>
 
                         <div className="flex items-center justify-start mt-auto gap-8">
-                          <div className="rounded flex items-start justify-center">
-                            {(roleplay.icon as any)?.url && (
-                              <CloudflareAssetPreview
-                                src={(roleplay.icon as any).url}
-                                alt={getTranslationValue(
-                                  (roleplay.icon as any)?.title,
-                                  lang
+                          {(() => {
+                            const light = roleplay.lightIcon as any;
+                            const dark = roleplay.icon as any;
+                            const lightValid =
+                              light?.url || light?.title || light?.color;
+                            const displayIcon = lightValid ? light : dark;
+                            return (
+                              <div className="rounded flex items-start justify-center">
+                                {displayIcon?.url && (
+                                  <CloudflareAssetPreview
+                                    src={displayIcon?.url}
+                                    alt={getTranslationValue(
+                                      displayIcon?.title,
+                                      lang
+                                    )}
+                                    className="w-5 h-5 object-cover rounded"
+                                  />
                                 )}
-                                className="w-5 h-5 object-cover rounded"
-                              />
-                            )}
-                            <span
-                              style={{
-                                color:
-                                  (roleplay.icon as any)?.color || "#f3f4f6",
-                                fontSize: 14,
-                                marginLeft: (roleplay.icon as any)?.url ? 6 : 0,
-                              }}
-                            >
-                              {getTranslationValue(
-                                (roleplay.icon as any)?.title,
-                                lang
-                              )}
-                            </span>
-                          </div>
+                                <span
+                                  style={{
+                                    color: displayIcon?.color || "#f3f4f6",
+                                    fontSize: 14,
+                                    marginLeft: displayIcon?.url ? 6 : 0,
+                                  }}
+                                >
+                                  {getTranslationValue(
+                                    displayIcon?.title,
+                                    lang
+                                  )}
+                                </span>
+                              </div>
+                            );
+                          })()}
 
                           <div className="flex items-center">
                             <img

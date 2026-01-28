@@ -289,12 +289,19 @@ export default function LessonList() {
                         </p>
 
                         <div className="flex items-center justify-start mt-auto gap-8">
-                          <div className="rounded flex items-start justify-center">
-                            {(lesson.icon as any)?.url && (
+                          {(() => {
+                            const light = lesson.lightIcon as any;
+                            const dark = lesson.icon as any;
+                            const lightValid =
+                              light?.url || light?.title || light?.color;
+                            const displayIcon = lightValid ? light : dark;
+                            return (
+                              <div className="rounded flex items-start justify-center">
+                                {displayIcon?.url && (
                               <CloudflareAssetPreview
-                                src={(lesson.icon as any).url}
+                                    src={displayIcon?.url}
                                 alt={getTranslationValue(
-                                  (lesson.icon as any)?.title,
+                                      displayIcon?.title,
                                   lang
                                 )}
                                 className="w-5 h-5 object-cover rounded"
@@ -302,17 +309,19 @@ export default function LessonList() {
                             )}
                             <span
                               style={{
-                                color: (lesson.icon as any)?.color || "#f3f4f6",
+                                    color: displayIcon?.color || "#f3f4f6",
                                 fontSize: 14,
-                                marginLeft: (lesson.icon as any)?.url ? 6 : 0,
+                                    marginLeft: displayIcon?.url ? 6 : 0,
                               }}
                             >
                               {getTranslationValue(
-                                (lesson.icon as any)?.title,
+                                    displayIcon?.title,
                                 lang
                               )}
                             </span>
-                          </div>
+                              </div>
+                            );
+                          })()}
 
                           <div className="flex items-center">
                             <img

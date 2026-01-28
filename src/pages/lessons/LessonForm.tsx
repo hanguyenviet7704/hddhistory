@@ -56,6 +56,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
         keypoints: [],
         estimateCompleTime: { [lang]: "" },
         icon: null,
+        lightIcon: null,
         status: LessonStatus.DRAFT,
         index: 0,
       } as ILesson)
@@ -86,6 +87,11 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
   const [iconQuery, setIconQuery] = useState("");
   const [isIconSearchActive, setIsIconSearchActive] = useState(false);
 
+  const [lightIcons, setLightIcons] = useState<ITag[]>([]);
+  const [lightIconQuery, setLightIconQuery] = useState("");
+  const [isLightIconSearchActive, setIsLightIconSearchActive] =
+    useState(false);
+
   // Hàm mới để xoá icon
   const handleClearIcon = () => {
     setCurrentLesson((prev) => ({
@@ -95,6 +101,15 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
     // Đảm bảo ô tìm kiếm cũng được làm sạch
     setIconQuery("");
     setIsIconSearchActive(false);
+  };
+
+  const handleClearLightIcon = () => {
+    setCurrentLesson((prev) => ({
+      ...prev,
+      lightIcon: null,
+    }));
+    setLightIconQuery("");
+    setIsLightIconSearchActive(false);
   };
 
   useEffect(() => {
@@ -115,6 +130,25 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
       active = false;
     };
   }, [iconQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchLightIcons = async () => {
+      try {
+        const res = await tagService.getList({
+          search: lightIconQuery,
+        });
+        const list: ITag[] = res.data.items ?? [];
+        if (active) setLightIcons(list);
+      } catch (err) {
+        console.error("fetchLightIcons", err);
+      }
+    };
+    fetchLightIcons();
+    return () => {
+      active = false;
+    };
+  }, [lightIconQuery]);
 
   const handleLessonImageChange = (newUrl: string) => {
     setCurrentLesson((prev) => ({
@@ -208,6 +242,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
         ...(description && { description }),
         ...(estimateCompleTime && { estimateCompleTime }),
         icon: (currentLesson.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
+        lightIcon: (currentLesson.lightIcon as any)?._id || "",
         image: currentLesson.image,
         keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentLesson.status,
@@ -354,6 +389,14 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
       icon: icon as any,
     }));
     setIconQuery("");
+  };
+
+  const handleSelectLightIcon = (icon: ITag) => {
+    setCurrentLesson((prev) => ({
+      ...prev,
+      lightIcon: icon as any,
+    }));
+    setLightIconQuery("");
   };
 
   // Confirm delete -> remove from state and save section (if lesson exists)
@@ -682,6 +725,97 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                               handleSelectIcon(icon);
                               setIsIconSearchActive(false);
                               setIconQuery("");
+                            }}
+                          >
+                            {icon.url ? (
+                              <img
+                                src={icon.url}
+                                alt={icon.title?.[lang]}
+                                className="w-6 h-6 object-cover rounded"
+                              />
+                            ) : (
+                              <div
+                                className="w-6 h-6 rounded flex items-center justify-center"
+                                style={{
+                                  backgroundColor: icon.color || "#f3f4f6",
+                                }}
+                              >
+                                <span>{icon.url}</span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-800">
+                                {icon.title?.[lang]}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Light Icon
+                </label>
+
+                <div className="relative">
+                  <input
+                    value={
+                      isLightIconSearchActive
+                        ? lightIconQuery
+                        : getTranslationValue(
+                            (currentLesson.lightIcon as any)?.title,
+                            lang
+                          ) || ""
+                    }
+                    onChange={(e) => setLightIconQuery(e.target.value)}
+                    onFocus={() => {
+                      setIsLightIconSearchActive(true);
+                      setLightIconQuery(
+                        getTranslationValue(
+                          (currentLesson.lightIcon as any)?.title,
+                          lang
+                        ) || ""
+                      );
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setIsLightIconSearchActive(false);
+                        setLightIconQuery("");
+                      }, 150);
+                    }}
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Search light icon..."
+                  />
+
+                  {currentLesson.lightIcon && !isLightIconSearchActive && (
+                    <button
+                      type="button"
+                      onClick={handleClearLightIcon}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                    >
+                      <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  )}
+
+                  {isLightIconSearchActive && lightIconQuery && (
+                    <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
+                      {lightIcons
+                        .filter((icon) =>
+                          icon.title?.[lang]
+                            ?.toLowerCase()
+                            .includes(lightIconQuery.toLowerCase())
+                        )
+                        .map((icon) => (
+                          <div
+                            key={icon._id}
+                            className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => {
+                              handleSelectLightIcon(icon);
+                              setIsLightIconSearchActive(false);
+                              setLightIconQuery("");
                             }}
                           >
                             {icon.url ? (

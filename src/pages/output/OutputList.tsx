@@ -293,28 +293,39 @@ export default function LessonList() {
                         </p>
 
                         <div className="flex items-center justify-start mt-auto gap-8">
-                          <div className="rounded flex items-start justify-center">
-                            <CloudflareAssetPreview
-                              src={(output.icon as any)?.url}
-                              alt={getTranslationValue(
-                                (output.icon as any)?.title,
-                                lang
-                              )}
-                              className="w-5 h-5 object-cover rounded"
-                            />
-                            <span
-                              style={{
-                                color: (output.icon as any)?.color || "#f3f4f6",
-                                fontSize: 14,
-                                marginLeft: 6,
-                              }}
-                            >
-                              {getTranslationValue(
-                                (output.icon as any)?.title,
-                                lang
-                              )}
-                            </span>
-                          </div>
+                          {(() => {
+                            const light = output.lightIcon as any;
+                            const dark = output.icon as any;
+                            const lightValid =
+                              light?.url || light?.title || light?.color;
+                            const displayIcon = lightValid ? light : dark;
+                            return (
+                              <div className="rounded flex items-start justify-center">
+                                {displayIcon?.url && (
+                                  <CloudflareAssetPreview
+                                    src={displayIcon?.url}
+                                    alt={getTranslationValue(
+                                      displayIcon?.title,
+                                      lang
+                                    )}
+                                    className="w-5 h-5 object-cover rounded"
+                                  />
+                                )}
+                                <span
+                                  style={{
+                                    color: displayIcon?.color || "#f3f4f6",
+                                    fontSize: 14,
+                                    marginLeft: displayIcon?.url ? 6 : 0,
+                                  }}
+                                >
+                                  {getTranslationValue(
+                                    displayIcon?.title,
+                                    lang
+                                  )}
+                                </span>
+                              </div>
+                            );
+                          })()}
 
                           <div className="flex items-center">
                             <img
