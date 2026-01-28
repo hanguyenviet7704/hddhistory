@@ -27,10 +27,8 @@ enum IncompleteFeedbackReason {
   @JsonValue('hard_questions')
   hardQuestions,
   @JsonValue('needs_more_examples')
-  needsMoreExamples,
-}
+  needsMoreExamples;
 
-extension IncompleteFeedbackReasonExtension on IncompleteFeedbackReason {
   String get apiValue {
     return switch (this) {
       IncompleteFeedbackReason.hardToUnderstand => 'hard_to_understand',
@@ -38,6 +36,28 @@ extension IncompleteFeedbackReasonExtension on IncompleteFeedbackReason {
       IncompleteFeedbackReason.poorVisuals => 'poor_visuals',
       IncompleteFeedbackReason.hardQuestions => 'hard_questions',
       IncompleteFeedbackReason.needsMoreExamples => 'needs_more_examples',
+    };
+  }
+
+  String label(BuildContext context) {
+    return switch (this) {
+      IncompleteFeedbackReason.hardToUnderstand => context.text.feedback.reasonHardToUnderstand,
+      IncompleteFeedbackReason.notEngaging => context.text.feedback.reasonNotEngaging,
+      IncompleteFeedbackReason.poorVisuals => context.text.feedback.reasonPoorVisuals,
+      IncompleteFeedbackReason.hardQuestions => context.text.feedback.reasonHardQuestions,
+      IncompleteFeedbackReason.needsMoreExamples => context.text.feedback.reasonNeedsMoreExamples,
+    };
+  }
+}
+
+extension IncompleteFeedbackReasonListExtension on List<IncompleteFeedbackReason> {
+  static Map<IncompleteFeedbackReason, String> buildReasonLabels(BuildContext context) {
+    return {
+      IncompleteFeedbackReason.hardToUnderstand: context.text.feedback.reasonHardToUnderstand,
+      IncompleteFeedbackReason.notEngaging: context.text.feedback.reasonNotEngaging,
+      IncompleteFeedbackReason.poorVisuals: context.text.feedback.reasonPoorVisuals,
+      IncompleteFeedbackReason.hardQuestions: context.text.feedback.reasonHardQuestions,
+      IncompleteFeedbackReason.needsMoreExamples: context.text.feedback.reasonNeedsMoreExamples,
     };
   }
 }

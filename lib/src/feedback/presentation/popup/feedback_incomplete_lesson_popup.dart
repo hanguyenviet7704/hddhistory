@@ -26,7 +26,7 @@ class FeedbackIncompleteLessonPopup extends StatefulWidget {
     }
     return showGeneralDialog<void>(
       context: context,
-      barrierDismissible: true,
+      barrierDismissible: false,
       barrierLabel: 'feedbackIncompleteLessonPopup',
       barrierColor: AppCustomColor.scrimOverlay,
       transitionDuration: const Duration(milliseconds: 500),
@@ -72,46 +72,43 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
           FeedbackBeforeYouGoPopup.show(context);
         });
       },
-      child: BlocBuilder<FeedbackCubit, FeedbackState>(
-        builder: (context, state) {
-          final cubit = context.read<FeedbackCubit>();
-          final labels = _buildReasonLabels(context);
-
-          return FeedbackPopupShell(
-            onTapOutside: () => context.back(),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(20.r),
-                gradient: LinearGradient(
-                  begin: Alignment.bottomCenter,
-                  end: Alignment.topCenter,
-                  colors: [
-                    AppCustomColor.backgroundWhite,
-                    AppCustomColor.feedbackGradientMid,
-                    AppCustomColor.feedbackGradientEnd,
-                  ],
-                  stops: const [0.253, 0.701, 1],
+      child: FeedbackPopupShell(
+        onTapOutside: () => context.back(),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(20.r),
+            gradient: LinearGradient(
+              begin: Alignment.bottomCenter,
+              end: Alignment.topCenter,
+              colors: [
+                AppCustomColor.backgroundWhite,
+                AppCustomColor.feedbackGradientMid,
+                AppCustomColor.feedbackGradientEnd,
+              ],
+              stops: const [0.253, 0.701, 1],
+            ),
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Padding(
+                padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 24.h),
+                child: FeedbackHeader(
+                  title: context.text.feedback.incompleteTitle,
+                  subtitle: context.text.feedback.incompleteSubtitle,
                 ),
               ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 24.h),
-                    child: FeedbackHeader(
-                      title: context.text.feedback.incompleteTitle,
-                      subtitle: context.text.feedback.incompleteSubtitle,
-                    ),
+              Padding(
+                padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
+                child: Container(
+                  padding: EdgeInsets.all(20.w),
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.backgroundWhite,
+                    borderRadius: BorderRadius.circular(16.r),
                   ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(8.w, 0, 8.w, 8.h),
-                    child: Container(
-                      padding: EdgeInsets.all(20.w),
-                      decoration: BoxDecoration(
-                        color: AppCustomColor.backgroundWhite,
-                        borderRadius: BorderRadius.circular(16.r),
-                      ),
-                      child: Column(
+                  child: BlocBuilder<FeedbackCubit, FeedbackState>(
+                    builder: (context, state) {
+                      return Column(
                         mainAxisSize: MainAxisSize.min,
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -125,15 +122,15 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                           ),
                           6.verticalSpace,
                           FeedbackReasonList(
-                            labels: labels,
+                            labels: IncompleteFeedbackReasonListExtension.buildReasonLabels(context),
                             selected: state.draftReasons,
-                            onToggle: cubit.toggleReason,
+                            onToggle: context.read<FeedbackCubit>().toggleReason,
                           ),
                           24.verticalSpace,
                           FeedbackCommentField(
                             value: state.draftComment,
                             hint: context.text.feedback.commentHint,
-                            onChanged: cubit.updateComment,
+                            onChanged: context.read<FeedbackCubit>().updateComment,
                           ),
                           32.verticalSpace,
                           FeedbackPrimaryButton(
@@ -149,29 +146,19 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                                 );
                               }
                               _submitted = true;
-                              cubit.submitFeedback();
+                              context.read<FeedbackCubit>().submitFeedback();
                             },
                           ),
                         ],
-                      ),
-                    ),
+                      );
+                    },
                   ),
-                ],
+                ),
               ),
-            ),
-          );
-        },
+            ],
+          ),
+        ),
       ),
     );
-  }
-
-  Map<IncompleteFeedbackReason, String> _buildReasonLabels(BuildContext context) {
-    return {
-      IncompleteFeedbackReason.hardToUnderstand: context.text.feedback.reasonHardToUnderstand,
-      IncompleteFeedbackReason.notEngaging: context.text.feedback.reasonNotEngaging,
-      IncompleteFeedbackReason.poorVisuals: context.text.feedback.reasonPoorVisuals,
-      IncompleteFeedbackReason.hardQuestions: context.text.feedback.reasonHardQuestions,
-      IncompleteFeedbackReason.needsMoreExamples: context.text.feedback.reasonNeedsMoreExamples,
-    };
   }
 }
