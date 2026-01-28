@@ -56,6 +56,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
         keypoints: [],
         estimateCompleTime: { [lang]: "" },
         icon: null,
+        lightIcon: null,
         status: LessonStatus.DRAFT,
         index: 0,
       } as ILesson)
@@ -86,16 +87,30 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
   const [icons, setIcons] = useState<ITag[]>([]);
   const [iconQuery, setIconQuery] = useState("");
   const [isIconSearchActive, setIsIconSearchActive] = useState(false);
+  const [lightIcons, setLightIcons] = useState<ITag[]>([]);
+  const [lightIconQuery, setLightIconQuery] = useState("");
+  const [isLightIconSearchActive, setIsLightIconSearchActive] =
+    useState(false);
 
   // Hàm mới để xoá icon
   const handleClearIcon = () => {
     setCurrentOutput((prev) => ({
       ...prev,
       icon: null, // Gán icon về null để xoá
+      lightIcon: null,
     }));
     // Đảm bảo ô tìm kiếm cũng được làm sạch
     setIconQuery("");
     setIsIconSearchActive(false);
+  };
+
+  const handleClearLightIcon = () => {
+    setCurrentOutput((prev) => ({
+      ...prev,
+      lightIcon: null,
+    }));
+    setLightIconQuery("");
+    setIsLightIconSearchActive(false);
   };
 
   useEffect(() => {
@@ -116,6 +131,32 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
       active = false;
     };
   }, [iconQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchLightIcons = async () => {
+      try {
+        const res = await tagService.getList({
+          search: lightIconQuery,
+        });
+        const list: ITag[] = res.data.items ?? [];
+        if (active) setLightIcons(list);
+      } catch (err) {
+        console.error("fetchLightIcons", err);
+      }
+    };
+    fetchLightIcons();
+    return () => {
+      active = false;
+    };
+  }, [lightIconQuery]);
+
+  const getDisplayIcon = (lesson: ILesson) => {
+    const light = lesson.lightIcon as any;
+    const dark = lesson.icon as any;
+    const lightValid = light?.url || light?.title || light?.color;
+    return lightValid ? light : dark;
+  };
 
   const handleOutputImageChange = (newUrl: string) => {
     setCurrentOutput((prev) => ({
@@ -209,6 +250,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
         ...(description && { description }),
         ...(estimateCompleTime && { estimateCompleTime }),
         icon: (currentOutput.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
+        lightIcon: (currentOutput.lightIcon as any)?._id || "",
         image: currentOutput.image,
         keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentOutput.status,
@@ -630,7 +672,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       isIconSearchActive
                         ? iconQuery
                         : getTranslationValue(
-                            (currentOutput.icon as any)?.title,
+                            getDisplayIcon(currentOutput)?.title,
                             lang
                           ) || ""
                     }
@@ -640,7 +682,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
                       setIconQuery(
                         getTranslationValue(
-                          (currentOutput.icon as any)?.title,
+                          getDisplayIcon(currentOutput)?.title,
                           lang
                         ) || ""
                       );
@@ -658,7 +700,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   />
 
                   {/* Nút 'x' để xoá icon - chỉ hiển thị khi có icon và không đang tìm kiếm */}
-                  {currentOutput.icon && !isIconSearchActive && (
+                  {getDisplayIcon(currentOutput) && !isIconSearchActive && (
                     <button
                       type="button"
                       onClick={handleClearIcon}
@@ -685,6 +727,100 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                               handleSelectIcon(icon);
                               setIsIconSearchActive(false);
                               setIconQuery("");
+                            }}
+                          >
+                            {icon.url ? (
+                              <img
+                                src={icon.url}
+                                alt={icon.title?.[lang]}
+                                className="w-6 h-6 object-cover rounded"
+                              />
+                            ) : (
+                              <div
+                                className="w-6 h-6 rounded flex items-center justify-center"
+                                style={{
+                                  backgroundColor: icon.color || "#f3f4f6",
+                                }}
+                              >
+                                <span>{icon.url}</span>
+                              </div>
+                            )}
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-800">
+                                {icon.title?.[lang]}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Light Icon
+                </label>
+
+                <div className="relative">
+                  <input
+                    value={
+                      isLightIconSearchActive
+                        ? lightIconQuery
+                        : getTranslationValue(
+                            (currentOutput.lightIcon as any)?.title,
+                            lang
+                          ) || ""
+                    }
+                    onChange={(e) => setLightIconQuery(e.target.value)}
+                    onFocus={() => {
+                      setIsLightIconSearchActive(true);
+                      setLightIconQuery(
+                        getTranslationValue(
+                          (currentOutput.lightIcon as any)?.title,
+                          lang
+                        ) || ""
+                      );
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setIsLightIconSearchActive(false);
+                        setLightIconQuery("");
+                      }, 150);
+                    }}
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Search light icon..."
+                  />
+
+                  {currentOutput.lightIcon && !isLightIconSearchActive && (
+                    <button
+                      type="button"
+                      onClick={handleClearLightIcon}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                    >
+                      <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  )}
+
+                  {isLightIconSearchActive && lightIconQuery && (
+                    <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
+                      {lightIcons
+                        .filter((icon) =>
+                          icon.title?.[lang]
+                            ?.toLowerCase()
+                            .includes(lightIconQuery.toLowerCase())
+                        )
+                        .map((icon) => (
+                          <div
+                            key={icon._id}
+                            className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => {
+                              setCurrentOutput((prev) => ({
+                                ...prev,
+                                lightIcon: icon as any,
+                              }));
+                              setIsLightIconSearchActive(false);
+                              setLightIconQuery("");
                             }}
                           >
                             {icon.url ? (
