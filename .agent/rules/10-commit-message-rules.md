@@ -1,5 +1,5 @@
 ---
-trigger: model_decision
+trigger: always_on
 description: Commit message rules with ticket extraction and file-based guidance
 ---
 

@@ -5,7 +5,6 @@ final class AppTrackingService extends ITrackingService {
   final BaseTrackingService _appTrackingService;
   AppTrackingService(@Named(DIKey.firebaseAnalyticsService) this._appTrackingService);
 
-
   @override
   Future<void> initialize() async {
     _appTrackingService.initialize();
@@ -75,6 +74,13 @@ final class AppTrackingService extends ITrackingService {
       'course_name': trackingData.course.trackingName,
       'roleplay_id': roleplayId,
       'roleplay_name': roleplayName,
+    };
+  }
+
+  Map<String, dynamic> _feedbackParams(CourseTrackingData trackingData, {required String source}) {
+    return {
+      ..._courseParams(trackingData),
+      'source': source,
     };
   }
 
@@ -873,6 +879,22 @@ final class AppTrackingService extends ITrackingService {
     );
   }
 
+  @override
+  Future<void> trackKeypointPopupNavView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointPopupNavView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointPopupNavContinue(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointPopupNavContinue,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
   //* Roleplay events
   @override
   Future<void> trackRoleplayInfoScrView(RoleplayTrackingData trackingData) async {
@@ -1204,6 +1226,51 @@ final class AppTrackingService extends ITrackingService {
     );
   }
 
+  //* Feedback events
+  @override
+  Future<void> trackFeedbackCompleteLessonView(
+    CourseTrackingData trackingData, {
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.feedbackCompleteLessonView,
+      parameters: _feedbackParams(trackingData, source: source),
+    );
+  }
+
+  @override
+  Future<void> trackFeedbackCompleteLessonSend(
+    CourseTrackingData trackingData, {
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.feedbackCompleteLessonSend,
+      parameters: _feedbackParams(trackingData, source: source),
+    );
+  }
+
+  @override
+  Future<void> trackFeedbackIncompleteLessonView(
+    CourseTrackingData trackingData, {
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.feedbackIncompleteLessonView,
+      parameters: _feedbackParams(trackingData, source: source),
+    );
+  }
+
+  @override
+  Future<void> trackFeedbackIncompleteLessonSend(
+    CourseTrackingData trackingData, {
+    required String source,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.feedbackIncompleteLessonSend,
+      parameters: _feedbackParams(trackingData, source: source),
+    );
+  }
+
   //* Paywall events
   @override
   Future<void> trackPaywallScrView(BuildContext context) async {
@@ -1262,7 +1329,6 @@ final class AppTrackingService extends ITrackingService {
       },
     );
   }
-
 
   //* Subscription events
   @override

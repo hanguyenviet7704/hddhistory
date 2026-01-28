@@ -112,6 +112,8 @@ mixin TrackingKey {
   static const String keypointExitClick = 'keypoint_exit_click';
   static const String keypointExitPopupView = 'keypoint_exit_popup_view';
   static const String keypointExitPopupClick = 'keypoint_exit_popup_click';
+  static const String keypointPopupNavView = 'keypoint_popup_nav_view';
+  static const String keypointPopupNavContinue = 'keypoint_popup_nav_continue';
 
   //* Roleplay events
   static const String roleplayInfoScrView = 'roleplay_info_scr_view';
@@ -150,6 +152,12 @@ mixin TrackingKey {
   static const String roleplayResultScroll = 'roleplay_result_scroll';
   static const String roleplayResultContinue = 'roleplay_result_continue';
   static const String badgeCompleteScrView = 'badge_complete_scr_view';
+
+  //* Feedback events
+  static const String feedbackCompleteLessonView = 'feedback_complete_lesson_view';
+  static const String feedbackCompleteLessonSend = 'feedback_complete_lesson_send';
+  static const String feedbackIncompleteLessonView = 'feedback_incomplete_lesson_view';
+  static const String feedbackIncompleteLessonSend = 'feedback_incomplete_lesson_send';
 
   //* Profile screen events
   static const String profileView = 'profile_view';

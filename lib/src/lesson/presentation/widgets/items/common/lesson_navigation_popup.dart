@@ -4,6 +4,10 @@ class LessonNavigationPopup extends StatelessWidget {
   const LessonNavigationPopup({super.key});
 
   static Future<void> show(BuildContext context) {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointPopupNavView(trackingData);
+    }
     return showGeneralDialog<void>(
       context: context,
       barrierDismissible: true,
@@ -30,7 +34,13 @@ class LessonNavigationPopup extends StatelessWidget {
       color: Colors.transparent,
       child: GestureDetector(
         behavior: HitTestBehavior.opaque,
-        onTap: () => context.pop(),
+        onTap: () {
+          final trackingData = KeypointTrackingData.fromContext();
+          if (trackingData != null) {
+            AppService.instance.appTrackingService.trackKeypointPopupNavContinue(trackingData);
+          }
+          context.back();
+        },
         child: BackdropFilter(
           filter: ui.ImageFilter.blur(sigmaX: 2, sigmaY: 2),
           child: Center(

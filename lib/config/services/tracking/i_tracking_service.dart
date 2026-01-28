@@ -150,6 +150,8 @@ abstract interface class ITrackingService {
     KeypointTrackingData trackingData, {
     required String option,
   });
+  Future<void> trackKeypointPopupNavView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointPopupNavContinue(KeypointTrackingData trackingData);
 
   //* Roleplay events
   Future<void> trackRoleplayInfoScrView(RoleplayTrackingData trackingData);
@@ -209,6 +211,24 @@ abstract interface class ITrackingService {
   Future<void> trackRoleplayResultScroll(RoleplayTrackingData trackingData);
   Future<void> trackRoleplayResultContinue(RoleplayTrackingData trackingData);
   Future<void> trackBadgeCompleteScrView({RoleplayTrackingData? trackingData});
+
+  //* Feedback events
+  Future<void> trackFeedbackCompleteLessonView(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
+  Future<void> trackFeedbackCompleteLessonSend(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
+  Future<void> trackFeedbackIncompleteLessonView(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
+  Future<void> trackFeedbackIncompleteLessonSend(
+    CourseTrackingData trackingData, {
+    required String source,
+  });
 
   //* Paywall events
   Future<void> trackPaywallScrView(BuildContext context);
