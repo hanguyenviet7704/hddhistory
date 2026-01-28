@@ -14,6 +14,7 @@ abstract class LessonModel with _$LessonModel {
     @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagModel()) TagModel icon,
+    @Default(TagModel()) TagModel lightIcon,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
     @Default(0) int index,
   }) = _LessonModel;
@@ -61,6 +62,7 @@ extension LessonModelExtension on LessonModel {
     keypoints: keypoints.map((model) => model.toEntity()).toList(),
     estimateCompleTime: estimateCompleTime,
     icon: icon.toEntity(),
+    lightIcon: lightIcon.toEntity(),
     index: index,
     progess: progess,
   );

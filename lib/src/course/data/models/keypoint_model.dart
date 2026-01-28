@@ -6,6 +6,7 @@ abstract class KeypointModel with _$KeypointModel {
     @Default('') @JsonKey(name: '_id') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
     @Default(0) int index,
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevel,
@@ -41,6 +42,7 @@ extension KeypointModelExtension on KeypointModel {
   KeypointEntity toEntity() => KeypointEntity(
     id: id,
     title: title,
+    estimateCompleTime: estimateCompleTime,
     description: description,
     image: image,
     index: index,

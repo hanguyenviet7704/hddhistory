@@ -6,6 +6,7 @@ abstract class KeypointEntity with _$KeypointEntity {
     @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
     @Default(0) int index,
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevelData,

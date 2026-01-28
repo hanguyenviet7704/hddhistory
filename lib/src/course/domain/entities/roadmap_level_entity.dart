@@ -5,6 +5,10 @@ abstract class RoadmapLevelEntity with _$RoadmapLevelEntity {
   const factory RoadmapLevelEntity({
     @Default(0) int id,
     @Default(CourseLevel.level1) CourseLevel level,
+    @Default('') String lightBadge,
+    @Default('') String darkBadge,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage titleBadge,
+    @Default([]) List<String> keypointIds,
     @Default([]) List<RoadmapNodeEntity> nodes,
     @Default([]) List<LessonEntity> lessonList,
   }) = _RoadmapLevelEntity;
