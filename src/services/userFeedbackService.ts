@@ -6,4 +6,8 @@ export const userFeedbackService = {
     const res = await axiosClient.get(`/courses-feedback/${id}`, {});
     return res.data;
   },
+
+  async remove(id: string) {
+    return axiosClient.delete(`/courses-feedback/${id}`, {});
+  },
 };
