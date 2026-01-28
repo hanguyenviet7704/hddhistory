@@ -5,7 +5,7 @@ abstract class RoadmapNodeModel with _$RoadmapNodeModel {
   const factory RoadmapNodeModel({
     @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
-    BaseMultiLanguage? description,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String roleplayId,
     @Default([]) List<String> lessonIds,
     @Default('') String outputId,
@@ -21,6 +21,7 @@ extension RoadmapNodeModelExtension on RoadmapNodeModel {
   RoadmapNodeEntity toEntity() => RoadmapNodeEntity(
     id: id,
     title: title,
+    description: description,
     roleplayId: roleplayId,
     lessonIds: lessonIds,
     outputId: outputId,

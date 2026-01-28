@@ -34,6 +34,10 @@ extension RoadmapLevelModelExtension on RoadmapLevelModel {
   RoadmapLevelEntity toEntity() => RoadmapLevelEntity(
     id: id,
     level: level,
+    lightBadge: lightBadge,
+    darkBadge: darkBadge,
+    titleBadge: titleBadge,
+    keypointIds: keypointIds,
     nodes: nodes.map((model) => model.toEntity()).toList(),
     lessonList: lessonList.map((model) => model.toEntity()).toList(),
   );
