@@ -167,7 +167,6 @@ export default function RoleplayForm({
     setCurrentRoleplayLesson((prev) => ({
       ...prev,
       icon: null, // Gán icon về null để xoá
-      lightIcon: null,
     }));
     // Đảm bảo ô tìm kiếm cũng được làm sạch
     setIconQuery("");
@@ -460,12 +459,7 @@ export default function RoleplayForm({
     setLightIconQuery("");
   };
 
-  const getDisplayIcon = (lesson: ILesson) => {
-    const light = lesson.lightIcon as any;
-    const dark = lesson.icon as any;
-    const lightValid = light?.url || light?.title || light?.color;
-    return lightValid ? light : dark;
-  };
+  const getIconValue = (lesson: ILesson) => (lesson.icon as any) || null;
 
   const handleDeleteRoleplay = async () => {
     if (!currentRoleplayLesson._id) return;
@@ -718,7 +712,7 @@ export default function RoleplayForm({
                       isIconSearchActive
                         ? iconQuery
                         : getTranslationValue(
-                            getDisplayIcon(currentRoleplayLesson)?.title,
+                            getIconValue(currentRoleplayLesson)?.title,
                             lang
                           ) || ""
                     }
@@ -727,7 +721,7 @@ export default function RoleplayForm({
                       setIsIconSearchActive(true);
                       setIconQuery(
                         getTranslationValue(
-                          getDisplayIcon(currentRoleplayLesson)?.title,
+                          getIconValue(currentRoleplayLesson)?.title,
                           lang
                         ) || ""
                       );
@@ -742,7 +736,7 @@ export default function RoleplayForm({
                     placeholder="Search icon..."
                   />
 
-                  {getDisplayIcon(currentRoleplayLesson) &&
+                  {getIconValue(currentRoleplayLesson) &&
                     !isIconSearchActive && (
                     <button
                       type="button"
