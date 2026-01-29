@@ -10,7 +10,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
+      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -28,8 +28,8 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                       color: AppCustomColor.textPrimary,
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
                   ),
                   8.verticalSpace,
                 ],
@@ -63,11 +63,11 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                       animation: true,
                       animationDuration: 500,
                       animateFromLastPercent: true,
-                      lineHeight: 10.h,
+                      lineHeight: 9.h,
                       percent: roadmapLevel.progress,
                       backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
-                      progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
-                      barRadius: Radius.circular(30.r),
+                      progressColor: const Color(0xFF4B44CA), // Brand/Primary
+                      barRadius: Radius.circular(18.r),
                       padding: EdgeInsets.zero,
                     ),
                   ),

@@ -21,91 +21,37 @@ class RoadmapRoleplayCard extends StatelessWidget {
           color: AppCustomColor.backgroundWhite,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: AppCustomColor.brandPrimary, // Purple border as seen in Figma
-            width: 2,
+            color: AppCustomColor.brandPrimary,
+            width: 3,
           ),
           boxShadow: [
             BoxShadow(
-              color: AppCustomColor.brandPrimary.withValues(alpha: 0.1),
-              blurRadius: 8,
-              offset: const Offset(0, 4),
+              color: AppCustomColor.borderDefault,
+              blurRadius: 4,
+              offset: Offset.zero,
             ),
           ],
         ),
-        clipBehavior: Clip.hardEdge,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // Image Section
-            if (lesson.image.isNotEmpty)
-              AspectRatio(
-                aspectRatio: 16 / 9,
-                child: Image.network(
-                  lesson.image,
-                  fit: BoxFit.cover,
-                  errorBuilder: (_, __, ___) => Container(
-                    color: AppCustomColor.backgroundGray,
-                    child: Center(
-                      child: SvgPicture.asset(
-                        AppAsset.svg.app.icLayer, // Fallback icon
-                        colorFilter: ColorFilter.mode(
-                          AppCustomColor.textQuaternary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              )
-            else
-              // Placeholder if no image
-              Container(
-                height: 120.h,
-                color: AppCustomColor.backgroundGray,
-                child: Center(
-                  child: SvgPicture.asset(
-                    AppAsset.svg.app.icLayer,
-                    colorFilter: ColorFilter.mode(
-                      AppCustomColor.textQuaternary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-              ),
-
-            // Content Section
+            DCachedImage(
+              url: lesson.image,
+              width: double.infinity,
+              fit: BoxFit.cover,
+              margin: EdgeInsets.zero,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+            ),
             Padding(
-              padding: EdgeInsets.all(16.w),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  AppText(
-                    lesson.title.text,
-                    style: AppStyle.textBold18.copyWith(
-                      color: AppCustomColor.brandPrimary,
-                    ),
-                  ),
-                  8.verticalSpace,
-                  Row(
-                    children: [
-                      SvgPicture.asset(
-                        AppAsset.svg.app.icClock,
-                        width: 16.w,
-                        colorFilter: ColorFilter.mode(
-                          AppCustomColor.textSecondary,
-                          BlendMode.srcIn,
-                        ),
-                      ),
-                      8.horizontalSpace,
-                      AppText(
-                        lesson.estimateCompleTime.text,
-                        style: AppStyle.text14.copyWith(
-                          color: AppCustomColor.textSecondary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
+              padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 14.h),
+              child: AppText(
+                lesson.title.text,
+                style: AppStyle.textBold14.copyWith(
+                  color: AppCustomColor.brandPrimary,
+                  height: 1.75,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ),
           ],

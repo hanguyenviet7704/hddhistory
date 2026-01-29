@@ -16,7 +16,7 @@ class RoadmapSessionHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      margin: EdgeInsets.fromLTRB(4.w, 0, 4.w, 24.h),
+      margin: EdgeInsets.only(bottom: 24.h),
       padding: EdgeInsets.symmetric(
         horizontal: 12.w,
         vertical: 12.h,
@@ -33,7 +33,7 @@ class RoadmapSessionHeader extends StatelessWidget {
         children: [
           AppText(
             title.text.toUpperCase(),
-            style: AppStyle.textBold12.copyWith(
+            style: AppStyle.textBold10.copyWith(
               color: AppCustomColor.textPrimary,
               fontWeight: FontWeight.w700,
             ),
@@ -44,7 +44,7 @@ class RoadmapSessionHeader extends StatelessWidget {
             4.verticalSpace,
             AppText(
               description.text,
-              margin: EdgeInsets.symmetric(horizontal: 16.w),
+              margin: EdgeInsets.symmetric(horizontal: 12.w),
               style: AppStyle.text12.copyWith(
                 color: AppCustomColor.textTertiary,
                 height: 1.75,

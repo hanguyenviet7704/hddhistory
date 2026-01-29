@@ -23,7 +23,7 @@ class LessonCard extends StatelessWidget {
       case ProcessEnum.inProgress:
         return AppCustomColor.brandPrimary300;
       case ProcessEnum.notStarted:
-        return AppCustomColor.textQuaternary;
+        return AppCustomColor.textSecondary;
     }
   }
 
@@ -93,6 +93,7 @@ class LessonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isKeypoint = lesson.type == LessonType.lesson;
     return GestureDetector(
       onTap: () => _onTap(context),
       child: Stack(
@@ -105,12 +106,12 @@ class LessonCard extends StatelessWidget {
               color: AppCustomColor.backgroundWhite,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: lesson.progess == ProcessEnum.inProgress ? AppCustomColor.brandPrimary : const Color(0xFFEBF0F7), // var(--border/default)
+                color: lesson.progess == ProcessEnum.inProgress ? AppCustomColor.brandPrimary : AppCustomColor.borderDefault,
                 width: lesson.progess == ProcessEnum.inProgress ? 2 : 1,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: const Color(0xFFEBF0F7), // WhiteOnGray shadow from Figma
+                  color: AppCustomColor.borderDefault, // WhiteOnGray shadow from Figma
                   blurRadius: 4,
                   offset: const Offset(0, 0),
                 ),
@@ -119,42 +120,56 @@ class LessonCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                if (isKeypoint) ...[
+                  AppText(
+                    'KEYPOINT',
+                    style: AppStyle.text10.copyWith(
+                      fontWeight: FontWeight.w700,
+                      color: AppCustomColor.textQuaternary,
+                      height: 1.75,
+                    ),
+                  ),
+                  4.verticalSpace,
+                ],
                 // Lesson title
                 AppText(
                   lesson.title.text,
                   style: AppStyle.text14.copyWith(
                     fontWeight: FontWeight.w500,
                     color: _textColor,
+                    height: 1.75,
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
-                8.verticalSpace,
-                // Lesson metadata row
-                Row(
-                  children: [
-                    // Lesson type
-                    LessonMetadata(
-                      icon: lesson.icon,
-                      text: lesson.icon.title.text,
-                      textColor: _textColor,
-                    ),
-                    20.horizontalSpace,
-                    // Duration
-                    if (lesson.estimateCompleTime.en.isNotEmpty) ...[
-                      SvgPicture.asset(
-                        AppAsset.svg.app.icClock,
-                        colorFilter: ColorFilter.mode(_textColor, BlendMode.srcIn),
-                        width: 16.w,
-                      ),
-                      8.horizontalSpace,
+                if (!isKeypoint) ...[
+                  8.verticalSpace,
+                  // Lesson metadata row
+                  Row(
+                    children: [
+                      // Lesson type
                       LessonMetadata(
-                        text: lesson.estimateCompleTime.text,
+                        icon: lesson.icon,
+                        text: lesson.icon.title.text,
                         textColor: _textColor,
                       ),
+                      20.horizontalSpace,
+                      // Duration
+                      if (lesson.estimateCompleTime.en.isNotEmpty) ...[
+                        SvgPicture.asset(
+                          AppAsset.svg.app.icClock,
+                          colorFilter: ColorFilter.mode(_textColor, BlendMode.srcIn),
+                          width: 16.w,
+                        ),
+                        8.horizontalSpace,
+                        LessonMetadata(
+                          text: lesson.estimateCompleTime.text,
+                          textColor: _textColor,
+                        ),
+                      ],
                     ],
-                  ],
-                ),
+                  ),
+                ],
               ],
             ),
           ),

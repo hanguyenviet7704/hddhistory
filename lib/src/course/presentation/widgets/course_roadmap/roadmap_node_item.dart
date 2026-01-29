@@ -108,6 +108,7 @@ class RoadmapNodeItem extends StatelessWidget {
 
             // Determine type for styling
             final isRoleplay = lesson.type == LessonType.roleplay;
+            final isKeypoint = lesson.type == LessonType.lesson;
 
             // Icon Priority: lesson.icon.url -> lesson.lightIcon.url -> Default SVG
             final String? iconUrl = lesson.icon.url.isNotEmpty ? lesson.icon.url : (lesson.lightIcon.url.isNotEmpty ? lesson.lightIcon.url : null);
@@ -115,7 +116,7 @@ class RoadmapNodeItem extends StatelessWidget {
             final String defaultIconAsset;
             if (isRoleplay) {
               defaultIconAsset = AppAsset.svg.app.icSend;
-            } else if (lesson.type == LessonType.lesson) {
+            } else if (isKeypoint) {
               defaultIconAsset = AppAsset.svg.app.icBook;
             } else {
               defaultIconAsset = AppAsset.svg.app.icAim; // Default/Output
@@ -152,7 +153,7 @@ class RoadmapNodeItem extends StatelessWidget {
                 premiumLesson: isLocked,
                 lesson: lesson,
                 lessonRolePlay: node.roleplay,
-                onOverrideTap: lesson.type == LessonType.lesson
+                onOverrideTap: isKeypoint
                     ? () => RoadmapDetailPopup.show(
                         context,
                         lesson: lesson,
@@ -163,19 +164,20 @@ class RoadmapNodeItem extends StatelessWidget {
             }
 
             return Container(
-              margin: EdgeInsets.only(bottom: 20.h),
+              margin: EdgeInsets.only(bottom: isLast ? 0 : 20.h),
               child: TimelineTile(
                 isFirst: isFirst && index == 0,
                 isLast: isLast,
                 alignment: TimelineAlign.start,
                 indicatorStyle: IndicatorStyle(
-                  width: 32.w,
-                  height: 32.w,
+                  width: 54.w,
+                  height: 54.w,
                   padding: EdgeInsets.zero,
                   indicator: Container(
+                    padding: EdgeInsets.all(13.5.w),
                     decoration: BoxDecoration(
                       // Figma shows filled background for active icons
-                      color: isLocked ? AppCustomColor.backgroundGray : (isRoleplay ? AppCustomColor.brandPrimary : const Color(0xFF3B82F6)), // Blue for keypoints
+                      color: isLocked ? AppCustomColor.neutral100 : AppCustomColor.brandPrimary50,
                       shape: BoxShape.circle,
                     ),
                     child: Center(
@@ -183,24 +185,24 @@ class RoadmapNodeItem extends StatelessWidget {
                           ? ClipOval(
                               child: CachedNetworkImage(
                                 imageUrl: iconUrl,
-                                width: 20.w,
-                                height: 20.w,
+                                width: 28.w,
+                                height: 28.w,
                                 fit: BoxFit.contain,
                                 placeholder: (context, url) => SvgPicture.asset(
                                   defaultIconAsset,
-                                  width: 16.w,
-                                  height: 16.w,
+                                  width: 24.w,
+                                  height: 24.w,
                                   colorFilter: ColorFilter.mode(
-                                    isLocked ? AppCustomColor.textQuaternary : Colors.white,
+                                    isLocked ? AppCustomColor.textQuaternary : AppCustomColor.brandPrimary,
                                     BlendMode.srcIn,
                                   ),
                                 ),
                                 errorWidget: (context, url, error) => SvgPicture.asset(
                                   defaultIconAsset,
-                                  width: 16.w,
-                                  height: 16.w,
+                                  width: 24.w,
+                                  height: 24.w,
                                   colorFilter: ColorFilter.mode(
-                                    isLocked ? AppCustomColor.textQuaternary : Colors.white,
+                                    isLocked ? AppCustomColor.textQuaternary : AppCustomColor.brandPrimary,
                                     BlendMode.srcIn,
                                   ),
                                 ),
@@ -208,10 +210,10 @@ class RoadmapNodeItem extends StatelessWidget {
                             )
                           : SvgPicture.asset(
                               defaultIconAsset,
-                              width: 16.w,
-                              height: 16.w,
+                              width: 28.w,
+                              height: 28.w,
                               colorFilter: ColorFilter.mode(
-                                isLocked ? AppCustomColor.textQuaternary : Colors.white,
+                                isLocked ? AppCustomColor.textQuaternary : AppCustomColor.brandPrimary,
                                 BlendMode.srcIn,
                               ),
                             ),
@@ -221,10 +223,16 @@ class RoadmapNodeItem extends StatelessWidget {
                 beforeLineStyle: LineStyle(
                   color: AppCustomColor.borderSecondary,
                   thickness: 2.0,
+                  dotted: true,
+                  dotRadius: 2.0,
+                  dotSpacing: 6.0,
                 ),
                 afterLineStyle: LineStyle(
                   color: AppCustomColor.borderSecondary,
                   thickness: 2.0,
+                  dotted: true,
+                  dotRadius: 2.0,
+                  dotSpacing: 6.0,
                 ),
                 endChild: Padding(
                   padding: EdgeInsets.only(

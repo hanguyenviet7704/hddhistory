@@ -16,7 +16,7 @@ class CourseLevelContent extends StatelessWidget {
     return Column(
       children: [
         CourseRoadmapHeaderCard(roadmapLevel: roadmapLevel),
-        20.verticalSpace,
+        16.verticalSpace,
         if (roadmapLevel.nodes.isNotEmpty)
           ...roadmapLevel.nodes.map(
             (node) => RoadmapNodeItem(

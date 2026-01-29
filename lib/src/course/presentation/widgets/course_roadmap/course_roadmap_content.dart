@@ -14,7 +14,7 @@ class CourseRoadmapContent extends StatelessWidget {
             if (roadmap.levels.isEmpty) return const CourseEmptyState();
             final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
             return ListView.separated(
-              padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               separatorBuilder: (context, index) => 20.verticalSpace,
               itemCount: roadmap.levels.length,
               itemBuilder: (context, index) {

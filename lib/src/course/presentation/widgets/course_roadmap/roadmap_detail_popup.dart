@@ -19,6 +19,7 @@ class RoadmapDetailPopup extends StatelessWidget {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
+      barrierColor: AppCustomColor.scrimOverlay,
       builder: (context) => RoadmapDetailPopup(
         lesson: lesson,
         courseLevel: courseLevel,
@@ -59,7 +60,7 @@ class RoadmapDetailPopup extends StatelessWidget {
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
       ),
-      padding: EdgeInsets.fromLTRB(24.w, 12.h, 24.w, 32.h),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 20.h),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -67,47 +68,70 @@ class RoadmapDetailPopup extends StatelessWidget {
           // Handle Bar
           Center(
             child: Container(
-              width: 48.w,
-              height: 4.h,
+              width: 50.w,
+              height: 5.h,
               decoration: BoxDecoration(
-                color: AppCustomColor.borderDefault,
-                borderRadius: BorderRadius.circular(2.r),
+                color: AppCustomColor.backgroundWhite,
+                borderRadius: BorderRadius.circular(30.r),
               ),
             ),
           ),
-          32.verticalSpace,
+          24.verticalSpace,
 
           // Title
           AppText(
             lesson.title.text,
-            style: AppStyle.textBold18,
-            textAlign: TextAlign.start,
+            style: AppStyle.textBold24,
+            textAlign: TextAlign.center,
           ),
-          16.verticalSpace,
+          8.verticalSpace,
 
           // Duration
           if (lesson.estimateCompleTime.en.isNotEmpty) ...[
             Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                AppText(
+                  'KEYPOINT',
+                  style: AppStyle.text12.copyWith(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppCustomColor.textTertiary,
+                    height: 1.75,
+                  ),
+                ),
+                12.horizontalSpace,
+                Container(
+                  width: 4.w,
+                  height: 4.w,
+                  decoration: const ShapeDecoration(
+                    color: AppCustomColor.textTertiary,
+                    shape: OvalBorder(),
+                  ),
+                ),
+                12.horizontalSpace,
                 SvgPicture.asset(
                   AppAsset.svg.app.icClock,
-                  width: 20.w,
-                  height: 20.w,
+                  width: 16.w,
+                  height: 16.w,
                   colorFilter: ColorFilter.mode(
-                    AppCustomColor.textSecondary,
+                    AppCustomColor.textTertiary,
                     BlendMode.srcIn,
                   ),
                 ),
                 8.horizontalSpace,
                 AppText(
-                  lesson.estimateCompleTime.text,
-                  style: AppStyle.text14.copyWith(
-                    color: AppCustomColor.textSecondary,
+                  lesson.estimateCompleTime.text.toUpperCase(),
+                  style: AppStyle.text12.copyWith(
+                    fontSize: 11.sp,
+                    fontWeight: FontWeight.w700,
+                    color: AppCustomColor.textTertiary,
+                    height: 1.75,
                   ),
                 ),
               ],
             ),
-            16.verticalSpace,
+            12.verticalSpace,
           ],
 
           // Description
@@ -115,16 +139,24 @@ class RoadmapDetailPopup extends StatelessWidget {
             lesson.description.text,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
-              height: 1.5,
+              height: 1.75,
             ),
           ),
-          32.verticalSpace,
+          40.verticalSpace,
 
           // Start Button
           AppButton.primary(
-            child: 'Start Learning', // TODO: Add key to Sheets and regenerate
+            child: AppText(
+              'Start learning',
+              style: AppStyle.textBold16.copyWith(
+                color: AppCustomColor.textWhite,
+              ),
+              textAlign: TextAlign.center,
+            ), // TODO: Add key to Sheets and regenerate
             onPressed: () => _onStartLearning(context),
             fullWidthBtn: true,
+            height: 54.h,
+            borderRadius: BorderRadius.circular(1000.r),
           ),
         ],
       ),
