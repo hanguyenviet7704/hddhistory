@@ -244,6 +244,7 @@ class RoadmapNodeItem extends StatelessWidget {
             );
           }),
         ),
+        32.verticalSpace,
       ],
     );
   }

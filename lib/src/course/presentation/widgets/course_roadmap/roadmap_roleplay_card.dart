@@ -38,9 +38,10 @@ class RoadmapRoleplayCard extends StatelessWidget {
             DCachedImage(
               url: lesson.image,
               width: double.infinity,
+              height: 120.h,
               fit: BoxFit.cover,
               margin: EdgeInsets.zero,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(13.r)),
             ),
             Padding(
               padding: EdgeInsets.fromLTRB(12.w, 12.h, 12.w, 14.h),
