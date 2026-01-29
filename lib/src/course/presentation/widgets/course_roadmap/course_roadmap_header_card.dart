@@ -10,30 +10,20 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppCustomColor.borderDefault,
-            blurRadius: 4,
-            offset: const Offset(0, 0),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 16.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Course title
-          BlocBuilder<HomeCubit, HomeState>(
-            builder: (context, homeState) {
+          BlocSelector<HomeCubit, HomeState, String>(
+            selector: (state) => state.courseName,
+            builder: (context, courseName) {
               return Column(
                 children: [
                   AppText(
-                    homeState.courseName,
+                    courseName,
                     textWidthBasis: TextWidthBasis.longestLine,
-                    style: AppStyle.text24.copyWith(
+                    style: AppStyle.text20.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppCustomColor.textPrimary,
                     ),
@@ -42,20 +32,6 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                   ),
                   8.verticalSpace,
-                  // Course description
-                  if (homeState.currentCourse.description.text.isNotEmpty) ...[
-                    AppText(
-                      margin: EdgeInsets.symmetric(horizontal: 16.w),
-                      homeState.currentCourse.description.text,
-                      style: AppStyle.text14.copyWith(
-                        color: AppCustomColor.textSecondary,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                    12.verticalSpace,
-                  ],
                 ],
               );
             },
@@ -68,7 +44,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
               children: [
                 AppText(
                   roadmapLevel.level.name.toUpperCase(),
-                  style: AppStyle.textBold12.copyWith(color: AppCustomColor.textTertiary),
+                  style: AppStyle.textBold10.copyWith(color: AppCustomColor.textTertiary),
                   maxLines: 1,
                 ),
                 Container(
@@ -99,11 +75,13 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                 12.horizontalSpace,
                 // Lesson count
                 AppText(
-                  context.text.courseroadmap.lessonsProgress(
-                    completed: roadmapLevel.completedLessons,
-                    total: roadmapLevel.totalLessons,
-                  ),
-                  style: AppStyle.text14.copyWith(
+                  context.text.courseroadmap
+                      .lessonsProgress(
+                        completed: roadmapLevel.completedLessons,
+                        total: roadmapLevel.totalLessons,
+                      )
+                      .toUpperCase(),
+                  style: AppStyle.textBold10.copyWith(
                     color: AppCustomColor.textTertiary,
                   ),
                   maxLines: 1,

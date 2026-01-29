@@ -5,6 +5,7 @@ class LessonCard extends StatelessWidget {
   final LessonEntity lessonRolePlay;
   final bool premiumLesson;
   final CourseLevel courseLevel;
+  final VoidCallback? onOverrideTap;
 
   const LessonCard({
     super.key,
@@ -12,18 +13,8 @@ class LessonCard extends StatelessWidget {
     required this.lessonRolePlay,
     required this.premiumLesson,
     required this.courseLevel,
+    this.onOverrideTap,
   });
-
-  Color get _backgroundColor {
-    switch (lesson.progess) {
-      case ProcessEnum.done:
-        return AppCustomColor.backgroundWhite;
-      case ProcessEnum.inProgress:
-        return AppCustomColor.backgroundBrand;
-      case ProcessEnum.notStarted:
-        return AppCustomColor.backgroundGray;
-    }
-  }
 
   Color get _textColor {
     switch (lesson.progess) {
@@ -34,13 +25,6 @@ class LessonCard extends StatelessWidget {
       case ProcessEnum.notStarted:
         return AppCustomColor.textQuaternary;
     }
-  }
-
-  Color? get _borderColor {
-    if (lesson.progess == ProcessEnum.done) {
-      return AppCustomColor.borderDefault;
-    }
-    return null;
   }
 
   bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
@@ -56,6 +40,11 @@ class LessonCard extends StatelessWidget {
 
   void _onTap(BuildContext context) {
     if (lesson.progess == ProcessEnum.notStarted && !kDebugMode) return;
+
+    if (onOverrideTap != null) {
+      onOverrideTap!();
+      return;
+    }
 
     if (lesson.type == LessonType.lesson) {
       _trackRoadmapItemClick(context);
@@ -113,9 +102,19 @@ class LessonCard extends StatelessWidget {
             padding: EdgeInsets.all(16.w),
             constraints: BoxConstraints(minHeight: 44.h),
             decoration: BoxDecoration(
-              color: _backgroundColor,
+              color: AppCustomColor.backgroundWhite,
               borderRadius: BorderRadius.circular(12.r),
-              border: _borderColor != null ? Border.all(color: _borderColor!, width: 1) : null,
+              border: Border.all(
+                color: lesson.progess == ProcessEnum.inProgress ? AppCustomColor.brandPrimary : const Color(0xFFEBF0F7), // var(--border/default)
+                width: lesson.progess == ProcessEnum.inProgress ? 2 : 1,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFFEBF0F7), // WhiteOnGray shadow from Figma
+                  blurRadius: 4,
+                  offset: const Offset(0, 0),
+                ),
+              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

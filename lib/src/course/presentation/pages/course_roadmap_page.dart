@@ -102,7 +102,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
         ),
       ],
       child: Scaffold(
-        backgroundColor: AppCustomColor.backgroundGray,
+        backgroundColor: AppCustomColor.backgroundWhite,
         body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
           selector: (state) => state.status == CourseRoadmapStatus.loading && state.roadmap.levels.isEmpty,
           builder: (context, isLoading) {
