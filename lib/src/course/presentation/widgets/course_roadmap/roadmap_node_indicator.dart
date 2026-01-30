@@ -8,7 +8,7 @@ class RoadmapNodeIndicator extends StatelessWidget {
     required this.lesson,
   });
 
-  Color _borderColor(bool isLastInProgress) => isLastInProgress ? AppCustomColor.brandPrimary : AppCustomColor.neutral100;
+  Color _borderColor(bool isLastInProgress) => isLastInProgress ? AppCustomColor.borderBrand : AppCustomColor.neutral100;
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +26,7 @@ class RoadmapNodeIndicator extends StatelessWidget {
             shape: BoxShape.circle,
             border: Border.all(
               color: _borderColor(isLastInProgress),
-              width: isLastInProgress ? 3.w : 2.w,
+              width: 2.w,
             ),
           ),
           child: DCachedImage(

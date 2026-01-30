@@ -2,16 +2,24 @@ part of '../../../course.dart';
 
 class CourseRoadmapFloatingButton extends StatelessWidget {
   final VoidCallback onPressed;
-  final String label;
+  final String? label;
 
   const CourseRoadmapFloatingButton({
     super.key,
     required this.onPressed,
-    this.label = 'Start lesson',
+    this.label,
   });
 
   @override
   Widget build(BuildContext context) {
+    final hasProgress = context.select<CourseRoadmapCubit, bool>(
+      (cubit) => cubit.state.roadmap.levels.any((level) => level.hasRoadmapProgress),
+    );
+    final labelText =
+        label ??
+        (hasProgress
+            ? context.text.courseroadmap.continueLearningButton
+            : context.text.courseroadmap.startLessonButton);
     return AppButton.primary(
       onPressed: onPressed,
       width: 160.w,
@@ -19,7 +27,7 @@ class CourseRoadmapFloatingButton extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 10.w),
       borderRadius: BorderRadius.circular(1000.r),
       child: AppText(
-        label,
+        labelText,
         style: AppStyle.textBold16.copyWith(
           color: AppCustomColor.textWhite,
           height: 1.5,
