@@ -12,44 +12,25 @@ class LessonKeypointCard extends StatelessWidget {
 
   KeypointEntity get keypoint => lesson.firstKeypoint;
 
-  Color get _textColor {
-    switch (keypoint.progess) {
-      case ProcessEnum.done:
-        return AppCustomColor.textPrimary;
-      case ProcessEnum.inProgress:
-        return AppCustomColor.brandPrimary300;
-      case ProcessEnum.notStarted:
-        return AppCustomColor.textSecondary;
-    }
-  }
-
-  Color get _borderColor {
-    return AppCustomColor.borderDefault;
-  }
-
-  double get _borderWidth {
-    return 1.w;
-  }
+  Color _borderColor(bool selected) => selected ? AppCustomColor.brandPrimary : AppCustomColor.neutral100;
+  Color _textColor(bool selected) => selected ? AppCustomColor.brandPrimary : AppCustomColor.textPrimary;
 
   @override
   Widget build(BuildContext context) {
-    final isSelected = context.select<CourseRoadmapCubit, bool>((cubit) => cubit.state.isLessonSelected(lesson));
-    final borderColor = isSelected ? AppCustomColor.brandPrimary : _borderColor;
-    final borderWidth = isSelected ? 2.w : _borderWidth;
     return GestureDetector(
       onTap: onTap,
-      child: Stack(
-        clipBehavior: Clip.none,
-        children: [
-          Container(
+      child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(
+        selector: (state) => state.isLessonSelected(lesson),
+        builder: (context, isSelected) {
+          return Container(
             padding: EdgeInsets.all(12.w),
             constraints: BoxConstraints(minHeight: 44.h, minWidth: double.infinity),
             decoration: BoxDecoration(
               color: AppCustomColor.backgroundWhite,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: borderColor,
-                width: borderWidth,
+                color: _borderColor(isSelected),
+                width: isSelected ? 2.w : 1.w,
               ),
               boxShadow: [
                 BoxShadow(
@@ -63,14 +44,14 @@ class LessonKeypointCard extends StatelessWidget {
               keypoint.title.text,
               style: AppStyle.text14.copyWith(
                 fontWeight: FontWeight.w500,
-                color: _textColor,
+                color: _textColor(isSelected),
                 height: 1.75,
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-          ),
-        ],
+          );
+        },
       ),
     );
   }
