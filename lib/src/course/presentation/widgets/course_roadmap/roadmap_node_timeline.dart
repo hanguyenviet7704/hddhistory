@@ -28,11 +28,22 @@ class RoadmapNodeActionHelper {
     RoleplayIntroRoute().go(context);
   }
 
-  static void startSelectedLessonAction(BuildContext context) {
-    final cubit = context.read<CourseRoadmapCubit>();
-    final roadmapState = cubit.state;
-    final lesson = cubit.cachedLessonAction;
-    if (lesson == null || lesson.id.isEmpty) return;
+  static CourseLevel _resolveCourseLevel(RoadmapEntity roadmap, LessonEntity lesson, CourseLevel fallback) {
+    for (final level in roadmap.levels) {
+      if (level.roadmapLessonsList.any((item) => item.isSameLesson(lesson))) {
+        return level.level;
+      }
+    }
+    return fallback;
+  }
+
+  static LessonEntity? _resolveLastInProgressLesson(RoadmapEntity roadmap) {
+    return roadmap.lastInProgressLesson ?? roadmap.displayLessons.firstOrNull;
+  }
+
+  static void _startLessonAction(BuildContext context, LessonEntity lesson, CourseRoadmapState state) {
+    if (lesson.id.isEmpty) return;
+    context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
 
     final isLocked = true;
     if (!_canTapLesson(lesson)) return;
@@ -47,12 +58,24 @@ class RoadmapNodeActionHelper {
         RoadmapDetailPopup.show(
           context,
           lesson: lesson,
-          courseLevel: roadmapState.currentCourseLevel,
+          courseLevel: _resolveCourseLevel(state.roadmap, lesson, state.currentCourseLevel),
         );
         return;
       case LessonType.output:
         return;
     }
+  }
+
+  static void startLessonAction(BuildContext context, LessonEntity lesson) {
+    final state = context.read<CourseRoadmapCubit>().state;
+    _startLessonAction(context, lesson, state);
+  }
+
+  static void startLastInProgressAction(BuildContext context) {
+    final state = context.read<CourseRoadmapCubit>().state;
+    final lesson = _resolveLastInProgressLesson(state.roadmap);
+    if (lesson == null) return;
+    _startLessonAction(context, lesson, state);
   }
 }
 

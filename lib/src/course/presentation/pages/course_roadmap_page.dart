@@ -104,7 +104,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundWhite,
         floatingActionButton: CourseRoadmapFloatingButton(
-          onPressed: () => RoadmapNodeActionHelper.startSelectedLessonAction(context),
+          onPressed: () => RoadmapNodeActionHelper.startLastInProgressAction(context),
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(

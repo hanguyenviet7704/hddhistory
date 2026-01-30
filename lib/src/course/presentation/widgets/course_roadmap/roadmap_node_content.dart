@@ -10,7 +10,7 @@ class RoadmapNodeContent extends StatelessWidget {
     required this.isLocked,
   });
 
-  void _handleTap(BuildContext context) => context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
+  void _handleTap(BuildContext context) => RoadmapNodeActionHelper.startLessonAction(context, lesson);
   
   @override
   Widget build(BuildContext context) {

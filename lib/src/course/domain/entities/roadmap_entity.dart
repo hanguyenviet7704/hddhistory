@@ -32,6 +32,15 @@ extension RoadmapEntityExtension on RoadmapEntity {
     return displayLessons;
   }
 
+  LessonEntity? get lastInProgressLesson {
+    final display = displayLessons;
+    for (var i = display.length - 1; i >= 0; i--) {
+      final lesson = display[i];
+      if (lesson.roadmapProgress == ProcessEnum.inProgress) return lesson;
+    }
+    return null;
+  }
+
   MapEntry<LessonEntity, CourseLevel> autoSelectedLesson({required CourseLevel fallbackLevel}) {
     if (levels.isEmpty) return MapEntry(LessonEntity(), fallbackLevel);
     final display = displayLessons;
