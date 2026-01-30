@@ -29,8 +29,8 @@ extension RoadmapNodeEntityExtension on RoadmapNodeEntity {
   bool get isCompleted => completedLessons >= totalLessons;
 
   List<LessonEntity> get lessonsList => [
-    roleplay,
+    if (roleplay.id.isNotEmpty) roleplay,
     ...lessons.expand((lesson) => lesson.lessonsPerKeypoint),
-    output,
+    if (output.id.isNotEmpty) output,
   ];
 }

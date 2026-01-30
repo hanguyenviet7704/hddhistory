@@ -18,14 +18,13 @@ class CourseRoadmapContent extends StatelessWidget {
               separatorBuilder: (context, index) => 20.verticalSpace,
               itemCount: roadmap.levels.length,
               itemBuilder: (context, index) {
+                // ignore: unused_local_variable
                 final lockedLessonStartIndex = roadmap.lockedLessonStartIndexForLevel(
                   paywallConfig: paywallConfig,
                   levelIndex: index,
                 );
                 return CourseLevelContent(
                   roadmapLevel: roadmap.levels[index],
-                  usingAppProgressLessons: roadmap.usingAppProgressLessons(index),
-                  lockedLessonStartIndex: lockedLessonStartIndex,
                 );
               },
             );

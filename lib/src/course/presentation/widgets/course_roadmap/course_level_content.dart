@@ -2,13 +2,9 @@ part of '../../../course.dart';
 
 class CourseLevelContent extends StatelessWidget {
   final RoadmapLevelEntity roadmapLevel;
-  final bool usingAppProgressLessons;
-  final int lockedLessonStartIndex;
   const CourseLevelContent({
     super.key,
     required this.roadmapLevel,
-    this.usingAppProgressLessons = false,
-    required this.lockedLessonStartIndex,
   });
 
   @override
@@ -20,9 +16,6 @@ class CourseLevelContent extends StatelessWidget {
         ...roadmapLevel.nodes.map(
           (node) => RoadmapNodeItem(
             node: node,
-            courseLevel: roadmapLevel.level,
-            lockedLessonStartIndex: lockedLessonStartIndex,
-            levelLessons: roadmapLevel.lessonList,
           ),
         ),
 

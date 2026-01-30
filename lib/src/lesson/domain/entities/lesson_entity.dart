@@ -50,4 +50,9 @@ extension LessonEntityExtension on LessonEntity {
       (index) => copyWith(keypoints: [keypoints[index]]),
     );
   }
+
+  String get iconUrl {
+    if (progess == ProcessEnum.done || progess == ProcessEnum.inProgress) return lightIcon.url;
+    return icon.url;
+  }
 }
