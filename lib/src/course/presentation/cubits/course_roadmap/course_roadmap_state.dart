@@ -24,6 +24,14 @@ extension CourseRoadmapStateExtension on CourseRoadmapState {
   RoadmapLevelEntity get currentLevelOpen => roadmap.levels.firstWhere((level) => !level.isCompleted);
   RoadmapLevelEntity get currentLevel => roadmap.levels.firstWhere((level) => level.level == currentCourseLevel);
   List<LessonEntity> get currentLevelLessons => currentLevel.lessonList.where((lesson) => lesson.type == LessonType.lesson).toList();
+  bool isLessonSelected(LessonEntity lesson) {
+    if (lesson.id.isEmpty || currentLesson.id.isEmpty) return false;
+    final lessonKeypointId = lesson.firstKeypoint.id;
+    if (lessonKeypointId.isNotEmpty) {
+      return lessonKeypointId == currentLesson.firstKeypoint.id;
+    }
+    return lesson.id == currentLesson.id;
+  }
   bool get isLastLessonInLevel {
     if (currentLevelLessons.isEmpty) return false;
     return currentLevelLessons.last.id == currentLesson.id;

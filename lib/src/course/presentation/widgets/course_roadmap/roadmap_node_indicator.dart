@@ -19,14 +19,17 @@ class RoadmapNodeIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isSelected = context.select<CourseRoadmapCubit, bool>((cubit) => cubit.state.isLessonSelected(lesson));
+    final borderColor = isSelected ? AppCustomColor.brandPrimary : _borderColor;
+    final borderWidth = isSelected ? 3.w : 2.w;
     return Container(
       width: 54.w,
       height: 54.w,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
         border: Border.all(
-          color: _borderColor,
-          width: 2.w,
+          color: borderColor,
+          width: borderWidth,
         ),
       ),
       child: DCachedImage(

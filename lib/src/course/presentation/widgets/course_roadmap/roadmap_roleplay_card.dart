@@ -12,26 +12,21 @@ class RoadmapRoleplayCard extends StatelessWidget {
     this.onTap,
   });
 
-  double get _borderWidth {
-    switch (lesson.roadmapProgress) {
-      case ProcessEnum.done || ProcessEnum.inProgress:
-        return 3.w;
-      case ProcessEnum.notStarted:
-        return 2.w;
-    }
-  }
-
-  Color get _borderColor {
-    switch (lesson.roadmapProgress) {
-      case ProcessEnum.done || ProcessEnum.inProgress:
-        return AppCustomColor.brandPrimary;
-      case ProcessEnum.notStarted:
-        return AppCustomColor.borderDefault;
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
+    final isSelected = context.select<CourseRoadmapCubit, bool>((cubit) => cubit.state.isLessonSelected(lesson));
+    final borderColor = isSelected
+        ? AppCustomColor.brandPrimary
+        : switch (lesson.roadmapProgress) {
+            ProcessEnum.done || ProcessEnum.inProgress => AppCustomColor.brandPrimary,
+            ProcessEnum.notStarted => AppCustomColor.borderDefault,
+          };
+    final borderWidth = isSelected
+        ? 3.w
+        : switch (lesson.roadmapProgress) {
+            ProcessEnum.done || ProcessEnum.inProgress => 3.w,
+            ProcessEnum.notStarted => 2.w,
+          };
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -39,8 +34,8 @@ class RoadmapRoleplayCard extends StatelessWidget {
           color: AppCustomColor.backgroundWhite,
           borderRadius: BorderRadius.circular(16.r),
           border: Border.all(
-            color: _borderColor,
-            width: _borderWidth,
+            color: borderColor,
+            width: borderWidth,
           ),
           boxShadow: [
             BoxShadow(

@@ -24,25 +24,18 @@ class LessonKeypointCard extends StatelessWidget {
   }
 
   Color get _borderColor {
-    switch (lesson.roadmapProgress) {
-      case ProcessEnum.done || ProcessEnum.inProgress:
-        return AppCustomColor.brandPrimary;
-      case ProcessEnum.notStarted:
-        return AppCustomColor.borderDefault;
-    }
+    return AppCustomColor.borderDefault;
   }
 
   double get _borderWidth {
-    switch (lesson.roadmapProgress) {
-      case ProcessEnum.done || ProcessEnum.inProgress:
-        return 2.w;
-      case ProcessEnum.notStarted:
-        return 1.w;
-    }
+    return 1.w;
   }
 
   @override
   Widget build(BuildContext context) {
+    final isSelected = context.select<CourseRoadmapCubit, bool>((cubit) => cubit.state.isLessonSelected(lesson));
+    final borderColor = isSelected ? AppCustomColor.brandPrimary : _borderColor;
+    final borderWidth = isSelected ? 2.w : _borderWidth;
     return GestureDetector(
       onTap: onTap,
       child: Stack(
@@ -55,8 +48,8 @@ class LessonKeypointCard extends StatelessWidget {
               color: AppCustomColor.backgroundWhite,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: _borderColor,
-                width: _borderWidth,
+                color: borderColor,
+                width: borderWidth,
               ),
               boxShadow: [
                 BoxShadow(

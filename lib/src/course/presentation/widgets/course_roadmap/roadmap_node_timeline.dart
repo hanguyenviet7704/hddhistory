@@ -57,6 +57,8 @@ class RoadmapTimelineItem extends StatelessWidget {
     if (!_canTap(lesson)) return;
     if (!_handlePaywall(context, lesson, isLocked)) return;
 
+    context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
+
     AppDI.injector.get<RoleplayCubit>()
       ..reset()
       ..setCurrentLesson(lesson)
@@ -71,6 +73,8 @@ class RoadmapTimelineItem extends StatelessWidget {
   ) {
     if (!_canTap(lesson)) return;
     if (!_handlePaywall(context, lesson, isLocked)) return;
+
+    context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
 
     RoadmapDetailPopup.show(
       context,
