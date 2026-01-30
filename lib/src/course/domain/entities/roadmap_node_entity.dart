@@ -18,6 +18,12 @@ abstract class RoadmapNodeEntity with _$RoadmapNodeEntity {
 }
 
 extension RoadmapNodeEntityExtension on RoadmapNodeEntity {
+  List<LessonEntity> get lessonsList => [
+    if (roleplay.id.isNotEmpty) roleplay,
+    ...lessons.expand((lesson) => lesson.lessonsPerKeypoint),
+    if (output.id.isNotEmpty) output,
+  ];
+
   int get totalLessons => lessons.length;
   int get completedLessons => lessons.where((r) => r.progess == ProcessEnum.done).length;
   double get progress {
@@ -27,10 +33,4 @@ extension RoadmapNodeEntityExtension on RoadmapNodeEntity {
   }
 
   bool get isCompleted => completedLessons >= totalLessons;
-
-  List<LessonEntity> get lessonsList => [
-    if (roleplay.id.isNotEmpty) roleplay,
-    ...lessons.expand((lesson) => lesson.lessonsPerKeypoint),
-    if (output.id.isNotEmpty) output,
-  ];
 }

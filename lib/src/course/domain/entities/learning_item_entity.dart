@@ -32,8 +32,6 @@ abstract class LearningItemEntity with _$LearningItemEntity {
 }
 
 extension LearningItemEntityExtension on LearningItemEntity {
-  bool get isPlayingMainQuestions => !isPlayingSubQuestions && !isPlayingRoleplayQuestions;
-
   List<QuestionEntity> get questions {
     // if (type == LearningItemType.exercise) return mainQuestions;
     //  if (type == LearningItemType.roleplay) {
@@ -43,4 +41,6 @@ extension LearningItemEntityExtension on LearningItemEntity {
     // return [];
     return mainQuestions;
   }
+
+  bool get isPlayingMainQuestions => !isPlayingSubQuestions && !isPlayingRoleplayQuestions;
 }
