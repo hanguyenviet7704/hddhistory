@@ -14,6 +14,56 @@ abstract class RoadmapEntity with _$RoadmapEntity {
 }
 
 extension RoadmapEntityExtension on RoadmapEntity {
+  List<LessonEntity> get displayLessons {
+    if (levels.isEmpty) return [];
+    final levelFlags = levelSequentialUnlockFlags;
+    final displayLessons = <LessonEntity>[];
+    for (var levelIndex = 0; levelIndex < levels.length; levelIndex++) {
+      final level = levels[levelIndex];
+      final enableSequentialUnlock = levelIndex < levelFlags.length ? levelFlags[levelIndex] : false;
+      final nodeFlags = enableSequentialUnlock ? level.sequentialUnlockFlags : List<bool>.filled(level.nodes.length, false);
+      for (var nodeIndex = 0; nodeIndex < level.nodes.length; nodeIndex++) {
+        final node = level.nodes[nodeIndex];
+        final enableNodeUnlock = nodeIndex < nodeFlags.length ? nodeFlags[nodeIndex] : false;
+        final items = node.lessonsList.applySequentialUnlock(enableAutoUnlock: enableNodeUnlock);
+        displayLessons.addAll(items);
+      }
+    }
+    return displayLessons;
+  }
+
+  MapEntry<LessonEntity, CourseLevel> autoSelectedLesson({required CourseLevel fallbackLevel}) {
+    if (levels.isEmpty) return MapEntry(LessonEntity(), fallbackLevel);
+    final display = displayLessons;
+    if (display.isEmpty) return MapEntry(LessonEntity(), fallbackLevel);
+
+    final hasProgress = display.any((lesson) => lesson.roadmapProgress != ProcessEnum.notStarted);
+    LessonEntity selectedLesson;
+    if (!hasProgress) {
+      selectedLesson = display.first;
+    } else {
+      final inProgressLessons = display.where((lesson) => lesson.roadmapProgress == ProcessEnum.inProgress).toList();
+      if (inProgressLessons.isNotEmpty) {
+        selectedLesson = inProgressLessons.last;
+      } else {
+        selectedLesson = display.lastWhere(
+          (lesson) => lesson.roadmapProgress != ProcessEnum.notStarted,
+          orElse: () => display.first,
+        );
+      }
+    }
+
+    CourseLevel selectedLevel = fallbackLevel;
+    for (final level in levels) {
+      if (level.roadmapLessonsList.any((lesson) => lesson.isSameLesson(selectedLesson))) {
+        selectedLevel = level.level;
+        break;
+      }
+    }
+
+    return MapEntry(selectedLesson, selectedLevel);
+  }
+
   int get lastCompletedLevelIndex {
     for (int i = levels.length - 1; i >= 0; i--) {
       if (levels.elementAt(i).isCompleted) return i + 1;
