@@ -77,7 +77,6 @@ part 'presentation/widgets/course/skill_set_tab.dart';
 part 'presentation/widgets/course_roadmap/course_level_content.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_header_card.dart';
-part 'presentation/widgets/course_roadmap/course_roadmap_timeline_list.dart';
 part 'presentation/widgets/course_roadmap/in_progress_badge.dart';
 part 'presentation/widgets/course_roadmap/lesson_keypoint_card.dart';
 part 'presentation/widgets/course_roadmap/lesson_metadata.dart';

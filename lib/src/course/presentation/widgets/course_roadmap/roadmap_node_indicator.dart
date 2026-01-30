@@ -1,14 +1,21 @@
 part of '../../../course.dart';
 
 class RoadmapNodeIndicator extends StatelessWidget {
-  final String iconUrl;
-  final bool isLocked;
+  final LessonEntity lesson;
 
   const RoadmapNodeIndicator({
     super.key,
-    this.iconUrl = '',
-    required this.isLocked,
+    required this.lesson,
   });
+
+  Color get _borderColor {
+    switch (lesson.roadmapProgress) {
+      case ProcessEnum.done || ProcessEnum.inProgress:
+        return AppCustomColor.borderBrand;
+      case ProcessEnum.notStarted:
+        return AppCustomColor.neutral100;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,11 +23,14 @@ class RoadmapNodeIndicator extends StatelessWidget {
       width: 54.w,
       height: 54.w,
       decoration: BoxDecoration(
-        color: isLocked ? AppCustomColor.neutral100 : AppCustomColor.brandPrimary50,
         shape: BoxShape.circle,
+        border: Border.all(
+          color: _borderColor,
+          width: 2.w,
+        ),
       ),
       child: DCachedImage(
-        url: iconUrl,
+        url: lesson.roadmapIconUrl,
         fit: BoxFit.contain,
       ),
     );

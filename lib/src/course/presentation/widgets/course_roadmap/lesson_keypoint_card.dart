@@ -1,14 +1,16 @@
 part of '../../../course.dart';
 
 class LessonKeypointCard extends StatelessWidget {
-  final KeypointEntity keypoint;
+  final LessonEntity lesson;
   final VoidCallback? onTap;
 
   const LessonKeypointCard({
     super.key,
-    required this.keypoint,
+    required this.lesson,
     this.onTap,
   });
+
+  KeypointEntity get keypoint => lesson.firstKeypoint;
 
   Color get _textColor {
     switch (keypoint.progess) {
@@ -18,6 +20,24 @@ class LessonKeypointCard extends StatelessWidget {
         return AppCustomColor.brandPrimary300;
       case ProcessEnum.notStarted:
         return AppCustomColor.textSecondary;
+    }
+  }
+
+  Color get _borderColor {
+    switch (lesson.roadmapProgress) {
+      case ProcessEnum.done || ProcessEnum.inProgress:
+        return AppCustomColor.brandPrimary;
+      case ProcessEnum.notStarted:
+        return AppCustomColor.borderDefault;
+    }
+  }
+
+  double get _borderWidth {
+    switch (lesson.roadmapProgress) {
+      case ProcessEnum.done || ProcessEnum.inProgress:
+        return 2.w;
+      case ProcessEnum.notStarted:
+        return 1.w;
     }
   }
 
@@ -35,12 +55,12 @@ class LessonKeypointCard extends StatelessWidget {
               color: AppCustomColor.backgroundWhite,
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
-                color: keypoint.progess == ProcessEnum.inProgress ? AppCustomColor.brandPrimary : AppCustomColor.borderDefault,
-                width: keypoint.progess == ProcessEnum.inProgress ? 2 : 1,
+                color: _borderColor,
+                width: _borderWidth,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppCustomColor.borderDefault, // WhiteOnGray shadow from Figma
+                  color: AppCustomColor.borderDefault,
                   blurRadius: 4,
                   offset: const Offset(0, 0),
                 ),

@@ -10,12 +10,13 @@ class RoadmapNodeTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final displayItems = items.applySequentialUnlock();
     return Column(
-      children: List.generate(items.length, (index) {
+      children: List.generate(displayItems.length, (index) {
         return RoadmapTimelineItem(
-          lesson: items[index],
+          lesson: displayItems[index],
           isFirst: index == 0,
-          isLast: index == items.length - 1,
+          isLast: index == displayItems.length - 1,
         );
       }),
     );
@@ -34,7 +35,7 @@ class RoadmapTimelineItem extends StatelessWidget {
     required this.isLast,
   });
 
-  bool _canTap(LessonEntity lesson) => lesson.progess != ProcessEnum.notStarted || kDebugMode;
+  bool _canTap(LessonEntity lesson) => lesson.roadmapProgress != ProcessEnum.notStarted || kDebugMode;
 
   bool _handlePaywall(BuildContext context, LessonEntity lesson, bool isLocked) {
     if (!isLocked) return true;
@@ -87,10 +88,7 @@ class RoadmapTimelineItem extends StatelessWidget {
         width: 54.w,
         height: 54.w,
         padding: EdgeInsets.zero,
-        indicator: RoadmapNodeIndicator(
-          iconUrl: lesson.iconUrl,
-          isLocked: isLocked,
-        ),
+        indicator: RoadmapNodeIndicator(lesson: lesson),
       ),
       beforeLineStyle: const LineStyle(
         color: AppCustomColor.borderSecondary,

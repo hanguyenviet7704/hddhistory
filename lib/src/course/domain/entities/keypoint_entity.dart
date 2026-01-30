@@ -12,6 +12,7 @@ abstract class KeypointEntity with _$KeypointEntity {
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevelData,
     @Default([]) List<LearningItemEntity> learningItems,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
+    @Default(-1) int averageScore,
 
     //* Custom Fields
     @Default(0) int point,
@@ -24,6 +25,11 @@ abstract class KeypointEntity with _$KeypointEntity {
 
 extension KeypointEntityExtension on KeypointEntity {
   bool get isCompleted => progess == ProcessEnum.done;
+
+  ProcessEnum get progressFromAverageScore {
+    if (averageScore >= 0) return ProcessEnum.done;
+    return progess;
+  }
 
   StrengthLevel get strengthLevel {
     if (!isUseRoleplayModule && !isUseProgressData) return strengthLevelData;

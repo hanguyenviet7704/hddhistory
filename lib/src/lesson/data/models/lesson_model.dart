@@ -46,7 +46,15 @@ enum ProcessEnum {
   @JsonValue('in_progress')
   inProgress,
   @JsonValue('not_started')
-  notStarted,
+  notStarted;
+
+  int get rank {
+    return switch (this) {
+      done => 2,
+      inProgress => 1,
+      notStarted => 0
+    };
+  }
 }
 
 extension LessonModelExtension on LessonModel {

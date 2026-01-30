@@ -31,6 +31,41 @@ extension LessonEntityListExtension on List<LessonEntity> {
     }
     return LessonEntity();
   }
+
+  List<LessonEntity> applySequentialUnlock() {
+    bool hasInProgress = false;
+    bool previousAllDone = true;
+    return map((lesson) {
+      final progress = lesson.roadmapProgress;
+      if (progress == ProcessEnum.done) return lesson;
+      if (progress == ProcessEnum.inProgress) {
+        hasInProgress = true;
+        previousAllDone = false;
+        return lesson;
+      }
+      if (!hasInProgress && previousAllDone) {
+        hasInProgress = true;
+        previousAllDone = false;
+        return _markLessonInProgress(lesson);
+      }
+      previousAllDone = false;
+      return lesson;
+    }).toList();
+  }
+}
+
+LessonEntity _markLessonInProgress(LessonEntity lesson) {
+  if (lesson.keypoints.isEmpty) {
+    return lesson.copyWith(progess: ProcessEnum.inProgress);
+  }
+
+  final keypoint = lesson.keypoints.first;
+  if (keypoint.progressFromAverageScore != ProcessEnum.notStarted) return lesson;
+  return lesson.copyWith(
+    keypoints: [
+      keypoint.copyWith(progess: ProcessEnum.inProgress),
+    ],
+  );
 }
 
 extension LessonEntityExtension on LessonEntity {
@@ -51,8 +86,23 @@ extension LessonEntityExtension on LessonEntity {
     );
   }
 
-  String get iconUrl {
-    if (progess == ProcessEnum.done || progess == ProcessEnum.inProgress) return lightIcon.url;
+  KeypointEntity get firstKeypoint => keypoints.isNotEmpty ? keypoints.first : KeypointEntity();
+
+  ProcessEnum get roadmapProgress {
+    if (firstKeypoint.id.isEmpty) return progess;
+    final keypointProgress = firstKeypoint.progressFromAverageScore;
+    return _higherProgress(progess, keypointProgress);
+  }
+
+  ProcessEnum _higherProgress(ProcessEnum a, ProcessEnum b) {
+    return a.rank >= b.rank ? a : b;
+  }
+
+  String get roadmapIconUrl {
+    if (roadmapProgress == ProcessEnum.done) return lightIcon.url;
+    if (roadmapProgress == ProcessEnum.inProgress) {
+      return firstKeypoint.progressFromAverageScore == ProcessEnum.done ? lightIcon.url : icon.url;
+    }
     return icon.url;
   }
 }

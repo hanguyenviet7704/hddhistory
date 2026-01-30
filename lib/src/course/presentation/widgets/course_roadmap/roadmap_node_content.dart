@@ -27,7 +27,7 @@ class RoadmapNodeContent extends StatelessWidget {
     if (lesson.type == LessonType.lesson) {
       if (lesson.keypoints.isEmpty) return const SizedBox.shrink();
       return LessonKeypointCard(
-        keypoint: lesson.keypoints.first,
+        lesson: lesson,
         onTap: onKeypointTap,
       );
     }

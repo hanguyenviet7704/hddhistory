@@ -11,6 +11,7 @@ abstract class KeypointModel with _$KeypointModel {
     @Default(0) int index,
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevel,
     @Default([]) List<LearningItemModel> learningItems,
+    @Default(-1) int averageScore,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
   }) = _KeypointModel;
 
@@ -47,6 +48,7 @@ extension KeypointModelExtension on KeypointModel {
     image: image,
     index: index,
     strengthLevelData: strengthLevel,
+    averageScore: averageScore,
     progess: progess,
     learningItems: learningItems.map((model) => model.toEntity()).toList(),
   );
