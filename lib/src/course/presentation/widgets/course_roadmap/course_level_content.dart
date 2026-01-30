@@ -17,21 +17,20 @@ class CourseLevelContent extends StatelessWidget {
       children: [
         CourseRoadmapHeaderCard(roadmapLevel: roadmapLevel),
         16.verticalSpace,
-        if (roadmapLevel.nodes.isNotEmpty)
-          ...roadmapLevel.nodes.map(
-            (node) => RoadmapNodeItem(
-              node: node,
-              courseLevel: roadmapLevel.level,
-              lockedLessonStartIndex: lockedLessonStartIndex,
-              levelLessons: roadmapLevel.lessonList,
-            ),
-          )
-        else
-          CourseRoadmapTimeline(
-            lessons: roadmapLevel.appProgressLessons(usingAppProgressLessons),
+        ...roadmapLevel.nodes.map(
+          (node) => RoadmapNodeItem(
+            node: node,
             courseLevel: roadmapLevel.level,
             lockedLessonStartIndex: lockedLessonStartIndex,
+            levelLessons: roadmapLevel.lessonList,
           ),
+        ),
+
+        // CourseRoadmapTimeline(
+        //   lessons: roadmapLevel.appProgressLessons(usingAppProgressLessons),
+        //   courseLevel: roadmapLevel.level,
+        //   lockedLessonStartIndex: lockedLessonStartIndex,
+        // ),
       ],
     );
   }

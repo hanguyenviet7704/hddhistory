@@ -83,6 +83,7 @@ part 'presentation/widgets/course_roadmap/lesson_card.dart';
 part 'presentation/widgets/course_roadmap/lesson_metadata.dart';
 part 'presentation/widgets/course_roadmap/roadmap_detail_popup.dart';
 part 'presentation/widgets/course_roadmap/roadmap_node_item.dart';
+part 'presentation/widgets/course_roadmap/roadmap_node_timeline.dart';
 part 'presentation/widgets/course_roadmap/roadmap_roleplay_card.dart';
 part 'presentation/widgets/course_roadmap/roadmap_session_header.dart';
 part 'presentation/widgets/course_roadmap/timeline_indicator.dart';

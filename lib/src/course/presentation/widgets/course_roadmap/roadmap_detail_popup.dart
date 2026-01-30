@@ -15,14 +15,23 @@ class RoadmapDetailPopup extends StatelessWidget {
     required LessonEntity lesson,
     required CourseLevel courseLevel,
   }) async {
-    await showModalBottomSheet(
+    showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       barrierColor: AppCustomColor.scrimOverlay,
-      builder: (context) => RoadmapDetailPopup(
-        lesson: lesson,
-        courseLevel: courseLevel,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
+      routeSettings: const RouteSettings(name: RouteNamed.roadmapDetailPopup),
+      builder: (context) => MultiBlocProvider(
+        providers: [
+          BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+        ],
+        child: RoadmapDetailPopup(
+          lesson: lesson,
+          courseLevel: courseLevel,
+        ),
       ),
     );
   }
@@ -87,52 +96,50 @@ class RoadmapDetailPopup extends StatelessWidget {
           8.verticalSpace,
 
           // Duration
-          if (lesson.estimateCompleTime.en.isNotEmpty) ...[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AppText(
-                  'KEYPOINT',
-                  style: AppStyle.text12.copyWith(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppCustomColor.textTertiary,
-                    height: 1.75,
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              AppText(
+                'KEYPOINT',
+                style: AppStyle.text12.copyWith(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppCustomColor.textTertiary,
+                  height: 1.75,
                 ),
-                12.horizontalSpace,
-                Container(
-                  width: 4.w,
-                  height: 4.w,
-                  decoration: const ShapeDecoration(
-                    color: AppCustomColor.textTertiary,
-                    shape: OvalBorder(),
-                  ),
+              ),
+              12.horizontalSpace,
+              Container(
+                width: 4.w,
+                height: 4.w,
+                decoration: const ShapeDecoration(
+                  color: AppCustomColor.textTertiary,
+                  shape: OvalBorder(),
                 ),
-                12.horizontalSpace,
-                SvgPicture.asset(
-                  AppAsset.svg.app.icClock,
-                  width: 16.w,
-                  height: 16.w,
-                  colorFilter: ColorFilter.mode(
-                    AppCustomColor.textTertiary,
-                    BlendMode.srcIn,
-                  ),
+              ),
+              12.horizontalSpace,
+              SvgPicture.asset(
+                AppAsset.svg.app.icClock,
+                width: 16.w,
+                height: 16.w,
+                colorFilter: ColorFilter.mode(
+                  AppCustomColor.textTertiary,
+                  BlendMode.srcIn,
                 ),
-                8.horizontalSpace,
-                AppText(
-                  lesson.estimateCompleTime.text.toUpperCase(),
-                  style: AppStyle.text12.copyWith(
-                    fontSize: 11.sp,
-                    fontWeight: FontWeight.w700,
-                    color: AppCustomColor.textTertiary,
-                    height: 1.75,
-                  ),
+              ),
+              8.horizontalSpace,
+              AppText(
+                lesson.estimateCompleTime.text.toUpperCase(),
+                style: AppStyle.text12.copyWith(
+                  fontSize: 11.sp,
+                  fontWeight: FontWeight.w700,
+                  color: AppCustomColor.textTertiary,
+                  height: 1.75,
                 ),
-              ],
-            ),
-            12.verticalSpace,
-          ],
+              ),
+            ],
+          ),
+          12.verticalSpace,
 
           // Description
           AppText(
@@ -146,17 +153,17 @@ class RoadmapDetailPopup extends StatelessWidget {
 
           // Start Button
           AppButton.primary(
+            onPressed: () => _onStartLearning(context),
+            fullWidthBtn: true,
+            height: 54.h,
+            borderRadius: BorderRadius.circular(1000.r),
             child: AppText(
               'Start learning',
               style: AppStyle.textBold16.copyWith(
                 color: AppCustomColor.textWhite,
               ),
               textAlign: TextAlign.center,
-            ), // TODO: Add key to Sheets and regenerate
-            onPressed: () => _onStartLearning(context),
-            fullWidthBtn: true,
-            height: 54.h,
-            borderRadius: BorderRadius.circular(1000.r),
+            ),
           ),
         ],
       ),

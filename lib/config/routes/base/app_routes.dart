@@ -114,6 +114,7 @@ mixin RouteNamed {
   static const String courseRoadmap = 'Course Roadmap';
   static const String lessonList = 'Lesson List';
   static const String lessonExplainPopup = 'Lesson Explain Popup';
+  static const String roadmapDetailPopup = 'Roadmap Detail Popup';
   static const String courseLessonEmptyNotiPopup = 'Course Lesson Empty Noti Popup';
 
   //? Course - Lesson
