@@ -328,6 +328,7 @@ const TagDisplay = ({
 
 const EXERCISE_TYPE_LABELS: Record<ExerciseType, string> = {
   [ExerciseType.SINGLE_CHOICE]: "Single Choice",
+  [ExerciseType.SINGLE_CHOICE_SURVEY]: "Single Choice Survey",
   [ExerciseType.MULTIPLE_CHOICE]: "Multiple Choice",
   [ExerciseType.DRAG_DROP]: "Drag & Drop",
   [ExerciseType.RECORD]: "Record",

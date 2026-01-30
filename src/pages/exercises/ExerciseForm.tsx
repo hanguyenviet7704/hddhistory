@@ -32,6 +32,11 @@ import {
   IExerciseChoiceOption,
   IExerciseSingleChoice,
 } from "../../types/interface/learning-item/excercises/single-choice.interface";
+import {
+  IExerciseSingleChoiceSurvey,
+  IExerciseSurveyChoiceOption,
+  IExerciseSurveyDocumentGroup,
+} from "../../types/interface/learning-item/excercises/single-choice-survey.interface";
 import { IExerciseMultipleChoice } from "../../types/interface/learning-item/excercises/multiple-choice.interface";
 import {
   IAnswer,
@@ -153,6 +158,23 @@ const cleanDocumentItems = (documents: IDocument[]) => {
       return hasValue ? ({ ...doc, data: cleanedData } as IDocument) : null;
     })
     .filter(Boolean) as IDocument[];
+};
+
+const cleanDocumentGroups = (
+  groups?: IExerciseSurveyDocumentGroup[]
+): IExerciseSurveyDocumentGroup[] => {
+  if (!Array.isArray(groups)) return [];
+  return groups
+    .map((group) => ({
+      ...group,
+      id: group.id || "",
+      documents: cleanDocumentItems(group.documents || []),
+    }))
+    .filter((group) => {
+      const hasId = typeof group.id === "string" && group.id.trim().length > 0;
+      const hasDocs = group.documents && group.documents.length > 0;
+      return hasId || hasDocs;
+    });
 };
 
 const getDocumentContentLabel = (type: DocumentType) => {
@@ -481,6 +503,12 @@ export default function ExerciseForm({
         convertedQuestion.document = cleanedDocuments;
       }
 
+      if (question.type === ExerciseType.SINGLE_CHOICE_SURVEY) {
+        convertedQuestion.documentGroups = cleanDocumentGroups(
+          question.documentGroups || []
+        );
+      }
+
       return convertedQuestion;
     });
   };
@@ -657,6 +685,21 @@ export default function ExerciseForm({
           completionTime: 60,
           mainQuestion: 0,
         } as IExerciseMultipleChoice;
+      case ExerciseType.SINGLE_CHOICE_SURVEY:
+        return {
+          id,
+          exerciseId: "",
+          type,
+          tag: null,
+          document: defaultDocuments,
+          explanation: { [currentLang]: "" },
+          options: [] as IExerciseSurveyChoiceOption[],
+          documentGroups: [] as IExerciseSurveyDocumentGroup[],
+          level: [...DEFAULT_LEVELS],
+          maxScore: 10,
+          completionTime: 60,
+          mainQuestion: 0,
+        } as IExerciseSingleChoiceSurvey;
       case ExerciseType.DRAG_DROP:
         return {
           id,
@@ -1086,6 +1129,59 @@ export default function ExerciseForm({
                                 </div>
                               )}
 
+                            {question.type ===
+                              ExerciseType.SINGLE_CHOICE_SURVEY &&
+                              Array.isArray((question as any).options) && (
+                                <div>
+                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                    Options:
+                                  </span>
+                                  <ul className="mt-1 space-y-1">
+                                    {(question as any).options.map(
+                                      (opt: any, idx: number) => (
+                                        <li
+                                          key={idx}
+                                          className="flex items-center gap-2"
+                                        >
+                                          <TextWithTooltip
+                                            text={opt.value}
+                                            lang={lang}
+                                          />
+                                          {opt.documentGroupId && (
+                                            <span className="text-xs text-gray-500">
+                                              ({opt.documentGroupId})
+                                            </span>
+                                          )}
+                                        </li>
+                                      )
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+
+                            {question.type ===
+                              ExerciseType.SINGLE_CHOICE_SURVEY &&
+                              Array.isArray((question as any).documentGroups) &&
+                              (question as any).documentGroups.length > 0 && (
+                                <div>
+                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                    Document Groups:
+                                  </span>
+                                  <div className="flex flex-wrap gap-2 mt-1">
+                                    {(question as any).documentGroups.map(
+                                      (group: any, idx: number) => (
+                                        <span
+                                          key={`${group.id || "group"}-${idx}`}
+                                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-sky-100 text-sky-800"
+                                        >
+                                          {group.id || "Untitled"}
+                                        </span>
+                                      )
+                                    )}
+                                  </div>
+                                </div>
+                              )}
+
                             {question.type === ExerciseType.DRAG_DROP && (
                               <div>
                                 <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
@@ -1383,6 +1479,26 @@ export default function ExerciseForm({
         updated.options = [{ value: { [lang]: "" }, isCorrect: false }];
       }
 
+      if (type === ExerciseType.SINGLE_CHOICE_SURVEY) {
+        if (!updated.options || updated.options.length === 0) {
+          updated.options = [
+            { value: { [lang]: "" }, documentGroupId: "" },
+          ];
+        } else {
+          updated.options = updated.options.map((opt: any) => ({
+            value: opt?.value || { [lang]: "" },
+            documentGroupId: opt?.documentGroupId || "",
+          }));
+        }
+
+        updated.documentGroups = Array.isArray(updated.documentGroups)
+          ? updated.documentGroups.map((group: any) => ({
+              id: group?.id || "",
+              documents: group?.documents || [],
+            }))
+          : [];
+      }
+
       if (
         type === ExerciseType.DRAG_DROP &&
         (!updated.answer || updated.answer.length === 0)
@@ -1609,6 +1725,158 @@ export default function ExerciseForm({
       return null;
     };
 
+    const renderGroupDocumentFields = (
+      doc: IDocument,
+      groupIndex: number,
+      docIndex: number
+    ) => {
+      if (isTextualDocumentType(doc.type)) {
+        const label = getDocumentContentLabel(doc.type);
+        const isLongForm = doc.type === DocumentType.TEXT;
+        const placeholder =
+          doc.type === DocumentType.TEXT
+            ? "Enter content"
+            : `Enter ${label.toLowerCase()}`;
+
+        return (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              {label}
+            </label>
+            {isLongForm ? (
+              <textarea
+                value={getCurrentTranslationValue(doc.data.content, lang)}
+                onChange={(e) =>
+                  handleGroupDataChange(
+                    groupIndex,
+                    docIndex,
+                    "content",
+                    e.target.value
+                  )
+                }
+                rows={3}
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            ) : (
+              <input
+                type="text"
+                value={getCurrentTranslationValue(doc.data.content, lang)}
+                onChange={(e) =>
+                  handleGroupDataChange(
+                    groupIndex,
+                    docIndex,
+                    "content",
+                    e.target.value
+                  )
+                }
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder={placeholder}
+              />
+            )}
+          </div>
+        );
+      }
+
+      const mediaUrl = getCurrentTranslationValue(doc.data.url, lang) || "";
+
+      if (doc.type === DocumentType.IMAGE) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) =>
+                handleGroupDataChange(groupIndex, docIndex, "url", newUrl)
+              }
+              label="Image URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "exercises",
+              }}
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.AUDIO) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) =>
+                handleGroupDataChange(groupIndex, docIndex, "url", newUrl)
+              }
+              label="Audio URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "exercises",
+              }}
+              accept="audio/*"
+            />
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.VIDEO) {
+        return (
+          <div className="flex flex-col gap-3">
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={mediaUrl}
+                onUrlChange={(newUrl) =>
+                  handleGroupDataChange(groupIndex, docIndex, "url", newUrl)
+                }
+                label="Video URL"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "exercises",
+                }}
+              />
+            </div>
+            <div className="w-52">
+              <CloudflareFileUpload
+                initialUrl={doc.data.thumbnail || ""}
+                onUrlChange={(newUrl) =>
+                  handleGroupDataChange(
+                    groupIndex,
+                    docIndex,
+                    "thumbnail",
+                    newUrl
+                  )
+                }
+                label="Video Thumbnail"
+                uploadPayload={{
+                  prefix: "",
+                  folder: "exercises",
+                }}
+              />
+            </div>
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.ANIMATION) {
+        return (
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) =>
+                handleGroupDataChange(groupIndex, docIndex, "url", newUrl)
+              }
+              label="Animation URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "exercises",
+              }}
+              accept="application/json,.json,.lottie"
+            />
+          </div>
+        );
+      }
+
+      return null;
+    };
+
     const addNewDocument = () => {
       // Tìm ID lớn nhất hiện tại từ các document trong form
       const currentMaxId = (localFormData.document || []).reduce(
@@ -1649,6 +1917,11 @@ export default function ExerciseForm({
         ? cleanDocumentItems(localFormData.document)
         : [];
 
+      const cleanedDocumentGroups =
+        questionType === ExerciseType.SINGLE_CHOICE_SURVEY
+          ? cleanDocumentGroups(localFormData.documentGroups || [])
+          : undefined;
+
       let normalizedScoring = localFormData.scoringCriteria;
       if (questionType === ExerciseType.RECORD) {
         normalizedScoring = rebalanceRecordScoringCriteria(
@@ -1658,11 +1931,17 @@ export default function ExerciseForm({
         );
       }
 
-      onSave({
+      const nextPayload = {
         ...localFormData,
         document: cleanedDocuments,
         scoringCriteria: normalizedScoring,
-      });
+      } as any;
+
+      if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
+        nextPayload.documentGroups = cleanedDocumentGroups;
+      }
+
+      onSave(nextPayload);
     };
 
     // Add new option
@@ -1674,6 +1953,12 @@ export default function ExerciseForm({
         const newOptions = [
           ...localFormData.options,
           { value: { [lang]: "" }, isCorrect: false },
+        ];
+        handleChange("options", newOptions);
+      } else if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
+        const newOptions = [
+          ...localFormData.options,
+          { value: { [lang]: "" }, documentGroupId: "" },
         ];
         handleChange("options", newOptions);
       } else if (questionType === ExerciseType.DRAG_DROP) {
@@ -1692,7 +1977,8 @@ export default function ExerciseForm({
     const removeOption = (index: number) => {
       if (
         questionType === ExerciseType.SINGLE_CHOICE ||
-        questionType === ExerciseType.MULTIPLE_CHOICE
+        questionType === ExerciseType.MULTIPLE_CHOICE ||
+        questionType === ExerciseType.SINGLE_CHOICE_SURVEY
       ) {
         const newOptions = [...localFormData.options];
         newOptions.splice(index, 1);
@@ -1708,7 +1994,8 @@ export default function ExerciseForm({
     const updateOptionValue = (index: number, value: string) => {
       if (
         questionType === ExerciseType.SINGLE_CHOICE ||
-        questionType === ExerciseType.MULTIPLE_CHOICE
+        questionType === ExerciseType.MULTIPLE_CHOICE ||
+        questionType === ExerciseType.SINGLE_CHOICE_SURVEY
       ) {
         const newOptions = [...localFormData.options];
         const currentTranslation = newOptions[index].value || {};
@@ -1727,9 +2014,19 @@ export default function ExerciseForm({
           lang,
           value
         );
-        newOptions[index] = { ...newOptions[index], text: updatedTranslation };
+          newOptions[index] = { ...newOptions[index], text: updatedTranslation };
         handleChange("options", newOptions);
       }
+    };
+
+    const updateOptionDocumentGroupId = (
+      index: number,
+      documentGroupId: string
+    ) => {
+      if (questionType !== ExerciseType.SINGLE_CHOICE_SURVEY) return;
+      const newOptions = [...localFormData.options];
+      newOptions[index] = { ...newOptions[index], documentGroupId };
+      handleChange("options", newOptions);
     };
 
     // Update option correctness
@@ -1909,13 +2206,15 @@ export default function ExerciseForm({
       setLocalFormData((prev: any) => {
         const newOptions = [...(prev.options || [])];
         let nextId = localNextOptionId;
-        if (!newOptions[index]) {
-          if (questionType === ExerciseType.DRAG_DROP) {
-            newOptions[index] = { text: { [lang]: "" }, id: nextId++ };
-          } else {
-            newOptions[index] = { value: { [lang]: "" }, isCorrect: false };
-          }
+      if (!newOptions[index]) {
+        if (questionType === ExerciseType.DRAG_DROP) {
+          newOptions[index] = { text: { [lang]: "" }, id: nextId++ };
+        } else if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
+          newOptions[index] = { value: { [lang]: "" }, documentGroupId: "" };
+        } else {
+          newOptions[index] = { value: { [lang]: "" }, isCorrect: false };
         }
+      }
 
         lines.forEach((line, offset) => {
           const targetIndex = index + offset;
@@ -1926,6 +2225,12 @@ export default function ExerciseForm({
               ...existing,
               id,
               text: updateTranslationValue(existing?.text || {}, lang, line),
+            };
+          } else if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
+            newOptions[targetIndex] = {
+              ...existing,
+              value: updateTranslationValue(existing?.value || {}, lang, line),
+              documentGroupId: existing?.documentGroupId || "",
             };
           } else {
             newOptions[targetIndex] = {
@@ -1985,6 +2290,142 @@ export default function ExerciseForm({
       questionType === ExerciseType.DRAG_DROP &&
       (localFormData.form === FormDragDropType.TextGapFilling ||
         localFormData.form === FormDragDropType.ArrangeTheSequence);
+
+    const documentGroupIds = Array.isArray(localFormData.documentGroups)
+      ? localFormData.documentGroups
+          .map((group: any) =>
+            typeof group?.id === "string" ? group.id.trim() : ""
+          )
+          .filter(Boolean)
+      : [];
+
+    const addDocumentGroup = () => {
+      setLocalFormData((prev: any) => ({
+        ...prev,
+        documentGroups: [
+          ...(prev.documentGroups || []),
+          {
+            id: "",
+            documents: [createDefaultTextDocument(lang)],
+          },
+        ],
+      }));
+    };
+
+    const removeDocumentGroup = (index: number) => {
+      setLocalFormData((prev: any) => {
+        const groups = prev.documentGroups || [];
+        return {
+          ...prev,
+          documentGroups: groups.filter((_: any, i: number) => i !== index),
+        };
+      });
+    };
+
+    const updateDocumentGroupId = (index: number, value: string) => {
+      setLocalFormData((prev: any) => {
+        const groups = [...(prev.documentGroups || [])];
+        const current = groups[index] || { id: "", documents: [] };
+        groups[index] = { ...current, id: value };
+        return { ...prev, documentGroups: groups };
+      });
+    };
+
+    const addDocumentToGroup = (groupIndex: number) => {
+      setLocalFormData((prev: any) => {
+        const groups = [...(prev.documentGroups || [])];
+        const group = groups[groupIndex] || { id: "", documents: [] };
+        const currentDocs = group.documents || [];
+        const currentMaxId = currentDocs.reduce(
+          (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
+          0
+        );
+        const newId = currentMaxId + 1;
+        const nextDocuments = [
+          ...currentDocs,
+          {
+            id: newId,
+            type: DocumentType.TEXT,
+            data: createEmptyMediaDocument(lang),
+          },
+        ];
+        groups[groupIndex] = { ...group, documents: nextDocuments };
+        return { ...prev, documentGroups: groups };
+      });
+    };
+
+    const removeDocumentFromGroup = (
+      groupIndex: number,
+      docIndex: number
+    ) => {
+      setLocalFormData((prev: any) => {
+        const groups = [...(prev.documentGroups || [])];
+        const group = groups[groupIndex];
+        if (!group) return prev;
+        const documents = group.documents || [];
+        groups[groupIndex] = {
+          ...group,
+          documents: documents.filter((_: IDocument, i: number) => i !== docIndex),
+        };
+        return { ...prev, documentGroups: groups };
+      });
+    };
+
+    const handleGroupDocumentChange = (
+      groupIndex: number,
+      docIndex: number,
+      field: keyof IDocument,
+      value: any
+    ) => {
+      setLocalFormData((prev: any) => {
+        const groups = [...(prev.documentGroups || [])];
+        const group = groups[groupIndex] || { id: "", documents: [] };
+        const documents = [...(group.documents || [])];
+        const updatedDoc = {
+          ...documents[docIndex],
+          [field]: value,
+        };
+        if (field === "type") {
+          updatedDoc.data = createEmptyMediaDocument(lang);
+        }
+        documents[docIndex] = updatedDoc;
+        groups[groupIndex] = { ...group, documents };
+        return { ...prev, documentGroups: groups };
+      });
+    };
+
+    const handleGroupDataChange = (
+      groupIndex: number,
+      docIndex: number,
+      field: keyof IMediaDocument,
+      value: string | ITranslation
+    ) => {
+      setLocalFormData((prev: any) => {
+        const groups = [...(prev.documentGroups || [])];
+        const group = groups[groupIndex] || { id: "", documents: [] };
+        const documents = [...(group.documents || [])];
+        const currentDoc = documents[docIndex];
+        const targetFieldValue = currentDoc?.data?.[field];
+        const shouldTranslate =
+          (field === "content" || field === "url") && typeof value === "string";
+
+        documents[docIndex] = {
+          ...currentDoc,
+          data: {
+            ...currentDoc.data,
+            [field]: shouldTranslate
+              ? updateTranslationValue(
+                  (targetFieldValue as ITranslation) || {},
+                  lang,
+                  value
+                )
+              : value,
+          },
+        };
+        groups[groupIndex] = { ...group, documents };
+        return { ...prev, documentGroups: groups };
+      });
+    };
 
     return (
       <div className="space-y-4">
@@ -2166,6 +2607,206 @@ export default function ExerciseForm({
               >
                 <PlusIcon className="h-4 w-4 mr-1" />
                 Add Option
+              </button>
+            </div>
+          </div>
+        )}
+
+        {questionType === ExerciseType.SINGLE_CHOICE_SURVEY && (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Options
+            </label>
+            <datalist id="survey-document-group-ids">
+              {documentGroupIds.map((id: string) => (
+                <option key={id} value={id} />
+              ))}
+            </datalist>
+            <div className="space-y-3">
+              {localFormData.options.map((opt: any, idx: number) => (
+                <div
+                  key={idx}
+                  className="grid grid-cols-1 md:grid-cols-3 gap-2 items-center"
+                >
+                  <input
+                    type="text"
+                    value={getCurrentTranslationValue(opt.value, lang)}
+                    onChange={(e) => updateOptionValue(idx, e.target.value)}
+                    onPaste={(e) => handlePasteOptions(idx, e)}
+                    className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder={`Option ${idx + 1}`}
+                  />
+                  <input
+                    type="text"
+                    list="survey-document-group-ids"
+                    value={opt.documentGroupId || ""}
+                    onChange={(e) =>
+                      updateOptionDocumentGroupId(idx, e.target.value)
+                    }
+                    className="border rounded-lg p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="Document group ID (optional)"
+                  />
+                  <div className="flex justify-end">
+                    {localFormData.options.length > 1 && (
+                      <button
+                        type="button"
+                        onClick={() => removeOption(idx)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                      >
+                        <TrashIcon className="h-5 w-5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={addOption}
+                className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+              >
+                <PlusIcon className="h-4 w-4 mr-1" />
+                Add Option
+              </button>
+            </div>
+          </div>
+        )}
+
+        {questionType === ExerciseType.SINGLE_CHOICE_SURVEY && (
+          <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="font-medium text-gray-800">Document Groups</h3>
+            </div>
+
+            {(localFormData.documentGroups || []).length === 0 ? (
+              <p className="text-sm text-gray-500">
+                Chưa có group. Thêm group để gắn card cho từng kịch bản.
+              </p>
+            ) : (
+              <div className="space-y-4">
+                {(localFormData.documentGroups || []).map(
+                  (group: any, groupIndex: number) => (
+                    <div
+                      key={`group-${groupIndex}`}
+                      className="border rounded-lg p-4 bg-white"
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex-1">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Group ID
+                          </label>
+                          <input
+                            type="text"
+                            value={group.id || ""}
+                            onChange={(e) =>
+                              updateDocumentGroupId(groupIndex, e.target.value)
+                            }
+                            className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                            placeholder="e.g., cardA"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeDocumentGroup(groupIndex)}
+                          className="ml-3 text-red-500 hover:text-red-700"
+                        >
+                          <TrashIcon className="h-5 w-5" />
+                        </button>
+                      </div>
+
+                      {(group.documents || []).map(
+                        (doc: IDocument, docIndex: number) => (
+                          <div
+                            key={doc.id || docIndex}
+                            className="border rounded-lg p-4 bg-gray-50 mb-3"
+                          >
+                            <div className="flex justify-between items-center mb-3">
+                              <h4 className="font-medium text-sky-400">
+                                Content {docIndex + 1}
+                              </h4>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  removeDocumentFromGroup(
+                                    groupIndex,
+                                    docIndex
+                                  )
+                                }
+                                className="text-red-500 hover:text-red-700"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            </div>
+
+                            <div className="space-y-3">
+                              <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  Type
+                                </label>
+                                <select
+                                  value={doc.type}
+                                  onChange={(e) =>
+                                    handleGroupDocumentChange(
+                                      groupIndex,
+                                      docIndex,
+                                      "type",
+                                      e.target.value as DocumentType
+                                    )
+                                  }
+                                  className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                                >
+                                  <option value={DocumentType.TITLE}>
+                                    Title
+                                  </option>
+                                  <option value={DocumentType.CAPTION}>
+                                    Caption
+                                  </option>
+                                  <option value={DocumentType.TEXT}>Text</option>
+                                  <option value={DocumentType.IMAGE}>
+                                    Image
+                                  </option>
+                                  <option value={DocumentType.VIDEO}>
+                                    Video
+                                  </option>
+                                  <option value={DocumentType.AUDIO}>
+                                    Audio
+                                  </option>
+                                  <option value={DocumentType.ANIMATION}>
+                                    Animation
+                                  </option>
+                                </select>
+                              </div>
+                            </div>
+                            {renderGroupDocumentFields(
+                              doc,
+                              groupIndex,
+                              docIndex
+                            )}
+                          </div>
+                        )
+                      )}
+
+                      <div className="text-center">
+                        <button
+                          type="button"
+                          onClick={() => addDocumentToGroup(groupIndex)}
+                          className="px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                        >
+                          Add Content
+                        </button>
+                      </div>
+                    </div>
+                  )
+                )}
+              </div>
+            )}
+            <div className="flex justify-center pt-2">
+              <button
+                type="button"
+                onClick={addDocumentGroup}
+                className="text-blue-600 hover:text-blue-800 p-2 rounded-full"
+                title="Add Group"
+              >
+                <PlusCircleIcon className="h-6 w-6" />
               </button>
             </div>
           </div>
@@ -2788,6 +3429,19 @@ export default function ExerciseForm({
                       <span className="text-blue-600 font-bold">A</span>
                     </div>
                     <span className="font-medium">Single Choice</span>
+                  </button>
+                  <button
+                    onClick={() =>
+                      handleSelectExerciseType(
+                        ExerciseType.SINGLE_CHOICE_SURVEY
+                      )
+                    }
+                    className="p-4 bg-cyan-50 rounded-lg hover:bg-cyan-100 transition flex flex-col items-center gap-2"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
+                      <span className="text-cyan-600 font-bold">S</span>
+                    </div>
+                    <span className="font-medium">Single Choice Survey</span>
                   </button>
                   <button
                     onClick={() =>

@@ -14,6 +14,10 @@ import {
   IExerciseRecord,
 } from "./excercises/record.interface";
 import {
+  ExerciseSingleChoiceSurveyPayload,
+  IExerciseSingleChoiceSurvey,
+} from "./excercises/single-choice-survey.interface";
+import {
   ExerciseSingleChoicePayload,
   IExerciseSingleChoice,
 } from "./excercises/single-choice.interface";
@@ -76,12 +80,14 @@ export interface LearningItemPayload {
 
 export type ExerciseInput =
   | Partial<IExerciseSingleChoice>
+  | Partial<IExerciseSingleChoiceSurvey>
   | Partial<IExerciseMultipleChoice>
   | Partial<IExerciseDragDrop>
   | Partial<IExerciseRecord>;
 
 export type ExerciseInputPayload =
   | Partial<ExerciseSingleChoicePayload>
+  | Partial<ExerciseSingleChoiceSurveyPayload>
   | Partial<ExerciseMultipleChoicePayload>
   | Partial<ExerciseDragDropPayload>
   | Partial<ExerciseRecordPayload>;

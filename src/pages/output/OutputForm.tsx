@@ -97,7 +97,6 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     setCurrentOutput((prev) => ({
       ...prev,
       icon: null, // Gán icon về null để xoá
-      lightIcon: null,
     }));
     // Đảm bảo ô tìm kiếm cũng được làm sạch
     setIconQuery("");
@@ -151,12 +150,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     };
   }, [lightIconQuery]);
 
-  const getDisplayIcon = (lesson: ILesson) => {
-    const light = lesson.lightIcon as any;
-    const dark = lesson.icon as any;
-    const lightValid = light?.url || light?.title || light?.color;
-    return lightValid ? light : dark;
-  };
+  const getIconValue = (lesson: ILesson) => (lesson.icon as any) || null;
 
   const handleOutputImageChange = (newUrl: string) => {
     setCurrentOutput((prev) => ({
@@ -672,7 +666,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       isIconSearchActive
                         ? iconQuery
                         : getTranslationValue(
-                            getDisplayIcon(currentOutput)?.title,
+                            getIconValue(currentOutput)?.title,
                             lang
                           ) || ""
                     }
@@ -682,7 +676,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
                       setIconQuery(
                         getTranslationValue(
-                          getDisplayIcon(currentOutput)?.title,
+                          getIconValue(currentOutput)?.title,
                           lang
                         ) || ""
                       );
@@ -700,7 +694,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   />
 
                   {/* Nút 'x' để xoá icon - chỉ hiển thị khi có icon và không đang tìm kiếm */}
-                  {getDisplayIcon(currentOutput) && !isIconSearchActive && (
+                  {getIconValue(currentOutput) && !isIconSearchActive && (
                     <button
                       type="button"
                       onClick={handleClearIcon}
