@@ -32,10 +32,10 @@ enum LessonPublishStatus {
 }
 
 enum LessonType {
-  @JsonValue('lesson')
-  lesson,
   @JsonValue('roleplay')
   roleplay,
+  @JsonValue('lesson')
+  lesson,
   @JsonValue('output')
   output,
 }

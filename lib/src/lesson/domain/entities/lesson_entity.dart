@@ -43,4 +43,11 @@ extension LessonEntityExtension on LessonEntity {
   String get trackingName => title.en;
 
   String get trackingNameOrText => title.en.isNotEmpty ? title.en : title.text;
+
+  List<LessonEntity> get lessonsPerKeypoint {
+    return List.generate(
+      keypoints.length,
+      (index) => copyWith(keypoints: [keypoints[index]]),
+    );
+  }
 }

@@ -11,6 +11,61 @@ class CourseRoadmapTimeline extends StatelessWidget {
     required this.lockedLessonStartIndex,
   });
 
+  void _onLessonTap(
+    BuildContext context, {
+    required LessonEntity targetLesson,
+    required bool isLocked,
+    required LessonEntity roleplay,
+  }) {
+    if (targetLesson.progess == ProcessEnum.notStarted && !kDebugMode) return;
+
+    if (targetLesson.type == LessonType.lesson) {
+      final trackingData = CourseLessonTrackingData.fromLesson(context, targetLesson);
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoadmapItemClick(
+          trackingData,
+          itemType: 'lesson',
+        );
+      }
+    }
+
+    final isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
+    if (isLocked && !isUserPremium) {
+      final trackingData = CourseTrackingData.fromCourseId(context, targetLesson.courseId);
+      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
+        PaywallEntryPoint.courseRoadmap,
+        trackingData: trackingData,
+      );
+      PaywallRoute().push(context);
+      return;
+    }
+
+    switch (targetLesson.type) {
+      case LessonType.lesson:
+        if (roleplay.id.isNotEmpty) {
+          context.read<ProgressCubit>().loadUserProgressLesson(lessonId: roleplay.id);
+        }
+        context.read<CourseLessonCubit>()
+          ..reset()
+          ..loadLesson(targetLesson.id);
+        LessonListRoute().go(context);
+        context.read<CourseRoadmapCubit>()
+          ..setCurrentCourseLevel(courseLevel)
+          ..setCurrentLesson(targetLesson);
+        break;
+      case LessonType.roleplay:
+        AppDI.injector.get<RoleplayCubit>()
+          ..reset()
+          ..setCurrentLesson(targetLesson)
+          ..loadLearningItem(targetLesson.learningItemId, estimateCompleTime: targetLesson.estimateCompleTime);
+        context.read<RoleplayPointCubit>().reset();
+        RoleplayIntroRoute().go(context);
+        break;
+      case LessonType.output:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     if (lessons.isEmpty) {
@@ -78,10 +133,21 @@ class CourseRoadmapTimeline extends StatelessWidget {
                 top: 8.h,
               ),
               child: LessonKeypointCard(
-                courseLevel: courseLevel,
-                premiumLesson: isLocked,
-                lesson: lesson,
-                lessonRolePlay: lessons.lessonRolePlay(lesson.id),
+                keypoint: lesson.keypoints.isNotEmpty
+                    ? lesson.keypoints.first
+                    : KeypointEntity(
+                        id: lesson.id,
+                        title: lesson.title,
+                        description: lesson.description,
+                        estimateCompleTime: lesson.estimateCompleTime,
+                        progess: lesson.progess,
+                      ),
+                onTap: () => _onLessonTap(
+                  context,
+                  targetLesson: lesson,
+                  isLocked: isLocked,
+                  roleplay: lessons.lessonRolePlay(lesson.id),
+                ),
               ),
             ),
           );

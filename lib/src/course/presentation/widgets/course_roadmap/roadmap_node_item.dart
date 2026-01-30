@@ -16,9 +16,7 @@ class RoadmapNodeItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final items = node.timelineItems(levelLessons);
-    if (items.isEmpty) return const SizedBox.shrink();
-    final resolvedRoleplay = node.resolveRoleplay(levelLessons);
+    if (node.lessonsList.isEmpty) return const SizedBox.shrink();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -28,12 +26,12 @@ class RoadmapNodeItem extends StatelessWidget {
           description: node.description,
         ),
 
-        _RoadmapNodeTimeline(
-          items: items,
+        RoadmapNodeTimeline(
+          items: node.lessonsList,
           levelLessons: levelLessons,
           lockedLessonStartIndex: lockedLessonStartIndex,
           courseLevel: courseLevel,
-          roleplay: resolvedRoleplay,
+          roleplay: node.roleplay,
         ),
         32.verticalSpace,
       ],

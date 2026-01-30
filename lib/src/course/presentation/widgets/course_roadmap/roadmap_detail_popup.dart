@@ -48,6 +48,10 @@ class RoadmapDetailPopup extends StatelessWidget {
       );
     }
 
+    // if (roleplay.id.isNotEmpty) {
+    //   context.read<ProgressCubit>().loadUserProgressLesson(lessonId: roleplay.id);
+    // }
+
     // Navigation Logic
     context.read<CourseLessonCubit>()
       ..reset()

@@ -1,13 +1,14 @@
 part of '../../../course.dart';
 
-class _RoadmapNodeTimeline extends StatelessWidget {
+class RoadmapNodeTimeline extends StatelessWidget {
   final List<LessonEntity> items;
   final List<LessonEntity> levelLessons;
   final int lockedLessonStartIndex;
   final CourseLevel courseLevel;
   final LessonEntity roleplay;
 
-  const _RoadmapNodeTimeline({
+  const RoadmapNodeTimeline({
+    super.key,
     required this.items,
     required this.levelLessons,
     required this.lockedLessonStartIndex,
@@ -19,7 +20,7 @@ class _RoadmapNodeTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: List.generate(items.length, (index) {
-        return _RoadmapTimelineItem(
+        return RoadmapTimelineItem(
           lesson: items[index],
           isFirst: index == 0,
           isLast: index == items.length - 1,
@@ -33,7 +34,7 @@ class _RoadmapNodeTimeline extends StatelessWidget {
   }
 }
 
-class _RoadmapTimelineItem extends StatelessWidget {
+class RoadmapTimelineItem extends StatelessWidget {
   final LessonEntity lesson;
   final bool isFirst;
   final bool isLast;
@@ -42,7 +43,8 @@ class _RoadmapTimelineItem extends StatelessWidget {
   final CourseLevel courseLevel;
   final LessonEntity roleplay;
 
-  const _RoadmapTimelineItem({
+  const RoadmapTimelineItem({
+    super.key,
     required this.lesson,
     required this.isFirst,
     required this.isLast,
@@ -69,94 +71,45 @@ class _RoadmapTimelineItem extends StatelessWidget {
     return null;
   }
 
-  Widget _buildIndicator(BuildContext context, bool isLocked) {
-    final iconUrl = _iconUrl;
-    return Container(
-      padding: EdgeInsets.all(13.5.w),
-      decoration: BoxDecoration(
-        color: isLocked ? AppCustomColor.neutral100 : AppCustomColor.brandPrimary50,
-        shape: BoxShape.circle,
-      ),
-      child: Center(
-        child: iconUrl != null
-            ? ClipOval(
-                child: CachedNetworkImage(
-                  imageUrl: iconUrl,
-                  width: 28.w,
-                  height: 28.w,
-                  fit: BoxFit.contain,
-                  placeholder: (context, url) => SvgPicture.asset(
-                    _defaultIconAsset,
-                    width: 24.w,
-                    height: 24.w,
-                    colorFilter: ColorFilter.mode(
-                      isLocked ? AppCustomColor.textQuaternary : AppCustomColor.brandPrimary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                  errorWidget: (context, url, error) => SvgPicture.asset(
-                    _defaultIconAsset,
-                    width: 24.w,
-                    height: 24.w,
-                    colorFilter: ColorFilter.mode(
-                      isLocked ? AppCustomColor.textQuaternary : AppCustomColor.brandPrimary,
-                      BlendMode.srcIn,
-                    ),
-                  ),
-                ),
-              )
-            : SvgPicture.asset(
-                _defaultIconAsset,
-                width: 28.w,
-                height: 28.w,
-                colorFilter: ColorFilter.mode(
-                  isLocked ? AppCustomColor.textQuaternary : AppCustomColor.brandPrimary,
-                  BlendMode.srcIn,
-                ),
-              ),
-      ),
+  bool _canTap(LessonEntity lesson) => lesson.progess != ProcessEnum.notStarted || kDebugMode;
+
+  bool _handlePaywall(BuildContext context, LessonEntity lesson, bool isLocked) {
+    if (!isLocked) return true;
+    final isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
+    if (isUserPremium) return true;
+
+    final trackingData = CourseTrackingData.fromCourseId(context, lesson.courseId);
+    AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
+      PaywallEntryPoint.courseRoadmap,
+      trackingData: trackingData,
     );
+    PaywallRoute().push(context);
+    return false;
   }
 
-  void _onRoleplayTap(BuildContext context, bool isLocked) {
-    if (isLocked) return;
-    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackRoadmapItemClick(
-        trackingData,
-        itemType: 'roadmap_roleplay_item',
-      );
-    }
-    context.read<CourseLessonCubit>()
+  void _handleRoleplayTap(BuildContext context, LessonEntity lesson, bool isLocked) {
+    if (!_canTap(lesson)) return;
+    if (!_handlePaywall(context, lesson, isLocked)) return;
+
+    AppDI.injector.get<RoleplayCubit>()
       ..reset()
-      ..loadLesson(lesson.id);
-    LessonListRoute().go(context);
-    context.read<CourseRoadmapCubit>()
-      ..setCurrentCourseLevel(courseLevel)
-      ..setCurrentLesson(lesson);
+      ..setCurrentLesson(lesson)
+      ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
+    context.read<RoleplayPointCubit>().reset();
+    RoleplayIntroRoute().go(context);
   }
 
-  Widget _buildContent(BuildContext context, bool isLocked) {
-    if (lesson.type == LessonType.roleplay) {
-      return RoadmapRoleplayCard(
-        lesson: lesson,
-        isLocked: isLocked,
-        onTap: () => _onRoleplayTap(context, isLocked),
-      );
-    }
+  void _handleLessonKeypointTap(
+    BuildContext context,
+    bool isLocked,
+  ) {
+    if (!_canTap(lesson)) return;
+    if (!_handlePaywall(context, lesson, isLocked)) return;
 
-    return LessonKeypointCard(
-      courseLevel: courseLevel,
-      premiumLesson: isLocked,
+    RoadmapDetailPopup.show(
+      context,
       lesson: lesson,
-      lessonRolePlay: roleplay,
-      onOverrideTap: lesson.type == LessonType.lesson
-          ? () => RoadmapDetailPopup.show(
-              context,
-              lesson: lesson,
-              courseLevel: courseLevel,
-            )
-          : null,
+      courseLevel: courseLevel,
     );
   }
 
@@ -173,7 +126,11 @@ class _RoadmapTimelineItem extends StatelessWidget {
           width: 54.w,
           height: 54.w,
           padding: EdgeInsets.zero,
-          indicator: _buildIndicator(context, isLocked),
+          indicator: _RoadmapNodeIndicator(
+            iconUrl: _iconUrl,
+            defaultIconAsset: _defaultIconAsset,
+            isLocked: isLocked,
+          ),
         ),
         beforeLineStyle: const LineStyle(
           color: AppCustomColor.borderSecondary,
@@ -191,7 +148,12 @@ class _RoadmapTimelineItem extends StatelessWidget {
         ),
         endChild: Padding(
           padding: EdgeInsets.only(left: 16.w),
-          child: _buildContent(context, isLocked),
+          child: RoadmapNodeContent(
+            lesson: lesson,
+            isLocked: isLocked,
+            onRoleplayTap: () => _handleRoleplayTap(context, lesson, isLocked),
+            onKeypointTap: () => _handleLessonKeypointTap(context, isLocked),
+          ),
         ),
       ),
     );
