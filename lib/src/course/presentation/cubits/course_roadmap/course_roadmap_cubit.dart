@@ -3,6 +3,7 @@ part of '../../../course.dart';
 @lazySingleton
 class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUseCaseHandlerMixin<CourseRoadmapState> {
   final GetRoadmapUseCase _getRoadmapUseCase;
+  LessonEntity? _cachedLessonAction;
 
   CourseRoadmapCubit(
     this._getRoadmapUseCase,
@@ -29,7 +30,12 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
 
   void setCurrentCourseLevel(CourseLevel level) => emit(state.copyWith(currentCourseLevel: level));
 
-  void setCurrentLesson(LessonEntity lesson) => emit(state.copyWith(currentLesson: lesson));
+  void setCurrentLesson(LessonEntity lesson) {
+    _cachedLessonAction = lesson;
+    emit(state.copyWith(currentLesson: lesson));
+  }
+
+  LessonEntity? get cachedLessonAction => _cachedLessonAction;
 
   void loadRoadmap({String courseId = ''}) async {
     if (courseId.isEmpty) {

@@ -1,19 +1,19 @@
 part of '../../../course.dart';
 
 class CourseRoadmapFloatingButton extends StatelessWidget {
+  final VoidCallback onPressed;
   final String label;
 
   const CourseRoadmapFloatingButton({
     super.key,
+    required this.onPressed,
     this.label = 'Start lesson',
   });
 
   @override
   Widget build(BuildContext context) {
     return AppButton.primary(
-      onPressed: () {
-        CourseRoadmapRoute().go(context);
-      },
+      onPressed: onPressed,
       width: 160.w,
       height: 54.h,
       padding: EdgeInsets.symmetric(horizontal: 10.w),

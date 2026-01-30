@@ -1,5 +1,61 @@
 part of '../../../course.dart';
 
+class RoadmapNodeActionHelper {
+  const RoadmapNodeActionHelper._();
+
+  static bool _canTapLesson(LessonEntity lesson) => lesson.roadmapProgress != ProcessEnum.notStarted || kDebugMode;
+
+  static bool _handlePaywall(BuildContext context, LessonEntity lesson, bool isLocked) {
+    if (!isLocked) return true;
+    final isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
+    if (isUserPremium) return true;
+
+    final trackingData = CourseTrackingData.fromCourseId(context, lesson.courseId);
+    AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
+      PaywallEntryPoint.courseRoadmap,
+      trackingData: trackingData,
+    );
+    PaywallRoute().push(context);
+    return false;
+  }
+
+  static void _startRoleplay(BuildContext context, LessonEntity lesson) {
+    AppDI.injector.get<RoleplayCubit>()
+      ..reset()
+      ..setCurrentLesson(lesson)
+      ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
+    context.read<RoleplayPointCubit>().reset();
+    RoleplayIntroRoute().go(context);
+  }
+
+  static void startSelectedLessonAction(BuildContext context) {
+    final cubit = context.read<CourseRoadmapCubit>();
+    final roadmapState = cubit.state;
+    final lesson = cubit.cachedLessonAction;
+    if (lesson == null || lesson.id.isEmpty) return;
+
+    final isLocked = true;
+    if (!_canTapLesson(lesson)) return;
+    if (!_handlePaywall(context, lesson, isLocked)) return;
+
+    switch (lesson.type) {
+      case LessonType.roleplay:
+        _startRoleplay(context, lesson);
+        return;
+      case LessonType.lesson:
+        if (lesson.keypoints.isEmpty) return;
+        RoadmapDetailPopup.show(
+          context,
+          lesson: lesson,
+          courseLevel: roadmapState.currentCourseLevel,
+        );
+        return;
+      case LessonType.output:
+        return;
+    }
+  }
+}
+
 class RoadmapNodeTimeline extends StatelessWidget {
   final List<LessonEntity> items;
   final bool enableSequentialUnlock;
@@ -37,52 +93,6 @@ class RoadmapTimelineItem extends StatelessWidget {
     required this.isLast,
   });
 
-  bool _canTap(LessonEntity lesson) => lesson.roadmapProgress != ProcessEnum.notStarted || kDebugMode;
-
-  bool _handlePaywall(BuildContext context, LessonEntity lesson, bool isLocked) {
-    if (!isLocked) return true;
-    final isUserPremium = context.read<ProfileCubit>().state.user.iapSubscriptions.isNotEmpty;
-    if (isUserPremium) return true;
-
-    final trackingData = CourseTrackingData.fromCourseId(context, lesson.courseId);
-    AppDI.injector.get<IapCubit>().setPaywallEntryPoint(
-      PaywallEntryPoint.courseRoadmap,
-      trackingData: trackingData,
-    );
-    PaywallRoute().push(context);
-    return false;
-  }
-
-  void _handleRoleplayTap(BuildContext context, LessonEntity lesson, bool isLocked) {
-    if (!_canTap(lesson)) return;
-    if (!_handlePaywall(context, lesson, isLocked)) return;
-
-    context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
-
-    AppDI.injector.get<RoleplayCubit>()
-      ..reset()
-      ..setCurrentLesson(lesson)
-      ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
-    context.read<RoleplayPointCubit>().reset();
-    RoleplayIntroRoute().go(context);
-  }
-
-  void _handleLessonKeypointTap(
-    BuildContext context,
-    bool isLocked,
-  ) {
-    if (!_canTap(lesson)) return;
-    if (!_handlePaywall(context, lesson, isLocked)) return;
-
-    context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
-
-    RoadmapDetailPopup.show(
-      context,
-      lesson: lesson,
-      courseLevel: CourseLevel.level1,
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final isLocked = true;
@@ -115,8 +125,6 @@ class RoadmapTimelineItem extends StatelessWidget {
         child: RoadmapNodeContent(
           lesson: lesson,
           isLocked: isLocked,
-          onRoleplayTap: () => _handleRoleplayTap(context, lesson, isLocked),
-          onKeypointTap: () => _handleLessonKeypointTap(context, isLocked),
         ),
       ),
     );
