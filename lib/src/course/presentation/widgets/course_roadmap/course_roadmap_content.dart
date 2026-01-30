@@ -25,6 +25,7 @@ class CourseRoadmapContent extends StatelessWidget {
                 );
                 return CourseLevelContent(
                   roadmapLevel: roadmap.levels[index],
+                  enableSequentialUnlock: roadmap.levelSequentialUnlockFlags.elementAt(index),
                 );
               },
             );

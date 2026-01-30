@@ -2,15 +2,17 @@ part of '../../../course.dart';
 
 class RoadmapNodeTimeline extends StatelessWidget {
   final List<LessonEntity> items;
+  final bool enableSequentialUnlock;
 
   const RoadmapNodeTimeline({
     super.key,
     required this.items,
+    this.enableSequentialUnlock = true,
   });
 
   @override
   Widget build(BuildContext context) {
-    final displayItems = items.applySequentialUnlock();
+    final displayItems = items.applySequentialUnlock(enableAutoUnlock: enableSequentialUnlock);
     return Column(
       children: List.generate(displayItems.length, (index) {
         return RoadmapTimelineItem(

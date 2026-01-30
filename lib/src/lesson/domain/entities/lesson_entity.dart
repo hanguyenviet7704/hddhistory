@@ -32,7 +32,8 @@ extension LessonEntityListExtension on List<LessonEntity> {
     return LessonEntity();
   }
 
-  List<LessonEntity> applySequentialUnlock() {
+  List<LessonEntity> applySequentialUnlock({bool enableAutoUnlock = true}) {
+    if (!enableAutoUnlock) return toList();
     bool hasInProgress = false;
     bool previousAllDone = true;
     return map((lesson) {
@@ -46,26 +47,12 @@ extension LessonEntityListExtension on List<LessonEntity> {
       if (!hasInProgress && previousAllDone) {
         hasInProgress = true;
         previousAllDone = false;
-        return _markLessonInProgress(lesson);
+        return lesson.markInProgressForRoadmap();
       }
       previousAllDone = false;
       return lesson;
     }).toList();
   }
-}
-
-LessonEntity _markLessonInProgress(LessonEntity lesson) {
-  if (lesson.keypoints.isEmpty) {
-    return lesson.copyWith(progess: ProcessEnum.inProgress);
-  }
-
-  final keypoint = lesson.keypoints.first;
-  if (keypoint.progressFromAverageScore != ProcessEnum.notStarted) return lesson;
-  return lesson.copyWith(
-    keypoints: [
-      keypoint.copyWith(progess: ProcessEnum.inProgress),
-    ],
-  );
 }
 
 extension LessonEntityExtension on LessonEntity {
@@ -94,15 +81,27 @@ extension LessonEntityExtension on LessonEntity {
     return _higherProgress(progess, keypointProgress);
   }
 
+  LessonEntity markInProgressForRoadmap() {
+    if (keypoints.isEmpty) {
+      return copyWith(progess: ProcessEnum.inProgress);
+    }
+
+    final keypoint = keypoints.first;
+    if (keypoint.progressFromAverageScore != ProcessEnum.notStarted) return this;
+    return copyWith(
+      keypoints: [
+        keypoint.copyWith(progess: ProcessEnum.inProgress),
+      ],
+    );
+  }
+
   ProcessEnum _higherProgress(ProcessEnum a, ProcessEnum b) {
     return a.rank >= b.rank ? a : b;
   }
 
   String get roadmapIconUrl {
-    if (roadmapProgress == ProcessEnum.done) return lightIcon.url;
-    if (roadmapProgress == ProcessEnum.inProgress) {
-      return firstKeypoint.progressFromAverageScore == ProcessEnum.done ? lightIcon.url : icon.url;
-    }
+    if (roadmapProgress == ProcessEnum.notStarted) return icon.url;
+    if (lightIcon.url.isNotEmpty) return lightIcon.url;
     return icon.url;
   }
 }

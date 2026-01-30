@@ -2,10 +2,12 @@ part of '../../../course.dart';
 
 class RoadmapNodeItem extends StatelessWidget {
   final RoadmapNodeEntity node;
+  final bool enableSequentialUnlock;
 
   const RoadmapNodeItem({
     super.key,
     required this.node,
+    this.enableSequentialUnlock = true,
   });
 
   @override
@@ -22,6 +24,7 @@ class RoadmapNodeItem extends StatelessWidget {
 
         RoadmapNodeTimeline(
           items: node.lessonsList,
+          enableSequentialUnlock: enableSequentialUnlock,
         ),
         32.verticalSpace,
       ],

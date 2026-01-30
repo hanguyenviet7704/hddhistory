@@ -45,5 +45,14 @@ extension RoadmapEntityExtension on RoadmapEntity {
     return levelIndex <= lastCompletedLevelIndex;
   }
 
+  List<bool> get levelSequentialUnlockFlags {
+    bool previousLevelsCompleted = true;
+    return levels.map((level) {
+      final enableSequentialUnlock = level.hasRoadmapProgress || previousLevelsCompleted;
+      previousLevelsCompleted = previousLevelsCompleted && level.isRoadmapCompleted;
+      return enableSequentialUnlock;
+    }).toList();
+  }
+
   int get totalLessons => levels.fold(0, (sum, level) => sum + level.totalLessons);
 }

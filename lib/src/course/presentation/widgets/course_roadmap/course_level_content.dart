@@ -2,10 +2,17 @@ part of '../../../course.dart';
 
 class CourseLevelContent extends StatelessWidget {
   final RoadmapLevelEntity roadmapLevel;
+  final bool enableSequentialUnlock;
   const CourseLevelContent({
     super.key,
     required this.roadmapLevel,
+    this.enableSequentialUnlock = true,
   });
+
+  List<bool> get _sequentialUnlockFlags {
+    if (!enableSequentialUnlock) return List<bool>.filled(roadmapLevel.nodes.length, false);
+    return roadmapLevel.sequentialUnlockFlags;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,11 +20,12 @@ class CourseLevelContent extends StatelessWidget {
       children: [
         CourseRoadmapHeaderCard(roadmapLevel: roadmapLevel),
         16.verticalSpace,
-        ...roadmapLevel.nodes.map(
-          (node) => RoadmapNodeItem(
-            node: node,
-          ),
-        ),
+        ...roadmapLevel.nodes.asMap().entries.map((entry) {
+          return RoadmapNodeItem(
+            node: entry.value,
+            enableSequentialUnlock: _sequentialUnlockFlags.elementAt(entry.key),
+          );
+        }),
 
         // CourseRoadmapTimeline(
         //   lessons: roadmapLevel.appProgressLessons(usingAppProgressLessons),

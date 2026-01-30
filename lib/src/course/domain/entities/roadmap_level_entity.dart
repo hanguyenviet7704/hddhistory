@@ -27,6 +27,29 @@ extension RoadmapLevelEntityExtension on RoadmapLevelEntity {
 
   bool get isCompleted => completedLessons >= totalLessons;
 
+  List<LessonEntity> get roadmapLessonsList => [
+    ...nodes.expand((node) => node.lessonsList),
+  ];
+
+  bool get hasRoadmapProgress =>
+      roadmapLessonsList.any((lesson) => lesson.roadmapProgress != ProcessEnum.notStarted);
+
+  bool get isRoadmapCompleted =>
+      roadmapLessonsList.isNotEmpty && roadmapLessonsList.every((lesson) => lesson.roadmapProgress == ProcessEnum.done);
+
+  List<bool> get sequentialUnlockFlags {
+    bool previousNodesCompleted = true;
+    return nodes.map((node) {
+      final items = node.lessonsList;
+      final nodeHasProgress = items.any((lesson) => lesson.roadmapProgress != ProcessEnum.notStarted);
+      final nodeItemsCompleted =
+          items.isNotEmpty && items.every((lesson) => lesson.roadmapProgress == ProcessEnum.done);
+      final enableSequentialUnlock = nodeHasProgress || previousNodesCompleted;
+      previousNodesCompleted = previousNodesCompleted && nodeItemsCompleted;
+      return enableSequentialUnlock;
+    }).toList();
+  }
+
   List<LessonEntity> appProgressLessons(bool usingAppProgressLessons) {
     if (!usingAppProgressLessons) return lessonList;
     if (lessonList.isEmpty) return [];
