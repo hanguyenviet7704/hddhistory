@@ -44,10 +44,9 @@ class RoadmapNodeActionHelper {
         return;
       case LessonType.lesson:
         if (lesson.keypoints.isEmpty) return;
-        final keypointLesson = lesson.asKeypointLesson;
         RoadmapDetailPopup.show(
           context,
-          lesson: keypointLesson,
+          lesson: lesson,
           courseLevel: roadmapState.currentCourseLevel,
         );
         return;

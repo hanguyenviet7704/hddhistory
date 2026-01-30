@@ -56,17 +56,6 @@ extension LessonEntityListExtension on List<LessonEntity> {
 }
 
 extension LessonEntityExtension on LessonEntity {
-  LessonEntity get asKeypointLesson {
-    if (type != LessonType.lesson) return this;
-    final keypoint = firstKeypoint;
-    if (keypoint.id.isEmpty) return this;
-    return copyWith(
-      title: keypoint.title,
-      description: keypoint.description,
-      estimateCompleTime: keypoint.estimateCompleTime,
-    );
-  }
-
   bool isSameLesson(LessonEntity other) {
     if (id.isEmpty || other.id.isEmpty) return false;
     final keypointId = firstKeypoint.id;

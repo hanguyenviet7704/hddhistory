@@ -10,6 +10,8 @@ class RoadmapDetailPopup extends StatelessWidget {
     required this.courseLevel,
   });
 
+  KeypointEntity get keypoint => lesson.firstKeypoint;
+
   static Future<void> show(
     BuildContext context, {
     required LessonEntity lesson,
@@ -27,6 +29,7 @@ class RoadmapDetailPopup extends StatelessWidget {
           BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
           BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
           BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
         ],
         child: RoadmapDetailPopup(
           lesson: lesson,
@@ -37,7 +40,7 @@ class RoadmapDetailPopup extends StatelessWidget {
   }
 
   void _onStartLearning(BuildContext context) {
-    if (lesson.id.isEmpty) return;
+    if (lesson.id.isEmpty || keypoint.id.isEmpty) return;
 
     // Tracking
     final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
@@ -52,12 +55,14 @@ class RoadmapDetailPopup extends StatelessWidget {
     //   context.read<ProgressCubit>().loadUserProgressLesson(lessonId: roleplay.id);
     // }
 
-    // Navigation Logic
-    context.read<CourseLessonCubit>()
-      ..reset()
-      ..loadLesson(lesson.id);
+    if (keypoint.id.isEmpty) return;
 
-    LessonListRoute().go(context);
+    // Navigation Logic
+    context.read<LessonCubit>()
+      ..reset()
+      ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
+    context.read<CourseLessonCubit>().setCurrentKeypointId(keypoint.id);
+    LessonRoute().go(context);
 
     context.read<CourseRoadmapCubit>()
       ..setCurrentCourseLevel(courseLevel)
@@ -93,7 +98,7 @@ class RoadmapDetailPopup extends StatelessWidget {
 
           // Title
           AppText(
-            lesson.title.text,
+            keypoint.title.text,
             style: AppStyle.textBold24,
             textAlign: TextAlign.center,
           ),
@@ -104,7 +109,7 @@ class RoadmapDetailPopup extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AppText(
-                'KEYPOINT',
+                context.text.courseroadmap.keypointLabel.toUpperCase(),
                 style: AppStyle.text12.copyWith(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w700,
@@ -133,7 +138,7 @@ class RoadmapDetailPopup extends StatelessWidget {
               ),
               8.horizontalSpace,
               AppText(
-                lesson.estimateCompleTime.text.toUpperCase(),
+                keypoint.estimateCompleTime.text.toUpperCase(),
                 style: AppStyle.text12.copyWith(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w700,
@@ -147,7 +152,7 @@ class RoadmapDetailPopup extends StatelessWidget {
 
           // Description
           AppText(
-            lesson.description.text,
+            keypoint.description.text,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
               height: 1.75,
@@ -162,7 +167,7 @@ class RoadmapDetailPopup extends StatelessWidget {
             height: 54.h,
             borderRadius: BorderRadius.circular(1000.r),
             child: AppText(
-              'Start learning',
+              context.text.courseroadmap.startLearningButton,
               style: AppStyle.textBold16.copyWith(
                 color: AppCustomColor.textWhite,
               ),
