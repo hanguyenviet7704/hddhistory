@@ -1,13 +1,13 @@
 part of '../../../course.dart';
 
-class LessonCard extends StatelessWidget {
+class LessonKeypointCard extends StatelessWidget {
   final LessonEntity lesson;
   final LessonEntity lessonRolePlay;
   final bool premiumLesson;
   final CourseLevel courseLevel;
   final VoidCallback? onOverrideTap;
 
-  const LessonCard({
+  const LessonKeypointCard({
     super.key,
     required this.lesson,
     required this.lessonRolePlay,
@@ -26,8 +26,6 @@ class LessonCard extends StatelessWidget {
         return AppCustomColor.textSecondary;
     }
   }
-
-  bool get _showInProgressBadge => lesson.progess == ProcessEnum.inProgress;
 
   void _trackRoadmapItemClick(BuildContext context) {
     final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
@@ -93,7 +91,6 @@ class LessonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isKeypoint = lesson.type == LessonType.lesson;
     return GestureDetector(
       onTap: () => _onTap(context),
       child: Stack(
@@ -117,69 +114,17 @@ class LessonCard extends StatelessWidget {
                 ),
               ],
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (isKeypoint) ...[
-                  AppText(
-                    'KEYPOINT',
-                    style: AppStyle.text10.copyWith(
-                      fontWeight: FontWeight.w700,
-                      color: AppCustomColor.textQuaternary,
-                      height: 1.75,
-                    ),
-                  ),
-                  4.verticalSpace,
-                ],
-                // Lesson title
-                AppText(
-                  lesson.title.text,
-                  style: AppStyle.text14.copyWith(
-                    fontWeight: FontWeight.w500,
-                    color: _textColor,
-                    height: 1.75,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                if (!isKeypoint) ...[
-                  8.verticalSpace,
-                  // Lesson metadata row
-                  Row(
-                    children: [
-                      // Lesson type
-                      LessonMetadata(
-                        icon: lesson.icon,
-                        text: lesson.icon.title.text,
-                        textColor: _textColor,
-                      ),
-                      20.horizontalSpace,
-                      // Duration
-                      if (lesson.estimateCompleTime.en.isNotEmpty) ...[
-                        SvgPicture.asset(
-                          AppAsset.svg.app.icClock,
-                          colorFilter: ColorFilter.mode(_textColor, BlendMode.srcIn),
-                          width: 16.w,
-                        ),
-                        8.horizontalSpace,
-                        LessonMetadata(
-                          text: lesson.estimateCompleTime.text,
-                          textColor: _textColor,
-                        ),
-                      ],
-                    ],
-                  ),
-                ],
-              ],
+            child: AppText(
+              lesson.title.text,
+              style: AppStyle.text14.copyWith(
+                fontWeight: FontWeight.w500,
+                color: _textColor,
+                height: 1.75,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          // In Progress badge
-          if (_showInProgressBadge)
-            Positioned(
-              top: -10.h,
-              left: 16.w,
-              child: const InProgressBadge(),
-            ),
         ],
       ),
     );

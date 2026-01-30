@@ -145,17 +145,17 @@ class _RoadmapTimelineItem extends StatelessWidget {
       );
     }
 
-    return LessonCard(
+    return LessonKeypointCard(
       courseLevel: courseLevel,
       premiumLesson: isLocked,
       lesson: lesson,
       lessonRolePlay: roleplay,
       onOverrideTap: lesson.type == LessonType.lesson
           ? () => RoadmapDetailPopup.show(
-                context,
-                lesson: lesson,
-                courseLevel: courseLevel,
-              )
+              context,
+              lesson: lesson,
+              courseLevel: courseLevel,
+            )
           : null,
     );
   }

@@ -79,7 +79,7 @@ part 'presentation/widgets/course_roadmap/course_roadmap_content.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_header_card.dart';
 part 'presentation/widgets/course_roadmap/course_roadmap_timeline_list.dart';
 part 'presentation/widgets/course_roadmap/in_progress_badge.dart';
-part 'presentation/widgets/course_roadmap/lesson_card.dart';
+part 'presentation/widgets/course_roadmap/lesson_keypoint_card.dart';
 part 'presentation/widgets/course_roadmap/lesson_metadata.dart';
 part 'presentation/widgets/course_roadmap/roadmap_detail_popup.dart';
 part 'presentation/widgets/course_roadmap/roadmap_node_item.dart';

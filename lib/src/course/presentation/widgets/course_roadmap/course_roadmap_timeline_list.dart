@@ -77,7 +77,7 @@ class CourseRoadmapTimeline extends StatelessWidget {
                 bottom: 8.h,
                 top: 8.h,
               ),
-              child: LessonCard(
+              child: LessonKeypointCard(
                 courseLevel: courseLevel,
                 premiumLesson: isLocked,
                 lesson: lesson,
