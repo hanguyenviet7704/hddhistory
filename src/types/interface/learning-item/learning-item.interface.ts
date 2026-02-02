@@ -14,9 +14,9 @@ import {
   IExerciseRecord,
 } from "./excercises/record.interface";
 import {
-  ExerciseSingleChoiceSurveyPayload,
-  IExerciseSingleChoiceSurvey,
-} from "./excercises/single-choice-survey.interface";
+  ExerciseSingleChoiceNoCorrectAnswerPayload,
+  IExerciseSingleChoiceNoCorrectAnswer,
+} from "./excercises/single-choice-no-correct-answer.interface";
 import {
   ExerciseSingleChoicePayload,
   IExerciseSingleChoice,
@@ -80,14 +80,14 @@ export interface LearningItemPayload {
 
 export type ExerciseInput =
   | Partial<IExerciseSingleChoice>
-  | Partial<IExerciseSingleChoiceSurvey>
+  | Partial<IExerciseSingleChoiceNoCorrectAnswer>
   | Partial<IExerciseMultipleChoice>
   | Partial<IExerciseDragDrop>
   | Partial<IExerciseRecord>;
 
 export type ExerciseInputPayload =
   | Partial<ExerciseSingleChoicePayload>
-  | Partial<ExerciseSingleChoiceSurveyPayload>
+  | Partial<ExerciseSingleChoiceNoCorrectAnswerPayload>
   | Partial<ExerciseMultipleChoicePayload>
   | Partial<ExerciseDragDropPayload>
   | Partial<ExerciseRecordPayload>;

@@ -4,40 +4,40 @@ import { ExerciseType } from "../../../enum/learningItem.enum";
 import { ITag } from "../../tag.interface";
 import { IDocument } from "../document.interface";
 
-export interface IExerciseSurveyChoiceOption {
+export interface IExerciseSingleChoiceNoCorrectAnswerOption {
   value: ITranslation;
   documentGroupId: string;
 }
 
-export interface IExerciseSurveyDocumentGroup {
+export interface IExerciseSingleChoiceNoCorrectAnswerDocumentGroup {
   id: string;
   documents: IDocument[];
 }
 
-export interface IExerciseSingleChoiceSurvey {
+export interface IExerciseSingleChoiceNoCorrectAnswer {
   id: number;
   exerciseId: string;
   type: ExerciseType;
   tag: ITag | null;
   document: IDocument[];
   explanation: ITranslation;
-  options: IExerciseSurveyChoiceOption[];
-  documentGroups: IExerciseSurveyDocumentGroup[];
+  options: IExerciseSingleChoiceNoCorrectAnswerOption[];
+  documentGroups: IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[];
   level: KeypointLevel[];
   maxScore: number;
   mainQuestion?: number;
   keypointId?: string;
 }
 
-export interface ExerciseSingleChoiceSurveyPayload {
+export interface ExerciseSingleChoiceNoCorrectAnswerPayload {
   id: number;
   exerciseId: string;
   type: ExerciseType;
-  tagId: string;
+  tagId: string; // | null;
   document: IDocument[];
   explanation: ITranslation;
-  options: IExerciseSurveyChoiceOption[];
-  documentGroups: IExerciseSurveyDocumentGroup[];
+  options: IExerciseSingleChoiceNoCorrectAnswerOption[];
+  documentGroups: IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[];
   level: KeypointLevel[];
   maxScore: number;
   mainQuestion?: number;
