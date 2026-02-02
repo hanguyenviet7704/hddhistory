@@ -3,10 +3,12 @@ part of '../../../course.dart';
 class CourseLevelContent extends StatelessWidget {
   final RoadmapLevelEntity roadmapLevel;
   final bool enableSequentialUnlock;
+  final Set<String> lockedLessonKeys;
   const CourseLevelContent({
     super.key,
     required this.roadmapLevel,
     this.enableSequentialUnlock = true,
+    this.lockedLessonKeys = const {},
   });
 
   List<bool> get _sequentialUnlockFlags {
@@ -24,6 +26,7 @@ class CourseLevelContent extends StatelessWidget {
           return RoadmapNodeItem(
             node: entry.value,
             enableSequentialUnlock: _sequentialUnlockFlags.elementAt(entry.key),
+            lockedLessonKeys: lockedLessonKeys,
           );
         }),
 

@@ -14,6 +14,44 @@ abstract class RoadmapEntity with _$RoadmapEntity {
 }
 
 extension RoadmapEntityExtension on RoadmapEntity {
+  List<LessonEntity> get flatLessons {
+    if (levels.isEmpty) return [];
+    final lessons = <LessonEntity>[];
+    for (final level in levels) {
+      for (final node in level.nodes) {
+        lessons.addAll(node.lessonsList);
+      }
+    }
+    return lessons;
+  }
+
+  int lockedLessonStartIndex(PaywallConfigEntity config) {
+    if (!config.enableLessonLock) return -1;
+    if (config.lessonLock <= 0) return -1;
+    final totalLessons = flatLessons.length;
+    if (totalLessons == 0) return -1;
+    if (config.lessonLock > totalLessons) return -1;
+    return config.lessonLock - 1;
+  }
+
+  Set<String> lockedLessonKeys(PaywallConfigEntity config) {
+    final startIndex = lockedLessonStartIndex(config);
+    if (startIndex < 0) return {};
+    final lessons = flatLessons;
+    if (startIndex >= lessons.length) return {};
+    return lessons
+        .skip(startIndex)
+        .map((lesson) => lesson.roadmapKey)
+        .where((key) => key.isNotEmpty)
+        .toSet();
+  }
+
+  bool isLessonLocked(LessonEntity lesson, PaywallConfigEntity config) {
+    final key = lesson.roadmapKey;
+    if (key.isEmpty) return false;
+    return lockedLessonKeys(config).contains(key);
+  }
+
   List<LessonEntity> get displayLessons {
     if (levels.isEmpty) return [];
     final levelFlags = levelSequentialUnlockFlags;

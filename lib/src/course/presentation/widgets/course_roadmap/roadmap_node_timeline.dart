@@ -41,13 +41,19 @@ class RoadmapNodeActionHelper {
     return roadmap.lastInProgressLesson ?? roadmap.displayLessons.firstOrNull;
   }
 
-  static void _startLessonAction(BuildContext context, LessonEntity lesson, CourseRoadmapState state) {
+  static void _startLessonAction(
+    BuildContext context,
+    LessonEntity lesson,
+    CourseRoadmapState state, {
+    bool? isLocked,
+  }) {
     if (lesson.id.isEmpty) return;
     context.read<CourseRoadmapCubit>().setCurrentLesson(lesson);
 
-    final isLocked = true;
+    final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
+    final lessonIsLocked = isLocked ?? state.roadmap.isLessonLocked(lesson, paywallConfig);
     if (!_canTapLesson(lesson)) return;
-    if (!_handlePaywall(context, lesson, isLocked)) return;
+    if (!_handlePaywall(context, lesson, lessonIsLocked)) return;
 
     switch (lesson.type) {
       case LessonType.roleplay:
@@ -66,9 +72,9 @@ class RoadmapNodeActionHelper {
     }
   }
 
-  static void startLessonAction(BuildContext context, LessonEntity lesson) {
+  static void startLessonAction(BuildContext context, LessonEntity lesson, {bool? isLocked}) {
     final state = context.read<CourseRoadmapCubit>().state;
-    _startLessonAction(context, lesson, state);
+    _startLessonAction(context, lesson, state, isLocked: isLocked);
   }
 
   static void startLastInProgressAction(BuildContext context) {
@@ -82,11 +88,13 @@ class RoadmapNodeActionHelper {
 class RoadmapNodeTimeline extends StatelessWidget {
   final List<LessonEntity> items;
   final bool enableSequentialUnlock;
+  final Set<String> lockedLessonKeys;
 
   const RoadmapNodeTimeline({
     super.key,
     required this.items,
     this.enableSequentialUnlock = true,
+    this.lockedLessonKeys = const {},
   });
 
   @override
@@ -94,10 +102,13 @@ class RoadmapNodeTimeline extends StatelessWidget {
     final displayItems = items.applySequentialUnlock(enableAutoUnlock: enableSequentialUnlock);
     return Column(
       children: List.generate(displayItems.length, (index) {
+        final lesson = displayItems[index];
+        final isLocked = lockedLessonKeys.contains(lesson.roadmapKey);
         return RoadmapTimelineItem(
-          lesson: displayItems[index],
+          lesson: lesson,
           isFirst: index == 0,
           isLast: index == displayItems.length - 1,
+          isLocked: isLocked,
         );
       }),
     );
@@ -108,17 +119,18 @@ class RoadmapTimelineItem extends StatelessWidget {
   final LessonEntity lesson;
   final bool isFirst;
   final bool isLast;
+  final bool isLocked;
 
   const RoadmapTimelineItem({
     super.key,
     required this.lesson,
     required this.isFirst,
     required this.isLast,
+    required this.isLocked,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isLocked = true;
     return TimelineTile(
       isFirst: isFirst,
       isLast: isLast,

@@ -56,6 +56,12 @@ extension LessonEntityListExtension on List<LessonEntity> {
 }
 
 extension LessonEntityExtension on LessonEntity {
+  String get roadmapKey {
+    final keypointId = firstKeypoint.id;
+    if (keypointId.isNotEmpty) return keypointId;
+    return id;
+  }
+
   bool isSameLesson(LessonEntity other) {
     if (id.isEmpty || other.id.isEmpty) return false;
     final keypointId = firstKeypoint.id;

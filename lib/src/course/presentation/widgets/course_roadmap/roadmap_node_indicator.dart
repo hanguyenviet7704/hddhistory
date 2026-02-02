@@ -10,7 +10,7 @@ class RoadmapNodeIndicator extends StatelessWidget {
 
   Color _borderColor(bool isLastInProgress) => isLastInProgress ? AppCustomColor.borderBrand : AppCustomColor.neutral100;
 
-  bool _isLocked(bool isLastInProgress) => !isLastInProgress && lesson.progess == ProcessEnum.notStarted;
+  bool _isLocked(bool isLastInProgress) => !isLastInProgress && lesson.roadmapProgress == ProcessEnum.notStarted;
 
   @override
   Widget build(BuildContext context) {

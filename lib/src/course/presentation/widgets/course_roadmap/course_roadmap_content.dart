@@ -13,19 +13,16 @@ class CourseRoadmapContent extends StatelessWidget {
           builder: (context, roadmap) {
             if (roadmap.levels.isEmpty) return const CourseEmptyState();
             final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
+            final lockedLessonKeys = roadmap.lockedLessonKeys(paywallConfig);
             return ListView.separated(
               padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 16.h),
               separatorBuilder: (context, index) => 20.verticalSpace,
               itemCount: roadmap.levels.length,
               itemBuilder: (context, index) {
-                // ignore: unused_local_variable
-                final lockedLessonStartIndex = roadmap.lockedLessonStartIndexForLevel(
-                  paywallConfig: paywallConfig,
-                  levelIndex: index,
-                );
                 return CourseLevelContent(
                   roadmapLevel: roadmap.levels[index],
                   enableSequentialUnlock: roadmap.levelSequentialUnlockFlags.elementAt(index),
+                  lockedLessonKeys: lockedLessonKeys,
                 );
               },
             );

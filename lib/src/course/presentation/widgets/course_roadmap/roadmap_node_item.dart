@@ -3,11 +3,13 @@ part of '../../../course.dart';
 class RoadmapNodeItem extends StatelessWidget {
   final RoadmapNodeEntity node;
   final bool enableSequentialUnlock;
+  final Set<String> lockedLessonKeys;
 
   const RoadmapNodeItem({
     super.key,
     required this.node,
     this.enableSequentialUnlock = true,
+    this.lockedLessonKeys = const {},
   });
 
   @override
@@ -25,6 +27,7 @@ class RoadmapNodeItem extends StatelessWidget {
         RoadmapNodeTimeline(
           items: node.lessonsList,
           enableSequentialUnlock: enableSequentialUnlock,
+          lockedLessonKeys: lockedLessonKeys,
         ),
         32.verticalSpace,
       ],

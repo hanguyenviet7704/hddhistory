@@ -2,13 +2,11 @@ part of '../../../course.dart';
 
 class RoadmapRoleplayCard extends StatelessWidget {
   final LessonEntity lesson;
-  final bool isLocked;
   final VoidCallback? onTap;
 
   const RoadmapRoleplayCard({
     super.key,
     required this.lesson,
-    this.isLocked = false,
     this.onTap,
   });
 
