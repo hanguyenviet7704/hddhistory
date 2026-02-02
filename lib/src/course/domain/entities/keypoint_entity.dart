@@ -31,6 +31,8 @@ extension KeypointEntityExtension on KeypointEntity {
 
   bool get isCompleted => progess == ProcessEnum.done;
 
+  bool get isCompletedFromAverageScore => progressFromAverageScore == ProcessEnum.done;
+
   StrengthLevel get strengthLevel {
     final hasProgressData = isUseRoleplayModule || isUseProgressData;
     if (!hasProgressData) return strengthLevelData;

@@ -2,7 +2,7 @@ part of '../utils.dart';
 
 // ignore: must_be_immutable
 class AppButton extends StatelessWidget {
-  dynamic child;
+  Widget? child;
   final VoidCallback? onPressed;
   EdgeInsets? padding;
   BorderRadius? borderRadius;
@@ -137,44 +137,54 @@ class AppButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: decoration,
-      width: fullWidthBtn ? double.infinity : width,
-      height: height,
-      constraints: BoxConstraints(minWidth: _minWidth ?? 0),
-      child: ClipRRect(
-        borderRadius: borderRadius ?? BorderRadius.circular(100.r),
-        child: MaterialButton(
-          elevation: 0,
-          color: Colors.transparent,
-          highlightElevation: 0,
-          hoverElevation: 0,
-          materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-          minWidth: 0,
-          height: 0,
-          splashColor: isTransparent ? Colors.transparent : null,
-          highlightColor: isTransparent ? Colors.transparent : null,
-          padding: padding ?? EdgeInsets.symmetric(vertical: 16.w, horizontal: 24.w),
-          onPressed: !disabled ? onPressed : null,
-          child: (child is Widget)
-              ? child
-              : Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Flexible(
-                      child: Text(child, style: textStyle, textAlign: TextAlign.center),
-                    ),
-                    icon != null
-                        ? Padding(
-                            padding: EdgeInsets.only(left: paddingLeftIcon ?? 12.w),
-                            child: SvgPicture.asset(icon!, colorFilter: ColorFilter.mode(textStyle?.color ?? _colorTextPrimary, BlendMode.srcIn)),
-                          )
-                        : const SizedBox(),
-                  ],
-                ),
-        ),
-      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final minWidth = _minWidth ?? 0;
+        final maxWidth = constraints.maxWidth.isFinite ? constraints.maxWidth : double.infinity;
+        final effectiveMinWidth = maxWidth.isFinite ? min(minWidth, maxWidth) : minWidth;
+        return Container(
+          decoration: decoration,
+          width: fullWidthBtn ? double.infinity : width,
+          height: height,
+          constraints: BoxConstraints(minWidth: effectiveMinWidth),
+          child: ClipRRect(
+            borderRadius: borderRadius ?? BorderRadius.circular(100.r),
+            child: MaterialButton(
+              elevation: 0,
+              color: Colors.transparent,
+              highlightElevation: 0,
+              hoverElevation: 0,
+              materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              minWidth: 0,
+              height: 0,
+              splashColor: isTransparent ? Colors.transparent : null,
+              highlightColor: isTransparent ? Colors.transparent : null,
+              padding: padding ?? EdgeInsets.symmetric(vertical: 16.h, horizontal: 24.w),
+              onPressed: !disabled ? onPressed : null,
+              child:
+                  icon == null
+                      ? (child ?? const SizedBox.shrink())
+                      : Row(
+                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Flexible(child: child ?? const SizedBox.shrink()),
+                            Padding(
+                              padding: EdgeInsets.only(left: paddingLeftIcon ?? 12.w),
+                              child: SvgPicture.asset(
+                                icon!,
+                                colorFilter: ColorFilter.mode(
+                                  textStyle?.color ?? _colorTextPrimary,
+                                  BlendMode.srcIn,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

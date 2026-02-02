@@ -14,6 +14,18 @@ class LessonKeypointCard extends StatelessWidget {
 
   Color _borderColor(bool isLastInProgress) => isLastInProgress ? AppCustomColor.brandPrimary : AppCustomColor.neutral100;
 
+  Color _textColor(bool isLastInProgress) {
+    if (isLastInProgress) return AppCustomColor.brandPrimary;
+    if (keypoint.isCompletedFromAverageScore) return AppCustomColor.textPrimary;
+    return AppCustomColor.textTertiary;
+  }
+
+  Color _backgroundColor(bool isLastInProgress) {
+    if (isLastInProgress) return AppCustomColor.backgroundWhite;
+    if (keypoint.isCompletedFromAverageScore) return AppCustomColor.backgroundWhite;
+    return AppCustomColor.backgroundGray;
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -29,25 +41,18 @@ class LessonKeypointCard extends StatelessWidget {
             padding: EdgeInsets.all(12.w),
             constraints: BoxConstraints(minHeight: 44.h, minWidth: double.infinity),
             decoration: BoxDecoration(
-              color: AppCustomColor.backgroundWhite,
+              color: _backgroundColor(isLastInProgress),
               borderRadius: BorderRadius.circular(12.r),
               border: Border.all(
                 color: _borderColor(isLastInProgress),
                 width: isLastInProgress ? 2.w : 1.w,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppCustomColor.borderDefault,
-                  blurRadius: 4,
-                  offset: const Offset(0, 0),
-                ),
-              ],
             ),
             child: AppText(
               keypoint.title.text,
               style: AppStyle.text14.copyWith(
                 fontWeight: FontWeight.w500,
-                color: AppCustomColor.textPrimary,
+                color: _textColor(isLastInProgress),
                 height: 1.75,
               ),
               maxLines: 2,

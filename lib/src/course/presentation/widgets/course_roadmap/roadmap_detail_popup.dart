@@ -100,6 +100,7 @@ class RoadmapDetailPopup extends StatelessWidget {
           AppText(
             keypoint.title.text,
             style: AppStyle.textBold24,
+            enableFitScaleDown: true,
             textAlign: TextAlign.center,
           ),
           8.verticalSpace,
@@ -153,6 +154,8 @@ class RoadmapDetailPopup extends StatelessWidget {
           // Description
           AppText(
             keypoint.description.text,
+            textAlign: TextAlign.center,
+            maxLines: 10,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.textSecondary,
               height: 1.75,
