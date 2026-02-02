@@ -1,6 +1,6 @@
 export enum ExerciseType {
   SINGLE_CHOICE = "single_choice",
-  SINGLE_CHOICE_SURVEY = "single_choice_survey",
+  SINGLE_CHOICE_NO_CORRECT_ANSWER = "single_choice_no_correct_answer",
   MULTIPLE_CHOICE = "multiple_choice",
   DRAG_DROP = "drag_drop",
   RECORD = "record",

@@ -33,10 +33,10 @@ import {
   IExerciseSingleChoice,
 } from "../../types/interface/learning-item/excercises/single-choice.interface";
 import {
-  IExerciseSingleChoiceSurvey,
-  IExerciseSurveyChoiceOption,
-  IExerciseSurveyDocumentGroup,
-} from "../../types/interface/learning-item/excercises/single-choice-survey.interface";
+  IExerciseSingleChoiceNoCorrectAnswer,
+  IExerciseSingleChoiceNoCorrectAnswerOption,
+  IExerciseSingleChoiceNoCorrectAnswerDocumentGroup,
+} from "../../types/interface/learning-item/excercises/single-choice-no-correct-answer.interface";
 import { IExerciseMultipleChoice } from "../../types/interface/learning-item/excercises/multiple-choice.interface";
 import {
   IAnswer,
@@ -79,7 +79,7 @@ const isValidNumber = (value: unknown): value is number =>
 const rebalanceRecordScoringCriteria = (
   criteriaInput?: Partial<IScoringCriteria>[],
   exerciseMaxScore?: number,
-  lang?: LangCode
+  lang?: LangCode,
 ): IScoringCriteria[] => {
   const sanitized =
     criteriaInput?.map((item) => ({
@@ -161,8 +161,8 @@ const cleanDocumentItems = (documents: IDocument[]) => {
 };
 
 const cleanDocumentGroups = (
-  groups?: IExerciseSurveyDocumentGroup[]
-): IExerciseSurveyDocumentGroup[] => {
+  groups?: IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[],
+): IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[] => {
   if (!Array.isArray(groups)) return [];
   return groups
     .map((group) => ({
@@ -202,7 +202,7 @@ const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
 
 const createDefaultDocumentsForQuestion = (
   type: ExerciseType,
-  currentLang: LangCode
+  currentLang: LangCode,
 ): IDocument[] =>
   type === ExerciseType.DRAG_DROP
     ? []
@@ -272,7 +272,7 @@ export default function ExerciseForm({
 }: ExerciseFormProps) {
   const navigate = useNavigate();
   const lang = useSelector(
-    (state: RootState) => state.lang.code
+    (state: RootState) => state.lang.code,
   ) as keyof ITranslation as LangCode;
   const isEditMode = !!exercise;
   const { showSuccess, showError } = useNotification();
@@ -281,7 +281,7 @@ export default function ExerciseForm({
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [keypointQuery, setKeypointQuery] = useState("");
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
-    null
+    null,
   );
 
   // State for question ID counters - separate for each section
@@ -310,7 +310,7 @@ export default function ExerciseForm({
         subQuestions: [],
         documents: [],
         index: 0,
-      } as ILearningItem)
+      } as ILearningItem),
   );
 
   useEffect(() => {
@@ -318,13 +318,13 @@ export default function ExerciseForm({
       // Find max question ID for each section and set nextQuestionId accordingly
       const maxQuestionIdForQuestions = [...exercise.questions].reduce(
         (max, q) => Math.max(max, q.id ?? 0),
-        0
+        0,
       );
       setNextQuestionIdForQuestions(maxQuestionIdForQuestions + 1);
 
       const maxQuestionIdForSubQuestions = [...exercise.subQuestions].reduce(
         (max, q) => Math.max(max, q.id ?? 0),
-        0
+        0,
       );
       setNextQuestionIdForSubQuestions(maxQuestionIdForSubQuestions + 1);
 
@@ -350,10 +350,10 @@ export default function ExerciseForm({
       const normalizeDragDropIds = (q: any) => {
         if (q.type !== ExerciseType.DRAG_DROP) return q;
         const normalizedOptions = (q.options || []).map((opt: any) =>
-          opt && opt.id ? opt : { ...opt, id: optionCounter++ }
+          opt && opt.id ? opt : { ...opt, id: optionCounter++ },
         );
         const normalizedAnswers = (q.answer || []).map((ans: any) =>
-          ans && ans.id ? ans : { ...ans, id: answerCounter++ }
+          ans && ans.id ? ans : { ...ans, id: answerCounter++ },
         );
         return { ...q, options: normalizedOptions, answer: normalizedAnswers };
       };
@@ -503,9 +503,9 @@ export default function ExerciseForm({
         convertedQuestion.document = cleanedDocuments;
       }
 
-      if (question.type === ExerciseType.SINGLE_CHOICE_SURVEY) {
+      if (question.type === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER) {
         convertedQuestion.documentGroups = cleanDocumentGroups(
-          question.documentGroups || []
+          question.documentGroups || [],
         );
       }
 
@@ -526,7 +526,7 @@ export default function ExerciseForm({
         isSub: currentExercise.isSub,
         questions: convertQuestionsToPayload(currentExercise.questions || []),
         subQuestions: convertQuestionsToPayload(
-          currentExercise.subQuestions || []
+          currentExercise.subQuestions || [],
         ),
         index: currentExercise.index,
       };
@@ -548,7 +548,7 @@ export default function ExerciseForm({
     } catch (err) {
       console.error("handleSaveExercise", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save exercise"
+        (err as any).response?.data?.message || "Failed to save exercise",
       );
     } finally {
       setSaving(false);
@@ -559,7 +559,7 @@ export default function ExerciseForm({
   const handleReorder = (
     section: "questions" | "subQuestions" | null,
     activeId: number,
-    overId: number
+    overId: number,
   ) => {
     if (!section) return;
 
@@ -595,7 +595,7 @@ export default function ExerciseForm({
 
   // Open exercise type popup
   const handleOpenExerciseTypePopup = (
-    section: "questions" | "subQuestions"
+    section: "questions" | "subQuestions",
   ) => {
     setCurrentSectionForPopup(section);
     setShowExerciseTypePopup(true);
@@ -610,8 +610,8 @@ export default function ExerciseForm({
       currentSectionForPopup === "questions"
         ? nextQuestionIdForQuestions
         : currentSectionForPopup === "subQuestions"
-        ? nextQuestionIdForSubQuestions
-        : 0;
+          ? nextQuestionIdForSubQuestions
+          : 0;
 
     const formData = createEmptyQuestion(questionType, nextId);
 
@@ -628,15 +628,15 @@ export default function ExerciseForm({
   const handleOpenModal = (
     section: "questions" | "subQuestions",
     questionType: ExerciseType,
-    question?: any
+    question?: any,
   ) => {
     // Get the appropriate next ID based on section
     const nextId =
       section === "questions"
         ? nextQuestionIdForQuestions
         : section === "subQuestions"
-        ? nextQuestionIdForSubQuestions
-        : 0;
+          ? nextQuestionIdForSubQuestions
+          : 0;
 
     // If there is question data (editing), copy the data
     // If not (adding new), create empty question
@@ -652,11 +652,11 @@ export default function ExerciseForm({
   const createEmptyQuestion = (
     type: ExerciseType,
     id: number,
-    currentLang: LangCode = lang
+    currentLang: LangCode = lang,
   ) => {
     const defaultDocuments = createDefaultDocumentsForQuestion(
       type,
-      currentLang
+      currentLang,
     );
     switch (type) {
       case ExerciseType.SINGLE_CHOICE:
@@ -685,7 +685,7 @@ export default function ExerciseForm({
           completionTime: 60,
           mainQuestion: 0,
         } as IExerciseMultipleChoice;
-      case ExerciseType.SINGLE_CHOICE_SURVEY:
+      case ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER:
         return {
           id,
           exerciseId: "",
@@ -693,13 +693,14 @@ export default function ExerciseForm({
           tag: null,
           document: defaultDocuments,
           explanation: { [currentLang]: "" },
-          options: [] as IExerciseSurveyChoiceOption[],
-          documentGroups: [] as IExerciseSurveyDocumentGroup[],
+          options: [] as IExerciseSingleChoiceNoCorrectAnswerOption[],
+          documentGroups:
+            [] as IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[],
           level: [...DEFAULT_LEVELS],
           maxScore: 10,
           completionTime: 60,
           mainQuestion: 0,
-        } as IExerciseSingleChoiceSurvey;
+        } as IExerciseSingleChoiceNoCorrectAnswer;
       case ExerciseType.DRAG_DROP:
         return {
           id,
@@ -740,7 +741,7 @@ export default function ExerciseForm({
   const requestDeleteQuestion = (
     section: "questions" | "subQuestions",
     itemId: number,
-    itemTitle = "question"
+    itemTitle = "question",
   ) => {
     setConfirmDeleteQuestion({ section, itemId, itemTitle });
   };
@@ -774,7 +775,7 @@ export default function ExerciseForm({
         const section = modalOpen.section!;
         const existing = currentExercise[section] || [];
         const updatedList = existing.map((q) =>
-          q.id === questionData.id ? questionData : q
+          q.id === questionData.id ? questionData : q,
         );
         updatedExercise = { ...currentExercise, [section]: updatedList };
       } else {
@@ -805,7 +806,7 @@ export default function ExerciseForm({
         isSub: updatedExercise.isSub,
         questions: convertQuestionsToPayload(updatedExercise.questions || []),
         subQuestions: convertQuestionsToPayload(
-          updatedExercise.subQuestions || []
+          updatedExercise.subQuestions || [],
         ),
         index: updatedExercise.index,
       };
@@ -824,7 +825,7 @@ export default function ExerciseForm({
     } catch (err) {
       console.error("handleSaveQuestionAndExercise", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save question"
+        (err as any).response?.data?.message || "Failed to save question",
       );
     } finally {
       setSaving(false);
@@ -844,7 +845,7 @@ export default function ExerciseForm({
       setSaving(true);
 
       const newList = (currentExercise[section] || []).filter(
-        (q) => q.id !== itemId
+        (q) => q.id !== itemId,
       );
 
       const reassignedList = newList.map((item, index) => ({
@@ -870,7 +871,7 @@ export default function ExerciseForm({
         isSub: updatedExercise.isSub,
         questions: convertQuestionsToPayload(updatedExercise.questions || []),
         subQuestions: convertQuestionsToPayload(
-          updatedExercise.subQuestions || []
+          updatedExercise.subQuestions || [],
         ),
         index: updatedExercise.index,
       };
@@ -884,7 +885,7 @@ export default function ExerciseForm({
     } catch (err) {
       console.error("handleDeleteQuestionAndSaveExercise", err);
       showError(
-        (err as any).response?.data?.message || "Failed to delete question"
+        (err as any).response?.data?.message || "Failed to delete question",
       );
     } finally {
       setSaving(false);
@@ -894,7 +895,7 @@ export default function ExerciseForm({
   // Render questions section with drag and drop
   const renderQuestionsSection = (
     section: "questions" | "subQuestions",
-    title: string
+    title: string,
   ) => {
     const list = currentExercise[section] || [];
 
@@ -951,7 +952,7 @@ export default function ExerciseForm({
                                   handleOpenModal(
                                     section,
                                     question.type || ExerciseType.SINGLE_CHOICE,
-                                    question
+                                    question,
                                   )
                                 }
                                 className="text-blue-600 hover:text-blue-800 p-1 rounded"
@@ -971,7 +972,7 @@ export default function ExerciseForm({
                                   requestDeleteQuestion(
                                     section,
                                     question.id || 0,
-                                    `Question ${question.id}`
+                                    `Question ${question.id}`,
                                   )
                                 }
                                 className="text-red-500 hover:text-red-700 p-1 rounded"
@@ -994,15 +995,17 @@ export default function ExerciseForm({
 
                             {question.mainQuestion !== undefined &&
                               question.mainQuestion !== null && (
-                              <div className="flex items-start">
-                                <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
-                                  Main question:
-                                </span>
-                                <TextWithTooltip
-                                  text={question.mainQuestion?.toString() || ""}
-                                />
-                              </div>
-                            )}
+                                <div className="flex items-start">
+                                  <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
+                                    Main question:
+                                  </span>
+                                  <TextWithTooltip
+                                    text={
+                                      question.mainQuestion?.toString() || ""
+                                    }
+                                  />
+                                </div>
+                              )}
 
                             {question.document &&
                               question.document.length > 0 && (
@@ -1032,7 +1035,7 @@ export default function ExerciseForm({
                                         {doc.type === DocumentType.IMAGE &&
                                           getTranslationValue(
                                             doc.data.url,
-                                            lang
+                                            lang,
                                           ) && (
                                             <div className="ml-1">
                                               <TextWithTooltip
@@ -1045,7 +1048,7 @@ export default function ExerciseForm({
                                         {doc.type === DocumentType.AUDIO &&
                                           getTranslationValue(
                                             doc.data.url,
-                                            lang
+                                            lang,
                                           ) && (
                                             <div className="ml-1">
                                               <TextWithTooltip
@@ -1059,7 +1062,7 @@ export default function ExerciseForm({
                                           <>
                                             {getTranslationValue(
                                               doc.data.url,
-                                              lang
+                                              lang,
                                             ) && (
                                               <div className="ml-1">
                                                 <TextWithTooltip
@@ -1080,7 +1083,7 @@ export default function ExerciseForm({
                                           </>
                                         )}
                                       </div>
-                                    )
+                                    ),
                                   )}
                                 </div>
                               )}
@@ -1123,14 +1126,14 @@ export default function ExerciseForm({
                                             lang={lang}
                                           />
                                         </li>
-                                      )
+                                      ),
                                     )}
                                   </ul>
                                 </div>
                               )}
 
                             {question.type ===
-                              ExerciseType.SINGLE_CHOICE_SURVEY &&
+                              ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER &&
                               Array.isArray((question as any).options) && (
                                 <div>
                                   <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
@@ -1153,14 +1156,14 @@ export default function ExerciseForm({
                                             </span>
                                           )}
                                         </li>
-                                      )
+                                      ),
                                     )}
                                   </ul>
                                 </div>
                               )}
 
                             {question.type ===
-                              ExerciseType.SINGLE_CHOICE_SURVEY &&
+                              ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER &&
                               Array.isArray((question as any).documentGroups) &&
                               (question as any).documentGroups.length > 0 && (
                                 <div>
@@ -1176,7 +1179,7 @@ export default function ExerciseForm({
                                         >
                                           {group.id || "Untitled"}
                                         </span>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -1228,7 +1231,7 @@ export default function ExerciseForm({
                                             lang={lang}
                                           />
                                         </li>
-                                      )
+                                      ),
                                     )}
                                   </ul>
                                 </div>
@@ -1254,7 +1257,7 @@ export default function ExerciseForm({
                                             lang={lang}
                                           />
                                         </li>
-                                      )
+                                      ),
                                     )}
                                   </ul>
                                 </div>
@@ -1309,7 +1312,7 @@ export default function ExerciseForm({
                                         >
                                           {level}
                                         </span>
-                                      )
+                                      ),
                                     )}
                                   </div>
                                 </div>
@@ -1381,7 +1384,7 @@ export default function ExerciseForm({
     const updateScoringCriteria = (
       index: number,
       field: keyof IScoringCriteria,
-      value: string | ITranslation
+      value: string | ITranslation,
     ) => {
       const current = getScoringCriteria();
       if (!current[index]) return;
@@ -1392,11 +1395,11 @@ export default function ExerciseForm({
             ? undefined
             : Number(value)
           : field === "criteria" && typeof value === "string"
-          ? updateTranslationValue(current[index].criteria || {}, lang, value)
-          : value;
+            ? updateTranslationValue(current[index].criteria || {}, lang, value)
+            : value;
 
       const next = current.map((item, idx) =>
-        idx === index ? ({ ...item, [field]: parsedValue } as any) : item
+        idx === index ? ({ ...item, [field]: parsedValue } as any) : item,
       );
 
       if (field === "maxScore" && typeof parsedValue === "number") {
@@ -1416,7 +1419,7 @@ export default function ExerciseForm({
           const maxAllowed = Math.max(0, totalValue - manualSumExceptLast);
           const adjusted = Math.min(
             Math.max(0, Math.round(parsedValue)),
-            maxAllowed
+            maxAllowed,
           );
 
           next[index] = { ...next[index], maxScore: adjusted };
@@ -1434,7 +1437,7 @@ export default function ExerciseForm({
 
     const handlePasteCriteria = (
       index: number,
-      e: React.ClipboardEvent<HTMLTextAreaElement>
+      e: React.ClipboardEvent<HTMLTextAreaElement>,
     ) => {
       const pasted = e.clipboardData.getData("text");
       if (!pasted) return;
@@ -1458,7 +1461,7 @@ export default function ExerciseForm({
           criteria: updateTranslationValue(
             (existing as any)?.criteria || {},
             lang,
-            line
+            line,
           ),
           maxScore: existing?.maxScore,
         } as any;
@@ -1479,11 +1482,9 @@ export default function ExerciseForm({
         updated.options = [{ value: { [lang]: "" }, isCorrect: false }];
       }
 
-      if (type === ExerciseType.SINGLE_CHOICE_SURVEY) {
+      if (type === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER) {
         if (!updated.options || updated.options.length === 0) {
-          updated.options = [
-            { value: { [lang]: "" }, documentGroupId: "" },
-          ];
+          updated.options = [{ value: { [lang]: "" }, documentGroupId: "" }];
         } else {
           updated.options = updated.options.map((opt: any) => ({
             value: opt?.value || { [lang]: "" },
@@ -1524,9 +1525,9 @@ export default function ExerciseForm({
         const parsed = parseInt(formData.mainQuestion, 10);
         setLocalFormData(
           applyQuestionDefaults({
-          ...formData,
-          mainQuestion: Number.isNaN(parsed) ? undefined : parsed,
-        })
+            ...formData,
+            mainQuestion: Number.isNaN(parsed) ? undefined : parsed,
+          }),
         );
       } else {
         setLocalFormData(applyQuestionDefaults(formData));
@@ -1553,7 +1554,7 @@ export default function ExerciseForm({
     const handleDocumentChange = (
       index: number,
       field: keyof IDocument,
-      value: any
+      value: any,
     ) => {
       setLocalFormData((prev: any) => {
         const currentDocs = prev.document || [];
@@ -1573,7 +1574,7 @@ export default function ExerciseForm({
     const handleDataChange = (
       docIndex: number,
       field: keyof IMediaDocument,
-      value: string | ITranslation
+      value: string | ITranslation,
     ) => {
       setLocalFormData((prev: any) => {
         const currentDocs = prev.document || [];
@@ -1591,7 +1592,7 @@ export default function ExerciseForm({
               ? updateTranslationValue(
                   (targetFieldValue as ITranslation) || {},
                   lang,
-                  value
+                  value,
                 )
               : value,
           },
@@ -1728,7 +1729,7 @@ export default function ExerciseForm({
     const renderGroupDocumentFields = (
       doc: IDocument,
       groupIndex: number,
-      docIndex: number
+      docIndex: number,
     ) => {
       if (isTextualDocumentType(doc.type)) {
         const label = getDocumentContentLabel(doc.type);
@@ -1751,7 +1752,7 @@ export default function ExerciseForm({
                     groupIndex,
                     docIndex,
                     "content",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 rows={3}
@@ -1767,7 +1768,7 @@ export default function ExerciseForm({
                     groupIndex,
                     docIndex,
                     "content",
-                    e.target.value
+                    e.target.value,
                   )
                 }
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -1841,7 +1842,7 @@ export default function ExerciseForm({
                     groupIndex,
                     docIndex,
                     "thumbnail",
-                    newUrl
+                    newUrl,
                   )
                 }
                 label="Video Thumbnail"
@@ -1881,7 +1882,7 @@ export default function ExerciseForm({
       // Tìm ID lớn nhất hiện tại từ các document trong form
       const currentMaxId = (localFormData.document || []).reduce(
         (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
-        0
+        0,
       );
       const newId = currentMaxId + 1;
 
@@ -1918,7 +1919,7 @@ export default function ExerciseForm({
         : [];
 
       const cleanedDocumentGroups =
-        questionType === ExerciseType.SINGLE_CHOICE_SURVEY
+        questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER
           ? cleanDocumentGroups(localFormData.documentGroups || [])
           : undefined;
 
@@ -1927,7 +1928,7 @@ export default function ExerciseForm({
         normalizedScoring = rebalanceRecordScoringCriteria(
           localFormData.scoringCriteria,
           100,
-          lang
+          lang,
         );
       }
 
@@ -1937,7 +1938,7 @@ export default function ExerciseForm({
         scoringCriteria: normalizedScoring,
       } as any;
 
-      if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
+      if (questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER) {
         nextPayload.documentGroups = cleanedDocumentGroups;
       }
 
@@ -1955,7 +1956,7 @@ export default function ExerciseForm({
           { value: { [lang]: "" }, isCorrect: false },
         ];
         handleChange("options", newOptions);
-      } else if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
+      } else if (questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER) {
         const newOptions = [
           ...localFormData.options,
           { value: { [lang]: "" }, documentGroupId: "" },
@@ -1978,7 +1979,7 @@ export default function ExerciseForm({
       if (
         questionType === ExerciseType.SINGLE_CHOICE ||
         questionType === ExerciseType.MULTIPLE_CHOICE ||
-        questionType === ExerciseType.SINGLE_CHOICE_SURVEY
+        questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER
       ) {
         const newOptions = [...localFormData.options];
         newOptions.splice(index, 1);
@@ -1995,14 +1996,14 @@ export default function ExerciseForm({
       if (
         questionType === ExerciseType.SINGLE_CHOICE ||
         questionType === ExerciseType.MULTIPLE_CHOICE ||
-        questionType === ExerciseType.SINGLE_CHOICE_SURVEY
+        questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER
       ) {
         const newOptions = [...localFormData.options];
         const currentTranslation = newOptions[index].value || {};
         const updatedTranslation = updateTranslationValue(
           currentTranslation,
           lang,
-          value
+          value,
         );
         newOptions[index] = { ...newOptions[index], value: updatedTranslation };
         handleChange("options", newOptions);
@@ -2012,18 +2013,18 @@ export default function ExerciseForm({
         const updatedTranslation = updateTranslationValue(
           currentTranslation,
           lang,
-          value
+          value,
         );
-          newOptions[index] = { ...newOptions[index], text: updatedTranslation };
+        newOptions[index] = { ...newOptions[index], text: updatedTranslation };
         handleChange("options", newOptions);
       }
     };
 
     const updateOptionDocumentGroupId = (
       index: number,
-      documentGroupId: string
+      documentGroupId: string,
     ) => {
-      if (questionType !== ExerciseType.SINGLE_CHOICE_SURVEY) return;
+      if (questionType !== ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER) return;
       const newOptions = [...localFormData.options];
       newOptions[index] = { ...newOptions[index], documentGroupId };
       handleChange("options", newOptions);
@@ -2056,7 +2057,7 @@ export default function ExerciseForm({
     // Remove answer
     const removeAnswer = (index: number) => {
       const newAnswer = localFormData.answer.filter(
-        (_: any, i: number) => i !== index
+        (_: any, i: number) => i !== index,
       );
       if (newAnswer.length === 0) {
         const newId = localNextAnswerId;
@@ -2073,7 +2074,7 @@ export default function ExerciseForm({
       const updatedTranslation = updateTranslationValue(
         currentTranslation,
         lang,
-        value
+        value,
       );
       newAnswer[index] = {
         ...newAnswer[index],
@@ -2083,7 +2084,7 @@ export default function ExerciseForm({
     };
 
     const getTranslationTokens = (
-      value: ITranslation | string | undefined
+      value: ITranslation | string | undefined,
     ): Set<string> => {
       const tokens = new Set<string>();
       if (!value) return tokens;
@@ -2104,7 +2105,7 @@ export default function ExerciseForm({
     };
 
     const ensureTranslation = (
-      value: ITranslation | string | undefined
+      value: ITranslation | string | undefined,
     ): ITranslation => {
       if (!value) return { [lang]: "" };
       if (typeof value === "string") {
@@ -2115,7 +2116,7 @@ export default function ExerciseForm({
 
     const mergeTranslations = (
       target: ITranslation | undefined,
-      source: ITranslation
+      source: ITranslation,
     ): ITranslation => {
       const merged: ITranslation = { ...(target || {}) };
       Object.entries(source).forEach(([code, text]) => {
@@ -2158,7 +2159,7 @@ export default function ExerciseForm({
       let nextId = localNextOptionId;
       const mergedOptions = [...currentOptions];
       const optionTokens = mergedOptions.map((opt: IOptions) =>
-        getTranslationTokens(opt.text)
+        getTranslationTokens(opt.text),
       );
 
       currentAnswers.forEach((ans: IAnswer) => {
@@ -2167,7 +2168,7 @@ export default function ExerciseForm({
         if (answerTokens.size === 0) return;
 
         const matchIndex = optionTokens.findIndex((tokens) =>
-          hasOverlap(tokens, answerTokens)
+          hasOverlap(tokens, answerTokens),
         );
 
         if (matchIndex === -1) {
@@ -2179,7 +2180,7 @@ export default function ExerciseForm({
         const existingOption = mergedOptions[matchIndex];
         const mergedText = mergeTranslations(
           existingOption.text,
-          answerTranslation
+          answerTranslation,
         );
         mergedOptions[matchIndex] = { ...existingOption, text: mergedText };
         optionTokens[matchIndex] = getTranslationTokens(mergedText);
@@ -2192,7 +2193,7 @@ export default function ExerciseForm({
 
     const handlePasteOptions = (
       index: number,
-      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
       const pasted = e.clipboardData.getData("text");
       if (!pasted) return;
@@ -2206,15 +2207,17 @@ export default function ExerciseForm({
       setLocalFormData((prev: any) => {
         const newOptions = [...(prev.options || [])];
         let nextId = localNextOptionId;
-      if (!newOptions[index]) {
-        if (questionType === ExerciseType.DRAG_DROP) {
-          newOptions[index] = { text: { [lang]: "" }, id: nextId++ };
-        } else if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
-          newOptions[index] = { value: { [lang]: "" }, documentGroupId: "" };
-        } else {
-          newOptions[index] = { value: { [lang]: "" }, isCorrect: false };
+        if (!newOptions[index]) {
+          if (questionType === ExerciseType.DRAG_DROP) {
+            newOptions[index] = { text: { [lang]: "" }, id: nextId++ };
+          } else if (
+            questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER
+          ) {
+            newOptions[index] = { value: { [lang]: "" }, documentGroupId: "" };
+          } else {
+            newOptions[index] = { value: { [lang]: "" }, isCorrect: false };
+          }
         }
-      }
 
         lines.forEach((line, offset) => {
           const targetIndex = index + offset;
@@ -2226,7 +2229,9 @@ export default function ExerciseForm({
               id,
               text: updateTranslationValue(existing?.text || {}, lang, line),
             };
-          } else if (questionType === ExerciseType.SINGLE_CHOICE_SURVEY) {
+          } else if (
+            questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER
+          ) {
             newOptions[targetIndex] = {
               ...existing,
               value: updateTranslationValue(existing?.value || {}, lang, line),
@@ -2248,7 +2253,7 @@ export default function ExerciseForm({
 
     const handlePasteAnswers = (
       index: number,
-      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
       const pasted = e.clipboardData.getData("text");
       if (!pasted) return;
@@ -2276,7 +2281,7 @@ export default function ExerciseForm({
             correctAnswer: updateTranslationValue(
               existing?.correctAnswer || {},
               lang,
-              line
+              line,
             ),
           };
         });
@@ -2294,7 +2299,7 @@ export default function ExerciseForm({
     const documentGroupIds = Array.isArray(localFormData.documentGroups)
       ? localFormData.documentGroups
           .map((group: any) =>
-            typeof group?.id === "string" ? group.id.trim() : ""
+            typeof group?.id === "string" ? group.id.trim() : "",
           )
           .filter(Boolean)
       : [];
@@ -2338,7 +2343,7 @@ export default function ExerciseForm({
         const currentDocs = group.documents || [];
         const currentMaxId = currentDocs.reduce(
           (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
-          0
+          0,
         );
         const newId = currentMaxId + 1;
         const nextDocuments = [
@@ -2354,10 +2359,7 @@ export default function ExerciseForm({
       });
     };
 
-    const removeDocumentFromGroup = (
-      groupIndex: number,
-      docIndex: number
-    ) => {
+    const removeDocumentFromGroup = (groupIndex: number, docIndex: number) => {
       setLocalFormData((prev: any) => {
         const groups = [...(prev.documentGroups || [])];
         const group = groups[groupIndex];
@@ -2365,7 +2367,9 @@ export default function ExerciseForm({
         const documents = group.documents || [];
         groups[groupIndex] = {
           ...group,
-          documents: documents.filter((_: IDocument, i: number) => i !== docIndex),
+          documents: documents.filter(
+            (_: IDocument, i: number) => i !== docIndex,
+          ),
         };
         return { ...prev, documentGroups: groups };
       });
@@ -2375,7 +2379,7 @@ export default function ExerciseForm({
       groupIndex: number,
       docIndex: number,
       field: keyof IDocument,
-      value: any
+      value: any,
     ) => {
       setLocalFormData((prev: any) => {
         const groups = [...(prev.documentGroups || [])];
@@ -2398,7 +2402,7 @@ export default function ExerciseForm({
       groupIndex: number,
       docIndex: number,
       field: keyof IMediaDocument,
-      value: string | ITranslation
+      value: string | ITranslation,
     ) => {
       setLocalFormData((prev: any) => {
         const groups = [...(prev.documentGroups || [])];
@@ -2417,7 +2421,7 @@ export default function ExerciseForm({
               ? updateTranslationValue(
                   (targetFieldValue as ITranslation) || {},
                   lang,
-                  value
+                  value,
                 )
               : value,
           },
@@ -2445,7 +2449,7 @@ export default function ExerciseForm({
               onChange={(e) =>
                 handleChange(
                   "mainQuestion",
-                  e.target.value === "" ? "" : Number(e.target.value)
+                  e.target.value === "" ? "" : Number(e.target.value),
                 )
               }
               className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -2486,7 +2490,7 @@ export default function ExerciseForm({
                       handleDocumentChange(
                         index,
                         "type",
-                        e.target.value as DocumentType
+                        e.target.value as DocumentType,
                       )
                     }
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -2518,9 +2522,7 @@ export default function ExerciseForm({
 
         <div
           className={
-            isExplanationOpen
-              ? "border rounded-lg p-3 bg-gray-50"
-              : "p-0"
+            isExplanationOpen ? "border rounded-lg p-3 bg-gray-50" : "p-0"
           }
         >
           <button
@@ -2537,7 +2539,7 @@ export default function ExerciseForm({
             <textarea
               value={getCurrentTranslationValue(
                 localFormData.explanation,
-                lang
+                lang,
               )}
               onChange={(e) =>
                 handleChange(
@@ -2545,8 +2547,8 @@ export default function ExerciseForm({
                   updateTranslationValue(
                     localFormData.explanation || {},
                     lang,
-                    e.target.value
-                  )
+                    e.target.value,
+                  ),
                 )
               }
               rows={3}
@@ -2612,12 +2614,12 @@ export default function ExerciseForm({
           </div>
         )}
 
-        {questionType === ExerciseType.SINGLE_CHOICE_SURVEY && (
+        {questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Options
             </label>
-            <datalist id="survey-document-group-ids">
+            <datalist id="no-correct-answer-document-group-ids">
               {documentGroupIds.map((id: string) => (
                 <option key={id} value={id} />
               ))}
@@ -2638,7 +2640,7 @@ export default function ExerciseForm({
                   />
                   <input
                     type="text"
-                    list="survey-document-group-ids"
+                    list="no-correct-answer-document-group-ids"
                     value={opt.documentGroupId || ""}
                     onChange={(e) =>
                       updateOptionDocumentGroupId(idx, e.target.value)
@@ -2671,7 +2673,7 @@ export default function ExerciseForm({
           </div>
         )}
 
-        {questionType === ExerciseType.SINGLE_CHOICE_SURVEY && (
+        {questionType === ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER && (
           <div className="border rounded-lg p-4 bg-gray-50 space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-medium text-gray-800">Document Groups</h3>
@@ -2726,10 +2728,7 @@ export default function ExerciseForm({
                               <button
                                 type="button"
                                 onClick={() =>
-                                  removeDocumentFromGroup(
-                                    groupIndex,
-                                    docIndex
-                                  )
+                                  removeDocumentFromGroup(groupIndex, docIndex)
                                 }
                                 className="text-red-500 hover:text-red-700"
                               >
@@ -2749,7 +2748,7 @@ export default function ExerciseForm({
                                       groupIndex,
                                       docIndex,
                                       "type",
-                                      e.target.value as DocumentType
+                                      e.target.value as DocumentType,
                                     )
                                   }
                                   className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -2760,7 +2759,9 @@ export default function ExerciseForm({
                                   <option value={DocumentType.CAPTION}>
                                     Caption
                                   </option>
-                                  <option value={DocumentType.TEXT}>Text</option>
+                                  <option value={DocumentType.TEXT}>
+                                    Text
+                                  </option>
                                   <option value={DocumentType.IMAGE}>
                                     Image
                                   </option>
@@ -2779,10 +2780,10 @@ export default function ExerciseForm({
                             {renderGroupDocumentFields(
                               doc,
                               groupIndex,
-                              docIndex
+                              docIndex,
                             )}
                           </div>
-                        )
+                        ),
                       )}
 
                       <div className="text-center">
@@ -2795,7 +2796,7 @@ export default function ExerciseForm({
                         </button>
                       </div>
                     </div>
-                  )
+                  ),
                 )}
               </div>
             )}
@@ -2852,8 +2853,8 @@ export default function ExerciseForm({
                   updateTranslationValue(
                     localFormData.targetArea || {},
                     lang,
-                    e.target.value
-                  )
+                    e.target.value,
+                  ),
                 )
               }
               className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
@@ -3028,13 +3029,13 @@ export default function ExerciseForm({
                         <textarea
                           value={getCurrentTranslationValue(
                             criteriaItem.criteria,
-                            lang
+                            lang,
                           )}
                           onChange={(e) =>
                             updateScoringCriteria(
                               index,
                               "criteria",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           onPaste={(e) => handlePasteCriteria(index, e)}
@@ -3058,7 +3059,7 @@ export default function ExerciseForm({
                             updateScoringCriteria(
                               index,
                               "maxScore",
-                              e.target.value
+                              e.target.value,
                             )
                           }
                           className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -3088,7 +3089,7 @@ export default function ExerciseForm({
                     const newLevel = e.target.checked
                       ? [...(localFormData.level || []), level]
                       : (localFormData.level || []).filter(
-                          (l: KeypointLevel) => l !== level
+                          (l: KeypointLevel) => l !== level,
                         );
                     handleChange("level", newLevel);
                   }}
@@ -3204,7 +3205,7 @@ export default function ExerciseForm({
                   value={currentExercise.keypointId || null}
                   onChange={(val: string | null) => {
                     setCurrentExercise((prev) =>
-                      prev ? { ...prev, keypointId: val ?? "" } : prev
+                      prev ? { ...prev, keypointId: val ?? "" } : prev,
                     );
                     setKeypointQuery("");
                   }}
@@ -3229,7 +3230,7 @@ export default function ExerciseForm({
                         .filter((k) =>
                           k.title?.[lang]
                             ?.toLowerCase()
-                            .includes(keypointQuery.toLowerCase())
+                            .includes(keypointQuery.toLowerCase()),
                         )
                         .map((c) => (
                           <Combobox.Option
@@ -3274,7 +3275,7 @@ export default function ExerciseForm({
                         type="button"
                         onClick={() => {
                           const newTags = (currentExercise.tag || []).filter(
-                            (_, i) => i !== index
+                            (_, i) => i !== index,
                           );
                           setCurrentExercise({
                             ...currentExercise,
@@ -3433,7 +3434,7 @@ export default function ExerciseForm({
                   <button
                     onClick={() =>
                       handleSelectExerciseType(
-                        ExerciseType.SINGLE_CHOICE_SURVEY
+                        ExerciseType.SINGLE_CHOICE_NO_CORRECT_ANSWER,
                       )
                     }
                     className="p-4 bg-cyan-50 rounded-lg hover:bg-cyan-100 transition flex flex-col items-center gap-2"
@@ -3441,7 +3442,9 @@ export default function ExerciseForm({
                     <div className="w-10 h-10 rounded-full bg-cyan-100 flex items-center justify-center">
                       <span className="text-cyan-600 font-bold">S</span>
                     </div>
-                    <span className="font-medium">Single Choice Survey</span>
+                    <span className="font-medium">
+                      Single Choice No Correct Answer
+                    </span>
                   </button>
                   <button
                     onClick={() =>
