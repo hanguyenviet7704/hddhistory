@@ -61,7 +61,10 @@ class RoadmapDetailPopup extends StatelessWidget {
     context.read<LessonCubit>()
       ..reset()
       ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
-    context.read<CourseLessonCubit>().setCurrentKeypointId(keypoint.id);
+    context.read<CourseLessonCubit>()
+      ..setSelectedLesson(lesson)
+      ..setCurrentKeypointId(keypoint.id)
+      ..loadLesson(lesson.id);
     LessonRoute().go(context);
 
     context.read<CourseRoadmapCubit>()

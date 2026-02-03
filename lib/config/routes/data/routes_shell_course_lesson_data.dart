@@ -1,23 +1,23 @@
 part of '../routes.dart';
 
 //? Course - Lesson
-class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
-  const LessonListRoute();
+// class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
+//   const LessonListRoute();
 
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+//   @override
+//   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
-    ],
-    child: const LessonListPage(),
-  );
-}
+//   @override
+//   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+//     providers: [
+//       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+//       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+//       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+//       BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+//     ],
+//     child: const LessonListPage(),
+//   );
+// }
 
 class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
   const LessonRoute();

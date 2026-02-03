@@ -382,10 +382,10 @@ packages:
     dependency: "direct main"
     description:
       name: dio
-      sha256: d90ee57923d1828ac14e492ca49440f65477f4bb1263575900be731a3dac66a9
+      sha256: b9d46faecab38fc8cc286f80bc4d61a3bb5d4ac49e51ed877b4d6706efe57b25
       url: "https://pub.dev"
     source: hosted
-    version: "5.9.0"
+    version: "5.9.1"
   dio_web_adapter:
     dependency: transitive
     description:
@@ -454,10 +454,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: d974b6ba2606371ac71dd94254beefb6fa81185bde0b59bdc1df09885da85fde
+      sha256: "57d9a1dd5063f85fa3107fb42d1faffda52fdc948cefd5fe5ea85267a5fc7343"
       url: "https://pub.dev"
     source: hosted
-    version: "10.3.8"
+    version: "10.3.10"
   file_selector_linux:
     dependency: transitive
     description:
@@ -1378,18 +1378,26 @@ packages:
     dependency: "direct main"
     description:
       name: json_annotation
-      sha256: "1ce844379ca14835a50d2f019a3099f419082cfdd231cd86a142af94dd5c6bb1"
+      sha256: "805fa86df56383000f640384b282ce0cb8431f1a7a2396de92fb66186d8c57df"
       url: "https://pub.dev"
     source: hosted
-    version: "4.9.0"
+    version: "4.10.0"
+  json_schema:
+    dependency: transitive
+    description:
+      name: json_schema
+      sha256: f37d9c3fdfe8c9aae55fdfd5af815d24ce63c3a0f6a2c1f0982c30f43643fa1a
+      url: "https://pub.dev"
+    source: hosted
+    version: "5.2.2"
   json_serializable:
     dependency: "direct dev"
     description:
       name: json_serializable
-      sha256: "5b89c1e32ae3840bb20a1b3434e3a590173ad3cb605896fb0f60487ce2f8104e"
+      sha256: "93fba3ad139dab2b1ce59ecc6fdce6da46a42cdb6c4399ecda30f1e7e725760d"
       url: "https://pub.dev"
     source: hosted
-    version: "6.11.4"
+    version: "6.12.0"
   just_audio:
     dependency: "direct main"
     description:
@@ -1814,6 +1822,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.5.0"
+  quiver:
+    dependency: transitive
+    description:
+      name: quiver
+      sha256: ea0b925899e64ecdfbf9c7becb60d5b50e706ade44a85b2363be2a22d88117d2
+      url: "https://pub.dev"
+    source: hosted
+    version: "3.2.2"
   recase:
     dependency: transitive
     description:
@@ -1903,6 +1919,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "10.2.1"
+  rfc_6901:
+    dependency: transitive
+    description:
+      name: rfc_6901
+      sha256: "6a43b1858dca2febaf93e15639aa6b0c49ccdfd7647775f15a499f872b018154"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.1"
   rxdart:
     dependency: transitive
     description:
@@ -2032,26 +2056,26 @@ packages:
     dependency: "direct dev"
     description:
       name: slang
-      sha256: "13e3b6f07adc51ab751e7889647774d294cbce7a3382f81d9e5029acfe9c37b2"
+      sha256: "81e277dc5e2305f53412b92afeb803620453259afe147d5cd6417700f998a7a6"
       url: "https://pub.dev"
     source: hosted
-    version: "4.12.0"
+    version: "4.12.1"
   slang_build_runner:
     dependency: "direct dev"
     description:
       name: slang_build_runner
-      sha256: "453d74b5430153a3c4150d5ba8f6380e0785f3939f7511f10ac5b6cf9bb7d2a7"
+      sha256: "010f337703dbc736ac9f0e3eb9d6e1464850736fed69f85a23c07ee4678fcc1c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.12.0"
+    version: "4.12.1"
   slang_flutter:
     dependency: "direct main"
     description:
       name: slang_flutter
-      sha256: "0a4545cca5404d6b7487cf61cf1fe56c52daeb08de56a7574ee8381fbad035a0"
+      sha256: "0f0276c400660c8b67150005aa4df57643b86ce6ae9c824abee8e25f345d9abc"
       url: "https://pub.dev"
     source: hosted
-    version: "4.12.0"
+    version: "4.12.1"
   smooth_page_indicator:
     dependency: "direct main"
     description:
@@ -2228,6 +2252,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
+  uri:
+    dependency: transitive
+    description:
+      name: uri
+      sha256: "889eea21e953187c6099802b7b4cf5219ba8f3518f604a1033064d45b1b8268a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
   url_launcher:
     dependency: "direct main"
     description:
