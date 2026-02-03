@@ -35,42 +35,43 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
           context.text.roleplay.rolePlayResultBreakdownTitle,
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
-        GestureDetector(
-          onTap: () => LessonExplainPopup.show(context, showPoint: true),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AppText(
-                context.text.lesson.lessonLessonKeypointInstruction,
-                style: AppStyle.text12.copyWith(
-                  color: AppCustomColor.textQuaternary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              8.horizontalSpace,
-              Container(
-                width: 20.w,
-                height: 20.w,
-                decoration: BoxDecoration(
-                  border: Border.all(
-                    color: AppCustomColor.textQuaternary,
-                    width: 2,
-                  ),
-                  shape: BoxShape.circle,
-                ),
-                alignment: Alignment.center,
-                child: AppText(
-                  'i',
+        if (kDebugMode)
+          GestureDetector(
+            onTap: () => LessonExplainPopup.show(context, showPoint: true),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                AppText(
+                  context.text.lesson.lessonLessonKeypointInstruction,
                   style: AppStyle.text12.copyWith(
                     color: AppCustomColor.textQuaternary,
                     fontWeight: FontWeight.w600,
-                    height: 1,
                   ),
                 ),
-              ),
-            ],
+                8.horizontalSpace,
+                Container(
+                  width: 20.w,
+                  height: 20.w,
+                  decoration: BoxDecoration(
+                    border: Border.all(
+                      color: AppCustomColor.textQuaternary,
+                      width: 2,
+                    ),
+                    shape: BoxShape.circle,
+                  ),
+                  alignment: Alignment.center,
+                  child: AppText(
+                    'i',
+                    style: AppStyle.text12.copyWith(
+                      color: AppCustomColor.textQuaternary,
+                      fontWeight: FontWeight.w600,
+                      height: 1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
       ],
     );
   }

@@ -9,6 +9,7 @@ class RoleplayCompletePage extends StatefulWidget {
 
 class _RoleplayCompletePageState extends State<RoleplayCompletePage> {
   bool _hasTrackedView = false;
+  bool _hasAutoNavigated = false;
 
   void _trackDoneScrView() {
     if (_hasTrackedView) return;
@@ -22,6 +23,15 @@ class _RoleplayCompletePageState extends State<RoleplayCompletePage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) => _trackDoneScrView());
+    Future.delayed(const Duration(seconds: 2), () {
+      if (!mounted || _hasAutoNavigated) return;
+      _hasAutoNavigated = true;
+      final trackingData = RoleplayTrackingData.fromContext();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayDoneResultClick(trackingData);
+      }
+      const RoleplayFeedbackRoute().go(context);
+    });
   }
 
   @override
@@ -45,23 +55,13 @@ class _RoleplayCompletePageState extends State<RoleplayCompletePage> {
                         width: 224.w,
                         fit: BoxFit.contain,
                       ),
-                      16.verticalSpace,
+                      36.verticalSpace,
                       RoleplayCompleteTitle(text: context.text.roleplay.rolePlayComplete),
                     ],
                   ),
                 ),
               ),
-              RoleplayCompleteBottomCTA(
-                label: context.text.roleplay.rolePlayShowResultButton,
-                onPressed: () {
-                  final trackingData = RoleplayTrackingData.fromContext();
-                  if (trackingData != null) {
-                    AppService.instance.appTrackingService.trackRoleplayDoneResultClick(trackingData);
-                  }
-                  const RoleplayFeedbackRoute().go(context);
-                },
-                bottomPadding: bottomPadding,
-              ),
+              SizedBox(height: 16.h + bottomPadding, width: double.infinity),
             ],
           ),
         ),

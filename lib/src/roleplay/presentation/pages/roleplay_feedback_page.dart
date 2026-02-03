@@ -13,6 +13,7 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
   bool _hasTrackedScroll = false;
   bool _hasTrackedScrollBottom = false;
   bool _hasShownFeedbackPopup = false;
+  bool _hasSubmittedProgress = false;
 
   void _trackResultView() {
     if (_hasTrackedView) return;
@@ -39,6 +40,18 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
     }
   }
 
+  void _maybeFinishRoleplayLesson(RoleplayState state) {
+    if (_hasSubmittedProgress) return;
+    final progressCubit = AppDI.injector.get<ProgressCubit>();
+    if (progressCubit.state.currentLessonResult.reviews.isNotEmpty) return;
+    if (state.status == RoleplayStatus.loading && state.feedback.feedbackText.isEmpty) return;
+
+    context.read<RoleplayPointCubit>().finishRoleplayLesson(
+      lessonReview: state.feedback.feedbackText,
+    );
+    _hasSubmittedProgress = true;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -46,6 +59,7 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _trackResultView();
       context.read<FeedbackCubit>().loadUserFeedbacks();
+      _maybeFinishRoleplayLesson(context.read<RoleplayCubit>().state);
     });
   }
 
@@ -59,22 +73,34 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
 
   @override
   Widget build(BuildContext context) {
-    return BlocListener<FeedbackCubit, FeedbackState>(
-      listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
-      listener: (context, state) {
-        if (_hasShownFeedbackPopup) return;
-        if (state.userFeedback.userHasRoleplayFeedbackComplete) return;
-        final trackingData = RoleplayTrackingData.fromContext();
-        if (trackingData == null) return;
-        _hasShownFeedbackPopup = true;
-        FeedbackCompleteLessonPopup.show(
-          context,
-          entry: FeedbackEntry.roleplay,
-          courseId: trackingData.course.id,
-          lessonId: trackingData.lesson.id,
-          keypointId: trackingData.learningItem.keypointId,
-        );
-      },
+    return MultiBlocListener(
+      listeners: [
+        BlocListener<FeedbackCubit, FeedbackState>(
+          listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
+          listener: (context, state) {
+            if (_hasShownFeedbackPopup) return;
+            if (state.userFeedback.userHasRoleplayFeedbackComplete) return;
+            final trackingData = RoleplayTrackingData.fromContext();
+            if (trackingData == null) return;
+            _hasShownFeedbackPopup = true;
+            FeedbackCompleteLessonPopup.show(
+              context,
+              entry: FeedbackEntry.roleplay,
+              courseId: trackingData.course.id,
+              lessonId: trackingData.lesson.id,
+              keypointId: trackingData.learningItem.keypointId,
+            );
+          },
+        ),
+        BlocListener<RoleplayCubit, RoleplayState>(
+          listenWhen: (previous, current) =>
+              previous.status != current.status ||
+              previous.feedback.feedbackText != current.feedback.feedbackText,
+          listener: (context, state) {
+            _maybeFinishRoleplayLesson(state);
+          },
+        ),
+      ],
       child: AnnotatedRegion<SystemUiOverlayStyle>(
         value: SystemUiOverlayStyle.dark,
         child: Scaffold(

@@ -31,13 +31,6 @@ class RoadmapRoleplayCard extends StatelessWidget {
                 color: _borderColor(isLastInProgress),
                 width: isLastInProgress ? 3.w : 2.w,
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: AppCustomColor.borderDefault,
-                  blurRadius: 4,
-                  offset: Offset.zero,
-                ),
-              ],
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
