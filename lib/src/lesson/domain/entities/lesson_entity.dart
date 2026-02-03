@@ -93,7 +93,7 @@ extension LessonEntityExtension on LessonEntity {
 
   ProcessEnum get roadmapProgress {
     if (firstKeypoint.id.isEmpty) return progess;
-    final keypointProgress = firstKeypoint.progressFromAverageScore;
+    final keypointProgress = firstKeypoint.progess;
     return _higherProgress(progess, keypointProgress);
   }
 
@@ -103,7 +103,7 @@ extension LessonEntityExtension on LessonEntity {
     }
 
     final keypoint = keypoints.first;
-    if (keypoint.progressFromAverageScore != ProcessEnum.notStarted) return this;
+    if (keypoint.progess != ProcessEnum.notStarted) return this;
     return copyWith(
       keypoints: [
         keypoint.copyWith(progess: ProcessEnum.inProgress),

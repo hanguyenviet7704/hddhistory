@@ -21,8 +21,8 @@ extension RoadmapLevelEntityExtension on RoadmapLevelEntity {
     ...nodes.expand((node) => node.lessonsList),
   ];
 
-  int get totalLessons => lessonList.length;
-  int get completedLessons => lessonList.where((r) => r.progess == ProcessEnum.done).length;
+  int get totalLessons => nodes.expand((node) => node.lessonsList).length;
+  int get completedLessons => nodes.expand((node) => node.lessonsList).where((r) => r.roadmapProgress == ProcessEnum.done).length;
   double get progress {
     if (totalLessons == 0) return 0;
     if (completedLessons >= totalLessons) return 1;

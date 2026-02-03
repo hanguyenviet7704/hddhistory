@@ -16,13 +16,13 @@ class LessonKeypointCard extends StatelessWidget {
 
   Color _textColor(bool isLastInProgress) {
     if (isLastInProgress) return AppCustomColor.brandPrimary;
-    if (keypoint.isCompletedFromAverageScore) return AppCustomColor.textPrimary;
+    if (keypoint.isCompleted) return AppCustomColor.textPrimary;
     return AppCustomColor.textTertiary;
   }
 
   Color _backgroundColor(bool isLastInProgress) {
     if (isLastInProgress) return AppCustomColor.backgroundWhite;
-    if (keypoint.isCompletedFromAverageScore) return AppCustomColor.backgroundWhite;
+    if (keypoint.isCompleted) return AppCustomColor.backgroundWhite;
     return AppCustomColor.backgroundGray;
   }
 
