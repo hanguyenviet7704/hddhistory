@@ -85,7 +85,7 @@ export default function CloudflareFileUpload({
   }, [initialUrl]);
 
   const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const file = event.target.files?.[0];
     if (!file) return;
@@ -162,7 +162,7 @@ export default function CloudflareFileUpload({
         const onDataFailed = () => setAnimationError(true);
         animationInstanceRef.current?.addEventListener(
           "data_failed",
-          onDataFailed
+          onDataFailed,
         );
         animationInstanceRef.current?.addEventListener("error", onDataFailed);
       };
@@ -296,15 +296,8 @@ export default function CloudflareFileUpload({
           <div className="flex flex-col items-center">
             <CloudArrowUpIcon className="h-10 w-10 text-gray-400" />
             <span className="mt-2 text-sm text-gray-500">
-              Click to upload or drag and drop
+              Click to upload file PNG, JPG, GIF...
             </span>
-            <p className="text-xs text-gray-500">
-              {accept.includes("audio")
-                ? "MP3, WAV up to 10MB"
-                : accept.includes("json") || accept.includes("lottie")
-                ? "JSON / Lottie"
-                : "PNG, JPG, GIF up to 10MB"}
-            </p>
           </div>
         )}
       </label>

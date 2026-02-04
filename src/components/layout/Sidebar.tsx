@@ -11,7 +11,6 @@ import {
   SparklesIcon,
   Cog6ToothIcon,
   PuzzlePieceIcon,
-  UsersIcon,
   CreditCardIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
@@ -31,6 +30,11 @@ const menuItems = [
   { name: "Theory", icon: DocumentTextIcon, path: "/theory" },
   { name: "Exercise", icon: PencilSquareIcon, path: "/exercise" },
   { name: "Onboarding", icon: SparklesIcon, path: "/onboarding" },
+  {
+    name: "Onboarding Branching",
+    icon: SparklesIcon,
+    path: "/onboarding-branching",
+  },
   { name: "Payment", icon: CreditCardIcon, path: "/payment" },
 ];
 
@@ -48,8 +52,8 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
     }
 
     // Nếu path hiện tại bắt đầu bằng path của menu item và có thêm các phần sau
-    // Ví dụ: "/lesson" sẽ khớp với "/lesson", "/lesson/123", "/lesson/edit"...
-    if (currentPath.startsWith(path + "/") || currentPath.startsWith(path)) {
+    // Ví dụ: "/lesson" sẽ khớp với "/lesson/123", "/lesson/edit"...
+    if (currentPath.startsWith(path + "/")) {
       return true;
     }
 

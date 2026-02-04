@@ -65,7 +65,7 @@ type OnboardingArrayField =
   | "dailyLearningGoal";
 
 const sanitizeTranslation = (
-  translation: ITranslation | undefined
+  translation: ITranslation | undefined,
 ): ITranslation => {
   const sanitized: ITranslation = {};
 
@@ -347,7 +347,7 @@ const IntroInput: React.FC<{
       // Gọi onChange với ID của item hiện tại
       onChange(item.id, { ...item, image: newUrl });
     },
-    [item.id, onChange]
+    [item.id, onChange],
   );
 
   return (
@@ -470,7 +470,7 @@ const IntroInput: React.FC<{
               }}
               dangerouslySetInnerHTML={{
                 __html: DOMPurify.sanitize(
-                  getCurrentTranslationValue(item.content, lang)
+                  getCurrentTranslationValue(item.content, lang),
                 ),
               }}
             />
@@ -592,7 +592,7 @@ const MotivationInput: React.FC<{
     (newUrl: string) => {
       onChange({ ...item, image: newUrl });
     },
-    [item, onChange]
+    [item, onChange],
   );
 
   return (
@@ -629,7 +629,7 @@ const MotivationInput: React.FC<{
             content: updateTranslationValue(
               item.content as ITranslation,
               lang,
-              e.target.value
+              e.target.value,
             ),
           })
         }
@@ -706,7 +706,7 @@ const OnboardingManagement: React.FC = () => {
     fields.forEach((field) => {
       if (Array.isArray(data[field]) && data[field].length > 0) {
         const maxId = Math.max(
-          ...(data[field] as any[]).map((item) => item.id)
+          ...(data[field] as any[]).map((item) => item.id),
         );
         newIds[field as keyof typeof newIds] = maxId + 1;
       }
@@ -733,14 +733,14 @@ const OnboardingManagement: React.FC = () => {
   }, []); // ĐÃ SỬA: Chỉ chạy 1 lần
 
   const buildIntroPayload = (
-    list: IOnboardingIntro[]
+    list: IOnboardingIntro[],
   ): OnboardingIntroPayload[] =>
     list.map((intro) => {
       const cleanedTitle = sanitizeTranslation(
-        cleanTranslation(intro.title) || intro.title
+        cleanTranslation(intro.title) || intro.title,
       );
       const cleanedContent = sanitizeTranslation(
-        cleanTranslation(intro.content) || intro.content
+        cleanTranslation(intro.content) || intro.content,
       );
 
       return {
@@ -755,14 +755,14 @@ const OnboardingManagement: React.FC = () => {
 
   const buildLabelPayload = (
     list: ILablel[],
-    requireTitle: boolean = false
+    requireTitle: boolean = false,
   ): LablelPayload[] =>
     list.map((l) => {
       const cleanedLabel = sanitizeTranslation(
-        cleanTranslation(l.label) || l.label
+        cleanTranslation(l.label) || l.label,
       );
       const cleanedTitle = sanitizeTranslation(
-        cleanTranslation(l.title) || l.title
+        cleanTranslation(l.title) || l.title,
       );
 
       const payload: Partial<LablelPayload> = {
@@ -780,7 +780,7 @@ const OnboardingManagement: React.FC = () => {
     });
 
   const buildMotivationPayload = (
-    motivation: IMotivation | undefined
+    motivation: IMotivation | undefined,
   ): IMotivation => {
     const cleanedContent = cleanTranslation(motivation?.content);
 
@@ -806,20 +806,20 @@ const OnboardingManagement: React.FC = () => {
         gender: buildLabelPayload(onboarding.gender || [], false),
         skillsetWantToMaster: buildLabelPayload(
           onboarding.skillsetWantToMaster || [],
-          false
+          false,
         ),
         learningGoal: buildLabelPayload(onboarding.learningGoal || [], false),
         learningStruggles: buildLabelPayload(
           onboarding.learningStruggles || [],
-          false
+          false,
         ),
         comfortableLearningTime: buildLabelPayload(
           onboarding.comfortableLearningTime || [],
-          true
+          true,
         ),
         dailyLearningGoal: buildLabelPayload(
           onboarding.dailyLearningGoal || [],
-          false
+          false,
         ),
         welcome: buildMotivationPayload(onboarding.welcome),
         motivationOne: buildMotivationPayload(onboarding.motivationOne),
@@ -852,14 +852,14 @@ const OnboardingManagement: React.FC = () => {
       newArray[index] = value;
       setOnboarding({ ...onboarding, [field]: newArray });
     },
-    [onboarding]
+    [onboarding],
   );
 
   const updateMotivationField = useCallback(
     (field: MotivationField, value: IMotivation) => {
       setOnboarding((prev) => (prev ? { ...prev, [field]: value } : prev));
     },
-    []
+    [],
   );
 
   const getMotivationValue = (field: MotivationField): IMotivation =>
@@ -978,7 +978,7 @@ const OnboardingManagement: React.FC = () => {
   const renderLabelsTab = (
     field: OnboardingArrayField,
     title: string,
-    showTitle?: boolean
+    showTitle?: boolean,
   ): React.ReactNode => (
     <Box sx={{ mb: 3 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
@@ -1013,7 +1013,7 @@ const OnboardingManagement: React.FC = () => {
 
   const renderMotivationTab = (
     field: MotivationField,
-    title: string
+    title: string,
   ): React.ReactNode => (
     <MotivationInput
       item={getMotivationValue(field)}
@@ -1087,7 +1087,7 @@ const OnboardingManagement: React.FC = () => {
 
   const renderMotivationSection = (
     field: MotivationField,
-    title: string
+    title: string,
   ): React.ReactNode => {
     const motivation = getMotivationValue(field);
 
@@ -1342,7 +1342,7 @@ const OnboardingManagement: React.FC = () => {
                           sx={{ lineHeight: 1.6 }}
                           dangerouslySetInnerHTML={{
                             __html: DOMPurify.sanitize(
-                              getCurrentTranslationValue(intro.content, lang)
+                              getCurrentTranslationValue(intro.content, lang),
                             ),
                           }}
                         />
@@ -1470,7 +1470,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {onboarding.skillsetWantToMaster.map((item) =>
-                  renderChipWithIcon(item)
+                  renderChipWithIcon(item),
                 )}
               </Box>
             </Box>
@@ -1512,7 +1512,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {onboarding.learningGoal.map((item) =>
-                  renderChipWithIcon(item)
+                  renderChipWithIcon(item),
                 )}
               </Box>
             </Box>
@@ -1554,7 +1554,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {onboarding.learningStruggles.map((item) =>
-                  renderChipWithIcon(item)
+                  renderChipWithIcon(item),
                 )}
               </Box>
             </Box>
@@ -1596,7 +1596,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {onboarding.comfortableLearningTime.map((item) =>
-                  renderChipWithIconAndTitle(item)
+                  renderChipWithIconAndTitle(item),
                 )}
               </Box>
             </Box>
@@ -1638,7 +1638,7 @@ const OnboardingManagement: React.FC = () => {
               </Box>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
                 {onboarding.dailyLearningGoal.map((item) =>
-                  renderChipWithIcon(item)
+                  renderChipWithIcon(item),
                 )}
               </Box>
             </Box>

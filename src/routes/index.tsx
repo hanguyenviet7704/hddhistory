@@ -25,6 +25,7 @@ import ExerciseList from "../pages/exercises/ExerciseList";
 import ExerciseCreate from "../pages/exercises/ExerciseCreate";
 import ExerciseDetail from "../pages/exercises/ExerciseDetail";
 import OnboardingManagement from "../pages/onboardings/OnboardingManagemant";
+import OnboardingManagemantScenarioBranching from "../pages/onboardings/OnboardingManagemantScenarioBranching";
 import KeypointDetail from "../pages/keypoints/KeypointDetail";
 import SettingsPage from "../pages/setting/Setting";
 import SkillsetList from "../pages/skillsets/skillsetList";
@@ -73,6 +74,10 @@ export default function AppRouter() {
               <Route path="roleplay/:lessonId" element={<RoleplayDetail />} />
 
               <Route path="onboarding" element={<OnboardingManagement />} />
+              <Route
+                path="onboarding-branching"
+                element={<OnboardingManagemantScenarioBranching />}
+              />
 
               <Route
                 path="progress/user/:userId"
