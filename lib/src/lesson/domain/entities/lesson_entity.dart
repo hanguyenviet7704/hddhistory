@@ -34,18 +34,18 @@ extension LessonEntityListExtension on List<LessonEntity> {
 
   List<LessonEntity> applySequentialUnlock({bool enableAutoUnlock = true}) {
     if (!enableAutoUnlock) return toList();
-    bool hasInProgress = false;
+    final lessons = toList();
+    final hasExistingInProgress = lessons.any((lesson) => lesson.roadmapProgress == ProcessEnum.inProgress);
+    if (hasExistingInProgress) return lessons;
     bool previousAllDone = true;
-    return map((lesson) {
+    return lessons.map((lesson) {
       final progress = lesson.roadmapProgress;
       if (progress == ProcessEnum.done) return lesson;
       if (progress == ProcessEnum.inProgress) {
-        hasInProgress = true;
         previousAllDone = false;
         return lesson;
       }
-      if (!hasInProgress && previousAllDone) {
-        hasInProgress = true;
+      if (previousAllDone) {
         previousAllDone = false;
         return lesson.markInProgressForRoadmap();
       }
@@ -93,8 +93,7 @@ extension LessonEntityExtension on LessonEntity {
 
   ProcessEnum get roadmapProgress {
     if (firstKeypoint.id.isEmpty) return progess;
-    final keypointProgress = firstKeypoint.progess;
-    return _higherProgress(progess, keypointProgress);
+    return firstKeypoint.progess;
   }
 
   LessonEntity markInProgressForRoadmap() {
@@ -109,10 +108,6 @@ extension LessonEntityExtension on LessonEntity {
         keypoint.copyWith(progess: ProcessEnum.inProgress),
       ],
     );
-  }
-
-  ProcessEnum _higherProgress(ProcessEnum a, ProcessEnum b) {
-    return a.rank >= b.rank ? a : b;
   }
 
   String get roadmapIconUrl {

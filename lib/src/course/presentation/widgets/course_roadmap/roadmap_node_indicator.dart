@@ -8,7 +8,11 @@ class RoadmapNodeIndicator extends StatelessWidget {
     required this.lesson,
   });
 
-  Color _borderColor(bool isLastInProgress) => isLastInProgress ? AppCustomColor.borderBrand : AppCustomColor.neutral100;
+  Color _borderColor(bool isLastInProgress) {
+    if (isLastInProgress) return AppCustomColor.borderBrand;
+    if (lesson.roadmapProgress == ProcessEnum.done) return AppCustomColor.brandPrimary50;
+    return AppCustomColor.neutral100;
+  }
 
   bool _isLocked(bool isLastInProgress) => !isLastInProgress && lesson.roadmapProgress == ProcessEnum.notStarted;
 
