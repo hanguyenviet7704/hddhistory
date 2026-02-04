@@ -80,9 +80,8 @@ part 'presentation/cubits/speaking/speaking_state.dart';
 part 'presentation/cubits/theory/theory_cubit.dart';
 part 'presentation/cubits/theory/theory_state.dart';
 //* Presentation Layer - Pages
-part 'presentation/pages/badge_complete_page.dart';
 part 'presentation/pages/keypoint_complete_page.dart';
-part 'presentation/pages/lesson_complete_page.dart';
+part 'presentation/pages/badge_progress_page.dart';
 part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/review_time_page.dart';
 //* Presentation Layer - Widgets
@@ -103,6 +102,7 @@ part 'presentation/widgets/items/choice/result_bottom_sheet.dart';
 part 'presentation/widgets/items/common/audio_player_widget.dart';
 part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/close_popup_lesson.dart';
+part 'presentation/widgets/items/common/completion_header_card.dart';
 part 'presentation/widgets/items/common/document_content_widget.dart';
 part 'presentation/widgets/items/common/document_item.dart';
 part 'presentation/widgets/items/common/document_media_widget.dart';
@@ -123,6 +123,7 @@ part 'presentation/widgets/items/common/lesson_completion_progress_bar.dart';
 part 'presentation/widgets/items/common/lesson_progress_bar.dart';
 part 'presentation/widgets/items/common/lesson_result_overlay.dart';
 part 'presentation/widgets/items/common/lesson_time_controller.dart';
+part 'presentation/widgets/items/common/next_lesson_card.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_available_marks.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_pause_mark.dart';
 part 'presentation/widgets/items/cues_placement/cues_placement_pause_mark_icon.dart';

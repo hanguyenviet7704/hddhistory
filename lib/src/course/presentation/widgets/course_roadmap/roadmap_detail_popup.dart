@@ -24,6 +24,7 @@ class RoadmapDetailPopup extends StatelessWidget {
       barrierColor: AppCustomColor.scrimOverlay,
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
       routeSettings: const RouteSettings(name: RouteNamed.roadmapDetailPopup),
+      useRootNavigator: true,
       builder: (context) => MultiBlocProvider(
         providers: [
           BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
@@ -71,7 +72,7 @@ class RoadmapDetailPopup extends StatelessWidget {
       ..setCurrentCourseLevel(courseLevel)
       ..setCurrentLesson(lesson);
 
-    Navigator.of(context).pop(); // Close popup
+    context.back();
   }
 
   @override

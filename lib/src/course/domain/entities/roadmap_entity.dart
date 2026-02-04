@@ -111,6 +111,24 @@ extension RoadmapEntityExtension on RoadmapEntity {
     return MapEntry(selectedLesson, selectedLevel);
   }
 
+  LessonEntity nextLessonAfter(LessonEntity current, {bool lessonOnly = true}) {
+    if (current.id.isEmpty) return LessonEntity();
+    final lessons = displayLessons;
+    if (lessons.isEmpty) return LessonEntity();
+
+    final currentIndex = lessons.indexWhere((lesson) => lesson.isSameLesson(current));
+    if (currentIndex == -1) return LessonEntity();
+
+    for (int i = currentIndex + 1; i < lessons.length; i++) {
+      final next = lessons[i];
+      if (!lessonOnly || next.type == LessonType.lesson) {
+        return next;
+      }
+    }
+
+    return LessonEntity();
+  }
+
   int get lastCompletedLevelIndex {
     for (int i = levels.length - 1; i >= 0; i--) {
       if (levels.elementAt(i).isCompleted) return i + 1;

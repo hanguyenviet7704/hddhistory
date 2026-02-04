@@ -20,8 +20,7 @@ part of '../routes.dart';
             TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
             TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
             TypedGoRoute<KeypointCompleteRoute>(path: RoutePath.keypointComplete, name: RouteNamed.keypointComplete),
-            TypedGoRoute<LessonCompleteRoute>(path: RoutePath.lessonComplete, name: RouteNamed.lessonComplete),
-            TypedGoRoute<BadgeCompleteRoute>(path: RoutePath.badgeComplete, name: RouteNamed.badgeComplete),
+            TypedGoRoute<BadgeProgressRoute>(path: RoutePath.badgeProgress, name: RouteNamed.badgeProgress),
             
             //? Course - Roleplay
             TypedGoRoute<RoleplayIntroRoute>(
