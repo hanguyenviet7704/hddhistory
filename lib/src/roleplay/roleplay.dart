@@ -53,6 +53,7 @@ part 'presentation/pages/roleplay_intro_page.dart';
 part 'presentation/pages/roleplay_page.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_audio_answer_player.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_colapsed_exercise_body.dart';
+part 'presentation/widgets/roleplay/exercise/roleplay_exercise_explanation_section.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_answer.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_answer_body.dart';
 part 'presentation/widgets/roleplay/exercise/roleplay_exercise_answer_header.dart';
