@@ -19,6 +19,30 @@ abstract class CourseLessonState with _$CourseLessonState {
 extension CourseLessonStateExtension on CourseLessonState {
   bool get isCompleted => selectedLesson.progess == ProcessEnum.done;
 
+  KeypointEntity get resolvedCurrentKeypoint {
+    if (currentKeypointId.isNotEmpty) {
+      return selectedLesson.keypoints.firstWhere(
+        (keypoint) => keypoint.id == currentKeypointId,
+        orElse: () => selectedLesson.firstKeypoint,
+      );
+    }
+    return selectedLesson.firstKeypoint;
+  }
+
+  String get currentTitle {
+    final keypoint = resolvedCurrentKeypoint;
+    if (keypoint.title.text.isNotEmpty) return keypoint.title.text;
+    return selectedLesson.title.text;
+  }
+
+  LessonEntity get currentLessonForNext {
+    final keypoint = resolvedCurrentKeypoint;
+    if (keypoint.id.isNotEmpty) {
+      return selectedLesson.copyWith(keypoints: [keypoint]);
+    }
+    return selectedLesson;
+  }
+
   KeypointEntity get currentKeypoint {
     return selectedLesson.keypoints.firstWhere((keypoint) => keypoint.id == currentKeypointId);
   }
