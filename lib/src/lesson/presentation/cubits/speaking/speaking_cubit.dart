@@ -26,11 +26,26 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     _questionScore = 0;
   }
 
-  void setQuestion(QuestionEntity question) => emit(state.copyWith(question: question));
+  void setQuestion(QuestionEntity question) {
+    emit(
+      state.copyWith(
+        question: question,
+        result: question.result,
+        isFeedbackLoading: false,
+      ),
+    );
+  }
   void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
 
   void setReviewResult(QuestionEntity question, ExerciseResultEntity result) {
-    emit(state.copyWith(question: question, status: SpeakingStatus.success));
+    emit(
+      state.copyWith(
+        question: question,
+        result: result,
+        status: SpeakingStatus.success,
+        isFeedbackLoading: false,
+      ),
+    );
     applyExerciseResult(result);
   }
 
@@ -240,7 +255,12 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   void getVoiceFeedback({String? url}) async {
     await _streamSubscription?.cancel();
     _feedbackStream = '';
-    emit(state.copyWith(goodPoints: const [], improvementPoints: const []));
+    emit(
+      state.copyWith(
+        result: state.result.copyWith(goodPoints: const [], improvementPoints: const []),
+        isFeedbackLoading: true,
+      ),
+    );
 
     AppLocale localeType = _localeCubit.state;
     String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
@@ -271,6 +291,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
                 final payload = _extractSsePayload(line);
                 if (payload == '[DONE]') {
                   setPoints();
+                  _markFeedbackComplete();
                   return;
                 }
 
@@ -287,16 +308,18 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
                 if (_feedbackStream.isNotEmpty) {
                   setPoints();
                 }
+                _markFeedbackComplete();
                 // emit(state.copyWith(status: SpeakingStatus.success));
               },
               onError: (err) {
                 LogDev.one("❌ Stream error: $err");
+                _markFeedbackComplete();
                 // emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: err.toString()));
               },
             );
       },
       onFailure: (error) {
-        emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error));
+        emit(state.copyWith(status: SpeakingStatus.failure, errorMessage: error, isFeedbackLoading: false));
       },
     );
   }
@@ -330,10 +353,18 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
     emit(
       state.copyWith(
-        goodPoints: goodPoints,
-        improvementPoints: improvementPoints,
+        result: state.result.copyWith(
+          goodPoints: goodPoints,
+          improvementPoints: improvementPoints,
+        ),
       ),
     );
+    _storeLessonResult(toExerciseResult());
+  }
+
+  void _markFeedbackComplete() {
+    if (!state.isFeedbackLoading) return;
+    emit(state.copyWith(isFeedbackLoading: false));
   }
 
   List<String> _extractPoints(String section) {
@@ -429,7 +460,8 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       review: state.textInput,
     );
 
-    return ExerciseResultEntity(
+    final baseResult = state.result;
+    return baseResult.copyWith(
       exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
       type: question.type,
       form: question.form,
@@ -448,9 +480,11 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
     emit(
       state.copyWith(
+        result: result,
         inputMode: inputMode,
         audioFilePath: record.isNotEmpty ? record : null,
         textInput: review,
+        isFeedbackLoading: false,
       ),
     );
   }

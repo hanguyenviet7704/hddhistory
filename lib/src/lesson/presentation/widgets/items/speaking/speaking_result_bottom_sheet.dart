@@ -20,6 +20,7 @@ class SpeakingResultBottomSheet extends StatelessWidget {
         explanation: SpeakingExplanationContent(
           textInput: state.textInput,
           audioFilePath: state.audioFilePath ?? '',
+          isFeedbackLoading: state.isFeedbackLoading,
           goodPoints: state.goodPoints,
           improvementPoints: state.improvementPoints,
         ),
@@ -43,12 +44,14 @@ class SpeakingResultBottomSheet extends StatelessWidget {
 class SpeakingExplanationContent extends StatelessWidget {
   final String textInput;
   final String audioFilePath;
+  final bool isFeedbackLoading;
   final List<String> goodPoints;
   final List<String> improvementPoints;
   const SpeakingExplanationContent({
     super.key,
     this.textInput = '',
     this.audioFilePath = '',
+    this.isFeedbackLoading = false,
     this.goodPoints = const [],
     this.improvementPoints = const [],
   });
@@ -112,8 +115,8 @@ class SpeakingExplanationContent extends StatelessWidget {
                           onPlayTap: _trackExplainReplay,
                         ),
                 ),
-              SpeakingGoodPointsSection(points: goodPoints),
-              SpeakingImprovementSection(points: improvementPoints),
+              SpeakingGoodPointsSection(points: goodPoints, isLoading: isFeedbackLoading),
+              SpeakingImprovementSection(points: improvementPoints, isLoading: isFeedbackLoading),
             ],
           ),
         ),
@@ -124,10 +127,12 @@ class SpeakingExplanationContent extends StatelessWidget {
 
 class SpeakingGoodPointsSection extends StatelessWidget {
   final List<String> points;
+  final bool isLoading;
 
   const SpeakingGoodPointsSection({
     super.key,
     this.points = const [],
+    this.isLoading = false,
   });
 
   @override
@@ -163,27 +168,24 @@ class SpeakingGoodPointsSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
-            selector: (state) => state.goodPoints,
-            builder: (context, goodPoints) {
-              return AnimateSwitch(
-                child: goodPoints.isEmpty
-                    ? const _SpeakingPointsSkeleton(
-                        key: ValueKey('skeleton-goodPoints'),
-                        baseColor: Color(0xFFC7C5FA),
-                        highlightColor: Color(0xFFEBEAFD),
-                      )
+          AnimateSwitch(
+            child: isLoading && points.isEmpty
+                ? const _SpeakingPointsSkeleton(
+                    key: ValueKey('skeleton-goodPoints'),
+                    baseColor: Color(0xFFC7C5FA),
+                    highlightColor: Color(0xFFEBEAFD),
+                  )
+                : points.isEmpty
+                    ? const SizedBox.shrink()
                     : AnimatedPointsList(
                         key: ValueKey('good-points'),
-                        points: goodPoints,
+                        points: points,
                         textStyle: AppStyle.text14.copyWith(
                           color: const Color(0xFF364152),
                           height: 1.5,
                         ),
                         indexColor: const Color(0xFF554FF0),
                       ),
-              );
-            },
           ),
         ],
       ),
@@ -193,10 +195,12 @@ class SpeakingGoodPointsSection extends StatelessWidget {
 
 class SpeakingImprovementSection extends StatelessWidget {
   final List<String> points;
+  final bool isLoading;
 
   const SpeakingImprovementSection({
     super.key,
     this.points = const [],
+    this.isLoading = false,
   });
 
   @override
@@ -232,27 +236,24 @@ class SpeakingImprovementSection extends StatelessWidget {
             ],
           ),
           8.verticalSpace,
-          BlocSelector<SpeakingCubit, SpeakingState, List<String>>(
-            selector: (state) => state.improvementPoints,
-            builder: (context, improvementPoints) {
-              return AnimateSwitch(
-                child: improvementPoints.isEmpty
-                    ? const _SpeakingPointsSkeleton(
-                        key: ValueKey('skeleton-improvementPoints'),
-                        baseColor: Color(0xFFB3DDCC),
-                        highlightColor: Color(0xFFE6F4EE),
-                      )
+          AnimateSwitch(
+            child: isLoading && points.isEmpty
+                ? const _SpeakingPointsSkeleton(
+                    key: ValueKey('skeleton-improvementPoints'),
+                    baseColor: Color(0xFFB3DDCC),
+                    highlightColor: Color(0xFFE6F4EE),
+                  )
+                : points.isEmpty
+                    ? const SizedBox.shrink()
                     : AnimatedPointsList(
                         key: ValueKey('improvement-points'),
-                        points: improvementPoints,
+                        points: points,
                         textStyle: AppStyle.text14.copyWith(
                           color: const Color(0xFF364152),
                           height: 1.5,
                         ),
                         indexColor: const Color(0xFF41AE8C),
                       ),
-              );
-            },
           ),
         ],
       ),
