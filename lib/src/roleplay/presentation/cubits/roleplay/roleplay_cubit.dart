@@ -22,8 +22,9 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
   }
 
   void endRoleplay() {
-    AppDI.injector.get<RoleplayPointCubit>().finishRoleplayLesson();
-    _sendFeedback();
+    if (state.feedback.feedbackText.isEmpty) {
+      _sendFeedback();
+    }
     bool isCompleted = state.currentLesson.progess == ProcessEnum.done;
     if (isCompleted) {
       RoleplayFeedbackRoute().go(AppConfig.instance.context!);
@@ -168,7 +169,13 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
       lessonId: lessonId,
       onSuccess: (result) {
         if (currentRoleplayId != state.currentRoleplay.id) return;
-        if (result.exercisesResult.isEmpty) return;
+        final bool shouldUpdateFeedback = result.reviews.isNotEmpty && state.feedback.feedbackText.isEmpty;
+        if (result.exercisesResult.isEmpty) {
+          if (shouldUpdateFeedback) {
+            emit(state.copyWith(feedback: RoleplayFeedbackEntity(feedbackText: result.reviews)));
+          }
+          return;
+        }
 
         final Map<String, ExerciseResultEntity> resultsById = {
           for (final exerciseResult in result.exercisesResult)
@@ -192,6 +199,7 @@ class RoleplayCubit extends Cubit<RoleplayState> with CubitUseCaseHandlerMixin<R
             currentLearningItem: state.currentLearningItem.copyWith(
               roleplay: state.currentRoleplay.copyWith(contents: updatedContents),
             ),
+            feedback: shouldUpdateFeedback ? RoleplayFeedbackEntity(feedbackText: result.reviews) : state.feedback,
           ),
         );
         _restoreRoleplayPointsFromResults(resultsById);

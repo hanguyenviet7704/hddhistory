@@ -14,6 +14,7 @@ abstract class LessonEntity with _$LessonEntity {
     @Default([]) List<KeypointEntity> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagEntity()) TagEntity icon,
+    @Default(TagEntity()) TagEntity lightIcon,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
     @Default(0) int index,
   }) = _LessonEntity;
@@ -30,9 +31,47 @@ extension LessonEntityListExtension on List<LessonEntity> {
     }
     return LessonEntity();
   }
+
+  List<LessonEntity> applySequentialUnlock({bool enableAutoUnlock = true}) {
+    if (!enableAutoUnlock) return toList();
+    final lessons = toList();
+    final hasExistingInProgress = lessons.any((lesson) => lesson.roadmapProgress == ProcessEnum.inProgress);
+    if (hasExistingInProgress) return lessons;
+    bool previousAllDone = true;
+    return lessons.map((lesson) {
+      final progress = lesson.roadmapProgress;
+      if (progress == ProcessEnum.done) return lesson;
+      if (progress == ProcessEnum.inProgress) {
+        previousAllDone = false;
+        return lesson;
+      }
+      if (previousAllDone) {
+        previousAllDone = false;
+        return lesson.markInProgressForRoadmap();
+      }
+      previousAllDone = false;
+      return lesson;
+    }).toList();
+  }
 }
 
 extension LessonEntityExtension on LessonEntity {
+  String get roadmapKey {
+    final keypointId = firstKeypoint.id;
+    if (keypointId.isNotEmpty) return keypointId;
+    return id;
+  }
+
+  bool isSameLesson(LessonEntity other) {
+    if (id.isEmpty || other.id.isEmpty) return false;
+    final keypointId = firstKeypoint.id;
+    final otherKeypointId = other.firstKeypoint.id;
+    if (keypointId.isNotEmpty && otherKeypointId.isNotEmpty) {
+      return keypointId == otherKeypointId;
+    }
+    return id == other.id;
+  }
+
   List<KeypointEntity> get sortedKeypoints {
     List<KeypointEntity> sortedKeypoints = List<KeypointEntity>.from(keypoints);
     sortedKeypoints.sort((a, b) => a.strengthLevel.index.compareTo(b.strengthLevel.index));
@@ -42,4 +81,38 @@ extension LessonEntityExtension on LessonEntity {
   String get trackingName => title.en;
 
   String get trackingNameOrText => title.en.isNotEmpty ? title.en : title.text;
+
+  List<LessonEntity> get lessonsPerKeypoint {
+    return List.generate(
+      keypoints.length,
+      (index) => copyWith(keypoints: [keypoints[index]]),
+    );
+  }
+
+  KeypointEntity get firstKeypoint => keypoints.isNotEmpty ? keypoints.first : KeypointEntity();
+
+  ProcessEnum get roadmapProgress {
+    if (firstKeypoint.id.isEmpty) return progess;
+    return firstKeypoint.progess;
+  }
+
+  LessonEntity markInProgressForRoadmap() {
+    if (keypoints.isEmpty) {
+      return copyWith(progess: ProcessEnum.inProgress);
+    }
+
+    final keypoint = keypoints.first;
+    if (keypoint.progess != ProcessEnum.notStarted) return this;
+    return copyWith(
+      keypoints: [
+        keypoint.copyWith(progess: ProcessEnum.inProgress),
+      ],
+    );
+  }
+
+  String get roadmapIconUrl {
+    if (roadmapProgress == ProcessEnum.notStarted) return icon.url;
+    if (lightIcon.url.isNotEmpty) return lightIcon.url;
+    return icon.url;
+  }
 }

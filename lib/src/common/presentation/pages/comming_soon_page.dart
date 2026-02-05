@@ -45,14 +45,22 @@ class CommingSoonPage extends StatelessWidget {
                       width: MediaQuery.of(context).size.width > 400 ? null : double.infinity,
                       child: AppButton.secondary(
                         onPressed: () => context.back(),
-                        child: context.text.common.fakedoorIDoNotWantNotifications,
+                        child: AppText(
+                          context.text.common.fakedoorIDoNotWantNotifications,
+                          style: AppStyle.textBold20.copyWith(color: const Color(0xFF7F8EA4)),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                     SizedBox(
                       width: MediaQuery.of(context).size.width > 400 ? null : double.infinity,
                       child: AppButton.primary(
                         onPressed: () => context.back(),
-                        child: context.text.common.fakedoorNotifyMe,
+                        child: AppText(
+                          context.text.common.fakedoorNotifyMe,
+                          style: AppStyle.textBold20.copyWith(color: Colors.white),
+                          textAlign: TextAlign.center,
+                        ),
                       ),
                     ),
                   ],

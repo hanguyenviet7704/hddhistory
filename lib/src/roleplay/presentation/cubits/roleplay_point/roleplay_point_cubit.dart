@@ -41,7 +41,7 @@ class RoleplayPointCubit extends Cubit<RoleplayPointState> {
     LogDev.one('RoleplayPointCubit: after existing setPoint: ${point.title}: ${existingPoint.point}');
   }
 
-  void finishRoleplayLesson() {
+  void finishRoleplayLesson({String lessonReview = ''}) {
     List<KeypointEntity> points = List<KeypointEntity>.from(state.points);
     List<UpdateUserProgressKeypointData> keypoints = points
         .map(
@@ -58,6 +58,10 @@ class RoleplayPointCubit extends Cubit<RoleplayPointState> {
       keypoints: keypoints,
     );
 
-    AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(LessonType.roleplay, keypointParams);
+    AppDI.injector.get<ProgressCubit>().updateUserProgressKeypoint(
+      LessonType.roleplay,
+      keypointParams,
+      lessonReview: lessonReview,
+    );
   }
 }

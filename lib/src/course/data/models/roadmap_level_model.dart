@@ -5,6 +5,10 @@ abstract class RoadmapLevelModel with _$RoadmapLevelModel {
   const factory RoadmapLevelModel({
     @Default(0) int id,
     @Default(CourseLevel.level1) CourseLevel level,
+    @Default('') String lightBadge,
+    @Default('') String darkBadge,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage titleBadge,
+    @Default([]) List<String> keypointIds,
     @Default([]) List<RoadmapNodeModel> nodes,
     @Default([]) List<LessonModel> lessonList,
   }) = _RoadmapLevelModel;
@@ -30,6 +34,10 @@ extension RoadmapLevelModelExtension on RoadmapLevelModel {
   RoadmapLevelEntity toEntity() => RoadmapLevelEntity(
     id: id,
     level: level,
+    lightBadge: lightBadge,
+    darkBadge: darkBadge,
+    titleBadge: titleBadge,
+    keypointIds: keypointIds,
     nodes: nodes.map((model) => model.toEntity()).toList(),
     lessonList: lessonList.map((model) => model.toEntity()).toList(),
   );

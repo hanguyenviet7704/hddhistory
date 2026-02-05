@@ -6,10 +6,12 @@ abstract class KeypointModel with _$KeypointModel {
     @Default('') @JsonKey(name: '_id') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
     @Default(0) int index,
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevel,
     @Default([]) List<LearningItemModel> learningItems,
+    @Default(-1) int averageScore,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
   }) = _KeypointModel;
 
@@ -41,10 +43,12 @@ extension KeypointModelExtension on KeypointModel {
   KeypointEntity toEntity() => KeypointEntity(
     id: id,
     title: title,
+    estimateCompleTime: estimateCompleTime,
     description: description,
     image: image,
     index: index,
     strengthLevelData: strengthLevel,
+    averageScore: averageScore,
     progess: progess,
     learningItems: learningItems.map((model) => model.toEntity()).toList(),
   );

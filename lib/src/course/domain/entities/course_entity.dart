@@ -19,7 +19,10 @@ abstract class CourseEntity with _$CourseEntity {
 extension CourseEntityExtension on CourseEntity {
   CourseEntity get withSkillset {
     List<SkillsetEntity> skillsets = AppDI.injector.get<HomeCubit>().state.skillsets;
-    SkillsetEntity skillset = skillsets.firstWhere((skillset) => skillset.id == skillsetId, orElse: () => SkillsetEntity());
+    SkillsetEntity skillset = skillsets.firstWhere(
+      (skillset) => skillset.id == skillsetId,
+      orElse: () => SkillsetEntity(),
+    );
     return copyWith(skillset: skillset);
   }
 

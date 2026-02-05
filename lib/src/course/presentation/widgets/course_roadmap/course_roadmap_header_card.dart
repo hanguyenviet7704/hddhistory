@@ -10,52 +10,28 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundWhite,
-        borderRadius: BorderRadius.circular(16.r),
-        boxShadow: [
-          BoxShadow(
-            color: AppCustomColor.borderDefault,
-            blurRadius: 4,
-            offset: const Offset(0, 0),
-          ),
-        ],
-      ),
+      padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           // Course title
-          BlocBuilder<HomeCubit, HomeState>(
-            builder: (context, homeState) {
+          BlocSelector<HomeCubit, HomeState, String>(
+            selector: (state) => state.courseName,
+            builder: (context, courseName) {
               return Column(
                 children: [
                   AppText(
-                    homeState.courseName,
+                    courseName,
                     textWidthBasis: TextWidthBasis.longestLine,
-                    style: AppStyle.text24.copyWith(
+                    style: AppStyle.text20.copyWith(
                       fontWeight: FontWeight.w600,
                       color: AppCustomColor.textPrimary,
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    overflow: TextOverflow.fade,
                   ),
                   8.verticalSpace,
-                  // Course description
-                  if (homeState.currentCourse.description.text.isNotEmpty) ...[
-                    AppText(
-                      margin: EdgeInsets.symmetric(horizontal: 16.w),
-                      homeState.currentCourse.description.text,
-                      style: AppStyle.text14.copyWith(
-                        color: AppCustomColor.textSecondary,
-                      ),
-                      maxLines: 3,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                    ),
-                    12.verticalSpace,
-                  ],
                 ],
               );
             },
@@ -68,7 +44,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
               children: [
                 AppText(
                   roadmapLevel.level.name.toUpperCase(),
-                  style: AppStyle.textBold12.copyWith(color: AppCustomColor.textTertiary),
+                  style: AppStyle.textBold10.copyWith(color: AppCustomColor.textTertiary),
                   maxLines: 1,
                 ),
                 Container(
@@ -87,11 +63,11 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                       animation: true,
                       animationDuration: 500,
                       animateFromLastPercent: true,
-                      lineHeight: 10.h,
+                      lineHeight: 9.h,
                       percent: roadmapLevel.progress,
                       backgroundColor: const Color(0xFFE3E8EF), // Neutral/200
-                      progressColor: const Color(0xFF0D121C), // Brand/Brand/Primary/300
-                      barRadius: Radius.circular(30.r),
+                      progressColor: const Color(0xFF4B44CA), // Brand/Primary
+                      barRadius: Radius.circular(18.r),
                       padding: EdgeInsets.zero,
                     ),
                   ),
@@ -99,11 +75,13 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                 12.horizontalSpace,
                 // Lesson count
                 AppText(
-                  context.text.courseroadmap.lessonsProgress(
-                    completed: roadmapLevel.completedLessons,
-                    total: roadmapLevel.totalLessons,
-                  ),
-                  style: AppStyle.text14.copyWith(
+                  context.text.courseroadmap
+                      .lessonsProgress(
+                        completed: roadmapLevel.completedLessons,
+                        total: roadmapLevel.totalLessons,
+                      )
+                      .toUpperCase(),
+                  style: AppStyle.textBold10.copyWith(
                     color: AppCustomColor.textTertiary,
                   ),
                   maxLines: 1,

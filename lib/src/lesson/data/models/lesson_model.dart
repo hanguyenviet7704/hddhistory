@@ -14,6 +14,7 @@ abstract class LessonModel with _$LessonModel {
     @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagModel()) TagModel icon,
+    @Default(TagModel()) TagModel lightIcon,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
     @Default(0) int index,
   }) = _LessonModel;
@@ -31,10 +32,10 @@ enum LessonPublishStatus {
 }
 
 enum LessonType {
-  @JsonValue('lesson')
-  lesson,
   @JsonValue('roleplay')
   roleplay,
+  @JsonValue('lesson')
+  lesson,
   @JsonValue('output')
   output,
 }
@@ -45,7 +46,15 @@ enum ProcessEnum {
   @JsonValue('in_progress')
   inProgress,
   @JsonValue('not_started')
-  notStarted,
+  notStarted;
+
+  int get rank {
+    return switch (this) {
+      done => 2,
+      inProgress => 1,
+      notStarted => 0
+    };
+  }
 }
 
 extension LessonModelExtension on LessonModel {
@@ -61,6 +70,7 @@ extension LessonModelExtension on LessonModel {
     keypoints: keypoints.map((model) => model.toEntity()).toList(),
     estimateCompleTime: estimateCompleTime,
     icon: icon.toEntity(),
+    lightIcon: lightIcon.toEntity(),
     index: index,
     progess: progess,
   );

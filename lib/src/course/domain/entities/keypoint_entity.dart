@@ -6,11 +6,13 @@ abstract class KeypointEntity with _$KeypointEntity {
     @Default('') String id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
     @Default(0) int index,
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevelData,
     @Default([]) List<LearningItemEntity> learningItems,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
+    @Default(-1) int averageScore,
 
     //* Custom Fields
     @Default(0) int point,
@@ -22,10 +24,18 @@ abstract class KeypointEntity with _$KeypointEntity {
 }
 
 extension KeypointEntityExtension on KeypointEntity {
+  ProcessEnum get progressFromAverageScore {
+    if (averageScore >= 0) return ProcessEnum.done;
+    return progess;
+  }
+
   bool get isCompleted => progess == ProcessEnum.done;
 
+  bool get isCompletedFromAverageScore => progressFromAverageScore == ProcessEnum.done;
+
   StrengthLevel get strengthLevel {
-    if (!isUseRoleplayModule && !isUseProgressData) return strengthLevelData;
+    final hasProgressData = isUseRoleplayModule || isUseProgressData;
+    if (!hasProgressData) return strengthLevelData;
     if (point >= 0 && point <= 50) return StrengthLevel.weakPoint;
     if (point > 50 && point <= 84) return StrengthLevel.morePractice;
     if (point > 85 && point <= 100) return StrengthLevel.optionalPractice;

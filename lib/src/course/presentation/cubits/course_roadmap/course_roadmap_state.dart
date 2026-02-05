@@ -21,7 +21,8 @@ abstract class CourseRoadmapState with _$CourseRoadmapState {
 
 extension CourseRoadmapStateExtension on CourseRoadmapState {
   bool get isCompleted => roadmap.levels.every((level) => level.isCompleted);
-  RoadmapLevelEntity get currentLevelOpen => roadmap.levels.firstWhere((level) => !level.isCompleted);
+  RoadmapLevelEntity get currentLevelOpen =>
+      roadmap.levels.firstWhere((level) => !level.isCompleted, orElse: () => RoadmapLevelEntity());
   RoadmapLevelEntity get currentLevel => roadmap.levels.firstWhere((level) => level.level == currentCourseLevel);
   List<LessonEntity> get currentLevelLessons => currentLevel.lessonList.where((lesson) => lesson.type == LessonType.lesson).toList();
   bool get isLastLessonInLevel {

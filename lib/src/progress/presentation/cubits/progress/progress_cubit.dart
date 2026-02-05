@@ -153,7 +153,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     );
   }
 
-  void updateUserProgressKeypoint(LessonType lessonType, UpdateUserProgressKeypointParams params) async {
+  void updateUserProgressKeypoint(LessonType lessonType, UpdateUserProgressKeypointParams params, {String lessonReview = ''}) async {
     final String userId = _userCubit.state.user.id;
     final String courseId = _homeCubit.state.currentCourse.id;
     final CourseLessonState courseLessonState = _courseLessonCubit.state;
@@ -186,16 +186,13 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
       onSuccess: (item) {
         if ((lessonType == LessonType.lesson && courseLessonState.isAllOtherKeypointsCompleted) || (lessonType == LessonType.roleplay)) {
-          _updateUserProgressLesson(
-            lessonId,
-            {
-              "userId": userId,
-              "courseId": courseId,
-              "averageScore": params.keypoints.first.averageScore,
-              "passed": params.keypoints.first.passed,
-              "reviews": params.keypoints.first.reviews,
-            },
-          );
+          updateUserProgressLesson(UpdateUserProgressLessonParams(lessonId: lessonId, body: {
+            "userId": userId,
+            "courseId": courseId,
+            "averageScore": params.keypoints.first.averageScore,
+            "passed": params.keypoints.first.passed,
+            "reviews": lessonReview.isNotEmpty ? lessonReview : params.keypoints.first.reviews,
+          }));
         }
         emit(state.copyWith(status: ProgressStatus.success));
         _courseLessonCubit.loadLesson(courseLessonState.selectedLesson.id);
@@ -207,10 +204,6 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
           ..loadAllAchievenmentResponses();
       },
     );
-  }
-
-  void _updateUserProgressLesson(String lessonId, Map<String, dynamic> body) async {
-    updateUserProgressLesson(UpdateUserProgressLessonParams(lessonId: lessonId, body: body));
   }
 
   void updateUserProgressExercise(UpdateUserProgressExerciseParams params) async {

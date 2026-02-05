@@ -56,11 +56,17 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
       if (state.subQuestions.isNotEmpty) {
         ReviewTimeRoute().go(AppConfig.instance.context!);
+        Future.delayed(const Duration(milliseconds: 100), () {
+          AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.reviewTime);
+        });
         return;
       }
 
       _updateUserProgressKeypoint();
       KeypointCompleteRoute().go(AppConfig.instance.context!);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);
+      });
       return;
     }
 

@@ -32,20 +32,20 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
             return _HighlightEmpty(onRetry: cubit.loadIapProducts);
           }
 
-        return _HighlightCard(
-          product: state.bestDealProduct,
-          onPurchase: () {
-            AppService.instance.appTrackingService.trackPremiumPurchase();
-            cubit.purchaseProduct(isHighlight: true);
-          },
-          onSeeAllPlans: () {
-            AppService.instance.appTrackingService.trackPremiumAllpackClick();
-            PaywallAllPackageInfoBottomSheet.show(context);
-          },
-        );
-      },
-    ),
-  );
+          return _HighlightCard(
+            product: state.bestDealProduct,
+            onPurchase: () {
+              AppService.instance.appTrackingService.trackPremiumPurchase();
+              cubit.purchaseProduct(isHighlight: true);
+            },
+            onSeeAllPlans: () {
+              AppService.instance.appTrackingService.trackPremiumAllpackClick();
+              PaywallAllPackageInfoBottomSheet.show(context);
+            },
+          );
+        },
+      ),
+    );
   }
 }
 
@@ -125,8 +125,12 @@ class _HighlightEmpty extends StatelessWidget {
           AppButton.secondary(
             height: 42.h,
             padding: EdgeInsets.symmetric(horizontal: 12.w),
-            child: t.monetization.retry,
             onPressed: onRetry,
+            child: AppText(
+              t.monetization.retry,
+              style: AppStyle.textBold20.copyWith(color: const Color(0xFF7F8EA4)),
+              textAlign: TextAlign.center,
+            ),
           ),
         ],
       ),

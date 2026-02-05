@@ -12,6 +12,10 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
 
   void reset() => emit(CourseLessonState.initial());
   void setCurrentKeypointId(String id) => emit(state.copyWith(currentKeypointId: id));
+  void setSelectedLesson(LessonEntity lesson) {
+    if (lesson.id.isEmpty) return;
+    emit(state.copyWith(selectedLesson: lesson));
+  }
 
   void loadLesson(String id) async {
     String requestId = id;

@@ -1,23 +1,23 @@
 part of '../routes.dart';
 
 //? Course - Lesson
-class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
-  const LessonListRoute();
+// class LessonListRoute extends BaseTransitionRouteData with $LessonListRoute {
+//   const LessonListRoute();
 
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+//   @override
+//   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
-    ],
-    child: const LessonListPage(),
-  );
-}
+//   @override
+//   Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+//     providers: [
+//       BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
+//       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+//       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
+//       BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
+//     ],
+//     child: const LessonListPage(),
+//   );
+// }
 
 class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
   const LessonRoute();
@@ -77,27 +77,8 @@ class KeypointCompleteRoute extends BaseTransitionRouteData with $KeypointComple
   );
 }
 
-class LessonCompleteRoute extends BaseTransitionRouteData with $LessonCompleteRoute {
-  const LessonCompleteRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
-    providers: [
-      BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<HomeCubit>()),
-    ],
-    child: const LessonCompletePage(),
-  );
-}
-
-class BadgeCompleteRoute extends BaseTransitionRouteData with $BadgeCompleteRoute {
-  const BadgeCompleteRoute();
+class BadgeProgressRoute extends BaseTransitionRouteData with $BadgeProgressRoute {
+  const BadgeProgressRoute();
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
@@ -108,6 +89,6 @@ class BadgeCompleteRoute extends BaseTransitionRouteData with $BadgeCompleteRout
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
     ],
-    child: const BadgeCompletePage(),
+    child: const BadgeProgressPage(),
   );
 }

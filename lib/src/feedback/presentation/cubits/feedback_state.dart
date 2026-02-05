@@ -42,6 +42,6 @@ extension FeedbackStateExtension on FeedbackState {
   String get pageRouteName {
     if (activeType == FeedbackType.incomplete) return RouteNamed.courseRoadmap;
     if (activeEntry == FeedbackEntry.roleplay) return RouteNamed.roleplayFeedback;
-    return RouteNamed.lessonComplete;
+    return RouteNamed.keypointComplete;
   }
 }
