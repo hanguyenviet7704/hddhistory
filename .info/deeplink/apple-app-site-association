@@ -1,0 +1,27 @@
+{
+    "applinks": {
+        "apps": [],
+        "details": [
+            {
+                "appIDs": [
+                    "GK9UEKLL78.com.eup.meup",
+                    "GK9UEKLL78.com.eup.meup.dev",
+                    "GK9UEKLL78.com.eup.meup.stg"
+                ],
+                "paths": [
+                    "*"
+                ],
+                "components": [
+                    {
+                        "/": "/*"
+                    }
+                ]
+            }
+        ]
+    },
+    "webcredentials": {
+        "apps": [
+            "GK9UEKLL78.com.eup.meup"
+        ]
+    }
+}

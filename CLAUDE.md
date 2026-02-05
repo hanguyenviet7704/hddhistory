@@ -1,0 +1,151 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Build, Test, and Development Commands
+
+### Code Generation (Required after model/API changes)
+```bash
+dart run build_runner build --delete-conflicting-outputs  # Generate all code
+dart run build_runner watch --delete-conflicting-outputs  # Watch mode
+dart run build_runner clean                               # Clean generated files
+```
+
+### Testing and Analysis
+```bash
+flutter test                    # All tests
+flutter test test/unit/         # Unit tests only
+flutter analyze                 # Static analysis
+dart format lib/ test/          # Format code (180 char line width)
+```
+
+### Localization
+```bash
+# Pull from Google Sheets (macOS/Linux)
+tools/macos/localization/localization.sh pull
+# Windows: tools\windows\localization\localization.bat pull
+
+# If you edited YAML locally, push + re-pull before slang
+tools/<os>/localization/localization.sh push --apply
+tools/<os>/localization/localization.sh pull
+
+tools/<os>/localization/localization.sh slang  # Regenerate translations after pull
+```
+
+### Building
+```bash
+# Android
+./tools/macos/build/build_apk.sh <dev|stg|prod>
+./tools/macos/build/build_appbundle.sh <dev|stg|prod>
+
+# iOS (macOS only)
+./tools/macos/build/build_ios.sh <dev|stg|prod>
+./tools/macos/build/build_ipa.sh <dev|stg|prod>
+
+# After flavor changes
+flutter clean && dart run flutter_flavorizr && flutter pub get
+```
+
+## Architecture Overview
+
+**Clean Architecture** with three layers per feature module:
+
+```
+lib/src/<feature>/
+├── domain/       # Business logic: entities, repository interfaces, use cases
+├── data/         # Data sources (remote/local), models, repository implementations
+└── presentation/ # UI pages, widgets, BLoCs/Cubits
+```
+
+### Key Directories
+- `lib/config/` - App-wide config: DI (`di/`), routes (`routes/`), l10n (`l10n/`), themes (`themes/`), services (`services/`)
+- `lib/core/` - Shared utilities: base classes (`base/`), constants (`constants/`), helpers (`helpers/`), UI utils (`utils/`)
+- `lib/src/` - Feature modules: auth, course, lesson, roleplay, monetization, etc.
+- `tools/` - Cross-platform build/config scripts (macOS, Linux, Windows)
+- `.info/` - Centralized project configuration (app.json, firebase.json, build.json)
+
+### State Management
+- **BLoC/Cubit** pattern with `flutter_bloc`
+- **HydratedBloc** for persistent state (theme, locale, settings)
+- **UseCase Handler Mixins** reduce boilerplate: `CubitUseCaseHandlerMixin` with `executeUseCase`, `executeListUseCase`, `executePageBreakUseCase`
+
+### Data Flow
+Widget → Cubit/BLoC → UseCase → Repository Interface → Data Source
+
+Do not expose `dio`/`graphql` types beyond data layer.
+
+### Networking
+- **REST**: Dio + Retrofit (code-generated API clients in `data/datasources/remote/`)
+- **GraphQL**: graphql_flutter (templates in `data/datasources/graphql/template/`, generated in `gen/`)
+- **Error Handling**: Functional with `fpdart` (`TaskEither<AppException, T>`)
+
+### Dependency Injection
+- `get_it` + `injectable` annotations (`@LazySingleton`, `@factoryMethod`)
+- Resolve via `getIt<T>()` or constructor injection
+
+### Navigation
+- `go_router` with type-safe code generation
+- Route data files in `lib/config/routes/` organized by feature
+
+## Multi-Environment Setup
+
+Three flavors: `dev`, `stg`, `prod`
+
+| Flavor | Entry Point | Env File |
+|--------|------------|----------|
+| dev | `main_dev.dart` | `.env/.env.dev` |
+| stg | `main_stg.dart` | `.env/.env.stg` |
+| prod | `main_prod.dart` | `.env/.env.prod` |
+
+Uses `--dart-define-from-file` (NOT `--dart-define`) for environment configuration.
+
+## Code Generation Tools
+
+| Generator | Purpose |
+|-----------|---------|
+| `go_router_builder` | Type-safe routing |
+| `retrofit_generator` | REST API clients |
+| `json_serializable` | JSON serialization |
+| `freezed` | Immutable classes/states |
+| `injectable_generator` | Dependency injection |
+| `graphql_codegen` | GraphQL clients |
+| `flutter_gen_runner` | Asset references |
+| `slang_build_runner` | Localization |
+
+Never edit generated files (`*.g.dart`, `*.config.dart`, `*.freezed.dart`). Rerun generators instead.
+
+## Coding Conventions
+
+### Naming
+- Files/dirs: `snake_case.dart`
+- Types: `PascalCase`
+- Cubit/BLoC: suffix with `Cubit`/`Bloc`
+
+### Commit Messages
+Format: `type/TICKET-ID: subject`
+- Extract ticket ID from branch (e.g., `feature/MEUP-123-desc` → `MEUP-123`)
+- Types: `feature`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, `perf`
+- Example: `feature/MEUP-123: add social login functionality`
+
+### Branch Naming
+`type/TICKET-ID-description` (e.g., `feature/MEUP-123-add-login`)
+
+## Localization
+
+- YAML source: `assets/i18n/<locale>/<module>.yaml`
+- Generated Dart: `lib/config/l10n/`
+- Keys: lowerCamelCase without module prefix (module is the namespace)
+- Workflow: `pull` → edit keys → `push --apply` → `pull` → `slang`
+
+## Testing
+
+- Tests in `test/unit/<feature>/` mirroring feature structure
+- Name: `<target>_test.dart`
+- Mock injected services and storage for `hydrated_bloc`
+- Run `flutter test` before PR
+
+## Security Notes
+
+Do not commit: `google-services.json`, `GoogleService-Info.plist`, keystores, Apple provisioning, localization SA JSON.
+
+Release builds use `--obfuscate --split-debug-info=.obfuscation`; symbols auto-upload to Crashlytics.

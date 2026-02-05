@@ -1,0 +1,216 @@
+// ignore_for_file: unused_local_variable
+
+part of '../../auth.dart';
+
+@LazySingleton(as: IAuthRepository)
+class AuthRepository with RestfulRequestHandlerMixin implements IAuthRepository {
+  final AuthApi _authApi;
+  final IAuthService _authService;
+  final IDeviceInfoService _deviceInfoService;
+  AuthRepository(this._authApi, this._authService, this._deviceInfoService);
+
+  @override
+  TaskEither<AppException, AuthEntity> login(Map<String, dynamic> body) {
+    return TaskEither.tryCatch(
+      () async {
+        final userCredential = await _authService.signInWithEmail(
+          body['email'] as String,
+          body['password'] as String,
+        );
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+
+        return AuthEntity();
+      },
+      (error, stackTrace) {
+        if (error is FirebaseException) {
+          return AppException.unauthorized(error.message);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  @override
+  TaskEither<AppException, AuthEntity> loginAnonymous(Map<String, dynamic> body) {
+    return callApiWithTransform(
+      apiCall: () => _authApi.loginAnonymous(body),
+      transform: (response) => response.toEntity(),
+      defaultValue: AuthEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, AuthEntity> loginSSOGoogle() {
+    return TaskEither.tryCatch(
+      () async {
+        final userCredential = await _authService.signInWithGoogle();
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+        AppGlobalValue.accessToken = idToken;
+
+        String deviceId = await _deviceInfoService.deviceToken;
+        String deviceName = await _deviceInfoService.deviceName;
+
+        BaseResponse<AuthModel> result = await _authApi.loginProvider({
+          "device": {
+            "deviceId": deviceId,
+            "deviceName": deviceName,
+          },
+          "provider": "google.com",
+        });
+
+        return result.data?.toEntity() ?? AuthEntity();
+      },
+      (error, stackTrace) {
+        if (error is FirebaseException) {
+          return AppException.unauthorized(error.message);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  @override
+  TaskEither<AppException, AuthEntity> loginSSOApple() {
+    return TaskEither.tryCatch(
+      () async {
+        final userCredential = await _authService.signInWithApple();
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+        AppGlobalValue.accessToken = idToken;
+        LogDev.one('idToken: $idToken');
+
+        String deviceId = await _deviceInfoService.deviceToken;
+        String deviceName = await _deviceInfoService.deviceName;
+
+        BaseResponse<AuthModel> result = await _authApi.loginProvider({
+          "device": {
+            "deviceId": deviceId,
+            "deviceName": deviceName,
+          },
+          "provider": "apple.com",
+        });
+
+        return result.data?.toEntity() ?? AuthEntity();
+      },
+      (error, stackTrace) {
+        if (error is FirebaseException) {
+          return AppException.unauthorized(error.message);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  @override
+  TaskEither<AppException, AuthEntity> register(Map<String, dynamic> body) {
+    return TaskEither.tryCatch(
+      () async {
+        final userCredential = await _authService.signUpWithEmail(
+          body['email'] as String,
+          body['password'] as String,
+        );
+        final user = userCredential.user;
+
+        if (user == null) {
+          throw AppException.unauthorized('Failed to get user information');
+        }
+
+        // Get the ID token for authentication
+        final idToken = await user.getIdToken() ?? '';
+
+        return AuthEntity();
+      },
+      (error, stackTrace) {
+        if (error is FirebaseException) {
+          return AppException.unauthorized(error.message);
+        }
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  @override
+  TaskEither<AppException, AuthEntity> refreshToken(Map<String, dynamic> body) {
+    Map<String, dynamic> data = body;
+    String userId = body['userId'] as String;
+    data.remove('userId');
+    return callApiWithTransform(
+      apiCall: () => _authApi.refreshToken(userId, data),
+      transform: (response) => response.toEntity(),
+      defaultValue: AuthEntity(),
+    );
+  }
+
+  // @override
+  // TaskEither<AppException, AuthEntity> forgotPassword(Map<String, dynamic> body) {
+  //   return callApiWithTransform<AuthModel, AuthEntity>(
+  //     apiCall: () => _authApi.forgotPassword(body),
+  //     transform: (response) => response.toEntity(),
+  //     defaultValue: AuthEntity(),
+  //   );
+  // }
+
+  @override
+  TaskEither<AppException, Unit> logout() {
+    // return callApi(apiCall: () => _authApi.logout());
+    return TaskEither.tryCatch(
+      () async {
+        await _authService.signOut();
+        return unit;
+      },
+      (error, stackTrace) {
+        return AppException.unexpected(error.toString());
+      },
+    );
+  }
+
+  @override
+  TaskEither<AppException, Unit> resendOTP(String phone) {
+    return executeApiAction(apiCall: () => _authApi.resendOTP(phone));
+  }
+
+  @override
+  TaskEither<AppException, Unit> resetPassword(Map<String, dynamic> body) {
+    return executeApiAction(apiCall: () => _authApi.resetPassword(body));
+  }
+
+  @override
+  TaskEither<AppException, Unit> updatePassword(Map<String, dynamic> body) {
+    return executeApiAction(apiCall: () => _authApi.updatePassword(body));
+  }
+
+  @override
+  TaskEither<AppException, UserEntity> verifyOTP(Map<String, dynamic> body) {
+    return callApiWithTransform(apiCall: () => _authApi.verifyOTP(body), transform: (response) => response.toEntity(), defaultValue: UserEntity());
+  }
+
+  @override
+  TaskEither<AppException, Unit> deletePermanentUser(String userId) {
+    return executeApiAction(apiCall: () => _authApi.deletePermanentUser(userId));
+  }
+
+  @override
+  TaskEither<AppException, Unit> deleteAccount() {
+    return executeApiAction(apiCall: () => _authApi.deleteAccount());
+  }
+}

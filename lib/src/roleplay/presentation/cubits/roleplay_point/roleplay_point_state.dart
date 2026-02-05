@@ -1,0 +1,15 @@
+part of '../../../roleplay.dart';
+
+enum RoleplayPointStatus { initial, loading, success, failure }
+
+@freezed
+abstract class RoleplayPointState with _$RoleplayPointState {
+  const factory RoleplayPointState({
+    @Default(RoleplayPointStatus.initial) RoleplayPointStatus status,
+    @Default([]) List<KeypointEntity> points,
+  }) = _RoleplayPointState;
+
+  factory RoleplayPointState.initial() => RoleplayPointState(points: []);
+
+  factory RoleplayPointState.fromJson(Map<String, dynamic> json) => _$RoleplayPointStateFromJson(json);
+}

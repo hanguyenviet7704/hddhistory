@@ -1,0 +1,10 @@
+Version {{version}} - {{flavor}} Build
+
+Environment: {{flavor}}
+Domain: {{domain}}
+Build Date: {{date}}
+
+What's New:
+- First distribution
+- Onboarding flow
+

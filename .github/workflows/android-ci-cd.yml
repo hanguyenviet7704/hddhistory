@@ -1,0 +1,268 @@
+name: Android CI/CD
+
+on:
+  push:
+    branches: [ develop, main, master ]
+  pull_request:
+    branches: [ develop, main, master ]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to build'
+        required: true
+        default: 'dev'
+        type: choice
+        options:
+          - dev
+          - stg
+          - prod
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'apk'
+        type: choice
+        options:
+          - apk
+          - appbundle
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Analyze code
+        run: flutter analyze
+
+  build-android:
+    name: Build Android
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [dev, stg, prod]
+        build_type: [apk, appbundle]
+        exclude:
+          # Only build prod for releases
+          - environment: prod
+        include:
+          - environment: prod
+            build_type: appbundle
+            only_on_release: true
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Generate code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Create environment file
+        run: |
+          mkdir -p .env
+          case "${{ matrix.environment }}" in
+            dev)
+              echo "Creating dev environment file"
+              cat > .env/.env.dev << EOF
+          # Development Environment Configuration
+          API_BASE_URL=https://dev.venusshop.top/api/v1
+          ENVIRONMENT=development
+          DEBUG_MODE=true
+          EOF
+              ;;
+            stg)
+              echo "Creating staging environment file"
+              cat > .env/.env.stg << EOF
+          # Staging Environment Configuration
+          API_BASE_URL=https://dev.venusshop.top/api/v1
+          ENVIRONMENT=staging
+          DEBUG_MODE=true
+          EOF
+              ;;
+            prod)
+              echo "Creating production environment file"
+              cat > .env/.env.prod << EOF
+          # Production Environment Configuration
+          API_BASE_URL=https://venusshop.top/api/v1
+          ENVIRONMENT=production
+          DEBUG_MODE=false
+          EOF
+              ;;
+          esac
+
+      - name: Setup Android signing
+        if: matrix.environment == 'prod'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 --decode > android/app/keystore.jks
+          echo "storeFile=keystore.jks" > android/key.properties
+          echo "keyAlias=${{ secrets.ANDROID_KEY_ALIAS }}" >> android/key.properties
+          echo "storePassword=${{ secrets.ANDROID_STORE_PASSWORD }}" >> android/key.properties
+          echo "keyPassword=${{ secrets.ANDROID_KEY_PASSWORD }}" >> android/key.properties
+
+      - name: Build APK
+        if: matrix.build_type == 'apk'
+        run: |
+          if [ -f "./tools/macos/build/build_apk.sh" ]; then
+            chmod +x ./tools/macos/build/build_apk.sh
+            ./tools/macos/build/build_apk.sh ${{ matrix.environment }}
+          else
+            flutter build apk --flavor ${{ matrix.environment }} --release --obfuscate --split-debug-info=.obfuscation/
+          fi
+
+      - name: Build App Bundle
+        if: matrix.build_type == 'appbundle'
+        run: |
+          if [ -f "./tools/macos/build/build_appbundle.sh" ]; then
+            chmod +x ./tools/macos/build/build_appbundle.sh
+            ./tools/macos/build/build_appbundle.sh ${{ matrix.environment }}
+          else
+            flutter build appbundle --flavor ${{ matrix.environment }} --release --obfuscate --split-debug-info=.obfuscation/
+          fi
+
+      - name: Upload APK artifact
+        if: matrix.build_type == 'apk'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk-${{ matrix.environment }}
+          path: |
+            build/app/outputs/flutter-apk/*.apk
+            .obfuscation/
+          retention-days: 30
+
+      - name: Upload App Bundle artifact
+        if: matrix.build_type == 'appbundle'
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-bundle-${{ matrix.environment }}
+          path: |
+            build/app/outputs/bundle/**/*.aab
+            .obfuscation/
+          retention-days: 30
+
+  deploy-dev:
+    name: Deploy to Firebase App Distribution (Dev)
+    needs: build-android
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk-dev
+          path: ./build/
+
+      - name: Setup Firebase CLI
+        uses: w9jds/firebase-action@master
+        with:
+          args: --version
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy to Firebase App Distribution
+        uses: w9jds/firebase-action@master
+        with:
+          args: appdistribution:distribute build/app/outputs/flutter-apk/app-dev-release.apk --app ${{ secrets.FIREBASE_ANDROID_APP_ID_DEV }} --groups "internal-testers" --release-notes "Automated build from develop branch"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  deploy-staging:
+    name: Deploy to Firebase App Distribution (Staging)
+    needs: build-android
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'refs/heads/release/') || (github.ref == 'refs/heads/main' && github.event_name == 'push')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-apk-stg
+          path: ./build/
+
+      - name: Setup Firebase CLI
+        uses: w9jds/firebase-action@master
+        with:
+          args: --version
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+      - name: Deploy to Firebase App Distribution
+        uses: w9jds/firebase-action@master
+        with:
+          args: appdistribution:distribute build/app/outputs/flutter-apk/app-stg-release.apk --app ${{ secrets.FIREBASE_ANDROID_APP_ID_STG }} --groups "qa-testers,stakeholders" --release-notes "Staging build ready for QA testing"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+
+  deploy-production:
+    name: Deploy to Google Play Store
+    needs: build-android
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/') && contains(github.ref, 'prod')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download App Bundle artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-bundle-prod
+          path: ./build/
+
+      - name: Setup Google Play API key
+        run: echo "${{ secrets.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON }}" > google-play-key.json
+
+      - name: Deploy to Google Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: google-play-key.json
+          packageName: com.eup.meup
+          releaseFiles: build/app/outputs/bundle/prodRelease/app-prod-release.aab
+          track: internal
+          status: completed
+          inAppUpdatePriority: 2
+          userFraction: 0.1
+          whatsNewDirectory: metadata/android/en-US/changelogs
+          mappingFile: .obfuscation/app.android-arm64.symbols

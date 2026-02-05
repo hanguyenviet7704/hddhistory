@@ -1,0 +1,242 @@
+part of '../../../lesson.dart';
+
+@lazySingleton
+class MarkStressWordCubit extends Cubit<MarkStressWordState> {
+  MarkStressWordCubit() : super(MarkStressWordState.initial());
+
+  void setQuestion(QuestionEntity question) {
+    emit(
+      state.copyWith(
+        question: question,
+        selectedWordIndices: {},
+        hasChecked: false,
+        isCorrect: false,
+        showExplanation: false,
+      ),
+    );
+  }
+
+  /// Toggle word selection (add if not selected, remove if already selected)
+  void selectWord(int index) {
+    if (state.hasChecked) return;
+
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizMultiSelect(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
+      }
+    }
+
+    final updatedSelection = Set<int>.from(state.selectedWordIndices);
+    if (updatedSelection.contains(index)) {
+      updatedSelection.remove(index);
+    } else {
+      updatedSelection.add(index);
+    }
+
+    emit(state.copyWith(selectedWordIndices: updatedSelection));
+  }
+
+  /// Check if selected words match all correct answers
+  void checkAnswer() {
+    if (state.selectedWordIndices.isEmpty || state.hasChecked) return;
+
+    // Get correct word indices (0-based)
+    final correctIndices = state.correctWordIndices;
+
+    // Check if selected indices exactly match correct indices
+    final isCorrect = state.selectedWordIndices.length == correctIndices.length && state.selectedWordIndices.every((index) => correctIndices.contains(index));
+
+    emit(
+      state.copyWith(
+        hasChecked: true,
+        isCorrect: isCorrect,
+      ),
+    );
+
+    final result = toExerciseResult();
+    _storeLessonResult(result);
+
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType == LearningItemType.roleplay) {
+      final trackingData = _roleplayTrackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizCheck(trackingData);
+      }
+    } else {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointExerciseCheckClick(trackingData);
+      }
+    }
+
+    _updateUserProgressExercise(result);
+
+    if (!isCorrect) {
+      AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
+    }
+  }
+
+  void _updateUserProgressExercise(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.exerciseId.isEmpty) return;
+    final double score = pointCalculation().toDouble();
+
+    final data = UpdateUserProgressExerciseData(
+      exerciseId: question.exerciseId.isNotEmpty ? question.exerciseId : question.id.toString(),
+      type: QuestionType.dragAndDrop,
+      form: question.form,
+      passed: result.passed,
+      score: score,
+      dragDropAnswer: _progressDragDropList(result.dragDropAnswer),
+    );
+
+    final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
+    final isRoleplay = exerciseCubit.state.currentLearningItem.type == LearningItemType.roleplay;
+    final LessonEntity lesson = isRoleplay ? AppDI.injector.get<RoleplayCubit>().state.currentLesson : AppDI.injector.get<CourseLessonCubit>().state.selectedLesson;
+    final String courseId = lesson.courseId.isNotEmpty ? lesson.courseId : AppDI.injector.get<HomeCubit>().state.currentCourse.id;
+
+    final params = UpdateUserProgressExerciseParams(
+      userId: AppDI.injector.get<UserCubit>().state.user.id,
+      courseId: courseId,
+      lessonId: lesson.id,
+      keypointId: question.keypointId,
+      exercises: [data],
+    );
+
+    AppDI.injector.get<ProgressCubit>().updateUserProgressExercise(params);
+  }
+
+  void _storeLessonResult(ExerciseResultEntity result) {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return;
+    AppDI.injector.get<LessonCubit>().storeExerciseResult(state.question, result);
+  }
+
+  int pointCalculation() {
+    /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
+    /// Sai ko bị trừ điểm
+    final correctIndices = state.correctWordIndices;
+    final selectedIndices = state.selectedWordIndices;
+
+    if (selectedIndices.isEmpty) return 0;
+
+    final totalCorrectWords = correctIndices.length;
+    if (totalCorrectWords == 0) return 0;
+
+    final pointPerWord = state.question.maxScore / totalCorrectWords;
+    final correctSelections = selectedIndices.where((index) => correctIndices.contains(index)).length;
+
+    final score = correctSelections * pointPerWord;
+
+    return score.clamp(0, state.question.maxScore).toInt();
+  }
+
+  void toggleExplanation() {
+    final shouldShow = !state.showExplanation;
+    emit(state.copyWith(showExplanation: shouldShow));
+
+    final trackingData = _trackingData();
+    if (trackingData == null) return;
+    if (shouldShow) {
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainClick(trackingData);
+      AppService.instance.appTrackingService.trackKeypointExerciseExplainView(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointExerciseExplainClose(trackingData);
+  }
+
+  KeypointTrackingData? _trackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.exercise) return null;
+    return KeypointTrackingData.fromContext();
+  }
+
+  RoleplayTrackingData? _roleplayTrackingData() {
+    final exerciseType = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type;
+    if (exerciseType != LearningItemType.roleplay) return null;
+    return RoleplayTrackingData.fromContext();
+  }
+
+  void reset() {
+    emit(MarkStressWordState.initial());
+  }
+
+  ExerciseResultEntity toExerciseResult() {
+    final question = state.question;
+    final indices = state.selectedWordIndices.toList()..sort();
+    final words = state.words;
+
+    final dragDropAnswer = indices.where((index) => index >= 0 && index < words.length).map(
+      (index) {
+        final word = words[index];
+        return OptionEntity(
+          id: index,
+          text: BaseMultiLanguage(en: word, vi: word, zh: word),
+          value: BaseMultiLanguage(en: word, vi: word, zh: word),
+        );
+      },
+    ).toList();
+
+    return ExerciseResultEntity(
+      exerciseId: question.id.toString(),
+      type: question.type,
+      form: question.form,
+      passed: state.isCorrect,
+      dragDropAnswer: dragDropAnswer,
+    );
+  }
+
+  void applyExerciseResult(ExerciseResultEntity result) {
+    final question = state.question;
+    if (question.id == 0) return;
+
+    final words = state.words;
+    final selectedIndices = <int>{};
+    final usedIndices = <int>{};
+
+    for (final answer in result.dragDropAnswer) {
+      if (answer.id >= 0 && answer.id < words.length) {
+        selectedIndices.add(answer.id);
+        usedIndices.add(answer.id);
+        continue;
+      }
+
+      final label = answer.labelText;
+      if (label.isEmpty) continue;
+
+      for (int i = 0; i < words.length; i++) {
+        if (usedIndices.contains(i)) continue;
+        if (words[i] == label) {
+          selectedIndices.add(i);
+          usedIndices.add(i);
+          break;
+        }
+      }
+    }
+
+    final isCorrect = _stressWordIsCorrect(question, selectedIndices);
+
+    emit(
+      state.copyWith(
+        selectedWordIndices: selectedIndices,
+        hasChecked: true,
+        isCorrect: isCorrect,
+        showExplanation: false,
+      ),
+    );
+  }
+}
+
+bool _stressWordIsCorrect(QuestionEntity question, Set<int> selectedIndices) {
+  final correctIndices = question.answer.map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
+
+  return selectedIndices.length == correctIndices.length && selectedIndices.every((index) => correctIndices.contains(index));
+}

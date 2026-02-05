@@ -1,0 +1,148 @@
+targets:
+  $default:
+    builders:
+      go_router_builder|go_router_builder:
+        enabled: true
+        generate_for:
+          include:
+            - "lib/config/routes/**.dart"
+        options:
+          type_safe_parameters: true
+          route_names: true
+
+      retrofit_generator|retrofit_generator:
+        enabled: true
+        generate_for:
+          include:
+            - "lib/src/**/data/datasources/apis/**.dart"
+            - "lib/src/**/data/datasources/sockets/**.dart"
+            - "lib/src/*/**.dart"  # Feature root hub files
+        options:
+          nullsafety: true
+          parser: "FlutterCompute"
+          format_output: false
+
+      json_serializable|json_serializable:
+        enabled: true
+        options:
+          any_map: false
+          checked: false
+          constructor: ""
+          create_factory: true
+          create_field_map: false
+          create_json_keys: false
+          create_per_field_to_json: false
+          create_to_json: true
+          disallow_unrecognized_keys: false
+          field_rename: none
+          generic_argument_factories: true
+          ignore_unannotated: false
+          explicit_to_json: true
+          include_if_null: false
+        generate_for:
+          include:
+            - "lib/src/**/data/models/**.dart"
+            - "lib/src/**/domain/entities/**.dart"
+            - "lib/core/base/**.dart"
+            - "lib/src/**/presentation/blocs/**.dart"
+            - "lib/src/*/**.dart"  # Feature root hub files
+
+      freezed|freezed:
+        enabled: true
+        options:
+          makeCollectionsUnmodifiable: false
+          generic_argument_factories: true
+          format: false
+          copy_with: true
+          equal: true
+          map: true
+          field_rename: none
+          when:
+            when: true
+            maybe_when: true
+            when_or_null: false
+        generate_for:
+          include:
+            - "lib/src/**/data/models/**.dart"
+            - "lib/src/**/domain/entities/**.dart"
+            - "lib/core/base/**.dart"
+            - "lib/src/**/presentation/blocs/**.dart"
+            - "lib/src/*/**.dart"  # Feature root hub files
+            - "**/**.f.dart"
+
+      graphql_codegen:
+        enabled: true
+        options:
+          clients:
+            - graphql
+            - graphql_flutter
+          assetsPath: lib/src/**/data/datasources/graphql/template/**
+          outputDirectory: ../gen/
+          generatedFileHeader: "// GENERATED CODE - DO NOT MODIFY BY HAND\n// ignore_for_file: type=lint\n"
+
+
+      injectable_generator:injectable_builder:
+        enabled: true
+        options:
+          auto_register: true
+        generate_for:
+          include:
+            - "lib/config/di/**.dart"
+            - "lib/config/services/**.dart"
+            - "lib/src/**/data/datasources/apis/**.dart"
+            - "lib/src/**/data/datasources/sockets/**.dart"
+            - "lib/src/**/data/datasources/local/**.dart"
+            - "lib/src/**/data/datasources/remote/**.dart"
+            - "lib/src/**/data/repositories/**.dart"
+            - "lib/src/**/domain/repositories/**.dart"
+            - "lib/src/**/domain/usecases/**.dart"
+            - "lib/src/**/presentation/blocs/**.dart"
+            - "lib/src/**/presentation/cubits/**.dart"
+            - "lib/src/**/**.dart"  # Feature root hub files
+
+      injectable_generator:injectable_config_builder:
+        enabled: true
+        generate_for:
+          include:
+            - "lib/config/di/**.dart"
+            - "lib/config/services/**.dart"
+            - "lib/src/**/data/datasources/apis/**.dart"
+            - "lib/src/**/data/datasources/sockets/**.dart"
+            - "lib/src/**/data/datasources/local/**.dart"
+            - "lib/src/**/data/datasources/remote/**.dart"
+            - "lib/src/**/data/repositories/**.dart"
+            - "lib/src/**/domain/repositories/**.dart"
+            - "lib/src/**/domain/usecases/**.dart"
+            - "lib/src/**/presentation/blocs/**.dart"
+            - "lib/src/**/presentation/cubits/**.dart"
+            # - "lib/src/**/**.dart"  # Feature root hub files
+        options:
+          force_auto_register: true
+
+      flutter_gen_runner:
+        enabled: true
+        options:
+          output: lib/core/constants/gen/
+          line_length: 200
+
+      slang_build_runner:
+        enabled: true  # Allows regeneration via build_runner in addition to `dart run slang`
+        options:
+          base_locale: en
+          fallback_strategy: base_locale
+          input_directory: assets/i18n
+          input_file_pattern: .yaml
+          output_directory: lib/config/l10n
+          output_file_name: l10n.g.dart
+          namespaces: true
+          lazy: true
+          locale_handling: true
+          flutter_integration: true
+          translation_class_visibility: public
+          key_case: camel
+          param_case: camel
+          string_interpolation: dart
+          flat_map: false
+          pluralization:
+            auto: cardinal
+            default_parameter: count

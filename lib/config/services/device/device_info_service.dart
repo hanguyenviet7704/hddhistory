@@ -1,0 +1,90 @@
+part of '../services.dart';
+
+abstract interface class IDeviceInfoService {
+  Future<String> get deviceToken;
+  Future<String> get deviceName;
+  Future<void> getAllDeviceInfo();
+  Future<int?> getAndroidSdkVersion();
+  Future<bool> isAndroid13OrHigher();
+  Future<BaseDeviceInfo?> get deviceInfo;
+}
+
+@LazySingleton(as: IDeviceInfoService)
+class DeviceInfoService implements IDeviceInfoService {
+  final ILocalStoreService _localStoreService;
+  final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
+
+  DeviceInfoService(this._localStoreService) {
+    initialize();
+  }
+
+  DeviceInfoPlugin get deviceInfoPlugin => _deviceInfoPlugin;
+
+  /// Initialize the device info service
+  void initialize() async {
+    LogDev.info('DeviceInfoService initialized');
+    await getAllDeviceInfo();
+    final deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
+    LogDev.one('deviceId: $deviceId');
+    if(!Platform.isIOS) return;
+    if(deviceId.isNotEmpty) return;
+    final fakeDeviceId = const Uuid().v8();
+    await _localStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: fakeDeviceId);
+  }
+
+  /// Returns the Android SDK version as an integer.
+  /// For non-Android devices, it returns null.
+  @override
+  Future<int?> getAndroidSdkVersion() async {
+    if (Platform.isAndroid) {
+      final androidInfo = await _deviceInfoPlugin.androidInfo;
+      return androidInfo.version.sdkInt;
+    }
+    return null;
+  }
+
+  /// Checks if the device is running Android 13 or higher
+  @override
+  Future<bool> isAndroid13OrHigher() async {
+    final sdkVersion = await getAndroidSdkVersion();
+    return sdkVersion != null && sdkVersion > 32;
+  }
+
+  @override
+  Future<void> getAllDeviceInfo() async {
+    final deviceInfo = await _deviceInfoPlugin.deviceInfo;
+    LogDev.one('deviceInfo: ${deviceInfo.data}');
+  }
+
+  @override
+  Future<String> get deviceToken async {
+    String deviceId = '';
+    try {
+      if (Platform.isAndroid) {
+        final AndroidDeviceInfo androidInfo = await _deviceInfoPlugin.androidInfo;
+        deviceId = androidInfo.id;
+      } else if (Platform.isIOS) {
+        deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
+      }
+    } catch (e) {
+      LogDev.warning('Error getting device info: $e');
+    }
+
+    if (deviceId.isEmpty) {
+      deviceId = const Uuid().v4();
+    }
+
+    return deviceId;
+  }
+
+  @override
+  Future<String> get deviceName async {
+    final deviceInfo = await _deviceInfoPlugin.deviceInfo;
+    return deviceInfo.data['model'] as String;
+  }
+
+  @override
+  Future<BaseDeviceInfo?> get deviceInfo async {
+    return await _deviceInfoPlugin.deviceInfo;
+  }
+}

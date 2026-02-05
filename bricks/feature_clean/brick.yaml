@@ -1,0 +1,59 @@
+name: feature_clean
+description: A Mason brick for generating Clean Architecture feature modules with flatter structure
+version: 1.0.0
+repository: https://github.com/your-org/meup
+
+vars:
+  feature_name:
+    type: string
+    description: The name of the feature in snake_case
+    prompt: What is the feature name?
+
+  entity_name:
+    type: string
+    description: The name of the main business object in PascalCase
+    prompt: What is the entity name?
+
+  use_bloc:
+    type: boolean
+    description: Use BLoC instead of Cubit
+    default: false
+    prompt: Use BLoC instead of Cubit?
+
+  architecture_profile:
+    type: enum
+    description: Choose how much of the Clean Architecture stack to scaffold
+    default: full_stack
+    values:
+      - presentation_only
+      - domain_presentation
+      - full_stack
+    prompt: Which architecture profile do you need?
+
+  presentation_profile:
+    type: enum
+    description: Default UI template to scaffold for this feature
+    default: paged_list
+    values:
+      - paged_list
+      - single_item
+      - blank_screen
+    prompt: Which presentation profile fits best?
+
+  crud_operations:
+    type: string
+    description: Comma separated operations to scaffold (list,detail,create,update,delete)
+    default: list,detail,create,update,delete
+    prompt: Which CRUD operations do you need? (comma separated)
+
+  include_remote_datasource:
+    type: boolean
+    description: Include Retrofit API client for this feature
+    default: true
+    prompt: Include remote data source (Retrofit/Dio)?
+
+  include_local_cache:
+    type: boolean
+    description: Include local cache data source for offline support
+    default: true
+    prompt: Include local cache data source?

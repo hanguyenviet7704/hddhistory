@@ -1,0 +1,9 @@
+#include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
+#include "Generated.xcconfig"
+
+ASSET_PREFIX=dev
+BUNDLE_NAME=Meup Dev
+BUNDLE_DISPLAY_NAME=Meup Dev
+API_BASE_URL=https://dev.api.com
+GID_CLIENT_ID=116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a.apps.googleusercontent.com
+REVERSED_CLIENT_ID=com.googleusercontent.apps.116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a

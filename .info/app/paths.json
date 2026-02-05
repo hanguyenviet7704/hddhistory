@@ -1,0 +1,55 @@
+{
+  "project": {
+    "root": ".",
+    "lib": "lib",
+    "android": "android",
+    "ios": "ios",
+    "test": "test",
+    "assets": "assets",
+    "fonts": "assets/fonts",
+    "images": "assets/images"
+  },
+  "environment": {
+    "envDir": ".env",
+    "files": {
+      "dev": ".env/.env.dev",
+      "stg": ".env/.env.stg", 
+      "prod": ".env/.env.prod"
+    }
+  },
+  "config": {
+    "info": ".info",
+    "flavorizr": "flavorizr.yaml",
+    "pubspec": "pubspec.yaml",
+    "l10n": "l10n.yaml"
+  },
+  "tools": {
+    "macos": "tools/macos",
+    "build": "tools/macos/build",
+    "config": "tools/macos/config",
+    "distribution": "tools/macos/distribution",
+    "key": "tools/macos/key",
+    "common": "tools/macos/common"
+  },
+  "firebase": {
+    "configOutput": {
+      "dart": "lib/config/services/firebase",
+      "android": "android/app/src",
+      "ios": "ios/flavors"
+    }
+  },
+  "build": {
+    "outputs": {
+      "android": {
+        "apk": "build/app/outputs/flutter-apk",
+        "appbundle": "build/app/outputs/bundle"
+      },
+      "ios": {
+        "app": "build/ios/iphoneos",
+        "ipa": "build/ios/ipa",
+        "archive": "build/ios/archive"
+      },
+      "obfuscation": ".obfuscation"
+    }
+  }
+}
