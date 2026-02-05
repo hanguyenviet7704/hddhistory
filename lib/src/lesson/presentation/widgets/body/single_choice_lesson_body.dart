@@ -45,11 +45,6 @@ class SingleChoiceLessonBody extends StatelessWidget {
               },
               onExplain: hasExplanation
                   ? () {
-                      if (state.showExplanation) {
-                        LessonResultOverlayManager.hide();
-                        context.read<LessonCubit>().setIsShowResultOverlay(false);
-                        return;
-                      }
                       context.read<ChoiceCubit>().toggleExplanation();
                     }
                   : null,
@@ -57,6 +52,20 @@ class SingleChoiceLessonBody extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, ChoiceState state) {
+    if (isReadOnly) {
+      context.read<LessonCubit>().consumePendingAdvance();
+    }
+    if (currentQuestion.hasExplanation && !state.showExplanation) {
+      context.read<ChoiceCubit>().toggleExplanation();
+    }
+    _showResultOverlay(
+      context,
+      state.isCorrect ? ResultType.correct : ResultType.incorrect,
+      isReview: isReadOnly,
     );
   }
 
@@ -81,20 +90,6 @@ class SingleChoiceLessonBody extends StatelessWidget {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
-
-          void handleExplainTap() {
-            if (isReadOnly) {
-              context.read<LessonCubit>().consumePendingAdvance();
-            }
-            if (currentQuestion.hasExplanation && !state.showExplanation) {
-              context.read<ChoiceCubit>().toggleExplanation();
-            }
-            _showResultOverlay(
-              context,
-              state.isCorrect ? ResultType.correct : ResultType.incorrect,
-              isReview: isReadOnly,
-            );
-          }
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -136,7 +131,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
               if (showExplainButton) ...[
                 12.verticalSpace,
                 LessonExplainButton(
-                  onTap: handleExplainTap,
+                  onTap: () => _handleExplainTap(context, currentQuestion, state),
                   hasExplanation: currentQuestion.hasExplanation,
                 ),
               ],

@@ -48,11 +48,6 @@ class DragAndDropLessonBody extends StatelessWidget {
               },
               onExplain: hasExplanation
                   ? () {
-                      if (state.showExplanation) {
-                        LessonResultOverlayManager.hide();
-                        context.read<LessonCubit>().setIsShowResultOverlay(false);
-                        return;
-                      }
                       context.read<DragAndDropCubit>().toggleExplanation();
                     }
                   : null,
@@ -62,6 +57,20 @@ class DragAndDropLessonBody extends StatelessWidget {
       ),
     );
   }
+
+  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, DragAndDropState state) {
+            if (isReadOnly) {
+              context.read<LessonCubit>().consumePendingAdvance();
+            }
+            if (currentQuestion.hasExplanation && !state.showExplanation) {
+              context.read<DragAndDropCubit>().toggleExplanation();
+            }
+            (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultOverlay(
+              context,
+              state.isCorrect ? ResultType.correct : ResultType.incorrect,
+              isReview: isReadOnly,
+            );
+          }
 
   @override
   Widget build(BuildContext context) {
@@ -85,19 +94,7 @@ class DragAndDropLessonBody extends StatelessWidget {
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
 
-          void handleExplainTap() {
-            if (isReadOnly) {
-              context.read<LessonCubit>().consumePendingAdvance();
-            }
-            if (currentQuestion.hasExplanation && !state.showExplanation) {
-              context.read<DragAndDropCubit>().toggleExplanation();
-            }
-            (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultOverlay(
-              context,
-              state.isCorrect ? ResultType.correct : ResultType.incorrect,
-              isReview: isReadOnly,
-            );
-          }
+          
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -147,7 +144,7 @@ class DragAndDropLessonBody extends StatelessWidget {
               if (showExplainButton) ...[
                 12.verticalSpace,
                 LessonExplainButton(
-                  onTap: handleExplainTap,
+                  onTap: () => _handleExplainTap(context, currentQuestion, state),
                   hasExplanation: currentQuestion.hasExplanation,
                 ),
               ],

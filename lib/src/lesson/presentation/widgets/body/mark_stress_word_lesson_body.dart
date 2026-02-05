@@ -48,11 +48,6 @@ class MarkStressWordLessonBody extends StatelessWidget {
               },
               onExplain: hasExplanation
                   ? () {
-                      if (state.showExplanation) {
-                        LessonResultOverlayManager.hide();
-                        context.read<LessonCubit>().setIsShowResultOverlay(false);
-                        return;
-                      }
                       context.read<MarkStressWordCubit>().toggleExplanation();
                     }
                   : null,
@@ -60,6 +55,20 @@ class MarkStressWordLessonBody extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, MarkStressWordState state) {
+    if (isReadOnly) {
+      context.read<LessonCubit>().consumePendingAdvance();
+    }
+    if (currentQuestion.hasExplanation && !state.showExplanation) {
+      context.read<MarkStressWordCubit>().toggleExplanation();
+    }
+    _showResultOverlay(
+      context,
+      state.isCorrect ? ResultType.correct : ResultType.incorrect,
+      isReview: isReadOnly,
     );
   }
 
@@ -85,20 +94,6 @@ class MarkStressWordLessonBody extends StatelessWidget {
           final words = state.words;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
-
-          void handleExplainTap() {
-            if (isReadOnly) {
-              context.read<LessonCubit>().consumePendingAdvance();
-            }
-            if (currentQuestion.hasExplanation && !state.showExplanation) {
-              context.read<MarkStressWordCubit>().toggleExplanation();
-            }
-            _showResultOverlay(
-              context,
-              state.isCorrect ? ResultType.correct : ResultType.incorrect,
-              isReview: isReadOnly,
-            );
-          }
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -166,7 +161,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
               if (showExplainButton) ...[
                 12.verticalSpace,
                 LessonExplainButton(
-                  onTap: handleExplainTap,
+                  onTap: () => _handleExplainTap(context, currentQuestion, state),
                   hasExplanation: currentQuestion.hasExplanation,
                 ),
               ],

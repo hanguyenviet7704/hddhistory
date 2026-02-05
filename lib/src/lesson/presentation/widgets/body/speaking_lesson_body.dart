@@ -44,6 +44,16 @@ class SpeakingLessonBody extends StatelessWidget {
     );
   }
 
+  void _handleExplainTap(BuildContext context, bool hasExplainData, SpeakingState state) {
+    if (isReadOnly) {
+      context.read<LessonCubit>().consumePendingAdvance();
+    }
+    if (hasExplainData && !state.showExplanation) {
+      context.read<SpeakingCubit>().toggleExplanation();
+    }
+    _showResultOverlay(context, ResultType.correct, isReview: isReadOnly);
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<SpeakingCubit, SpeakingState>(
@@ -67,21 +77,8 @@ class SpeakingLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final hasExplainData = state.textInput.isNotEmpty ||
-              state.goodPoints.isNotEmpty ||
-              state.improvementPoints.isNotEmpty ||
-              (state.audioFilePath?.isNotEmpty ?? false);
+          final hasExplainData = state.textInput.isNotEmpty || state.goodPoints.isNotEmpty || state.improvementPoints.isNotEmpty || (state.audioFilePath?.isNotEmpty ?? false);
           final showExplainButton = isLessonExercise && state.status == SpeakingStatus.success && hasExplainData;
-
-          void handleExplainTap() {
-            if (isReadOnly) {
-              context.read<LessonCubit>().consumePendingAdvance();
-            }
-            if (hasExplainData && !state.showExplanation) {
-              context.read<SpeakingCubit>().toggleExplanation();
-            }
-            _showResultOverlay(context, ResultType.correct, isReview: isReadOnly);
-          }
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -110,7 +107,7 @@ class SpeakingLessonBody extends StatelessWidget {
               if (showExplainButton) ...[
                 12.verticalSpace,
                 LessonExplainButton(
-                  onTap: handleExplainTap,
+                  onTap: () => _handleExplainTap(context, hasExplainData, state),
                   hasExplanation: hasExplainData,
                 ),
               ],

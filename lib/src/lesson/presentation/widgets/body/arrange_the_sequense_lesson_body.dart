@@ -52,11 +52,6 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
               },
               onExplain: hasExplanation
                   ? () {
-                      if (state.showExplanation) {
-                        LessonResultOverlayManager.hide();
-                        context.read<LessonCubit>().setIsShowResultOverlay(false);
-                        return;
-                      }
                       context.read<ArrangeTheSequenceCubit>().toggleExplanation();
                     }
                   : null,
@@ -64,6 +59,20 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
           },
         ),
       ),
+    );
+  }
+
+  void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, ArrangeTheSequenceState state) {
+    if (isReadOnly) {
+      context.read<LessonCubit>().consumePendingAdvance();
+    }
+    if (currentQuestion.hasExplanation && !state.showExplanation) {
+      context.read<ArrangeTheSequenceCubit>().toggleExplanation();
+    }
+    _showResultOverlay(
+      context,
+      state.isCorrect ? ResultType.correct : ResultType.incorrect,
+      isReview: isReadOnly,
     );
   }
 
@@ -88,20 +97,6 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
-
-          void handleExplainTap() {
-            if (isReadOnly) {
-              context.read<LessonCubit>().consumePendingAdvance();
-            }
-            if (currentQuestion.hasExplanation && !state.showExplanation) {
-              context.read<ArrangeTheSequenceCubit>().toggleExplanation();
-            }
-            _showResultOverlay(
-              context,
-              state.isCorrect ? ResultType.correct : ResultType.incorrect,
-              isReview: isReadOnly,
-            );
-          }
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,7 +171,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
               if (showExplainButton) ...[
                 12.verticalSpace,
                 LessonExplainButton(
-                  onTap: handleExplainTap,
+                  onTap: () => _handleExplainTap(context, currentQuestion, state),
                   hasExplanation: currentQuestion.hasExplanation,
                 ),
               ],
