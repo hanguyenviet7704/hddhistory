@@ -230,8 +230,6 @@ const getSceneBranchOptions = (scene: IOnboardingScenarioScene) => {
   return branchContent?.branch?.options || [];
 };
 
-// test
-
 const getNextSceneIdForOption = (
   scenes: IOnboardingScenarioScene[],
   parentSceneId: string,
