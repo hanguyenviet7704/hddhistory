@@ -78,7 +78,7 @@ class SpeakingLessonBody extends StatelessWidget {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final hasExplainData = state.textInput.isNotEmpty || (state.audioFilePath?.isNotEmpty ?? false);
-          final showExplainButton = isLessonExercise && hasExplainData;
+          final showExplainButton = isLessonExercise && isReadOnly && hasExplainData;
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,

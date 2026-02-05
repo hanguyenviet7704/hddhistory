@@ -77,7 +77,7 @@ class ExerciseResultSummary extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onExplain != null && kDebugMode)
+              if (onExplain != null)
                 Opacity(
                   opacity: 0.5,
                   child: GestureDetector(

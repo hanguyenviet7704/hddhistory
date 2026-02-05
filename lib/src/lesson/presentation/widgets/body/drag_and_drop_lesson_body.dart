@@ -92,7 +92,7 @@ class DragAndDropLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
+          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
           
 

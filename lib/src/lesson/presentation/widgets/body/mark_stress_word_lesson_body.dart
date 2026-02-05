@@ -93,7 +93,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
           final currentQuestion = state.question;
           final words = state.words;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
+          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
