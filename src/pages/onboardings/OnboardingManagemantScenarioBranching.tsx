@@ -15,6 +15,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
+import { courseService } from "../../services/courseService";
 import {
   IOnboardingScenarioBranch,
   IOnboardingScenarioActivation,
@@ -25,6 +26,7 @@ import {
   IOnboardingScenarioScene,
   OnboardingContentType,
 } from "../../types/interface/onboarding-scenario-branching.interface";
+import { ICourse } from "../../types/interface/course.interface";
 import { ILablel, LangCode } from "../../types/enum/common.enum";
 import {
   cleanTranslation,
@@ -70,6 +72,7 @@ const createBranch = (): IOnboardingScenarioBranch => ({
       label: createTranslation(),
       icon: "",
       nextSceneId: "",
+      courses: [],
     },
   ],
 });
@@ -219,18 +222,25 @@ const createSceneId = (scenes: IOnboardingScenarioScene[]) => {
   return candidate;
 };
 
-const createSceneIdForOption = (
+const getSceneBranchOptions = (scene: IOnboardingScenarioScene) => {
+  const branchContent = scene.contents.find(
+    (content) =>
+      content.type === OnboardingContentType.BRANCH && content.branch,
+  );
+  return branchContent?.branch?.options || [];
+};
+
+const getNextSceneIdForOption = (
   scenes: IOnboardingScenarioScene[],
   parentSceneId: string,
   optionId: number,
 ) => {
   const usedIds = new Set(scenes.map((scene) => scene.id));
-  const baseId = `${parentSceneId}_${optionId}`;
-  let candidate = baseId;
-  let suffix = 2;
+  let candidateNumber = optionId;
+  let candidate = `${parentSceneId}_${candidateNumber}`;
   while (usedIds.has(candidate)) {
-    candidate = `${baseId}_${suffix}`;
-    suffix += 1;
+    candidateNumber += 1;
+    candidate = `${parentSceneId}_${candidateNumber}`;
   }
   return candidate;
 };
@@ -466,6 +476,67 @@ const TextWithTooltip = ({
   );
 };
 
+const ConfirmDialog = ({
+  open,
+  title,
+  message,
+  messageClassName,
+  confirmLabel = "Confirm",
+  confirmTone = "danger",
+  onCancel,
+  onConfirm,
+}: {
+  open: boolean;
+  title: string;
+  message: string;
+  messageClassName?: string;
+  confirmLabel?: string;
+  confirmTone?: "danger" | "primary";
+  onCancel: () => void;
+  onConfirm: () => void;
+}) => {
+  if (!open) return null;
+  const confirmClass =
+    confirmTone === "primary"
+      ? "bg-blue-600 hover:bg-blue-700"
+      : "bg-red-600 hover:bg-red-700";
+  return (
+    <AnimatePresence>
+      <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60 px-4">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          exit={{ opacity: 0, scale: 0.9 }}
+          className="w-full max-w-md rounded-xl bg-white p-6 shadow-xl"
+        >
+          <h2 className="text-lg font-semibold text-slate-900">{title}</h2>
+          <p
+            className={`mt-2 text-sm text-slate-600 ${messageClassName || ""}`}
+          >
+            {message}
+          </p>
+          <div className="mt-6 flex justify-end gap-3">
+            <button
+              type="button"
+              onClick={onCancel}
+              className="rounded-lg bg-slate-200 px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-300"
+            >
+              Cancel
+            </button>
+            <button
+              type="button"
+              onClick={onConfirm}
+              className={`rounded-lg px-4 py-2 text-sm text-white transition ${confirmClass}`}
+            >
+              {confirmLabel}
+            </button>
+          </div>
+        </motion.div>
+      </div>
+    </AnimatePresence>
+  );
+};
+
 const TranslationInputs = ({
   label,
   value,
@@ -607,6 +678,15 @@ export default function OnboardingManagemantScenarioBranching() {
   const [scenarioId, setScenarioId] = useState<string>("");
   const [selectedSceneId, setSelectedSceneId] = useState<string>("");
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
+  const [sceneLabelQuery, setSceneLabelQuery] = useState("");
+  const [courseQuery, setCourseQuery] = useState("");
+  const [courses, setCourses] = useState<ICourse[]>([]);
+  const [isCourseLoading, setIsCourseLoading] = useState(false);
+  const [courseMap, setCourseMap] = useState<Record<string, ICourse>>({});
+  const [confirmDialog, setConfirmDialog] = useState<{
+    type: "deleteScene" | "setEntry";
+    sceneId: string;
+  } | null>(null);
   const [draftContent, setDraftContent] = useState<{
     sceneId: string;
     content: IOnboardingScenarioContentItem;
@@ -649,6 +729,43 @@ export default function OnboardingManagemantScenarioBranching() {
   }, []);
 
   useEffect(() => {
+    let active = true;
+    const trimmedQuery = courseQuery.trim();
+    if (!trimmedQuery) {
+      setCourses([]);
+      setIsCourseLoading(false);
+      return () => {
+        active = false;
+      };
+    }
+    const fetchCourses = async () => {
+      setIsCourseLoading(true);
+      try {
+        const res = await courseService.getList({
+          page: 1,
+          take: 20,
+          search: trimmedQuery,
+          isAll: true,
+        });
+        const list: ICourse[] = res?.data?.items ?? res?.items ?? [];
+        if (active) {
+          setCourses(list);
+        }
+      } catch (error) {
+        console.error("fetchCourses", error);
+      } finally {
+        if (active) {
+          setIsCourseLoading(false);
+        }
+      }
+    };
+    fetchCourses();
+    return () => {
+      active = false;
+    };
+  }, [courseQuery]);
+
+  useEffect(() => {
     if (!scenario.scenes.length) {
       setSelectedSceneId("");
       return;
@@ -677,6 +794,11 @@ export default function OnboardingManagemantScenarioBranching() {
     () => scenario.scenes.findIndex((scene) => scene.id === selectedSceneId),
     [scenario.scenes, selectedSceneId],
   );
+
+  const rootSceneId = useMemo(() => {
+    if (scenario.entrySceneId) return scenario.entrySceneId;
+    return scenario.scenes[0]?.id || "";
+  }, [scenario.entrySceneId, scenario.scenes]);
 
   const selectedSceneHasBranch = useMemo(
     () =>
@@ -717,6 +839,54 @@ export default function OnboardingManagemantScenarioBranching() {
       mode: "edit" as const,
     };
   }, [contentModal, draftContent, scenario.scenes]);
+
+  useEffect(() => {
+    if (!activeContentData) return;
+    if (activeContentData.sceneId !== scenario.entrySceneId) return;
+    if (activeContentData.content.type !== OnboardingContentType.BRANCH) return;
+    const courseIds = (
+      activeContentData.content.branch?.options.flatMap(
+        (option) => option.courses || [],
+      ) || []
+    ).filter(Boolean);
+    const uniqueIds = Array.from(new Set(courseIds)).filter(
+      (id) => !courseMap[id],
+    );
+    if (!uniqueIds.length) return;
+
+    let active = true;
+    const fetchCourseDetails = async () => {
+      try {
+        const results = await Promise.all(
+          uniqueIds.map(async (id) => {
+            try {
+              const res = await courseService.getById(id);
+              return { id, course: res?.data ?? res };
+            } catch (error) {
+              console.error("fetchCourseById", error);
+              return null;
+            }
+          }),
+        );
+        if (!active) return;
+        setCourseMap((prev) => {
+          const next = { ...prev };
+          results.forEach((item) => {
+            if (item && item.course) {
+              next[item.id] = item.course as ICourse;
+            }
+          });
+          return next;
+        });
+      } catch (error) {
+        console.error("fetchCourseDetails", error);
+      }
+    };
+    fetchCourseDetails();
+    return () => {
+      active = false;
+    };
+  }, [activeContentData, scenario.entrySceneId, courseMap]);
 
   useEffect(() => {
     if (contentModal && !activeContentData) {
@@ -838,6 +1008,211 @@ export default function OnboardingManagemantScenarioBranching() {
     setIsTypeModalOpen(false);
   };
 
+  const handleSetEntryScene = async (sceneId: string) => {
+    const nextScenario = normalizeScenario({
+      ...scenario,
+      entrySceneId: sceneId,
+    });
+    setScenario(nextScenario);
+    await handleSave(nextScenario);
+  };
+
+  const handleConfirmAction = async () => {
+    if (!confirmDialog) return;
+    if (confirmDialog.type === "deleteScene") {
+      handleRemoveScene(confirmDialog.sceneId);
+      setConfirmDialog(null);
+      return;
+    }
+    if (confirmDialog.type === "setEntry") {
+      await handleSetEntryScene(confirmDialog.sceneId);
+      setConfirmDialog(null);
+    }
+  };
+
+  const normalizedSceneLabelQuery = sceneLabelQuery.trim().toLowerCase();
+
+  const getOptionLabelText = (option: IOnboardingScenarioBranchOption) =>
+    getCurrentTranslationValue(option.label, lang) || `Option ${option.id}`;
+
+  const matchesSceneLabelQuery = (value: string) =>
+    !normalizedSceneLabelQuery ||
+    value.toLowerCase().includes(normalizedSceneLabelQuery);
+
+  const doesSceneMatchQuery = (
+    sceneId: string,
+    cache: Map<string, boolean>,
+    visited = new Set<string>(),
+  ) => {
+    if (cache.has(sceneId)) {
+      return cache.get(sceneId) as boolean;
+    }
+    if (visited.has(sceneId)) {
+      return false;
+    }
+    const scene = scenario.scenes.find((item) => item.id === sceneId);
+    if (!scene) {
+      cache.set(sceneId, false);
+      return false;
+    }
+    visited.add(sceneId);
+    const branchOptions = getSceneBranchOptions(scene);
+    const matched = branchOptions.some((option) => {
+      const labelText = getOptionLabelText(option);
+      if (matchesSceneLabelQuery(labelText)) {
+        return true;
+      }
+      return option.nextSceneId
+        ? doesSceneMatchQuery(option.nextSceneId, cache, visited)
+        : false;
+    });
+    cache.set(sceneId, matched);
+    return matched;
+  };
+
+  const getCourseTitle = (courseId: string) => {
+    const course =
+      courseMap[courseId] || courses.find((item) => item._id === courseId);
+    return course ? getCurrentTranslationValue(course.title, lang) : courseId;
+  };
+
+  const renderSceneOptions = (
+    sceneId: string,
+    depth = 0,
+    visited = new Set<string>(),
+  ) => {
+    const scene = scenario.scenes.find((item) => item.id === sceneId);
+    if (!scene) return null;
+    if (visited.has(scene.id)) {
+      return (
+        <div
+          className="text-xs text-rose-500"
+          style={{ marginLeft: depth * 16 }}
+        >
+          Loop detected
+        </div>
+      );
+    }
+    const nextVisited = new Set(visited);
+    nextVisited.add(scene.id);
+    const branchOptions = getSceneBranchOptions(scene);
+
+    if (!branchOptions.length) return null;
+
+    const searchCache = new Map<string, boolean>();
+    const filteredOptions = branchOptions.filter((option) => {
+      if (!normalizedSceneLabelQuery) return true;
+      const labelText = getOptionLabelText(option);
+      if (matchesSceneLabelQuery(labelText)) return true;
+      return option.nextSceneId
+        ? doesSceneMatchQuery(option.nextSceneId, searchCache)
+        : false;
+    });
+
+    if (!filteredOptions.length) return null;
+
+    return (
+      <div className="space-y-2">
+        {filteredOptions.map((option) => {
+          const rawLabel = getOptionLabelText(option);
+          const paddedLabel = rawLabel.padEnd(20, " ");
+          return (
+            <div
+              key={`${scene.id}-option-${option.id}-${option.nextSceneId}`}
+              className="space-y-2"
+            >
+              <div
+                className="flex items-center gap-2 text-xs text-slate-500"
+                style={{ marginLeft: depth * 16 }}
+              >
+                <span className="text-slate-400">({depth})</span>
+                <TextWithTooltip
+                  text={paddedLabel}
+                  maxLength={20}
+                  className="text-slate-600 w-[20ch] inline-block whitespace-pre"
+                />
+                <span className="text-slate-400">=&gt;</span>
+                {option.nextSceneId ? (
+                  <button
+                    type="button"
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      if (option.nextSceneId) {
+                        setSelectedSceneId(option.nextSceneId);
+                      }
+                    }}
+                    className="text-blue-600 underline decoration-dashed underline-offset-2 hover:text-blue-700"
+                    title={`Go to ${option.nextSceneId}`}
+                  >
+                    {option.nextSceneId}
+                  </button>
+                ) : (
+                  <span className="text-slate-400">—</span>
+                )}
+              </div>
+              {option.nextSceneId
+                ? renderSceneOptions(option.nextSceneId, depth + 1, nextVisited)
+                : null}
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const renderRootScene = (sceneId: string) => {
+    const scene = scenario.scenes.find((item) => item.id === sceneId);
+    if (!scene) return null;
+    const isActive = scene.id === selectedSceneId;
+    const hasSearchMatch =
+      !normalizedSceneLabelQuery ||
+      doesSceneMatchQuery(scene.id, new Map<string, boolean>());
+
+    return (
+      <div className="space-y-3">
+        <div
+          role="button"
+          tabIndex={0}
+          onClick={() => setSelectedSceneId(scene.id)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              setSelectedSceneId(scene.id);
+            }
+          }}
+          className={`rounded-2xl border px-4 py-3 text-left transition-all duration-200 ${
+            isActive
+              ? "border-blue-300 bg-blue-50 text-slate-900 shadow-sm"
+              : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:shadow-sm"
+          }`}
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-semibold">{scene.id}</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {scene.id === scenario.entrySceneId && (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                    isActive
+                      ? "bg-blue-200 text-blue-800"
+                      : "bg-blue-50 text-blue-700"
+                  }`}
+                >
+                  Entry
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+        {hasSearchMatch ? (
+          renderSceneOptions(scene.id, 1)
+        ) : (
+          <div className="text-xs text-slate-400">Không tìm thấy kết quả.</div>
+        )}
+      </div>
+    );
+  };
+
   const handleAddSceneAndLinkOption = (
     sceneIndex: number,
     contentIndex: number,
@@ -850,9 +1225,9 @@ export default function OnboardingManagemantScenarioBranching() {
         return prev;
       }
       const optionId =
-        parentScene.contents[contentIndex]?.branch?.options?.[optionIndex]?.id ??
-        optionIndex + 1;
-      const nextId = createSceneIdForOption(
+        parentScene.contents[contentIndex]?.branch?.options?.[optionIndex]
+          ?.id ?? optionIndex + 1;
+      const nextId = getNextSceneIdForOption(
         prev.scenes,
         parentSceneId,
         optionId,
@@ -893,7 +1268,7 @@ export default function OnboardingManagemantScenarioBranching() {
     const optionId =
       draftContent.content.branch?.options?.[optionIndex]?.id ??
       optionIndex + 1;
-    const nextId = createSceneIdForOption(
+    const nextId = getNextSceneIdForOption(
       scenario.scenes,
       draftContent.sceneId,
       optionId,
@@ -923,6 +1298,48 @@ export default function OnboardingManagemantScenarioBranching() {
             })),
           }
         : prev,
+    );
+  };
+
+  const handleAddCourseToOption = (
+    sceneIndex: number,
+    contentIndex: number,
+    optionIndex: number,
+    courseId: string,
+  ) => {
+    updateContent(sceneIndex, contentIndex, (item) =>
+      withBranch(item, (branch) => ({
+        ...branch,
+        options: branch.options.map((optionItem, oIndex) => {
+          if (oIndex !== optionIndex) return optionItem;
+          const current = optionItem.courses || [];
+          if (current.includes(courseId)) return optionItem;
+          return {
+            ...optionItem,
+            courses: [...current, courseId],
+          };
+        }),
+      })),
+    );
+  };
+
+  const handleRemoveCourseFromOption = (
+    sceneIndex: number,
+    contentIndex: number,
+    optionIndex: number,
+    courseId: string,
+  ) => {
+    updateContent(sceneIndex, contentIndex, (item) =>
+      withBranch(item, (branch) => ({
+        ...branch,
+        options: branch.options.map((optionItem, oIndex) => {
+          if (oIndex !== optionIndex) return optionItem;
+          return {
+            ...optionItem,
+            courses: (optionItem.courses || []).filter((id) => id !== courseId),
+          };
+        }),
+      })),
     );
   };
 
@@ -1365,6 +1782,103 @@ export default function OnboardingManagemantScenarioBranching() {
                     </button>
                   </div>
                 </div>
+                {selectedScene?.id === scenario.entrySceneId ? (
+                  <div className="mt-4 space-y-2">
+                    <span className={`${labelTextClass} ${toneClasses.amber}`}>
+                      Courses
+                    </span>
+                    <input
+                      value={courseQuery}
+                      onChange={(event) => setCourseQuery(event.target.value)}
+                      placeholder="Search course..."
+                      className={`${textInputClass} text-xs`}
+                    />
+                    {courseQuery.trim() ? (
+                      <div className="max-h-32 space-y-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2">
+                        {isCourseLoading ? (
+                          <p className="text-xs text-slate-400">Loading...</p>
+                        ) : courses.length ? (
+                          courses.map((course) => {
+                            const title =
+                              getCurrentTranslationValue(course.title, lang) ||
+                              course._id;
+                            const isSelected =
+                              option.courses?.includes(course._id) || false;
+                            return (
+                              <button
+                                key={course._id}
+                                type="button"
+                                onClick={() =>
+                                  handleAddCourseToOption(
+                                    sceneIndex,
+                                    contentIndex,
+                                    optionIndex,
+                                    course._id,
+                                  )
+                                }
+                                disabled={isSelected}
+                                className={`flex w-full items-center justify-between rounded-lg px-3 py-2 text-left text-xs transition ${
+                                  isSelected
+                                    ? "cursor-not-allowed bg-slate-100 text-slate-400"
+                                    : "bg-slate-50 text-slate-700 hover:bg-slate-100"
+                                }`}
+                              >
+                                <TextWithTooltip
+                                  text={title}
+                                  maxLength={32}
+                                  className="text-slate-700"
+                                />
+                                <span className="text-slate-400">
+                                  {isSelected ? "Added" : "Add"}
+                                </span>
+                              </button>
+                            );
+                          })
+                        ) : (
+                          <p className="text-xs text-slate-400">
+                            Không tìm thấy course.
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <p className="text-xs text-slate-400">
+                        Nhập từ khoá để tìm course.
+                      </p>
+                    )}
+                    {option.courses?.length ? (
+                      <div className="flex flex-wrap gap-2">
+                        {option.courses.map((courseId) => (
+                          <span
+                            key={`${option.id}-${courseId}`}
+                            className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs text-slate-600"
+                          >
+                            <TextWithTooltip
+                              text={getCourseTitle(courseId)}
+                              maxLength={28}
+                              className="text-slate-600"
+                            />
+                            <button
+                              type="button"
+                              onClick={() =>
+                                handleRemoveCourseFromOption(
+                                  sceneIndex,
+                                  contentIndex,
+                                  optionIndex,
+                                  courseId,
+                                )
+                              }
+                              className="text-rose-500 hover:text-rose-600"
+                              aria-label="Remove course"
+                              title="Remove course"
+                            >
+                              <XMarkIcon className="h-4 w-4" />
+                            </button>
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
+                  </div>
+                ) : null}
               </div>
             ))}
           </div>
@@ -1382,6 +1896,7 @@ export default function OnboardingManagemantScenarioBranching() {
                         label: createTranslation(),
                         icon: "",
                         nextSceneId: "",
+                        courses: [],
                       },
                     ],
                   })),
@@ -1509,14 +2024,18 @@ export default function OnboardingManagemantScenarioBranching() {
                   void handleSave();
                 }}
                 disabled={isSaving || isLoading}
-                className="rounded-full border border-blue-600 bg-blue-600 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-white shadow-sm transition hover:bg-blue-700 disabled:opacity-50"
+                className={`flex items-center justify-center gap-2 rounded-lg px-6 py-3 text-sm font-semibold text-white shadow transition ${
+                  isSaving || isLoading
+                    ? "cursor-not-allowed bg-gray-400"
+                    : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
+                }`}
               >
-                {isSaving ? "Saving..." : "Save"}
+                {isSaving ? "Saving..." : "Save Onboarding"}
               </button>
             </div>
           </div>
 
-          <div className="mt-8 grid gap-6 xl:grid-cols-[320px_minmax(0,1fr)]">
+          <div className="mt-8 grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
               <div className="flex items-center justify-between">
                 <div>
@@ -1524,130 +2043,34 @@ export default function OnboardingManagemantScenarioBranching() {
                     Scenes
                   </p>
                 </div>
+                <button
+                  type="button"
+                  onClick={handleAddScene}
+                  className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"
+                >
+                  + Scene
+                </button>
+              </div>
+              <div className="mt-4">
+                <label className="space-y-1">
+                  <span className={labelTextClass}>Search label</span>
+                  <input
+                    value={sceneLabelQuery}
+                    onChange={(event) => setSceneLabelQuery(event.target.value)}
+                    placeholder="Tìm theo label..."
+                    className={`${textInputClass} text-xs`}
+                  />
+                </label>
               </div>
 
-              <div className="mt-5 space-y-3">
+              <div className="mt-5 max-h-[70vh] overflow-y-auto space-y-3 pr-1">
                 {!scenario.scenes.length ? (
                   <div className="rounded-2xl border border-dashed border-slate-200 bg-white p-6 text-center text-sm text-slate-500">
                     Chưa có scene. Nhấn “+ Scene” để tạo mới.
                   </div>
                 ) : null}
 
-                {scenario.scenes.map((scene, index) => {
-                  const isActive = scene.id === selectedSceneId;
-                  const branchOptions = scene.contents.flatMap((content) =>
-                    content.type === OnboardingContentType.BRANCH &&
-                    content.branch?.options?.length
-                      ? content.branch.options.map((option) => ({
-                          id: option.id,
-                          label: getCurrentTranslationValue(option.label, lang),
-                          nextSceneId: option.nextSceneId,
-                        }))
-                      : [],
-                  );
-                  return (
-                    <div
-                      key={scene.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => setSelectedSceneId(scene.id)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                          setSelectedSceneId(scene.id);
-                        }
-                      }}
-                      className={`rounded-2xl border px-4 py-3 text-left transition-all duration-200 ${
-                        isActive
-                          ? "border-blue-300 bg-blue-50 text-slate-900 shadow-sm"
-                          : "border-slate-200 bg-white text-slate-800 hover:border-slate-300 hover:shadow-sm"
-                      }`}
-                      style={{
-                        animation: `riseIn 0.45s ease ${index * 0.08}s both`,
-                      }}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold">{scene.id}</p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {scene.id === scenario.entrySceneId && (
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                                isActive
-                                  ? "bg-blue-200 text-blue-800"
-                                  : "bg-blue-50 text-blue-700"
-                              }`}
-                            >
-                              Entry
-                            </span>
-                          )}
-                          <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
-                              isActive
-                                ? "bg-slate-200 text-slate-700"
-                                : "bg-slate-100 text-slate-600"
-                            }`}
-                          >
-                            {scene.contents.length} items
-                          </span>
-                          <button
-                            type="button"
-                            onClick={(event) => {
-                              event.stopPropagation();
-                              handleRemoveScene(scene.id);
-                            }}
-                            className={iconButtonDangerClass}
-                            aria-label="Delete scene"
-                            title="Delete scene"
-                          >
-                            <TrashIcon className="h-4 w-4" />
-                          </button>
-                        </div>
-                      </div>
-                      {branchOptions.length ? (
-                        <div className="mt-3 space-y-1 text-xs text-slate-500">
-                          {branchOptions.map((option) => (
-                            <div
-                              key={`${scene.id}-option-${option.id}-${option.nextSceneId}`}
-                              className="flex items-center gap-2"
-                            >
-                              <span className="text-slate-600">
-                                Option {option.id}
-                              </span>
-                              <span className="text-slate-400">=&gt;</span>
-                              {option.nextSceneId ? (
-                                <button
-                                  type="button"
-                                  onClick={(event) => {
-                                    event.stopPropagation();
-                                    if (option.nextSceneId) {
-                                      setSelectedSceneId(option.nextSceneId);
-                                    }
-                                  }}
-                                  className="text-blue-600 underline decoration-dashed underline-offset-2 hover:text-blue-700"
-                                  title={`Go to ${option.nextSceneId}`}
-                                >
-                                  {option.nextSceneId}
-                                </button>
-                              ) : (
-                                <span className="text-slate-400">—</span>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      ) : null}
-                    </div>
-                  );
-                })}
-                <div className="flex justify-center pt-2">
-                  <button
-                    type="button"
-                    onClick={handleAddScene}
-                    className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-slate-600"
-                  >
-                    + Scene
-                  </button>
-                </div>
+                {rootSceneId ? renderRootScene(rootSceneId) : null}
               </div>
             </section>
 
@@ -1663,19 +2086,32 @@ export default function OnboardingManagemantScenarioBranching() {
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="button"
-                        onClick={() =>
-                          updateScenario((prev) => ({
-                            ...prev,
-                            entrySceneId: selectedScene.id,
-                          }))
-                        }
+                        onClick={() => {
+                          if (!selectedScene) return;
+                          setConfirmDialog({
+                            type: "setEntry",
+                            sceneId: selectedScene.id,
+                          });
+                        }}
                         className="rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-blue-700"
                       >
                         Set Entry
                       </button>
-                      <span className="rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-600">
-                        {selectedScene.contents.length} content
-                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!selectedScene) return;
+                          setConfirmDialog({
+                            type: "deleteScene",
+                            sceneId: selectedScene.id,
+                          });
+                        }}
+                        className={iconButtonDangerClass}
+                        aria-label="Delete scene"
+                        title="Delete scene"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
                     </div>
                   ) : null}
                 </div>
@@ -1701,7 +2137,11 @@ export default function OnboardingManagemantScenarioBranching() {
                             typeof over.id === "string"
                               ? parseInt(over.id, 10)
                               : over.id;
-                          handleReorderContents(selectedScene.id, activeId, overId);
+                          handleReorderContents(
+                            selectedScene.id,
+                            activeId,
+                            overId,
+                          );
                         }
                       }}
                     >
@@ -1712,385 +2152,478 @@ export default function OnboardingManagemantScenarioBranching() {
                         strategy={verticalListSortingStrategy}
                       >
                         <div className="space-y-6">
-                          {selectedScene.contents.map((content, contentIndex) => {
-                      const meta = typeMeta[content.type];
-                      const sceneIndex = selectedSceneIndex;
-                      const factLabel =
-                        content.type === OnboardingContentType.FACT
-                          ? getCurrentTranslationValue(
-                              content.fact?.label,
-                              lang,
-                            )
-                          : "";
-                      const factTitle =
-                        content.type === OnboardingContentType.FACT
-                          ? getCurrentTranslationValue(
-                              content.fact?.title,
-                              lang,
-                            )
-                          : "";
-                      const factIcon =
-                        content.type === OnboardingContentType.FACT
-                          ? content.fact?.icon || ""
-                          : "";
-                      const activationCount =
-                        content.type === OnboardingContentType.ACTIVATION
-                          ? content.activation
-                            ? 1
-                            : 0
-                          : 0;
-                      const activationTitle =
-                        content.type === OnboardingContentType.ACTIVATION
-                          ? getCurrentTranslationValue(
-                              content.activation?.title,
-                              lang,
-                            )
-                          : "";
-                      const activationDescription =
-                        content.type === OnboardingContentType.ACTIVATION
-                          ? getCurrentTranslationValue(
-                              content.activation?.description,
-                              lang,
-                            )
-                          : "";
-                      const activationIcon =
-                        content.type === OnboardingContentType.ACTIVATION
-                          ? content.activation?.content.icon || ""
-                          : "";
-                      const branchQuestion =
-                        content.type === OnboardingContentType.BRANCH
-                          ? getCurrentTranslationValue(
-                              content.branch?.question,
-                              lang,
-                            )
-                          : "";
-                      const branchSubQuestion =
-                        content.type === OnboardingContentType.BRANCH
-                          ? getCurrentTranslationValue(
-                              content.branch?.subQuestion,
-                              lang,
-                            )
-                          : "";
-                      const branchOptions =
-                        content.type === OnboardingContentType.BRANCH
-                          ? content.branch?.options || []
-                          : [];
-                      const fixedQuestion =
-                        content.type === OnboardingContentType.FIXED
-                          ? getCurrentTranslationValue(
-                              content.fixed?.question,
-                              lang,
-                            )
-                          : "";
-                      const fixedSubQuestion =
-                        content.type === OnboardingContentType.FIXED
-                          ? getCurrentTranslationValue(
-                              content.fixed?.subQuestion,
-                              lang,
-                            )
-                          : "";
-                      const fixedOptions =
-                        content.type === OnboardingContentType.FIXED
-                          ? content.fixed?.options || []
-                          : [];
+                          {selectedScene.contents.map(
+                            (content, contentIndex) => {
+                              const meta = typeMeta[content.type];
+                              const sceneIndex = selectedSceneIndex;
+                              const factLabel =
+                                content.type === OnboardingContentType.FACT
+                                  ? getCurrentTranslationValue(
+                                      content.fact?.label,
+                                      lang,
+                                    )
+                                  : "";
+                              const factTitle =
+                                content.type === OnboardingContentType.FACT
+                                  ? getCurrentTranslationValue(
+                                      content.fact?.title,
+                                      lang,
+                                    )
+                                  : "";
+                              const factIcon =
+                                content.type === OnboardingContentType.FACT
+                                  ? content.fact?.icon || ""
+                                  : "";
+                              const activationCount =
+                                content.type ===
+                                OnboardingContentType.ACTIVATION
+                                  ? content.activation
+                                    ? 1
+                                    : 0
+                                  : 0;
+                              const activationTitle =
+                                content.type ===
+                                OnboardingContentType.ACTIVATION
+                                  ? getCurrentTranslationValue(
+                                      content.activation?.title,
+                                      lang,
+                                    )
+                                  : "";
+                              const activationDescription =
+                                content.type ===
+                                OnboardingContentType.ACTIVATION
+                                  ? getCurrentTranslationValue(
+                                      content.activation?.description,
+                                      lang,
+                                    )
+                                  : "";
+                              const activationIcon =
+                                content.type ===
+                                OnboardingContentType.ACTIVATION
+                                  ? content.activation?.content.icon || ""
+                                  : "";
+                              const branchQuestion =
+                                content.type === OnboardingContentType.BRANCH
+                                  ? getCurrentTranslationValue(
+                                      content.branch?.question,
+                                      lang,
+                                    )
+                                  : "";
+                              const branchSubQuestion =
+                                content.type === OnboardingContentType.BRANCH
+                                  ? getCurrentTranslationValue(
+                                      content.branch?.subQuestion,
+                                      lang,
+                                    )
+                                  : "";
+                              const branchOptions =
+                                content.type === OnboardingContentType.BRANCH
+                                  ? content.branch?.options || []
+                                  : [];
+                              const fixedQuestion =
+                                content.type === OnboardingContentType.FIXED
+                                  ? getCurrentTranslationValue(
+                                      content.fixed?.question,
+                                      lang,
+                                    )
+                                  : "";
+                              const fixedSubQuestion =
+                                content.type === OnboardingContentType.FIXED
+                                  ? getCurrentTranslationValue(
+                                      content.fixed?.subQuestion,
+                                      lang,
+                                    )
+                                  : "";
+                              const fixedOptions =
+                                content.type === OnboardingContentType.FIXED
+                                  ? content.fixed?.options || []
+                                  : [];
 
-                      return (
-                        <SortableItem
-                          key={`${selectedScene.id}-${content.id}`}
-                          id={content.id.toString()}
-                        >
-                          <div
-                            className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
-                            style={{
-                              animation: `riseIn 0.45s ease ${
-                                contentIndex * 0.08
-                              }s both`,
-                            }}
-                          >
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div className="flex flex-wrap items-center gap-3">
-                              <span
-                                className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
-                                  typeBadgeClasses[content.type]
-                                }`}
-                              >
-                                {meta.label}
-                              </span>
-                              <span className="text-xs font-medium text-slate-400">
-                                Content {content.id}
-                              </span>
-                            </div>
-                            <p className="text-xs font-medium text-slate-500">
-                              {meta.description}
-                            </p>
-                          </div>
-
-                          <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 text-sm text-slate-600">
-                            {content.type === OnboardingContentType.FACT ? (
-                              <div className="space-y-1">
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelSubClass}>
-                                    Title:
-                                  </span>
-                                  <TextWithTooltip text={factTitle} />
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelSubClass}>
-                                    Label:
-                                  </span>
-                                  <TextWithTooltip text={factLabel} />
-                                </div>
-                                {factIcon ? (
-                                  <div className="flex items-start gap-2">
-                                    <span className={summaryLabelSubClass}>
-                                      Icon:
-                                    </span>
-                                    <TextWithTooltip text={factIcon} />
-                                  </div>
-                                ) : null}
-                              </div>
-                            ) : null}
-
-                            {content.type ===
-                            OnboardingContentType.ACTIVATION ? (
-                              <div className="space-y-1">
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Activations:
-                                  </span>
-                                  <TextWithTooltip
-                                    text={activationCount.toString()}
-                                  />
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Title:
-                                  </span>
-                                  <TextWithTooltip text={activationTitle} />
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Description:
-                                  </span>
-                                  <TextWithTooltip
-                                    text={activationDescription}
-                                    maxLength={80}
-                                  />
-                                </div>
-                                {activationIcon ? (
-                                  <div className="flex items-start gap-2">
-                                    <span className={summaryLabelMainClass}>
-                                      Icon:
-                                    </span>
-                                    <TextWithTooltip text={activationIcon} />
-                                  </div>
-                                ) : null}
-                              </div>
-                            ) : null}
-
-                            {content.type === OnboardingContentType.BRANCH ? (
-                              <div className="space-y-1">
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Sub question:
-                                  </span>
-                                  <TextWithTooltip text={branchSubQuestion} />
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Question:
-                                  </span>
-                                  <TextWithTooltip
-                                    text={branchQuestion}
-                                    maxLength={80}
-                                  />
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Options:
-                                  </span>
-                                  <TextWithTooltip
-                                    text={branchOptions.length.toString()}
-                                  />
-                                </div>
-                                {branchOptions.length ? (
-                                  <div className="space-y-1">
-                                    {branchOptions.map((option) => {
-                                      const optionLabel =
-                                        getCurrentTranslationValue(
-                                          option.label,
-                                          lang,
-                                        );
-                                      return (
-                                        <div
-                                          key={option.id}
-                                          className="flex flex-col gap-1 px-2 py-1"
+                              return (
+                                <SortableItem
+                                  key={`${selectedScene.id}-${content.id}`}
+                                  id={content.id.toString()}
+                                >
+                                  <div
+                                    className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm"
+                                    style={{
+                                      animation: `riseIn 0.45s ease ${
+                                        contentIndex * 0.08
+                                      }s both`,
+                                    }}
+                                  >
+                                    <div className="flex flex-wrap items-center justify-between gap-3">
+                                      <div className="flex flex-wrap items-center gap-3">
+                                        <span
+                                          className={`rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-[0.2em] ${
+                                            typeBadgeClasses[content.type]
+                                          }`}
                                         >
-                                          <div className="flex items-start gap-2">
-                                            <span className="text-xs font-semibold text-green-500">
-                                              Option {option.id}:
-                                            </span>
-                                            <TextWithTooltip
-                                              text={optionLabel}
-                                              maxLength={60}
-                                            />
-                                          </div>
-                                          {option.icon ? (
-                                            <div className="flex items-start gap-2">
-                                              <span className="text-xs font-semibold text-green-500">
-                                                Icon:
-                                              </span>
-                                              <TextWithTooltip
-                                                text={option.icon}
-                                                maxLength={60}
-                                              />
-                                            </div>
-                                          ) : null}
-                                          {option.nextSceneId ? (
-                                            <div className="flex items-start gap-2">
-                                              <span className="text-xs font-semibold text-green-500">
-                                                Next scene:
-                                              </span>
-                                              <TextWithTooltip
-                                                text={option.nextSceneId}
-                                                maxLength={40}
-                                              />
-                                            </div>
-                                          ) : null}
-                                        </div>
-                                      );
-                                    })}
-                                  </div>
-                                ) : null}
-                              </div>
-                            ) : null}
+                                          {meta.label}
+                                        </span>
+                                        <span className="text-xs font-medium text-slate-400">
+                                          Content {content.id}
+                                        </span>
+                                      </div>
+                                      <p className="text-xs font-medium text-slate-500">
+                                        {meta.description}
+                                      </p>
+                                    </div>
 
-                            {content.type === OnboardingContentType.FIXED ? (
-                              <div className="space-y-1">
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Sub question:
-                                  </span>
-                                  <TextWithTooltip text={fixedSubQuestion} />
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Question:
-                                  </span>
-                                  <TextWithTooltip
-                                    text={fixedQuestion}
-                                    maxLength={80}
-                                  />
-                                </div>
-                                <div className="flex items-start gap-2">
-                                  <span className={summaryLabelMainClass}>
-                                    Options:
-                                  </span>
-                                  <TextWithTooltip
-                                    text={fixedOptions.length.toString()}
-                                  />
-                                </div>
-                                {fixedOptions.length ? (
-                                  <div className="space-y-1">
-                                    {fixedOptions.map((option) => {
-                                      const optionTitle =
-                                        getCurrentTranslationValue(
-                                          option.title,
-                                          lang,
-                                        );
-                                      const optionLabel =
-                                        getCurrentTranslationValue(
-                                          option.label,
-                                          lang,
-                                        );
-                                      return (
-                                        <div
-                                          key={option.id}
-                                          className="flex flex-col gap-1 px-2 py-1"
-                                        >
+                                    <div className="mt-3 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-slate-100 bg-slate-50/70 px-4 py-3 text-sm text-slate-600">
+                                      {content.type ===
+                                      OnboardingContentType.FACT ? (
+                                        <div className="space-y-1">
                                           <div className="flex items-start gap-2">
-                                            <span className="text-xs font-semibold text-green-500">
-                                              Option {option.id}:
+                                            <span
+                                              className={summaryLabelSubClass}
+                                            >
+                                              Title:
                                             </span>
-                                            <TextWithTooltip
-                                              text={optionTitle}
-                                              maxLength={60}
-                                            />
+                                            <TextWithTooltip text={factTitle} />
                                           </div>
                                           <div className="flex items-start gap-2">
-                                            <span className="text-xs font-semibold text-green-500">
+                                            <span
+                                              className={summaryLabelSubClass}
+                                            >
                                               Label:
                                             </span>
-                                            <TextWithTooltip
-                                              text={optionLabel}
-                                              maxLength={60}
-                                            />
+                                            <TextWithTooltip text={factLabel} />
                                           </div>
-                                          {option.icon ? (
+                                          {factIcon ? (
                                             <div className="flex items-start gap-2">
-                                              <span className="text-xs font-semibold text-green-500">
+                                              <span
+                                                className={summaryLabelSubClass}
+                                              >
                                                 Icon:
                                               </span>
                                               <TextWithTooltip
-                                                text={option.icon}
-                                                maxLength={60}
+                                                text={factIcon}
                                               />
                                             </div>
                                           ) : null}
                                         </div>
-                                      );
-                                    })}
-                                  </div>
-                                ) : null}
-                              </div>
-                            ) : null}
+                                      ) : null}
 
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setContentModal({
-                                    sceneId: selectedScene.id,
-                                    contentId: content.id,
-                                    mode: "edit",
-                                  })
-                                }
-                                className={iconButtonClass}
-                                aria-label="Edit content"
-                                title="Edit content"
-                              >
-                                <PencilSquareIcon className="h-4 w-4" />
-                              </button>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  updateScenario((prev) => ({
-                                    ...prev,
-                                    scenes: prev.scenes.map((scene, sIndex) =>
-                                      sIndex === sceneIndex
-                                        ? {
-                                            ...scene,
-                                            contents: scene.contents.filter(
-                                              (_, cIndex) =>
-                                                cIndex !== contentIndex,
-                                            ),
+                                      {content.type ===
+                                      OnboardingContentType.ACTIVATION ? (
+                                        <div className="space-y-1">
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Activations:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={activationCount.toString()}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Labels:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={
+                                                content.activation?.content.labels?.length?.toString() ||
+                                                "0"
+                                              }
+                                            />
+                                          </div>
+                                          {content.activation?.content.labels
+                                            ?.length ? (
+                                            <div className="space-y-1 pl-2">
+                                              {content.activation.content.labels.map(
+                                                (labelItem) => {
+                                                  const labelValue =
+                                                    getCurrentTranslationValue(
+                                                      labelItem.label,
+                                                      lang,
+                                                    );
+                                                  return (
+                                                    <div
+                                                      key={labelItem.id}
+                                                      className="flex items-start gap-2"
+                                                    >
+                                                      <span className="text-xs font-semibold text-green-500">
+                                                        Label {labelItem.id}:
+                                                      </span>
+                                                      <TextWithTooltip
+                                                        text={labelValue}
+                                                        maxLength={60}
+                                                      />
+                                                    </div>
+                                                  );
+                                                },
+                                              )}
+                                            </div>
+                                          ) : null}
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Title:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={activationTitle}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Description:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={activationDescription}
+                                              maxLength={80}
+                                            />
+                                          </div>
+                                          {activationIcon ? (
+                                            <div className="flex items-start gap-2">
+                                              <span
+                                                className={
+                                                  summaryLabelMainClass
+                                                }
+                                              >
+                                                Icon:
+                                              </span>
+                                              <TextWithTooltip
+                                                text={activationIcon}
+                                              />
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      ) : null}
+
+                                      {content.type ===
+                                      OnboardingContentType.BRANCH ? (
+                                        <div className="space-y-1">
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Sub question:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={branchSubQuestion}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Question:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={branchQuestion}
+                                              maxLength={80}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Options:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={branchOptions.length.toString()}
+                                            />
+                                          </div>
+                                          {branchOptions.length ? (
+                                            <div className="space-y-1">
+                                              {branchOptions.map((option) => {
+                                                const optionLabel =
+                                                  getCurrentTranslationValue(
+                                                    option.label,
+                                                    lang,
+                                                  );
+                                                return (
+                                                  <div
+                                                    key={option.id}
+                                                    className="flex flex-col gap-1 px-2 py-1"
+                                                  >
+                                                    <div className="flex items-start gap-2">
+                                                      <span className="text-xs font-semibold text-green-500">
+                                                        Option {option.id}:
+                                                      </span>
+                                                      <TextWithTooltip
+                                                        text={optionLabel}
+                                                        maxLength={60}
+                                                      />
+                                                    </div>
+                                                    {option.icon ? (
+                                                      <div className="flex items-start gap-2">
+                                                        <span className="text-xs font-semibold text-green-500">
+                                                          Icon:
+                                                        </span>
+                                                        <TextWithTooltip
+                                                          text={option.icon}
+                                                          maxLength={60}
+                                                        />
+                                                      </div>
+                                                    ) : null}
+                                                    {option.nextSceneId ? (
+                                                      <div className="flex items-start gap-2">
+                                                        <span className="text-xs font-semibold text-green-500">
+                                                          Next scene:
+                                                        </span>
+                                                        <TextWithTooltip
+                                                          text={
+                                                            option.nextSceneId
+                                                          }
+                                                          maxLength={40}
+                                                        />
+                                                      </div>
+                                                    ) : null}
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      ) : null}
+
+                                      {content.type ===
+                                      OnboardingContentType.FIXED ? (
+                                        <div className="space-y-1">
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Sub question:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={fixedSubQuestion}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Question:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={fixedQuestion}
+                                              maxLength={80}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Options:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={fixedOptions.length.toString()}
+                                            />
+                                          </div>
+                                          {fixedOptions.length ? (
+                                            <div className="space-y-1">
+                                              {fixedOptions.map((option) => {
+                                                const optionTitle =
+                                                  getCurrentTranslationValue(
+                                                    option.title,
+                                                    lang,
+                                                  );
+                                                const optionLabel =
+                                                  getCurrentTranslationValue(
+                                                    option.label,
+                                                    lang,
+                                                  );
+                                                return (
+                                                  <div
+                                                    key={option.id}
+                                                    className="flex flex-col gap-1 px-2 py-1"
+                                                  >
+                                                    <div className="flex items-start gap-2">
+                                                      <span className="text-xs font-semibold text-green-500">
+                                                        Option {option.id}:
+                                                      </span>
+                                                      <TextWithTooltip
+                                                        text={optionTitle}
+                                                        maxLength={60}
+                                                      />
+                                                    </div>
+                                                    <div className="flex items-start gap-2">
+                                                      <span className="text-xs font-semibold text-green-500">
+                                                        Label:
+                                                      </span>
+                                                      <TextWithTooltip
+                                                        text={optionLabel}
+                                                        maxLength={60}
+                                                      />
+                                                    </div>
+                                                    {option.icon ? (
+                                                      <div className="flex items-start gap-2">
+                                                        <span className="text-xs font-semibold text-green-500">
+                                                          Icon:
+                                                        </span>
+                                                        <TextWithTooltip
+                                                          text={option.icon}
+                                                          maxLength={60}
+                                                        />
+                                                      </div>
+                                                    ) : null}
+                                                  </div>
+                                                );
+                                              })}
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      ) : null}
+
+                                      <div className="flex items-center gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            setContentModal({
+                                              sceneId: selectedScene.id,
+                                              contentId: content.id,
+                                              mode: "edit",
+                                            })
                                           }
-                                        : scene,
-                                    ),
-                                  }))
-                                }
-                                className={iconButtonDangerClass}
-                                aria-label="Remove content"
-                                title="Remove content"
-                              >
-                                <TrashIcon className="h-4 w-4" />
-                              </button>
-                            </div>
-                          </div>
-                          </div>
-                        </SortableItem>
-                      );
-                          })}
+                                          className={iconButtonClass}
+                                          aria-label="Edit content"
+                                          title="Edit content"
+                                        >
+                                          <PencilSquareIcon className="h-4 w-4" />
+                                        </button>
+                                        <button
+                                          type="button"
+                                          onClick={() =>
+                                            updateScenario((prev) => ({
+                                              ...prev,
+                                              scenes: prev.scenes.map(
+                                                (scene, sIndex) =>
+                                                  sIndex === sceneIndex
+                                                    ? {
+                                                        ...scene,
+                                                        contents:
+                                                          scene.contents.filter(
+                                                            (_, cIndex) =>
+                                                              cIndex !==
+                                                              contentIndex,
+                                                          ),
+                                                      }
+                                                    : scene,
+                                              ),
+                                            }))
+                                          }
+                                          className={iconButtonDangerClass}
+                                          aria-label="Remove content"
+                                          title="Remove content"
+                                        >
+                                          <TrashIcon className="h-4 w-4" />
+                                        </button>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </SortableItem>
+                              );
+                            },
+                          )}
                         </div>
                       </SortableContext>
                     </DndContext>
@@ -2200,6 +2733,33 @@ export default function OnboardingManagemantScenarioBranching() {
           </div>
         ) : null}
       </AnimatePresence>
+
+      <ConfirmDialog
+        open={!!confirmDialog}
+        title={
+          confirmDialog?.type === "deleteScene"
+            ? "Xoá scene"
+            : "Đặt scene làm Entry"
+        }
+        message={
+          confirmDialog?.type === "deleteScene"
+            ? "Bạn có chắc muốn xoá scene này? Hành động này không thể hoàn tác."
+            : "Bạn có chắc muốn đặt scene này làm Entry? Thao tác này sẽ làm thay đổi cấu trúc của toàn bộ dữ liệu."
+        }
+        messageClassName={
+          confirmDialog?.type === "setEntry" ? "text-amber-600" : undefined
+        }
+        confirmLabel={
+          confirmDialog?.type === "deleteScene" ? "Xoá" : "Đặt Entry"
+        }
+        confirmTone={
+          confirmDialog?.type === "deleteScene" ? "danger" : "primary"
+        }
+        onCancel={() => setConfirmDialog(null)}
+        onConfirm={() => {
+          void handleConfirmAction();
+        }}
+      />
 
       <AnimatePresence>
         {activeContentData ? (

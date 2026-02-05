@@ -13,6 +13,7 @@ export interface IOnboardingScenarioBranchOption {
   label: ITranslation;
   icon: string;
   nextSceneId?: string;
+  courses?: string[];
 }
 
 export interface IOnboardingScenarioBranch {
