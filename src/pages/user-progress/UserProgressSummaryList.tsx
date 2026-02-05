@@ -1,6 +1,11 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { Pagination } from "@mui/material";
-import { ArrowPathIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
+import {
+  ArrowPathIcon,
+  DocumentDuplicateIcon,
+  EyeIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -391,6 +396,33 @@ export default function UserProgressSummaryList() {
     }
   };
 
+  const handleCopyUserId = async () => {
+    if (!userId) {
+      showError("Không có userId để copy");
+      return;
+    }
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(userId);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = userId;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      showSuccess("Đã copy userId");
+    } catch (error) {
+      console.error("Failed to copy userId", error);
+      showError("Copy userId thất bại");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto space-y-4">
@@ -399,9 +431,26 @@ export default function UserProgressSummaryList() {
             <h1 className="text-2xl font-semibold text-gray-900">
               User learn progress
             </h1>
-            <p className="text-sm text-gray-500">
-              {userLabel}
-            </p>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-gray-500">
+              <span>{userLabel || "-"}</span>
+              {userId ? (
+                <span className="inline-flex items-center gap-1 rounded-md bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-600">
+                  <span className="text-[10px] uppercase tracking-wide text-gray-400">
+                    ID
+                  </span>
+                  <span className="font-mono">{userId}</span>
+                  <button
+                    type="button"
+                    onClick={handleCopyUserId}
+                    className="text-gray-500 hover:text-gray-800"
+                    title="Copy userId"
+                    aria-label="Copy userId"
+                  >
+                    <DocumentDuplicateIcon className="h-3.5 w-3.5" />
+                  </button>
+                </span>
+              ) : null}
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <button
