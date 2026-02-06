@@ -37,7 +37,15 @@ enum LessonType {
   @JsonValue('lesson')
   lesson,
   @JsonValue('output')
-  output,
+  output;
+
+  String get trackingName {
+    return switch (this) {
+      roleplay => 'roleplay',
+      lesson => 'lesson',
+      output => 'output',
+    };
+  }
 }
 
 enum ProcessEnum {

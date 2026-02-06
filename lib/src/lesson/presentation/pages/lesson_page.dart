@@ -118,7 +118,7 @@ class _LessonPageState extends State<LessonPage> {
       builder: (context, constraints) {
         final listHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0;
         return NotificationListener<UserScrollNotification>(
-          onNotification: (notification) => _controller.handleUserScroll(notification, _trackKeypointExerciseScroll),
+          onNotification: (notification) => _controller.handleUserScroll(notification, _trackCurrentLearningItemScroll),
           child: ListView.separated(
             controller: _controller.scrollController,
             itemCount: items.length,
@@ -342,13 +342,22 @@ class _LessonPageState extends State<LessonPage> {
     AppService.instance.appTrackingService.trackKeypointExerciseScrView(trackingData);
   }
 
-  void _trackKeypointExerciseScroll() {
+  void _trackCurrentLearningItemScroll() {
     final lessonState = context.read<LessonCubit>().state;
-    if (lessonState.currentLearningItem.type != LearningItemType.exercise) return;
+    final learningItemType = lessonState.currentLearningItem.type;
+    if (learningItemType != LearningItemType.exercise && learningItemType != LearningItemType.theory) return;
+
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData == null) return;
-    final scrollKey = '${lessonState.currentLearningItem.id}:${lessonState.currentLessonIndex}';
-    if (!_controller.shouldTrackExerciseScroll(scrollKey)) return;
-    AppService.instance.appTrackingService.trackKeypointExerciseScroll(trackingData);
+
+    final scrollKey = '${lessonState.currentLearningItem.id}:${lessonState.currentLessonIndex}:${learningItemType.name}';
+    if (!_controller.shouldTrackScroll(scrollKey)) return;
+
+    if (learningItemType == LearningItemType.exercise) {
+      AppService.instance.appTrackingService.trackKeypointExerciseScroll(trackingData);
+      return;
+    }
+
+    AppService.instance.appTrackingService.trackKeypointTheoryScroll(trackingData);
   }
 }

@@ -584,6 +584,54 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackPopupItemImp(CourseLessonTrackingData trackingData) async {
+    final keypoint = trackingData.lesson.firstKeypoint;
+    _appTrackingService.trackEvent(
+      TrackingKey.popupItemImp,
+      parameters: {
+        ..._courseLessonParams(trackingData),
+        'keypoint_id': keypoint.id,
+        'keypoint_name': keypoint.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPopupItemClick(CourseLessonTrackingData trackingData) async {
+    final keypoint = trackingData.lesson.firstKeypoint;
+    _appTrackingService.trackEvent(
+      TrackingKey.popupItemClick,
+      parameters: {
+        ..._courseLessonParams(trackingData),
+        'keypoint_id': keypoint.id,
+        'keypoint_name': keypoint.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoadmapItemScroll(CourseTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roadmapItemScroll,
+      parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoadmapQuickLearningClick(
+    CourseTrackingData trackingData, {
+    required String actionType,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roadmapQuickLearningClick,
+      parameters: {
+        ..._courseParams(trackingData),
+        'action_type': actionType,
+      },
+    );
+  }
+
+  @override
   Future<void> trackHowItWorkScrView(
     CourseLessonTrackingData trackingData, {
     required String source,
@@ -597,80 +645,15 @@ final class AppTrackingService extends ITrackingService {
     );
   }
 
-  @override
-  Future<void> trackHowItWorkDoneClick(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.howItWorkDoneClick,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'source': source,
-      },
-    );
-  }
-
-  @override
-  Future<void> trackHowItWorkExitTap(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.howItWorkExitTap,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'source': source,
-      },
-    );
-  }
-
-  @override
-  Future<void> trackHowItWorkClick(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.howItWorkClick,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'source': source,
-      },
-    );
-  }
-
-  @override
-  Future<void> trackLessonKeypointScrView(CourseLessonTrackingData trackingData) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.lessonKeypointScrView,
-      parameters: _courseLessonParams(trackingData),
-    );
-  }
-
-  @override
-  Future<void> trackLessonKeypointExit(CourseLessonTrackingData trackingData) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.lessonKeypointExit,
-      parameters: _courseLessonParams(trackingData),
-    );
-  }
-
-  @override
-  Future<void> trackLessonKeypointClick(
-    CourseLessonTrackingData trackingData, {
-    required KeypointEntity keypoint,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.lessonKeypointClick,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'keypoint_id': keypoint.id,
-        'keypoint_name': keypoint.trackingName,
-      },
-    );
-  }
-
   //* Keypoint events
+  @override
+  Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointTheoryScroll,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
   @override
   Future<void> trackKeypointTheoryScrView(KeypointTrackingData trackingData) async {
     _appTrackingService.trackEvent(
@@ -837,6 +820,22 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackKeypointFinishScrView(KeypointTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointFinishScrView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointBadgeUpdateScrView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointBadgeUpdateScrView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointFinishComplete(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointFinishComplete,
       parameters: _keypointParams(trackingData),
     );
   }

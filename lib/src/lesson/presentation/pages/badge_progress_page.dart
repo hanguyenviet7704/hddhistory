@@ -15,6 +15,7 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
   BadgeProgressStep _step = BadgeProgressStep.inProgress;
   Timer? _autoAdvanceTimer;
   bool _hasExited = false;
+  bool _hasTrackedBadgeUpdate = false;
   bool _hasTrackedComplete = false;
 
   @override
@@ -74,12 +75,19 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
     _hasTrackedComplete = true;
   }
 
+  void _trackBadgeUpdateScrView() {
+    if (_hasTrackedBadgeUpdate) return;
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackKeypointBadgeUpdateScrView(trackingData);
+    _hasTrackedBadgeUpdate = true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
       listenWhen: (previous, current) =>
-          previous.currentLevelProgress.progress != current.currentLevelProgress.progress ||
-          previous.currentLevelProgress.isCompleted != current.currentLevelProgress.isCompleted,
+          previous.currentLevelProgress.progress != current.currentLevelProgress.progress || previous.currentLevelProgress.isCompleted != current.currentLevelProgress.isCompleted,
       listener: (context, state) {
         if (_step != BadgeProgressStep.inProgress) return;
         if (_isProgressComplete(state.currentLevelProgress)) {
@@ -109,6 +117,9 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
                   child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, CourseLevelProgressEntity>(
                     selector: (state) => state.currentLevelProgress,
                     builder: (context, progress) {
+                      if (_step == BadgeProgressStep.inProgress) {
+                        _trackBadgeUpdateScrView();
+                      }
                       if (_step == BadgeProgressStep.complete) {
                         _trackCompleteView();
                       }

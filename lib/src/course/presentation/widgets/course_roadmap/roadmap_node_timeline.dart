@@ -55,6 +55,14 @@ class RoadmapNodeActionHelper {
     if (!_canTapLesson(lesson)) return;
     if (!_handlePaywall(context, lesson, lessonIsLocked)) return;
 
+    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackRoadmapItemClick(
+        trackingData,
+        itemType: lesson.type.trackingName,
+      );
+    }
+
     switch (lesson.type) {
       case LessonType.roleplay:
         _startRoleplay(context, lesson);

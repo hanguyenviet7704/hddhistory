@@ -17,8 +17,8 @@ class LessonPageController {
   final bool Function() _isMounted;
 
   int _lastRenderedItemCount = 0;
-  bool _didNotifyExerciseScroll = false;
-  String _lastExerciseScrollKey = '';
+  bool _didNotifyScroll = false;
+  String _lastScrollKey = '';
   bool _didShowNavigationPopup = false;
 
   void handleEmptyItems() {
@@ -37,18 +37,18 @@ class LessonPageController {
     onShowPopup();
   }
 
-  bool shouldTrackExerciseScroll(String scrollKey) {
-    if (scrollKey == _lastExerciseScrollKey) return false;
-    _lastExerciseScrollKey = scrollKey;
+  bool shouldTrackScroll(String scrollKey) {
+    if (scrollKey == _lastScrollKey) return false;
+    _lastScrollKey = scrollKey;
     return true;
   }
 
-  bool handleUserScroll(UserScrollNotification notification, VoidCallback onTrackExerciseScroll) {
+  bool handleUserScroll(UserScrollNotification notification, VoidCallback onTrackScroll) {
     if (notification.direction == ScrollDirection.idle) {
-      _didNotifyExerciseScroll = false;
-    } else if (!_didNotifyExerciseScroll) {
-      _didNotifyExerciseScroll = true;
-      onTrackExerciseScroll();
+      _didNotifyScroll = false;
+    } else if (!_didNotifyScroll) {
+      _didNotifyScroll = true;
+      onTrackScroll();
     }
     _updateBottomButtonVisibility();
     return false;

@@ -17,6 +17,11 @@ class RoadmapDetailPopup extends StatelessWidget {
     required LessonEntity lesson,
     required CourseLevel courseLevel,
   }) async {
+    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackPopupItemImp(trackingData);
+    }
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -41,15 +46,11 @@ class RoadmapDetailPopup extends StatelessWidget {
   }
 
   void _onStartLearning(BuildContext context) {
-    if (lesson.id.isEmpty || keypoint.id.isEmpty) return;
+    if (lesson.id.isEmpty) return;
 
-    // Tracking
     final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
     if (trackingData != null) {
-      AppService.instance.appTrackingService.trackRoadmapItemClick(
-        trackingData,
-        itemType: 'lesson_popup_start',
-      );
+      AppService.instance.appTrackingService.trackPopupItemClick(trackingData);
     }
 
     // if (roleplay.id.isNotEmpty) {

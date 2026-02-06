@@ -85,6 +85,11 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
               LessonCompletionPrimaryButton(
                 label: context.text.exercise.exerciseCompleteKeypointSkipButton,
                 onPressed: () {
+                  final trackingData = KeypointTrackingData.fromContext();
+                  if (trackingData != null) {
+                    AppService.instance.appTrackingService.trackKeypointFinishComplete(trackingData);
+                  }
+
                   if (lessonState.wasLessonCompletedBefore) {
                     CourseRoadmapRoute().go(context);
                     Future.delayed(const Duration(milliseconds: 100), () {
