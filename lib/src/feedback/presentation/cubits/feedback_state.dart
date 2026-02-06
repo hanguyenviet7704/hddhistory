@@ -32,7 +32,7 @@ extension FeedbackStateExtension on FeedbackState {
   }
 
   bool get feedbackCompleteCanSubmit {
-    return draftOverallRating > 0 && draftContentRating > 0 && draftExperienceRating > 0 && draftComment.isNotEmpty && !isLoading;
+    return draftContentRating > 0 && draftExperienceRating > 0 && !isLoading;
   }
 
   bool get feedbackIncompleteCanSubmit {
