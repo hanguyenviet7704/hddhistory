@@ -12,7 +12,12 @@ class SpeakingLessonBody extends StatelessWidget {
     this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
+  void _showResultOverlay(
+    BuildContext context,
+    ResultType type, {
+    bool isReview = false,
+    bool showExplainAction = true,
+  }) {
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
@@ -27,6 +32,7 @@ class SpeakingLessonBody extends StatelessWidget {
         ],
         child: SpeakingResultBottomSheet(
           type: type,
+          showExplainAction: showExplainAction,
           onContinue: () {
             if (isReview) {
               LessonResultOverlayManager.hide();
@@ -51,7 +57,12 @@ class SpeakingLessonBody extends StatelessWidget {
     if (hasExplainData && !state.showExplanation) {
       context.read<SpeakingCubit>().toggleExplanation();
     }
-    _showResultOverlay(context, ResultType.correct, isReview: isReadOnly);
+    _showResultOverlay(
+      context,
+      ResultType.correct,
+      isReview: isReadOnly,
+      showExplainAction: false,
+    );
   }
 
   @override

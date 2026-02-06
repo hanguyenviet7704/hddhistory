@@ -4,11 +4,13 @@ part of '../../../../lesson.dart';
 class SpeakingResultBottomSheet extends StatelessWidget {
   final ResultType type;
   final VoidCallback onContinue;
+  final bool showExplainAction;
 
   const SpeakingResultBottomSheet({
     super.key,
     required this.type,
     required this.onContinue,
+    this.showExplainAction = true,
   });
 
   @override
@@ -28,9 +30,11 @@ class SpeakingResultBottomSheet extends StatelessWidget {
           type: type,
           onContinue: onContinue,
           showExplanation: state.showExplanation,
-          onExplain: () {
-            context.read<SpeakingCubit>().toggleExplanation();
-          },
+          onExplain: showExplainAction
+              ? () {
+                  context.read<SpeakingCubit>().toggleExplanation();
+                }
+              : null,
           continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
           explainLabel: context.text.exercise.exerciseExplainButton,
           closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,

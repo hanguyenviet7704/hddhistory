@@ -85,6 +85,13 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
               LessonCompletionPrimaryButton(
                 label: context.text.exercise.exerciseCompleteKeypointSkipButton,
                 onPressed: () {
+                  if (lessonState.wasLessonCompletedBefore) {
+                    CourseRoadmapRoute().go(context);
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+                    });
+                    return;
+                  }
                   BadgeProgressRoute().go(context);
                   Future.delayed(const Duration(milliseconds: 100), () {
                     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);

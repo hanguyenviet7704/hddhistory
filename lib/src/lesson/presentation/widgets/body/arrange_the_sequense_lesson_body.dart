@@ -10,7 +10,12 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
     this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
+  void _showResultOverlay(
+    BuildContext context,
+    ResultType type, {
+    bool isReview = false,
+    bool showExplainAction = true,
+  }) {
     final trackingData = KeypointTrackingData.fromContext();
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
@@ -50,7 +55,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
                 LessonResultOverlayManager.hide();
                 AppDI.injector.get<ExerciseCubit>().nextQuestion();
               },
-              onExplain: hasExplanation
+              onExplain: showExplainAction && hasExplanation
                   ? () {
                       context.read<ArrangeTheSequenceCubit>().toggleExplanation();
                     }
@@ -73,6 +78,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
       context,
       state.isCorrect ? ResultType.correct : ResultType.incorrect,
       isReview: isReadOnly,
+      showExplainAction: false,
     );
   }
 

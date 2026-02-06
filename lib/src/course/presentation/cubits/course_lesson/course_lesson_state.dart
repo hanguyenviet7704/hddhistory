@@ -8,6 +8,7 @@ abstract class CourseLessonState with _$CourseLessonState {
     @Default(CourseLessonStatus.initial) CourseLessonStatus status,
     @Default(LessonEntity()) LessonEntity selectedLesson,
     @Default('') String currentKeypointId,
+    @Default(false) bool wasLessonCompletedBefore,
     String? errorMessage,
   }) = _CourseLessonState;
 
