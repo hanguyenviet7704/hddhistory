@@ -17,3 +17,10 @@ export enum UserProgressExportStatus {
   COMPLETED = "completed",
   FAILED = "failed",
 }
+
+export enum StatisticsUsersLearningCoursesOrderBy {
+  STARTED_USER_COUNT = "startedUserCount",
+  ROLEPLAY_KEYPOINT_PASSED_COUNT = "roleplayKeypointPassedCount",
+  LESSON_KEYPOINT_PASSED_COUNT = "lessonKeypointPassedCount",
+  COMPLETED_USER_COUNT = "completedUserCount",
+}

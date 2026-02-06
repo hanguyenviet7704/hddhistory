@@ -2,6 +2,7 @@ import { ITranslation } from "../../utils/translate";
 import { LessonType } from "../enum/lesson.enum";
 import {
   GradeResultType,
+  StatisticsUsersLearningCoursesOrderBy,
   UserProgressExportStatus,
 } from "../enum/user-progress.enum";
 import { BaseQuery } from "./common.interface";
@@ -94,7 +95,7 @@ export class UserProgressListQuery extends BaseQuery {
     init: {
       courseId: string;
       grade: GradeResultType;
-    } & Partial<UserProgressListQuery>
+    } & Partial<UserProgressListQuery>,
   ) {
     super(init);
     this.grade = init.grade;
@@ -119,7 +120,7 @@ export class ProgressOfUserQuery extends BaseQuery {
     init: {
       courseId: string;
       grade: GradeResultType;
-    } & Partial<UserProgressListQuery>
+    } & Partial<UserProgressListQuery>,
   ) {
     super(init);
     Object.assign(this, init);
@@ -127,6 +128,35 @@ export class ProgressOfUserQuery extends BaseQuery {
 
   override toQueryParams(): string {
     const params = new URLSearchParams(super.toQueryParams());
+    return params.toString();
+  }
+}
+
+export interface ICourseLearningStatistics {
+  courseId: string;
+  title?: ITranslation;
+  startedUserCount: number;
+  roleplayKeypointPassedCount: number;
+  lessonKeypointPassedCount: number;
+  completedUserCount: number;
+}
+
+export class StatisticsUsersLearningCoursesQuery extends BaseQuery {
+  orderBy: StatisticsUsersLearningCoursesOrderBy;
+
+  constructor(
+    init: {
+      orderBy: StatisticsUsersLearningCoursesOrderBy;
+    } & Partial<StatisticsUsersLearningCoursesQuery>,
+  ) {
+    super(init);
+    this.orderBy = init.orderBy;
+    Object.assign(this, init);
+  }
+
+  override toQueryParams(): string {
+    const params = new URLSearchParams(super.toQueryParams());
+    if (this.orderBy) params.set("orderBy", this.orderBy);
     return params.toString();
   }
 }
@@ -144,7 +174,7 @@ export class RemoveUserProgress {
       userId: string;
       courseId: string;
       grade: GradeResultType;
-    } & Partial<UserProgressListQuery>
+    } & Partial<UserProgressListQuery>,
   ) {
     this.userId = init.userId;
     this.courseId = init.courseId;

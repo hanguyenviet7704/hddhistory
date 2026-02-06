@@ -1,7 +1,9 @@
 import {
   ExportAllUserProgressResponse,
+  ICourseLearningStatistics,
   ProgressOfUserQuery,
   RemoveUserProgress,
+  StatisticsUsersLearningCoursesQuery,
   UserProgressListQuery,
 } from "../types/interface/user-progress.interface";
 import axiosClient from "./axiosClient";
@@ -18,24 +20,34 @@ export const userProgressService = {
 
   async getProgressOfUser(
     userId: string,
-    params?: Partial<ProgressOfUserQuery>
+    params?: Partial<ProgressOfUserQuery>,
   ) {
     const res = await axiosClient.get(
       `/courses-user-progress/users/${userId}`,
-      { params }
+      { params },
     );
     return res.data;
   },
 
   async getCourseProgressDetailOfUser(userId: string, courseId: string) {
     const res = await axiosClient.get(
-      `/courses-user-progress/users/${userId}/courses/${courseId}`
+      `/courses-user-progress/users/${userId}/courses/${courseId}`,
     );
     return res.data;
   },
 
   async exportAllUserProgress(): Promise<ExportAllUserProgressResponse> {
     const res = await axiosClient.post(`/courses-user-progress/export`);
+    return res.data;
+  },
+
+  async statisticsUsersLearnigCourses(
+    params: StatisticsUsersLearningCoursesQuery,
+  ): Promise<ICourseLearningStatistics[]> {
+    const res = await axiosClient.get(
+      `/courses-user-progress/statistics-users-learnig-courses`,
+      { params },
+    );
     return res.data;
   },
 };

@@ -30,6 +30,7 @@ import KeypointDetail from "../pages/keypoints/KeypointDetail";
 import SettingsPage from "../pages/setting/Setting";
 import SkillsetList from "../pages/skillsets/skillsetList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
+import StatisticsPage from "../pages/statistics/Statistics";
 
 export default function AppRouter() {
   return (
@@ -89,6 +90,8 @@ export default function AppRouter() {
               />
 
               <Route path="settings" element={<SettingsPage />} />
+
+              <Route path="statistics" element={<StatisticsPage />} />
 
               <Route path="payment" element={<PaymentDashboard />} />
             </Route>
