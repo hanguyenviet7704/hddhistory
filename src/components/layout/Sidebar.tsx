@@ -12,6 +12,7 @@ import {
   Cog6ToothIcon,
   PuzzlePieceIcon,
   CreditCardIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -35,6 +36,7 @@ const menuItems = [
     icon: SparklesIcon,
     path: "/onboarding-branching",
   },
+  { name: "Statistics", icon: ChartBarIcon, path: "/statistics" },
   { name: "Payment", icon: CreditCardIcon, path: "/payment" },
 ];
 
@@ -65,7 +67,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       className={`
         ${collapsed ? "w-16" : "w-64"}
         h-screen bg-white shadow-lg border-r border-gray-200
-        flex flex-col transition-all duration-300 ease-in-out
+        relative flex flex-col transition-all duration-300 ease-in-out
       `}
     >
       {/* Toggle button - Đổi vị trí và icon */}
@@ -120,7 +122,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       </div>
 
       {/* Menu */}
-      <nav className="space-y-1 flex-1 px-2">
+      <nav className="space-y-1 flex-1 min-h-0 overflow-y-auto px-2 pb-24">
         {menuItems.map((item) => {
           const Icon = item.icon;
           const isActive = isActivePath(item.path);
@@ -165,7 +167,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       </nav>
 
       {/* Settings Button - Larger and more colorful */}
-      <div className="px-5 pb-4">
+      <div className="absolute bottom-0 left-0 right-0 px-5 py-4 bg-white z-20 border-t border-gray-100">
         <NavLink
           to="/settings"
           className={`
