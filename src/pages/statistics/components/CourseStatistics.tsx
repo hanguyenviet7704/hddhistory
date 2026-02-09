@@ -67,6 +67,19 @@ const formatNumber = (value?: number) => {
   return value.toLocaleString("vi-VN");
 };
 
+const getRoleplayPassedCount = (
+  item: ICourseLearningStatistics,
+): number | undefined => {
+  const normalizedItem = item as ICourseLearningStatistics & {
+    roleplayPassedCount?: number;
+    roleplayKeypointPassedCount?: number;
+  };
+  return (
+    normalizedItem.roleplayPassedCount ??
+    normalizedItem.roleplayKeypointPassedCount
+  );
+};
+
 const orderByOptions: {
   value: StatisticsUsersLearningCoursesOrderBy;
   label: string;
@@ -76,8 +89,8 @@ const orderByOptions: {
     label: "Started Users",
   },
   {
-    value: StatisticsUsersLearningCoursesOrderBy.ROLEPLAY_KEYPOINT_PASSED_COUNT,
-    label: "Roleplay Keypoints Passed",
+    value: StatisticsUsersLearningCoursesOrderBy.ROLEPLAY_PASSED_COUNT,
+    label: "Roleplay Passed",
   },
   {
     value: StatisticsUsersLearningCoursesOrderBy.LESSON_KEYPOINT_PASSED_COUNT,
@@ -109,9 +122,14 @@ const CourseStatistics: React.FC = () => {
       query.take = PAGE_SIZE;
       delete (query as { order?: string }).order;
       const res =
-        await userProgressService.statisticsUsersLearnigCourses(query);
+        await userProgressService.statisticsUsersLearningCourses(query);
       const normalized = normalizeStats(res);
-      const pagination = resolvePagination(res, normalized.length, page, PAGE_SIZE);
+      const pagination = resolvePagination(
+        res,
+        normalized.length,
+        page,
+        PAGE_SIZE,
+      );
       setStats(normalized);
       setTotalPages(pagination.totalPages);
       if (pagination.currentPage !== page) {
@@ -197,7 +215,7 @@ const CourseStatistics: React.FC = () => {
               <th className="px-4 py-3 font-semibold">Course</th>
               <th className="px-4 py-3 font-semibold">Started Users</th>
               <th className="px-4 py-3 font-semibold">
-                Roleplay Keypoints Passed
+                Roleplay Passed
               </th>
               <th className="px-4 py-3 font-semibold">
                 Lesson Keypoints Passed
@@ -229,7 +247,7 @@ const CourseStatistics: React.FC = () => {
                   </td>
                   <td className="px-4 py-3 text-slate-700">
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-amber-100 text-amber-800 font-semibold">
-                      {formatNumber(item.roleplayKeypointPassedCount)}
+                      {formatNumber(getRoleplayPassedCount(item))}
                     </span>
                   </td>
                   <td className="px-4 py-3 text-slate-700">

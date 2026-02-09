@@ -41,11 +41,11 @@ export const userProgressService = {
     return res.data;
   },
 
-  async statisticsUsersLearnigCourses(
+  async statisticsUsersLearningCourses(
     params: StatisticsUsersLearningCoursesQuery,
   ): Promise<ICourseLearningStatistics[]> {
     const res = await axiosClient.get(
-      `/courses-user-progress/statistics-users-learnig-courses`,
+      `/courses-user-progress/statistics-users-learning-courses`,
       { params },
     );
     return res.data;
