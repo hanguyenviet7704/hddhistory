@@ -13,6 +13,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
   void _showResultOverlay(
     BuildContext context,
     ResultType type, {
+    String? title,
     bool isReview = false,
     bool showExplainAction = true,
   }) {
@@ -34,6 +35,7 @@ class SingleChoiceLessonBody extends StatelessWidget {
 
             return ResultBottomSheet(
               type: type,
+              title: title,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
               onContinue: () {
@@ -67,9 +69,11 @@ class SingleChoiceLessonBody extends StatelessWidget {
     if (currentQuestion.hasExplanation && !state.showExplanation) {
       context.read<ChoiceCubit>().toggleExplanation();
     }
+    final resultTitle = state.isNoCorrectSingleChoiceQuestion ? context.text.exercise.exerciseLessonCompleteTitle : null;
     _showResultOverlay(
       context,
       state.isCorrect ? ResultType.correct : ResultType.incorrect,
+      title: resultTitle,
       isReview: isReadOnly,
       showExplainAction: false,
     );
@@ -86,16 +90,19 @@ class SingleChoiceLessonBody extends StatelessWidget {
         onAnswerChecked(state.isCorrect);
         final bool isRoleplay = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type == LearningItemType.roleplay;
         if (isRoleplay) return;
+        final resultTitle = state.isNoCorrectSingleChoiceQuestion ? context.text.exercise.exerciseLessonCompleteTitle : null;
         _showResultOverlay(
           context,
           state.isCorrect ? ResultType.correct : ResultType.incorrect,
+          title: resultTitle,
+          showExplainAction: !state.isNoCorrectSingleChoiceQuestion,
         );
       },
       child: BlocBuilder<ChoiceCubit, ChoiceState>(
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
+          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation && !state.isNoCorrectSingleChoiceQuestion;
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -116,11 +123,11 @@ class SingleChoiceLessonBody extends StatelessWidget {
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: currentQuestion.options.length,
+                itemCount: state.answerOptions.length,
                 separatorBuilder: (context, index) => 12.verticalSpace,
                 itemBuilder: (context, index) {
                   return ChoiceAnswerCard(
-                    option: currentQuestion.options[index],
+                    option: state.answerOptions[index],
                     isMultiChoice: false,
                     state: state.getAnswerState(index),
                     onTap: () => context.read<ChoiceCubit>().selectAnswer(index),

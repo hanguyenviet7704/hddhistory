@@ -74,42 +74,42 @@ class ExerciseCubit extends Cubit<ExerciseState> with CubitUseCaseHandlerMixin<E
 
   void setQuestionData(QuestionEntity question) {
     AppDI.injector.get<LessonCubit>().setCurrentLessonIndex(state.currentQuestionIndex);
-    switch (question.type) {
-      case QuestionTypeEnum.singleChoice:
+    final payload = question.payloadOrLegacy;
+    switch (payload) {
+      case QuestionSingleChoicePayloadEntity() || QuestionSingleChoiceNoCorrectAnswerPayloadEntity() || QuestionMultipleChoicePayloadEntity():
         AppDI.injector.get<ChoiceCubit>()
           ..reset()
           ..setQuestion(question);
-        break;
-      case QuestionTypeEnum.multipleChoice:
-        AppDI.injector.get<ChoiceCubit>()
-          ..reset()
-          ..setQuestion(question);
-        break;
-      case QuestionTypeEnum.cuesPlacement:
+        return;
+      case QuestionCuesPlacementPayloadEntity():
         AppDI.injector.get<CuesPlacementCubit>()
           ..reset()
           ..setQuestion(question);
-        break;
-      case QuestionTypeEnum.dragAndDrop:
+        return;
+      case QuestionDragAndDropPayloadEntity():
         AppDI.injector.get<DragAndDropCubit>()
           ..reset()
           ..setQuestion(question);
-        break;
-      case QuestionTypeEnum.arrangeTheSequence:
+        return;
+      case QuestionArrangeTheSequencePayloadEntity():
         AppDI.injector.get<ArrangeTheSequenceCubit>()
           ..reset()
           ..setQuestion(question);
-        break;
-      case QuestionTypeEnum.stressPlacement:
+        return;
+      case QuestionStressPlacementPayloadEntity():
         AppDI.injector.get<MarkStressWordCubit>()
           ..reset()
           ..setQuestion(question);
-        break;
-      case QuestionTypeEnum.speaking:
+        return;
+      case QuestionSpeakingPayloadEntity():
         AppDI.injector.get<SpeakingCubit>()
           ..reset()
           ..setQuestion(question);
-        break;
+        return;
+      case QuestionUnsupportedPayloadEntity():
+        return;
+      default:
+        return;
     }
   }
 

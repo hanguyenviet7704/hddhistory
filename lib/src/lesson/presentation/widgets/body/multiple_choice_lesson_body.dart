@@ -116,11 +116,11 @@ class MultipleChoiceLessonBody extends StatelessWidget {
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: currentQuestion.options.length,
+                itemCount: state.answerOptions.length,
                 separatorBuilder: (context, index) => 12.verticalSpace,
                 itemBuilder: (context, index) {
                   return MultipleChoiceAnswerCard(
-                    option: currentQuestion.options[index],
+                    option: state.answerOptions[index],
                     state: state.getAnswerState(index),
                     onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
                   );

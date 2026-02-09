@@ -23,6 +23,7 @@ abstract class QuestionEntity with _$QuestionEntity {
     @Default([]) List<ScoringCriteriaEntity> scoringCriteria,
     @Default(0) int mainQuestion,
     @Default(KeypointEntity()) KeypointEntity keypoint,
+    @Default(QuestionPayloadEntity.singleChoice()) QuestionPayloadEntity typedPayload,
 
     @Default(ExerciseResultEntity()) ExerciseResultEntity result,
   }) = _QuestionEntity;

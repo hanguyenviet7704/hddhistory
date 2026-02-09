@@ -6,6 +6,7 @@ class ResultBottomSheet extends StatelessWidget {
   final VoidCallback? onExplain;
   final bool showExplanation;
   final String? explanationText;
+  final String? title;
 
   const ResultBottomSheet({
     super.key,
@@ -14,6 +15,7 @@ class ResultBottomSheet extends StatelessWidget {
     this.onExplain,
     this.showExplanation = false,
     this.explanationText,
+    this.title,
   });
 
   @override
@@ -33,6 +35,7 @@ class ResultBottomSheet extends StatelessWidget {
         continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
         explainLabel: context.text.exercise.exerciseExplainButton,
         closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
+        title: title,
       ),
     );
   }

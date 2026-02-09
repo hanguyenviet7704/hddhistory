@@ -96,7 +96,7 @@ class _LessonPageState extends State<LessonPage> {
     switch (state.currentLearningItem.type) {
       case LearningItemType.exercise || LearningItemType.roleplay:
         final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
-        return _buildExerciseLessonBody(question.type);
+        return _buildExerciseLessonBody(question);
       case LearningItemType.theory:
         return TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
     }
@@ -190,27 +190,41 @@ class _LessonPageState extends State<LessonPage> {
     return items;
   }
 
-  Widget _buildExerciseLessonBody(QuestionTypeEnum questionType) {
-    return switch (questionType) {
-      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionTypeEnum.speaking => SpeakingLessonBody(onAnswerChecked: _handleAnswerChecked),
+  Widget _buildExerciseLessonBody(QuestionEntity question) {
+    final payload = question.payloadOrLegacy;
+    return switch (payload) {
+      QuestionSingleChoicePayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionMultipleChoicePayloadEntity() => MultipleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionDragAndDropPayloadEntity() => DragAndDropLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionArrangeTheSequencePayloadEntity() => ArrangeTheSequenceLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionCuesPlacementPayloadEntity() => CuesPlacementLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionStressPlacementPayloadEntity() => MarkStressWordLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionSpeakingPayloadEntity() => SpeakingLessonBody(onAnswerChecked: _handleAnswerChecked),
+      QuestionUnsupportedPayloadEntity() => UnsupportedLessonBody(
+        question: question,
+        onContinue: () => AppDI.injector.get<ExerciseCubit>().nextQuestion(),
+      ),
+      _ => UnsupportedLessonBody(
+        question: question,
+        onContinue: () => AppDI.injector.get<ExerciseCubit>().nextQuestion(),
+      ),
     };
   }
 
   Widget _buildReviewExerciseBody(QuestionEntity question) {
-    return switch (question.type) {
-      QuestionTypeEnum.singleChoice => _buildChoiceReviewBody(question, isMultiple: false),
-      QuestionTypeEnum.multipleChoice => _buildChoiceReviewBody(question, isMultiple: true),
-      QuestionTypeEnum.dragAndDrop => _buildDragDropReviewBody(question),
-      QuestionTypeEnum.arrangeTheSequence => _buildArrangeSequenceReviewBody(question),
-      QuestionTypeEnum.cuesPlacement => _buildCuesPlacementReviewBody(question),
-      QuestionTypeEnum.stressPlacement => _buildStressPlacementReviewBody(question),
-      QuestionTypeEnum.speaking => _buildSpeakingReviewBody(question),
+    final payload = question.payloadOrLegacy;
+    return switch (payload) {
+      QuestionSingleChoicePayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),
+      QuestionMultipleChoicePayloadEntity() => _buildChoiceReviewBody(question, isMultiple: true),
+      QuestionDragAndDropPayloadEntity() => _buildDragDropReviewBody(question),
+      QuestionArrangeTheSequencePayloadEntity() => _buildArrangeSequenceReviewBody(question),
+      QuestionCuesPlacementPayloadEntity() => _buildCuesPlacementReviewBody(question),
+      QuestionStressPlacementPayloadEntity() => _buildStressPlacementReviewBody(question),
+      QuestionSpeakingPayloadEntity() => _buildSpeakingReviewBody(question),
+      QuestionUnsupportedPayloadEntity() => UnsupportedLessonBody(question: question, isReadOnly: true),
+      _ => UnsupportedLessonBody(question: question, isReadOnly: true),
     };
   }
 
@@ -322,6 +336,7 @@ class _LessonPageState extends State<LessonPage> {
       CuesPlacementLessonBody body => body.buildBottomButton(context),
       MarkStressWordLessonBody body => body.buildBottomButton(context),
       SpeakingLessonBody body => body.buildBottomButton(context),
+      UnsupportedLessonBody body => body.buildBottomButton(context),
       TheoryLessonBody body => body.buildBottomButton(context),
       _ => const SizedBox.shrink(),
     };

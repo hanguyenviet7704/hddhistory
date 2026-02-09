@@ -10,6 +10,7 @@ part of '../../lesson.dart';
 /// | Question Type                          | Used Fields            |
 /// |----------------------------------------|------------------------|
 /// | `singleChoice` / `multipleChoice`      | `value`, `isCorrect`   |
+/// | `singleChoiceNoCorrectAnswer`          | `value`, `documentGroupId` |
 /// | `dragAndDrop`                          | `id`, `text`           |
 /// | `record`                               | None                   |
 
@@ -20,6 +21,7 @@ abstract class OptionModel with _$OptionModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage text,
     @Default(BaseMultiLanguage()) BaseMultiLanguage value,
     @Default(false) bool isCorrect,
+    @Default('') String documentGroupId,
   }) = _OptionModel;
 
   factory OptionModel.fromJson(Map<String, dynamic> json) => _$OptionModelFromJson(json);
@@ -32,4 +34,28 @@ extension OptionModelExtension on OptionModel {
     value: value,
     isCorrect: isCorrect,
   );
+
+  QuestionChoiceOptionEntity toChoiceOptionEntity() {
+    final pickedValue = value.text.isNotEmpty ? value : text;
+    return QuestionChoiceOptionEntity(
+      value: pickedValue,
+      isCorrect: isCorrect,
+    );
+  }
+
+  QuestionNoCorrectChoiceOptionEntity toNoCorrectChoiceOptionEntity() {
+    final pickedValue = value.text.isNotEmpty ? value : text;
+    return QuestionNoCorrectChoiceOptionEntity(
+      value: pickedValue,
+      documentGroupId: documentGroupId,
+    );
+  }
+
+  QuestionDragDropOptionEntity toDragDropOptionEntity() {
+    final pickedText = text.text.isNotEmpty ? text : value;
+    return QuestionDragDropOptionEntity(
+      id: id,
+      text: pickedText,
+    );
+  }
 }
