@@ -231,25 +231,29 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
       ),
     );
 
-    switch (widget.exercise.type) {
-      case QuestionTypeEnum.singleChoice:
-      case QuestionTypeEnum.multipleChoice:
+    final payload = widget.exercise.payloadOrLegacy;
+    switch (payload) {
+      case QuestionSingleChoicePayloadEntity() || QuestionSingleChoiceNoCorrectAnswerPayloadEntity() || QuestionMultipleChoicePayloadEntity():
         AppDI.injector.get<ChoiceCubit>().applyExerciseResult(result);
         break;
-      case QuestionTypeEnum.dragAndDrop:
+      case QuestionDragAndDropPayloadEntity():
         AppDI.injector.get<DragAndDropCubit>().applyExerciseResult(result);
         break;
-      case QuestionTypeEnum.arrangeTheSequence:
+      case QuestionArrangeTheSequencePayloadEntity():
         AppDI.injector.get<ArrangeTheSequenceCubit>().applyExerciseResult(result);
         break;
-      case QuestionTypeEnum.cuesPlacement:
+      case QuestionCuesPlacementPayloadEntity():
         AppDI.injector.get<CuesPlacementCubit>().applyExerciseResult(result);
         break;
-      case QuestionTypeEnum.stressPlacement:
+      case QuestionStressPlacementPayloadEntity():
         AppDI.injector.get<MarkStressWordCubit>().applyExerciseResult(result);
         break;
-      case QuestionTypeEnum.speaking:
+      case QuestionSpeakingPayloadEntity():
         AppDI.injector.get<SpeakingCubit>().applyExerciseResult(result);
+        break;
+      case QuestionUnsupportedPayloadEntity():
+        break;
+      default:
         break;
     }
   }

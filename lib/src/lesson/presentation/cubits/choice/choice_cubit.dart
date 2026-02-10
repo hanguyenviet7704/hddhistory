@@ -104,11 +104,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     if (question.id == 0) return;
     final double score = pointCalculation().toDouble();
 
-    final QuestionType progressType = switch (question.type) {
-      QuestionTypeEnum.singleChoice => QuestionType.singleChoice,
-      QuestionTypeEnum.multipleChoice => QuestionType.multipleChoice,
-      _ => QuestionType.singleChoice,
-    };
+    final QuestionType progressType = progressQuestionTypeFromPayload(state.payload);
 
     final data = UpdateUserProgressExerciseData(
       exerciseId: question.exerciseId,
@@ -116,7 +112,11 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       passed: result.passed,
       score: score,
       multipleAnswer: state.isMultipleChoiceQuestion ? _progressOptionList(result.multipleAnswer) : null,
-      singleAnswer: state.isMultipleChoiceQuestion ? null : _progressSingleOption(result.singleAnswer),
+      singleAnswer: state.isMultipleChoiceQuestion
+          ? null
+          : state.isNoCorrectSingleChoiceQuestion
+          ? progressSingleOptionNoCorrect(result.singleAnswer)
+          : _progressSingleOption(result.singleAnswer),
     );
 
     final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
@@ -266,6 +266,14 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       ),
     );
   }
+}
+
+QuestionType progressQuestionTypeFromPayload(QuestionPayloadEntity payload) {
+  return switch (payload) {
+    QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => QuestionType.singleChoiceNoCorrectAnswer,
+    QuestionMultipleChoicePayloadEntity() => QuestionType.multipleChoice,
+    _ => QuestionType.singleChoice,
+  };
 }
 
 int _findOptionIndex(QuestionEntity question, OptionEntity answer, Set<int> usedIndices) {

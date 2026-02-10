@@ -57,6 +57,14 @@ UpdateUserProgressExerciseOption? _progressSingleOption(OptionEntity option) {
   return _progressOptionFromOption(option);
 }
 
+UpdateUserProgressExerciseOption? progressSingleOptionNoCorrect(OptionEntity option) {
+  final value = _progressValueFromBase(_progressPickValue(option));
+  if (value == null) return null;
+  return UpdateUserProgressExerciseOption(
+    value: value,
+  );
+}
+
 UpdateUserProgressExerciseRecordAnswer? _progressRecordAnswer(AnswerEntity answer) {
   final record = answer.record.trim();
   final review = answer.review.trim();
