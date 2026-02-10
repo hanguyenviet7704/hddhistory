@@ -30,8 +30,10 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
         ],
         child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
           builder: (context, state) {
-            final correctAnswers = state.question.answer.map((answer) {
-              return state.question.options.firstWhere(
+            final runtimeAnswers = questionRuntimeAnswers(state.question);
+            final runtimeOptions = questionRuntimeOptions(state.question);
+            final correctAnswers = runtimeAnswers.map((answer) {
+              return runtimeOptions.firstWhere(
                 (option) => option.id == answer.id,
                 orElse: () => const OptionEntity(),
               );

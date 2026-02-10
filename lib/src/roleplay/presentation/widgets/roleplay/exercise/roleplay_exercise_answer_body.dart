@@ -67,7 +67,7 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
         style: answerTextStyle,
       ),
       QuestionDragAndDropPayloadEntity() => RoleplayGapFillingAnswer(
-        template: exercise.legacyTargetAreaFromPayload.text,
+        template: questionRuntimeTargetArea(exercise).text,
         answers: _resolveDragDropAnswers(correctOptions),
         baseStyle: answerTextStyle,
         highlightStyle: answerTextStyle.copyWith(
@@ -96,15 +96,15 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
   }
 
   List<String> _resolveCorrectOptionTexts() {
-    final options = exercise.legacyOptionsFromPayload.where((option) => option.isCorrect).toList();
+    final options = questionRuntimeOptions(exercise).where((option) => option.isCorrect).toList();
     if (options.isNotEmpty) {
       return options.map((option) => option.textValue).where((text) => text.isNotEmpty).toList();
     }
-    return exercise.legacyAnswersFromPayload.map((answer) => answer.correctAnswer.text).where((text) => text.isNotEmpty).toList();
+    return questionRuntimeAnswers(exercise).map((answer) => answer.correctAnswer.text).where((text) => text.isNotEmpty).toList();
   }
 
   List<String> _resolveDragDropAnswers(List<String> fallbackCorrectOptions) {
-    final answers = exercise.legacyAnswersFromPayload;
+    final answers = questionRuntimeAnswers(exercise);
     if (answers.isNotEmpty) {
       return answers.map((answer) => answer.correctAnswer.text).where((text) => text.isNotEmpty).toList();
     }
@@ -114,13 +114,13 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
 
   List<String> _resolveSequenceAnswers(List<String> fallbackCorrectOptions) {
     // Primary source: ordered answers from backend
-    final answers = exercise.legacyAnswersFromPayload;
+    final answers = questionRuntimeAnswers(exercise);
     if (answers.isNotEmpty) {
       return answers.map(_sequenceAnswerText).where((text) => text.isNotEmpty).toList();
     }
 
     // Fallback: use all options in their given order
-    final orderedOptions = exercise.legacyOptionsFromPayload.map((option) => option.textValue).where((text) => text.isNotEmpty).toList();
+    final orderedOptions = questionRuntimeOptions(exercise).map((option) => option.textValue).where((text) => text.isNotEmpty).toList();
     if (orderedOptions.isNotEmpty) return orderedOptions;
 
     return fallbackCorrectOptions;
@@ -129,7 +129,7 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
   String _sequenceAnswerText(AnswerEntity answer) {
     if (answer.correctAnswer.text.isNotEmpty) return answer.correctAnswer.text;
 
-    final match = exercise.legacyOptionsFromPayload.firstWhere(
+    final match = questionRuntimeOptions(exercise).firstWhere(
       (option) => option.id == answer.id,
       orElse: () => const OptionEntity(),
     );
@@ -143,7 +143,7 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
     if (multipleFirst != null && multipleFirst.labelText.isNotEmpty) {
       return multipleFirst.labelText;
     }
-    final fallbackOption = exercise.legacyOptionsFromPayload.firstOrNull;
+    final fallbackOption = questionRuntimeOptions(exercise).firstOrNull;
     if (fallbackOption != null) return fallbackOption.textValue;
     return '';
   }

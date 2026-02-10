@@ -31,6 +31,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
         child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
           builder: (context, state) {
             final hasExplanation = state.question.hasExplanation;
+            final runtimeOptions = questionRuntimeOptions(state.question);
 
             return CuesPlacementResultBottomSheet(
               type: type,
@@ -40,7 +41,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
               placedMarks: state.placedMarks,
               correctPositions: state.correctPositions,
               optionsById: {
-                for (var option in state.question.options) option.id: option,
+                for (var option in runtimeOptions) option.id: option,
               },
               onContinue: () {
                 if (isReview) {
@@ -100,6 +101,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
       child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
         builder: (context, state) {
           final currentQuestion = state.question;
+          final runtimeOptions = questionRuntimeOptions(currentQuestion);
           final words = state.words;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
@@ -146,7 +148,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
                     (index) {
                       final placedMarkId = state.placedMarks[index];
                       final placedMark = placedMarkId != null
-                          ? currentQuestion.options.firstWhere(
+                          ? runtimeOptions.firstWhere(
                               (opt) => opt.id == placedMarkId,
                               orElse: () => const OptionEntity(),
                             )
@@ -185,7 +187,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: CuesPlacementAvailableMarks(
-                  allOptions: currentQuestion.options,
+                  allOptions: runtimeOptions,
                   availableOptions: state.availableOptions,
                   onAcceptReturn: (data) {
                     if (data.fromWordIndex != null) {

@@ -1,5 +1,9 @@
 part of '../../lesson.dart';
 
+/// Transitional compatibility adapter while legacy question fields are being retired.
+///
+/// Keep `payloadOrLegacy` until all persisted/constructed legacy-only questions
+/// are migrated to provide `typedPayload` directly.
 extension QuestionLegacyAdapterX on QuestionEntity {
   /// Returns typed payload if already set; otherwise derives it from legacy fields.
   QuestionPayloadEntity get payloadOrLegacy {
@@ -54,61 +58,6 @@ extension QuestionLegacyAdapterX on QuestionEntity {
       ),
     };
   }
-
-  QuestionEntity withInferredTypedPayload() => copyWith(typedPayload: inferTypedPayloadFromLegacy());
-
-  List<OptionEntity> get legacyOptionsFromPayload {
-    final payload = payloadOrLegacy;
-    return switch (payload) {
-      QuestionSingleChoicePayloadEntity(:final options) => options.map(_legacyOptionFromChoiceOption).toList(),
-      QuestionMultipleChoicePayloadEntity(:final options) => options.map(_legacyOptionFromChoiceOption).toList(),
-      QuestionSingleChoiceNoCorrectAnswerPayloadEntity(:final options) => options.map(_legacyOptionFromNoCorrectOption).toList(),
-      QuestionDragAndDropPayloadEntity(:final options) => options.map(_legacyOptionFromDragDropOption).toList(),
-      QuestionArrangeTheSequencePayloadEntity(:final options) => options.map(_legacyOptionFromDragDropOption).toList(),
-      QuestionCuesPlacementPayloadEntity(:final options) => options.map(_legacyOptionFromDragDropOption).toList(),
-      QuestionStressPlacementPayloadEntity(:final options) => options.map(_legacyOptionFromDragDropOption).toList(),
-      QuestionSpeakingPayloadEntity() => const [],
-      QuestionUnsupportedPayloadEntity() => const [],
-      _ => const [],
-    };
-  }
-
-  List<AnswerEntity> get legacyAnswersFromPayload {
-    final payload = payloadOrLegacy;
-    return switch (payload) {
-      QuestionDragAndDropPayloadEntity(:final answers) => answers.map(_legacyAnswerFromDragDropAnswer).toList(),
-      QuestionArrangeTheSequencePayloadEntity(:final answers) => answers.map(_legacyAnswerFromDragDropAnswer).toList(),
-      QuestionCuesPlacementPayloadEntity(:final answers) => answers.map(_legacyAnswerFromDragDropAnswer).toList(),
-      QuestionStressPlacementPayloadEntity(:final answers) => answers.map(_legacyAnswerFromDragDropAnswer).toList(),
-      _ => const [],
-    };
-  }
-
-  BaseMultiLanguage get legacyTargetAreaFromPayload {
-    final payload = payloadOrLegacy;
-    return switch (payload) {
-      QuestionDragAndDropPayloadEntity(:final targetArea) => targetArea,
-      QuestionCuesPlacementPayloadEntity(:final targetArea) => targetArea,
-      QuestionStressPlacementPayloadEntity(:final targetArea) => targetArea,
-      _ => const BaseMultiLanguage(),
-    };
-  }
-
-  String get legacyRecordFromPayload {
-    final payload = payloadOrLegacy;
-    return switch (payload) {
-      QuestionSpeakingPayloadEntity(:final record) => record,
-      _ => '',
-    };
-  }
-
-  List<ScoringCriteriaEntity> get legacyScoringCriteriaFromPayload {
-    final payload = payloadOrLegacy;
-    return switch (payload) {
-      QuestionSpeakingPayloadEntity(:final scoringCriteria) => scoringCriteria,
-      _ => const [],
-    };
-  }
 }
 
 QuestionChoiceOptionEntity _legacyChoiceOptionFromOption(OptionEntity option) {
@@ -129,37 +78,6 @@ QuestionDragDropOptionEntity _legacyDragDropOptionFromOption(OptionEntity option
 
 QuestionDragDropAnswerEntity _legacyDragDropAnswerFromAnswer(AnswerEntity answer) {
   return QuestionDragDropAnswerEntity(
-    id: answer.id,
-    correctAnswer: answer.correctAnswer,
-  );
-}
-
-OptionEntity _legacyOptionFromChoiceOption(QuestionChoiceOptionEntity option) {
-  return OptionEntity(
-    text: option.value,
-    value: option.value,
-    isCorrect: option.isCorrect,
-  );
-}
-
-OptionEntity _legacyOptionFromDragDropOption(QuestionDragDropOptionEntity option) {
-  return OptionEntity(
-    id: option.id,
-    text: option.text,
-    value: option.text,
-  );
-}
-
-OptionEntity _legacyOptionFromNoCorrectOption(QuestionNoCorrectChoiceOptionEntity option) {
-  return OptionEntity(
-    text: option.value,
-    value: option.value,
-    isCorrect: false,
-  );
-}
-
-AnswerEntity _legacyAnswerFromDragDropAnswer(QuestionDragDropAnswerEntity answer) {
-  return AnswerEntity(
     id: answer.id,
     correctAnswer: answer.correctAnswer,
   );

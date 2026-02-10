@@ -64,23 +64,13 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       }
     }
 
-    bool isCorrect = false;
-
-    if (state.isMultipleChoiceQuestion) {
-      // Check multiple choice answer
-      if (state.selectedAnswersIndices.isNotEmpty) {
-        Set<int> correctIndexes = state.correctOptionsIndices;
-        Set<int> selectedIndexes = state.selectedAnswersIndices;
-        // User is correct if they've selected all correct options
-        isCorrect = correctIndexes.every((index) => selectedIndexes.contains(index));
-      }
-    } else if (state.isNoCorrectSingleChoiceQuestion) {
-      // No-correct-answer single choice is complete once user selects any option.
-      isCorrect = state.selectedAnswerIndex >= 0;
-    } else {
-      // Check single choice answer
-      isCorrect = state.correctOptionsIndices.contains(state.selectedAnswerIndex);
-    }
+    final isCorrect = resolveChoiceCheckResult(
+      isMultipleChoice: state.isMultipleChoiceQuestion,
+      isNoCorrectSingleChoice: state.isNoCorrectSingleChoiceQuestion,
+      selectedAnswerIndex: state.selectedAnswerIndex,
+      selectedAnswersIndices: state.selectedAnswersIndices,
+      correctOptionsIndices: state.correctOptionsIndices,
+    );
 
     emit(
       state.copyWith(
@@ -142,35 +132,14 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   }
 
   int pointCalculation() {
-    if (state.isMultipleChoiceQuestion) {
-      /// Mỗi câu chọn đúng = Max điểm / tổng số câu đúng
-      /// Mỗi câu chọn sai → sẽ bị trừ 50% số điểm của 1 câu đúng. Trừ đến khi về 0 thì thôi
-      /// Không chọn→  0 điểm
-      final correctIndexes = state.correctOptionsIndices;
-      final selectedIndexes = state.selectedAnswersIndices;
-
-      if (selectedIndexes.isEmpty) return 0;
-
-      final correctCount = correctIndexes.length;
-      final pointPerCorrect = state.question.maxScore / correctCount;
-
-      final correctSelections = selectedIndexes.where((index) => correctIndexes.contains(index)).length;
-      final wrongSelections = selectedIndexes.where((index) => !correctIndexes.contains(index)).length;
-
-      final score = (correctSelections * pointPerCorrect) - (wrongSelections * pointPerCorrect * 0.5);
-
-      return score.clamp(0, state.question.maxScore).toInt();
-    }
-
-    if (state.isNoCorrectSingleChoiceQuestion) {
-      return state.selectedAnswerIndex >= 0 ? state.question.maxScore : 0;
-    }
-
-    if (state.correctOptionsIndices.isEmpty) return 0;
-    final correctIndex = state.correctOptionsIndices.first;
-    final selectedIndex = state.selectedAnswerIndex;
-    final score = (selectedIndex == correctIndex ? state.question.maxScore : 0);
-    return score;
+    return calculateChoiceScore(
+      isMultipleChoice: state.isMultipleChoiceQuestion,
+      isNoCorrectSingleChoice: state.isNoCorrectSingleChoiceQuestion,
+      maxScore: state.question.maxScore,
+      correctOptionsIndices: state.correctOptionsIndices,
+      selectedAnswersIndices: state.selectedAnswersIndices,
+      selectedAnswerIndex: state.selectedAnswerIndex,
+    );
   }
 
   void toggleExplanation() {
@@ -239,7 +208,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
         }
       }
 
-      final isCorrect = _isMultipleCorrect(question, selectedIndices);
+      final isCorrect = choiceIsMultipleCorrect(question, selectedIndices);
 
       emit(
         state.copyWith(
@@ -254,7 +223,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     }
 
     final selectedIndex = _findOptionIndex(question, result.singleAnswer, <int>{});
-    final isCorrect = state.isNoCorrectSingleChoiceQuestion ? selectedIndex >= 0 : _isSingleCorrect(question, selectedIndex);
+    final isCorrect = state.isNoCorrectSingleChoiceQuestion ? selectedIndex >= 0 : choiceIsSingleCorrect(question, selectedIndex);
 
     emit(
       state.copyWith(
@@ -268,16 +237,8 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   }
 }
 
-QuestionType progressQuestionTypeFromPayload(QuestionPayloadEntity payload) {
-  return switch (payload) {
-    QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => QuestionType.singleChoiceNoCorrectAnswer,
-    QuestionMultipleChoicePayloadEntity() => QuestionType.multipleChoice,
-    _ => QuestionType.singleChoice,
-  };
-}
-
 int _findOptionIndex(QuestionEntity question, OptionEntity answer, Set<int> usedIndices) {
-  final options = question.legacyOptionsFromPayload;
+  final options = questionRuntimeOptions(question);
   if (answer.id != 0) {
     for (int i = 0; i < options.length; i++) {
       if (usedIndices.contains(i)) continue;
@@ -296,26 +257,4 @@ int _findOptionIndex(QuestionEntity question, OptionEntity answer, Set<int> used
   }
 
   return -1;
-}
-
-bool _isMultipleCorrect(QuestionEntity question, Set<int> selectedIndices) {
-  if (selectedIndices.isEmpty) return false;
-
-  final options = question.legacyOptionsFromPayload;
-  final correctIndices = <int>{};
-  for (int i = 0; i < options.length; i++) {
-    if (options[i].isCorrect) correctIndices.add(i);
-  }
-
-  return correctIndices.every((index) => selectedIndices.contains(index));
-}
-
-bool _isSingleCorrect(QuestionEntity question, int selectedIndex) {
-  if (selectedIndex < 0) return false;
-  if (question.payloadOrLegacy is QuestionSingleChoiceNoCorrectAnswerPayloadEntity) return true;
-
-  final correctIndex = question.legacyOptionsFromPayload.indexWhere((option) => option.isCorrect);
-  if (correctIndex == -1) return false;
-
-  return selectedIndex == correctIndex;
 }

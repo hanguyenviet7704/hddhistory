@@ -18,10 +18,10 @@ sealed class CuesPlacementState with _$CuesPlacementState {
 
 extension CuesPlacementStateX on CuesPlacementState {
   /// Get list of words by splitting targetArea by space
-  List<String> get words => question.targetArea.text.split(' ');
+  List<String> get words => questionRuntimeTargetArea(question).text.split(' ');
 
   /// Get total number of pause marks available
-  int get totalMarksCount => question.options.length;
+  int get totalMarksCount => questionRuntimeOptions(question).length;
 
   /// Get number of available (not yet placed) pause marks
   int get availableMarksCount => totalMarksCount - placedMarks.length;
@@ -29,7 +29,7 @@ extension CuesPlacementStateX on CuesPlacementState {
   /// Get set of correct positions (0-based indices where pause marks should be placed)
   /// The answer contains 1-based indices, so we subtract 1
   Set<int> get correctPositions {
-    return question.answer
+    return questionRuntimeAnswers(question)
         .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
         .where((index) => index > 0)
         .map((index) => index - 1) // Convert from 1-based to 0-based
@@ -70,6 +70,6 @@ extension CuesPlacementStateX on CuesPlacementState {
   /// Get available pause mark options that haven't been placed yet
   List<OptionEntity> get availableOptions {
     final placedOptionIds = placedMarks.values.toSet();
-    return question.options.where((option) => !placedOptionIds.contains(option.id)).toList();
+    return questionRuntimeOptions(question).where((option) => !placedOptionIds.contains(option.id)).toList();
   }
 }

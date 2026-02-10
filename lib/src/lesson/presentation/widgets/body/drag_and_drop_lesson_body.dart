@@ -36,9 +36,9 @@ class DragAndDropLessonBody extends StatelessWidget {
               type: type,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
-              targetArea: state.question.targetArea.text,
+              targetArea: questionRuntimeTargetArea(state.question).text,
               placedWords: state.placedWords,
-              correctAnswers: state.question.answer.map((a) => a.correctAnswer.text).toList(),
+              correctAnswers: questionRuntimeAnswers(state.question).map((a) => a.correctAnswer.text).toList(),
               onContinue: () {
                 if (isReview) {
                   LessonResultOverlayManager.hide();
@@ -64,19 +64,19 @@ class DragAndDropLessonBody extends StatelessWidget {
   }
 
   void _handleExplainTap(BuildContext context, QuestionEntity currentQuestion, DragAndDropState state) {
-            if (isReadOnly) {
-              context.read<LessonCubit>().consumePendingAdvance();
-            }
-            if (currentQuestion.hasExplanation && !state.showExplanation) {
-              context.read<DragAndDropCubit>().toggleExplanation();
-            }
-            (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultOverlay(
-              context,
-              state.isCorrect ? ResultType.correct : ResultType.incorrect,
-              isReview: isReadOnly,
-              showExplainAction: false,
-            );
-          }
+    if (isReadOnly) {
+      context.read<LessonCubit>().consumePendingAdvance();
+    }
+    if (currentQuestion.hasExplanation && !state.showExplanation) {
+      context.read<DragAndDropCubit>().toggleExplanation();
+    }
+    (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultOverlay(
+      context,
+      state.isCorrect ? ResultType.correct : ResultType.incorrect,
+      isReview: isReadOnly,
+      showExplainAction: false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -100,8 +100,6 @@ class DragAndDropLessonBody extends StatelessWidget {
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
-          
-
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -111,7 +109,7 @@ class DragAndDropLessonBody extends StatelessWidget {
               ],
               SentenceBuilder(
                 placedWords: state.placedWords,
-                targetArea: currentQuestion.targetArea.text,
+                targetArea: questionRuntimeTargetArea(currentQuestion).text,
                 answerCount: state.dropZoneCount,
                 onWordPlaced: (index, word, fromIndex) {
                   context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
@@ -134,7 +132,7 @@ class DragAndDropLessonBody extends StatelessWidget {
               12.verticalSpace,
               AnswerCardsArea(
                 availableWords: state.availableWords,
-                allWords: currentQuestion.options.map((option) => option.text.text).toList(),
+                allWords: questionRuntimeOptions(currentQuestion).map((option) => option.labelText).where((text) => text.isNotEmpty).toList(),
                 onWordReturnedFromSlot: (word, fromIndex) {
                   // Word is being dragged back to available area from a slot
                   context.read<DragAndDropCubit>().removeWord(fromIndex);

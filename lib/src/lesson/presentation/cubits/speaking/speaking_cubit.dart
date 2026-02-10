@@ -35,6 +35,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
       ),
     );
   }
+
   void setErrorMessage(String? message) => emit(state.copyWith(errorMessage: message));
 
   void setReviewResult(QuestionEntity question, ExerciseResultEntity result) {
@@ -217,7 +218,8 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
 
   void getScoreRecord({String? audioUrl}) async {
     final criteria = <String, int>{};
-    for (final scoringCriteria in state.question.scoringCriteria) {
+    final runtimeScoringCriteria = questionRuntimeScoringCriteria(state.question);
+    for (final scoringCriteria in runtimeScoringCriteria) {
       criteria[scoringCriteria.criteria.text] = scoringCriteria.maxScore;
     }
 
@@ -265,7 +267,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     AppLocale localeType = _localeCubit.state;
     String? answerText = state.inputMode == SpeakingInputMode.recording ? null : state.textInput;
     String? audioUrl = state.inputMode == SpeakingInputMode.recording ? url : null;
-    String knowledge = state.question.scoringCriteria.map((e) => e.criteria.text).join(' \n');
+    String knowledge = questionRuntimeScoringCriteria(state.question).map((e) => e.criteria.text).join(' \n');
     await runUseCase<ResponseBody>(
       usecase: () => _sendVoiceFeedbackStreamUseCase.call(
         VoiceFeedbackRequest(

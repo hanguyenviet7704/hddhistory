@@ -82,11 +82,16 @@ part 'presentation/cubits/lesson/lesson_cubit.dart';
 part 'presentation/cubits/lesson/lesson_state.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_cubit.dart';
 part 'presentation/cubits/mark_stress_word/mark_stress_word_state.dart';
-part 'presentation/cubits/progress_payload_helpers.dart';
 part 'presentation/cubits/speaking/speaking_cubit.dart';
 part 'presentation/cubits/speaking/speaking_state.dart';
 part 'presentation/cubits/theory/theory_cubit.dart';
 part 'presentation/cubits/theory/theory_state.dart';
+//* Presentation Layer - Helpers
+part 'presentation/helper/choice_correctness_rules.dart';
+part 'presentation/helper/choice_progress_mapper.dart';
+part 'presentation/helper/choice_scoring_rules.dart';
+part 'presentation/helper/progress_payload_mapper.dart';
+part 'presentation/helper/question_payload_access.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/keypoint_complete_page.dart';
 part 'presentation/pages/badge_progress_page.dart';

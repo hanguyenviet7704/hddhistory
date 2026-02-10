@@ -255,7 +255,9 @@ class CuesPlacementCubit extends Cubit<CuesPlacementState> {
 
 bool _cuesPlacementIsCorrect(QuestionEntity question, Map<int, int> placedMarks) {
   final placedPositions = placedMarks.keys.toSet();
-  final correctPositions = question.answer.map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
+  final correctPositions = questionRuntimeAnswers(
+    question,
+  ).map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
 
   return placedPositions.length == correctPositions.length && placedPositions.every((pos) => correctPositions.contains(pos));
 }

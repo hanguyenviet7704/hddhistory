@@ -26,7 +26,7 @@ extension ChoiceStateExtension on ChoiceState {
 
   bool get isNoCorrectSingleChoiceQuestion => payload is QuestionSingleChoiceNoCorrectAnswerPayloadEntity;
 
-  List<OptionEntity> get answerOptions => question.legacyOptionsFromPayload;
+  List<OptionEntity> get answerOptions => questionRuntimeOptions(question);
 
   /// Returns the list indices of correct options (not option IDs)
   Set<int> get correctOptionsIndices {

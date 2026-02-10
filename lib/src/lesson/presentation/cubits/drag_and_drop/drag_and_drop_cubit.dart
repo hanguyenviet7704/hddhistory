@@ -7,7 +7,7 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
   /// Load question and initialize available words
   void setQuestion(QuestionEntity question) {
     // Extract available words from options
-    final List<String> words = question.options.map((option) => option.text.text).toList();
+    final List<String> words = questionRuntimeOptions(question).map((option) => option.labelText).where((text) => text.isNotEmpty).toList();
 
     emit(
       state.copyWith(
@@ -82,10 +82,11 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
   /// Check if the answer is correct
   void checkAnswer() {
     bool allCorrect = true;
+    final answers = questionRuntimeAnswers(state.question);
 
     // Check if all positions match the correct answers
-    for (int i = 0; i < state.question.answer.length; i++) {
-      final correctAnswer = state.question.answer[i].correctAnswer;
+    for (int i = 0; i < answers.length; i++) {
+      final correctAnswer = answers[i].correctAnswer;
       final placedAnswer = state.placedWords[i];
 
       if (placedAnswer == null || placedAnswer != correctAnswer.text) {
@@ -164,7 +165,7 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     /// Đúng 1 vị trí = ( Max điểm / số vị trí( câu đúng) )
     /// Sai ko bị trừ điểm
     final placedWords = state.placedWords;
-    final correctAnswers = state.question.answer;
+    final correctAnswers = questionRuntimeAnswers(state.question);
 
     if (placedWords.isEmpty) return 0;
 
@@ -222,7 +223,9 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
 
   ExerciseResultEntity toExerciseResult() {
     final question = state.question;
-    int totalSlots = question.answer.length;
+    final runtimeOptions = questionRuntimeOptions(question);
+    final runtimeAnswers = questionRuntimeAnswers(question);
+    int totalSlots = runtimeAnswers.length;
     if (totalSlots == 0 && state.placedWords.isNotEmpty) {
       totalSlots = state.placedWords.keys.reduce(math.max) + 1;
     }
@@ -237,8 +240,8 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
         continue;
       }
 
-      final optionIndex = _dragDropFindOptionIndex(question.options, placedWord, usedIndices);
-      final sourceOption = optionIndex >= 0 ? question.options[optionIndex] : null;
+      final optionIndex = _dragDropFindOptionIndex(runtimeOptions, placedWord, usedIndices);
+      final sourceOption = optionIndex >= 0 ? runtimeOptions[optionIndex] : null;
       if (optionIndex >= 0) usedIndices.add(optionIndex);
 
       dragDropAnswer.add(_dragDropBuildOption(placedWord, sourceOption));
@@ -257,8 +260,9 @@ class DragAndDropCubit extends Cubit<DragAndDropState> {
     final question = state.question;
     if (question.id == 0) return;
 
+    final runtimeOptions = questionRuntimeOptions(question);
     final placedWords = <int, String>{};
-    final availableWords = question.options.map((option) => option.labelText).where((text) => text.isNotEmpty).toList();
+    final availableWords = runtimeOptions.map((option) => option.labelText).where((text) => text.isNotEmpty).toList();
 
     for (int i = 0; i < result.dragDropAnswer.length; i++) {
       final answer = result.dragDropAnswer[i];
@@ -301,9 +305,10 @@ OptionEntity _dragDropBuildOption(String word, OptionEntity? sourceOption) {
 }
 
 bool _dragDropIsCorrect(QuestionEntity question, Map<int, String> placedWords) {
+  final answers = questionRuntimeAnswers(question);
   bool allCorrect = true;
-  for (int i = 0; i < question.answer.length; i++) {
-    final correctAnswer = question.answer[i].correctAnswer.text;
+  for (int i = 0; i < answers.length; i++) {
+    final correctAnswer = answers[i].correctAnswer.text;
     final placedAnswer = placedWords[i];
     if (placedAnswer == null || placedAnswer != correctAnswer) {
       allCorrect = false;
