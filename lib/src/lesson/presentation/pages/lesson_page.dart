@@ -9,6 +9,10 @@ class LessonPage extends StatefulWidget {
 
 class _LessonPageState extends State<LessonPage> {
   late final LessonPageController _controller;
+  late final LessonReviewBodyBuilder _reviewBodyBuilder;
+  late final LessonBodyFactory _bodyFactory;
+  late final LessonTimelineBuilder _timelineBuilder;
+  late final LessonTrackingDelegate _trackingDelegate;
 
   @override
   void initState() {
@@ -18,6 +22,14 @@ class _LessonPageState extends State<LessonPage> {
       onClearSuppressNextAutoScroll: () => context.read<LessonCubit>().clearSuppressNextAutoScroll(),
       isMounted: () => mounted,
     );
+    _reviewBodyBuilder = const LessonReviewBodyBuilder();
+    _bodyFactory = LessonBodyFactory(
+      onAnswerChecked: _handleAnswerChecked,
+      onContinueUnsupported: () => AppDI.injector.get<ExerciseCubit>().nextQuestion(),
+      reviewBodyBuilder: _reviewBodyBuilder,
+    );
+    _timelineBuilder = const LessonTimelineBuilder();
+    _trackingDelegate = const LessonTrackingDelegate();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _showLessonNavigationPopupIfNeeded();
@@ -40,7 +52,7 @@ class _LessonPageState extends State<LessonPage> {
                 previous.currentLearningItem.id != current.currentLearningItem.id ||
                 previous.currentDocument.id != current.currentDocument.id;
           },
-          listener: (context, state) => _trackKeypointTheoryScrView(state),
+          listener: (context, state) => _trackingDelegate.trackKeypointTheoryScrView(state),
         ),
         BlocListener<ExerciseCubit, ExerciseState>(
           listenWhen: (previous, current) {
@@ -48,7 +60,7 @@ class _LessonPageState extends State<LessonPage> {
                 previous.currentLearningItem.id != current.currentLearningItem.id ||
                 previous.currentQuestion.id != current.currentQuestion.id;
           },
-          listener: (context, state) => _trackKeypointExerciseScrView(state),
+          listener: (context, state) => _trackingDelegate.trackKeypointExerciseScrView(state),
         ),
       ],
       child: BlocBuilder<LessonCubit, LessonState>(
@@ -61,8 +73,14 @@ class _LessonPageState extends State<LessonPage> {
         },
         builder: (context, state) {
           final activeBody = _buildActiveBody(context, state);
-          final lessonBody = _buildLessonListView(state, activeBody);
-          final bottomButton = _buildBottomButton(context, activeBody);
+          final lessonBody = _timelineBuilder.buildLessonListView(
+            state: state,
+            activeBody: activeBody,
+            controller: _controller,
+            buildReviewBody: _bodyFactory.buildReviewBody,
+            onTrackCurrentLearningItemScroll: _trackCurrentLearningItemScroll,
+          );
+          final bottomButton = _bodyFactory.buildBottomButton(context, activeBody);
 
           return LessonLayout(
             body: lessonBody,
@@ -96,283 +114,16 @@ class _LessonPageState extends State<LessonPage> {
     switch (state.currentLearningItem.type) {
       case LearningItemType.exercise || LearningItemType.roleplay:
         final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
-        return _buildExerciseLessonBody(question);
+        return _bodyFactory.buildExerciseBody(question);
       case LearningItemType.theory:
         return TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
     }
   }
 
-  Widget _buildLessonListView(LessonState state, Widget activeBody) {
-    final items = _collectLessonItems(state, activeBody);
-    if (items.isEmpty) {
-      _controller.handleEmptyItems();
-      return const SizedBox.shrink();
-    }
-
-    _controller.handleAutoScroll(
-      itemCount: items.length,
-      shouldSuppressAutoScroll: state.suppressNextAutoScroll,
-    );
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final listHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0;
-        return NotificationListener<UserScrollNotification>(
-          onNotification: (notification) => _controller.handleUserScroll(notification, _trackCurrentLearningItemScroll),
-          child: ListView.separated(
-            controller: _controller.scrollController,
-            itemCount: items.length,
-            padding: EdgeInsets.only(bottom: 160.h),
-            separatorBuilder: (context, index) => 40.verticalSpace,
-            itemBuilder: (context, index) {
-              if (index == items.length - 1) {
-                return KeyedSubtree(
-                  key: _controller.lastItemKey,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: listHeight),
-                    child: items[index],
-                  ),
-                );
-              }
-              return items[index];
-            },
-          ),
-        );
-      },
-    );
-  }
-
-  List<Widget> _collectLessonItems(LessonState state, Widget activeBody) {
-    final items = <Widget>[];
-    if (state.pageData.items.isEmpty) return items;
-
-    final lastItemIndex = math.min(state.currentLearningItemIndex, state.pageData.items.length - 1);
-    if (lastItemIndex < 0) return items;
-
-    for (int itemIndex = 0; itemIndex <= lastItemIndex; itemIndex++) {
-      final learningItem = state.pageData.items[itemIndex];
-      final isCurrentItem = itemIndex == state.currentLearningItemIndex;
-
-      switch (learningItem.type) {
-        case LearningItemType.theory:
-          final documents = learningItem.documents;
-          if (documents.isEmpty) continue;
-          final activeDocIndex = isCurrentItem ? math.min(state.currentLessonIndex, documents.length - 1) : documents.length - 1;
-          final maxDocIndex = activeDocIndex;
-
-          for (int docIndex = 0; docIndex <= maxDocIndex; docIndex++) {
-            if (isCurrentItem && docIndex == activeDocIndex) {
-              items.add(activeBody);
-              continue;
-            }
-
-            items.add(DocumentWidget(documents: documents[docIndex].document));
-          }
-          break;
-        case LearningItemType.exercise || LearningItemType.roleplay:
-          final questions = learningItem.questions;
-          if (questions.isEmpty) continue;
-          final activeQuestionIndex = isCurrentItem ? math.min(state.currentLessonIndex, questions.length - 1) : questions.length - 1;
-          final maxQuestionIndex = activeQuestionIndex;
-
-          for (int questionIndex = 0; questionIndex <= maxQuestionIndex; questionIndex++) {
-            if (isCurrentItem && questionIndex == activeQuestionIndex) {
-              items.add(activeBody);
-              continue;
-            }
-
-            items.add(_buildReviewExerciseBody(questions[questionIndex]));
-          }
-          break;
-      }
-    }
-
-    return items;
-  }
-
-  Widget _buildExerciseLessonBody(QuestionEntity question) {
-    final payload = question.typedPayload;
-    return switch (payload) {
-      QuestionSingleChoicePayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionMultipleChoicePayloadEntity() => MultipleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionDragAndDropPayloadEntity() => DragAndDropLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionArrangeTheSequencePayloadEntity() => ArrangeTheSequenceLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionCuesPlacementPayloadEntity() => CuesPlacementLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionStressPlacementPayloadEntity() => MarkStressWordLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionSpeakingPayloadEntity() => SpeakingLessonBody(onAnswerChecked: _handleAnswerChecked),
-      QuestionUnsupportedPayloadEntity() => UnsupportedLessonBody(
-        question: question,
-        onContinue: () => AppDI.injector.get<ExerciseCubit>().nextQuestion(),
-      ),
-      _ => UnsupportedLessonBody(
-        question: question,
-        onContinue: () => AppDI.injector.get<ExerciseCubit>().nextQuestion(),
-      ),
-    };
-  }
-
-  Widget _buildReviewExerciseBody(QuestionEntity question) {
-    final payload = question.typedPayload;
-    return switch (payload) {
-      QuestionSingleChoicePayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),
-      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),
-      QuestionMultipleChoicePayloadEntity() => _buildChoiceReviewBody(question, isMultiple: true),
-      QuestionDragAndDropPayloadEntity() => _buildDragDropReviewBody(question),
-      QuestionArrangeTheSequencePayloadEntity() => _buildArrangeSequenceReviewBody(question),
-      QuestionCuesPlacementPayloadEntity() => _buildCuesPlacementReviewBody(question),
-      QuestionStressPlacementPayloadEntity() => _buildStressPlacementReviewBody(question),
-      QuestionSpeakingPayloadEntity() => _buildSpeakingReviewBody(question),
-      QuestionUnsupportedPayloadEntity() => UnsupportedLessonBody(question: question, isReadOnly: true),
-      _ => UnsupportedLessonBody(question: question, isReadOnly: true),
-    };
-  }
-
-  Widget _buildChoiceReviewBody(QuestionEntity question, {required bool isMultiple}) {
-    return BlocProvider<ChoiceCubit>(
-      create: (_) {
-        final cubit = ChoiceCubit();
-        cubit.setQuestion(question);
-        cubit.applyExerciseResult(question.result);
-        return cubit;
-      },
-      child: isMultiple
-          ? MultipleChoiceLessonBody(
-              onAnswerChecked: (_) {},
-              isReadOnly: true,
-            )
-          : SingleChoiceLessonBody(
-              onAnswerChecked: (_) {},
-              isReadOnly: true,
-            ),
-    );
-  }
-
-  Widget _buildDragDropReviewBody(QuestionEntity question) {
-    return BlocProvider<DragAndDropCubit>(
-      create: (_) {
-        final cubit = DragAndDropCubit();
-        cubit.setQuestion(question);
-        cubit.applyExerciseResult(question.result);
-        return cubit;
-      },
-      child: DragAndDropLessonBody(
-        onAnswerChecked: (_) {},
-        isReadOnly: true,
-      ),
-    );
-  }
-
-  Widget _buildArrangeSequenceReviewBody(QuestionEntity question) {
-    return BlocProvider<ArrangeTheSequenceCubit>(
-      create: (_) {
-        final cubit = ArrangeTheSequenceCubit();
-        cubit.setQuestion(question);
-        cubit.applyExerciseResult(question.result);
-        return cubit;
-      },
-      child: ArrangeTheSequenceLessonBody(
-        onAnswerChecked: (_) {},
-        isReadOnly: true,
-      ),
-    );
-  }
-
-  Widget _buildCuesPlacementReviewBody(QuestionEntity question) {
-    return BlocProvider<CuesPlacementCubit>(
-      create: (_) {
-        final cubit = CuesPlacementCubit();
-        cubit.setQuestion(question);
-        cubit.applyExerciseResult(question.result);
-        return cubit;
-      },
-      child: CuesPlacementLessonBody(
-        onAnswerChecked: (_) {},
-        isReadOnly: true,
-      ),
-    );
-  }
-
-  Widget _buildStressPlacementReviewBody(QuestionEntity question) {
-    return BlocProvider<MarkStressWordCubit>(
-      create: (_) {
-        final cubit = MarkStressWordCubit();
-        cubit.setQuestion(question);
-        cubit.applyExerciseResult(question.result);
-        return cubit;
-      },
-      child: MarkStressWordLessonBody(
-        onAnswerChecked: (_) {},
-        isReadOnly: true,
-      ),
-    );
-  }
-
-  Widget _buildSpeakingReviewBody(QuestionEntity question) {
-    return BlocProvider<SpeakingCubit>(
-      create: (_) {
-        final cubit = SpeakingCubit(
-          AppDI.injector.get<SendVoiceFeedbackStreamUseCase>(),
-          AppDI.injector.get<SendScoreRecordUseCase>(),
-          AppDI.injector.get<UploadCubit>(),
-          AppDI.injector.get<LocaleCubit>(),
-        );
-        cubit.setReviewResult(question, question.result);
-        return cubit;
-      },
-      child: SpeakingLessonBody(
-        onAnswerChecked: (_) {},
-        isReadOnly: true,
-      ),
-    );
-  }
-
-  Widget _buildBottomButton(BuildContext context, Widget lessonBody) {
-    return switch (lessonBody) {
-      SingleChoiceLessonBody body => body.buildBottomButton(context),
-      MultipleChoiceLessonBody body => body.buildBottomButton(context),
-      DragAndDropLessonBody body => body.buildBottomButton(context),
-      ArrangeTheSequenceLessonBody body => body.buildBottomButton(context),
-      CuesPlacementLessonBody body => body.buildBottomButton(context),
-      MarkStressWordLessonBody body => body.buildBottomButton(context),
-      SpeakingLessonBody body => body.buildBottomButton(context),
-      UnsupportedLessonBody body => body.buildBottomButton(context),
-      TheoryLessonBody body => body.buildBottomButton(context),
-      _ => const SizedBox.shrink(),
-    };
-  }
-
-  void _trackKeypointTheoryScrView(TheoryState state) {
-    if (state.currentLearningItem.id.isEmpty) return;
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData == null) return;
-    AppService.instance.appTrackingService.trackKeypointTheoryScrView(trackingData);
-  }
-
-  void _trackKeypointExerciseScrView(ExerciseState state) {
-    if (state.currentLearningItem.type != LearningItemType.exercise) return;
-    if (state.currentQuestion.id == 0) return;
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData == null) return;
-    AppService.instance.appTrackingService.trackKeypointExerciseScrView(trackingData);
-  }
-
   void _trackCurrentLearningItemScroll() {
-    final lessonState = context.read<LessonCubit>().state;
-    final learningItemType = lessonState.currentLearningItem.type;
-    if (learningItemType != LearningItemType.exercise && learningItemType != LearningItemType.theory) return;
-
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData == null) return;
-
-    final scrollKey = '${lessonState.currentLearningItem.id}:${lessonState.currentLessonIndex}:${learningItemType.name}';
-    if (!_controller.shouldTrackScroll(scrollKey)) return;
-
-    if (learningItemType == LearningItemType.exercise) {
-      AppService.instance.appTrackingService.trackKeypointExerciseScroll(trackingData);
-      return;
-    }
-
-    AppService.instance.appTrackingService.trackKeypointTheoryScroll(trackingData);
+    _trackingDelegate.trackCurrentLearningItemScroll(
+      lessonState: context.read<LessonCubit>().state,
+      shouldTrackScroll: _controller.shouldTrackScroll,
+    );
   }
 }

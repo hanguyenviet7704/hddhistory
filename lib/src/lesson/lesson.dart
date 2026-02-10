@@ -94,7 +94,11 @@ part 'presentation/helper/question_payload_access.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/keypoint_complete_page.dart';
 part 'presentation/pages/badge_progress_page.dart';
+part 'presentation/pages/lesson_body_factory.dart';
 part 'presentation/pages/lesson_page.dart';
+part 'presentation/pages/lesson_review_body_builder.dart';
+part 'presentation/pages/lesson_timeline_builder.dart';
+part 'presentation/pages/lesson_tracking_delegate.dart';
 part 'presentation/pages/review_time_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
