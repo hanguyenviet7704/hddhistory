@@ -1,6 +1,6 @@
 # API Integration Guide
 
-**Last Updated:** Jan 22, 2026
+**Last Updated:** Feb 10, 2026
 **Related:** [System Architecture](./system-architecture.md)
 
 ---

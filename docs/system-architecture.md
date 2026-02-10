@@ -1,8 +1,9 @@
 # System Architecture
 
-**Last Updated:** Jan 22, 2026
-**Architecture Pattern:** Clean Architecture + BLoC State Management
+**Last Updated:** Feb 10, 2026
+**Architecture Pattern:** Clean Architecture + BLoC State Management + Factory Patterns
 **Platforms:** iOS (12+) | Android (API 21+)
+**Current Focus:** feature/MEUP-637 - Lesson refactoring with strongly-typed payloads
 
 ---
 
@@ -384,6 +385,108 @@ void runUseCase<T>({...}) async {
 
 ---
 
+## 6. Lesson Page Architecture (MEUP-637)
+
+### Type-Safe Question Payload System
+
+**Problem:** 8+ question types with different data structures required manual type checking, runtime errors, and boilerplate.
+
+**Solution:** Union types (freezed) + factory pattern for type-safe routing
+
+```
+QuestionPayloadEntity (Union Type)
+├── singleChoice(options, correctId)
+├── singleChoiceNoCorrectAnswer(options, documentUrl) [NEW]
+├── multipleChoice(options, correctIds)
+├── dragAndDrop(sentences, words)
+├── arrangeTheSequence(items, correctOrder)
+├── cuesPlacement(cues, positions)
+├── stressPlacement(words, stressMarks)
+└── speaking(instruction, maxDuration)
+```
+
+### Factory Pattern for Body Routing
+
+**LessonBodyFactory** - Single responsibility: map payload types to UI bodies
+
+```dart
+class LessonBodyFactory {
+  static Widget createBody({
+    required QuestionPayloadEntity payload,
+    required QuestionEntity question,
+    required void Function(AnswerSubmission) onAnswerSubmitted,
+  }) {
+    return payload.when(
+      singleChoice: (options, correctId) => ChoiceQuestionBody(...),
+      singleChoiceNoCorrectAnswer: (options, docUrl) => NoCorrectAnswerChoiceBody(...),
+      speaking: (instruction, duration) => SpeakingQuestionBody(...),
+      // exhaustive matching ensures all types handled
+    );
+  }
+}
+```
+
+**Usage in ExerciseCubit:**
+```dart
+void loadQuestion(QuestionEntity question) {
+  final body = LessonBodyFactory.createBody(
+    payload: question.payload,
+    question: question,
+    onAnswerSubmitted: _onAnswerSubmitted,
+  );
+  emit(ExerciseState.loaded(questionBody: body));
+}
+```
+
+### Page Structure
+
+```
+LessonPage
+├── LessonCubit (overall lesson state)
+├── Top Section: Theory/Document Display
+│   └── DocumentWidget (displays lesson content)
+├── Middle Section: Exercise
+│   ├── ExerciseCubit (exercise-specific state)
+│   └── LessonBodyFactory.createBody() → Exercise widget
+├── Bottom Section: Review/Timeline
+│   └── LessonTimelineBuilder (moved to common) → ReviewTimeline
+└── Floating CTA: Submit Answer
+    └── ChoiceSubmissionCubit → Result validation
+```
+
+### New Routes (MEUP-637)
+
+```
+/course/{courseId}/lesson/{lessonId}/
+├── /exercise/{exerciseId}
+├── /noCorrectAnswerDocument/:groupId  [NEW]
+└── /review
+```
+
+**NoCorrectAnswerDocumentPage:** Special page for questions without correct answers
+- Displays document/reference material
+- No submission required
+- Routes back to lesson after review
+
+### Payload Mapping & Helpers
+
+**Extracted from Exercise Cubits:**
+- **ChoiceCorrectnessRules** - Validates answer correctness
+- **ChoiceScoringRules** - Calculates score
+- **ChoiceProgressMapper** - Maps to progress entity
+- **ProgressPayloadMapper** - Normalizes progress payload
+
+**Benefits:** Reduces duplication across exercise types, easier testing
+
+### Tracking & Analytics
+
+**LessonTrackingDelegate** - Centralized lesson event tracking
+- Question view, answer submission, result feedback
+- Integration with tracking service
+- Automatic parameter enrichment (course, lesson, question type)
+
+---
+
 ## Related Documentation
 
 - **[API Integration Guide](./api-integration-guide.md)**: REST/GraphQL patterns, authentication, DI, analytics
@@ -393,5 +496,5 @@ void runUseCase<T>({...}) async {
 ---
 
 **Document Maintained By:** Architecture Team
-**Last Review:** Jan 22, 2026
+**Last Review:** Feb 10, 2026
 **Next Review:** Mar 22, 2026
