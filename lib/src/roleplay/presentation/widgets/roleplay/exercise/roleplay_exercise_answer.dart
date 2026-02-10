@@ -26,7 +26,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     height: 1.75,
   );
 
-  bool get _isSpeakingPayload => exercise.payloadOrLegacy is QuestionSpeakingPayloadEntity;
+  bool get _isSpeakingPayload => exercise.typedPayload is QuestionSpeakingPayloadEntity;
 
   bool get _showsStatusHeader => !_isSpeakingPayload;
 

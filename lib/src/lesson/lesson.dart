@@ -47,7 +47,6 @@ part 'domain/entities/exercise_entity.dart';
 part 'domain/entities/lesson_entity.dart';
 part 'domain/entities/option_entity.dart';
 part 'domain/entities/question_entity.dart';
-part 'domain/entities/question_legacy_adapter.dart';
 part 'domain/entities/question_payload_entity.dart';
 part 'domain/entities/question_types/choice_option_entity.dart';
 part 'domain/entities/question_types/drag_drop_answer_entity.dart';

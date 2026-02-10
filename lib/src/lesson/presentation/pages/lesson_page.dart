@@ -191,7 +191,7 @@ class _LessonPageState extends State<LessonPage> {
   }
 
   Widget _buildExerciseLessonBody(QuestionEntity question) {
-    final payload = question.payloadOrLegacy;
+    final payload = question.typedPayload;
     return switch (payload) {
       QuestionSingleChoicePayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
       QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _handleAnswerChecked),
@@ -213,7 +213,7 @@ class _LessonPageState extends State<LessonPage> {
   }
 
   Widget _buildReviewExerciseBody(QuestionEntity question) {
-    final payload = question.payloadOrLegacy;
+    final payload = question.typedPayload;
     return switch (payload) {
       QuestionSingleChoicePayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),
       QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),

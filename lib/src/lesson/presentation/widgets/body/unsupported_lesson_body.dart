@@ -13,7 +13,7 @@ class UnsupportedLessonBody extends StatelessWidget {
   });
 
   String _unsupportedTypeLabel() {
-    final payload = question.payloadOrLegacy;
+    final payload = question.typedPayload;
     if (payload is QuestionUnsupportedPayloadEntity && payload.rawType.isNotEmpty) {
       return payload.rawType;
     }

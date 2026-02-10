@@ -15,7 +15,7 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
     required this.answerLabel,
   });
 
-  QuestionPayloadEntity get _payload => exercise.payloadOrLegacy;
+  QuestionPayloadEntity get _payload => exercise.typedPayload;
 
   @override
   Widget build(BuildContext context) {

@@ -93,8 +93,6 @@ enum FormDragDropType {
 
 extension QuestionModelExtension on QuestionModel {
   QuestionEntity toEntity() {
-    final mappedAnswers = answer.map((model) => model.toEntity()).toList();
-    final mappedOptions = options.map((model) => model.toEntity()).toList();
     final mappedScoringCriteria = scoringCriteria.map((model) => model.toEntity()).toList();
 
     return QuestionEntity(
@@ -105,17 +103,12 @@ extension QuestionModelExtension on QuestionModel {
       tag: tag.toEntity(),
       document: document.map((model) => model.toEntity()).toList(),
       explanation: explanation,
-      targetArea: targetArea,
-      answer: mappedAnswers,
-      options: mappedOptions,
       level: level,
       form: form,
-      record: record,
       maxDuration: maxDuration,
       maxCharacter: maxCharacter,
       maxScore: maxScore,
       completionTime: completionTime,
-      scoringCriteria: mappedScoringCriteria,
       mainQuestion: mainQuestion,
       keypoint: keypoint.toEntity(),
       typedPayload: _toTypedPayload(mappedScoringCriteria),

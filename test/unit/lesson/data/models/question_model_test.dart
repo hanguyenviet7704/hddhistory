@@ -35,7 +35,7 @@ void main() {
       );
 
       final entity = model.toEntity();
-      final payload = entity.payloadOrLegacy;
+      final payload = entity.typedPayload;
 
       expect(entity.type, QuestionTypeEnum.singleChoice);
       expect(payload, isA<QuestionSingleChoiceNoCorrectAnswerPayloadEntity>());
@@ -55,7 +55,7 @@ void main() {
       );
 
       final entity = model.toEntity();
-      final payload = entity.payloadOrLegacy;
+      final payload = entity.typedPayload;
 
       expect(payload, isA<QuestionUnsupportedPayloadEntity>());
       expect((payload as QuestionUnsupportedPayloadEntity).rawType, 'unknown');

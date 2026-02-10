@@ -33,7 +33,7 @@ bool choiceIsMultipleCorrect(QuestionEntity question, Set<int> selectedIndices) 
 
 bool choiceIsSingleCorrect(QuestionEntity question, int selectedIndex) {
   if (selectedIndex < 0) return false;
-  if (question.payloadOrLegacy is QuestionSingleChoiceNoCorrectAnswerPayloadEntity) return true;
+  if (question.typedPayload is QuestionSingleChoiceNoCorrectAnswerPayloadEntity) return true;
 
   final options = questionRuntimeOptions(question);
   final correctIndex = options.indexWhere((option) => option.isCorrect);

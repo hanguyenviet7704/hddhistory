@@ -2,10 +2,9 @@ part of '../../lesson.dart';
 
 /// Runtime payload accessors for presentation.
 ///
-/// These helpers prioritize typed payload fields and keep legacy fields only as
-/// a compatibility fallback while migration is in progress.
+/// These helpers read from typed payload only.
 List<OptionEntity> questionRuntimeOptions(QuestionEntity question) {
-  final payload = question.payloadOrLegacy;
+  final payload = question.typedPayload;
   return switch (payload) {
     QuestionSingleChoicePayloadEntity(:final options) => options.map(_optionFromChoicePayload).toList(),
     QuestionMultipleChoicePayloadEntity(:final options) => options.map(_optionFromChoicePayload).toList(),
@@ -14,44 +13,45 @@ List<OptionEntity> questionRuntimeOptions(QuestionEntity question) {
     QuestionArrangeTheSequencePayloadEntity(:final options) => options.map(_optionFromDragDropPayload).toList(),
     QuestionCuesPlacementPayloadEntity(:final options) => options.map(_optionFromDragDropPayload).toList(),
     QuestionStressPlacementPayloadEntity(:final options) => options.map(_optionFromDragDropPayload).toList(),
-    _ => question.options,
+    QuestionSpeakingPayloadEntity() || QuestionUnsupportedPayloadEntity() => const [],
+    _ => const [],
   };
 }
 
 List<AnswerEntity> questionRuntimeAnswers(QuestionEntity question) {
-  final payload = question.payloadOrLegacy;
+  final payload = question.typedPayload;
   return switch (payload) {
     QuestionDragAndDropPayloadEntity(:final answers) => answers.map(_answerFromDragDropPayload).toList(),
     QuestionArrangeTheSequencePayloadEntity(:final answers) => answers.map(_answerFromDragDropPayload).toList(),
     QuestionCuesPlacementPayloadEntity(:final answers) => answers.map(_answerFromDragDropPayload).toList(),
     QuestionStressPlacementPayloadEntity(:final answers) => answers.map(_answerFromDragDropPayload).toList(),
-    _ => question.answer,
+    _ => const [],
   };
 }
 
 BaseMultiLanguage questionRuntimeTargetArea(QuestionEntity question) {
-  final payload = question.payloadOrLegacy;
+  final payload = question.typedPayload;
   return switch (payload) {
     QuestionDragAndDropPayloadEntity(:final targetArea) => targetArea,
     QuestionCuesPlacementPayloadEntity(:final targetArea) => targetArea,
     QuestionStressPlacementPayloadEntity(:final targetArea) => targetArea,
-    _ => question.targetArea,
+    _ => const BaseMultiLanguage(),
   };
 }
 
 String questionRuntimeRecord(QuestionEntity question) {
-  final payload = question.payloadOrLegacy;
+  final payload = question.typedPayload;
   return switch (payload) {
     QuestionSpeakingPayloadEntity(:final record) => record,
-    _ => question.record,
+    _ => '',
   };
 }
 
 List<ScoringCriteriaEntity> questionRuntimeScoringCriteria(QuestionEntity question) {
-  final payload = question.payloadOrLegacy;
+  final payload = question.typedPayload;
   return switch (payload) {
     QuestionSpeakingPayloadEntity(:final scoringCriteria) => scoringCriteria,
-    _ => question.scoringCriteria,
+    _ => const [],
   };
 }
 

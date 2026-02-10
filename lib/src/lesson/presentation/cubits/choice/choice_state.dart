@@ -20,7 +20,7 @@ sealed class ChoiceState with _$ChoiceState {
 }
 
 extension ChoiceStateExtension on ChoiceState {
-  QuestionPayloadEntity get payload => question.payloadOrLegacy;
+  QuestionPayloadEntity get payload => question.typedPayload;
 
   bool get isMultipleChoiceQuestion => payload is QuestionMultipleChoicePayloadEntity;
 

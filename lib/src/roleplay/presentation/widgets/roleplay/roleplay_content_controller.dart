@@ -259,7 +259,7 @@ class RoleplayContentController extends ChangeNotifier {
     if (_isDisposing) return;
     if (_pendingExerciseContentIndex != contentIndex) return;
 
-    final payload = exercise.payloadOrLegacy;
+    final payload = exercise.typedPayload;
     final shouldSetQuestionPoint = payload is! QuestionSpeakingPayloadEntity && payload is! QuestionUnsupportedPayloadEntity;
     if (shouldSetQuestionPoint) {
       AppDI.injector.get<ExerciseCubit>().setQuestionPoint(exercise);

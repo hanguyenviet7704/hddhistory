@@ -231,7 +231,7 @@ class _RoleplayExerciseOverlayInteractiveState extends State<RoleplayExerciseOve
       ),
     );
 
-    final payload = widget.exercise.payloadOrLegacy;
+    final payload = widget.exercise.typedPayload;
     switch (payload) {
       case QuestionSingleChoicePayloadEntity() || QuestionSingleChoiceNoCorrectAnswerPayloadEntity() || QuestionMultipleChoicePayloadEntity():
         AppDI.injector.get<ChoiceCubit>().applyExerciseResult(result);

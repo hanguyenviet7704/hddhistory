@@ -31,7 +31,7 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   bool _hasTrackedResultScrollBottom = false;
 
   RoleplayTrackingData? _trackingData() => RoleplayTrackingData.fromContext();
-  QuestionPayloadEntity get _payload => widget.exercise.payloadOrLegacy;
+  QuestionPayloadEntity get _payload => widget.exercise.typedPayload;
   bool get _isSpeakingPayload => _payload is QuestionSpeakingPayloadEntity;
   bool get _isNoCorrectSingleChoicePayload => _payload is QuestionSingleChoiceNoCorrectAnswerPayloadEntity;
   bool get _isUnsupportedPayload => _payload is QuestionUnsupportedPayloadEntity;
