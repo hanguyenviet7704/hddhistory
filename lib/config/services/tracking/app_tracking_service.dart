@@ -517,6 +517,22 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackCourseSelectCourseClick(
+    SkillsetEntity skillset,
+    CourseEntity course, {
+    required String source,
+  }) async {
+    final trackingData = CourseTrackingData(skillset: skillset, course: course);
+    _appTrackingService.trackEvent(
+      TrackingKey.courseSelectCourseClick,
+      parameters: {
+        ..._courseParams(trackingData),
+        'source': source,
+      },
+    );
+  }
+
+  @override
   Future<void> trackCourseSelectExit() async {
     _appTrackingService.trackEvent(TrackingKey.courseSelectExit);
   }

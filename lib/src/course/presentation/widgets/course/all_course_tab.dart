@@ -109,6 +109,12 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       return;
     }
 
+    AppService.instance.appTrackingService.trackCourseSelectCourseClick(
+      skillset,
+      course,
+      source: 'all_course',
+    );
+
     final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
     if (isFirstTimeUserChooseCourse) {
       AppService.instance.appTrackingService.trackCourseSelectFirstCourseClick(skillset, course);

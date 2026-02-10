@@ -76,6 +76,11 @@ abstract interface class ITrackingService {
   Future<void> trackCourseSelectCategorySlide();
   Future<void> trackCourseSelectCategoryClick(SkillsetEntity skillset, {required bool isRightDirection});
   Future<void> trackCourseSelectFirstCourseClick(SkillsetEntity skillset, CourseEntity course);
+  Future<void> trackCourseSelectCourseClick(
+    SkillsetEntity skillset,
+    CourseEntity course, {
+    required String source,
+  });
   Future<void> trackCourseSelectExit();
   Future<void> trackCourseSelectAllCourseScroll({required bool isSameCategory});
 

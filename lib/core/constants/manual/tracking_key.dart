@@ -71,6 +71,7 @@ mixin TrackingKey {
   static const String courseSelectCategorySlide = 'course_select_category_slide';
   static const String courseSelectCategoryClick = 'course_select_category_click';
   static const String courseSelectFirstCourseClick = 'course_select_1stcourse_click';
+  static const String courseSelectCourseClick = 'course_select_course_click';
   static const String courseSelectExit = 'course_select_exit';
   static const String courseSelectAllCourseScroll = 'course_select_all_course_scroll';
 
