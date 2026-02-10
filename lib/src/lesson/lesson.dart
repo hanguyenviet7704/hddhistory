@@ -89,6 +89,7 @@ part 'presentation/cubits/theory/theory_state.dart';
 part 'presentation/helper/choice_correctness_rules.dart';
 part 'presentation/helper/choice_progress_mapper.dart';
 part 'presentation/helper/choice_scoring_rules.dart';
+part 'presentation/helper/no_correct_answer_document_group_resolver.dart';
 part 'presentation/helper/progress_payload_mapper.dart';
 part 'presentation/helper/question_payload_access.dart';
 //* Presentation Layer - Pages
@@ -96,6 +97,7 @@ part 'presentation/pages/badge_progress_page.dart';
 part 'presentation/pages/keypoint_complete_page.dart';
 part 'presentation/pages/lesson_body_factory.dart';
 part 'presentation/pages/lesson_page.dart';
+part 'presentation/pages/no_correct_answer_document_page.dart';
 part 'presentation/pages/review_time_page.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
@@ -103,6 +105,7 @@ part 'presentation/widgets/body/cues_placement_lesson_body.dart';
 part 'presentation/widgets/body/drag_and_drop_lesson_body.dart';
 part 'presentation/widgets/body/mark_stress_word_lesson_body.dart';
 part 'presentation/widgets/body/multiple_choice_lesson_body.dart';
+part 'presentation/widgets/body/single_choice_no_correct_answer_lesson_body.dart';
 part 'presentation/widgets/body/single_choice_lesson_body.dart';
 part 'presentation/widgets/body/speaking_lesson_body.dart';
 part 'presentation/widgets/body/theory_lesson_body.dart';

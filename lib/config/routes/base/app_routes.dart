@@ -47,6 +47,7 @@ mixin RoutePath {
 
   //? Course - Lesson
   static const String lesson = 'lesson';
+  static const String noCorrectAnswerDocument = 'no-correct-answer-document/:groupId';
   static const String reviewTime = 'review-time';
   static const String keypointComplete = 'keypoint-complete';
   static const String badgeProgress = 'badge-progress';
@@ -118,6 +119,7 @@ mixin RouteNamed {
 
   //? Course - Lesson
   static const String lesson = 'Lesson';
+  static const String noCorrectAnswerDocument = 'No Correct Answer Document';
   static const String reviewTime = 'Review Time';
   static const String keypointComplete = 'Keypoint Complete';
   static const String badgeProgress = 'Badge Progress';

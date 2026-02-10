@@ -125,7 +125,11 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   Widget _buildExerciseLessonBody(BuildContext context) {
     final onChecked = widget.readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
     return switch (_payload) {
-      QuestionSingleChoicePayloadEntity() || QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceLessonBody(
+      QuestionSingleChoicePayloadEntity() => SingleChoiceLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceNoCorrectAnswerLessonBody(
         onAnswerChecked: onChecked,
         isReadOnly: widget.readOnly,
       ),
@@ -170,6 +174,7 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   Widget _buildBottomButton(BuildContext context, Widget lessonBody) {
     return switch (lessonBody) {
       SingleChoiceLessonBody body => body.buildBottomButton(context),
+      SingleChoiceNoCorrectAnswerLessonBody body => body.buildBottomButton(context),
       MultipleChoiceLessonBody body => body.buildBottomButton(context),
       DragAndDropLessonBody body => body.buildBottomButton(context),
       ArrangeTheSequenceLessonBody body => body.buildBottomButton(context),

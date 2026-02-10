@@ -33,7 +33,7 @@ void main() {
 
       final exerciseCases = <({QuestionPayloadEntity payload, Type widgetType})>[
         (payload: const QuestionPayloadEntity.singleChoice(), widgetType: SingleChoiceLessonBody),
-        (payload: const QuestionPayloadEntity.singleChoiceNoCorrectAnswer(), widgetType: SingleChoiceLessonBody),
+        (payload: const QuestionPayloadEntity.singleChoiceNoCorrectAnswer(), widgetType: SingleChoiceNoCorrectAnswerLessonBody),
         (payload: const QuestionPayloadEntity.multipleChoice(), widgetType: MultipleChoiceLessonBody),
         (payload: const QuestionPayloadEntity.dragAndDrop(), widgetType: DragAndDropLessonBody),
         (payload: const QuestionPayloadEntity.arrangeTheSequence(), widgetType: ArrangeTheSequenceLessonBody),
@@ -91,9 +91,20 @@ void main() {
       expect(multipleChild, isA<MultipleChoiceLessonBody>());
       expect((multipleChild as MultipleChoiceLessonBody).isReadOnly, isTrue);
 
-      final unsupportedReview = factory.buildReviewBody(
+      final noCorrectReview = factory.buildReviewBody(
         const QuestionEntity(
           id: 12,
+          typedPayload: QuestionPayloadEntity.singleChoiceNoCorrectAnswer(),
+        ),
+      );
+      expect(noCorrectReview, isA<BlocProvider<ChoiceCubit>>());
+      final noCorrectChild = (noCorrectReview as BlocProvider<ChoiceCubit>).child;
+      expect(noCorrectChild, isA<SingleChoiceNoCorrectAnswerLessonBody>());
+      expect((noCorrectChild as SingleChoiceNoCorrectAnswerLessonBody).isReadOnly, isTrue);
+
+      final unsupportedReview = factory.buildReviewBody(
+        const QuestionEntity(
+          id: 13,
           typedPayload: QuestionPayloadEntity.unsupported(rawType: 'legacy_unknown'),
         ),
       );
@@ -122,6 +133,7 @@ void main() {
           child: Builder(
             builder: (context) {
               capturedButtons.add(factory.buildBottomButton(context, SingleChoiceLessonBody(onAnswerChecked: (_) {})));
+              capturedButtons.add(factory.buildBottomButton(context, SingleChoiceNoCorrectAnswerLessonBody(onAnswerChecked: (_) {})));
               capturedButtons.add(factory.buildBottomButton(context, MultipleChoiceLessonBody(onAnswerChecked: (_) {})));
               capturedButtons.add(factory.buildBottomButton(context, DragAndDropLessonBody(onAnswerChecked: (_) {})));
               capturedButtons.add(factory.buildBottomButton(context, ArrangeTheSequenceLessonBody(onAnswerChecked: (_) {})));
@@ -147,14 +159,15 @@ void main() {
 
       expect(capturedButtons[0], isA<BlocBuilder<ChoiceCubit, ChoiceState>>());
       expect(capturedButtons[1], isA<BlocBuilder<ChoiceCubit, ChoiceState>>());
-      expect(capturedButtons[2], isA<BlocBuilder<DragAndDropCubit, DragAndDropState>>());
-      expect(capturedButtons[3], isA<BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>>());
-      expect(capturedButtons[4], isA<BlocBuilder<CuesPlacementCubit, CuesPlacementState>>());
-      expect(capturedButtons[5], isA<BlocBuilder<MarkStressWordCubit, MarkStressWordState>>());
-      expect(capturedButtons[6], isA<SpeakingBottomAction>());
-      expect(capturedButtons[7], isA<ExerciseContinueButton>());
-      expect(capturedButtons[8], isA<BlocBuilder<TheoryCubit, TheoryState>>());
-      expect(capturedButtons[9], isA<SizedBox>());
+      expect(capturedButtons[2], isA<BlocBuilder<ChoiceCubit, ChoiceState>>());
+      expect(capturedButtons[3], isA<BlocBuilder<DragAndDropCubit, DragAndDropState>>());
+      expect(capturedButtons[4], isA<BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>>());
+      expect(capturedButtons[5], isA<BlocBuilder<CuesPlacementCubit, CuesPlacementState>>());
+      expect(capturedButtons[6], isA<BlocBuilder<MarkStressWordCubit, MarkStressWordState>>());
+      expect(capturedButtons[7], isA<SpeakingBottomAction>());
+      expect(capturedButtons[8], isA<ExerciseContinueButton>());
+      expect(capturedButtons[9], isA<BlocBuilder<TheoryCubit, TheoryState>>());
+      expect(capturedButtons[10], isA<SizedBox>());
     });
   });
 }

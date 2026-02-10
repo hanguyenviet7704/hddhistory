@@ -8,7 +8,7 @@ class LessonReviewBodyBuilder {
 
     return switch (payload) {
       QuestionSingleChoicePayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),
-      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => _buildChoiceReviewBody(question, isMultiple: false),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => _buildNoCorrectSingleChoiceReviewBody(question),
       QuestionMultipleChoicePayloadEntity() => _buildChoiceReviewBody(question, isMultiple: true),
       QuestionDragAndDropPayloadEntity() => _buildDragDropReviewBody(question),
       QuestionArrangeTheSequencePayloadEntity() => _buildArrangeSequenceReviewBody(question),
@@ -37,6 +37,21 @@ class LessonReviewBodyBuilder {
               onAnswerChecked: (_) {},
               isReadOnly: true,
             ),
+    );
+  }
+
+  Widget _buildNoCorrectSingleChoiceReviewBody(QuestionEntity question) {
+    return _buildReadOnlyCubitBody<ChoiceCubit>(
+      createCubit: ChoiceCubit.new,
+      setupCubit: (cubit) {
+        cubit
+          ..setQuestion(question)
+          ..applyExerciseResult(question.result);
+      },
+      child: SingleChoiceNoCorrectAnswerLessonBody(
+        onAnswerChecked: (_) {},
+        isReadOnly: true,
+      ),
     );
   }
 

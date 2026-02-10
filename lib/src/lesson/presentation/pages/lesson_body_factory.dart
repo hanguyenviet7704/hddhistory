@@ -18,7 +18,7 @@ class LessonBodyFactory {
 
     return switch (payload) {
       QuestionSingleChoicePayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _onAnswerChecked),
-      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceNoCorrectAnswerLessonBody(onAnswerChecked: _onAnswerChecked),
       QuestionMultipleChoicePayloadEntity() => MultipleChoiceLessonBody(onAnswerChecked: _onAnswerChecked),
       QuestionDragAndDropPayloadEntity() => DragAndDropLessonBody(onAnswerChecked: _onAnswerChecked),
       QuestionArrangeTheSequencePayloadEntity() => ArrangeTheSequenceLessonBody(onAnswerChecked: _onAnswerChecked),
@@ -43,6 +43,7 @@ class LessonBodyFactory {
   Widget buildBottomButton(BuildContext context, Widget lessonBody) {
     return switch (lessonBody) {
       SingleChoiceLessonBody body => body.buildBottomButton(context),
+      SingleChoiceNoCorrectAnswerLessonBody body => body.buildBottomButton(context),
       MultipleChoiceLessonBody body => body.buildBottomButton(context),
       DragAndDropLessonBody body => body.buildBottomButton(context),
       ArrangeTheSequenceLessonBody body => body.buildBottomButton(context),
