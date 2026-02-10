@@ -1,4 +1,4 @@
-part of '../../lesson.dart';
+part of '../../../../lesson.dart';
 
 class LessonReviewBodyBuilder {
   const LessonReviewBodyBuilder();
