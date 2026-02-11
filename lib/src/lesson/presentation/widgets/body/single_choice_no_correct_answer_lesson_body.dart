@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class SingleChoiceNoCorrectAnswerLessonBody extends StatelessWidget {
+class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -15,17 +15,13 @@ class SingleChoiceNoCorrectAnswerLessonBody extends StatelessWidget {
     ResultType type, {
     bool isReview = false,
   }) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<ChoiceCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<ChoiceCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<ChoiceCubit, ChoiceState>(
           builder: (context, state) {
@@ -34,18 +30,7 @@ class SingleChoiceNoCorrectAnswerLessonBody extends StatelessWidget {
               title: context.text.exercise.exerciseLessonCompleteTitle,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
+              onContinue: onContinue,
               onExplain: null,
             );
           },
@@ -113,6 +98,7 @@ class SingleChoiceNoCorrectAnswerLessonBody extends StatelessWidget {
     );
   }
 
+  @override
   Widget buildBottomButton(BuildContext context) {
     return _buildSingleChoiceBottomButton(context);
   }

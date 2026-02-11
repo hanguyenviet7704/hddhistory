@@ -92,6 +92,7 @@ part 'presentation/helper/choice_scoring_rules.dart';
 part 'presentation/helper/no_correct_answer_document_group_resolver.dart';
 part 'presentation/helper/progress_payload_mapper.dart';
 part 'presentation/helper/question_payload_access.dart';
+part 'presentation/helper/lesson_result_overlay_helper.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/badge_progress_page.dart';
 part 'presentation/pages/keypoint_complete_page.dart';
@@ -100,6 +101,7 @@ part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/no_correct_answer_document_page.dart';
 part 'presentation/pages/review_time_page.dart';
 //* Presentation Layer - Widgets
+part 'presentation/widgets/body/lesson_body_widget.dart';
 part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
 part 'presentation/widgets/body/cues_placement_lesson_body.dart';
 part 'presentation/widgets/body/drag_and_drop_lesson_body.dart';

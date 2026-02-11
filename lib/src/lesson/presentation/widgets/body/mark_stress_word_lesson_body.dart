@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class MarkStressWordLessonBody extends StatelessWidget {
+class MarkStressWordLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -16,22 +16,17 @@ class MarkStressWordLessonBody extends StatelessWidget {
     bool isReview = false,
     bool showExplainAction = true,
   }) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<MarkStressWordCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<MarkStressWordCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<MarkStressWordCubit, MarkStressWordState>(
           builder: (context, state) {
             final hasExplanation = state.question.hasExplanation;
-
             return MarkStressWordResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
@@ -39,22 +34,9 @@ class MarkStressWordLessonBody extends StatelessWidget {
               words: state.words,
               selectedIndices: state.selectedWordIndices,
               correctIndices: state.correctWordIndices,
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
+              onContinue: onContinue,
               onExplain: showExplainAction && hasExplanation
-                  ? () {
-                      context.read<MarkStressWordCubit>().toggleExplanation();
-                    }
+                  ? () => context.read<MarkStressWordCubit>().toggleExplanation()
                   : null,
             );
           },
@@ -178,7 +160,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for mark stress word questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<MarkStressWordCubit, MarkStressWordState>(
       builder: (context, state) {

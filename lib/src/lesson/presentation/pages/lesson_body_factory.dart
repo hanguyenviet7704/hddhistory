@@ -41,18 +41,9 @@ class LessonBodyFactory {
   }
 
   Widget buildBottomButton(BuildContext context, Widget lessonBody) {
-    return switch (lessonBody) {
-      SingleChoiceLessonBody body => body.buildBottomButton(context),
-      SingleChoiceNoCorrectAnswerLessonBody body => body.buildBottomButton(context),
-      MultipleChoiceLessonBody body => body.buildBottomButton(context),
-      DragAndDropLessonBody body => body.buildBottomButton(context),
-      ArrangeTheSequenceLessonBody body => body.buildBottomButton(context),
-      CuesPlacementLessonBody body => body.buildBottomButton(context),
-      MarkStressWordLessonBody body => body.buildBottomButton(context),
-      SpeakingLessonBody body => body.buildBottomButton(context),
-      UnsupportedLessonBody body => body.buildBottomButton(context),
-      TheoryLessonBody body => body.buildBottomButton(context),
-      _ => const SizedBox.shrink(),
-    };
+    if (lessonBody is LessonBodyWidget) {
+      return lessonBody.buildBottomButton(context);
+    }
+    return const SizedBox.shrink();
   }
 }

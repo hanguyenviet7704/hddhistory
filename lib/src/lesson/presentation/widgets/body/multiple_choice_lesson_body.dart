@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class MultipleChoiceLessonBody extends StatelessWidget {
+class MultipleChoiceLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -16,42 +16,24 @@ class MultipleChoiceLessonBody extends StatelessWidget {
     bool isReview = false,
     bool showExplainAction = true,
   }) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<ChoiceCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<ChoiceCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<ChoiceCubit, ChoiceState>(
           builder: (context, state) {
             final hasExplanation = state.question.hasExplanation;
-
             return ResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
+              onContinue: onContinue,
               onExplain: showExplainAction && hasExplanation
-                  ? () {
-                      context.read<ChoiceCubit>().toggleExplanation();
-                    }
+                  ? () => context.read<ChoiceCubit>().toggleExplanation()
                   : null,
             );
           },
@@ -147,7 +129,7 @@ class MultipleChoiceLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for multiple choice questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<ChoiceCubit, ChoiceState>(
       builder: (context, state) {

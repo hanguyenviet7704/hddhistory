@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class UnsupportedLessonBody extends StatelessWidget {
+class UnsupportedLessonBody extends LessonBodyWidget {
   final QuestionEntity question;
   final VoidCallback? onContinue;
   final bool isReadOnly;
@@ -20,6 +20,7 @@ class UnsupportedLessonBody extends StatelessWidget {
     return '';
   }
 
+  @override
   Widget buildBottomButton(BuildContext context) {
     if (isReadOnly || onContinue == null) return const SizedBox.shrink();
     return ExerciseContinueButton(

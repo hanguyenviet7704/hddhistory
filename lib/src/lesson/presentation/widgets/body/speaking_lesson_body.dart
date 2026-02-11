@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class SpeakingLessonBody extends StatelessWidget {
+class SpeakingLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final VoidCallback? onRoleplayReplayTap;
   final bool isReadOnly;
@@ -18,33 +18,18 @@ class SpeakingLessonBody extends StatelessWidget {
     bool isReview = false,
     bool showExplainAction = true,
   }) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<SpeakingCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<SpeakingCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: SpeakingResultBottomSheet(
           type: type,
           showExplainAction: showExplainAction,
-          onContinue: () {
-            if (isReview) {
-              LessonResultOverlayManager.hide();
-              context.read<LessonCubit>().setIsShowResultOverlay(false);
-              return;
-            }
-            if (trackingData != null) {
-              AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-            }
-            LessonResultOverlayManager.hide();
-            AppDI.injector.get<ExerciseCubit>().nextQuestion();
-          },
+          onContinue: onContinue,
         ),
       ),
     );
@@ -129,7 +114,7 @@ class SpeakingLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for speaking questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return const SpeakingBottomAction();
   }

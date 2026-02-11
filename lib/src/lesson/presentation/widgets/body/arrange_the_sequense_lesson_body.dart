@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class ArrangeTheSequenceLessonBody extends StatelessWidget {
+class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -16,17 +16,13 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
     bool isReview = false,
     bool showExplainAction = true,
   }) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<ArrangeTheSequenceCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<ArrangeTheSequenceCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
           builder: (context, state) {
@@ -39,28 +35,14 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
               );
             }).toList();
             final hasExplanation = state.question.hasExplanation;
-
             return ArrangeSequenceResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
               arrangedAnswers: correctAnswers,
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
+              onContinue: onContinue,
               onExplain: showExplainAction && hasExplanation
-                  ? () {
-                      context.read<ArrangeTheSequenceCubit>().toggleExplanation();
-                    }
+                  ? () => context.read<ArrangeTheSequenceCubit>().toggleExplanation()
                   : null,
             );
           },
@@ -190,7 +172,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for arrange the sequence questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
       builder: (context, state) {

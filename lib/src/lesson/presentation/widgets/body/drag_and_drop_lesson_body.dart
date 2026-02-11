@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class DragAndDropLessonBody extends StatelessWidget {
+class DragAndDropLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -16,22 +16,17 @@ class DragAndDropLessonBody extends StatelessWidget {
     bool isReview = false,
     bool showExplainAction = true,
   }) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<DragAndDropCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<DragAndDropCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<DragAndDropCubit, DragAndDropState>(
           builder: (context, state) {
             final hasExplanation = state.question.hasExplanation;
-
             return DragAndDropResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
@@ -39,22 +34,9 @@ class DragAndDropLessonBody extends StatelessWidget {
               targetArea: questionRuntimeTargetArea(state.question).text,
               placedWords: state.placedWords,
               correctAnswers: questionRuntimeAnswers(state.question).map((a) => a.correctAnswer.text).toList(),
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
+              onContinue: onContinue,
               onExplain: showExplainAction && hasExplanation
-                  ? () {
-                      context.read<DragAndDropCubit>().toggleExplanation();
-                    }
+                  ? () => context.read<DragAndDropCubit>().toggleExplanation()
                   : null,
             );
           },
@@ -70,7 +52,7 @@ class DragAndDropLessonBody extends StatelessWidget {
     if (currentQuestion.hasExplanation && !state.showExplanation) {
       context.read<DragAndDropCubit>().toggleExplanation();
     }
-    (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultOverlay(
+    _showResultOverlay(
       context,
       state.isCorrect ? ResultType.correct : ResultType.incorrect,
       isReview: isReadOnly,
@@ -82,14 +64,13 @@ class DragAndDropLessonBody extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocListener<DragAndDropCubit, DragAndDropState>(
       listenWhen: (previous, current) {
-        // Only trigger when hasChecked changes from false to true
         return !previous.hasChecked && current.hasChecked;
       },
       listener: (context, state) {
         onAnswerChecked(state.isCorrect);
         final bool isRoleplay = AppDI.injector.get<ExerciseCubit>().state.currentLearningItem.type == LearningItemType.roleplay;
         if (isRoleplay) return;
-        (context.findAncestorWidgetOfExactType<DragAndDropLessonBody>() as DragAndDropLessonBody)._showResultOverlay(
+        _showResultOverlay(
           context,
           state.isCorrect ? ResultType.correct : ResultType.incorrect,
         );
@@ -159,7 +140,7 @@ class DragAndDropLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for drag and drop questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<DragAndDropCubit, DragAndDropState>(
       builder: (context, state) {

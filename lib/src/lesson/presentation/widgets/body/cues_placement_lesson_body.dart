@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class CuesPlacementLessonBody extends StatelessWidget {
+class CuesPlacementLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -16,23 +16,18 @@ class CuesPlacementLessonBody extends StatelessWidget {
     bool isReview = false,
     bool showExplainAction = true,
   }) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<CuesPlacementCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<CuesPlacementCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
           builder: (context, state) {
             final hasExplanation = state.question.hasExplanation;
             final runtimeOptions = questionRuntimeOptions(state.question);
-
             return CuesPlacementResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
@@ -43,22 +38,9 @@ class CuesPlacementLessonBody extends StatelessWidget {
               optionsById: {
                 for (var option in runtimeOptions) option.id: option,
               },
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
+              onContinue: onContinue,
               onExplain: showExplainAction && hasExplanation
-                  ? () {
-                      context.read<CuesPlacementCubit>().toggleExplanation();
-                    }
+                  ? () => context.read<CuesPlacementCubit>().toggleExplanation()
                   : null,
             );
           },
@@ -218,7 +200,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for cues placement questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
       buildWhen: (previous, current) => previous.availableOptions != current.availableOptions,
