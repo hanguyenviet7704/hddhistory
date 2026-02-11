@@ -9,8 +9,8 @@ abstract class ExerciseResultModel with _$ExerciseResultModel {
     @Default(0) int numberOfCorrect,
     @Default(0) int numberOfIncorrect,
     @Default('') String reviews,
-    @Default(QuestionType.singleChoice) QuestionType type,
-    @Default(FormDragDropType.textGapFilling) FormDragDropType form,
+    @JsonKey(unknownEnumValue: QuestionType.unknown) @Default(QuestionType.singleChoice) QuestionType type,
+    @JsonKey(unknownEnumValue: FormDragDropType.unknown) @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default([]) List<OptionModel> multipleAnswer,
     @Default(OptionModel()) OptionModel singleAnswer,
     @Default([]) List<OptionModel> dragDropAnswer,
@@ -38,4 +38,3 @@ extension ExerciseResultModelExtension on ExerciseResultModel {
     submittedAt: submittedAt,
   );
 }
-

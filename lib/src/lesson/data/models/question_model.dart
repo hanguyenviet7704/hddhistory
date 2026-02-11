@@ -4,7 +4,7 @@ part of '../../lesson.dart';
 abstract class QuestionModel with _$QuestionModel {
   const factory QuestionModel({
     @JsonKey(unknownEnumValue: QuestionType.unknown) @Default(QuestionType.singleChoice) QuestionType type,
-    @Default(FormDragDropType.textGapFilling) FormDragDropType form,
+    @JsonKey(unknownEnumValue: FormDragDropType.unknown) @Default(FormDragDropType.textGapFilling) FormDragDropType form,
     @Default(0) int id,
     @Default('') String exerciseId,
     @Default(BaseMultiLanguage()) BaseMultiLanguage speechBubble,
@@ -15,7 +15,7 @@ abstract class QuestionModel with _$QuestionModel {
     @Default([]) List<AnswerModel> answer,
     @Default([]) List<OptionModel> options,
     @Default([]) List<NoCorrectDocumentGroupModel> documentGroups,
-    @Default([]) List<KeypointLevelType> level,
+    @JsonKey(fromJson: _keypointLevelTypeListFromJson, toJson: _keypointLevelTypeListToJson) @Default([]) List<KeypointLevelType> level,
     @Default('') String record,
     @Default(0) int maxDuration,
     @Default(0) int maxCharacter,
@@ -36,6 +36,27 @@ enum KeypointLevelType {
   morePractice,
   @JsonValue('weak_point')
   weakPoint,
+  @JsonValue('unknown')
+  unknown
+  ;
+
+  static KeypointLevelType fromRawValue(String value) {
+    return switch (value) {
+      'optional_practice' => KeypointLevelType.optionalPractice,
+      'more_practice' => KeypointLevelType.morePractice,
+      'weak_point' => KeypointLevelType.weakPoint,
+      _ => KeypointLevelType.unknown,
+    };
+  }
+
+  String get rawValue {
+    return switch (this) {
+      KeypointLevelType.optionalPractice => 'optional_practice',
+      KeypointLevelType.morePractice => 'more_practice',
+      KeypointLevelType.weakPoint => 'weak_point',
+      KeypointLevelType.unknown => 'unknown',
+    };
+  }
 }
 
 enum QuestionType {
@@ -50,7 +71,8 @@ enum QuestionType {
   @JsonValue('record')
   record,
   @JsonValue('unknown')
-  unknown;
+  unknown
+  ;
 
   QuestionTypeEnum toQuestionTypeEnum(FormDragDropType form) {
     return switch (this) {
@@ -63,6 +85,7 @@ enum QuestionType {
         FormDragDropType.cuesPlacement => QuestionTypeEnum.cuesPlacement,
         FormDragDropType.stressPlacement => QuestionTypeEnum.stressPlacement,
         FormDragDropType.arrangeTheSequence => QuestionTypeEnum.arrangeTheSequence,
+        FormDragDropType.unknown => QuestionTypeEnum.dragAndDrop,
       },
       QuestionType.unknown => QuestionTypeEnum.singleChoice,
     };
@@ -89,6 +112,29 @@ enum FormDragDropType {
   stressPlacement,
   @JsonValue('Arrange the Sequence')
   arrangeTheSequence,
+  @JsonValue('unknown')
+  unknown
+  ;
+
+  static FormDragDropType fromRawValue(String value) {
+    return switch (value) {
+      'Text Gap Filling' => FormDragDropType.textGapFilling,
+      'Cues Placement' => FormDragDropType.cuesPlacement,
+      'Stress Placement' => FormDragDropType.stressPlacement,
+      'Arrange the Sequence' => FormDragDropType.arrangeTheSequence,
+      _ => FormDragDropType.unknown,
+    };
+  }
+
+  String get rawValue {
+    return switch (this) {
+      FormDragDropType.textGapFilling => 'Text Gap Filling',
+      FormDragDropType.cuesPlacement => 'Cues Placement',
+      FormDragDropType.stressPlacement => 'Stress Placement',
+      FormDragDropType.arrangeTheSequence => 'Arrange the Sequence',
+      FormDragDropType.unknown => 'unknown',
+    };
+  }
 }
 
 extension QuestionModelExtension on QuestionModel {
@@ -147,6 +193,7 @@ extension QuestionModelExtension on QuestionModel {
           answers: answer.map((model) => model.toDragDropAnswerEntity()).toList(),
           options: options.map((model) => model.toDragDropOptionEntity()).toList(),
         ),
+        FormDragDropType.unknown => QuestionPayloadEntity.unsupported(rawType: '${type.rawValue}:${form.rawValue}'),
       },
       QuestionType.record => QuestionPayloadEntity.speaking(
         record: record,
@@ -157,4 +204,18 @@ extension QuestionModelExtension on QuestionModel {
       QuestionType.unknown => QuestionPayloadEntity.unsupported(rawType: type.rawValue),
     };
   }
+}
+
+List<KeypointLevelType> _keypointLevelTypeListFromJson(Object? rawValue) {
+  if (rawValue is! List) return const [];
+
+  return rawValue.map((item) {
+    if (item is KeypointLevelType) return item;
+    if (item is String) return KeypointLevelType.fromRawValue(item);
+    return KeypointLevelType.unknown;
+  }).toList();
+}
+
+List<String> _keypointLevelTypeListToJson(List<KeypointLevelType> levels) {
+  return levels.map((item) => item.rawValue).toList();
 }

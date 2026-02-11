@@ -5,8 +5,8 @@ abstract class IapProductModel with _$IapProductModel {
   const factory IapProductModel({
     @Default('') String id,
     @Default('') String productId,
-    @Default(PaymentPlatform.google) PaymentPlatform platform,
-    @Default(ProductType.subscriptionAutoRenew) ProductType type,
+    @JsonKey(unknownEnumValue: PaymentPlatform.unknown) @Default(PaymentPlatform.google) PaymentPlatform platform,
+    @JsonKey(unknownEnumValue: ProductType.subscriptionAutoRenew) @Default(ProductType.subscriptionAutoRenew) ProductType type,
     @Default('') String title,
     @Default('') String description,
     @DefaultString() @Default('') String price,
@@ -23,7 +23,9 @@ enum PaymentPlatform {
   @JsonValue('google')
   google,
   @JsonValue('apple')
-  apple
+  apple,
+  @JsonValue('unknown')
+  unknown
   ;
 
   static PaymentPlatform get fromDevicePlatform {
@@ -50,8 +52,8 @@ extension IapProductModelExtension on IapProductModel {
 
   String period(BuildContext context) {
     return switch (id) {
-      String _ when id.contains('monthly') => 'context.text.monetMonthLabel',
-      String _ when id.contains('weekly') => 'context.text.monetWeekLabel',
+      String _ when id.contains('monthly') => context.text.monetization.pricePerMonth,
+      String _ when id.contains('weekly') => context.text.monetization.pricePerWeek,
       _ => 'Not found product id',
     };
   }

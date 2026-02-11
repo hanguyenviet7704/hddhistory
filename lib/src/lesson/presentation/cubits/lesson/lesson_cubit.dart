@@ -49,6 +49,8 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
           ..reset()
           ..setCurrentLearningItem(learningItem);
         break;
+      case LearningItemType.unknown:
+        break;
     }
   }
 

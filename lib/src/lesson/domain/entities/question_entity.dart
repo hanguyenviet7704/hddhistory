@@ -153,6 +153,7 @@ QuestionPayloadEntity _inferTypedPayloadFromLegacyJson({
         answers: answerModels.map((model) => model.toDragDropAnswerEntity()).toList(),
         options: optionModels.map(_legacyDragDropOptionFromModel).toList(),
       ),
+      FormDragDropType.unknown => QuestionPayloadEntity.unsupported(rawType: '${type.name}:${form.rawValue}'),
     },
     QuestionTypeEnum.arrangeTheSequence => QuestionPayloadEntity.arrangeTheSequence(
       answers: answerModels.map((model) => model.toDragDropAnswerEntity()).toList(),

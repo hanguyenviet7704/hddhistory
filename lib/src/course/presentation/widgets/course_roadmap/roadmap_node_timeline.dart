@@ -75,7 +75,7 @@ class RoadmapNodeActionHelper {
           courseLevel: _resolveCourseLevel(state.roadmap, lesson, state.currentCourseLevel),
         );
         return;
-      case LessonType.output:
+      case LessonType.output || LessonType.unknown:
         return;
     }
   }

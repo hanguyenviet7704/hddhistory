@@ -12,7 +12,8 @@ class StrengthIndicatorBadge extends StatelessWidget {
     return switch (level) {
       StrengthLevel.weakPoint => AppCustomColor.errorRed,
       StrengthLevel.morePractice => AppCustomColor.brandPrimary,
-      StrengthLevel.optionalPractice => AppCustomColor.successGreen
+      StrengthLevel.optionalPractice => AppCustomColor.successGreen,
+      StrengthLevel.unknown => AppCustomColor.borderSecondary,
     };
   }
 
@@ -20,7 +21,8 @@ class StrengthIndicatorBadge extends StatelessWidget {
     return switch (level) {
       StrengthLevel.weakPoint => 3,
       StrengthLevel.morePractice => 2,
-      StrengthLevel.optionalPractice => 1
+      StrengthLevel.optionalPractice => 1,
+      StrengthLevel.unknown => 0,
     };
   }
 

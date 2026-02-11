@@ -5,11 +5,11 @@ abstract class IapVerifyModel with _$IapVerifyModel {
   const factory IapVerifyModel({
     @Default('') String id,
     @Default('') String userId,
-    @Default(PaymentPlatform.google) PaymentPlatform platform,
+    @JsonKey(unknownEnumValue: PaymentPlatform.unknown) @Default(PaymentPlatform.google) PaymentPlatform platform,
     @Default('') String storeTransactionId,
     @Default('') String productId,
     @Default('') String orderId,
-    @Default(IapPurchaseStatus.pending) IapPurchaseStatus status,
+    @JsonKey(unknownEnumValue: IapPurchaseStatus.unknown) @Default(IapPurchaseStatus.pending) IapPurchaseStatus status,
     @Default('') String rawPayload,
     @Default('') String idempotencyKey,
     DateTime? purchaseTime,
@@ -25,6 +25,7 @@ enum IapPurchaseStatus {
   failed,
   canceled,
   refunded,
+  unknown,
 }
 
 extension IapVerifyModelExtension on IapVerifyModel {

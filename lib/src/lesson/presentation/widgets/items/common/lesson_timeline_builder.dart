@@ -102,6 +102,8 @@ class LessonTimelineBuilder {
 
             items.add(buildReviewBody(questions[questionIndex]));
           }
+        case LearningItemType.unknown:
+          continue;
       }
     }
 

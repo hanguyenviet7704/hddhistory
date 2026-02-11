@@ -117,6 +117,8 @@ class _LessonPageState extends State<LessonPage> {
         return _bodyFactory.buildExerciseBody(question);
       case LearningItemType.theory:
         return TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
+      case LearningItemType.unknown:
+        return const SizedBox.shrink();
     }
   }
 

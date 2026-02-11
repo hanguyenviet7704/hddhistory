@@ -4,7 +4,7 @@ part of '../../lesson.dart';
 abstract class ContentDocumentModel with _$ContentDocumentModel {
   const factory ContentDocumentModel({
     @Default(0) @JsonKey(name: '_id') int id,
-    @Default(ContentDocumentType.text) ContentDocumentType type,
+    @JsonKey(unknownEnumValue: ContentDocumentType.unknown) @Default(ContentDocumentType.text) ContentDocumentType type,
     @Default(DocumentDataModel()) DocumentDataModel data,
   }) = _ContentDocumentModel;
 
@@ -24,6 +24,8 @@ enum ContentDocumentType {
   image,
   @JsonValue('audio')
   audio,
+  @JsonValue('unknown')
+  unknown,
 }
 
 extension ContentDocumentModelExtension on ContentDocumentModel {
