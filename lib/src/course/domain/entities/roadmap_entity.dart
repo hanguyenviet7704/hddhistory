@@ -27,11 +27,11 @@ extension RoadmapEntityExtension on RoadmapEntity {
 
   int lockedLessonStartIndex(PaywallConfigEntity config) {
     if (!config.enableLessonLock) return -1;
-    if (config.lessonLock <= 0) return -1;
+    if (config.lessonLock < 0) return -1;
     final totalLessons = flatLessons.length;
     if (totalLessons == 0) return -1;
-    if (config.lessonLock > totalLessons) return -1;
-    return config.lessonLock - 1;
+    if (config.lessonLock >= totalLessons) return -1;
+    return config.lessonLock;
   }
 
   Set<String> lockedLessonKeys(PaywallConfigEntity config) {
@@ -39,11 +39,7 @@ extension RoadmapEntityExtension on RoadmapEntity {
     if (startIndex < 0) return {};
     final lessons = flatLessons;
     if (startIndex >= lessons.length) return {};
-    return lessons
-        .skip(startIndex)
-        .map((lesson) => lesson.roadmapKey)
-        .where((key) => key.isNotEmpty)
-        .toSet();
+    return lessons.skip(startIndex).map((lesson) => lesson.roadmapKey).where((key) => key.isNotEmpty).toSet();
   }
 
   bool isLessonLocked(LessonEntity lesson, PaywallConfigEntity config) {
@@ -159,6 +155,7 @@ extension RoadmapEntityExtension on RoadmapEntity {
   }) {
     if (levelIndex < 0 || levelIndex >= levels.length) return -1;
     if (!paywallConfig.enableLessonLock) return -1;
+    if (paywallConfig.lessonLock < 0) return -1;
 
     final totalLessonsInLevel = levels[levelIndex].totalLessons;
     int lessonOffset = 0;
