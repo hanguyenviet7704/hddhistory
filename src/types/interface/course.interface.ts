@@ -56,6 +56,7 @@ export class CourseListQuery extends BaseQuery {
 }
 
 export interface IRoadmapNode {
+  id: string;
   title: ITranslation;
   description?: ITranslation;
   roleplayId: string;
