@@ -130,32 +130,32 @@ const RoadmapPage: React.FC = () => {
   });
 
   // ---------- Data fetching ----------
+  const fetchRoadmap = useCallback(async () => {
+    try {
+      const res = await courseService.getRoadmap(courseId!);
+      const data: IRoadmap = res.data?.data || res.data;
+      const normalizedLevels = (data?.levels || []).map((level) => ({
+        ...level,
+        lightBadge: level.lightBadge || (level as any).badge || "",
+        darkBadge: level.darkBadge || "",
+        titleBadge: level.titleBadge || {},
+        nodes: (level.nodes || []).map((node) => ({
+          ...node,
+          roleplay: node.roleplay ?? (node as any).entrance ?? null,
+        })),
+      }));
+      setRoadmap({ ...data, levels: normalizedLevels });
+    } catch (e) {
+      console.error(e);
+      showError("Không thể tải roadmap");
+    } finally {
+      setLoading(false);
+    }
+  }, [courseId, showError]);
+
   useEffect(() => {
-    const fetchRoadmap = async () => {
-      try {
-        const res = await courseService.getRoadmap(courseId!);
-        const data: IRoadmap = res.data?.data || res.data;
-        const normalizedLevels = (data?.levels || []).map((level) => ({
-          ...level,
-          lightBadge: level.lightBadge || (level as any).badge || "",
-          darkBadge: level.darkBadge || "",
-          titleBadge: level.titleBadge || {},
-          nodes: (level.nodes || []).map((node) => ({
-            ...node,
-            roleplay: node.roleplay ?? (node as any).entrance ?? null,
-          })),
-        }));
-        setRoadmap({ ...data, levels: normalizedLevels });
-      } catch (e) {
-        console.error(e);
-        showError("Không thể tải roadmap");
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchRoadmap();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [courseId]);
+  }, [fetchRoadmap]);
 
   const fetchLessonsByType = useCallback(
     async (type: LessonType, search = "") => {
@@ -400,6 +400,7 @@ const RoadmapPage: React.FC = () => {
     if (levelIndex < 0) return;
 
     const newNode: IRoadmapNode = {
+      id: "",
       title: updateTranslationValue(undefined, lang, newNodeTitle),
       description: newNodeDescription.trim()
         ? updateTranslationValue(undefined, lang, newNodeDescription)
@@ -547,6 +548,39 @@ const RoadmapPage: React.FC = () => {
     setSelectedLessons([]);
   };
 
+  const handleCopyNodeId = async (nodeId: string) => {
+    const trimmedId = nodeId?.trim();
+    if (!trimmedId) {
+      showError("Node chưa có ID để copy");
+      return;
+    }
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(trimmedId);
+      } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = trimmedId;
+        textArea.style.position = "fixed";
+        textArea.style.opacity = "0";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        document.execCommand("copy");
+        document.body.removeChild(textArea);
+      }
+      showSuccess("Đã copy Node ID");
+    } catch (e) {
+      console.error(e);
+      showError("Không thể copy Node ID");
+    }
+  };
+
+  const formatNodeId = (nodeId: string) => {
+    const trimmedId = nodeId?.trim();
+    if (!trimmedId) return "Chưa có ID";
+    return trimmedId.length > 12 ? `${trimmedId.slice(0, 12)}...` : trimmedId;
+  };
+
   // ---------- Save ----------
   const handleSaveRoadmap = async () => {
     if (!roadmap) return;
@@ -606,6 +640,7 @@ const RoadmapPage: React.FC = () => {
     try {
       await courseService.updateRoadmap(courseId!, payload);
       showSuccess("Lưu roadmap thành công");
+      await fetchRoadmap();
     } catch (e) {
       console.error(e);
       showError("Lưu roadmap thất bại");
@@ -963,7 +998,7 @@ const RoadmapPage: React.FC = () => {
                         null;
                       return (
                         <div
-                          key={`node-${levelIndex}-${nodeIndex}`}
+                          key={`node-${node.id || `${levelIndex}-${nodeIndex}`}`}
                           className="relative"
                         >
                           {/* connection line from axis to card */}
@@ -985,9 +1020,47 @@ const RoadmapPage: React.FC = () => {
                                 isLeft ? "mr-auto" : "ml-auto"
                               }`}
                             >
-                              <h2 className="block text-sm font-medium text-gray-700 mb-1">
-                                Node
-                              </h2>
+                              <div className="flex items-center justify-between gap-2 mb-2">
+                                <h2 className="block text-sm font-medium text-gray-700">
+                                  Node
+                                </h2>
+                                <div className="flex items-center gap-2 min-w-0">
+                                  <span
+                                    className="text-xs font-mono text-gray-500 truncate"
+                                    title={node.id || ""}
+                                  >
+                                    {formatNodeId(node.id)}
+                                  </span>
+                                  <IconButton
+                                    onClick={() => handleCopyNodeId(node.id)}
+                                    disabled={!node.id}
+                                    title="Copy Node ID"
+                                    aria-label="Copy Node ID"
+                                    className="p-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="w-4 h-4"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth={2}
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <rect
+                                        x="9"
+                                        y="9"
+                                        width="13"
+                                        height="13"
+                                        rx="2"
+                                        ry="2"
+                                      />
+                                      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                                    </svg>
+                                  </IconButton>
+                                </div>
+                              </div>
                               <div className="flex items-start gap-3 mb-4">
                                 <div className="flex-1">
                                   <input
