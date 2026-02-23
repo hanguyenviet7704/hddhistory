@@ -151,7 +151,7 @@ class FirebaseAnalyticsService extends BaseTrackingService {
       name: 'app_error',
       parameters: {
         'error_message': exception.toString(),
-        if (errorType != null) 'error_type': errorType,
+        'error_type': ?errorType,
         if (context != null) 'context': context.toString(),
       },
     );

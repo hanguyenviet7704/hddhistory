@@ -91,7 +91,7 @@ class SentryTrackingService extends BaseTrackingService {
       message: 'Viewed $screenName screen',
       data: {
         'screen_name': screenName,
-        if (screenClass != null) 'screen_class': screenClass,
+        'screen_class': ?screenClass,
       },
       level: SentryLevel.info,
       type: 'navigation',
