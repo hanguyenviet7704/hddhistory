@@ -11,6 +11,9 @@ prepare:generated:
     paths:
       - assets/i18n/
       - build/localization/records.json
+      - lib/core/constants/gen/
+      - lib/config/l10n/
+      - lib/**/gen/
       - lib/**/*.g.dart
       - lib/**/*.freezed.dart
       - lib/**/*.config.dart
