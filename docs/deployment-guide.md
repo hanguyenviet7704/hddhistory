@@ -9,7 +9,7 @@
 
 ### Prerequisites
 - **macOS/Linux/Windows** with cross-platform build tools
-- **Flutter SDK:** 3.24.0+ (use `fvm` or `puro` for version management)
+- **Flutter SDK:** 3.41.2 (pinned for CI/CD; use `fvm` or `puro` locally if needed)
 - **Dart SDK:** 3.10.0+ (comes with Flutter)
 - **Java:** JDK 17+ (for Android builds)
 - **Xcode:** 16.0+ (macOS for iOS builds)
