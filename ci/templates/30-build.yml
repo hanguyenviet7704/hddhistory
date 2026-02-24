@@ -1,0 +1,70 @@
+build:apk:develop:
+  extends: .linux_job_base
+  stage: build
+  parallel:
+    matrix:
+      - FLAVOR: ["dev", "stg"]
+  needs:
+    - quality:analyze
+    - quality:test
+    - job: prepare:generated
+      artifacts: true
+  script:
+    - export CI=true
+    - export SKIP_SYMBOL_UPLOAD=true
+    - bash tools/linux/build/build_apk.sh "$FLAVOR" --ci
+  artifacts:
+    expire_in: 14 days
+    paths:
+      - build/app/outputs/flutter-apk/app-$FLAVOR-release.apk
+      - .obfuscation/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - when: never
+
+build:apk:release:
+  extends: .linux_job_base
+  stage: build
+  parallel:
+    matrix:
+      - FLAVOR: ["dev", "stg", "prod"]
+  needs:
+    - quality:analyze
+    - quality:test
+    - job: prepare:generated
+      artifacts: true
+  script:
+    - export CI=true
+    - export SKIP_SYMBOL_UPLOAD=true
+    - bash tools/linux/build/build_apk.sh "$FLAVOR" --ci
+  artifacts:
+    expire_in: 14 days
+    paths:
+      - build/app/outputs/flutter-apk/app-$FLAVOR-release.apk
+      - .obfuscation/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - when: never
+
+build:aab:prod:
+  extends: .linux_job_base
+  stage: build
+  needs:
+    - quality:analyze
+    - quality:test
+    - job: prepare:generated
+      artifacts: true
+  script:
+    - export CI=true
+    - export SKIP_SYMBOL_UPLOAD=true
+    - bash tools/linux/build/build_appbundle.sh prod --ci
+  artifacts:
+    expire_in: 14 days
+    paths:
+      - build/app/outputs/bundle/prodRelease/app-prod-release.aab
+      - .obfuscation/
+  rules:
+    - if: '$CI_COMMIT_BRANCH == "main"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - when: never
