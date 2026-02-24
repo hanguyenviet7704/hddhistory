@@ -18,10 +18,14 @@ part of '../routes.dart';
           routes: [
             //? Course - Lesson
             TypedGoRoute<LessonRoute>(path: RoutePath.lesson, name: RouteNamed.lesson),
+            TypedGoRoute<NoCorrectAnswerDocumentRoute>(
+              path: RoutePath.noCorrectAnswerDocument,
+              name: RouteNamed.noCorrectAnswerDocument,
+            ),
             TypedGoRoute<ReviewTimeRoute>(path: RoutePath.reviewTime, name: RouteNamed.reviewTime),
             TypedGoRoute<KeypointCompleteRoute>(path: RoutePath.keypointComplete, name: RouteNamed.keypointComplete),
             TypedGoRoute<BadgeProgressRoute>(path: RoutePath.badgeProgress, name: RouteNamed.badgeProgress),
-            
+
             //? Course - Roleplay
             TypedGoRoute<RoleplayIntroRoute>(
               path: RoutePath.roleplayIntro,

@@ -1,6 +1,6 @@
 # Deployment Guide
 
-**Last Updated:** Jan 22, 2026
+**Last Updated:** Feb 10, 2026
 **Status:** Production Ready
 
 ---
@@ -9,7 +9,7 @@
 
 ### Prerequisites
 - **macOS/Linux/Windows** with cross-platform build tools
-- **Flutter SDK:** 3.24.0+ (use `fvm` or `puro` for version management)
+- **Flutter SDK:** 3.41.2 (pinned for CI/CD; use `fvm` or `puro` locally if needed)
 - **Dart SDK:** 3.10.0+ (comes with Flutter)
 - **Java:** JDK 17+ (for Android builds)
 - **Xcode:** 16.0+ (macOS for iOS builds)
@@ -147,48 +147,69 @@ flutter run \
 
 ## 4. CI/CD Pipeline Overview
 
-### GitHub Actions Workflow (`.github/workflows/android-ci-cd.yml`)
+### GitLab CI Workflow (`.gitlab-ci.yml`)
+
+Pipeline definition is modular and lives in:
+- `.gitlab-ci.yml`
+- `ci/templates/00-workflow.yml`
+- `ci/templates/10-prepare.yml`
+- `ci/templates/20-quality.yml`
+- `ci/templates/30-build.yml`
+- `ci/templates/40-release-skeleton.yml`
+- `ci/templates/45-firebase-distribution.yml`
 
 #### Triggers
 | Trigger | Environment | Target |
 |---------|-----------|--------|
-| Push to `develop` | Dev | Firebase App Distribution |
-| Push to `main` | Staging | Firebase App Distribution |
-| Git tag `prod-*` | Production | Google Play Store (10% rollout) |
+| `merge_request_event` | Validation | `prepare` + `quality` (quality chạy khi có thay đổi Dart/build config liên quan) |
+| Push to `develop` | Dev/Staging | `prepare + build` APK (`dev`, `stg`) + optional Firebase Distribution |
+| Push to `main` | Full matrix | Build APK (`dev`, `stg`, `prod`) + AAB (`prod`) + optional Firebase Distribution (`prod`) |
+| Git tag `v*` | Release candidate | Same as `main` full matrix |
 
 #### Pipeline Stages
 
 ```
-1. TEST (Ubuntu, Flutter 3.24.0)
-   ├─ flutter test (all unit tests)
-   ├─ flutter analyze (static analysis)
-   ├─ dart run build_runner (code generation)
-   └─ Report: test results + coverage
+1. PREPARE
+   ├─ bootstrap secrets/runtime files (`ci/scripts/bootstrap-secrets.sh`)
+   ├─ localization pull (Google Sheets -> YAML)
+   ├─ slang generation
+   └─ build_runner generation
 
-2. BUILD (Matrix: dev, stg, prod)
-   ├─ Setup Java JDK 17
-   ├─ Setup Flutter environment
-   ├─ Create .env files from secrets
-   ├─ Generate code (build_runner)
-   ├─ Build APK (all flavors)
-   ├─ Build App Bundle (prod only)
-   ├─ Sign Android packages (prod)
-   └─ Upload debug symbols to Crashlytics
+2. QUALITY
+   ├─ flutter analyze
+   └─ flutter test
+   (MR: chỉ chạy khi thay đổi các file liên quan code/build như `lib/**`, `test/**`, `pubspec.yaml`, `build.yaml`, ...)
 
-3. DEPLOY
-   ├─ Dev: Firebase App Distribution (internal testers)
-   ├─ Stg: Firebase App Distribution (QA + stakeholders)
-   └─ Prod: Google Play Store (internal track, 10% rollout)
+3. BUILD
+   ├─ APK matrix by branch policy
+   ├─ AAB prod on `main`/`v*`
+   ├─ obfuscation symbols artifact
+   └─ CI-safe mode (no raw env output in logs)
+
+4. RELEASE_SKELETON
+   ├─ Android Firebase Distribution (`dev`, `stg`) on `develop` (auto, gated by variable)
+   ├─ Android Firebase Distribution (`prod`) on `main`/`v*` (auto, gated by variable)
+   ├─ Android fastlane contract check (manual)
+   └─ iOS fastlane contract check (manual, macOS runner)
 ```
 
 ### Access Requirements
-- **Firebase Service Account:** `.info/key/firebase-adminsdk.json`
-- **Android Signing:** Keystore file stored in GitHub Secrets
-- **Google Play Service Account:** `.info/key/playstore-key.json`
-- **GitHub Secrets:**
-  - `FIREBASE_SERVICE_ACCOUNT` (base64-encoded JSON)
-  - `ANDROID_KEYSTORE_PASSWORD`
-  - `ANDROID_KEY_PASSWORD`
+- **GitLab Runner:** Linux for build pipeline, optional macOS runner for iOS fastlane skeleton.
+- **GitLab CI/CD Variables:**
+  - `CI_IMAGE` (optional override custom CI image)
+  - `CI_SKIP_SYSTEM_SETUP=1` (optional, bật khi custom image đã preinstall jq/python/pip để bỏ bước `apt-get`)
+  - `ENABLE_FIREBASE_DISTRIBUTION_DEV=1` (optional, bật auto upload APK `dev` lên Firebase App Distribution khi push `develop`)
+  - `ENABLE_FIREBASE_DISTRIBUTION_STG=1` (optional, bật auto upload APK `stg` lên Firebase App Distribution khi push `develop`)
+  - `ENABLE_FIREBASE_DISTRIBUTION_PROD=1` (optional, bật auto upload APK `prod` lên Firebase App Distribution khi push `main` hoặc tag `v*`)
+  - `FIREBASE_TOKEN` (required nếu bật Firebase Distribution)
+  - `ENV_DEV_FILE` / `ENV_DEV_CONTENT`
+  - `ENV_STG_FILE` / `ENV_STG_CONTENT`
+  - `ENV_PROD_FILE` / `ENV_PROD_CONTENT`
+  - `LOCALIZATION_SA_JSON` (recommended when pulling l10n in CI)
+  - `ENABLE_FASTLANE=1` (to enable manual skeleton jobs)
+- **Optional phase-2 variables (fastlane release):**
+  - `PLAYSTORE_JSON`
+  - `APPSTORE_P8`, `APPSTORE_ISSUER_ID`, `APPSTORE_KEY_ID`
 
 ---
 
@@ -211,11 +232,11 @@ flutter run \
 
 #### 1. Staging Release (Firebase App Distribution)
 ```bash
-# Push to main branch (triggers CI/CD)
+# Push to main branch (triggers GitLab CI full build matrix)
 git checkout main
 git pull origin main
 
-# Verify build in GitHub Actions
+# Verify build in GitLab pipeline
 # Check Firebase App Distribution for staging build
 # QA team tests in Firebase
 
@@ -226,15 +247,13 @@ git pull origin main
 
 ```bash
 # Tag release (triggers production build)
-git tag prod-v1.0.0
-git push origin prod-v1.0.0
+git tag v1.0.0
+git push origin v1.0.0
 
-# GitHub Actions automatically:
+# GitLab CI automatically:
 # 1. Builds APK + App Bundle (prod flavor)
-# 2. Signs with production keystore
-# 3. Uploads debug symbols to Crashlytics
-# 4. Deploys to Google Play Store (internal track)
-# 5. Starts 10% rollout
+# 2. Publishes build artifacts + obfuscation symbols
+# 3. Phase-2 release jobs remain manual (fastlane skeleton gated)
 
 # Monitor rollout in Google Play Console
 # - Check crash rate
@@ -389,12 +408,12 @@ keytool -genkey -v -keystore meup.jks \
 # Store in .info/key/ (git-ignored)
 mv meup.jks .info/key/
 
-# Update GitHub Secrets with keystore password
+# Add keystore/passwords to GitLab protected variables
 ```
 
 #### Sign Release Build
 ```bash
-# Automatic via GitHub Actions (uses secrets)
+# Automatic via GitLab CI (uses CI variables and scripts)
 # Or manual:
 jarsigner -verbose \
   -sigalg SHA1withRSA \
@@ -481,7 +500,7 @@ All builds include:
 |-------|-------|----------|
 | `build_runner` hangs | Large codebase, slow machine | Run with `--delete-conflicting-outputs` |
 | APK size > 100MB | Unoptimized assets | Enable tree shaking, compress images |
-| Code signing fails | Invalid keystore password | Verify in GitHub Secrets |
+| Code signing fails | Invalid keystore password | Verify in GitLab protected variables |
 | Flavor not found | pubspec.yaml out of sync | Run `flutter clean && flutter pub get` |
 | 401 Unauthorized (API) | Expired refresh token | Clear app data, re-authenticate |
 
@@ -525,7 +544,7 @@ flutter build apk --flavor {flavor} --dart-define-from-file=.env/.env.{flavor}
 - [ ] Staging build tested by QA
 
 ### During Deployment
-- [ ] GitHub Actions pipeline completed successfully
+- [ ] GitLab pipeline completed successfully
 - [ ] APK/IPA built without errors
 - [ ] Signing verified (no certificate errors)
 - [ ] Debug symbols uploaded to Crashlytics
@@ -605,9 +624,9 @@ git push origin hotfix/MEUP-xxx
 # Create PR, review, merge
 
 # 4. BUILD HOTFIX
-git tag prod-v1.0.1
-git push origin prod-v1.0.1
-# GitHub Actions builds & deploys
+git tag v1.0.1
+git push origin v1.0.1
+# GitLab CI builds artifacts for redeploy
 
 # 5. RESUME ROLLOUT
 # Google Play Console → Resume with new version

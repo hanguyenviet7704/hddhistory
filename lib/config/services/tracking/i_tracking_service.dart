@@ -76,6 +76,11 @@ abstract interface class ITrackingService {
   Future<void> trackCourseSelectCategorySlide();
   Future<void> trackCourseSelectCategoryClick(SkillsetEntity skillset, {required bool isRightDirection});
   Future<void> trackCourseSelectFirstCourseClick(SkillsetEntity skillset, CourseEntity course);
+  Future<void> trackCourseSelectCourseClick(
+    SkillsetEntity skillset,
+    CourseEntity course, {
+    required String source,
+  });
   Future<void> trackCourseSelectExit();
   Future<void> trackCourseSelectAllCourseScroll({required bool isSameCategory});
 
@@ -91,30 +96,20 @@ abstract interface class ITrackingService {
     CourseLessonTrackingData trackingData, {
     required String itemType,
   });
+  Future<void> trackPopupItemImp(CourseLessonTrackingData trackingData);
+  Future<void> trackPopupItemClick(CourseLessonTrackingData trackingData);
+  Future<void> trackRoadmapItemScroll(CourseTrackingData trackingData);
+  Future<void> trackRoadmapQuickLearningClick(
+    CourseTrackingData trackingData, {
+    required String actionType,
+  });
   Future<void> trackHowItWorkScrView(
     CourseLessonTrackingData trackingData, {
     required String source,
   });
-  Future<void> trackHowItWorkDoneClick(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  });
-  Future<void> trackHowItWorkExitTap(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  });
-  Future<void> trackHowItWorkClick(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  });
-  Future<void> trackLessonKeypointScrView(CourseLessonTrackingData trackingData);
-  Future<void> trackLessonKeypointExit(CourseLessonTrackingData trackingData);
-  Future<void> trackLessonKeypointClick(
-    CourseLessonTrackingData trackingData, {
-    required KeypointEntity keypoint,
-  });
 
   //* Keypoint events
+  Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData);
   Future<void> trackKeypointTheoryScrView(KeypointTrackingData trackingData);
   Future<void> trackKeypointTheoryContinueClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseScrView(KeypointTrackingData trackingData);
@@ -143,6 +138,8 @@ abstract interface class ITrackingService {
   Future<void> trackKeypointExerciseContinue(KeypointTrackingData trackingData);
   Future<void> trackKeypointExerciseExplainClose(KeypointTrackingData trackingData);
   Future<void> trackKeypointFinishScrView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointBadgeUpdateScrView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointFinishComplete(KeypointTrackingData trackingData);
   Future<void> trackLessonFinishScrView(CourseLessonTrackingData trackingData);
   Future<void> trackKeypointExitClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointExitPopupView(KeypointTrackingData trackingData);

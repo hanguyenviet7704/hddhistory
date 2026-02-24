@@ -30,12 +30,6 @@ class KeypointsSectionHeader extends StatelessWidget {
         GestureDetector(
           onTap: () {
             final trackingData = _buildTrackingData(context);
-            if (trackingData != null) {
-              AppService.instance.appTrackingService.trackHowItWorkClick(
-                trackingData,
-                source: trackingData.source,
-              );
-            }
             LessonExplainPopup.show(context, trackingData: trackingData);
           },
           child: Row(

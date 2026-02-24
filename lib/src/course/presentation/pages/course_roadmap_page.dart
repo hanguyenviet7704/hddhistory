@@ -11,6 +11,20 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   bool _hasTrackedForVisibility = false;
   String _lastTrackedCourseId = '';
 
+  void _trackRoadmapQuickLearningClick() {
+    final roadmapState = context.read<CourseRoadmapCubit>().state;
+    final courseId = roadmapState.roadmap.courseId;
+    if (courseId.isEmpty) return;
+    final trackingData = CourseTrackingData.fromCourseId(context, courseId);
+    if (trackingData == null) return;
+    final hasProgress = roadmapState.roadmap.levels.any((level) => level.hasRoadmapProgress);
+    final actionType = hasProgress ? 'continue_learning' : 'start_lesson';
+    AppService.instance.appTrackingService.trackRoadmapQuickLearningClick(
+      trackingData,
+      actionType: actionType,
+    );
+  }
+
   void _trackRoadmapScrView() {
     if (!(ModalRoute.of(context)?.isCurrent ?? false)) return;
     if (context.read<PageCubit>().state.currentRouteName != RouteNamed.courseRoadmap) return;
@@ -104,7 +118,10 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundWhite,
         floatingActionButton: CourseRoadmapFloatingButton(
-          onPressed: () => RoadmapNodeActionHelper.startLastInProgressAction(context),
+          onPressed: () {
+            _trackRoadmapQuickLearningClick();
+            RoadmapNodeActionHelper.startLastInProgressAction(context);
+          },
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
         body: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, bool>(

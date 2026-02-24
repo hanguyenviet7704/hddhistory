@@ -26,9 +26,11 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
     height: 1.75,
   );
 
-  bool get _showsStatusHeader => exercise.type != QuestionTypeEnum.speaking;
+  bool get _isSpeakingPayload => exercise.typedPayload is QuestionSpeakingPayloadEntity;
 
-  String get _answerLabel => exercise.type == QuestionTypeEnum.speaking ? t.exercise.exerciseYourAnswer : t.exercise.exerciseAnswer;
+  bool get _showsStatusHeader => !_isSpeakingPayload;
+
+  String get _answerLabel => _isSpeakingPayload ? t.exercise.exerciseYourAnswer : t.exercise.exerciseAnswer;
 
   @override
   Widget build(BuildContext context) {

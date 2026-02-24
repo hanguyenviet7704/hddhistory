@@ -1,6 +1,6 @@
 # Code Standards & Conventions
 
-**Last Updated:** Jan 22, 2026
+**Last Updated:** Feb 10, 2026
 **Applies To:** All Dart/Flutter code in Meup project
 
 ---
@@ -59,22 +59,61 @@ class CourseState with _$CourseState {
 - Prefer Cubits for new features
 
 ### HydratedCubit (Persistence)
+Extend `HydratedCubit<T>` and override `fromJson`/`toJson` for persistent state (e.g., `ThemeCubit`, `LocaleCubit`). State survives app restarts.
+
+---
+
+## 2.5 Factory Pattern for Type Routing (MEUP-637)
+
+**When to Use:** Route different types to appropriate UI bodies/handlers
+
 ```dart
-class ThemeCubit extends HydratedCubit<ThemeMode> {
-  @override
-  ThemeMode get initialState => ThemeMode.light;
+// Union type for payload variants
+@freezed
+class QuestionPayloadEntity with _$QuestionPayloadEntity {
+  const factory QuestionPayloadEntity.singleChoice({
+    required List<ChoiceOptionEntity> options,
+    required String correctOptionId,
+  }) = QuestionPayloadSingleChoice;
 
-  @override
-  ThemeMode? fromJson(Map<String, dynamic> json) {
-    return ThemeMode.values[json['index'] as int];
-  }
+  const factory QuestionPayloadEntity.singleChoiceNoCorrectAnswer({
+    required List<ChoiceOptionEntity> options,
+    required String documentUrl,
+  }) = QuestionPayloadSingleChoiceNoCorrectAnswer;
 
-  @override
-  Map<String, dynamic>? toJson(ThemeMode state) {
-    return {'index': state.index};
+  const factory QuestionPayloadEntity.speaking({
+    required String instruction,
+    required int maxDuration,
+  }) = QuestionPayloadSpeaking;
+  // ... other variants
+}
+
+// Factory for routing to correct UI body
+class LessonBodyFactory {
+  static Widget createBody({
+    required QuestionPayloadEntity payload,
+    required QuestionEntity question,
+  }) {
+    return payload.when(
+      singleChoice: (options, correctId) => ChoiceQuestionBody(
+        options: options,
+        correctId: correctId,
+      ),
+      singleChoiceNoCorrectAnswer: (options, docUrl) => NoCorrectAnswerChoiceBody(
+        options: options,
+        documentUrl: docUrl,
+      ),
+      speaking: (instruction, duration) => SpeakingQuestionBody(
+        instruction: instruction,
+        maxDuration: duration,
+      ),
+      // ... other cases — exhaustive matching enforced by compiler
+    );
   }
 }
 ```
+
+**Benefits:** Type-safe exhaustive matching, centralized routing, easy to extend with new question types.
 
 ---
 
@@ -431,6 +470,42 @@ void main() {
 }
 ```
 
+### Entity Union Type Test (MEUP-637)
+```dart
+void main() {
+  group('QuestionPayloadEntity', () {
+    test('correctly identifies single choice payload', () {
+      final payload = QuestionPayloadEntity.singleChoice(
+        options: [],
+        correctOptionId: '1',
+      );
+
+      payload.when(
+        singleChoice: (options, correctId) {
+          expect(correctId, '1');
+        },
+        singleChoiceNoCorrectAnswer: (_, __) => fail('Wrong type'),
+        // ... other cases fail
+      );
+    });
+
+    test('factory creates correct UI body for payload type', () {
+      final payload = QuestionPayloadEntity.singleChoice(
+        options: [...],
+        correctOptionId: '1',
+      );
+
+      final body = LessonBodyFactory.createBody(
+        payload: payload,
+        question: mockQuestion,
+      );
+
+      expect(body, isA<ChoiceQuestionBody>());
+    });
+  });
+}
+```
+
 ### Mock Creation
 ```dart
 import 'package:mockito/mockito.dart';
@@ -656,32 +731,13 @@ completeLesson: "Complete Lesson"
 
 ### In Code (NEVER hardcode)
 ```dart
-// ✅ CORRECT
-Text(context.text.course.courseCatalog)
-
-// ❌ WRONG
-Text('Course Catalog')
+// ✅ CORRECT: Text(context.text.course.courseCatalog)
+// ❌ WRONG:   Text('Course Catalog')
 ```
 
 ### Workflow
-```bash
-# 1. Pull from Google Sheets
-tools/<os>/localization/localization.sh pull
-
-# 2. Edit YAML in assets/i18n/
-
-# 3. Push changes and apply
-tools/<os>/localization/localization.sh push --apply
-
-# 4. Pull to refresh
-tools/<os>/localization/localization.sh pull
-
-# 5. Generate Dart code
-tools/<os>/localization/localization.sh slang
-
-# 6. Use in widgets
-Text(context.text.module.keyName)
-```
+`pull → edit YAML → push --apply → pull → slang → commit`
+See `docs/deployment-guide.md` Section 7 for detailed commands.
 
 ---
 
@@ -708,39 +764,9 @@ Text(context.text.module.keyName)
 
 ## 14. Performance Guidelines
 
-### Widget Optimization
-```dart
-// ❌ INEFFICIENT: Rebuilds entire tree
-class CourseListPage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<CourseCubit, CourseState>(
-      builder: (context, state) {
-        return ListView.builder(
-          itemCount: courses.length,
-          itemBuilder: (context, index) => CourseCard(...),  // Rebuilds all
-        );
-      },
-    );
-  }
-}
-
-// ✅ EFFICIENT: Individual items rebuild on change
-class CourseCard extends StatelessWidget {
-  final CourseEntity course;
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocBuilder<CourseCardCubit, CourseCardState>(
-      builder: (context, state) {
-        return Card(child: ...);  // Only this item rebuilds
-      },
-    );
-  }
-}
-```
-
-### Memory Management
+- Use `const` constructors everywhere possible
+- Push `BlocBuilder` down the tree (wrap only the widget that changes)
+- Use `ListView.builder` for large lists (lazy rendering)
 - Dispose controllers and listeners properly
 - Use `late` for lazy initialization
 - Avoid circular references in cubits
@@ -748,48 +774,23 @@ class CourseCard extends StatelessWidget {
 
 ---
 
-## 15. Service Patterns: Tracking & Remote Config
+## 15. Service Patterns
 
-### Tracking Service (ITrackingService)
-- **170+ event types** categorized: onboarding, course, lesson, roleplay, progress, payments
-- Helper methods: `_courseParams()`, `_courseLessonParams()`, `_roleplayParams()` reduce parameter duplication
-- Events sent to Firebase Analytics, Sentry, custom backends
-- See `lib/core/constants/manual/tracking_key.dart` for complete event catalog
-
-### Remote Config Service (IRemoteConfigService)
-- **AppVersionConfigEntity** - forceUserUpdate, latestAndroidVersion, latestIosVersion
-- **CourseConfigEntity** - enable, finishOptionalKp toggles
-- **PaywallConfigEntity** - enableLessonLock, lessonLock threshold
-- Auto-fetched on app launch from Firebase Remote Config
-
-### Entity Extensions
-Use for computed properties (avoid extra fields). Example:
-```dart
-extension QuestionExtension on QuestionEntity {
-  bool get hasExplanation => explanation != null && explanation!.text.isNotEmpty;
-}
-```
+- **Tracking**: 170+ events via `ITrackingService` → Firebase Analytics, Sentry. See `tracking_key.dart` for catalog.
+- **Remote Config**: `AppVersionConfigEntity`, `CourseConfigEntity`, `PaywallConfigEntity` auto-fetched on launch.
+- **Entity Extensions**: Use for computed properties (`bool get hasExplanation => explanationText.isNotEmpty;`).
+- See `docs/api-integration-guide.md` for detailed service patterns.
 
 ---
 
-## 16. Branch Naming Conventions
+## 16. Branch Naming
 
-### Format
-```
-type/TICKET-ID-description
-```
-
-### Examples
-```
-feature/MEUP-123-add-course-roadmap
-fix/MEUP-456-lesson-loading-timeout
-refactor/MEUP-789-exercise-state
-docs/MEUP-101-update-readme
-```
+Format: `type/TICKET-ID-description` (e.g., `feature/MEUP-123-add-course-roadmap`, `fix/MEUP-456-lesson-loading-timeout`)
 
 ---
 
-**Enforcement:** Code review process validates adherence to standards.
-**Questions:** Refer to architecture team or review recent merged PRs for examples.
+**Enforcement:** Code review validates adherence. Questions → architecture team or recent merged PRs.
 
-Last updated: Jan 22, 2026
+**Document Maintained By:** Architecture Team
+**Last Review:** Feb 10, 2026
+**Next Review:** Mar 22, 2026

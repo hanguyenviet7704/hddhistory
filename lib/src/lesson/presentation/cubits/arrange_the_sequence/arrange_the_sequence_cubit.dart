@@ -11,7 +11,7 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     emit(
       state.copyWith(
         question: question,
-        currentItems: List<OptionEntity>.from(question.options),
+        currentItems: List<OptionEntity>.from(questionRuntimeOptions(question)),
         hasChecked: false,
         isCorrect: false,
         showExplanation: false,
@@ -204,15 +204,16 @@ class ArrangeTheSequenceCubit extends Cubit<ArrangeTheSequenceState> {
     final question = state.question;
     if (question.id == 0) return;
 
+    final runtimeOptions = questionRuntimeOptions(question);
     List<OptionEntity> items = [];
     if (result.dragDropAnswer.isEmpty) {
-      items = List<OptionEntity>.from(question.options);
+      items = List<OptionEntity>.from(runtimeOptions);
     } else {
       final usedIndices = <int>{};
       for (final answer in result.dragDropAnswer) {
-        final index = _arrangeFindOptionIndex(question.options, answer, usedIndices);
+        final index = _arrangeFindOptionIndex(runtimeOptions, answer, usedIndices);
         if (index >= 0) {
-          items.add(question.options[index]);
+          items.add(runtimeOptions[index]);
           usedIndices.add(index);
         } else {
           items.add(_arrangeNormalizeOption(answer));
@@ -260,7 +261,7 @@ int _arrangeFindOptionIndex(List<OptionEntity> options, OptionEntity answer, Set
 String _arrangeAnswerLabel(QuestionEntity question, AnswerEntity answer) {
   if (answer.correctAnswer.text.isNotEmpty) return answer.correctAnswer.text;
 
-  final match = question.options.firstWhere(
+  final match = questionRuntimeOptions(question).firstWhere(
     (option) => option.id == answer.id,
     orElse: () => const OptionEntity(),
   );
@@ -271,7 +272,7 @@ String _arrangeAnswerLabel(QuestionEntity question, AnswerEntity answer) {
 
 bool _arrangeIsCorrect(QuestionEntity question, List<OptionEntity> currentItems) {
   final currentLabels = currentItems.map((option) => option.labelText).toList();
-  final correctLabels = question.answer.map((answer) => _arrangeAnswerLabel(question, answer)).toList();
+  final correctLabels = questionRuntimeAnswers(question).map((answer) => _arrangeAnswerLabel(question, answer)).toList();
 
   if (currentLabels.length != correctLabels.length) return false;
   for (int i = 0; i < correctLabels.length; i++) {

@@ -9,10 +9,10 @@ abstract class KeypointModel with _$KeypointModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
     @Default(0) int index,
-    @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevel,
+    @JsonKey(unknownEnumValue: StrengthLevel.unknown) @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevel,
     @Default([]) List<LearningItemModel> learningItems,
     @Default(-1) int averageScore,
-    @Default(ProcessEnum.notStarted) ProcessEnum progess,
+    @JsonKey(unknownEnumValue: ProcessEnum.unknown) @Default(ProcessEnum.notStarted) ProcessEnum progess,
   }) = _KeypointModel;
 
   factory KeypointModel.fromJson(Map<String, dynamic> json) => _$KeypointModelFromJson(json);
@@ -24,18 +24,23 @@ enum StrengthLevel {
   @JsonValue('more_practice')
   morePractice,
   @JsonValue('optional_practice')
-  optionalPractice;
+  optionalPractice,
+  @JsonValue('unknown')
+  unknown
+  ;
 
   String get point => switch (this) {
     weakPoint => '0-50',
     morePractice => '51-84',
     optionalPractice => '85-100',
+    unknown => '0-0',
   };
 
   String title(BuildContext context) => switch (this) {
     weakPoint => context.text.keypoint.keypointWeakpointTitle,
     morePractice => context.text.keypoint.keypointImprovementTitle,
     optionalPractice => context.text.keypoint.keypointSkipOptionPracticeType,
+    unknown => context.text.keypoint.keypointWeakpointTitle,
   };
 }
 

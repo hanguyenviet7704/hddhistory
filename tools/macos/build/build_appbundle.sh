@@ -21,12 +21,28 @@ source "${ROOT_DIR}/tools/macos/common/common.sh" || {
 # Initialize variables
 NO_TREE_SHAKE=""
 FLAVOR=""
+CI_MODE=false
+
+is_truthy() {
+    case "${1:-}" in
+        1|true|TRUE|yes|YES|on|ON)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         --no-tree-shake-icons)
             NO_TREE_SHAKE="--no-tree-shake-icons"
+            shift
+            ;;
+        --ci)
+            CI_MODE=true
             shift
             ;;
         dev|stg|prod)
@@ -39,6 +55,7 @@ while [[ $# -gt 0 ]]; do
             echo "Arguments:"
             echo "  dev|stg|prod           Build flavor (required)"
             echo "  --no-tree-shake-icons  Disable tree shaking for icons (optional)"
+            echo "  --ci                   Enable CI-safe mode (hide env values, skip opening output folder)"
             echo "  -h, --help            Show this help message"
             echo ""
             echo "This script uses centralized configuration from .info/ directory."
@@ -51,6 +68,10 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if is_truthy "${CI:-}"; then
+    CI_MODE=true
+fi
 
 # Validate environment and parameters
 if ! validate_environment; then
@@ -91,8 +112,12 @@ show_config_summary "$FLAVOR" "android"
 # Display environment file contents
 log_step "Environment Configuration"
 echo "Using environment variables from: $ENV_FILE"
-echo "Contents:"
-cat "$ENV_FILE"
+if [[ "$CI_MODE" == "true" ]]; then
+    echo "Contents hidden in CI mode"
+else
+    echo "Contents:"
+    cat "$ENV_FILE"
+fi
 echo
 
 # Build App Bundle with dynamic configuration
@@ -131,28 +156,37 @@ log_success "App Bundle built successfully for $FLAVOR flavor."
 log_info "Output location: $BUNDLE_OUTPUT_PATH"
 
 # Automatically upload debug symbols to Firebase Crashlytics
-echo
-log_step "Uploading debug symbols to Firebase Crashlytics..."
-FIREBASE_SETUP_SCRIPT="tools/macos/config/firebase_setup.sh"
-
-if [[ -f "$FIREBASE_SETUP_SCRIPT" ]]; then
-    "$FIREBASE_SETUP_SCRIPT" "$FLAVOR" "android"
-    
-    if [[ $? -eq 0 ]]; then
-        log_success "Debug symbols uploaded successfully!"
-    else
-        log_warning "Debug symbols upload failed, but App Bundle build was successful."
-        log_info "You can manually upload later with: $FIREBASE_SETUP_SCRIPT $FLAVOR android"
-    fi
+if is_truthy "${SKIP_SYMBOL_UPLOAD:-false}"; then
+    echo
+    log_info "Skipping debug symbols upload (SKIP_SYMBOL_UPLOAD=true)."
 else
-    log_warning "Firebase setup script not found at: $FIREBASE_SETUP_SCRIPT"
-    log_info "Debug symbols were not uploaded automatically."
+    echo
+    log_step "Uploading debug symbols to Firebase Crashlytics..."
+    FIREBASE_SETUP_SCRIPT="tools/macos/config/firebase_setup.sh"
+
+    if [[ -f "$FIREBASE_SETUP_SCRIPT" ]]; then
+        "$FIREBASE_SETUP_SCRIPT" "$FLAVOR" "android"
+        
+        if [[ $? -eq 0 ]]; then
+            log_success "Debug symbols uploaded successfully!"
+        else
+            log_warning "Debug symbols upload failed, but App Bundle build was successful."
+            log_info "You can manually upload later with: $FIREBASE_SETUP_SCRIPT $FLAVOR android"
+        fi
+    else
+        log_warning "Firebase setup script not found at: $FIREBASE_SETUP_SCRIPT"
+        log_info "Debug symbols were not uploaded automatically."
+    fi
 fi
 
 # Open the folder in Finder (macOS equivalent of Explorer)
 echo
-log_step "Opening App Bundle output folder..."
-open "$BUNDLE_OUTPUT_PATH"
+if [[ "$CI_MODE" == "true" ]]; then
+    log_info "Skipping output folder open in CI mode."
+else
+    log_step "Opening App Bundle output folder..."
+    open "$BUNDLE_OUTPUT_PATH"
+fi
 
 # Display build summary
 echo

@@ -30,7 +30,7 @@ class SplashContentCard extends StatelessWidget {
               children: [
                 Image.asset(AppAsset.images.common.splashIntro.path, width: 58.w),
                 16.horizontalSpace,
-                AppText('context.text.loadingSplashReadyToUnleashInfiniteCreativity', style: AppStyle.textBold20),
+                AppText(context.text.onboarding.onboardingLoadingPersonalizationText, style: AppStyle.textBold20),
               ],
             ),
           ),
@@ -43,20 +43,21 @@ class SplashContentCard extends StatelessWidget {
                 color: AppColorLight.surface,
                 borderRadius: BorderRadius.circular(8.r),
               ),
-              child: Container(
-                width: double.infinity,
-                height: 12.h,
-                decoration: BoxDecoration(
-                  color: AppCustomColor.brandPrimary,
-                  borderRadius: BorderRadius.circular(6.r),
-                ),
-              ).animate().scaleX(
-                begin: 0.0,
-                end: 1.0,
-                duration: 3000.ms,
-                curve: Curves.easeInOut,
-                alignment: Alignment.centerLeft,
-              ),
+              child:
+                  Container(
+                    width: double.infinity,
+                    height: 12.h,
+                    decoration: BoxDecoration(
+                      color: AppCustomColor.brandPrimary,
+                      borderRadius: BorderRadius.circular(6.r),
+                    ),
+                  ).animate().scaleX(
+                    begin: 0.0,
+                    end: 1.0,
+                    duration: 3000.ms,
+                    curve: Curves.easeInOut,
+                    alignment: Alignment.centerLeft,
+                  ),
             ),
           ),
         ],

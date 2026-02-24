@@ -20,14 +20,7 @@ class LessonExplainPopup {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20.sp))),
       routeSettings: const RouteSettings(name: RouteNamed.lessonExplainPopup),
       builder: (context) => _LessonExplainBottomSheet(showPoint: showPoint, trackingData: trackingData),
-    ).then((value) {
-      if (trackingData == null) return;
-      if (value == true) return;
-      AppService.instance.appTrackingService.trackHowItWorkExitTap(
-        trackingData,
-        source: trackingData.source,
-      );
-    });
+    );
   }
 }
 
@@ -141,12 +134,6 @@ class _LessonExplainBottomSheet extends StatelessWidget {
                 // Done button
                 GestureDetector(
                   onTap: () {
-                    if (trackingData != null) {
-                      AppService.instance.appTrackingService.trackHowItWorkDoneClick(
-                        trackingData!,
-                        source: trackingData!.source,
-                      );
-                    }
                     Navigator.of(context).pop(true);
                   },
                   child: Container(

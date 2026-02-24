@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class ArrangeTheSequenceLessonBody extends StatelessWidget {
+class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -10,50 +10,39 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
     this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+  void _showResultOverlay(
+    BuildContext context,
+    ResultType type, {
+    bool isReview = false,
+    bool showExplainAction = true,
+  }) {
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<ArrangeTheSequenceCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<ArrangeTheSequenceCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
           builder: (context, state) {
-            final correctAnswers = state.question.answer.map((answer) {
-              return state.question.options.firstWhere(
+            final runtimeAnswers = questionRuntimeAnswers(state.question);
+            final runtimeOptions = questionRuntimeOptions(state.question);
+            final correctAnswers = runtimeAnswers.map((answer) {
+              return runtimeOptions.firstWhere(
                 (option) => option.id == answer.id,
                 orElse: () => const OptionEntity(),
               );
             }).toList();
             final hasExplanation = state.question.hasExplanation;
-
             return ArrangeSequenceResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
               arrangedAnswers: correctAnswers,
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
-              onExplain: hasExplanation
-                  ? () {
-                      context.read<ArrangeTheSequenceCubit>().toggleExplanation();
-                    }
+              onContinue: onContinue,
+              onExplain: showExplainAction && hasExplanation
+                  ? () => context.read<ArrangeTheSequenceCubit>().toggleExplanation()
                   : null,
             );
           },
@@ -73,6 +62,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
       context,
       state.isCorrect ? ResultType.correct : ResultType.incorrect,
       isReview: isReadOnly,
+      showExplainAction: false,
     );
   }
 
@@ -96,7 +86,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
+          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -182,7 +172,7 @@ class ArrangeTheSequenceLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for arrange the sequence questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<ArrangeTheSequenceCubit, ArrangeTheSequenceState>(
       builder: (context, state) {

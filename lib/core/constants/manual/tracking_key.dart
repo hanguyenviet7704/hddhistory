@@ -71,6 +71,7 @@ mixin TrackingKey {
   static const String courseSelectCategorySlide = 'course_select_category_slide';
   static const String courseSelectCategoryClick = 'course_select_category_click';
   static const String courseSelectFirstCourseClick = 'course_select_1stcourse_click';
+  static const String courseSelectCourseClick = 'course_select_course_click';
   static const String courseSelectExit = 'course_select_exit';
   static const String courseSelectAllCourseScroll = 'course_select_all_course_scroll';
 
@@ -80,15 +81,14 @@ mixin TrackingKey {
   static const String popupLearningIntroSwipe = 'popup_learning_intro_swipe';
   static const String roadmapScrView = 'roadmap_scr_view';
   static const String roadmapItemClick = 'roadmap_item_click';
+  static const String popupItemImp = 'popup_item_imp';
+  static const String popupItemClick = 'popup_item_click';
+  static const String roadmapItemScroll = 'roadmap_item_scroll';
+  static const String roadmapQuickLearningClick = 'roadmap_quick_learning_click';
   static const String howItWorkScrView = 'how_it_work_scr_view';
-  static const String howItWorkDoneClick = 'how_it_work_done_click';
-  static const String howItWorkExitTap = 'how_it_work_exit_tap';
-  static const String howItWorkClick = 'how_it_work_click';
-  static const String lessonKeypointScrView = 'lesson_keypoint_scr_view';
-  static const String lessonKeypointExit = 'lesson_keypoint_exit';
-  static const String lessonKeypointClick = 'lesson_keypoint_click';
 
   //* Keypoint events
+  static const String keypointTheoryScroll = 'keypoint_theory_scroll';
   static const String keypointTheoryScrView = 'keypoint_theory_scr_view';
   static const String keypointTheoryContinueClick = 'keypoint_theory_continue_click';
   static const String keypointExerciseScrView = 'keypoint_exercise_scr_view';
@@ -108,6 +108,8 @@ mixin TrackingKey {
   static const String keypointExerciseContinue = 'keypoint_exercise_continue';
   static const String keypointExerciseExplainClose = 'keypoint_exercise_explain_close';
   static const String keypointFinishScrView = 'keypoint_finish_scr_view';
+  static const String keypointBadgeUpdateScrView = 'keypoint_badge_update_scr_view';
+  static const String keypointFinishComplete = 'keypoint_finish_complete';
   static const String lessonFinishScrView = 'lesson_finish_scr_view';
   static const String keypointExitClick = 'keypoint_exit_click';
   static const String keypointExitPopupView = 'keypoint_exit_popup_view';

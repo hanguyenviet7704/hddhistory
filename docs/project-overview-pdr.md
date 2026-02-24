@@ -1,8 +1,8 @@
 # Meup: Project Overview & Product Development Requirements
 
-**Last Updated:** Jan 22, 2026
+**Last Updated:** Feb 10, 2026
 **Project:** Meup Flutter Mobile Application
-**Status:** Active Development (feature/MEUP-574)
+**Status:** Active Development (feature/MEUP-637)
 
 ---
 
@@ -111,16 +111,19 @@ Data (APIs, Local Storage, Models)
 
 ### F3: Interactive Lessons
 - Display theory content (text, video, audio)
-- Support 8+ exercise types:
-  - Single/multiple choice
+- Support 8+ exercise types with strongly-typed payloads:
+  - Single/multiple choice with optional answer explanation
+  - Single choice (no correct answer) with document review
   - Drag-and-drop sentence building
   - Pronunciation cue placement
   - Word stress marking
   - Speaking (voice recording + ML evaluation)
   - Sequence arrangement
   - Gap-filling, custom exercises
-- Submit answers with immediate feedback
+- Submit answers with immediate feedback & detailed explanation
+- Lesson review with timeline navigation
 - Track exercise results, retry capability
+- Graceful handling of unsupported question types
 
 ### F4: AI-Driven Roleplay
 - Engage in dialogue scenarios with contextual narrative
@@ -358,4 +361,5 @@ setting (theme, language)
 ---
 
 **Document Maintained By:** Documentation Team
-**Next Review Date:** Feb 22, 2026
+**Last Review:** Feb 10, 2026
+**Next Review Date:** Mar 22, 2026

@@ -11,7 +11,7 @@ abstract class LearningItemModel with _$LearningItemModel {
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage description,
     @Default(BaseMultiLanguage(en: '')) BaseMultiLanguage estimateCompleTime,
     @Default('') String image,
-    @Default(LearningItemType.theory) LearningItemType type,
+    @JsonKey(unknownEnumValue: LearningItemType.unknown) @Default(LearningItemType.theory) LearningItemType type,
     @Default([]) List<QuestionModel> questions,
     @Default([]) List<QuestionModel> subQuestions,
     @Default([]) List<DocumentModel> documents,
@@ -33,6 +33,8 @@ enum LearningItemType {
   exercise,
   @JsonValue('roleplay')
   roleplay,
+  @JsonValue('unknown')
+  unknown,
 }
 
 extension LearningItemModelExtension on LearningItemModel {

@@ -29,7 +29,7 @@ extension ArrangeTheSequenceStateX on ArrangeTheSequenceState {
     final text = answer.correctAnswer.text;
     if (text.isNotEmpty) return text;
 
-    final match = question.options.firstWhere(
+    final match = questionRuntimeOptions(question).firstWhere(
       (option) => option.id == answer.id,
       orElse: () => const OptionEntity(),
     );
@@ -41,16 +41,17 @@ extension ArrangeTheSequenceStateX on ArrangeTheSequenceState {
 
   List<String> get currentOrderLabels => currentItems.map((item) => _optionLabel(item)).toList();
 
-  List<String> get correctOrderLabels => question.answer.map((answer) => _answerLabel(answer)).toList();
+  List<String> get correctOrderLabels => questionRuntimeAnswers(question).map((answer) => _answerLabel(answer)).toList();
 
   ArrangeAnswerState getItemState(int index) {
     if (!hasChecked) return ArrangeAnswerState.normal;
-    if (index >= currentItems.length || index >= question.answer.length) {
+    final runtimeAnswers = questionRuntimeAnswers(question);
+    if (index >= currentItems.length || index >= runtimeAnswers.length) {
       return ArrangeAnswerState.incorrect;
     }
 
     final currentLabel = _optionLabel(currentItems[index]);
-    final correctLabel = _answerLabel(question.answer[index]);
+    final correctLabel = _answerLabel(runtimeAnswers[index]);
 
     return currentLabel == correctLabel ? ArrangeAnswerState.correct : ArrangeAnswerState.incorrect;
   }

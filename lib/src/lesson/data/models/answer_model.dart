@@ -32,4 +32,9 @@ extension AnswerModelExtension on AnswerModel {
     record: record,
     review: review,
   );
+
+  QuestionDragDropAnswerEntity toDragDropAnswerEntity() => QuestionDragDropAnswerEntity(
+    id: id,
+    correctAnswer: correctAnswer,
+  );
 }

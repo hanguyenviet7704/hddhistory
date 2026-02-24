@@ -4,7 +4,7 @@ part of '../../course.dart';
 abstract class RoadmapLevelModel with _$RoadmapLevelModel {
   const factory RoadmapLevelModel({
     @Default(0) int id,
-    @Default(CourseLevel.level1) CourseLevel level,
+    @JsonKey(unknownEnumValue: CourseLevel.unknown) @Default(CourseLevel.level1) CourseLevel level,
     @Default('') String lightBadge,
     @Default('') String darkBadge,
     @Default(BaseMultiLanguage()) BaseMultiLanguage titleBadge,
@@ -20,11 +20,15 @@ enum CourseLevel {
   @JsonValue('level 1')
   level1,
   @JsonValue('level 2')
-  level2;
+  level2,
+  @JsonValue('unknown')
+  unknown
+  ;
 
   String get name => switch (this) {
     level1 => 'Level 1',
     level2 => 'Level 2',
+    unknown => 'Unknown',
   };
 
   String get number => name.split(' ').last;

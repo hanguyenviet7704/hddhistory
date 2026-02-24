@@ -15,7 +15,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     if (exerciseType == LearningItemType.roleplay) {
       final trackingData = _roleplayTrackingData();
       if (trackingData != null) {
-        if (state.question.type == QuestionTypeEnum.multipleChoice) {
+        if (state.isMultipleChoiceQuestion) {
           AppService.instance.appTrackingService.trackRoleplayQuizMultiSelect(trackingData);
         } else {
           AppService.instance.appTrackingService.trackRoleplayQuizSingSelect(trackingData);
@@ -24,7 +24,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     } else {
       final trackingData = _trackingData();
       if (trackingData != null) {
-        if (state.question.type == QuestionTypeEnum.multipleChoice) {
+        if (state.isMultipleChoiceQuestion) {
           AppService.instance.appTrackingService.trackKeypointExerciseMultiClick(trackingData);
         } else {
           AppService.instance.appTrackingService.trackKeypointExerciseClick(trackingData);
@@ -32,7 +32,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       }
     }
 
-    if (state.question.type == QuestionTypeEnum.multipleChoice) {
+    if (state.isMultipleChoiceQuestion) {
       // Handle multiple choice
       final Set<int> newSelectedAnswers = Set<int>.from(state.selectedAnswersIndices);
       if (newSelectedAnswers.contains(index)) {
@@ -64,20 +64,13 @@ class ChoiceCubit extends Cubit<ChoiceState> {
       }
     }
 
-    bool isCorrect = false;
-
-    if (state.question.type == QuestionTypeEnum.multipleChoice) {
-      // Check multiple choice answer
-      if (state.selectedAnswersIndices.isNotEmpty) {
-        Set<int> correctIndexes = state.correctOptionsIndices;
-        Set<int> selectedIndexes = state.selectedAnswersIndices;
-        // User is correct if they've selected all correct options
-        isCorrect = correctIndexes.every((index) => selectedIndexes.contains(index));
-      }
-    } else {
-      // Check single choice answer
-      isCorrect = state.correctOptionsIndices.contains(state.selectedAnswerIndex);
-    }
+    final isCorrect = resolveChoiceCheckResult(
+      isMultipleChoice: state.isMultipleChoiceQuestion,
+      isNoCorrectSingleChoice: state.isNoCorrectSingleChoiceQuestion,
+      selectedAnswerIndex: state.selectedAnswerIndex,
+      selectedAnswersIndices: state.selectedAnswersIndices,
+      correctOptionsIndices: state.correctOptionsIndices,
+    );
 
     emit(
       state.copyWith(
@@ -91,7 +84,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     _storeLessonResult(result);
     _updateUserProgressExercise(result);
 
-    if (!isCorrect) {
+    if (!isCorrect && !state.isNoCorrectSingleChoiceQuestion) {
       AppDI.injector.get<ExerciseCubit>().addSubQuestionToLessonCubit();
     }
   }
@@ -101,19 +94,19 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     if (question.id == 0) return;
     final double score = pointCalculation().toDouble();
 
-    final QuestionType progressType = switch (question.type) {
-      QuestionTypeEnum.singleChoice => QuestionType.singleChoice,
-      QuestionTypeEnum.multipleChoice => QuestionType.multipleChoice,
-      _ => QuestionType.singleChoice,
-    };
+    final QuestionType progressType = progressQuestionTypeFromPayload(state.payload);
 
     final data = UpdateUserProgressExerciseData(
       exerciseId: question.exerciseId,
       type: progressType,
       passed: result.passed,
       score: score,
-      multipleAnswer: question.type == QuestionTypeEnum.multipleChoice ? _progressOptionList(result.multipleAnswer) : null,
-      singleAnswer: question.type == QuestionTypeEnum.singleChoice ? _progressSingleOption(result.singleAnswer) : null,
+      multipleAnswer: state.isMultipleChoiceQuestion ? _progressOptionList(result.multipleAnswer) : null,
+      singleAnswer: state.isMultipleChoiceQuestion
+          ? null
+          : state.isNoCorrectSingleChoiceQuestion
+          ? progressSingleOptionNoCorrect(result.singleAnswer)
+          : _progressSingleOption(result.singleAnswer),
     );
 
     final exerciseCubit = AppDI.injector.get<ExerciseCubit>();
@@ -139,30 +132,14 @@ class ChoiceCubit extends Cubit<ChoiceState> {
   }
 
   int pointCalculation() {
-    if (state.question.type == QuestionTypeEnum.multipleChoice) {
-      /// Mỗi câu chọn đúng = Max điểm / tổng số câu đúng
-      /// Mỗi câu chọn sai → sẽ bị trừ 50% số điểm của 1 câu đúng. Trừ đến khi về 0 thì thôi
-      /// Không chọn→  0 điểm
-      final correctIndexes = state.correctOptionsIndices;
-      final selectedIndexes = state.selectedAnswersIndices;
-
-      if (selectedIndexes.isEmpty) return 0;
-
-      final correctCount = correctIndexes.length;
-      final pointPerCorrect = state.question.maxScore / correctCount;
-
-      final correctSelections = selectedIndexes.where((index) => correctIndexes.contains(index)).length;
-      final wrongSelections = selectedIndexes.where((index) => !correctIndexes.contains(index)).length;
-
-      final score = (correctSelections * pointPerCorrect) - (wrongSelections * pointPerCorrect * 0.5);
-
-      return score.clamp(0, state.question.maxScore).toInt();
-    }
-
-    final correctIndex = state.correctOptionsIndices.first;
-    final selectedIndex = state.selectedAnswerIndex;
-    final score = (selectedIndex == correctIndex ? state.question.maxScore : 0);
-    return score;
+    return calculateChoiceScore(
+      isMultipleChoice: state.isMultipleChoiceQuestion,
+      isNoCorrectSingleChoice: state.isNoCorrectSingleChoiceQuestion,
+      maxScore: state.question.maxScore,
+      correctOptionsIndices: state.correctOptionsIndices,
+      selectedAnswersIndices: state.selectedAnswersIndices,
+      selectedAnswerIndex: state.selectedAnswerIndex,
+    );
   }
 
   void toggleExplanation() {
@@ -194,14 +171,15 @@ class ChoiceCubit extends Cubit<ChoiceState> {
 
   ExerciseResultEntity toExerciseResult() {
     final question = state.question;
-    final isMultiple = question.type == QuestionTypeEnum.multipleChoice;
+    final isMultiple = state.isMultipleChoiceQuestion;
+    final options = state.answerOptions;
 
     final List<OptionEntity> multipleAnswer = isMultiple
-        ? (state.selectedAnswersIndices.toList()..sort()).where((index) => index >= 0 && index < question.options.length).map((index) => question.options[index]).toList()
+        ? (state.selectedAnswersIndices.toList()..sort()).where((index) => index >= 0 && index < options.length).map((index) => options[index]).toList()
         : const [];
 
-    final OptionEntity singleAnswer = !isMultiple && state.selectedAnswerIndex >= 0 && state.selectedAnswerIndex < question.options.length
-        ? question.options[state.selectedAnswerIndex]
+    final OptionEntity singleAnswer = !isMultiple && state.selectedAnswerIndex >= 0 && state.selectedAnswerIndex < options.length
+        ? options[state.selectedAnswerIndex]
         : const OptionEntity();
 
     return ExerciseResultEntity(
@@ -218,7 +196,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     final question = state.question;
     if (question.id == 0) return;
 
-    if (question.type == QuestionTypeEnum.multipleChoice) {
+    if (state.isMultipleChoiceQuestion) {
       final selectedIndices = <int>{};
       final usedIndices = <int>{};
 
@@ -230,7 +208,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
         }
       }
 
-      final isCorrect = _isMultipleCorrect(question, selectedIndices);
+      final isCorrect = choiceIsMultipleCorrect(question, selectedIndices);
 
       emit(
         state.copyWith(
@@ -245,7 +223,7 @@ class ChoiceCubit extends Cubit<ChoiceState> {
     }
 
     final selectedIndex = _findOptionIndex(question, result.singleAnswer, <int>{});
-    final isCorrect = _isSingleCorrect(question, selectedIndex);
+    final isCorrect = state.isNoCorrectSingleChoiceQuestion ? selectedIndex >= 0 : choiceIsSingleCorrect(question, selectedIndex);
 
     emit(
       state.copyWith(
@@ -260,42 +238,23 @@ class ChoiceCubit extends Cubit<ChoiceState> {
 }
 
 int _findOptionIndex(QuestionEntity question, OptionEntity answer, Set<int> usedIndices) {
+  final options = questionRuntimeOptions(question);
   if (answer.id != 0) {
-    for (int i = 0; i < question.options.length; i++) {
+    for (int i = 0; i < options.length; i++) {
       if (usedIndices.contains(i)) continue;
-      if (question.options[i].id == answer.id) return i;
+      if (options[i].id == answer.id) return i;
     }
   }
 
   final answerText = answer.labelText;
   if (answerText.isNotEmpty) {
-    for (int i = 0; i < question.options.length; i++) {
+    for (int i = 0; i < options.length; i++) {
       if (usedIndices.contains(i)) continue;
-      final option = question.options[i];
+      final option = options[i];
       final optionText = option.labelText;
       if (optionText == answerText) return i;
     }
   }
 
   return -1;
-}
-
-bool _isMultipleCorrect(QuestionEntity question, Set<int> selectedIndices) {
-  if (selectedIndices.isEmpty) return false;
-
-  final correctIndices = <int>{};
-  for (int i = 0; i < question.options.length; i++) {
-    if (question.options[i].isCorrect) correctIndices.add(i);
-  }
-
-  return correctIndices.every((index) => selectedIndices.contains(index));
-}
-
-bool _isSingleCorrect(QuestionEntity question, int selectedIndex) {
-  if (selectedIndex < 0) return false;
-
-  final correctIndex = question.options.indexWhere((option) => option.isCorrect);
-  if (correctIndex == -1) return false;
-
-  return selectedIndex == correctIndex;
 }

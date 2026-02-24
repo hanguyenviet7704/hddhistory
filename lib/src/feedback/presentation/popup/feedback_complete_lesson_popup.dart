@@ -93,18 +93,14 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 16.h),
+                    padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 0),
                     child: Column(
                       children: [
-                        FeedbackHeader(title: context.text.feedback.completeTitle),
-                        12.verticalSpace,
-                        FeedbackRatingRow(
-                          rating: state.draftOverallRating,
-                          starSize: 36,
-                          spacing: 6,
-                          alignment: MainAxisAlignment.center,
-                          onRatingChanged: context.read<FeedbackCubit>().updateOverallRating,
+                        FeedbackHeader(
+                          title: context.text.feedback.completeTitle,
+                          subtitle: context.text.feedback.incompleteSubtitle,
                         ),
+                        16.verticalSpace,
                       ],
                     ),
                   ),
@@ -140,7 +136,7 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                             hint: context.text.feedback.commentHint,
                             onChanged: context.read<FeedbackCubit>().updateComment,
                           ),
-                          24.verticalSpace,
+                          32.verticalSpace,
                           FeedbackPrimaryButton(
                             title: context.text.feedback.sendFeedback,
                             enabled: state.feedbackCompleteCanSubmit,

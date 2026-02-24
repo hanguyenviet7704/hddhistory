@@ -15,6 +15,8 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
     required this.answerLabel,
   });
 
+  QuestionPayloadEntity get _payload => exercise.typedPayload;
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -51,62 +53,74 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
     final correctOptions = _resolveCorrectOptionTexts();
     final sequenceAnswers = _resolveSequenceAnswers(correctOptions);
 
-    switch (exercise.type) {
-      case QuestionTypeEnum.singleChoice:
-        return RoleplayAnswerLines(
-          items: [correctOptions.firstOrNull ?? ''],
-          style: answerTextStyle,
-        );
-      case QuestionTypeEnum.multipleChoice:
-        return RoleplayAnswerLines(items: correctOptions, style: answerTextStyle);
-      case QuestionTypeEnum.dragAndDrop:
-        final gapAnswers = exercise.answer.isNotEmpty
-            ? exercise.answer.map((answer) => answer.correctAnswer.text).toList()
-            : correctOptions;
-        return RoleplayGapFillingAnswer(
-          template: exercise.targetArea.text,
-          answers: gapAnswers,
-          baseStyle: answerTextStyle,
-          highlightStyle: answerTextStyle.copyWith(
-            color: AppCustomColor.successGreen,
-            fontWeight: FontWeight.w700,
-          ),
-        );
-      case QuestionTypeEnum.arrangeTheSequence:
-        return RoleplaySequenceAnswerList(items: sequenceAnswers, style: answerTextStyle);
-      case QuestionTypeEnum.stressPlacement:
-      case QuestionTypeEnum.cuesPlacement:
-        return const SizedBox.shrink();
-      case QuestionTypeEnum.speaking:
-        return RoleplaySpeakingAnswer(
-          recordAnswer: result.recordAnswer,
-          textStyle: answerTextStyle,
-        );
-    }
+    return switch (_payload) {
+      QuestionSingleChoicePayloadEntity() => RoleplayAnswerLines(
+        items: [_fallbackLine(correctOptions.firstOrNull)],
+        style: answerTextStyle,
+      ),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => RoleplayAnswerLines(
+        items: [_fallbackLine(_resolveNoCorrectSelectedAnswerText())],
+        style: answerTextStyle,
+      ),
+      QuestionMultipleChoicePayloadEntity() => RoleplayAnswerLines(
+        items: correctOptions.isEmpty ? [_fallbackLine(null)] : correctOptions,
+        style: answerTextStyle,
+      ),
+      QuestionDragAndDropPayloadEntity() => RoleplayGapFillingAnswer(
+        template: questionRuntimeTargetArea(exercise).text,
+        answers: _resolveDragDropAnswers(correctOptions),
+        baseStyle: answerTextStyle,
+        highlightStyle: answerTextStyle.copyWith(
+          color: AppCustomColor.successGreen,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+      QuestionArrangeTheSequencePayloadEntity() => RoleplaySequenceAnswerList(
+        items: sequenceAnswers.isEmpty ? [_fallbackLine(null)] : sequenceAnswers,
+        style: answerTextStyle,
+      ),
+      QuestionStressPlacementPayloadEntity() || QuestionCuesPlacementPayloadEntity() => const SizedBox.shrink(),
+      QuestionSpeakingPayloadEntity() => RoleplaySpeakingAnswer(
+        recordAnswer: result.recordAnswer,
+        textStyle: answerTextStyle,
+      ),
+      QuestionUnsupportedPayloadEntity() => RoleplayAnswerLines(
+        items: [_fallbackLine(_resolveUnsupportedAnswerText())],
+        style: answerTextStyle,
+      ),
+      _ => RoleplayAnswerLines(
+        items: [_fallbackLine(_resolveUnsupportedAnswerText())],
+        style: answerTextStyle,
+      ),
+    };
   }
 
   List<String> _resolveCorrectOptionTexts() {
-    final options = exercise.options.where((option) => option.isCorrect).toList();
+    final options = questionRuntimeOptions(exercise).where((option) => option.isCorrect).toList();
     if (options.isNotEmpty) {
       return options.map((option) => option.textValue).where((text) => text.isNotEmpty).toList();
     }
-    return exercise.answer
-        .map((answer) => answer.correctAnswer.text)
-        .where((text) => text.isNotEmpty)
-        .toList();
+    return questionRuntimeAnswers(exercise).map((answer) => answer.correctAnswer.text).where((text) => text.isNotEmpty).toList();
+  }
+
+  List<String> _resolveDragDropAnswers(List<String> fallbackCorrectOptions) {
+    final answers = questionRuntimeAnswers(exercise);
+    if (answers.isNotEmpty) {
+      return answers.map((answer) => answer.correctAnswer.text).where((text) => text.isNotEmpty).toList();
+    }
+    if (fallbackCorrectOptions.isNotEmpty) return fallbackCorrectOptions;
+    return [_fallbackLine(null)];
   }
 
   List<String> _resolveSequenceAnswers(List<String> fallbackCorrectOptions) {
     // Primary source: ordered answers from backend
-    if (exercise.answer.isNotEmpty) {
-      return exercise.answer.map(_sequenceAnswerText).where((text) => text.isNotEmpty).toList();
+    final answers = questionRuntimeAnswers(exercise);
+    if (answers.isNotEmpty) {
+      return answers.map(_sequenceAnswerText).where((text) => text.isNotEmpty).toList();
     }
 
     // Fallback: use all options in their given order
-    final orderedOptions = exercise.options
-        .map((option) => option.textValue)
-        .where((text) => text.isNotEmpty)
-        .toList();
+    final orderedOptions = questionRuntimeOptions(exercise).map((option) => option.textValue).where((text) => text.isNotEmpty).toList();
     if (orderedOptions.isNotEmpty) return orderedOptions;
 
     return fallbackCorrectOptions;
@@ -115,11 +129,34 @@ class _RoleplayExerciseAnswerBody extends StatelessWidget {
   String _sequenceAnswerText(AnswerEntity answer) {
     if (answer.correctAnswer.text.isNotEmpty) return answer.correctAnswer.text;
 
-    final match = exercise.options.firstWhere(
+    final match = questionRuntimeOptions(exercise).firstWhere(
       (option) => option.id == answer.id,
       orElse: () => const OptionEntity(),
     );
 
     return match.textValue;
+  }
+
+  String _resolveNoCorrectSelectedAnswerText() {
+    if (result.singleAnswer.labelText.isNotEmpty) return result.singleAnswer.labelText;
+    final multipleFirst = result.multipleAnswer.firstOrNull;
+    if (multipleFirst != null && multipleFirst.labelText.isNotEmpty) {
+      return multipleFirst.labelText;
+    }
+    final fallbackOption = questionRuntimeOptions(exercise).firstOrNull;
+    if (fallbackOption != null) return fallbackOption.textValue;
+    return '';
+  }
+
+  String _resolveUnsupportedAnswerText() {
+    if (result.singleAnswer.labelText.isNotEmpty) return result.singleAnswer.labelText;
+    final multipleFirst = result.multipleAnswer.firstOrNull;
+    if (multipleFirst != null && multipleFirst.labelText.isNotEmpty) return multipleFirst.labelText;
+    return '';
+  }
+
+  String _fallbackLine(String? text) {
+    if (text != null && text.isNotEmpty) return text;
+    return '-';
   }
 }

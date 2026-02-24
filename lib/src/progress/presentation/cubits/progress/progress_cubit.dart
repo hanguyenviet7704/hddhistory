@@ -170,6 +170,9 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       case LessonType.output:
         lessonId = '';
         break;
+      case LessonType.unknown:
+        lessonId = '';
+        break;
     }
 
     params = params.copyWith(
@@ -186,13 +189,18 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
       onSuccess: (item) {
         if ((lessonType == LessonType.lesson && courseLessonState.isAllOtherKeypointsCompleted) || (lessonType == LessonType.roleplay)) {
-          updateUserProgressLesson(UpdateUserProgressLessonParams(lessonId: lessonId, body: {
-            "userId": userId,
-            "courseId": courseId,
-            "averageScore": params.keypoints.first.averageScore,
-            "passed": params.keypoints.first.passed,
-            "reviews": lessonReview.isNotEmpty ? lessonReview : params.keypoints.first.reviews,
-          }));
+          updateUserProgressLesson(
+            UpdateUserProgressLessonParams(
+              lessonId: lessonId,
+              body: {
+                "userId": userId,
+                "courseId": courseId,
+                "averageScore": params.keypoints.first.averageScore,
+                "passed": params.keypoints.first.passed,
+                "reviews": lessonReview.isNotEmpty ? lessonReview : params.keypoints.first.reviews,
+              },
+            ),
+          );
         }
         emit(state.copyWith(status: ProgressStatus.success));
         _courseLessonCubit.loadLesson(courseLessonState.selectedLesson.id);

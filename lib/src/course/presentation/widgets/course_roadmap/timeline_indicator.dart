@@ -37,6 +37,10 @@ class TimelineIndicator extends StatelessWidget {
         color: AppCustomColor.borderSecondary,
         shape: BoxShape.circle,
       ),
+      ProcessEnum.unknown => BoxDecoration(
+        color: AppCustomColor.borderSecondary,
+        shape: BoxShape.circle,
+      ),
     };
   }
 
@@ -56,6 +60,10 @@ class TimelineIndicator extends StatelessWidget {
           color: AppCustomColor.brandPrimary,
           shape: BoxShape.circle,
         ),
+      ),
+      ProcessEnum.unknown => SvgPicture.asset(
+        AppAsset.svg.app.icLock,
+        width: 24.w,
       ),
     };
   }

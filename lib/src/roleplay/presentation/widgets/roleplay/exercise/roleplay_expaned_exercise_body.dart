@@ -31,6 +31,10 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   bool _hasTrackedResultScrollBottom = false;
 
   RoleplayTrackingData? _trackingData() => RoleplayTrackingData.fromContext();
+  QuestionPayloadEntity get _payload => widget.exercise.typedPayload;
+  bool get _isSpeakingPayload => _payload is QuestionSpeakingPayloadEntity;
+  bool get _isNoCorrectSingleChoicePayload => _payload is QuestionSingleChoiceNoCorrectAnswerPayloadEntity;
+  bool get _isUnsupportedPayload => _payload is QuestionUnsupportedPayloadEntity;
 
   @override
   void initState() {
@@ -78,15 +82,37 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
     widget.onAnswerChecked?.call(isCorrect);
   }
 
+  void _handleUnsupportedContinue(BuildContext context) {
+    if (!widget.readOnly) {
+      final trackingData = _trackingData();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayQuizContinue(trackingData);
+      }
+    }
+    _storeExerciseResult(context, true);
+    widget.onContinue?.call();
+  }
+
   void _storeExerciseResult(BuildContext context, bool isCorrect) {
-    final ExerciseResultEntity baseResult = switch (widget.exercise.type) {
-      QuestionTypeEnum.singleChoice => context.read<ChoiceCubit>().toExerciseResult(),
-      QuestionTypeEnum.multipleChoice => context.read<ChoiceCubit>().toExerciseResult(),
-      QuestionTypeEnum.dragAndDrop => context.read<DragAndDropCubit>().toExerciseResult(),
-      QuestionTypeEnum.arrangeTheSequence => context.read<ArrangeTheSequenceCubit>().toExerciseResult(),
-      QuestionTypeEnum.cuesPlacement => context.read<CuesPlacementCubit>().toExerciseResult(),
-      QuestionTypeEnum.stressPlacement => context.read<MarkStressWordCubit>().toExerciseResult(),
-      QuestionTypeEnum.speaking => context.read<SpeakingCubit>().toExerciseResult(),
+    final ExerciseResultEntity baseResult = switch (_payload) {
+      QuestionSingleChoicePayloadEntity() ||
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() ||
+      QuestionMultipleChoicePayloadEntity() => context.read<ChoiceCubit>().toExerciseResult(),
+      QuestionDragAndDropPayloadEntity() => context.read<DragAndDropCubit>().toExerciseResult(),
+      QuestionArrangeTheSequencePayloadEntity() => context.read<ArrangeTheSequenceCubit>().toExerciseResult(),
+      QuestionCuesPlacementPayloadEntity() => context.read<CuesPlacementCubit>().toExerciseResult(),
+      QuestionStressPlacementPayloadEntity() => context.read<MarkStressWordCubit>().toExerciseResult(),
+      QuestionSpeakingPayloadEntity() => context.read<SpeakingCubit>().toExerciseResult(),
+      QuestionUnsupportedPayloadEntity() => ExerciseResultEntity(
+        exerciseId: widget.exercise.exerciseId.isNotEmpty ? widget.exercise.exerciseId : widget.exercise.id.toString(),
+        type: widget.exercise.type,
+        form: widget.exercise.form,
+      ),
+      _ => ExerciseResultEntity(
+        exerciseId: widget.exercise.exerciseId.isNotEmpty ? widget.exercise.exerciseId : widget.exercise.id.toString(),
+        type: widget.exercise.type,
+        form: widget.exercise.form,
+      ),
     };
 
     context.read<RoleplayCubit>().setExerciseResult(
@@ -96,18 +122,50 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
     );
   }
 
-  Widget _buildExerciseLessonBody(BuildContext context, QuestionTypeEnum questionType) {
+  Widget _buildExerciseLessonBody(BuildContext context) {
     final onChecked = widget.readOnly ? (_) {} : (bool isCorrect) => _handleAnswerChecked(context, isCorrect);
-    return switch (questionType) {
-      QuestionTypeEnum.singleChoice => SingleChoiceLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
-      QuestionTypeEnum.multipleChoice => MultipleChoiceLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
-      QuestionTypeEnum.dragAndDrop => DragAndDropLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
-      QuestionTypeEnum.arrangeTheSequence => ArrangeTheSequenceLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
-      QuestionTypeEnum.cuesPlacement => CuesPlacementLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
-      QuestionTypeEnum.stressPlacement => MarkStressWordLessonBody(onAnswerChecked: onChecked, isReadOnly: widget.readOnly),
-      QuestionTypeEnum.speaking => SpeakingLessonBody(
+    return switch (_payload) {
+      QuestionSingleChoicePayloadEntity() => SingleChoiceLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceNoCorrectAnswerLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionMultipleChoicePayloadEntity() => MultipleChoiceLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionDragAndDropPayloadEntity() => DragAndDropLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionArrangeTheSequencePayloadEntity() => ArrangeTheSequenceLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionCuesPlacementPayloadEntity() => CuesPlacementLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionStressPlacementPayloadEntity() => MarkStressWordLessonBody(
+        onAnswerChecked: onChecked,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionSpeakingPayloadEntity() => SpeakingLessonBody(
         onAnswerChecked: onChecked,
         onRoleplayReplayTap: widget.readOnly ? _trackReviewReplay : null,
+        isReadOnly: widget.readOnly,
+      ),
+      QuestionUnsupportedPayloadEntity() => UnsupportedLessonBody(
+        question: widget.exercise,
+        onContinue: widget.readOnly ? null : () => _handleUnsupportedContinue(context),
+        isReadOnly: widget.readOnly,
+      ),
+      _ => UnsupportedLessonBody(
+        question: widget.exercise,
+        onContinue: widget.readOnly ? null : () => _handleUnsupportedContinue(context),
         isReadOnly: widget.readOnly,
       ),
     };
@@ -116,20 +174,22 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   Widget _buildBottomButton(BuildContext context, Widget lessonBody) {
     return switch (lessonBody) {
       SingleChoiceLessonBody body => body.buildBottomButton(context),
+      SingleChoiceNoCorrectAnswerLessonBody body => body.buildBottomButton(context),
       MultipleChoiceLessonBody body => body.buildBottomButton(context),
       DragAndDropLessonBody body => body.buildBottomButton(context),
       ArrangeTheSequenceLessonBody body => body.buildBottomButton(context),
       CuesPlacementLessonBody body => body.buildBottomButton(context),
       MarkStressWordLessonBody body => body.buildBottomButton(context),
       SpeakingLessonBody body => body.buildBottomButton(context),
+      UnsupportedLessonBody body => body.buildBottomButton(context),
       TheoryLessonBody body => body.buildBottomButton(context),
       _ => const SizedBox.shrink(),
     };
   }
 
   Widget _buildContinueButton() {
-    final isSpeaking = widget.exercise.type == QuestionTypeEnum.speaking;
-    final Color accentColor = isSpeaking || widget.isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
+    final bool shouldShowSuccess = _isSpeakingPayload || _isNoCorrectSingleChoicePayload || _isUnsupportedPayload || widget.isCorrect;
+    final Color accentColor = shouldShowSuccess ? AppCustomColor.successGreen : AppCustomColor.errorRed;
 
     return ExerciseContinueButton(
       onPressed: () {
@@ -149,12 +209,14 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
   }
 
   Widget _buildResultStatusRow() {
-    final isSpeaking = widget.exercise.type == QuestionTypeEnum.speaking;
-    final Color accentColor = isSpeaking || widget.isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
-    final String statusText = isSpeaking
+    final bool shouldShowSuccess = _isSpeakingPayload || _isNoCorrectSingleChoicePayload || _isUnsupportedPayload || widget.isCorrect;
+    final Color accentColor = shouldShowSuccess ? AppCustomColor.successGreen : AppCustomColor.errorRed;
+    final String statusText = _isSpeakingPayload
         ? t.exercise.exerciseCompleteVoiceTask
+        : (_isNoCorrectSingleChoicePayload || _isUnsupportedPayload)
+        ? t.exercise.exerciseLessonCompleteTitle
         : (widget.isCorrect ? t.exercise.exerciseFeedbackCorrectTitle : t.exercise.exerciseFeedbackIncorrectTitle);
-    final Widget icon = isSpeaking || widget.isCorrect ? AppAsset.icons.app.icTick.image(width: 24.w, height: 24.w) : AppAsset.icons.app.icClose.image(width: 24.w, height: 24.w);
+    final Widget icon = shouldShowSuccess ? AppAsset.icons.app.icTick.image(width: 24.w, height: 24.w) : AppAsset.icons.app.icClose.image(width: 24.w, height: 24.w);
 
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w),
@@ -179,7 +241,7 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
 
   @override
   Widget build(BuildContext context) {
-    Widget lessonBody = _buildExerciseLessonBody(context, widget.exercise.type);
+    Widget lessonBody = _buildExerciseLessonBody(context);
     Widget bottomButton = widget.showResult ? _buildContinueButton() : _buildBottomButton(context, lessonBody);
     final viewInsets = MediaQuery.viewInsetsOf(context);
     return AnimatedPadding(
@@ -199,7 +261,7 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
               child: Column(
                 children: [
                   AbsorbPointer(
-                    absorbing: widget.readOnly && widget.exercise.type != QuestionTypeEnum.speaking,
+                    absorbing: widget.readOnly && !_isSpeakingPayload,
                     child: lessonBody,
                   ),
                   60.verticalSpace,

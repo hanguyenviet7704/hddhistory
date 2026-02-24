@@ -1,0 +1,49 @@
+part of '../../lesson.dart';
+
+class LessonBodyFactory {
+  LessonBodyFactory({
+    required ValueChanged<bool> onAnswerChecked,
+    required VoidCallback onContinueUnsupported,
+    required LessonReviewBodyBuilder reviewBodyBuilder,
+  }) : _onAnswerChecked = onAnswerChecked,
+       _onContinueUnsupported = onContinueUnsupported,
+       _reviewBodyBuilder = reviewBodyBuilder;
+
+  final ValueChanged<bool> _onAnswerChecked;
+  final VoidCallback _onContinueUnsupported;
+  final LessonReviewBodyBuilder _reviewBodyBuilder;
+
+  Widget buildExerciseBody(QuestionEntity question) {
+    final payload = question.typedPayload;
+
+    return switch (payload) {
+      QuestionSingleChoicePayloadEntity() => SingleChoiceLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => SingleChoiceNoCorrectAnswerLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionMultipleChoicePayloadEntity() => MultipleChoiceLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionDragAndDropPayloadEntity() => DragAndDropLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionArrangeTheSequencePayloadEntity() => ArrangeTheSequenceLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionCuesPlacementPayloadEntity() => CuesPlacementLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionStressPlacementPayloadEntity() => MarkStressWordLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionSpeakingPayloadEntity() => SpeakingLessonBody(onAnswerChecked: _onAnswerChecked),
+      QuestionUnsupportedPayloadEntity() => UnsupportedLessonBody(
+        question: question,
+        onContinue: _onContinueUnsupported,
+      ),
+      _ => UnsupportedLessonBody(
+        question: question,
+        onContinue: _onContinueUnsupported,
+      ),
+    };
+  }
+
+  Widget buildReviewBody(QuestionEntity question) {
+    return _reviewBodyBuilder.buildReviewBody(question);
+  }
+
+  Widget buildBottomButton(BuildContext context, Widget lessonBody) {
+    if (lessonBody is LessonBodyWidget) {
+      return lessonBody.buildBottomButton(context);
+    }
+    return const SizedBox.shrink();
+  }
+}

@@ -17,17 +17,18 @@ usage() {
 Usage: run_app.sh [run|logs|devices|clear] [options]
 
 Commands:
-  run <dev|stg|prod> [--device <id>] [--target <path>] [--env <path>]
+  run <dev|stg|prod> [--platform <android|ios>] [--device <id>] [--target <path>] [--env <path>]
       Run the app with flavor and env file.
   logs [--device <id>] [--follow] [--raw]
       Show tracking logs from adb (Android).
   devices
-      List connected adb devices.
-  clear [--device <id>]
+      List available Flutter devices.
+  clear [--device <id>] [--platform <android>]
       Clear adb logcat buffer.
 
 Options:
-  --device <id>   adb device id (optional)
+  --platform <p>  target platform for run (default: android)
+  --device <id>   Flutter device id (optional; auto-select by platform if omitted)
   --target <path> Flutter target (default: lib/main_<flavor>.dart)
   --env <path>    Env file path (default from .info paths config)
   --follow        Stream logs (default: one-time dump)
@@ -36,6 +37,7 @@ Options:
 
 Examples:
   ./run_app.sh run prod --device R58M35FT1NR
+  ./run_app.sh run dev --platform ios
   ./run_app.sh logs --device R58M35FT1NR --follow
 USAGE
 }
@@ -47,6 +49,7 @@ DEVICE=""
 FLAVOR=""
 TARGET=""
 ENV_FILE=""
+PLATFORM=""
 
 if [[ $# -gt 0 ]]; then
     case "$1" in
@@ -69,6 +72,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --device)
             DEVICE="$2"
+            shift 2
+            ;;
+        --platform)
+            PLATFORM="$2"
             shift 2
             ;;
         --target)
@@ -108,17 +115,25 @@ fi
 
 case "$ACTION" in
     devices)
-        command -v adb >/dev/null 2>&1 || { log_error "adb not found"; exit 1; }
-        $ADB_CMD devices
+        FLUTTER_CMD=$(get_flutter_command)
+        $FLUTTER_CMD devices
         exit 0
         ;;
     clear)
+        if [[ -n "$PLATFORM" && "$PLATFORM" != "android" ]]; then
+            log_error "clear command only supports android"
+            exit 1
+        fi
         command -v adb >/dev/null 2>&1 || { log_error "adb not found"; exit 1; }
         $ADB_CMD logcat -c
         log_info "logcat buffer cleared"
         exit 0
         ;;
     logs)
+        if [[ -n "$PLATFORM" && "$PLATFORM" != "android" ]]; then
+            log_error "logs command only supports android"
+            exit 1
+        fi
         command -v adb >/dev/null 2>&1 || { log_error "adb not found"; exit 1; }
         FILTER="grep -E"
         if command -v rg >/dev/null 2>&1; then
@@ -149,6 +164,10 @@ fi
 
 validate_environment
 validate_flavor "$FLAVOR"
+if [[ -z "$PLATFORM" ]]; then
+    PLATFORM="android"
+fi
+validate_platform "$PLATFORM"
 
 if [[ -z "$ENV_FILE" ]]; then
     ENV_FILE=$(get_env_file_path "$FLAVOR")
@@ -167,12 +186,35 @@ if [[ ! -f "$ENV_FILE" ]]; then
 fi
 
 FLUTTER_CMD=$(get_flutter_command)
-show_config_summary "$FLAVOR" "android"
+show_config_summary "$FLAVOR" "$PLATFORM"
 
-RUN_CMD="$FLUTTER_CMD run --flavor $FLAVOR --dart-define-from-file=$ENV_FILE -t $TARGET"
-if [[ -n "$DEVICE" ]]; then
-    RUN_CMD="$RUN_CMD -d $DEVICE"
+if [[ -z "$DEVICE" ]]; then
+    DEVICE=$(
+        $FLUTTER_CMD devices --machine | jq -r --arg platform "$PLATFORM" '
+            if $platform == "android" then
+                map(select((.targetPlatform // "") | startswith("android"))) | .[0].id // empty
+            elif $platform == "ios" then
+                map(select((.targetPlatform // "") == "ios")) | .[0].id // empty
+            else
+                empty
+            end
+        '
+    )
+    if [[ -z "$DEVICE" ]]; then
+        log_error "No $PLATFORM device found. Connect one or pass --device <id>."
+        log_info "Run './tools/macos/build/run_app.sh devices' to list available devices."
+        exit 1
+    fi
+    log_info "Auto-selected $PLATFORM device: $DEVICE"
 fi
 
-echo "Command: $RUN_CMD"
-$RUN_CMD
+RUN_ARGS=(
+    run
+    --flavor "$FLAVOR"
+    "--dart-define-from-file=$ENV_FILE"
+    -t "$TARGET"
+    -d "$DEVICE"
+)
+
+echo "Command: $FLUTTER_CMD ${RUN_ARGS[*]}"
+$FLUTTER_CMD "${RUN_ARGS[@]}"

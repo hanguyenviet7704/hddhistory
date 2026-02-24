@@ -24,6 +24,18 @@ FLAVOR=""
 DISTRIBUTE=false
 DISTRIBUTION_GROUP=""
 DISTRIBUTION_TESTERS=""
+CI_MODE=false
+
+is_truthy() {
+    case "${1:-}" in
+        1|true|TRUE|yes|YES|on|ON)
+            return 0
+            ;;
+        *)
+            return 1
+            ;;
+    esac
+}
 
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
@@ -44,6 +56,10 @@ while [[ $# -gt 0 ]]; do
             DISTRIBUTION_TESTERS="$2"
             shift 2
             ;;
+        --ci)
+            CI_MODE=true
+            shift
+            ;;
         dev|stg|prod)
             FLAVOR="$1"
             shift
@@ -59,6 +75,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --distribute           Distribute to Firebase App Distribution after build"
             echo "  --group <name>         Override distribution group (uses config by default)"
             echo "  --testers <emails>     Override testers list (comma-separated)"
+            echo "  --ci                   Enable CI-safe mode (hide env values, skip opening output folder)"
             echo "  -h, --help            Show this help message"
             echo ""
             echo "Examples:"
@@ -76,6 +93,10 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+if is_truthy "${CI:-}"; then
+    CI_MODE=true
+fi
 
 # Validate environment and parameters
 if ! validate_environment; then
@@ -116,8 +137,12 @@ show_config_summary "$FLAVOR" "android"
 # Display environment file contents
 log_step "Environment Configuration"
 echo "Using environment variables from: $ENV_FILE"
-echo "Contents:"
-cat "$ENV_FILE"
+if [[ "$CI_MODE" == "true" ]]; then
+    echo "Contents hidden in CI mode"
+else
+    echo "Contents:"
+    cat "$ENV_FILE"
+fi
 echo
 
 # Build APK with dynamic configuration
@@ -156,35 +181,44 @@ log_success "APK built successfully for $FLAVOR flavor."
 log_info "Output location: $APK_OUTPUT_PATH"
 
 # Automatically upload debug symbols to Firebase Crashlytics
-echo
-log_step "Uploading debug symbols to Firebase Crashlytics..."
-FIREBASE_SETUP_SCRIPT="tools/linux/config/firebase_setup.sh"
-
-if [[ -f "$FIREBASE_SETUP_SCRIPT" ]]; then
-    "$FIREBASE_SETUP_SCRIPT" "$FLAVOR" "android"
-
-    if [[ $? -eq 0 ]]; then
-        log_success "Debug symbols uploaded successfully!"
-    else
-        log_warning "Debug symbols upload failed, but APK build was successful."
-        log_info "You can manually upload later with: $FIREBASE_SETUP_SCRIPT $FLAVOR android"
-    fi
+if is_truthy "${SKIP_SYMBOL_UPLOAD:-false}"; then
+    echo
+    log_info "Skipping debug symbols upload (SKIP_SYMBOL_UPLOAD=true)."
 else
-    log_warning "Firebase setup script not found at: $FIREBASE_SETUP_SCRIPT"
-    log_info "Debug symbols were not uploaded automatically."
+    echo
+    log_step "Uploading debug symbols to Firebase Crashlytics..."
+    FIREBASE_SETUP_SCRIPT="tools/linux/config/firebase_setup.sh"
+
+    if [[ -f "$FIREBASE_SETUP_SCRIPT" ]]; then
+        "$FIREBASE_SETUP_SCRIPT" "$FLAVOR" "android"
+
+        if [[ $? -eq 0 ]]; then
+            log_success "Debug symbols uploaded successfully!"
+        else
+            log_warning "Debug symbols upload failed, but APK build was successful."
+            log_info "You can manually upload later with: $FIREBASE_SETUP_SCRIPT $FLAVOR android"
+        fi
+    else
+        log_warning "Firebase setup script not found at: $FIREBASE_SETUP_SCRIPT"
+        log_info "Debug symbols were not uploaded automatically."
+    fi
 fi
 
 # Open the folder in file explorer (Linux equivalent of Explorer)
 echo
-log_step "Opening APK output folder..."
-if command -v xdg-open > /dev/null; then
-    xdg-open "$APK_OUTPUT_PATH"
-elif command -v gnome-open > /dev/null; then
-    gnome-open "$APK_OUTPUT_PATH"
-elif command -v kde-open > /dev/null; then
-    kde-open "$APK_OUTPUT_PATH"
+if [[ "$CI_MODE" == "true" ]]; then
+    log_info "Skipping output folder open in CI mode."
 else
-    log_info "Could not open file explorer. Please navigate to $APK_OUTPUT_PATH manually."
+    log_step "Opening APK output folder..."
+    if command -v xdg-open > /dev/null; then
+        xdg-open "$APK_OUTPUT_PATH"
+    elif command -v gnome-open > /dev/null; then
+        gnome-open "$APK_OUTPUT_PATH"
+    elif command -v kde-open > /dev/null; then
+        kde-open "$APK_OUTPUT_PATH"
+    else
+        log_info "Could not open file explorer. Please navigate to $APK_OUTPUT_PATH manually."
+    fi
 fi
 
 # Display build summary

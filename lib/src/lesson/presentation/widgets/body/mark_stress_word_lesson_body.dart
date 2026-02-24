@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class MarkStressWordLessonBody extends StatelessWidget {
+class MarkStressWordLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -10,23 +10,23 @@ class MarkStressWordLessonBody extends StatelessWidget {
     this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+  void _showResultOverlay(
+    BuildContext context,
+    ResultType type, {
+    bool isReview = false,
+    bool showExplainAction = true,
+  }) {
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<MarkStressWordCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<MarkStressWordCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<MarkStressWordCubit, MarkStressWordState>(
           builder: (context, state) {
             final hasExplanation = state.question.hasExplanation;
-
             return MarkStressWordResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
@@ -34,22 +34,9 @@ class MarkStressWordLessonBody extends StatelessWidget {
               words: state.words,
               selectedIndices: state.selectedWordIndices,
               correctIndices: state.correctWordIndices,
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
-              onExplain: hasExplanation
-                  ? () {
-                      context.read<MarkStressWordCubit>().toggleExplanation();
-                    }
+              onContinue: onContinue,
+              onExplain: showExplainAction && hasExplanation
+                  ? () => context.read<MarkStressWordCubit>().toggleExplanation()
                   : null,
             );
           },
@@ -69,6 +56,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
       context,
       state.isCorrect ? ResultType.correct : ResultType.incorrect,
       isReview: isReadOnly,
+      showExplainAction: false,
     );
   }
 
@@ -93,7 +81,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
           final currentQuestion = state.question;
           final words = state.words;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
+          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -172,7 +160,7 @@ class MarkStressWordLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for mark stress word questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<MarkStressWordCubit, MarkStressWordState>(
       builder: (context, state) {

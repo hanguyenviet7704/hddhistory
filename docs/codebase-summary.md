@@ -1,7 +1,8 @@
 # Meup Codebase Structure & Organization
 
-**Last Updated:** Jan 22, 2026
-**Total LOC:** ~86,000+ | **Dart Files:** 782 | **Architecture:** Clean Architecture
+**Last Updated:** Feb 10, 2026
+**Total LOC:** ~64,505 | **Dart Files:** 784 | **Architecture:** Clean Architecture
+**Current Branch:** feature/MEUP-637 (Lesson refactoring + no-correct-answer support)
 
 ---
 
@@ -28,7 +29,7 @@ meup/
 │   └── src/                    # Feature modules (54K+ LOC, 13 modules)
 │       ├── auth/               # Authentication (40 files, 3.2K LOC)
 │       ├── course/             # Course management (67 files, 6.8K LOC)
-│       ├── lesson/             # Interactive exercises (122 files, 10.5K LOC)
+│       ├── lesson/             # Interactive exercises (142 files, 12K+ LOC)
 │       ├── roleplay/           # AI roleplay (67 files, 3.6K LOC)
 │       ├── monetization/       # In-app purchases (38 files, 5.6K LOC)
 │       ├── progress/           # Progress tracking (34 files, 8.2K LOC)
@@ -118,16 +119,20 @@ Organized by subdirectory:
 - GraphQL: GraphQL link pattern with performance tracking
 
 ### 2.3 Routing (routes/)
-**Files:** 14 | **LOC:** 2,518
+**Files:** 15 | **LOC:** 2,600+
 
 Type-safe routing via `go_router` + `go_router_builder`:
 
 | File | Purpose |
 |------|---------|
 | `app_routes_config.dart` | GoRouter instance + shell routes |
-| `app_routes.dart` | Route path constants |
+| `app_routes.dart` | Route path constants (102 routes) |
 | `app_pages.dart` | Page builders with transitions |
-| `routes_*_data.dart` (10 files) | Feature-specific route data classes (generated) |
+| `routes_shell_course_lesson_data.dart` (NEW) | Lesson/roleplay nested route data |
+| `routes_*_data.dart` (11 files) | Feature-specific route data classes (generated) |
+
+**New Routes (MEUP-637):**
+- `/course/{courseId}/lesson/{lessonId}/noCorrectAnswerDocument/:groupId` - Document review for no-correct-answer questions
 
 **Navigation Layers:**
 ```
@@ -281,29 +286,53 @@ Each feature follows Clean Architecture: **Data → Domain → Presentation**
 
 **UI Highlights:** Course roadmap timeline, keypoint cards, course progress indicators
 
-### 4.3 Lesson Module (122 files, 10.5K LOC)
+### 4.3 Lesson Module (142 files, 12K+ LOC)
 **Purpose:** Interactive learning exercises (LARGEST MODULE)
 
 | Layer | Count | Files |
 |-------|-------|-------|
 | Data | 3 files | REST API, local storage, 8+ models |
-| Domain | 9 files | Entities, repository, 4 use cases |
-| Presentation | 106 files | 9 Cubits (per exercise type), 3 pages, 80+ widgets |
+| Domain | 12 files | Entities, repository, 5 use cases, QuestionPayloadEntity union |
+| Presentation | 127 files | 9 Cubits (per exercise type), 5 pages, 90+ widgets, factory patterns |
+
+**8 Strongly-Typed QuestionPayload Variants:**
+1. QuestionPayloadEntity.singleChoice
+2. QuestionPayloadEntity.singleChoiceNoCorrectAnswer (NEW)
+3. QuestionPayloadEntity.multipleChoice
+4. QuestionPayloadEntity.dragAndDrop
+5. QuestionPayloadEntity.arrangeTheSequence
+6. QuestionPayloadEntity.cuesPlacement
+7. QuestionPayloadEntity.stressPlacement
+8. QuestionPayloadEntity.speaking
 
 **9 Exercise-Type Cubits:**
 1. TheoryCubit - Document display
-2. ChoiceCubit - Single/multiple choice
+2. ChoiceCubit - Single/multiple choice + answer explanation
 3. DragAndDropCubit - Sentence building
 4. CuesPlacementCubit - Pronunciation cues
 5. MarkStressWordCubit - Word stress marking
-6. SpeakingCubit - Voice recording
+6. SpeakingCubit - Voice recording + feedback
 7. ArrangeTheSequenceCubit - Reorder items
 8. ExerciseCubit - Master flow state
-9. LessonCubit - Overall progress
+9. LessonCubit - Overall progress + review timeline
 
-**Key Widgets:** DocumentWidget, AudioPlayerWidget, ChoiceAnswerCard, SentenceBuilder, RecordingControlsArea, WaveformVisualizer
+**Key Components (MEUP-637):**
+- **LessonBodyFactory** - Factory pattern routing question types to UI bodies
+- **NoCorrectAnswerDocumentPage** - New page for document review when no correct answer
+- **NoCorrectAnswerDocumentGroupResolver** - Route helper resolver
+- **LessonReviewBodyBuilder**, **LessonTimelineBuilder** - Moved to common widgets
+- **UnsupportedLessonBody** - Graceful handling of unknown types
+- **LessonTrackingDelegate** - Lesson interaction tracking
 
-**Entity Extensions:** QuestionEntity with `explanationText`, `hasExplanation` properties for answer explanation display
+**Key Helpers (Extracted):**
+- **ChoiceCorrectnessRules** - Correctness validation
+- **ChoiceScoringRules** - Score calculation
+- **ChoiceProgressMapper** - Progress mapping
+- **ProgressPayloadMapper** - Progress payload transformation
+
+**Key Widgets:** DocumentWidget, AudioPlayerWidget, ChoiceAnswerCard, SentenceBuilder, RecordingControlsArea, WaveformVisualizer, ReviewTimeline
+
+**Entity Extensions:** QuestionEntity with `explanationText`, `hasExplanation` properties; QuestionPayloadAccess streamlined access
 
 ### 4.4 Roleplay Module (67 files, 3.6K LOC)
 **Purpose:** AI-driven conversational practice
@@ -399,8 +428,8 @@ Each feature follows Clean Architecture: **Data → Domain → Presentation**
 
 **Features:** Language picker, theme switcher, premium info
 
-### 4.13 Common Module (20 files, 2.4K LOC)
-**Purpose:** Global state, shared entities, error pages
+### 4.13 Common Module (18 files, 2.6K LOC)
+**Purpose:** Global state, shared widgets, error pages
 
 | Cubits | Purpose |
 |--------|---------|
@@ -409,6 +438,10 @@ Each feature follows Clean Architecture: **Data → Domain → Presentation**
 | ConnectivityCubit | Internet connection monitor |
 | DeeplinkCubit | Deep link navigation |
 | PageCubit | Current page state |
+
+**Shared Widgets (NEW):**
+- **LessonReviewBodyBuilder** - Lesson review body component (moved from lesson)
+- **LessonTimelineBuilder** - Timeline navigation for reviews (moved from lesson)
 
 **Error Pages:** ComingSoonPage, CommonErrorPage, NoInternetConnectionPage, ServerErrorPage
 
@@ -470,11 +503,26 @@ dart run build_runner build --delete-conflicting-outputs
 
 ```
 test/
+├── support/
+│   └── test_di.dart           # Shared DI setup for tests
 ├── unit/
+│   ├── config/
+│   │   └── routes/            # Route tests
+│   ├── lesson/                # NEW: 10+ test files (MEUP-637)
+│   │   ├── data/
+│   │   │   └── models/
+│   │   ├── domain/
+│   │   │   └── entities/
+│   │   └── presentation/
+│   │       ├── cubits/
+│   │       ├── helper/
+│   │       ├── pages/
+│   │       └── widgets/
+│   ├── roleplay/
+│   │   └── presentation/
+│   │       └── widgets/
 │   ├── auth/
 │   ├── course/
-│   ├── lesson/
-│   ├── roleplay/
 │   ├── monetization/
 │   ├── progress/
 │   ├── profile/
@@ -488,6 +536,7 @@ test/
 
 **Pattern:** `{target}_test.dart` mirrors feature structure
 **Mock Strategy:** Inject mocked services and repositories
+**MEUP-637 Coverage:** Models, entities, cubits, helpers, pages, widgets for lesson module
 
 ---
 
@@ -511,7 +560,7 @@ test/
 |--------|-------|
 | **Total LOC** | ~86,000+ |
 | **Dart Files** | 782 |
-| **Feature Modules** | 13 |
+| **Feature Modules** | 14 |
 | **Entities** | 50+ |
 | **Use Cases** | 60+ |
 | **Pages** | 40+ |
@@ -542,4 +591,5 @@ test/
 ---
 
 **Document Maintained By:** Architecture Team
+**Last Review:** Feb 10, 2026
 **Next Review Date:** Mar 22, 2026

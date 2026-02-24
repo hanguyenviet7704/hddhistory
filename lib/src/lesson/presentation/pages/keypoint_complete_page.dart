@@ -23,10 +23,13 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
 
   @override
   Widget build(BuildContext context) {
-    final currentLesson = context.select((CourseLessonCubit cubit) => cubit.state.selectedLesson);
+    final lessonState = context.select((CourseLessonCubit cubit) => cubit.state);
+    final currentTitle = lessonState.currentTitle;
+    final currentLessonForNext = lessonState.currentLessonForNext;
     final nextLesson = context.select(
-      (CourseRoadmapCubit cubit) => cubit.state.roadmap.nextLessonAfter(currentLesson),
+      (CourseRoadmapCubit cubit) => cubit.state.roadmap.nextLessonAfter(currentLessonForNext),
     );
+    final nextTitle = nextLesson.displayTitleForNextLesson;
 
     return BlocListener<FeedbackCubit, FeedbackState>(
       listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
@@ -71,11 +74,10 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                     children: [
                       Expanded(
                         child: Center(
-                          child: CompletionHeaderCard(title: currentLesson.title.text),
+                          child: CompletionHeaderCard(title: currentTitle),
                         ),
                       ),
-                      if (nextLesson.id.isNotEmpty && nextLesson.title.text.isNotEmpty)
-                        NextLessonCard(title: nextLesson.title.text),
+                      if (nextLesson.id.isNotEmpty && nextTitle.isNotEmpty) NextLessonCard(title: nextTitle),
                     ],
                   ),
                 ),
@@ -83,6 +85,18 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
               LessonCompletionPrimaryButton(
                 label: context.text.exercise.exerciseCompleteKeypointSkipButton,
                 onPressed: () {
+                  final trackingData = KeypointTrackingData.fromContext();
+                  if (trackingData != null) {
+                    AppService.instance.appTrackingService.trackKeypointFinishComplete(trackingData);
+                  }
+
+                  if (lessonState.wasLessonCompletedBefore) {
+                    CourseRoadmapRoute().go(context);
+                    Future.delayed(const Duration(milliseconds: 100), () {
+                      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+                    });
+                    return;
+                  }
                   BadgeProgressRoute().go(context);
                   Future.delayed(const Duration(milliseconds: 100), () {
                     AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);

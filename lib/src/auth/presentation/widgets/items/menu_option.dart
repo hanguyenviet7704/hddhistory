@@ -23,7 +23,7 @@ class MenuOption extends StatelessWidget {
               style: AppStyle.text20.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textPrimary),
             ),
             const Spacer(),
-            if (rightWidget != null) rightWidget!,
+            ?rightWidget,
             Icon(Icons.chevron_right, size: 24.r, color: AppCustomColor.textTertiary),
           ],
         ),

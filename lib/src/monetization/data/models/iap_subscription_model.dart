@@ -5,10 +5,10 @@ abstract class IapSubscriptionModel with _$IapSubscriptionModel {
   const factory IapSubscriptionModel({
     @Default('') String id,
     @Default('') String userId,
-    @Default(PaymentPlatform.google) PaymentPlatform platform,
+    @JsonKey(unknownEnumValue: PaymentPlatform.unknown) @Default(PaymentPlatform.google) PaymentPlatform platform,
     @Default('') String productId,
     @Default('') String anchorId,
-    @Default(SubscriptionStatus.active) SubscriptionStatus status,
+    @JsonKey(unknownEnumValue: SubscriptionStatus.unknown) @Default(SubscriptionStatus.active) SubscriptionStatus status,
     @Default(false) bool autoRenewing,
     @Default(false) bool isTrial,
     DateTime? currentPeriodStart,
@@ -31,6 +31,8 @@ enum SubscriptionStatus {
   onHold,
   @JsonValue('canceled') // user đã tắt auto-renew, nhưng vẫn còn dùng đến cuối kỳ
   canceled,
+  @JsonValue('unknown')
+  unknown,
 }
 
 extension IapSubscriptionModelExtension on IapSubscriptionModel {

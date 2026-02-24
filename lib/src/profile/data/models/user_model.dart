@@ -9,12 +9,12 @@ abstract class UserModel with _$UserModel {
     @Default('') String phone,
     @Default('') String age,
     @Default('') String gender,
-    @Default(UserAccountStatus.active) UserAccountStatus status,
+    @JsonKey(unknownEnumValue: UserAccountStatus.unknown) @Default(UserAccountStatus.active) UserAccountStatus status,
     @Default('') String language,
     @Default('') String country,
     @Default(UserLastActionModel()) UserLastActionModel lastAction,
     @Default('') String avatar,
-    @Default(UserRole.user) UserRole role,
+    @JsonKey(unknownEnumValue: UserRole.unknown) @Default(UserRole.user) UserRole role,
     @Default('') String provider,
     @Default('') String enery,
     @Default(false) bool anonymous,
@@ -32,6 +32,8 @@ enum UserAccountStatus {
   active,
   @JsonValue('IN_ACTIVE')
   inActive,
+  @JsonValue('UNKNOWN')
+  unknown,
 }
 
 enum UserRole {
@@ -39,6 +41,8 @@ enum UserRole {
   admin,
   @JsonValue('USER')
   user,
+  @JsonValue('UNKNOWN')
+  unknown,
 }
 
 extension UserStatusExtension on UserAccountStatus {
@@ -48,6 +52,8 @@ extension UserStatusExtension on UserAccountStatus {
         return 'ACTIVE';
       case UserAccountStatus.inActive:
         return 'IN_ACTIVE';
+      case UserAccountStatus.unknown:
+        return 'UNKNOWN';
     }
   }
 }
@@ -59,6 +65,8 @@ extension UserRoleExtension on UserRole {
         return 'ADMIN';
       case UserRole.user:
         return 'USER';
+      case UserRole.unknown:
+        return 'UNKNOWN';
     }
   }
 }

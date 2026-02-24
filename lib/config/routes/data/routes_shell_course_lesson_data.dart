@@ -19,14 +19,8 @@ part of '../routes.dart';
 //   );
 // }
 
-class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
-  const LessonRoute();
-
-  @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
-
-  @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => MultiBlocProvider(
+Widget _buildLessonFlowPage(Widget child) {
+  return MultiBlocProvider(
     providers: [
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
@@ -41,8 +35,32 @@ class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
       BlocProvider.value(value: AppDI.injector.get<FeedbackCubit>()),
     ],
-    child: const LessonPage(),
+    child: child,
   );
+}
+
+class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
+  const LessonRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => _buildLessonFlowPage(const LessonPage());
+}
+
+class NoCorrectAnswerDocumentRoute extends BaseTransitionRouteData with $NoCorrectAnswerDocumentRoute {
+  final String groupId;
+
+  const NoCorrectAnswerDocumentRoute({required this.groupId});
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return _buildLessonFlowPage(NoCorrectAnswerDocumentPage(groupId: groupId));
+  }
 }
 
 class ReviewTimeRoute extends BaseTransitionRouteData with $ReviewTimeRoute {

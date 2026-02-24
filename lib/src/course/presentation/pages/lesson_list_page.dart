@@ -8,36 +8,11 @@ class LessonListPage extends StatefulWidget {
 }
 
 class _LessonListPageState extends State<LessonListPage> {
-  bool _didTrackScrView = false;
-
   LessonExplainTrackingData? _buildTrackingData(LessonEntity lesson) {
     return LessonExplainTrackingData.fromLesson(
       context,
       lesson,
       source: 'lesson_keypoint',
-    );
-  }
-
-  void _trackLessonKeypointScrView(LessonEntity lesson) {
-    if (_didTrackScrView) return;
-    final trackingData = _buildTrackingData(lesson);
-    if (trackingData == null) return;
-    AppService.instance.appTrackingService.trackLessonKeypointScrView(trackingData);
-    _didTrackScrView = true;
-  }
-
-  void _trackLessonKeypointExit(LessonEntity lesson) {
-    final trackingData = _buildTrackingData(lesson);
-    if (trackingData == null) return;
-    AppService.instance.appTrackingService.trackLessonKeypointExit(trackingData);
-  }
-
-  void _trackLessonKeypointClick(LessonEntity lesson, KeypointEntity keypoint) {
-    final trackingData = _buildTrackingData(lesson);
-    if (trackingData == null) return;
-    AppService.instance.appTrackingService.trackLessonKeypointClick(
-      trackingData,
-      keypoint: keypoint,
     );
   }
 
@@ -54,11 +29,7 @@ class _LessonListPageState extends State<LessonListPage> {
   @override
   Widget build(BuildContext context) {
     return PopScope(
-      onPopInvokedWithResult: (isPop, result) {
-        if (!isPop) return;
-        final lesson = context.read<CourseLessonCubit>().state.selectedLesson;
-        _trackLessonKeypointExit(lesson);
-      },
+      onPopInvokedWithResult: (isPop, result) {},
       child: Scaffold(
         backgroundColor: AppCustomColor.backgroundWhite,
         body: SafeArea(
@@ -66,7 +37,6 @@ class _LessonListPageState extends State<LessonListPage> {
             listenWhen: (previous, current) => previous.selectedLesson.id != current.selectedLesson.id,
             listener: (context, state) {
               if (state.selectedLesson.id.isEmpty) return;
-              _trackLessonKeypointScrView(state.selectedLesson);
               _showTutorialIfNeeded(state.selectedLesson);
             },
             child: BlocBuilder<CourseLessonCubit, CourseLessonState>(
@@ -168,7 +138,6 @@ class _LessonListPageState extends State<LessonListPage> {
                               return KeypointCard(
                                 keypoint: keypoint,
                                 onTap: () {
-                                  _trackLessonKeypointClick(lesson, keypoint);
                                   context.read<LessonCubit>()
                                     ..reset()
                                     ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
