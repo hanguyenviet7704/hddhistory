@@ -27,8 +27,6 @@ default:
       files:
         - pubspec.lock
         - .info/app/build.json
-        - .info/app/localization.json
-        - slang.yaml
     policy: pull-push
     paths:
       - .pub-cache/
