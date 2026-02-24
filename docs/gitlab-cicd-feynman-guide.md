@@ -15,8 +15,8 @@ This keeps mistakes caught early and build outputs consistent across branches.
 ## 2. What runs on each trigger
 | Trigger | What runs |
 |---|---|
-| Merge Request | `prepare + quality` |
-| Push `develop` | `prepare + quality + build APK(dev, stg)` |
+| Merge Request | `prepare + quality` (quality chỉ chạy khi thay đổi file code/build liên quan) |
+| Push `develop` | `prepare + build APK(dev, stg)` |
 | Push `main` | `prepare + quality + build APK(dev, stg, prod) + AAB(prod)` |
 | Tag `v*` | Same as `main` |
 
@@ -34,7 +34,10 @@ For Linux runner jobs:
 - `flutter`, `dart`
 - `jq`, `python3`, `python3-venv`, `python3-pip`
 
-The pipeline installs missing runtime deps in job `before_script`.
+The pipeline installs missing runtime deps in job `before_script` only when needed.  
+If you use a custom image that already has tools, set:
+- `MEUP_CI_IMAGE=<your-image>`
+- `MEUP_CI_SKIP_SYSTEM_SETUP=1`
 
 ## 5. Secret contract (`MEUP_*`)
 ### Required for portable mode
@@ -91,8 +94,8 @@ These jobs validate release contracts and lane readiness only. They do not publi
 2. Add `ci/scripts/bootstrap-secrets.sh`
 3. Configure GitLab runner (Linux)
 4. Add `MEUP_*` variables in GitLab CI/CD settings
-5. Push MR and verify only `prepare + quality`
-6. Merge to `develop` and verify APK (`dev`, `stg`)
+5. Push MR and verify `prepare` + conditional `quality`
+6. Merge to `develop` and verify APK (`dev`, `stg`) without waiting for `quality`
 7. Merge to `main` and verify full matrix + `prod` AAB
 8. Push tag `v1.x.x` and verify same full matrix behavior
 

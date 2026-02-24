@@ -1,3 +1,13 @@
+.quality_changes: &quality_changes
+  - lib/**/*.dart
+  - test/**/*.dart
+  - pubspec.yaml
+  - pubspec.lock
+  - build.yaml
+  - analysis_options.yaml
+  - slang.yaml
+  - assets/i18n/**/*.yaml
+
 quality:analyze:
   extends: .linux_job_base
   stage: quality
@@ -9,7 +19,7 @@ quality:analyze:
     - flutter analyze
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+      changes: *quality_changes
     - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
     - when: never
@@ -25,7 +35,7 @@ quality:test:
     - flutter test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+      changes: *quality_changes
     - if: '$CI_COMMIT_BRANCH == "main"'
     - if: '$CI_COMMIT_TAG =~ /^v.*/'
     - when: never

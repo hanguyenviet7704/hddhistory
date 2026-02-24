@@ -160,8 +160,8 @@ Pipeline definition is modular and lives in:
 #### Triggers
 | Trigger | Environment | Target |
 |---------|-----------|--------|
-| `merge_request_event` | Validation | `prepare + quality` only |
-| Push to `develop` | Dev/Staging | Build APK (`dev`, `stg`) |
+| `merge_request_event` | Validation | `prepare` + `quality` (quality chạy khi có thay đổi Dart/build config liên quan) |
+| Push to `develop` | Dev/Staging | `prepare + build` APK (`dev`, `stg`) |
 | Push to `main` | Full matrix | Build APK (`dev`, `stg`, `prod`) + AAB (`prod`) |
 | Git tag `v*` | Release candidate | Same as `main` full matrix |
 
@@ -177,6 +177,7 @@ Pipeline definition is modular and lives in:
 2. QUALITY
    ├─ flutter analyze
    └─ flutter test
+   (MR: chỉ chạy khi thay đổi các file liên quan code/build như `lib/**`, `test/**`, `pubspec.yaml`, `build.yaml`, ...)
 
 3. BUILD
    ├─ APK matrix by branch policy
@@ -192,6 +193,8 @@ Pipeline definition is modular and lives in:
 ### Access Requirements
 - **GitLab Runner:** Linux for build pipeline, optional macOS runner for iOS fastlane skeleton.
 - **GitLab CI/CD Variables (prefix `MEUP_*`):**
+  - `MEUP_CI_IMAGE` (optional override custom CI image)
+  - `MEUP_CI_SKIP_SYSTEM_SETUP=1` (optional, bật khi custom image đã preinstall jq/python/pip để bỏ bước `apt-get`)
   - `MEUP_ENV_DEV_FILE` / `MEUP_ENV_DEV_CONTENT`
   - `MEUP_ENV_STG_FILE` / `MEUP_ENV_STG_CONTENT`
   - `MEUP_ENV_PROD_FILE` / `MEUP_ENV_PROD_CONTENT`
