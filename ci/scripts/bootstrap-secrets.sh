@@ -73,14 +73,14 @@ write_secret_target() {
 write_env_file() {
   local flavor="$1"
   local target_file="$2"
-  local file_var="MEUP_ENV_${flavor}_FILE"
-  local content_var="MEUP_ENV_${flavor}_CONTENT"
+  local file_var="ENV_${flavor}_FILE"
+  local content_var="ENV_${flavor}_CONTENT"
 
   if write_secret_target "$file_var" "$content_var" "$target_file"; then
-    append_runtime_env "MEUP_ENV_${flavor}_PATH" "$target_file"
+    append_runtime_env "ENV_${flavor}_PATH" "$target_file"
   elif [[ -f "$target_file" ]]; then
     log "Using existing ${target_file#${ROOT_DIR}/}"
-    append_runtime_env "MEUP_ENV_${flavor}_PATH" "$target_file"
+    append_runtime_env "ENV_${flavor}_PATH" "$target_file"
   else
     log "No runtime override for ${target_file#${ROOT_DIR}/}"
   fi
@@ -90,32 +90,34 @@ write_env_file "DEV" "${ROOT_DIR}/.env/.env.dev"
 write_env_file "STG" "${ROOT_DIR}/.env/.env.stg"
 write_env_file "PROD" "${ROOT_DIR}/.env/.env.prod"
 
-if write_secret_target "MEUP_LOCALIZATION_SA_PATH" "MEUP_LOCALIZATION_SA_JSON" "${ROOT_DIR}/.info/key/ci-localization-sa.json"; then
+if write_secret_target "LOCALIZATION_SA_PATH" "LOCALIZATION_SA_JSON" "${ROOT_DIR}/.info/key/ci-localization-sa.json"; then
   append_runtime_env "LOCALIZATION_SA_PATH" "${ROOT_DIR}/.info/key/ci-localization-sa.json"
-elif [[ -n "${LOCALIZATION_SA_JSON:-}" ]]; then
-  write_value_to_file "${LOCALIZATION_SA_JSON}" "${ROOT_DIR}/.info/key/ci-localization-sa.json"
-  append_runtime_env "LOCALIZATION_SA_PATH" "${ROOT_DIR}/.info/key/ci-localization-sa.json"
-  log "Wrote .info/key/ci-localization-sa.json from LOCALIZATION_SA_JSON"
 fi
 
-if write_secret_target "MEUP_PLAYSTORE_JSON_FILE" "MEUP_PLAYSTORE_JSON" "${ROOT_DIR}/.info/key/ci-fastlane-playstore.json"; then
-  append_runtime_env "MEUP_PLAYSTORE_JSON_PATH" "${ROOT_DIR}/.info/key/ci-fastlane-playstore.json"
+if write_secret_target "PLAYSTORE_JSON_FILE" "PLAYSTORE_JSON" "${ROOT_DIR}/.info/key/ci-fastlane-playstore.json"; then
+  append_runtime_env "PLAYSTORE_JSON_PATH" "${ROOT_DIR}/.info/key/ci-fastlane-playstore.json"
 fi
 
-if write_secret_target "MEUP_APPSTORE_P8_FILE" "MEUP_APPSTORE_P8" "${ROOT_DIR}/.info/key/ci-appstore-key.p8"; then
-  append_runtime_env "MEUP_APPSTORE_P8_PATH" "${ROOT_DIR}/.info/key/ci-appstore-key.p8"
+if write_secret_target "APPSTORE_P8_FILE" "APPSTORE_P8" "${ROOT_DIR}/.info/key/ci-appstore-key.p8"; then
+  append_runtime_env "APPSTORE_P8_PATH" "${ROOT_DIR}/.info/key/ci-appstore-key.p8"
 fi
 
-if [[ -n "${MEUP_FIREBASE_TOKEN:-}" ]]; then
-  append_runtime_env "FIREBASE_TOKEN" "${MEUP_FIREBASE_TOKEN}"
+if [[ -n "${FIREBASE_TOKEN:-}" ]]; then
+  append_runtime_env "FIREBASE_TOKEN" "${FIREBASE_TOKEN}"
+elif [[ -f "${ROOT_DIR}/.info/app/firebase.json" ]] && command -v jq >/dev/null 2>&1; then
+  firebase_token_from_file="$(jq -r '.firebaseToken // empty' "${ROOT_DIR}/.info/app/firebase.json" 2>/dev/null || true)"
+  if [[ -n "${firebase_token_from_file}" ]]; then
+    append_runtime_env "FIREBASE_TOKEN" "${firebase_token_from_file}"
+    log "Loaded FIREBASE_TOKEN from .info/app/firebase.json"
+  fi
 fi
 
-if [[ -n "${MEUP_APPSTORE_ISSUER_ID:-}" ]]; then
-  append_runtime_env "MEUP_APPSTORE_ISSUER_ID" "${MEUP_APPSTORE_ISSUER_ID}"
+if [[ -n "${APPSTORE_ISSUER_ID:-}" ]]; then
+  append_runtime_env "APPSTORE_ISSUER_ID" "${APPSTORE_ISSUER_ID}"
 fi
 
-if [[ -n "${MEUP_APPSTORE_KEY_ID:-}" ]]; then
-  append_runtime_env "MEUP_APPSTORE_KEY_ID" "${MEUP_APPSTORE_KEY_ID}"
+if [[ -n "${APPSTORE_KEY_ID:-}" ]]; then
+  append_runtime_env "APPSTORE_KEY_ID" "${APPSTORE_KEY_ID}"
 fi
 
 log "Runtime bootstrap complete. Generated build/ci/runtime.env"

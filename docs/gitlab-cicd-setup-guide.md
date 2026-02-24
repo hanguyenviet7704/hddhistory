@@ -1,4 +1,4 @@
-# GitLab CI/CD Feynman Guide (Meup)
+# GitLab CI/CD Setup Guide (Meup)
 
 **Last Updated:** Feb 24, 2026  
 **Scope:** GitLab CI V1 (Android build-first, fastlane skeleton only)
@@ -16,8 +16,8 @@ This keeps mistakes caught early and build outputs consistent across branches.
 | Trigger | What runs |
 |---|---|
 | Merge Request | `prepare + quality` (quality chỉ chạy khi thay đổi file code/build liên quan) |
-| Push `develop` | `prepare + build APK(dev, stg)` |
-| Push `main` | `prepare + quality + build APK(dev, stg, prod) + AAB(prod)` |
+| Push `develop` | `prepare + build APK(dev, stg)` + optional Firebase Distribution |
+| Push `main` | `prepare + quality + build APK(dev, stg, prod) + AAB(prod)` + optional Firebase Distribution (`prod`) |
 | Tag `v*` | Same as `main` |
 
 ## 3. Pipeline files
@@ -26,7 +26,8 @@ This keeps mistakes caught early and build outputs consistent across branches.
 - `ci/templates/10-prepare.yml`
 - `ci/templates/20-quality.yml`
 - `ci/templates/30-build.yml`
-- `ci/templates/40-fastlane-skeleton.yml`
+- `ci/templates/40-release-skeleton.yml`
+- `ci/templates/45-firebase-distribution.yml`
 - `ci/scripts/bootstrap-secrets.sh`
 
 ## 4. Runtime requirements
@@ -36,29 +37,35 @@ For Linux runner jobs:
 
 The pipeline installs missing runtime deps in job `before_script` only when needed.  
 If you use a custom image that already has tools, set:
-- `MEUP_CI_IMAGE=<your-image>`
-- `MEUP_CI_SKIP_SYSTEM_SETUP=1`
+- `CI_IMAGE=<your-image>`
+- `CI_SKIP_SYSTEM_SETUP=1`
 
-## 5. Secret contract (`MEUP_*`)
+## 5. CI variable contract
 ### Required for portable mode
-- `MEUP_ENV_DEV_FILE` or `MEUP_ENV_DEV_CONTENT`
-- `MEUP_ENV_STG_FILE` or `MEUP_ENV_STG_CONTENT`
-- `MEUP_ENV_PROD_FILE` or `MEUP_ENV_PROD_CONTENT`
+- `ENV_DEV_FILE` or `ENV_DEV_CONTENT`
+- `ENV_STG_FILE` or `ENV_STG_CONTENT`
+- `ENV_PROD_FILE` or `ENV_PROD_CONTENT`
 
 ### Recommended
-- `MEUP_LOCALIZATION_SA_JSON` (for localization pull in CI)
+- `LOCALIZATION_SA_JSON` (for localization pull in CI)
 
 ### Optional (phase-2 release)
-- `MEUP_ENABLE_FASTLANE=1`
-- `MEUP_PLAYSTORE_JSON`
-- `MEUP_APPSTORE_P8`
-- `MEUP_APPSTORE_ISSUER_ID`
-- `MEUP_APPSTORE_KEY_ID`
+- `ENABLE_FASTLANE=1`
+- `PLAYSTORE_JSON`
+- `APPSTORE_P8`
+- `APPSTORE_ISSUER_ID`
+- `APPSTORE_KEY_ID`
+
+### Optional (Firebase distribution)
+- `ENABLE_FIREBASE_DISTRIBUTION_DEV=1`
+- `ENABLE_FIREBASE_DISTRIBUTION_STG=1`
+- `ENABLE_FIREBASE_DISTRIBUTION_PROD=1`
+- `FIREBASE_TOKEN`
 
 ## 6. How bootstrap works
 `ci/scripts/bootstrap-secrets.sh` does this:
 1. Creates `build/ci/runtime.env`
-2. Maps `MEUP_ENV_*` variables to `.env/.env.dev|stg|prod`
+2. Maps `ENV_*` variables to `.env/.env.dev|stg|prod`
 3. Writes localization SA file when provided
 4. Writes optional fastlane credential files
 5. Never prints secret values
@@ -82,18 +89,35 @@ Produced artifacts:
 - AAB for `prod`
 - `.obfuscation` symbols for crash debugging
 
-## 9. Fastlane skeleton jobs
-Manual only, gated by `MEUP_ENABLE_FASTLANE=1`:
+## 9. Release skeleton jobs
+Manual only, gated by `ENABLE_FASTLANE=1`:
 - `release:android:fastlane:skeleton`
 - `release:ios:fastlane:skeleton` (requires macOS runner tag)
 
 These jobs validate release contracts and lane readiness only. They do not publish apps in V1.
 
+## 9.1 Firebase Distribution jobs
+When `ENABLE_FIREBASE_DISTRIBUTION_DEV=1` on `develop`, pipeline runs:
+- `release:android:firebase:distribution:dev`
+
+When `ENABLE_FIREBASE_DISTRIBUTION_STG=1` on `develop`, pipeline runs:
+- `release:android:firebase:distribution:stg`
+
+When `ENABLE_FIREBASE_DISTRIBUTION_PROD=1` on `main` or tag `v*`, pipeline runs:
+- `release:android:firebase:distribution:prod`
+
+These jobs use:
+- `tools/macos/distribution/distribute_android.sh apk dev`
+- `tools/macos/distribution/distribute_android.sh apk stg`
+- `tools/macos/distribution/distribute_android.sh apk prod`
+
+These jobs reuse APK artifacts via `needs`, so they do not rebuild APK.
+
 ## 10. First-time setup checklist
 1. Add `.gitlab-ci.yml` and all `ci/templates/*`
 2. Add `ci/scripts/bootstrap-secrets.sh`
 3. Configure GitLab runner (Linux)
-4. Add `MEUP_*` variables in GitLab CI/CD settings
+4. Add required CI variables in GitLab CI/CD settings
 5. Push MR and verify `prepare` + conditional `quality`
 6. Merge to `develop` and verify APK (`dev`, `stg`) without waiting for `quality`
 7. Merge to `main` and verify full matrix + `prod` AAB
@@ -101,12 +125,12 @@ These jobs validate release contracts and lane readiness only. They do not publi
 
 ## 11. Quick debug playbook
 ### Localization pull fails
-- Verify `MEUP_LOCALIZATION_SA_JSON`
+- Verify `LOCALIZATION_SA_JSON`
 - Verify sheet permissions for service account
 - Retry job after checking network
 
 ### Build fails due env file
-- Check `MEUP_ENV_*` variables
+- Check `ENV_*` variables
 - Open job log and verify bootstrap summary (no secret values)
 - Confirm `.env/.env.<flavor>` exists in workspace
 
@@ -119,7 +143,7 @@ To reuse this architecture:
 1. Copy `.gitlab-ci.yml`, `ci/templates/*`, `ci/scripts/bootstrap-secrets.sh`
 2. Keep script interface unchanged (`tools/linux/build/*.sh`, localization script)
 3. Update `.info/app/*.json` for new app/flavors/paths
-4. Provide project-specific `MEUP_*` variables (or rename prefix consistently)
+4. Provide project-specific CI variables matching the same contract
 
 ## 13. Security note
 Current repo still tracks sensitive files. CI masking is only minimum protection. Long-term safe state:

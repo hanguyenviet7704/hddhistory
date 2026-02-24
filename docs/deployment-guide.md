@@ -155,14 +155,15 @@ Pipeline definition is modular and lives in:
 - `ci/templates/10-prepare.yml`
 - `ci/templates/20-quality.yml`
 - `ci/templates/30-build.yml`
-- `ci/templates/40-fastlane-skeleton.yml`
+- `ci/templates/40-release-skeleton.yml`
+- `ci/templates/45-firebase-distribution.yml`
 
 #### Triggers
 | Trigger | Environment | Target |
 |---------|-----------|--------|
 | `merge_request_event` | Validation | `prepare` + `quality` (quality chạy khi có thay đổi Dart/build config liên quan) |
-| Push to `develop` | Dev/Staging | `prepare + build` APK (`dev`, `stg`) |
-| Push to `main` | Full matrix | Build APK (`dev`, `stg`, `prod`) + AAB (`prod`) |
+| Push to `develop` | Dev/Staging | `prepare + build` APK (`dev`, `stg`) + optional Firebase Distribution |
+| Push to `main` | Full matrix | Build APK (`dev`, `stg`, `prod`) + AAB (`prod`) + optional Firebase Distribution (`prod`) |
 | Git tag `v*` | Release candidate | Same as `main` full matrix |
 
 #### Pipeline Stages
@@ -185,24 +186,30 @@ Pipeline definition is modular and lives in:
    ├─ obfuscation symbols artifact
    └─ CI-safe mode (no raw env output in logs)
 
-4. RELEASE_SKELETON (manual, optional)
-   ├─ Android fastlane contract check
-   └─ iOS fastlane contract check (macOS runner)
+4. RELEASE_SKELETON
+   ├─ Android Firebase Distribution (`dev`, `stg`) on `develop` (auto, gated by variable)
+   ├─ Android Firebase Distribution (`prod`) on `main`/`v*` (auto, gated by variable)
+   ├─ Android fastlane contract check (manual)
+   └─ iOS fastlane contract check (manual, macOS runner)
 ```
 
 ### Access Requirements
 - **GitLab Runner:** Linux for build pipeline, optional macOS runner for iOS fastlane skeleton.
-- **GitLab CI/CD Variables (prefix `MEUP_*`):**
-  - `MEUP_CI_IMAGE` (optional override custom CI image)
-  - `MEUP_CI_SKIP_SYSTEM_SETUP=1` (optional, bật khi custom image đã preinstall jq/python/pip để bỏ bước `apt-get`)
-  - `MEUP_ENV_DEV_FILE` / `MEUP_ENV_DEV_CONTENT`
-  - `MEUP_ENV_STG_FILE` / `MEUP_ENV_STG_CONTENT`
-  - `MEUP_ENV_PROD_FILE` / `MEUP_ENV_PROD_CONTENT`
-  - `MEUP_LOCALIZATION_SA_JSON` (recommended when pulling l10n in CI)
-  - `MEUP_ENABLE_FASTLANE=1` (to enable manual skeleton jobs)
+- **GitLab CI/CD Variables:**
+  - `CI_IMAGE` (optional override custom CI image)
+  - `CI_SKIP_SYSTEM_SETUP=1` (optional, bật khi custom image đã preinstall jq/python/pip để bỏ bước `apt-get`)
+  - `ENABLE_FIREBASE_DISTRIBUTION_DEV=1` (optional, bật auto upload APK `dev` lên Firebase App Distribution khi push `develop`)
+  - `ENABLE_FIREBASE_DISTRIBUTION_STG=1` (optional, bật auto upload APK `stg` lên Firebase App Distribution khi push `develop`)
+  - `ENABLE_FIREBASE_DISTRIBUTION_PROD=1` (optional, bật auto upload APK `prod` lên Firebase App Distribution khi push `main` hoặc tag `v*`)
+  - `FIREBASE_TOKEN` (required nếu bật Firebase Distribution)
+  - `ENV_DEV_FILE` / `ENV_DEV_CONTENT`
+  - `ENV_STG_FILE` / `ENV_STG_CONTENT`
+  - `ENV_PROD_FILE` / `ENV_PROD_CONTENT`
+  - `LOCALIZATION_SA_JSON` (recommended when pulling l10n in CI)
+  - `ENABLE_FASTLANE=1` (to enable manual skeleton jobs)
 - **Optional phase-2 variables (fastlane release):**
-  - `MEUP_PLAYSTORE_JSON`
-  - `MEUP_APPSTORE_P8`, `MEUP_APPSTORE_ISSUER_ID`, `MEUP_APPSTORE_KEY_ID`
+  - `PLAYSTORE_JSON`
+  - `APPSTORE_P8`, `APPSTORE_ISSUER_ID`, `APPSTORE_KEY_ID`
 
 ---
 
@@ -406,7 +413,7 @@ mv meup.jks .info/key/
 
 #### Sign Release Build
 ```bash
-# Automatic via GitLab CI (uses MEUP_* variables and scripts)
+# Automatic via GitLab CI (uses CI variables and scripts)
 # Or manual:
 jarsigner -verbose \
   -sigalg SHA1withRSA \

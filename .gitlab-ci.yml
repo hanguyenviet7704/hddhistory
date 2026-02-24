@@ -3,4 +3,5 @@ include:
   - local: ci/templates/10-prepare.yml
   - local: ci/templates/20-quality.yml
   - local: ci/templates/30-build.yml
-  - local: ci/templates/40-fastlane-skeleton.yml
+  - local: ci/templates/40-release-skeleton.yml
+  - local: ci/templates/45-firebase-distribution.yml
