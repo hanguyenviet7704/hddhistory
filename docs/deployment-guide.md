@@ -161,9 +161,9 @@ Pipeline definition is modular and lives in:
 #### Triggers
 | Trigger | Environment | Target |
 |---------|-----------|--------|
-| `merge_request_event` | Validation | `prepare` + `quality` (quality chạy khi có thay đổi Dart/build config liên quan) |
-| Push to `develop` | Dev/Staging | `prepare + build` APK (`dev`, `stg`) + optional Firebase Distribution |
-| Push to `main` | Full matrix | Build APK (`dev`, `stg`, `prod`) + AAB (`prod`) + optional Firebase Distribution (`prod`) |
+| `merge_request_event` | Validation | `prepare` + `quality` (quality runs only when relevant Dart/build config files change) |
+| Push to `develop` | Dev/Staging | Build APK for enabled flavors (`ENABLE_BUILD_DEV/STG=1`) + optional Firebase Distribution |
+| Push to `main` | Full matrix | Build APK/AAB for enabled flavors (`ENABLE_BUILD_DEV/STG/PROD=1`) + optional Firebase Distribution (`prod`) |
 | Git tag `v*` | Release candidate | Same as `main` full matrix |
 
 #### Pipeline Stages
@@ -178,7 +178,7 @@ Pipeline definition is modular and lives in:
 2. QUALITY
    ├─ flutter analyze
    └─ flutter test
-   (MR: chỉ chạy khi thay đổi các file liên quan code/build như `lib/**`, `test/**`, `pubspec.yaml`, `build.yaml`, ...)
+   (MR: runs only when relevant code/build files change such as `lib/**`, `test/**`, `pubspec.yaml`, `build.yaml`, ...)
 
 3. BUILD
    ├─ APK matrix by branch policy
@@ -197,11 +197,14 @@ Pipeline definition is modular and lives in:
 - **GitLab Runner:** Linux for build pipeline, optional macOS runner for iOS fastlane skeleton.
 - **GitLab CI/CD Variables:**
   - `CI_IMAGE` (optional override custom CI image)
-  - `CI_SKIP_SYSTEM_SETUP=1` (optional, bật khi custom image đã preinstall jq/python/pip để bỏ bước `apt-get`)
-  - `ENABLE_FIREBASE_DISTRIBUTION_DEV=1` (optional, bật auto upload APK `dev` lên Firebase App Distribution khi push `develop`)
-  - `ENABLE_FIREBASE_DISTRIBUTION_STG=1` (optional, bật auto upload APK `stg` lên Firebase App Distribution khi push `develop`)
-  - `ENABLE_FIREBASE_DISTRIBUTION_PROD=1` (optional, bật auto upload APK `prod` lên Firebase App Distribution khi push `main` hoặc tag `v*`)
-  - `FIREBASE_TOKEN` (required nếu bật Firebase Distribution)
+  - `CI_SKIP_SYSTEM_SETUP=1` (optional, enable when your custom image already includes `jq/python/pip` to skip the `apt-get` step)
+  - `ENABLE_BUILD_DEV=1` (optional, enable `dev` APK build)
+  - `ENABLE_BUILD_STG=1` (optional, enable `stg` APK build)
+  - `ENABLE_BUILD_PROD=1` (optional, enable `prod` APK/AAB build)
+  - `ENABLE_DISTRIBUTE_DEV=1` (optional, auto-upload `dev` APK to Firebase App Distribution on `develop`)
+  - `ENABLE_DISTRIBUTE_STG=1` (optional, auto-upload `stg` APK to Firebase App Distribution on `develop`)
+  - `ENABLE_DISTRIBUTE_PROD=1` (optional, auto-upload `prod` APK to Firebase App Distribution on `main` or tag `v*`)
+  - `FIREBASE_TOKEN` (required when Firebase Distribution is enabled)
   - `ENV_DEV_FILE` / `ENV_DEV_CONTENT`
   - `ENV_STG_FILE` / `ENV_STG_CONTENT`
   - `ENV_PROD_FILE` / `ENV_PROD_CONTENT`

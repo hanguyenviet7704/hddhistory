@@ -36,9 +36,12 @@ release:android:firebase:distribution:dev:
     FLAVOR: "dev"
   needs:
     - job: build:apk:develop
+      parallel:
+        matrix:
+          - FLAVOR: "dev"
       artifacts: true
   rules:
-    - if: '$ENABLE_FIREBASE_DISTRIBUTION_DEV == "1" && $CI_COMMIT_BRANCH == "develop"'
+    - if: '$ENABLE_DISTRIBUTE_DEV == "1" && $ENABLE_BUILD_DEV == "1" && $CI_COMMIT_BRANCH == "develop"'
     - when: never
 
 release:android:firebase:distribution:stg:
@@ -47,9 +50,12 @@ release:android:firebase:distribution:stg:
     FLAVOR: "stg"
   needs:
     - job: build:apk:develop
+      parallel:
+        matrix:
+          - FLAVOR: "stg"
       artifacts: true
   rules:
-    - if: '$ENABLE_FIREBASE_DISTRIBUTION_STG == "1" && $CI_COMMIT_BRANCH == "develop"'
+    - if: '$ENABLE_DISTRIBUTE_STG == "1" && $ENABLE_BUILD_STG == "1" && $CI_COMMIT_BRANCH == "develop"'
     - when: never
 
 release:android:firebase:distribution:prod:
@@ -58,8 +64,11 @@ release:android:firebase:distribution:prod:
     FLAVOR: "prod"
   needs:
     - job: build:apk:release
+      parallel:
+        matrix:
+          - FLAVOR: "prod"
       artifacts: true
   rules:
-    - if: '$ENABLE_FIREBASE_DISTRIBUTION_PROD == "1" && $CI_COMMIT_BRANCH == "main"'
-    - if: '$ENABLE_FIREBASE_DISTRIBUTION_PROD == "1" && $CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$ENABLE_DISTRIBUTE_PROD == "1" && $ENABLE_BUILD_PROD == "1" && $CI_COMMIT_BRANCH == "main"'
+    - if: '$ENABLE_DISTRIBUTE_PROD == "1" && $ENABLE_BUILD_PROD == "1" && $CI_COMMIT_TAG =~ /^v.*/'
     - when: never
