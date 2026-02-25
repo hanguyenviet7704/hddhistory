@@ -1,0 +1,40 @@
+name: Release Skeleton
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Release skeleton target"
+        required: true
+        type: choice
+        default: both
+        options:
+          - android
+          - ios
+          - both
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-skeleton-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release_skeleton_macos:
+    if: ${{ !(vars.ENABLE_LINUX_PIPELINE == '1' && inputs.target == 'android') }}
+    uses: ./.github/workflows/reusable-release-skeleton-macos.yml
+    with:
+      target: ${{ inputs.target }}
+      ref: ${{ github.ref }}
+      ref_name: ${{ github.ref_name }}
+    secrets: inherit
+
+  release_skeleton_linux:
+    if: ${{ vars.ENABLE_LINUX_PIPELINE == '1' && inputs.target == 'android' }}
+    uses: ./.github/workflows/reusable-release-skeleton-linux.yml
+    with:
+      target: android
+      ref: ${{ github.ref }}
+      ref_name: ${{ github.ref_name }}
+    secrets: inherit

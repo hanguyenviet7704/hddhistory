@@ -2,7 +2,7 @@
 
 # Navigate to the root directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="${SCRIPT_DIR}/../../.."
+ROOT_DIR="${SCRIPT_DIR}/../../../.."
 cd "${ROOT_DIR}" || {
     echo "❌ Failed to navigate to the project root directory."
     exit 1

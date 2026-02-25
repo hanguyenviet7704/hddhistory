@@ -2,7 +2,7 @@
 
 # Navigate to the root directory relative to the current script location
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="${SCRIPT_DIR}/../../.."
+ROOT_DIR="${SCRIPT_DIR}/../../../.."
 cd "${ROOT_DIR}" || {
     echo "❌ Failed to navigate to the project root directory."
     exit 1
@@ -52,9 +52,9 @@ git config gitflow.prefix.versiontag v
 echo "✅ GitFlow setup completed successfully!"
 echo ""
 echo "📚 Available commands:"
-echo "  - ./tools/macos/git/feature.sh  : Manage feature branches"
-echo "  - ./tools/macos/git/fix.sh      : Manage fix branches"
-echo "  - ./tools/macos/git/release.sh  : Manage release branches"
-echo "  - ./tools/macos/git/hotfix.sh   : Manage hotfix branches"
+echo "  - ./tools/macos/git/workflow/feature.sh  : Manage feature branches"
+echo "  - ./tools/macos/git/workflow/fix.sh      : Manage fix branches"
+echo "  - ./tools/macos/git/workflow/release.sh  : Manage release branches"
+echo "  - ./tools/macos/git/workflow/hotfix.sh   : Manage hotfix branches"
 echo ""
-echo "💡 Run './tools/macos/git/feature.sh help' for usage instructions" 
+echo "💡 Run './tools/macos/git/workflow/feature.sh help' for usage instructions" 

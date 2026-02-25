@@ -1,0 +1,848 @@
+name: Reusable Flutter CI/CD
+
+on:
+  workflow_call:
+    inputs:
+      event_name:
+        required: true
+        type: string
+      ref:
+        required: true
+        type: string
+      ref_name:
+        required: true
+        type: string
+
+concurrency:
+  group: flutter-ci-${{ inputs.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CI_SKIP_SYSTEM_SETUP: ${{ vars.CI_SKIP_SYSTEM_SETUP }}
+  PUB_CACHE: ${{ github.workspace }}/.pub-cache
+  PIP_CACHE_DIR: ${{ github.workspace }}/.cache/pip
+  LC_ALL: C.UTF-8
+  LANG: C.UTF-8
+
+jobs:
+  prepare_generated:
+    name: Prepare Generated
+    runs-on: [self-hosted, macOS]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Validate system tools
+        run: |
+          set -e
+          if [ "${CI_SKIP_SYSTEM_SETUP:-0}" = "1" ]; then
+            echo "Skipping system setup checks (CI_SKIP_SYSTEM_SETUP=1)"
+            exit 0
+          fi
+
+          missing_tools=""
+          for cmd in jq python3 pip3; do
+            if ! command -v "$cmd" >/dev/null 2>&1; then
+              missing_tools="$missing_tools $cmd"
+            fi
+          done
+
+          if [ -n "$missing_tools" ]; then
+            echo "Missing required tools on macOS runner:$missing_tools"
+            echo "Install with: brew install jq python"
+            exit 1
+          fi
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          PLAYSTORE_JSON_FILE: ${{ secrets.PLAYSTORE_JSON_FILE || vars.PLAYSTORE_JSON_FILE }}
+          PLAYSTORE_JSON: ${{ secrets.PLAYSTORE_JSON || vars.PLAYSTORE_JSON }}
+          APPSTORE_P8_FILE: ${{ secrets.APPSTORE_P8_FILE || vars.APPSTORE_P8_FILE }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 || vars.APPSTORE_P8 }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID || vars.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID || vars.APPSTORE_KEY_ID }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Tool versions
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Pull localization
+        run: bash tools/macos/localization/localization.sh pull
+
+      - name: Generate slang localization
+        run: bash tools/macos/localization/localization.sh slang
+
+      - name: Build generated files
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Upload generated artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: prepare-generated
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            assets/i18n/**
+            build/localization/records.json
+            lib/core/constants/gen/**
+            lib/config/l10n/**
+            lib/**/gen/**
+            lib/**/*.g.dart
+            lib/**/*.freezed.dart
+            lib/**/*.config.dart
+            lib/**/*.graphql.dart
+
+  quality_analyze:
+    name: Quality Analyze
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Flutter analyze
+        run: flutter analyze
+
+  quality_test:
+    name: Quality Test
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Flutter test
+        run: flutter test
+
+  build_apk_develop_dev:
+    name: Build APK Develop (dev)
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated, quality_analyze, quality_test]
+    if: >-
+      inputs.event_name == 'push' &&
+      inputs.ref_name == 'develop' &&
+      vars.ENABLE_BUILD_DEV == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build APK
+        run: |
+          export CI=true
+          export SKIP_SYMBOL_UPLOAD=true
+          bash tools/macos/build/build_apk.sh dev --ci
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-develop-dev
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/app/outputs/flutter-apk/app-dev-release.apk
+            .obfuscation/**
+
+  build_apk_develop_stg:
+    name: Build APK Develop (stg)
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated, quality_analyze, quality_test]
+    if: >-
+      inputs.event_name == 'push' &&
+      inputs.ref_name == 'develop' &&
+      vars.ENABLE_BUILD_STG == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build APK
+        run: |
+          export CI=true
+          export SKIP_SYMBOL_UPLOAD=true
+          bash tools/macos/build/build_apk.sh stg --ci
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-develop-stg
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/app/outputs/flutter-apk/app-stg-release.apk
+            .obfuscation/**
+
+  build_apk_release_dev:
+    name: Build APK Release (dev)
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated, quality_analyze, quality_test]
+    if: >-
+      inputs.event_name == 'push' &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v')) &&
+      vars.ENABLE_BUILD_DEV == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build APK
+        run: |
+          export CI=true
+          export SKIP_SYMBOL_UPLOAD=true
+          bash tools/macos/build/build_apk.sh dev --ci
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-release-dev
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/app/outputs/flutter-apk/app-dev-release.apk
+            .obfuscation/**
+
+  build_apk_release_stg:
+    name: Build APK Release (stg)
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated, quality_analyze, quality_test]
+    if: >-
+      inputs.event_name == 'push' &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v')) &&
+      vars.ENABLE_BUILD_STG == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build APK
+        run: |
+          export CI=true
+          export SKIP_SYMBOL_UPLOAD=true
+          bash tools/macos/build/build_apk.sh stg --ci
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-release-stg
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/app/outputs/flutter-apk/app-stg-release.apk
+            .obfuscation/**
+
+  build_apk_release_prod:
+    name: Build APK Release (prod)
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated, quality_analyze, quality_test]
+    if: >-
+      inputs.event_name == 'push' &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v')) &&
+      vars.ENABLE_BUILD_PROD == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build APK
+        run: |
+          export CI=true
+          export SKIP_SYMBOL_UPLOAD=true
+          bash tools/macos/build/build_apk.sh prod --ci
+
+      - name: Upload APK artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: apk-release-prod
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/app/outputs/flutter-apk/app-prod-release.apk
+            .obfuscation/**
+
+  build_aab_prod:
+    name: Build AAB Prod
+    runs-on: [self-hosted, macOS]
+    needs: [prepare_generated, quality_analyze, quality_test]
+    if: >-
+      inputs.event_name == 'push' &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v')) &&
+      vars.ENABLE_BUILD_PROD == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Restore cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            .pub-cache
+            .dart_tool
+            .venv
+            .cache/pip
+          key: ${{ runner.os }}-flutter-${{ hashFiles('pubspec.lock', '.info/app/build.json') }}
+          restore-keys: |
+            ${{ runner.os }}-flutter-
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download generated artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: prepare-generated
+          path: ${{ github.workspace }}
+
+      - name: Flutter pub get
+        run: flutter pub get
+
+      - name: Build AAB
+        run: |
+          export CI=true
+          export SKIP_SYMBOL_UPLOAD=true
+          bash tools/macos/build/build_appbundle.sh prod --ci
+
+      - name: Upload AAB artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: aab-prod
+          retention-days: 14
+          if-no-files-found: error
+          path: |
+            build/app/outputs/bundle/prodRelease/app-prod-release.aab
+            .obfuscation/**
+
+  distribute_android_dev:
+    name: Firebase Distribution Dev
+    runs-on: [self-hosted, macOS]
+    needs: [build_apk_develop_dev]
+    if: >-
+      inputs.event_name == 'push' &&
+      inputs.ref_name == 'develop' &&
+      vars.ENABLE_BUILD_DEV == '1' &&
+      vars.ENABLE_DISTRIBUTE_DEV == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download dev APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: apk-develop-dev
+          path: ${{ github.workspace }}/build-artifact
+
+      - name: Restore APK path
+        run: |
+          mkdir -p build/app/outputs/flutter-apk
+          apk_file="$(find build-artifact -type f -name '*.apk' | head -n 1)"
+          [ -n "$apk_file" ]
+          cp "$apk_file" build/app/outputs/flutter-apk/app-dev-release.apk
+
+      - name: Ensure Firebase CLI
+        run: |
+          if command -v firebase >/dev/null 2>&1; then
+            firebase --version
+            exit 0
+          fi
+
+          if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+            if command -v brew >/dev/null 2>&1; then
+              brew install node
+            else
+              echo "Node.js/npm required for firebase-tools"
+              exit 1
+            fi
+          fi
+
+          npm install -g firebase-tools
+          firebase --version
+
+      - name: Validate Firebase token
+        run: |
+          if [ -z "${FIREBASE_TOKEN:-}" ]; then
+            echo "Missing FIREBASE_TOKEN (secret/var) or .info/app/firebase.json firebaseToken"
+            exit 1
+          fi
+
+      - name: Distribute dev APK
+        run: bash tools/macos/distribution/distribute_android.sh apk dev
+
+  distribute_android_stg:
+    name: Firebase Distribution Stg
+    runs-on: [self-hosted, macOS]
+    needs: [build_apk_develop_stg]
+    if: >-
+      inputs.event_name == 'push' &&
+      inputs.ref_name == 'develop' &&
+      vars.ENABLE_BUILD_STG == '1' &&
+      vars.ENABLE_DISTRIBUTE_STG == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download stg APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: apk-develop-stg
+          path: ${{ github.workspace }}/build-artifact
+
+      - name: Restore APK path
+        run: |
+          mkdir -p build/app/outputs/flutter-apk
+          apk_file="$(find build-artifact -type f -name '*.apk' | head -n 1)"
+          [ -n "$apk_file" ]
+          cp "$apk_file" build/app/outputs/flutter-apk/app-stg-release.apk
+
+      - name: Ensure Firebase CLI
+        run: |
+          if command -v firebase >/dev/null 2>&1; then
+            firebase --version
+            exit 0
+          fi
+
+          if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+            if command -v brew >/dev/null 2>&1; then
+              brew install node
+            else
+              echo "Node.js/npm required for firebase-tools"
+              exit 1
+            fi
+          fi
+
+          npm install -g firebase-tools
+          firebase --version
+
+      - name: Validate Firebase token
+        run: |
+          if [ -z "${FIREBASE_TOKEN:-}" ]; then
+            echo "Missing FIREBASE_TOKEN (secret/var) or .info/app/firebase.json firebaseToken"
+            exit 1
+          fi
+
+      - name: Distribute stg APK
+        run: bash tools/macos/distribution/distribute_android.sh apk stg
+
+  distribute_android_prod:
+    name: Firebase Distribution Prod
+    runs-on: [self-hosted, macOS]
+    needs: [build_apk_release_prod]
+    if: >-
+      inputs.event_name == 'push' &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v')) &&
+      vars.ENABLE_BUILD_PROD == '1' &&
+      vars.ENABLE_DISTRIBUTE_PROD == '1'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap runtime secrets
+        env:
+          ENV_DEV_FILE: ${{ secrets.ENV_DEV_FILE || vars.ENV_DEV_FILE }}
+          ENV_DEV_CONTENT: ${{ secrets.ENV_DEV_CONTENT || vars.ENV_DEV_CONTENT }}
+          ENV_STG_FILE: ${{ secrets.ENV_STG_FILE || vars.ENV_STG_FILE }}
+          ENV_STG_CONTENT: ${{ secrets.ENV_STG_CONTENT || vars.ENV_STG_CONTENT }}
+          ENV_PROD_FILE: ${{ secrets.ENV_PROD_FILE || vars.ENV_PROD_FILE }}
+          ENV_PROD_CONTENT: ${{ secrets.ENV_PROD_CONTENT || vars.ENV_PROD_CONTENT }}
+          LOCALIZATION_SA_PATH: ${{ secrets.LOCALIZATION_SA_PATH || vars.LOCALIZATION_SA_PATH }}
+          LOCALIZATION_SA_JSON: ${{ secrets.LOCALIZATION_SA_JSON || vars.LOCALIZATION_SA_JSON }}
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN || vars.FIREBASE_TOKEN }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Download prod APK artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: apk-release-prod
+          path: ${{ github.workspace }}/build-artifact
+
+      - name: Restore APK path
+        run: |
+          mkdir -p build/app/outputs/flutter-apk
+          apk_file="$(find build-artifact -type f -name '*.apk' | head -n 1)"
+          [ -n "$apk_file" ]
+          cp "$apk_file" build/app/outputs/flutter-apk/app-prod-release.apk
+
+      - name: Ensure Firebase CLI
+        run: |
+          if command -v firebase >/dev/null 2>&1; then
+            firebase --version
+            exit 0
+          fi
+
+          if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+            if command -v brew >/dev/null 2>&1; then
+              brew install node
+            else
+              echo "Node.js/npm required for firebase-tools"
+              exit 1
+            fi
+          fi
+
+          npm install -g firebase-tools
+          firebase --version
+
+      - name: Validate Firebase token
+        run: |
+          if [ -z "${FIREBASE_TOKEN:-}" ]; then
+            echo "Missing FIREBASE_TOKEN (secret/var) or .info/app/firebase.json firebaseToken"
+            exit 1
+          fi
+
+      - name: Distribute prod APK
+        run: bash tools/macos/distribution/distribute_android.sh apk prod
