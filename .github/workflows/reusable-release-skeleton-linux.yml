@@ -1,0 +1,88 @@
+name: Reusable Release Skeleton (Linux)
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      ref:
+        required: true
+        type: string
+      ref_name:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-skeleton-${{ inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  android_fastlane_skeleton:
+    name: Android Fastlane Skeleton
+    runs-on: [self-hosted, linux]
+    continue-on-error: true
+    if: >-
+      vars.ENABLE_FASTLANE == '1' &&
+      (inputs.target == 'android' || inputs.target == 'both') &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v'))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap runtime secrets
+        env:
+          PLAYSTORE_JSON_FILE: ${{ secrets.PLAYSTORE_JSON_FILE || vars.PLAYSTORE_JSON_FILE }}
+          PLAYSTORE_JSON: ${{ secrets.PLAYSTORE_JSON || vars.PLAYSTORE_JSON }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Validate Android fastlane contract
+        run: |
+          set -e
+          if ! command -v ruby >/dev/null 2>&1; then
+            echo "Ruby is required on Linux runner. Install with: sudo apt-get update && sudo apt-get install -y ruby"
+            exit 1
+          fi
+
+          if ! command -v bundle >/dev/null 2>&1; then
+            if command -v gem >/dev/null 2>&1; then
+              gem install bundler --no-document || true
+            fi
+          fi
+
+          if ! command -v bundle >/dev/null 2>&1; then
+            echo "Bundler is required on Linux runner. Install with: gem install bundler"
+            exit 1
+          fi
+
+          test -f android/Gemfile
+          test -f android/fastlane/Fastfile
+          grep -q "lane :build_apk" android/fastlane/Fastfile
+          grep -q "lane :build_bundle" android/fastlane/Fastfile
+          grep -q "lane :deploy" android/fastlane/Fastfile
+
+          if [ -z "${PLAYSTORE_JSON:-}" ] && [ -z "${PLAYSTORE_JSON_PATH:-}" ] && [ ! -f ".info/key/fastlane_playstore_key.json" ]; then
+            echo "Missing Play Store contract: provide PLAYSTORE_JSON (or file variable)."
+            exit 1
+          fi
+
+          if [ -f "${PLAYSTORE_JSON_PATH:-}" ]; then
+            ruby -rjson -e 'JSON.parse(File.read(ARGV[0]))' "${PLAYSTORE_JSON_PATH}"
+          elif [ -n "${PLAYSTORE_JSON:-}" ]; then
+            ruby -rjson -e 'JSON.parse(ARGV[0])' "${PLAYSTORE_JSON}"
+          elif [ -f ".info/key/fastlane_playstore_key.json" ]; then
+            ruby -rjson -e 'JSON.parse(File.read(ARGV[0]))' ".info/key/fastlane_playstore_key.json"
+          fi
+
+          cd android
+          bundle config set path vendor/bundle
+          bundle install --jobs 4 --retry 3
+          bundle exec fastlane lanes

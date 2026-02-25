@@ -21,10 +21,20 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
-  release_skeleton:
-    uses: ./.github/workflows/reusable-release-skeleton.yml
+  release_skeleton_macos:
+    if: ${{ !(vars.ENABLE_LINUX_PIPELINE == '1' && inputs.target == 'android') }}
+    uses: ./.github/workflows/reusable-release-skeleton-macos.yml
     with:
       target: ${{ inputs.target }}
+      ref: ${{ github.ref }}
+      ref_name: ${{ github.ref_name }}
+    secrets: inherit
+
+  release_skeleton_linux:
+    if: ${{ vars.ENABLE_LINUX_PIPELINE == '1' && inputs.target == 'android' }}
+    uses: ./.github/workflows/reusable-release-skeleton-linux.yml
+    with:
+      target: android
       ref: ${{ github.ref }}
       ref_name: ${{ github.ref_name }}
     secrets: inherit
