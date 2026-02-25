@@ -117,6 +117,7 @@ fi
 
 log_step "Activating virtual environment..."
 source "$VENV_DIR/bin/activate"
+VENV_PYTHON="$VENV_DIR/bin/python3"
 
 REQ_FILE="${SCRIPT_DIR}/requirements.txt"
 if [[ -f "$REQ_FILE" ]]; then
@@ -141,7 +142,7 @@ PY
     }
 
     python_deps_healthy() {
-        python3 - <<'PY' >/dev/null 2>&1
+        "$VENV_PYTHON" - <<'PY' >/dev/null 2>&1
 import importlib
 import sys
 
@@ -177,8 +178,11 @@ PY
 
     if [[ "$NEEDS_INSTALL" -eq 1 ]]; then
         log_step "Ensuring Python dependencies..."
-        pip install --upgrade pip >/dev/null
-        pip install -r "$REQ_FILE" >/dev/null
+        if ! "$VENV_PYTHON" -m pip --version >/dev/null 2>&1; then
+            "$VENV_PYTHON" -m ensurepip --upgrade >/dev/null
+        fi
+        "$VENV_PYTHON" -m pip install --upgrade pip >/dev/null
+        "$VENV_PYTHON" -m pip install -r "$REQ_FILE" >/dev/null
         echo "$REQ_HASH" > "$DEPS_STAMP"
     else
         log_info "Dependencies already satisfied (cached)."
