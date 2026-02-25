@@ -1,96 +1,133 @@
-fastlane documentation
-----
+# Android Fastlane Guide (New Joiner)
 
-# Installation
+This project uses Fastlane from `android/` to build Flutter Android artifacts, distribute to Firebase App Distribution, and deploy to Google Play.
 
-Make sure you have the latest version of the Xcode command line tools installed:
+## 1) First-time setup
 
-```sh
-xcode-select --install
-```
-
-For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
-
-# Available Actions
-
-## Android
-
-### android test
+Run from repository root:
 
 ```sh
-[bundle exec] fastlane android test
+cd android
 ```
 
-Runs all the tests
-
-### android build_apk
+Install Ruby gems:
 
 ```sh
-[bundle exec] fastlane android build_apk
+# Recommended on macOS (Apple Silicon/Homebrew Ruby)
+/opt/homebrew/opt/ruby/bin/bundle install
+
+# If your shell already points to Homebrew Ruby, this also works
+bundle install
 ```
 
-Build APK for specified flavor
-
-### android build_bundle
+Verify Fastlane:
 
 ```sh
-[bundle exec] fastlane android build_bundle
+/opt/homebrew/opt/ruby/bin/bundle exec fastlane --version
 ```
 
-Build App Bundle for specified flavor
+## 2) Required prerequisites
 
-### android beta
+- Flutter + FVM installed and working.
+- Android SDK installed.
+- Ruby + Bundler installed.
+- Play Console service account key exists at:
+  - `../.info/key/fastlane_playstore_key.json`
+- Firebase CLI logged in (needed for symbol upload / Firebase distribution flows):
+  - `firebase login`
+
+## 3) Common lanes
+
+All commands below are run inside `android/`.
+
+### Build
 
 ```sh
-[bundle exec] fastlane android beta
+bundle exec fastlane build_apk flavor:dev
+bundle exec fastlane build_apk flavor:stg
+bundle exec fastlane build_apk flavor:prod
+
+bundle exec fastlane build_bundle flavor:dev
+bundle exec fastlane build_bundle flavor:stg
+bundle exec fastlane build_bundle flavor:prod
 ```
 
-Submit a new Beta Build to Firebase App Distribution
-
-### android beta_bundle
+### Firebase distribution
 
 ```sh
-[bundle exec] fastlane android beta_bundle
+bundle exec fastlane beta flavor:dev
+bundle exec fastlane beta_bundle flavor:dev
 ```
 
-Submit a new Beta Build using App Bundle to Firebase App Distribution
-
-### android deploy
+Optional plugin path:
 
 ```sh
-[bundle exec] fastlane android deploy
+bundle exec fastlane beta flavor:dev use_plugin:true
+bundle exec fastlane beta_bundle flavor:dev use_plugin:true
 ```
 
-Deploy a new version to the Google Play Store
+### Play Store deploy
 
-### android deploy_alpha
+Default deploy:
+- flavor: `prod`
+- track: `internal`
+- changelog upload: enabled
+- metadata/images/screenshots upload: disabled
 
 ```sh
-[bundle exec] fastlane android deploy_alpha
+bundle exec fastlane deploy
+bundle exec fastlane deploy flavor:prod track:internal
+bundle exec fastlane deploy_alpha flavor:stg
+bundle exec fastlane deploy_beta flavor:stg
+bundle exec fastlane deploy_production flavor:prod
 ```
 
-Deploy to Play Store Alpha track
-
-### android deploy_beta
+Enable metadata uploads when needed:
 
 ```sh
-[bundle exec] fastlane android deploy_beta
+bundle exec fastlane deploy flavor:prod track:internal upload_metadata:true
+bundle exec fastlane deploy flavor:prod track:internal upload_images:true
+bundle exec fastlane deploy flavor:prod track:internal upload_screenshots:true
+bundle exec fastlane deploy flavor:prod track:internal upload_all_metadata:true
 ```
 
-Deploy to Play Store Beta track
+## 4) Metadata structure
 
-### android deploy_production
+Play Store text/assets are read from:
 
+```text
+android/fastlane/metadata/android/<locale>/
+```
+
+Examples:
+- `android/fastlane/metadata/android/en-US/title.txt`
+- `android/fastlane/metadata/android/en-US/short_description.txt`
+- `android/fastlane/metadata/android/en-US/full_description.txt`
+- `android/fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`
+
+## 5) New joiner release checklist
+
+1. Pull latest code.
+2. Update app metadata and changelog file for the target version code.
+3. Run a build lane (`build_apk` or `build_bundle`) for target flavor.
+4. Test artifact locally or via Firebase distribution.
+5. Deploy to Play internal/alpha/beta before production.
+
+## 6) Troubleshooting
+
+`cannot load such file -- ostruct`
+- Run in `android/`:
 ```sh
-[bundle exec] fastlane android deploy_production
+/opt/homebrew/opt/ruby/bin/bundle install
 ```
 
-Deploy to Play Store Production
+`Could not find 'bundler (2.7.2)'`
+- Your shell is using system Ruby (`/usr/bin/bundle`).
+- Use Homebrew Bundler explicitly:
+```sh
+/opt/homebrew/opt/ruby/bin/bundle install
+/opt/homebrew/opt/ruby/bin/bundle exec fastlane build_apk flavor:dev
+```
 
-----
-
-This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
-
-More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
-
-The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).
+`Top level ::CompositeIO is deprecated` warning
+- Warning only, not a blocker.
