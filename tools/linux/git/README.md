@@ -152,6 +152,52 @@ Runner management behavior:
 - `--json`: machine-readable output for `list`, `delete-one`, `delete-all`, `clean-cache`.
 - config edits are protected by lock + backup (`~/.gitlab-runner/config.toml.bak.*`).
 
+### setup_github_runner.sh
+Sets up the current machine as a GitHub self-hosted runner:
+```bash
+# One command mode (inside cloned GitHub repo + gh auth)
+./tools/linux/git/runner/github/setup_github_runner.sh
+
+# Explicit target repo
+./tools/linux/git/runner/github/setup_github_runner.sh --repo owner/repo
+
+# Use an existing registration token
+./tools/linux/git/runner/github/setup_github_runner.sh --repo owner/repo --runner-token <token> --name meup-linux-gh-runner
+
+# Strict mode
+./tools/linux/git/runner/github/setup_github_runner.sh --repo owner/repo --strict
+```
+
+Main behaviors:
+- auto-detects `owner/repo` from git remote when possible
+- creates registration token via GitHub API (`gh`) when token is not provided
+- downloads/extracts GitHub Actions runner binary
+- configures runner in unattended mode and starts `svc.sh`
+- supports `--replace` to reconfigure existing runner
+
+### manage_github_runner.sh
+Manage local/remote GitHub self-hosted runners on this machine:
+```bash
+# List local runners
+./tools/linux/git/runner/github/manage_github_runner.sh list
+./tools/linux/git/runner/github/manage_github_runner.sh list --json
+
+# Delete one runner
+./tools/linux/git/runner/github/manage_github_runner.sh delete-one --name <runner-name> --yes
+./tools/linux/git/runner/github/manage_github_runner.sh delete-one --dir <runner-dir> --yes --strict --json
+
+# Delete all local runners
+./tools/linux/git/runner/github/manage_github_runner.sh delete-all --yes
+
+# Clean runner work cache (_work)
+./tools/linux/git/runner/github/manage_github_runner.sh clean-cache --yes
+```
+
+Runner management behavior:
+- `--strict`: fail if remote delete/local delete fails.
+- `--json`: machine-readable output for automation.
+- prints runner info before delete in non-JSON mode.
+
 ### feature.sh
 Manages feature branches:
 ```bash
