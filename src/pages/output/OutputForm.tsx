@@ -1,41 +1,147 @@
 import React, { useEffect, useState } from "react";
-import { IKeypoint } from "../../types/interface/keypoint.interface";
-import { keypointService } from "../../services/keypointService";
-import { DndContext, closestCenter } from "@dnd-kit/core";
-import {
-  arrayMove,
-  SortableContext,
-  verticalListSortingStrategy,
-} from "@dnd-kit/sortable";
-import SortableItem from "../../components/common/SortableItem";
 import { TrashIcon } from "@heroicons/react/24/outline";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { useSelector } from "react-redux";
-import { RootState } from "../../store";
 import { Combobox } from "@headlessui/react";
-import { ICourse } from "../../types/interface/course.interface";
-import { courseService } from "../../services/courseService";
 import { useNavigate } from "react-router-dom";
-import { motion, AnimatePresence } from "framer-motion";
-import { PlusIcon } from "lucide-react";
-import { PuzzlePieceIcon, XMarkIcon } from "@heroicons/react/24/solid";
+import { AnimatePresence } from "framer-motion";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import { Bold, Italic, List, ListOrdered } from "lucide-react";
+import { RootState } from "../../store";
+import { ICourse } from "../../types/interface/course.interface";
+import { ITag } from "../../types/interface/tag.interface";
+import { IAvatar } from "../../types/interface/avatar.interface";
 import { ILesson, LessonPayload } from "../../types/interface/lesson.interface";
 import { LessonStatus, LessonType } from "../../types/enum/lesson.enum";
+import { courseService } from "../../services/courseService";
+import { tagService } from "../../services/tagService";
+import { avatarService } from "../../services/avatarService";
 import { lessonService } from "../../services/lessonService";
+import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import LessonConfirm from "../../components/lessons/LessonConfirm";
 import { useNotification } from "../../utils/hooks/useNotification";
-import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
-import { tagService } from "../../services/tagService";
-import { ITag } from "../../types/interface/tag.interface";
 import {
+  cleanTranslation,
   getTranslationValue,
   updateTranslationValue,
-  cleanTranslation,
 } from "../../utils/translation";
 
 interface OutputFormProps {
-  output?: ILesson; // Nếu có -> edit mode, không có -> create mode
+  output?: ILesson;
   onSave?: (output: ILesson) => void;
 }
+
+interface AIConfigEditorProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+const AIConfigEditor: React.FC<AIConfigEditorProps> = ({ value, onChange }) => {
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        heading: false,
+        blockquote: false,
+        codeBlock: false,
+        horizontalRule: false,
+      }),
+    ],
+    content: value || "<p></p>",
+    editorProps: {
+      attributes: {
+        class:
+          "ai-config-editor-content min-h-[180px] rounded-b-lg border border-t-0 border-gray-300 p-3 focus:outline-none",
+      },
+    },
+    onUpdate: ({ editor: nextEditor }) => {
+      onChange(nextEditor.getHTML());
+    },
+  });
+
+  useEffect(() => {
+    if (!editor) return;
+    const current = editor.getHTML();
+    if (value !== current) {
+      editor.commands.setContent(value || "<p></p>", false);
+    }
+  }, [editor, value]);
+
+  if (!editor) return null;
+
+  const toolbarBtn = (active: boolean) =>
+    `p-2 rounded-md border transition ${
+      active
+        ? "bg-blue-100 text-blue-700 border-blue-300"
+        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
+    }`;
+
+  return (
+    <div className="rounded-lg overflow-hidden">
+      <div className="flex flex-wrap items-center gap-2 border border-gray-300 border-b-0 rounded-t-lg bg-gray-50 p-2">
+        <button
+          type="button"
+          aria-label="Bold"
+          title="Bold"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleBold().run()}
+          className={toolbarBtn(editor.isActive("bold"))}
+        >
+          <Bold className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          aria-label="Italic"
+          title="Italic"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleItalic().run()}
+          className={toolbarBtn(editor.isActive("italic"))}
+        >
+          <Italic className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          aria-label="Bullet list"
+          title="Bullet List"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleBulletList().run()}
+          className={toolbarBtn(editor.isActive("bulletList"))}
+        >
+          <List className="h-4 w-4" />
+        </button>
+        <button
+          type="button"
+          aria-label="Ordered list"
+          title="Ordered List"
+          onMouseDown={(e) => e.preventDefault()}
+          onClick={() => editor.chain().focus().toggleOrderedList().run()}
+          className={toolbarBtn(editor.isActive("orderedList"))}
+        >
+          <ListOrdered className="h-4 w-4" />
+        </button>
+      </div>
+      <EditorContent editor={editor} />
+    </div>
+  );
+};
+
+const createInitialOutput = (lang: string): ILesson =>
+  ({
+    _id: "",
+    courseId: "",
+    type: LessonType.OUTPUT,
+    title: { en: "Practice" },
+    description: { [lang]: "" },
+    image: "",
+    keypoints: [],
+    estimateCompleTime: { [lang]: "" },
+    icon: null,
+    lightIcon: null,
+    AIConfig: "",
+    animation: null,
+    status: LessonStatus.DRAFT,
+    index: 0,
+  }) as ILesson;
 
 export default function OutputForm({ output, onSave }: OutputFormProps) {
   const lang = useSelector((state: RootState) => state.lang.code);
@@ -43,83 +149,53 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
 
-  // sync output prop -> local state (important when fetch async)
   const [currentOutput, setCurrentOutput] = useState<ILesson>(
-    output ??
-      ({
-        _id: "",
-        courseId: "",
-        type: LessonType.OUTPUT,
-        title: { [lang]: "" },
-        description: { [lang]: "" },
-        image: "",
-        keypoints: [],
-        estimateCompleTime: { [lang]: "" },
-        icon: null,
-        lightIcon: null,
-        status: LessonStatus.DRAFT,
-        index: 0,
-      } as ILesson)
+    output ?? createInitialOutput(lang),
   );
-
-  useEffect(() => {
-    if (output) setCurrentOutput(output);
-  }, [output]);
-
   const [saving, setSaving] = useState(false);
-  const [modalOpen, setModalOpen] = useState<{
-    section: "keypoints" | null;
-  }>({ section: null });
-  const [keypointList, setKeypointList] = useState<IKeypoint[]>([]);
-  const [searchKeypoint, setSearchKeypoint] = useState("");
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [courseQuery, setCourseQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
-  const [confirmDeleteKeypont, setConfirmDeleteKeypoint] = useState<{
-    section: "keypoints" | null;
-    itemId: string | null;
-    itemTitle: string;
-  } | null>(null);
-  const [selectedKeypoints, setSelectedKeypoints] = useState<IKeypoint[]>([]);
-
   const [confirmDeleteOutput, setConfirmDeleteOutput] = useState(false);
 
   const [icons, setIcons] = useState<ITag[]>([]);
   const [iconQuery, setIconQuery] = useState("");
   const [isIconSearchActive, setIsIconSearchActive] = useState(false);
+
   const [lightIcons, setLightIcons] = useState<ITag[]>([]);
   const [lightIconQuery, setLightIconQuery] = useState("");
-  const [isLightIconSearchActive, setIsLightIconSearchActive] =
-    useState(false);
+  const [isLightIconSearchActive, setIsLightIconSearchActive] = useState(false);
 
-  // Hàm mới để xoá icon
-  const handleClearIcon = () => {
-    setCurrentOutput((prev) => ({
-      ...prev,
-      icon: null, // Gán icon về null để xoá
-    }));
-    // Đảm bảo ô tìm kiếm cũng được làm sạch
-    setIconQuery("");
-    setIsIconSearchActive(false);
+  const [animations, setAnimations] = useState<IAvatar[]>([]);
+  const [animationQuery, setAnimationQuery] = useState("");
+  const [isAnimationSearchActive, setIsAnimationSearchActive] = useState(false);
+
+  const normalizeTagList = (res: any): ITag[] => {
+    const list = res?.data?.items ?? res?.data ?? res?.items ?? [];
+    return Array.isArray(list) ? list : [];
   };
 
-  const handleClearLightIcon = () => {
-    setCurrentOutput((prev) => ({
-      ...prev,
-      lightIcon: null,
-    }));
-    setLightIconQuery("");
-    setIsLightIconSearchActive(false);
-  };
+  useEffect(() => {
+    if (!output) {
+      setCurrentOutput(createInitialOutput(lang));
+      return;
+    }
+
+    setCurrentOutput({
+      ...createInitialOutput(lang),
+      ...output,
+      title: output.title || { en: "Practice" },
+      AIConfig: output.AIConfig || "",
+      animation: output.animation || null,
+    });
+  }, [output, lang]);
 
   useEffect(() => {
     let active = true;
     const fetchIcons = async () => {
       try {
-        const res = await tagService.getList({
-          search: iconQuery,
-        });
-        const list: ITag[] = res.data.items ?? [];
+        const res = await tagService.getList({ search: iconQuery });
+        const list = normalizeTagList(res);
         if (active) setIcons(list);
       } catch (err) {
         console.error("fetchIcons", err);
@@ -135,10 +211,8 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     let active = true;
     const fetchLightIcons = async () => {
       try {
-        const res = await tagService.getList({
-          search: lightIconQuery,
-        });
-        const list: ITag[] = res.data.items ?? [];
+        const res = await tagService.getList({ search: lightIconQuery });
+        const list = normalizeTagList(res);
         if (active) setLightIcons(list);
       } catch (err) {
         console.error("fetchLightIcons", err);
@@ -150,16 +224,28 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     };
   }, [lightIconQuery]);
 
-  const getIconValue = (lesson: ILesson) => (lesson.icon as any) || null;
+  useEffect(() => {
+    let active = true;
+    const fetchAnimations = async () => {
+      try {
+        const res = await avatarService.getList({
+          page: 1,
+          take: 100,
+          search: animationQuery,
+        });
+        const list: IAvatar[] =
+          res?.data?.items ?? res?.data ?? res?.items ?? ([] as IAvatar[]);
+        if (active) setAnimations(Array.isArray(list) ? list : []);
+      } catch (err) {
+        console.error("fetchAnimations", err);
+      }
+    };
+    fetchAnimations();
+    return () => {
+      active = false;
+    };
+  }, [animationQuery]);
 
-  const handleOutputImageChange = (newUrl: string) => {
-    setCurrentOutput((prev) => ({
-      ...prev,
-      image: newUrl,
-    }));
-  };
-
-  // Fetch courses based on query
   useEffect(() => {
     let active = true;
     const fetchCourses = async () => {
@@ -182,89 +268,86 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     };
   }, [courseQuery]);
 
-  // Fetch selected course details when courseId changes
   useEffect(() => {
-    if (currentOutput.courseId) {
-      const fetchCourseDetails = async () => {
-        try {
-          const res = await courseService.getById(currentOutput.courseId);
-
-          if (res.data) {
-            setSelectedCourse(res.data);
-          }
-        } catch (err) {
-          console.error("fetchCourseDetails", err);
-        }
-      };
-      fetchCourseDetails();
-    } else {
+    if (!currentOutput.courseId) {
       setSelectedCourse(null);
+      return;
     }
+
+    const fetchCourseDetails = async () => {
+      try {
+        const res = await courseService.getById(currentOutput.courseId);
+        if (res.data) setSelectedCourse(res.data);
+      } catch (err) {
+        console.error("fetchCourseDetails", err);
+      }
+    };
+
+    fetchCourseDetails();
   }, [currentOutput.courseId]);
 
-  // Save entire output (create or update)
+  const getTagId = (tag: ITag | null | undefined) => (tag as any)?._id || "";
+
   const handleSaveOutput = async () => {
     try {
       setSaving(true);
 
-      // Prepare lesson data with all ITranslation fields
-      // Update translation values and clean empty ones
+      const localizedTitleValue =
+        currentOutput.title?.[lang] ||
+        (lang !== "en" ? currentOutput.title?.en || "" : "");
+
       const title = cleanTranslation(
         updateTranslationValue(
-          currentOutput.title,
+          currentOutput.title || { en: "Practice" },
           lang,
-          currentOutput.title?.[lang] || ""
-        )
+          localizedTitleValue,
+        ),
       );
+
       const description = cleanTranslation(
         updateTranslationValue(
           currentOutput.description,
           lang,
-          currentOutput.description?.[lang] || ""
-        )
+          currentOutput.description?.[lang] || "",
+        ),
       );
+
       const estimateCompleTime = cleanTranslation(
         updateTranslationValue(
           currentOutput.estimateCompleTime,
           lang,
-          currentOutput.estimateCompleTime?.[lang] || ""
-        )
+          currentOutput.estimateCompleTime?.[lang] || "",
+        ),
       );
 
-      // Prepare LessonPayload with all ITranslation fields
-      // keypoints in LessonPayload should be string array (IDs)
-      // Extract IDs from IKeypoint objects in currentOutput
-      const keypointIds = currentOutput.keypoints?.map((kp) => kp._id) || [];
+      const keypointIds =
+        currentOutput.keypoints?.map((kp: any) => kp?._id || kp) || [];
 
-      const lessonPayload: any = {
+      const lessonPayload: LessonPayload = {
         courseId: currentOutput.courseId,
         learningItemId: currentOutput.learningItemId,
         type: LessonType.OUTPUT,
-        title: title || { [lang]: "" }, // Always include title for validation
+        title: title || { en: "Practice" },
         ...(description && { description }),
         ...(estimateCompleTime && { estimateCompleTime }),
-        icon: (currentOutput.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
-        lightIcon: (currentOutput.lightIcon as any)?._id || "",
         image: currentOutput.image,
-        keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentOutput.status,
+        keypoints: keypointIds,
+        icon: getTagId(currentOutput.icon),
+        lightIcon: getTagId(currentOutput.lightIcon),
+        AIConfig: currentOutput.AIConfig || "",
+        animation: currentOutput.animation?._id || "",
         index: currentOutput.index,
       };
 
-      // Optional fields already handled by conditional spread operator above
-
       let res;
       if (currentOutput._id) {
-        res = await lessonService.update(
-          currentOutput._id,
-          lessonPayload as Partial<LessonPayload>
-        );
+        res = await lessonService.update(currentOutput._id, lessonPayload);
       } else {
-        res = await lessonService.create(lessonPayload as LessonPayload);
+        res = await lessonService.create(lessonPayload);
       }
-      const savedOutput = res.data?.data ?? res.data;
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      const savedOutput = res.data?.data ?? res.data;
       onSave?.(savedOutput);
       currentOutput._id
         ? showSuccess("Saved output successfully")
@@ -272,159 +355,16 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     } catch (err) {
       console.error("handleSaveOutput", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save output"
+        (err as any).response?.data?.message || "Failed to save output",
       );
     } finally {
       setSaving(false);
     }
   };
 
-  // Save only one section (outputs/keypoints/outputs)
-  const handleSaveSection = async (
-    section: "keypoints",
-    customOutput?: ILesson
-  ) => {
-    const targetOutput = customOutput || currentOutput;
-    if (!targetOutput) return;
-    try {
-      // For keypoints, convert IKeypoint[] to string[] for LessonPayload
-      const keypointIds = targetOutput.keypoints?.map((kp) => kp._id) || [];
-      const payload: Partial<LessonPayload> = {
-        [section]: keypointIds, // Convert IKeypoint[] to string[]
-      };
-      if (targetOutput._id) {
-        await lessonService.update(targetOutput._id, payload);
-      }
-      await new Promise((resolve) => setTimeout(resolve, 500));
-    } catch (err) {
-      console.error("handleSaveSection", err);
-    }
-  };
-
-  // Reorder inside a section
-  const handleReorder = (
-    section: "keypoints",
-    activeId: string,
-    overId: string
-  ) => {
-    setCurrentOutput((prev) => {
-      if (!prev) return prev;
-      const list = (prev[section] as any[]) || [];
-      const oldIndex = list.findIndex(
-        (i) => (i as any)._id === activeId || i === activeId
-      );
-      const newIndex = list.findIndex(
-        (i) => (i as any)._id === overId || i === overId
-      );
-      return { ...prev, [section]: arrayMove(list, oldIndex, newIndex) };
-    });
-  };
-
-  // fetch keypoints whenever modal opens or search changes
-  useEffect(() => {
-    if (!modalOpen.section) return;
-    let active = true;
-    const timer = setTimeout(async () => {
-      try {
-        const res = await keypointService.getList({
-          page: 1,
-          take: 100,
-          search: searchKeypoint,
-        });
-        if (active) {
-          const list =
-            res.data?.items ?? res.data?.data?.list ?? res.data.list ?? [];
-          setKeypointList(list);
-        }
-      } catch (err) {
-        console.error("fetchKeypoints", err);
-      }
-    }, 300);
-
-    return () => {
-      active = false;
-      clearTimeout(timer);
-    };
-  }, [modalOpen.section, searchKeypoint]);
-
-  // Open modal to choose keypoint (triggered above effect)
-  const handleOpenModal = (section: "keypoints") => {
-    setSearchKeypoint("");
-    setSelectedKeypoints([]);
-    setModalOpen({ section });
-  };
-
-  const handleSelectIcon = (icon: ITag) => {
-    setCurrentOutput((prev) => ({
-      ...prev,
-      icon: icon as any,
-    }));
-    setIconQuery("");
-  };
-
-  const toggleKeypointSelection = (kp: IKeypoint) => {
-    setSelectedKeypoints((prev) => {
-      const exists = prev.some((item) => item._id === kp._id);
-      if (exists) return prev.filter((item) => item._id !== kp._id);
-      return [...prev, kp];
-    });
-  };
-
-  const handleAddSelectedKeypoints = () => {
-    if (!modalOpen.section) return;
-    const section = modalOpen.section;
-    setCurrentOutput((prev) => {
-      const existing = (prev[section] as any[]) || [];
-      const existingIds = new Set(
-        existing.map((item: any) => (item as any)._id || item)
-      );
-      const additions = selectedKeypoints.filter(
-        (kp) => !existingIds.has(kp._id)
-      );
-      return {
-        ...prev,
-        [section]: [...existing, ...additions],
-      } as ILesson;
-    });
-    setSelectedKeypoints([]);
-    setModalOpen({ section: null });
-  };
-
-  // Request delete -> open confirm modal
-  const requestDeleteItem = (
-    section: "keypoints",
-    itemId: string,
-    itemTitle = "item"
-  ) => {
-    setConfirmDeleteKeypoint({ section, itemId, itemTitle });
-  };
-
-  // Confirm delete -> remove from state and save section (if output exists)
-  const confirmDeleteItem = () => {
-    if (!confirmDeleteKeypont) return;
-    const { section, itemId } = confirmDeleteKeypont;
-    if (!section || !itemId) {
-      setConfirmDeleteKeypoint(null);
-      return;
-    }
-
-    setCurrentOutput((prev) => {
-      if (!prev) return prev;
-      const newList = (prev[section] as any[]).filter(
-        (i) => (i as any)._id !== itemId && i !== itemId
-      );
-      const updated = { ...prev, [section]: newList };
-      // try to save section (will do nothing if _id is empty)
-      // call in next tick to ensure state updated visually first
-      setTimeout(() => handleSaveSection(section, updated), 0);
-      return updated;
-    });
-
-    setConfirmDeleteKeypoint(null);
-  };
-
   const handleDeleteOutput = async () => {
     if (!currentOutput._id) return;
+
     try {
       await lessonService.remove(currentOutput._id);
       setConfirmDeleteOutput(false);
@@ -436,117 +376,62 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
     }
   };
 
-  const renderSection = (label: string, section: "keypoints") => {
-    const list = currentOutput[section] || [];
-    return (
-      <div className="mb-6 bg-gray-50 rounded-xl p-6 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4">
-          <h2 className="text-xl font-semibold text-gray-800">{label}</h2>
-          <div className="flex flex-wrap items-center gap-2">
-            <button
-              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg flex items-center gap-2"
-              onClick={() => handleOpenModal(section)}
-            >
-              <PlusIcon className="h-5 w-5" />
-              Add
-            </button>
-          </div>
-        </div>
+  const handleOutputImageChange = (newUrl: string) => {
+    setCurrentOutput((prev) => ({
+      ...prev,
+      image: newUrl,
+    }));
+  };
 
-        <p className="text-sm text-gray-500 mb-4">
-          👉 Drag to reorder. Click on item to view details.
-        </p>
+  const handleClearIcon = () => {
+    setCurrentOutput((prev) => ({
+      ...prev,
+      icon: null,
+    }));
+    setIconQuery("");
+    setIsIconSearchActive(false);
+  };
 
-        <DndContext
-          collisionDetection={closestCenter}
-          onDragEnd={({ active, over }) => {
-            if (over && active.id !== over.id)
-              handleReorder(section, active.id as string, over.id as string);
-          }}
-        >
-          <SortableContext
-            items={list.map((i) => (i as any)._id || i)}
-            strategy={verticalListSortingStrategy}
-          >
-            {list.length > 0 ? (
-              list.map((item) => {
-                const itemObj = item as any;
-                const itemId = itemObj._id || item;
-                return (
-                  <SortableItem key={itemId} id={itemId}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-4 bg-white border rounded-lg mb-3 cursor-pointer hover:shadow-md transition-all duration-300"
-                    >
-                      {/* {itemObj.image && (
-                        <img
-                          src={itemObj.image}
-                          alt={itemObj.title?.[lang]}
-                          className="w-full sm:w-32 h-32 object-cover rounded-lg"
-                        />
-                      )} */}
-                      <PuzzlePieceIcon className="h-8 w-8 text-yellow-500" />
-                      <div className="flex-1">
-                        <div className="font-semibold text-gray-800 text-lg">
-                          {itemObj.title?.[lang] || "Untitled"}
-                        </div>
-                        {itemObj.description?.[lang] && (
-                          <div className="text-sm text-gray-600 mt-1">
-                            {itemObj.description?.[lang]}
-                          </div>
-                        )}
-                        {/* Hiển thị tag nếu có */}
-                        {itemObj.tag &&
-                          Array.isArray(itemObj.tag) &&
-                          itemObj.tag.length > 0 && (
-                            <div className="flex flex-wrap gap-1 mt-2">
-                              {itemObj.tag.map((t: any, index: number) => (
-                                <span
-                                  key={index}
-                                  className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                >
-                                  {t}
-                                </span>
-                              ))}
-                            </div>
-                          )}
-                      </div>
-                      <button
-                        className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition-colors"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          e.preventDefault();
-                          requestDeleteItem(
-                            section,
-                            itemId,
-                            itemObj.title?.[lang] || "item"
-                          );
-                        }}
-                      >
-                        <TrashIcon className="w-5 h-5" />
-                      </button>
-                    </motion.div>
-                  </SortableItem>
-                );
-              })
-            ) : (
-              <div className="text-center py-8 text-gray-500 bg-white rounded-lg border border-dashed border-gray-300">
-                No items added yet. Click "Add" to get started.
-              </div>
-            )}
-          </SortableContext>
-        </DndContext>
-      </div>
-    );
+  const handleClearLightIcon = () => {
+    setCurrentOutput((prev) => ({
+      ...prev,
+      lightIcon: null,
+    }));
+    setLightIconQuery("");
+    setIsLightIconSearchActive(false);
+  };
+
+  const handleClearAnimation = () => {
+    setCurrentOutput((prev) => ({
+      ...prev,
+      animation: null,
+    }));
+    setAnimationQuery("");
+    setIsAnimationSearchActive(false);
+  };
+
+  const handleSelectIcon = (icon: ITag) => {
+    setCurrentOutput((prev) => ({
+      ...prev,
+      icon: icon as any,
+    }));
+    setIsIconSearchActive(false);
+    setIconQuery("");
+  };
+
+  const handleSelectLightIcon = (icon: ITag) => {
+    setCurrentOutput((prev) => ({
+      ...prev,
+      lightIcon: icon as any,
+    }));
+    setIsLightIconSearchActive(false);
+    setLightIconQuery("");
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="max-w-7xl mx-auto">
-        {/* Card: left image / right form */}
         <div className="bg-white shadow-xl rounded-xl overflow-hidden flex flex-col md:flex-row">
-          {/* LEFT: image + image input */}
           <div className="flex-1 flex flex-col items-start p-6 bg-gray-50">
             <div className="w-full">
               {currentOutput.image ? (
@@ -565,12 +450,10 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
             </div>
 
             <div className="mt-6 w-52 h-auto max-w-md">
-              <label className="block mb-2 text-sm font-medium text-gray-700"></label>
               <CloudflareFileUpload
                 initialUrl={currentOutput.image || ""}
                 onUrlChange={handleOutputImageChange}
                 label="Upload Image"
-                // Bạn có thể tùy chỉnh payload này theo nhu cầu
                 uploadPayload={{
                   prefix: "",
                   folder: "lessons",
@@ -579,27 +462,28 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
             </div>
           </div>
 
-          {/* RIGHT: form */}
           <div className="flex-[1.5] p-6">
             <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">
               {isEditMode ? "✏️ Edit Output" : "🌱 Create New Output"}
             </h1>
 
             <div className="space-y-6">
-              {/* Title */}
               <div>
                 <label className="block mb-1 text-sm font-medium text-gray-700">
                   Title *
                 </label>
                 <input
-                  value={currentOutput.title?.[lang] || ""}
+                  value={
+                    currentOutput.title?.[lang] ||
+                    (lang !== "en" ? currentOutput.title?.en || "" : "")
+                  }
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
                       ...prev,
                       title: updateTranslationValue(
                         prev.title,
                         lang,
-                        e.target.value
+                        e.target.value,
                       ),
                     }))
                   }
@@ -609,7 +493,6 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                 />
               </div>
 
-              {/* Description */}
               <div>
                 <label className="block mb-1 text-sm font-medium text-gray-700">
                   Description
@@ -622,7 +505,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       description: updateTranslationValue(
                         prev.description,
                         lang,
-                        e.target.value
+                        e.target.value,
                       ),
                     }))
                   }
@@ -634,67 +517,40 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
               <div>
                 <label className="block mb-1 text-sm font-medium text-gray-700">
-                  Time complete
-                </label>
-                <input
-                  value={currentOutput.estimateCompleTime?.[lang] || ""}
-                  onChange={(e) =>
-                    setCurrentOutput((prev) => ({
-                      ...prev,
-                      estimateCompleTime: updateTranslationValue(
-                        prev.estimateCompleTime,
-                        lang,
-                        e.target.value
-                      ),
-                    }))
-                  }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  placeholder="Lesson estimate complete time..."
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block mb-1 text-sm font-medium text-gray-700">
                   Icon
                 </label>
 
                 <div className="relative">
                   <input
-                    // Giá trị sẽ là iconQuery khi đang tìm kiếm, ngược lại là tên icon hiện tại
                     value={
                       isIconSearchActive
                         ? iconQuery
                         : getTranslationValue(
-                            getIconValue(currentOutput)?.title,
-                            lang
+                            (currentOutput.icon as any)?.title,
+                            lang,
                           ) || ""
                     }
                     onChange={(e) => setIconQuery(e.target.value)}
                     onFocus={() => {
                       setIsIconSearchActive(true);
-                      // Khi focus, điền sẵn tên icon hiện tại vào ô tìm kiếm
                       setIconQuery(
                         getTranslationValue(
-                          getIconValue(currentOutput)?.title,
-                          lang
-                        ) || ""
+                          (currentOutput.icon as any)?.title,
+                          lang,
+                        ) || "",
                       );
                     }}
                     onBlur={() => {
-                      // Dùng setTimeout để cho phép click vào nút 'x' hoặc dropdown item
                       setTimeout(() => {
                         setIsIconSearchActive(false);
                         setIconQuery("");
                       }, 150);
                     }}
-                    // Thêm padding bên phải để không bị đè lên nút 'x'
                     className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                     placeholder="Search icon..."
                   />
 
-                  {/* Nút 'x' để xoá icon - chỉ hiển thị khi có icon và không đang tìm kiếm */}
-                  {getIconValue(currentOutput) && !isIconSearchActive && (
+                  {currentOutput.icon && !isIconSearchActive && (
                     <button
                       type="button"
                       onClick={handleClearIcon}
@@ -704,24 +560,24 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                     </button>
                   )}
 
-                  {/* Dropdown hiển thị kết quả tìm kiếm */}
-                  {isIconSearchActive && iconQuery && (
+                  {isIconSearchActive && (
                     <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
                       {icons
-                        .filter((icon) =>
-                          icon.title?.[lang]
-                            ?.toLowerCase()
-                            .includes(iconQuery.toLowerCase())
-                        )
+                        .filter((icon) => {
+                          const title = (
+                            icon.title?.[lang] || ""
+                          ).toLowerCase();
+                          return (
+                            !iconQuery ||
+                            title.includes(iconQuery.toLowerCase())
+                          );
+                        })
                         .map((icon) => (
                           <div
                             key={icon._id}
                             className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                            onClick={() => {
-                              handleSelectIcon(icon);
-                              setIsIconSearchActive(false);
-                              setIconQuery("");
-                            }}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => handleSelectIcon(icon)}
                           >
                             {icon.url ? (
                               <img
@@ -735,9 +591,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                                 style={{
                                   backgroundColor: icon.color || "#f3f4f6",
                                 }}
-                              >
-                                <span>{icon.url}</span>
-                              </div>
+                              />
                             )}
                             <div className="flex-1">
                               <div className="font-medium text-gray-800">
@@ -763,7 +617,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                         ? lightIconQuery
                         : getTranslationValue(
                             (currentOutput.lightIcon as any)?.title,
-                            lang
+                            lang,
                           ) || ""
                     }
                     onChange={(e) => setLightIconQuery(e.target.value)}
@@ -772,8 +626,8 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       setLightIconQuery(
                         getTranslationValue(
                           (currentOutput.lightIcon as any)?.title,
-                          lang
-                        ) || ""
+                          lang,
+                        ) || "",
                       );
                     }}
                     onBlur={() => {
@@ -796,26 +650,24 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                     </button>
                   )}
 
-                  {isLightIconSearchActive && lightIconQuery && (
+                  {isLightIconSearchActive && (
                     <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
                       {lightIcons
-                        .filter((icon) =>
-                          icon.title?.[lang]
-                            ?.toLowerCase()
-                            .includes(lightIconQuery.toLowerCase())
-                        )
+                        .filter((icon) => {
+                          const title = (
+                            icon.title?.[lang] || ""
+                          ).toLowerCase();
+                          return (
+                            !lightIconQuery ||
+                            title.includes(lightIconQuery.toLowerCase())
+                          );
+                        })
                         .map((icon) => (
                           <div
                             key={icon._id}
                             className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
-                            onClick={() => {
-                              setCurrentOutput((prev) => ({
-                                ...prev,
-                                lightIcon: icon as any,
-                              }));
-                              setIsLightIconSearchActive(false);
-                              setLightIconQuery("");
-                            }}
+                            onMouseDown={(e) => e.preventDefault()}
+                            onClick={() => handleSelectLightIcon(icon)}
                           >
                             {icon.url ? (
                               <img
@@ -829,9 +681,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                                 style={{
                                   backgroundColor: icon.color || "#f3f4f6",
                                 }}
-                              >
-                                <span>{icon.url}</span>
-                              </div>
+                              />
                             )}
                             <div className="flex-1">
                               <div className="font-medium text-gray-800">
@@ -845,7 +695,81 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                 </div>
               </div>
 
-              {/* Status + Course row */}
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Animation
+                </label>
+
+                <div className="relative">
+                  <input
+                    value={
+                      isAnimationSearchActive
+                        ? animationQuery
+                        : currentOutput.animation?.name || ""
+                    }
+                    onChange={(e) => setAnimationQuery(e.target.value)}
+                    onFocus={() => {
+                      setIsAnimationSearchActive(true);
+                      setAnimationQuery(currentOutput.animation?.name || "");
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => {
+                        setIsAnimationSearchActive(false);
+                        setAnimationQuery("");
+                      }, 150);
+                    }}
+                    className="border rounded-lg w-full p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Search animation..."
+                  />
+
+                  {currentOutput.animation && !isAnimationSearchActive && (
+                    <button
+                      type="button"
+                      onClick={handleClearAnimation}
+                      className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 focus:outline-none"
+                    >
+                      <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                    </button>
+                  )}
+
+                  {isAnimationSearchActive && animationQuery && (
+                    <div className="absolute z-10 mt-1 w-full max-h-60 overflow-auto rounded-lg border bg-white shadow-lg">
+                      {animations
+                        .filter((avatar) =>
+                          avatar.name
+                            ?.toLowerCase()
+                            .includes(animationQuery.toLowerCase()),
+                        )
+                        .map((avatar) => (
+                          <div
+                            key={avatar._id}
+                            className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                            onClick={() => {
+                              setCurrentOutput((prev) => ({
+                                ...prev,
+                                animation: avatar,
+                              }));
+                              setIsAnimationSearchActive(false);
+                              setAnimationQuery("");
+                            }}
+                          >
+                            <img
+                              src={avatar.url}
+                              alt={avatar.name}
+                              className="w-8 h-8 object-cover rounded-full border"
+                            />
+                            <div className="flex-1">
+                              <div className="font-medium text-gray-800">
+                                {avatar.name}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
@@ -854,11 +778,10 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   <select
                     value={currentOutput.status}
                     onChange={(e) =>
-                      setCurrentOutput((prev) =>
-                        prev
-                          ? { ...prev, status: e.target.value as LessonStatus }
-                          : prev
-                      )
+                      setCurrentOutput((prev) => ({
+                        ...prev,
+                        status: e.target.value as LessonStatus,
+                      }))
                     }
                     className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                   >
@@ -870,7 +793,6 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   </select>
                 </div>
 
-                {/* Course: Combobox always shown */}
                 <div>
                   <label className="block mb-1 text-sm font-medium text-gray-700">
                     Course *
@@ -879,23 +801,22 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   <Combobox<string | null>
                     value={currentOutput.courseId || null}
                     onChange={(val: string | null) => {
-                      setCurrentOutput((prev) =>
-                        prev ? { ...prev, courseId: val ?? "" } : prev
-                      );
+                      setCurrentOutput((prev) => ({
+                        ...prev,
+                        courseId: val ?? "",
+                      }));
                       setCourseQuery("");
                     }}
                   >
                     <div className="relative">
                       <Combobox.Input
-                        displayValue={(val: string | null) => {
-                          // Nếu có selected course, hiển thị title của nó
+                        displayValue={() => {
                           if (selectedCourse) {
                             return getTranslationValue(
                               selectedCourse.title,
-                              lang
+                              lang,
                             );
                           }
-                          // Nếu không, hiển thị courseQuery (đang nhập hoặc courseId)
                           return courseQuery;
                         }}
                         onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
@@ -907,18 +828,18 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
                       <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                         {courses
-                          .filter((c) =>
-                            getTranslationValue(c.title, lang)
+                          .filter((course) =>
+                            getTranslationValue(course.title, lang)
                               ?.toLowerCase()
-                              .includes(courseQuery.toLowerCase())
+                              .includes(courseQuery.toLowerCase()),
                           )
-                          .map((c) => (
+                          .map((course) => (
                             <Combobox.Option
-                              key={c._id}
-                              value={c._id} // value is courseId (string)
+                              key={course._id}
+                              value={course._id}
                               className="cursor-pointer px-3 py-3 hover:bg-blue-50"
                             >
-                              {getTranslationValue(c.title, lang)}
+                              {getTranslationValue(course.title, lang)}
                             </Combobox.Option>
                           ))}
                       </Combobox.Options>
@@ -927,7 +848,6 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                 </div>
               </div>
 
-              {/* Save button */}
               <div className="pt-4 flex justify-end">
                 <button
                   onClick={handleSaveOutput}
@@ -938,23 +858,32 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                       : "bg-gradient-to-r from-blue-600 to-green-500 hover:opacity-90"
                   }`}
                 >
-                  {saving ? (
-                    <>Saving...</>
-                  ) : isEditMode ? (
-                    "Save Output"
-                  ) : (
-                    "Create Output"
-                  )}
+                  {saving
+                    ? "Saving..."
+                    : isEditMode
+                      ? "Save Output"
+                      : "Create Output"}
                 </button>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Sections below */}
-        <div className="mt-8">{renderSection("Keypoints", "keypoints")}</div>
+        <div className="mt-8 bg-white shadow-xl rounded-xl p-6">
+          <label className="block mb-1 text-sm font-medium text-gray-700">
+            AI Config
+          </label>
+          <AIConfigEditor
+            value={currentOutput.AIConfig || ""}
+            onChange={(value) =>
+              setCurrentOutput((prev) => ({
+                ...prev,
+                AIConfig: value,
+              }))
+            }
+          />
+        </div>
 
-        {/* nếu đang edit thì hiển thị nút Delete */}
         {currentOutput._id && (
           <div className="flex justify-center mt-8">
             <button
@@ -967,7 +896,6 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
           </div>
         )}
 
-        {/* Modal xác nhận xoá */}
         <AnimatePresence>
           {confirmDeleteOutput && (
             <LessonConfirm
@@ -975,131 +903,6 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
               message="Are you sure you want to delete this output? This action cannot be undone."
               onCancel={() => setConfirmDeleteOutput(false)}
               onConfirm={handleDeleteOutput}
-            />
-          )}
-        </AnimatePresence>
-
-        {/* Modal chọn keypoint */}
-        <AnimatePresence>
-          {modalOpen.section && (
-            <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-[9999]">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                className="bg-white w-[600px] rounded-xl shadow-xl p-6 max-w-full max-h-[90vh] overflow-hidden flex flex-col"
-              >
-                <h2 className="text-xl font-bold mb-4">
-                  Select Keypoint for {modalOpen.section}
-                </h2>
-
-                <div className="relative mb-4">
-                  <input
-                    value={searchKeypoint}
-                    onChange={(e) => setSearchKeypoint(e.target.value)}
-                    placeholder="Search keypoint..."
-                    className="border rounded-lg w-full p-3 pl-10 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  />
-                </div>
-
-                <div className="flex-grow overflow-y-auto max-h-[60vh]">
-                  {keypointList.length > 0 ? (
-                    keypointList
-                      .filter((kp) =>
-                        kp.title?.[lang]
-                          ?.toLowerCase()
-                          .includes(searchKeypoint.toLowerCase())
-                      )
-                      .map((kp) => {
-                        const selected = selectedKeypoints.some(
-                          (item) => item._id === kp._id
-                        );
-                        return (
-                          <motion.div
-                            key={kp._id}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            className={`flex items-center gap-4 p-4 cursor-pointer rounded-lg transition-colors border ${
-                              selected
-                                ? "bg-blue-50 border-blue-200"
-                                : "hover:bg-gray-100 border-transparent"
-                            }`}
-                            onClick={() => toggleKeypointSelection(kp)}
-                          >
-                            <div
-                              className={`h-6 w-6 rounded-full border flex items-center justify-center ${
-                                selected
-                                  ? "bg-blue-600 border-blue-600 text-white"
-                                  : "border-gray-300 text-transparent"
-                              }`}
-                            >
-                              ✓
-                            </div>
-                            <PuzzlePieceIcon className="h-8 w-8 text-yellow-500" />
-                            <div className="flex-1">
-                              <div className="font-medium text-gray-800">
-                                {kp.title?.[lang]}
-                              </div>
-                              {kp.description?.[lang] && (
-                                <div className="text-sm text-gray-600 mt-1">
-                                  {kp.description?.[lang]}
-                                </div>
-                              )}
-                              {/* Hiển thị tag nếu có */}
-                              {kp.tag && kp.tag.length > 0 && (
-                                <div className="flex flex-wrap gap-1 mt-2">
-                                  {kp.tag.map((t, index) => (
-                                    <span
-                                      key={index}
-                                      className="inline-block px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full"
-                                    >
-                                      {t}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                          </motion.div>
-                        );
-                      })
-                  ) : (
-                    <div className="text-center py-8 text-gray-500">
-                      No keypoints found
-                    </div>
-                  )}
-                </div>
-
-                <div className="mt-4 text-right">
-                  <button
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed mr-2"
-                    disabled={selectedKeypoints.length === 0}
-                    onClick={handleAddSelectedKeypoints}
-                  >
-                    Add selected
-                  </button>
-                  <button
-                    className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
-                    onClick={() => {
-                      setSelectedKeypoints([]);
-                      setModalOpen({ section: null });
-                    }}
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </motion.div>
-            </div>
-          )}
-        </AnimatePresence>
-
-        {/* Modal confirm delete */}
-        <AnimatePresence>
-          {confirmDeleteKeypont && (
-            <LessonConfirm
-              title="Confirm Delete"
-              message={`Are you sure you want to delete "${confirmDeleteKeypont.itemTitle}"?`}
-              onCancel={() => setConfirmDeleteKeypoint(null)}
-              onConfirm={() => confirmDeleteItem()}
             />
           )}
         </AnimatePresence>

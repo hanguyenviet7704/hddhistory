@@ -13,6 +13,10 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import { AnimatePresence, motion } from "framer-motion";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import Bold from "@tiptap/extension-bold";
+import Italic from "@tiptap/extension-italic";
 import { RootState } from "../../store";
 import { onboardingService } from "../../services/onboardingService";
 import { courseService } from "../../services/courseService";
@@ -23,6 +27,8 @@ import {
   IOnboardingScenarioBranching,
   IOnboardingScenarioContentItem,
   IOnboardingScenarioFixed,
+  IOnboardingScenarioPersonAdmire,
+  IOnboardingScenarioPersonAdmireOption,
   IOnboardingScenarioScene,
   OnboardingContentType,
 } from "../../types/interface/onboarding-scenario-branching.interface";
@@ -44,6 +50,19 @@ const emptyScenario: IOnboardingScenarioBranching = {
 };
 
 const createTranslation = (): ITranslation => ({});
+
+const cloneTranslationValue = (value?: ITranslation): ITranslation =>
+  value ? { ...value } : createTranslation();
+
+const normalizePersonTextValue = (
+  value?: ITranslation | string,
+): ITranslation => {
+  if (typeof value === "string") {
+    const trimmed = value.trim();
+    return trimmed ? { [LangCode.EN]: trimmed } : createTranslation();
+  }
+  return cloneTranslationValue(value);
+};
 
 const createLabel = (id: number): ILablel => ({
   id,
@@ -88,6 +107,24 @@ const createFixed = (): IOnboardingScenarioFixed => ({
 
 const ensureFixed = (fixed?: IOnboardingScenarioFixed) =>
   fixed ?? createFixed();
+
+const createPersonAdmireOption = (
+  overrides: Partial<IOnboardingScenarioPersonAdmireOption> = {},
+): IOnboardingScenarioPersonAdmireOption => ({
+  image: overrides.image || "",
+  name: overrides.name || "",
+  title: cloneTranslationValue(overrides.title),
+  subTitle: cloneTranslationValue(overrides.subTitle),
+});
+
+const createPersonAdmire = (): IOnboardingScenarioPersonAdmire => ({
+  subQuestion: createTranslation(),
+  question: createTranslation(),
+  options: [createPersonAdmireOption()],
+});
+
+const ensurePersonAdmire = (personAdmire?: IOnboardingScenarioPersonAdmire) =>
+  personAdmire ?? createPersonAdmire();
 
 const normalizeActivationContent = (
   content: IOnboardingScenarioContentItem,
@@ -161,6 +198,16 @@ const withFixed = (
   fixed: updater(ensureFixed(item.fixed)),
 });
 
+const withPersonAdmire = (
+  item: IOnboardingScenarioContentItem,
+  updater: (
+    personAdmire: IOnboardingScenarioPersonAdmire,
+  ) => IOnboardingScenarioPersonAdmire,
+): IOnboardingScenarioContentItem => ({
+  ...item,
+  personAdmire: updater(ensurePersonAdmire(item.personAdmire)),
+});
+
 const createContent = (
   id: number,
   type: OnboardingContentType,
@@ -186,6 +233,14 @@ const createContent = (
       id,
       type,
       fixed: createFixed(),
+    };
+  }
+
+  if (type === OnboardingContentType.PERSON_ADMIRE) {
+    return {
+      id,
+      type,
+      personAdmire: createPersonAdmire(),
     };
   }
 
@@ -243,6 +298,20 @@ const getNextSceneIdForOption = (
     candidate = `${parentSceneId}_${candidateNumber}`;
   }
   return candidate;
+};
+
+const getDirectChildScenes = (
+  scenes: IOnboardingScenarioScene[],
+  parentSceneId: string,
+) => {
+  const parentSegments = parentSceneId.split("_").length;
+  const childPrefix = `${parentSceneId}_`;
+
+  return scenes.filter((scene) => {
+    if (scene.id === parentSceneId) return false;
+    if (!scene.id.startsWith(childPrefix)) return false;
+    return scene.id.split("_").length === parentSegments + 1;
+  });
 };
 
 const normalizeScenario = (
@@ -311,6 +380,23 @@ const normalizeScenario = (
             ),
           };
         }
+      }
+
+      if (normalizedContent.type === OnboardingContentType.PERSON_ADMIRE) {
+        const normalizedPersonAdmire = ensurePersonAdmire(
+          normalizedContent.personAdmire,
+        );
+        normalizedContent.personAdmire = {
+          ...normalizedPersonAdmire,
+          subQuestion: normalizedPersonAdmire.subQuestion || createTranslation(),
+          question: normalizedPersonAdmire.question || createTranslation(),
+          options: (normalizedPersonAdmire.options || []).map((option) => ({
+            image: option.image || "",
+            name: option.name || "",
+            title: normalizePersonTextValue(option.title),
+            subTitle: normalizePersonTextValue(option.subTitle),
+          })),
+        };
       }
 
       return normalizedContent;
@@ -391,6 +477,26 @@ const sanitizeScenario = (
         };
       }
 
+      if (
+        content.type === OnboardingContentType.PERSON_ADMIRE &&
+        content.personAdmire
+      ) {
+        return {
+          ...content,
+          personAdmire: {
+            ...content.personAdmire,
+            subQuestion: sanitizeTranslationValue(content.personAdmire.subQuestion),
+            question: sanitizeTranslationValue(content.personAdmire.question),
+            options: (content.personAdmire.options || []).map((option) => ({
+              image: option.image || "",
+              name: option.name || "",
+              title: sanitizeTranslationValue(option.title),
+              subTitle: sanitizeTranslationValue(option.subTitle),
+            })),
+          },
+        };
+      }
+
       return content;
     }),
   })),
@@ -401,6 +507,7 @@ const typeBadgeClasses: Record<OnboardingContentType, string> = {
   [OnboardingContentType.ACTIVATION]: "text-pink-500",
   [OnboardingContentType.BRANCH]: "text-pink-500",
   [OnboardingContentType.FIXED]: "text-pink-500",
+  [OnboardingContentType.PERSON_ADMIRE]: "text-pink-500",
 };
 
 const typeMeta: Record<
@@ -423,13 +530,17 @@ const typeMeta: Record<
     label: "Fixed",
     description: "Fixed options",
   },
+  [OnboardingContentType.PERSON_ADMIRE]: {
+    label: "Person Admire",
+    description: "Person admire options",
+  },
 };
 
 const textInputClass =
   "w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm focus:border-slate-400 focus:outline-none";
 
 const labelTextClass =
-  "text-[11px] font-semibold uppercase tracking-[0.2em] text-slate-500";
+  "text-[11px] font-bold uppercase tracking-[0.2em] text-slate-500";
 
 const iconButtonClass =
   "inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 shadow-sm transition hover:border-slate-300 hover:bg-slate-50";
@@ -474,6 +585,32 @@ const TextWithTooltip = ({
       ) : null}
     </div>
   );
+};
+
+const stripHtml = (value = "") =>
+  value
+    .replace(/<[^>]*>/g, " ")
+    .replace(/&nbsp;/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const getDisplayTranslationValue = (
+  translation: ITranslation | string | undefined,
+  currentLang: LangCode,
+) => {
+  if (!translation) return "";
+  if (typeof translation === "string") return translation;
+
+  const currentValue = translation[currentLang];
+  if (currentValue?.trim()) return currentValue;
+
+  const viValue = translation[LangCode.VI];
+  if (viValue?.trim()) return viValue;
+
+  const enValue = translation[LangCode.EN];
+  if (enValue?.trim()) return enValue;
+
+  return Object.values(translation).find((value) => value?.trim()) || "";
 };
 
 const ConfirmDialog = ({
@@ -570,12 +707,125 @@ const TranslationInputs = ({
   </label>
 );
 
+const LabelTranslationInput = ({
+  value,
+  lang,
+  tone,
+  onChange,
+}: {
+  value?: ITranslation;
+  lang: LangCode;
+  tone?: "blue" | "emerald" | "amber";
+  onChange: (nextValue: ITranslation) => void;
+}) => {
+  const currentValue = getCurrentTranslationValue(value, lang);
+  const editor = useEditor({
+    extensions: [
+      StarterKit.configure({
+        bold: false,
+        italic: false,
+        heading: false,
+        blockquote: false,
+        codeBlock: false,
+        horizontalRule: false,
+        bulletList: false,
+        orderedList: false,
+        listItem: false,
+      }),
+      Bold,
+      Italic,
+    ],
+    content: currentValue || "<p></p>",
+    editorProps: {
+      attributes: {
+        class:
+          "label-rich-editor-content min-h-[64px] rounded-b-xl border border-t-0 border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-800 shadow-sm focus:outline-none",
+      },
+    },
+    onUpdate: ({ editor: nextEditor }) => {
+      const nextHtml = nextEditor.getText().trim()
+        ? nextEditor.getHTML()
+        : "";
+      onChange(cleanTranslation(updateTranslationValue(value, lang, nextHtml)) || {});
+    },
+  }, ["label-editor-v2"]);
+
+  useEffect(() => {
+    if (!editor) return;
+    const incoming = currentValue || "<p></p>";
+    if (editor.getHTML() !== incoming) {
+      editor.commands.setContent(incoming, false);
+    }
+  }, [currentValue, editor]);
+
+  const toolbarBtn = (active: boolean) =>
+    `inline-flex h-7 min-w-7 items-center justify-center rounded-md border px-2 text-xs font-semibold shadow-sm transition ${
+      active
+        ? "border-blue-300 bg-blue-100 text-blue-700"
+        : "border-slate-200 bg-white text-slate-700 hover:bg-slate-50"
+    }`;
+
+  const toggleBold = () => {
+    if (!editor) return;
+    if (!editor.schema.marks.bold) return;
+    const hasSelection = !editor.state.selection.empty;
+    const selectionEnd = editor.state.selection.to;
+    editor.chain().focus().toggleBold().run();
+    if (hasSelection) {
+      editor.chain().focus().setTextSelection(selectionEnd).unsetBold().run();
+    }
+  };
+
+  const toggleItalic = () => {
+    if (!editor) return;
+    if (!editor.schema.marks.italic) return;
+    const hasSelection = !editor.state.selection.empty;
+    const selectionEnd = editor.state.selection.to;
+    editor.chain().focus().toggleItalic().run();
+    if (hasSelection) {
+      editor.chain().focus().setTextSelection(selectionEnd).unsetItalic().run();
+    }
+  };
+
+  return (
+    <div className="space-y-1">
+      <span className={`${labelTextClass} ${tone ? toneClasses[tone] : ""}`}>
+        Label
+      </span>
+      <div className="flex items-center gap-2 rounded-t-xl border border-b-0 border-slate-200 bg-slate-50 p-2">
+        <button
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={toggleBold}
+          className={toolbarBtn(Boolean(editor?.isActive("bold")))}
+          title="Bold"
+          aria-label="Bold selected text"
+        >
+          <span className="font-bold">B</span>
+        </button>
+        <button
+          type="button"
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={toggleItalic}
+          className={toolbarBtn(Boolean(editor?.isActive("italic")))}
+          title="Italic"
+          aria-label="Italic selected text"
+        >
+          <span className="italic">I</span>
+        </button>
+      </div>
+      <EditorContent editor={editor} />
+    </div>
+  );
+};
+
 const LabelEditor = ({
   label,
   title,
   lang,
   tone,
   showIconUpload = true,
+  showTitleInput = true,
   onChange,
   onRemove,
 }: {
@@ -584,6 +834,7 @@ const LabelEditor = ({
   lang: LangCode;
   tone?: "blue" | "emerald" | "amber";
   showIconUpload?: boolean;
+  showTitleInput?: boolean;
   onChange: (nextLabel: ILablel) => void;
   onRemove?: () => void;
 }) => (
@@ -622,23 +873,24 @@ const LabelEditor = ({
         />
       </div>
     ) : null}
+    {showTitleInput ? (
+      <div className="mt-3">
+        <TranslationInputs
+          label="Title"
+          value={label.title}
+          lang={lang}
+          tone={tone}
+          onChange={(nextValue) =>
+            onChange({
+              ...label,
+              title: nextValue,
+            })
+          }
+        />
+      </div>
+    ) : null}
     <div className="mt-3">
-      <TranslationInputs
-        label="Title"
-        value={label.title}
-        lang={lang}
-        tone={tone}
-        onChange={(nextValue) =>
-          onChange({
-            ...label,
-            title: nextValue,
-          })
-        }
-      />
-    </div>
-    <div className="mt-3">
-      <TranslationInputs
-        label="Label"
+      <LabelTranslationInput
         value={label.label}
         lang={lang}
         tone={tone}
@@ -680,6 +932,10 @@ export default function OnboardingManagemantScenarioBranching() {
   const [isTypeModalOpen, setIsTypeModalOpen] = useState(false);
   const [sceneLabelQuery, setSceneLabelQuery] = useState("");
   const [courseQuery, setCourseQuery] = useState("");
+  const [courseQueryByOption, setCourseQueryByOption] = useState<
+    Record<string, string>
+  >({});
+  const [activeCourseOptionKey, setActiveCourseOptionKey] = useState("");
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [isCourseLoading, setIsCourseLoading] = useState(false);
   const [courseMap, setCourseMap] = useState<Record<string, ICourse>>({});
@@ -783,6 +1039,9 @@ export default function OnboardingManagemantScenarioBranching() {
     setIsTypeModalOpen(false);
     setDraftContent(null);
     setContentModal(null);
+    setCourseQuery("");
+    setCourseQueryByOption({});
+    setActiveCourseOptionKey("");
   }, [selectedSceneId]);
 
   const selectedScene = useMemo(
@@ -991,6 +1250,13 @@ export default function OnboardingManagemantScenarioBranching() {
       showError("Vui lòng chọn scene trước.");
       return;
     }
+    if (
+      type === OnboardingContentType.PERSON_ADMIRE &&
+      selectedSceneId !== rootSceneId
+    ) {
+      showError("Person Admire chỉ được thêm ở scene Entry.");
+      return;
+    }
     if (type === OnboardingContentType.BRANCH && selectedSceneHasBranch) {
       showError("Mỗi scene chỉ được có 1 branch.");
       return;
@@ -1033,7 +1299,7 @@ export default function OnboardingManagemantScenarioBranching() {
   const normalizedSceneLabelQuery = sceneLabelQuery.trim().toLowerCase();
 
   const getOptionLabelText = (option: IOnboardingScenarioBranchOption) =>
-    getCurrentTranslationValue(option.label, lang) || `Option ${option.id}`;
+    getDisplayTranslationValue(option.label, lang) || `Option ${option.id}`;
 
   const matchesSceneLabelQuery = (value: string) =>
     !normalizedSceneLabelQuery ||
@@ -1073,7 +1339,7 @@ export default function OnboardingManagemantScenarioBranching() {
   const getCourseTitle = (courseId: string) => {
     const course =
       courseMap[courseId] || courses.find((item) => item._id === courseId);
-    return course ? getCurrentTranslationValue(course.title, lang) : courseId;
+    return course ? getDisplayTranslationValue(course.title, lang) : courseId;
   };
 
   const renderSceneOptions = (
@@ -1306,6 +1572,7 @@ export default function OnboardingManagemantScenarioBranching() {
     contentIndex: number,
     optionIndex: number,
     courseId: string,
+    optionKey?: string,
   ) => {
     updateContent(sceneIndex, contentIndex, (item) =>
       withBranch(item, (branch) => ({
@@ -1321,6 +1588,14 @@ export default function OnboardingManagemantScenarioBranching() {
         }),
       })),
     );
+    setCourseQuery("");
+    if (optionKey) {
+      setCourseQueryByOption((prev) => ({
+        ...prev,
+        [optionKey]: "",
+      }));
+    }
+    setActiveCourseOptionKey("");
   };
 
   const handleRemoveCourseFromOption = (
@@ -1428,6 +1703,7 @@ export default function OnboardingManagemantScenarioBranching() {
             title="Fact label"
             lang={lang}
             tone="blue"
+            showTitleInput={false}
             onChange={(nextLabel) =>
               updateContent(sceneIndex, contentIndex, (item) =>
                 item.type === OnboardingContentType.FACT
@@ -1539,6 +1815,7 @@ export default function OnboardingManagemantScenarioBranching() {
                     lang={lang}
                     tone="emerald"
                     showIconUpload={false}
+                    showTitleInput={false}
                     onChange={(nextLabel) =>
                       updateContent(sceneIndex, contentIndex, (item) =>
                         item.type === OnboardingContentType.ACTIVATION &&
@@ -1755,13 +2032,17 @@ export default function OnboardingManagemantScenarioBranching() {
                       }
                     >
                       <option value="">Chọn scene tiếp theo</option>
-                      {scenario.scenes
-                        .filter((scene) => scene.id !== selectedScene?.id)
-                        .map((scene) => (
-                          <option key={scene.id} value={scene.id}>
-                            {scene.id}
-                          </option>
-                        ))}
+                      {(scenario.scenes[sceneIndex]?.id
+                        ? getDirectChildScenes(
+                            scenario.scenes,
+                            scenario.scenes[sceneIndex].id,
+                          )
+                        : []
+                      ).map((scene) => (
+                        <option key={scene.id} value={scene.id}>
+                          {scene.id}
+                        </option>
+                      ))}
                     </select>
                     <button
                       type="button"
@@ -1787,20 +2068,40 @@ export default function OnboardingManagemantScenarioBranching() {
                     <span className={`${labelTextClass} ${toneClasses.amber}`}>
                       Courses
                     </span>
+                    {(() => {
+                      const courseOptionKey = `${sceneIndex}-${contentIndex}-${optionIndex}`;
+                      const optionCourseQuery =
+                        courseQueryByOption[courseOptionKey] || "";
+                      const isCourseOptionActive =
+                        activeCourseOptionKey === courseOptionKey;
+                      return (
+                        <>
                     <input
-                      value={courseQuery}
-                      onChange={(event) => setCourseQuery(event.target.value)}
+                      value={optionCourseQuery}
+                      onFocus={() => {
+                        setActiveCourseOptionKey(courseOptionKey);
+                        setCourseQuery(optionCourseQuery);
+                      }}
+                      onChange={(event) => {
+                        const nextValue = event.target.value;
+                        setCourseQueryByOption((prev) => ({
+                          ...prev,
+                          [courseOptionKey]: nextValue,
+                        }));
+                        setActiveCourseOptionKey(courseOptionKey);
+                        setCourseQuery(nextValue);
+                      }}
                       placeholder="Search course..."
                       className={`${textInputClass} text-xs`}
                     />
-                    {courseQuery.trim() ? (
+                    {isCourseOptionActive && optionCourseQuery.trim() ? (
                       <div className="max-h-32 space-y-2 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2">
                         {isCourseLoading ? (
                           <p className="text-xs text-slate-400">Loading...</p>
                         ) : courses.length ? (
                           courses.map((course) => {
                             const title =
-                              getCurrentTranslationValue(course.title, lang) ||
+                              getDisplayTranslationValue(course.title, lang) ||
                               course._id;
                             const isSelected =
                               option.courses?.includes(course._id) || false;
@@ -1814,6 +2115,7 @@ export default function OnboardingManagemantScenarioBranching() {
                                     contentIndex,
                                     optionIndex,
                                     course._id,
+                                    courseOptionKey,
                                   )
                                 }
                                 disabled={isSelected}
@@ -1840,11 +2142,11 @@ export default function OnboardingManagemantScenarioBranching() {
                           </p>
                         )}
                       </div>
-                    ) : (
+                    ) : isCourseOptionActive ? (
                       <p className="text-xs text-slate-400">
                         Nhập từ khoá để tìm course.
                       </p>
-                    )}
+                    ) : null}
                     {option.courses?.length ? (
                       <div className="flex flex-wrap gap-2">
                         {option.courses.map((courseId) => (
@@ -1877,6 +2179,9 @@ export default function OnboardingManagemantScenarioBranching() {
                         ))}
                       </div>
                     ) : null}
+                        </>
+                      );
+                    })()}
                   </div>
                 ) : null}
               </div>
@@ -1898,6 +2203,200 @@ export default function OnboardingManagemantScenarioBranching() {
                         nextSceneId: "",
                         courses: [],
                       },
+                    ],
+                  })),
+                )
+              }
+              className={iconButtonAddClass}
+              aria-label="Add option"
+              title="Add option"
+            >
+              <PlusIcon className="h-4 w-4" />
+            </button>
+          </div>
+        </div>
+      ) : null}
+
+      {content.type === OnboardingContentType.PERSON_ADMIRE &&
+      content.personAdmire ? (
+        <div className="space-y-4">
+          <TranslationInputs
+            label="Sub question"
+            value={content.personAdmire.subQuestion}
+            lang={lang}
+            tone="emerald"
+            onChange={(nextValue) =>
+              updateContent(sceneIndex, contentIndex, (item) =>
+                withPersonAdmire(item, (personAdmire) => ({
+                  ...personAdmire,
+                  subQuestion: nextValue,
+                })),
+              )
+            }
+          />
+          <TranslationInputs
+            label="Question"
+            value={content.personAdmire.question}
+            lang={lang}
+            tone="emerald"
+            onChange={(nextValue) =>
+              updateContent(sceneIndex, contentIndex, (item) =>
+                withPersonAdmire(item, (personAdmire) => ({
+                  ...personAdmire,
+                  question: nextValue,
+                })),
+              )
+            }
+          />
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-600">
+              Options
+            </p>
+          </div>
+          <div className="space-y-3">
+            {content.personAdmire.options.map((option, optionIndex) => (
+              <div
+                key={`person-admire-${optionIndex}`}
+                className="rounded-2xl border border-slate-200 bg-white p-4"
+              >
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <p className="text-sm font-semibold text-sky-400">
+                    Option {optionIndex + 1}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      updateContent(sceneIndex, contentIndex, (item) =>
+                        withPersonAdmire(item, (personAdmire) => ({
+                          ...personAdmire,
+                          options: personAdmire.options.filter(
+                            (_, index) => index !== optionIndex,
+                          ),
+                        })),
+                      )
+                    }
+                    className={iconButtonDangerClass}
+                    aria-label="Remove option"
+                    title="Remove option"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <div className="mt-3 w-52">
+                  <CloudflareFileUpload
+                    initialUrl={option.image || ""}
+                    onUrlChange={(newUrl) =>
+                      updateContent(sceneIndex, contentIndex, (item) =>
+                        withPersonAdmire(item, (personAdmire) => ({
+                          ...personAdmire,
+                          options: personAdmire.options.map((entry, index) =>
+                            index === optionIndex
+                              ? { ...entry, image: newUrl }
+                              : entry,
+                          ),
+                        })),
+                      )
+                    }
+                    label="Image"
+                    uploadPayload={{
+                      prefix: "",
+                      folder: "onboarding",
+                    }}
+                  />
+                </div>
+
+                <div className="mt-3">
+                  <label className="space-y-1">
+                    <span className={labelTextClass}>Name</span>
+                    <input
+                      className={textInputClass}
+                      value={option.name}
+                      onChange={(event) =>
+                        updateContent(sceneIndex, contentIndex, (item) =>
+                          withPersonAdmire(item, (personAdmire) => ({
+                            ...personAdmire,
+                            options: personAdmire.options.map(
+                              (entry, index) =>
+                                index === optionIndex
+                                  ? { ...entry, name: event.target.value }
+                                  : entry,
+                            ),
+                          })),
+                        )
+                      }
+                    />
+                  </label>
+                </div>
+
+                <div className="mt-3">
+                  <TranslationInputs
+                    label="Title"
+                    value={option.title}
+                    lang={lang}
+                    tone="emerald"
+                    onChange={(nextValue) =>
+                      updateContent(sceneIndex, contentIndex, (item) =>
+                        withPersonAdmire(item, (personAdmire) => ({
+                          ...personAdmire,
+                          options: personAdmire.options.map(
+                            (entry, index) =>
+                              index === optionIndex
+                                ? { ...entry, title: nextValue }
+                                : entry,
+                          ),
+                        })),
+                      )
+                    }
+                  />
+                </div>
+
+                <div className="mt-3">
+                  <TranslationInputs
+                    label="Sub title"
+                    value={option.subTitle}
+                    lang={lang}
+                    tone="emerald"
+                    onChange={(nextValue) =>
+                      updateContent(sceneIndex, contentIndex, (item) =>
+                        withPersonAdmire(item, (personAdmire) => ({
+                          ...personAdmire,
+                          options: personAdmire.options.map(
+                            (entry, index) =>
+                              index === optionIndex
+                                ? { ...entry, subTitle: nextValue }
+                                : entry,
+                          ),
+                        })),
+                      )
+                    }
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-4 flex justify-center">
+            <button
+              type="button"
+              onClick={() =>
+                updateContent(sceneIndex, contentIndex, (item) =>
+                  withPersonAdmire(item, (personAdmire) => ({
+                    ...personAdmire,
+                    options: [
+                      ...(personAdmire.options || []),
+                      (() => {
+                        const previousOption =
+                          personAdmire.options?.[
+                            (personAdmire.options?.length || 1) - 1
+                          ];
+                        return previousOption
+                          ? createPersonAdmireOption({
+                              title: previousOption.title,
+                              subTitle: previousOption.subTitle,
+                            })
+                          : createPersonAdmireOption();
+                      })(),
                     ],
                   })),
                 )
@@ -1955,6 +2454,7 @@ export default function OnboardingManagemantScenarioBranching() {
                 title={`Option ${option.id}`}
                 lang={lang}
                 tone="blue"
+                showTitleInput={false}
                 onChange={(nextLabel) =>
                   updateContent(sceneIndex, contentIndex, (item) =>
                     withFixed(item, (fixed) => ({
@@ -2158,14 +2658,16 @@ export default function OnboardingManagemantScenarioBranching() {
                               const sceneIndex = selectedSceneIndex;
                               const factLabel =
                                 content.type === OnboardingContentType.FACT
-                                  ? getCurrentTranslationValue(
-                                      content.fact?.label,
-                                      lang,
+                                  ? stripHtml(
+                                      getDisplayTranslationValue(
+                                        content.fact?.label,
+                                        lang,
+                                      ),
                                     )
                                   : "";
                               const factTitle =
                                 content.type === OnboardingContentType.FACT
-                                  ? getCurrentTranslationValue(
+                                  ? getDisplayTranslationValue(
                                       content.fact?.title,
                                       lang,
                                     )
@@ -2184,7 +2686,7 @@ export default function OnboardingManagemantScenarioBranching() {
                               const activationTitle =
                                 content.type ===
                                 OnboardingContentType.ACTIVATION
-                                  ? getCurrentTranslationValue(
+                                  ? getDisplayTranslationValue(
                                       content.activation?.title,
                                       lang,
                                     )
@@ -2192,7 +2694,7 @@ export default function OnboardingManagemantScenarioBranching() {
                               const activationDescription =
                                 content.type ===
                                 OnboardingContentType.ACTIVATION
-                                  ? getCurrentTranslationValue(
+                                  ? getDisplayTranslationValue(
                                       content.activation?.description,
                                       lang,
                                     )
@@ -2204,14 +2706,14 @@ export default function OnboardingManagemantScenarioBranching() {
                                   : "";
                               const branchQuestion =
                                 content.type === OnboardingContentType.BRANCH
-                                  ? getCurrentTranslationValue(
+                                  ? getDisplayTranslationValue(
                                       content.branch?.question,
                                       lang,
                                     )
                                   : "";
                               const branchSubQuestion =
                                 content.type === OnboardingContentType.BRANCH
-                                  ? getCurrentTranslationValue(
+                                  ? getDisplayTranslationValue(
                                       content.branch?.subQuestion,
                                       lang,
                                     )
@@ -2222,14 +2724,14 @@ export default function OnboardingManagemantScenarioBranching() {
                                   : [];
                               const fixedQuestion =
                                 content.type === OnboardingContentType.FIXED
-                                  ? getCurrentTranslationValue(
+                                  ? getDisplayTranslationValue(
                                       content.fixed?.question,
                                       lang,
                                     )
                                   : "";
                               const fixedSubQuestion =
                                 content.type === OnboardingContentType.FIXED
-                                  ? getCurrentTranslationValue(
+                                  ? getDisplayTranslationValue(
                                       content.fixed?.subQuestion,
                                       lang,
                                     )
@@ -2237,6 +2739,27 @@ export default function OnboardingManagemantScenarioBranching() {
                               const fixedOptions =
                                 content.type === OnboardingContentType.FIXED
                                   ? content.fixed?.options || []
+                                  : [];
+                              const personAdmireQuestion =
+                                content.type ===
+                                OnboardingContentType.PERSON_ADMIRE
+                                  ? getDisplayTranslationValue(
+                                      content.personAdmire?.question,
+                                      lang,
+                                    )
+                                  : "";
+                              const personAdmireSubQuestion =
+                                content.type ===
+                                OnboardingContentType.PERSON_ADMIRE
+                                  ? getDisplayTranslationValue(
+                                      content.personAdmire?.subQuestion,
+                                      lang,
+                                    )
+                                  : "";
+                              const personAdmireOptions =
+                                content.type ===
+                                OnboardingContentType.PERSON_ADMIRE
+                                  ? content.personAdmire?.options || []
                                   : [];
 
                               return (
@@ -2337,9 +2860,11 @@ export default function OnboardingManagemantScenarioBranching() {
                                               {content.activation.content.labels.map(
                                                 (labelItem) => {
                                                   const labelValue =
-                                                    getCurrentTranslationValue(
-                                                      labelItem.label,
-                                                      lang,
+                                                    stripHtml(
+                                                      getDisplayTranslationValue(
+                                                        labelItem.label,
+                                                        lang,
+                                                      ),
                                                     );
                                                   return (
                                                     <div
@@ -2435,7 +2960,7 @@ export default function OnboardingManagemantScenarioBranching() {
                                             <div className="space-y-1">
                                               {branchOptions.map((option) => {
                                                 const optionLabel =
-                                                  getCurrentTranslationValue(
+                                                  getDisplayTranslationValue(
                                                     option.label,
                                                     lang,
                                                   );
@@ -2486,6 +3011,100 @@ export default function OnboardingManagemantScenarioBranching() {
                                       ) : null}
 
                                       {content.type ===
+                                      OnboardingContentType.PERSON_ADMIRE ? (
+                                        <div className="space-y-1">
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Sub question:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={personAdmireSubQuestion}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Question:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={personAdmireQuestion}
+                                              maxLength={80}
+                                            />
+                                          </div>
+                                          <div className="flex items-start gap-2">
+                                            <span
+                                              className={summaryLabelMainClass}
+                                            >
+                                              Options:
+                                            </span>
+                                            <TextWithTooltip
+                                              text={personAdmireOptions.length.toString()}
+                                            />
+                                          </div>
+                                          {personAdmireOptions.length ? (
+                                            <div className="space-y-1">
+                                              {personAdmireOptions.map(
+                                                (option, optionIndex) => (
+                                                  <div
+                                                    key={`person-admire-summary-${optionIndex}`}
+                                                    className="flex flex-col gap-1 px-2 py-1"
+                                                  >
+                                                    <div className="flex items-start gap-2">
+                                                      <span className="text-xs font-semibold text-green-500">
+                                                        Option {optionIndex + 1}:
+                                                      </span>
+                                                      <TextWithTooltip
+                                                        text={option.name}
+                                                        maxLength={60}
+                                                      />
+                                                    </div>
+                                                    <div className="flex items-start gap-2">
+                                                      <span className="text-xs font-semibold text-green-500">
+                                                        Title:
+                                                      </span>
+                                                      <TextWithTooltip
+                                                        text={getDisplayTranslationValue(
+                                                          option.title,
+                                                          lang,
+                                                        )}
+                                                        maxLength={60}
+                                                      />
+                                                    </div>
+                                                    <div className="flex items-start gap-2">
+                                                      <span className="text-xs font-semibold text-green-500">
+                                                        Sub title:
+                                                      </span>
+                                                      <TextWithTooltip
+                                                        text={getDisplayTranslationValue(
+                                                          option.subTitle,
+                                                          lang,
+                                                        )}
+                                                        maxLength={60}
+                                                      />
+                                                    </div>
+                                                    {option.image ? (
+                                                      <div className="flex items-start gap-2">
+                                                        <span className="text-xs font-semibold text-green-500">
+                                                          Image:
+                                                        </span>
+                                                        <TextWithTooltip
+                                                          text={option.image}
+                                                          maxLength={60}
+                                                        />
+                                                      </div>
+                                                    ) : null}
+                                                  </div>
+                                                ),
+                                              )}
+                                            </div>
+                                          ) : null}
+                                        </div>
+                                      ) : null}
+
+                                      {content.type ===
                                       OnboardingContentType.FIXED ? (
                                         <div className="space-y-1">
                                           <div className="flex items-start gap-2">
@@ -2523,14 +3142,16 @@ export default function OnboardingManagemantScenarioBranching() {
                                             <div className="space-y-1">
                                               {fixedOptions.map((option) => {
                                                 const optionTitle =
-                                                  getCurrentTranslationValue(
+                                                  getDisplayTranslationValue(
                                                     option.title,
                                                     lang,
                                                   );
                                                 const optionLabel =
-                                                  getCurrentTranslationValue(
-                                                    option.label,
-                                                    lang,
+                                                  stripHtml(
+                                                    getDisplayTranslationValue(
+                                                      option.label,
+                                                      lang,
+                                                    ),
                                                   );
                                                 return (
                                                   <div
@@ -2721,6 +3342,22 @@ export default function OnboardingManagemantScenarioBranching() {
                   </div>
                   <span className="font-medium">Fixed</span>
                 </button>
+                {selectedScene?.id === rootSceneId ? (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      handleSelectContentType(
+                        OnboardingContentType.PERSON_ADMIRE,
+                      )
+                    }
+                    className="flex flex-col items-center gap-2 rounded-lg bg-rose-50 p-4 transition hover:bg-rose-100"
+                  >
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-100">
+                      <span className="font-bold text-rose-600">PA</span>
+                    </div>
+                    <span className="font-medium">Person Admire</span>
+                  </button>
+                ) : null}
               </div>
               <button
                 type="button"

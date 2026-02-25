@@ -1,5 +1,6 @@
 import { ITranslation } from "../../utils/translate";
 import { LessonStatus, LessonType } from "../enum/lesson.enum";
+import { IAvatar } from "./avatar.interface";
 import { BaseQuery } from "./common.interface";
 import { IKeypoint } from "./keypoint.interface";
 import { ITag } from "./tag.interface";
@@ -17,6 +18,8 @@ export interface ILesson {
   estimateCompleTime: ITranslation;
   icon: ITag | null;
   lightIcon: ITag | null;
+  AIConfig: string;
+  animation: IAvatar | null;
   index: number;
 }
 
@@ -32,6 +35,8 @@ export interface LessonPayload {
   estimateCompleTime?: ITranslation;
   icon: string;
   lightIcon: string;
+  AIConfig: string;
+  animation: string;
   index: number;
 }
 

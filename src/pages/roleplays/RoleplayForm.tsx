@@ -79,6 +79,8 @@ export default function RoleplayForm({
         estimateCompleTime: { [lang]: "" },
         icon: null,
         lightIcon: null,
+        AIConfig: "",
+        animation: null,
         status: LessonStatus.DRAFT,
         index: 0,
       } as ILesson)
@@ -404,6 +406,8 @@ export default function RoleplayForm({
         ...(estimateCompleTime && { estimateCompleTime }),
         icon: (currentRoleplayLesson.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         lightIcon: (currentRoleplayLesson.lightIcon as any)?._id || "",
+        AIConfig: currentRoleplayLesson.AIConfig || "",
+        animation: (currentRoleplayLesson.animation as any)?._id || "",
         image: currentRoleplayLesson.image,
         keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentRoleplayLesson.status,

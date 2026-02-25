@@ -57,6 +57,8 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
         estimateCompleTime: { [lang]: "" },
         icon: null,
         lightIcon: null,
+        AIConfig: "",
+        animation: null,
         status: LessonStatus.DRAFT,
         index: 0,
       } as ILesson)
@@ -243,6 +245,8 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
         ...(estimateCompleTime && { estimateCompleTime }),
         icon: (currentLesson.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         lightIcon: (currentLesson.lightIcon as any)?._id || "",
+        AIConfig: currentLesson.AIConfig || "",
+        animation: (currentLesson.animation as any)?._id || "",
         image: currentLesson.image,
         keypoints: keypointIds, // Convert IKeypoint[] to string[]
         status: currentLesson.status,
