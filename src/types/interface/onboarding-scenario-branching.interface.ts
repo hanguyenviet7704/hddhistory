@@ -6,6 +6,7 @@ export enum OnboardingContentType {
   ACTIVATION = "activation",
   BRANCH = "branch",
   FIXED = "fixed",
+  PERSON_ADMIRE = "person_admire",
 }
 
 export interface IOnboardingScenarioBranchOption {
@@ -28,6 +29,22 @@ export interface IOnboardingScenarioFixed {
   options: ILablel[];
 }
 
+export interface IOnboardingScenarioPersonOption {
+  image: string;
+  name: string;
+  title: ITranslation;
+  subTitle: ITranslation;
+}
+
+export type IOnboardingScenarioPersonAdmireOption =
+  IOnboardingScenarioPersonOption;
+
+export interface IOnboardingScenarioPersonAdmire {
+  subQuestion: ITranslation;
+  question: ITranslation;
+  options: IOnboardingScenarioPersonAdmireOption[];
+}
+
 export interface IOnboardingScenarioActivation {
   id: number;
   title: ITranslation;
@@ -45,6 +62,7 @@ export interface IOnboardingScenarioContentItem {
   activation?: IOnboardingScenarioActivation;
   branch?: IOnboardingScenarioBranch;
   fixed?: IOnboardingScenarioFixed;
+  personAdmire?: IOnboardingScenarioPersonAdmire;
 }
 
 export interface IOnboardingScenarioScene {
