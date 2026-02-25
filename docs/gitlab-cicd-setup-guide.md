@@ -15,9 +15,9 @@ This keeps mistakes caught early and build outputs consistent across branches.
 ## 2. What runs on each trigger
 | Trigger | What runs |
 |---|---|
-| Merge Request | `prepare + quality` (quality chỉ chạy khi thay đổi file code/build liên quan) |
-| Push `develop` | Build APK theo flavor được bật (`ENABLE_FIREBASE_DISTRIBUTION_DEV/STG=1`) + optional Firebase Distribution |
-| Push `main` | `prepare + quality +` build APK/AAB theo flavor được bật (`DEV/STG/PROD`) + optional Firebase Distribution (`prod`) |
+| Merge Request | `prepare + quality` (quality runs only when relevant code/build files change) |
+| Push `develop` | Build APK for enabled flavors (`ENABLE_BUILD_DEV/STG=1`) + optional Firebase Distribution |
+| Push `main` | `prepare + quality +` build APK/AAB for enabled flavors (`ENABLE_BUILD_DEV/STG/PROD=1`) + optional Firebase Distribution (`prod`) |
 | Tag `v*` | Same as `main` |
 
 ## 3. Pipeline files
@@ -57,9 +57,12 @@ If you use a custom image that already has tools, set:
 - `APPSTORE_KEY_ID`
 
 ### Optional (Firebase distribution)
-- `ENABLE_FIREBASE_DISTRIBUTION_DEV=1`
-- `ENABLE_FIREBASE_DISTRIBUTION_STG=1`
-- `ENABLE_FIREBASE_DISTRIBUTION_PROD=1`
+- `ENABLE_BUILD_DEV=1`
+- `ENABLE_BUILD_STG=1`
+- `ENABLE_BUILD_PROD=1`
+- `ENABLE_DISTRIBUTE_DEV=1`
+- `ENABLE_DISTRIBUTE_STG=1`
+- `ENABLE_DISTRIBUTE_PROD=1`
 - `FIREBASE_TOKEN`
 
 ## 6. How bootstrap works
@@ -97,13 +100,13 @@ Manual only, gated by `ENABLE_FASTLANE=1`:
 These jobs validate release contracts and lane readiness only. They do not publish apps in V1.
 
 ## 9.1 Firebase Distribution jobs
-When `ENABLE_FIREBASE_DISTRIBUTION_DEV=1` on `develop`, pipeline runs:
+When `ENABLE_DISTRIBUTE_DEV=1` and `ENABLE_BUILD_DEV=1` on `develop`, pipeline runs:
 - `release:android:firebase:distribution:dev`
 
-When `ENABLE_FIREBASE_DISTRIBUTION_STG=1` on `develop`, pipeline runs:
+When `ENABLE_DISTRIBUTE_STG=1` and `ENABLE_BUILD_STG=1` on `develop`, pipeline runs:
 - `release:android:firebase:distribution:stg`
 
-When `ENABLE_FIREBASE_DISTRIBUTION_PROD=1` on `main` or tag `v*`, pipeline runs:
+When `ENABLE_DISTRIBUTE_PROD=1` and `ENABLE_BUILD_PROD=1` on `main` or tag `v*`, pipeline runs:
 - `release:android:firebase:distribution:prod`
 
 These jobs use:
@@ -119,8 +122,8 @@ These jobs reuse APK artifacts via `needs`, so they do not rebuild APK.
 3. Configure GitLab runner (Linux)
 4. Add required CI variables in GitLab CI/CD settings
 5. Push MR and verify `prepare` + conditional `quality`
-6. Merge to `develop` and verify APK (`dev`, `stg`) without waiting for `quality`
-7. Merge to `main` and verify full matrix + `prod` AAB
+6. Merge to `develop` and verify only enabled build flavors (`ENABLE_BUILD_DEV/STG`)
+7. Merge to `main` and verify only enabled build flavors (`ENABLE_BUILD_DEV/STG/PROD`) + optional `prod` AAB
 8. Push tag `v1.x.x` and verify same full matrix behavior
 
 ## 11. Quick debug playbook
