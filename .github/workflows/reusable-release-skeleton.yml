@@ -1,0 +1,141 @@
+name: Reusable Release Skeleton
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      ref:
+        required: true
+        type: string
+      ref_name:
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-skeleton-${{ inputs.ref }}
+  cancel-in-progress: false
+
+jobs:
+  android_fastlane_skeleton:
+    name: Android Fastlane Skeleton
+    runs-on: [self-hosted, macOS]
+    continue-on-error: true
+    if: >-
+      vars.ENABLE_FASTLANE == '1' &&
+      (inputs.target == 'android' || inputs.target == 'both') &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v'))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap runtime secrets
+        env:
+          PLAYSTORE_JSON_FILE: ${{ secrets.PLAYSTORE_JSON_FILE || vars.PLAYSTORE_JSON_FILE }}
+          PLAYSTORE_JSON: ${{ secrets.PLAYSTORE_JSON || vars.PLAYSTORE_JSON }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Validate Android fastlane contract
+        run: |
+          set -e
+          if ! command -v ruby >/dev/null 2>&1; then
+            echo "Ruby is required on macOS runner. Install with: brew install ruby"
+            exit 1
+          fi
+
+          if ! command -v bundle >/dev/null 2>&1; then
+            if command -v gem >/dev/null 2>&1; then
+              gem install bundler --no-document || true
+            fi
+          fi
+
+          if ! command -v bundle >/dev/null 2>&1; then
+            echo "Bundler is required on macOS runner. Install with: gem install bundler"
+            exit 1
+          fi
+
+          test -f android/Gemfile
+          test -f android/fastlane/Fastfile
+          grep -q "lane :build_apk" android/fastlane/Fastfile
+          grep -q "lane :build_bundle" android/fastlane/Fastfile
+          grep -q "lane :deploy" android/fastlane/Fastfile
+
+          if [ -z "${PLAYSTORE_JSON:-}" ] && [ -z "${PLAYSTORE_JSON_PATH:-}" ] && [ ! -f ".info/key/fastlane_playstore_key.json" ]; then
+            echo "Missing Play Store contract: provide PLAYSTORE_JSON (or file variable)."
+            exit 1
+          fi
+
+          if [ -f "${PLAYSTORE_JSON_PATH:-}" ]; then
+            ruby -rjson -e 'JSON.parse(File.read(ARGV[0]))' "${PLAYSTORE_JSON_PATH}"
+          elif [ -n "${PLAYSTORE_JSON:-}" ]; then
+            ruby -rjson -e 'JSON.parse(ARGV[0])' "${PLAYSTORE_JSON}"
+          elif [ -f ".info/key/fastlane_playstore_key.json" ]; then
+            ruby -rjson -e 'JSON.parse(File.read(ARGV[0]))' ".info/key/fastlane_playstore_key.json"
+          fi
+
+          cd android
+          bundle config set path vendor/bundle
+          bundle install --jobs 4 --retry 3
+          bundle exec fastlane lanes
+
+  ios_fastlane_skeleton:
+    name: iOS Fastlane Skeleton
+    runs-on: [self-hosted, macOS]
+    continue-on-error: true
+    if: >-
+      vars.ENABLE_FASTLANE == '1' &&
+      (inputs.target == 'ios' || inputs.target == 'both') &&
+      (inputs.ref_name == 'main' || startsWith(inputs.ref, 'refs/tags/v'))
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Bootstrap runtime secrets
+        env:
+          APPSTORE_P8_FILE: ${{ secrets.APPSTORE_P8_FILE || vars.APPSTORE_P8_FILE }}
+          APPSTORE_P8: ${{ secrets.APPSTORE_P8 || vars.APPSTORE_P8 }}
+          APPSTORE_ISSUER_ID: ${{ secrets.APPSTORE_ISSUER_ID || vars.APPSTORE_ISSUER_ID }}
+          APPSTORE_KEY_ID: ${{ secrets.APPSTORE_KEY_ID || vars.APPSTORE_KEY_ID }}
+        run: |
+          chmod +x .gitlab/scripts/bootstrap-secrets.sh
+          bash .gitlab/scripts/bootstrap-secrets.sh
+          if [ -f build/ci/runtime.env ]; then
+            cat build/ci/runtime.env >> "$GITHUB_ENV"
+          fi
+
+      - name: Validate iOS fastlane contract
+        run: |
+          set -e
+          test -f ios/Gemfile
+          test -f ios/fastlane/Appfile
+          test -f ios/fastlane/Fastfile
+
+          if [ -z "${APPSTORE_P8:-}" ] && [ -z "${APPSTORE_P8_PATH:-}" ] && ! ls .info/key/AuthKey_*.p8 >/dev/null 2>&1; then
+            echo "Missing App Store key contract: provide APPSTORE_P8 (or file variable)."
+            exit 1
+          fi
+
+          APPSTORE_ISSUER_ID_JSON="$(ruby -rjson -e 'j=JSON.parse(File.read(ARGV[0])); print(j.dig("ios","issuerId").to_s)' .info/app/app.json 2>/dev/null || true)"
+          APPSTORE_KEY_ID_JSON="$(ruby -rjson -e 'j=JSON.parse(File.read(ARGV[0])); print(j.dig("ios","keyId").to_s)' .info/app/app.json 2>/dev/null || true)"
+
+          APPSTORE_ISSUER_ID_VAL="${APPSTORE_ISSUER_ID:-$APPSTORE_ISSUER_ID_JSON}"
+          APPSTORE_KEY_ID_VAL="${APPSTORE_KEY_ID:-$APPSTORE_KEY_ID_JSON}"
+
+          if [ -z "${APPSTORE_ISSUER_ID_VAL}" ] || [ -z "${APPSTORE_KEY_ID_VAL}" ]; then
+            echo "Missing App Store issuer/key contract. Set APPSTORE_ISSUER_ID + APPSTORE_KEY_ID or provide values in .info/app/app.json"
+            exit 1
+          fi
+
+          cd ios
+          bundle config set path vendor/bundle
+          bundle install --jobs 4 --retry 3
+          bundle exec fastlane lanes
