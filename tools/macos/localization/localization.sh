@@ -197,12 +197,12 @@ cleanup() {
     deactivate >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
-python3 "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" "$ACTION" "$@"
+"$VENV_PYTHON" "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" "$ACTION" "$@"
 EXIT_CODE=$?
 
 if [[ $EXIT_CODE -eq 0 && $APPLY_FLAG -eq 1 && ( "$ACTION" == "push" || "$ACTION" == "migrate" ) ]]; then
     log_step "Refreshing sheet gid cache after apply..."
-    python3 "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" cache-gids --ensure-readme || true
+    "$VENV_PYTHON" "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" cache-gids --ensure-readme || true
 fi
 
 exit $EXIT_CODE
