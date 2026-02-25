@@ -120,11 +120,62 @@ source "$VENV_DIR/bin/activate"
 
 REQ_FILE="${SCRIPT_DIR}/requirements.txt"
 if [[ -f "$REQ_FILE" ]]; then
-    REQ_HASH=$(md5sum "$REQ_FILE" | awk '{print $1}')
+    compute_requirements_hash() {
+        local file_path="$1"
+        if command -v md5sum >/dev/null 2>&1; then
+            md5sum "$file_path" | awk '{print $1}'
+            return 0
+        fi
+        if command -v md5 >/dev/null 2>&1; then
+            md5 -q "$file_path"
+            return 0
+        fi
+        python3 - "$file_path" <<'PY'
+import hashlib
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+print(hashlib.md5(path.read_bytes()).hexdigest())
+PY
+    }
+
+    python_deps_healthy() {
+        python3 - <<'PY' >/dev/null 2>&1
+import importlib
+import sys
+
+modules = [
+    "requests",
+    "gspread",
+    "google.auth",
+    "google_auth_oauthlib",
+    "yaml",
+    "tabulate",
+]
+for module in modules:
+    try:
+        importlib.import_module(module)
+    except Exception:
+        sys.exit(1)
+sys.exit(0)
+PY
+    }
+
+    REQ_HASH=$(compute_requirements_hash "$REQ_FILE")
     DEPS_STAMP="$VENV_DIR/.deps_hash"
     CURRENT_HASH=""
     [[ -f "$DEPS_STAMP" ]] && CURRENT_HASH=$(cat "$DEPS_STAMP")
+
+    NEEDS_INSTALL=0
     if [[ "$REQ_HASH" != "$CURRENT_HASH" ]]; then
+        NEEDS_INSTALL=1
+    elif ! python_deps_healthy; then
+        log_warning "Python dependency cache is stale or incomplete. Reinstalling requirements..."
+        NEEDS_INSTALL=1
+    fi
+
+    if [[ "$NEEDS_INSTALL" -eq 1 ]]; then
         log_step "Ensuring Python dependencies..."
         pip install --upgrade pip >/dev/null
         pip install -r "$REQ_FILE" >/dev/null
