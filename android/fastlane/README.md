@@ -2,6 +2,10 @@
 
 This project uses Fastlane from `android/` to build Flutter Android artifacts, distribute to Firebase App Distribution, and deploy to Google Play.
 
+Fastlane docs used for this setup:
+- `upload_to_play_store`: https://docs.fastlane.tools/actions/upload_to_play_store/
+- `supply`: https://docs.fastlane.tools/actions/supply/
+
 ## 1) First-time setup
 
 Run from repository root:
@@ -91,7 +95,7 @@ bundle exec fastlane deploy flavor:prod track:internal upload_screenshots:true
 bundle exec fastlane deploy flavor:prod track:internal upload_all_metadata:true
 ```
 
-## 4) Metadata structure
+## 4) Metadata workflow
 
 Play Store text/assets are read from:
 
@@ -105,7 +109,47 @@ Examples:
 - `android/fastlane/metadata/android/en-US/full_description.txt`
 - `android/fastlane/metadata/android/en-US/changelogs/<versionCode>.txt`
 
-## 5) New joiner release checklist
+### Pull metadata from Google Play
+
+```sh
+cd android
+
+# Pull metadata + images + screenshots from Play Console
+bundle exec fastlane supply init
+```
+
+For flavor-specific package names (if needed), pull explicitly:
+
+```sh
+bundle exec fastlane supply init --package_name com.eup.meup.dev
+bundle exec fastlane supply init --package_name com.eup.meup.stg
+bundle exec fastlane supply init --package_name com.eup.meup
+```
+
+### Push metadata only (no AAB/APK upload)
+
+```sh
+cd android
+bundle exec fastlane supply --skip_upload_aab true --skip_upload_apk true --skip_upload_metadata false --skip_upload_images true --skip_upload_screenshots true
+```
+
+Push screenshots/images only:
+
+```sh
+bundle exec fastlane supply --skip_upload_aab true --skip_upload_apk true --skip_upload_metadata true --skip_upload_images false --skip_upload_screenshots false
+```
+
+### With deploy lane
+
+`bundle exec fastlane deploy flavor:prod track:internal upload_metadata:true` uploads metadata from default path `android/fastlane/metadata/android`.
+
+## 5) Notes
+
+- Android build/distribution uses project scripts under `tools/<os>/`.
+- `deploy` maps metadata flags to `upload_to_play_store` skip flags.
+- Running `bundle exec fastlane lanes` may regenerate `android/fastlane/README.md` depending on Fastlane commands used.
+
+## 6) New joiner release checklist
 
 1. Pull latest code.
 2. Update app metadata and changelog file for the target version code.
@@ -113,7 +157,7 @@ Examples:
 4. Test artifact locally or via Firebase distribution.
 5. Deploy to Play internal/alpha/beta before production.
 
-## 6) Troubleshooting
+## 7) Troubleshooting
 
 `cannot load such file -- ostruct`
 - Run in `android/`:

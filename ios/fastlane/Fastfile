@@ -13,11 +13,254 @@
 # Uncomment the line if you want fastlane to automatically update itself
 # update_fastlane
 
+require "json"
+require "shellwords"
+
 default_platform(:ios)
 
+def ensure_macos!
+  return if RUBY_PLATFORM.include?("darwin")
+
+  UI.user_error!("iOS fastlane lanes require macOS.")
+end
+
+def tools_script_path(*parts)
+  File.join("..", "..", "tools", "macos", *parts)
+end
+
+def project_root
+  File.expand_path("../..", __dir__)
+end
+
+def app_config_path
+  File.join(project_root, ".info", "app", "app.json")
+end
+
+def app_config
+  @app_config ||= JSON.parse(File.read(app_config_path))
+rescue StandardError => e
+  UI.user_error!("Failed to read app config at #{app_config_path}: #{e.message}")
+end
+
+def bundle_id_for_flavor(flavor)
+  app_config.dig("flavors", flavor, "ios", "bundleId") || app_config.dig("ios", "bundleId")
+end
+
+def app_store_api_key
+  ios_config = app_config.fetch("ios")
+  key_path = File.expand_path(ios_config.fetch("appStoreConnectAPIKeyPath"), project_root)
+
+  app_store_connect_api_key(
+    key_id: ios_config.fetch("keyId"),
+    issuer_id: ios_config.fetch("issuerId"),
+    key_filepath: key_path
+  )
+end
+
+def latest_ipa_path
+  ipa_files = Dir.glob(File.join(project_root, "build", "ios", "ipa", "**", "*.ipa"))
+  ipa_files.max_by { |file| File.mtime(file) }
+end
+
+def truthy?(value)
+  return value if value == true || value == false
+
+  %w[1 true yes y].include?(value.to_s.strip.downcase)
+end
+
+def groups_list(value)
+  return [] if value.nil?
+  return value.map(&:to_s).map(&:strip).reject(&:empty?) if value.is_a?(Array)
+
+  value.to_s.split(",").map(&:strip).reject(&:empty?)
+end
+
+def deploy_method_from_track(track)
+  case track
+  when "internal"
+    "testflight"
+  when "alpha"
+    "firebase"
+  when "beta"
+    "both"
+  when "production"
+    "appstore"
+  else
+    UI.user_error!("Unsupported track '#{track}'. Use internal, alpha, beta, or production.")
+  end
+end
+
 platform :ios do
-  desc "Description of what the lane does"
-  lane :custom_lane do
-    # add actions here: https://docs.fastlane.tools/actions
+  desc "Runs Flutter tests"
+  # Example: bundle exec fastlane test
+  lane :test do
+    sh("cd #{Shellwords.escape(project_root)} && fvm flutter test")
+  end
+
+  # Example: bundle exec fastlane build_ios
+  # Example: bundle exec fastlane build_ios flavor:dev
+  # Example: bundle exec fastlane build_ios flavor:stg
+  # Example: bundle exec fastlane build_ios flavor:prod
+  desc "Build iOS app for specified flavor"
+  lane :build_ios do |options|
+    ensure_macos!
+    flavor = options[:flavor] || "dev"
+    sh("#{Shellwords.escape(tools_script_path('build', 'build_ios.sh'))} #{Shellwords.escape(flavor)}")
+  end
+
+  # Example: bundle exec fastlane build_ipa
+  # Example: bundle exec fastlane build_ipa flavor:dev
+  # Example: bundle exec fastlane build_ipa flavor:stg
+  # Example: bundle exec fastlane build_ipa flavor:prod
+  # Example: bundle exec fastlane build_ipa flavor:prod export_method:app-store
+  desc "Build IPA for specified flavor"
+  lane :build_ipa do |options|
+    ensure_macos!
+    flavor = options[:flavor] || "dev"
+    export_method = options[:export_method]
+    command = "#{Shellwords.escape(tools_script_path('build', 'build_ipa.sh'))} #{Shellwords.escape(flavor)}"
+    command += " --export-method #{Shellwords.escape(export_method)}" if export_method
+    sh(command)
+  end
+
+  # Example: bundle exec fastlane beta
+  # Example: bundle exec fastlane beta flavor:dev
+  # Example: bundle exec fastlane beta flavor:stg
+  # Example: bundle exec fastlane beta flavor:prod
+  desc "Submit a new Beta Build to Firebase App Distribution"
+  lane :beta do |options|
+    ensure_macos!
+    flavor = options[:flavor] || "dev"
+    sh("#{Shellwords.escape(tools_script_path('distribution', 'distribute_ios.sh'))} #{Shellwords.escape(flavor)} --build-first --method firebase")
+  end
+
+  # Example: bundle exec fastlane beta_ipa
+  # Example: bundle exec fastlane beta_ipa flavor:dev
+  # Example: bundle exec fastlane beta_ipa flavor:stg
+  # Example: bundle exec fastlane beta_ipa flavor:prod
+  # Example: bundle exec fastlane beta_ipa flavor:prod changelog:"Build notes"
+  # Example: bundle exec fastlane beta_ipa flavor:prod distribute_external:true groups:"qa-team"
+  desc "Submit a new Beta Build to TestFlight"
+  lane :beta_ipa do |options|
+    ensure_macos!
+    flavor = options[:flavor] || "dev"
+    build_ipa(flavor: flavor, export_method: "app-store")
+
+    ipa_path = latest_ipa_path
+    UI.user_error!("No IPA found in build/ios/ipa after build_ipa.") if ipa_path.nil?
+
+    upload_options = {
+      api_key: app_store_api_key,
+      app_identifier: bundle_id_for_flavor(flavor),
+      ipa: ipa_path,
+      skip_waiting_for_build_processing: options.key?(:skip_waiting_for_build_processing) ? truthy?(options[:skip_waiting_for_build_processing]) : false
+    }
+
+    upload_options[:changelog] = options[:changelog] if options[:changelog]
+    if truthy?(options[:distribute_external])
+      groups = groups_list(options[:groups])
+      UI.user_error!("groups is required when distribute_external:true") if groups.empty?
+      if upload_options[:skip_waiting_for_build_processing]
+        UI.user_error!("skip_waiting_for_build_processing must be false when distribute_external:true")
+      end
+
+      upload_options[:distribute_external] = true
+      upload_options[:groups] = groups
+    end
+
+    upload_to_testflight(upload_options)
+  end
+
+  # Example: bundle exec fastlane deploy
+  # Example: bundle exec fastlane deploy flavor:prod track:internal
+  # Example: bundle exec fastlane deploy flavor:stg track:alpha
+  # Example: bundle exec fastlane deploy flavor:prod track:production
+  # Example: bundle exec fastlane deploy flavor:prod method:appstore
+  # Example: bundle exec fastlane deploy flavor:prod track:production upload_metadata:true
+  # Example: bundle exec fastlane deploy flavor:prod track:production upload_screenshots:true
+  # Example: bundle exec fastlane deploy flavor:prod track:production upload_all_metadata:true
+  desc "Deploy a new version for iOS"
+  lane :deploy do |options|
+    ensure_macos!
+    flavor = options[:flavor] || "prod"
+    track = options[:track] || "internal"
+    method = options[:method] || deploy_method_from_track(track)
+    upload_metadata = truthy?(options[:upload_metadata])
+    upload_screenshots = truthy?(options[:upload_screenshots])
+    upload_images = truthy?(options[:upload_images])
+    upload_all_metadata = truthy?(options[:upload_all_metadata])
+
+    case method
+    when "firebase"
+      if upload_metadata || upload_images || upload_screenshots || upload_all_metadata
+        UI.important("Metadata flags apply to upload_to_app_store only. They are ignored for firebase deploy.")
+      end
+      beta(flavor: flavor)
+    when "testflight"
+      if upload_metadata || upload_images || upload_screenshots || upload_all_metadata
+        UI.important("Metadata flags apply to upload_to_app_store only. They are ignored for testflight deploy.")
+      end
+      beta_ipa(
+        flavor: flavor,
+        changelog: options[:changelog],
+        distribute_external: options[:distribute_external],
+        groups: options[:groups],
+        skip_waiting_for_build_processing: options[:skip_waiting_for_build_processing]
+      )
+    when "both"
+      if upload_metadata || upload_images || upload_screenshots || upload_all_metadata
+        UI.important("Metadata flags apply to upload_to_app_store only. They are ignored for firebase/testflight deploy.")
+      end
+      beta(flavor: flavor)
+      beta_ipa(
+        flavor: flavor,
+        changelog: options[:changelog],
+        distribute_external: options[:distribute_external],
+        groups: options[:groups],
+        skip_waiting_for_build_processing: options[:skip_waiting_for_build_processing]
+      )
+    when "appstore"
+      build_ipa(flavor: flavor, export_method: "app-store")
+      ipa_path = latest_ipa_path
+      UI.user_error!("No IPA found in build/ios/ipa after build_ipa.") if ipa_path.nil?
+
+      metadata_enabled = upload_all_metadata || upload_metadata
+      screenshots_enabled = upload_all_metadata || upload_images || upload_screenshots
+
+      upload_to_app_store(
+        api_key: app_store_api_key,
+        app_identifier: bundle_id_for_flavor(flavor),
+        ipa: ipa_path,
+        skip_metadata: !metadata_enabled,
+        skip_screenshots: !screenshots_enabled,
+        skip_binary_upload: truthy?(options[:skip_binary_upload])
+      )
+    else
+      UI.user_error!("Unsupported deploy method '#{method}'. Use firebase, testflight, both, or appstore.")
+    end
+  end
+
+  # Example: bundle exec fastlane deploy_alpha
+  # Example: bundle exec fastlane deploy_alpha flavor:stg
+  desc "Deploy to iOS Alpha equivalent (Firebase)"
+  lane :deploy_alpha do |options|
+    flavor = options[:flavor] || "prod"
+    deploy(flavor: flavor, track: "alpha")
+  end
+
+  # Example: bundle exec fastlane deploy_beta
+  # Example: bundle exec fastlane deploy_beta flavor:stg
+  desc "Deploy to iOS Beta equivalent (Firebase + TestFlight)"
+  lane :deploy_beta do |options|
+    flavor = options[:flavor] || "prod"
+    deploy(flavor: flavor, track: "beta")
+  end
+
+  # Example: bundle exec fastlane deploy_production
+  # Example: bundle exec fastlane deploy_production flavor:prod
+  desc "Deploy to iOS Production (App Store Connect)"
+  lane :deploy_production do |options|
+    flavor = options[:flavor] || "prod"
+    deploy(flavor: flavor, track: "production")
   end
 end
