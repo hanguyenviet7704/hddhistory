@@ -16,8 +16,8 @@ This keeps mistakes caught early and build outputs consistent across branches.
 | Trigger | What runs |
 |---|---|
 | Merge Request | `prepare + quality` (quality chỉ chạy khi thay đổi file code/build liên quan) |
-| Push `develop` | `prepare + build APK(dev, stg)` + optional Firebase Distribution |
-| Push `main` | `prepare + quality + build APK(dev, stg, prod) + AAB(prod)` + optional Firebase Distribution (`prod`) |
+| Push `develop` | Build APK theo flavor được bật (`ENABLE_FIREBASE_DISTRIBUTION_DEV/STG=1`) + optional Firebase Distribution |
+| Push `main` | `prepare + quality +` build APK/AAB theo flavor được bật (`DEV/STG/PROD`) + optional Firebase Distribution (`prod`) |
 | Tag `v*` | Same as `main` |
 
 ## 3. Pipeline files

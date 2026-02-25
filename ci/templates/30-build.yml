@@ -17,7 +17,8 @@ build:apk:develop:
       - build/app/outputs/flutter-apk/app-$FLAVOR-release.apk
       - .obfuscation/
   rules:
-    - if: '$CI_COMMIT_BRANCH == "develop"'
+    - if: '$CI_COMMIT_BRANCH == "develop" && $FLAVOR == "dev" && $ENABLE_FIREBASE_DISTRIBUTION_DEV == "1"'
+    - if: '$CI_COMMIT_BRANCH == "develop" && $FLAVOR == "stg" && $ENABLE_FIREBASE_DISTRIBUTION_STG == "1"'
     - when: never
 
 build:apk:release:
@@ -41,8 +42,12 @@ build:apk:release:
       - build/app/outputs/flutter-apk/app-$FLAVOR-release.apk
       - .obfuscation/
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_COMMIT_BRANCH == "main" && $FLAVOR == "dev" && $ENABLE_FIREBASE_DISTRIBUTION_DEV == "1"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $FLAVOR == "stg" && $ENABLE_FIREBASE_DISTRIBUTION_STG == "1"'
+    - if: '$CI_COMMIT_BRANCH == "main" && $FLAVOR == "prod" && $ENABLE_FIREBASE_DISTRIBUTION_PROD == "1"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/ && $FLAVOR == "dev" && $ENABLE_FIREBASE_DISTRIBUTION_DEV == "1"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/ && $FLAVOR == "stg" && $ENABLE_FIREBASE_DISTRIBUTION_STG == "1"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/ && $FLAVOR == "prod" && $ENABLE_FIREBASE_DISTRIBUTION_PROD == "1"'
     - when: never
 
 build:aab:prod:
@@ -63,6 +68,6 @@ build:aab:prod:
       - build/app/outputs/bundle/prodRelease/app-prod-release.aab
       - .obfuscation/
   rules:
-    - if: '$CI_COMMIT_BRANCH == "main"'
-    - if: '$CI_COMMIT_TAG =~ /^v.*/'
+    - if: '$CI_COMMIT_BRANCH == "main" && $ENABLE_FIREBASE_DISTRIBUTION_PROD == "1"'
+    - if: '$CI_COMMIT_TAG =~ /^v.*/ && $ENABLE_FIREBASE_DISTRIBUTION_PROD == "1"'
     - when: never

@@ -162,8 +162,8 @@ Pipeline definition is modular and lives in:
 | Trigger | Environment | Target |
 |---------|-----------|--------|
 | `merge_request_event` | Validation | `prepare` + `quality` (quality chạy khi có thay đổi Dart/build config liên quan) |
-| Push to `develop` | Dev/Staging | `prepare + build` APK (`dev`, `stg`) + optional Firebase Distribution |
-| Push to `main` | Full matrix | Build APK (`dev`, `stg`, `prod`) + AAB (`prod`) + optional Firebase Distribution (`prod`) |
+| Push to `develop` | Dev/Staging | Build APK theo từng flavor được bật (`ENABLE_FIREBASE_DISTRIBUTION_DEV/STG=1`) + optional Firebase Distribution |
+| Push to `main` | Full matrix | Build APK/AAB theo flavor được bật (`DEV/STG/PROD`) + optional Firebase Distribution (`prod`) |
 | Git tag `v*` | Release candidate | Same as `main` full matrix |
 
 #### Pipeline Stages
