@@ -2,7 +2,7 @@
 
 # Navigate to the root directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-ROOT_DIR="${SCRIPT_DIR}/../../.."
+ROOT_DIR="${SCRIPT_DIR}/../../../.."
 cd "${ROOT_DIR}" || {
     echo "❌ Failed to navigate to the project root directory."
     exit 1
@@ -16,14 +16,14 @@ show_usage() {
     echo "Usage: $0 <command> [options]"
     echo ""
     echo "Commands:"
-    echo "  start <ticket-id> <description>  Start a new feature branch"
-    echo "  finish                           Finish current feature branch"
-    echo "  publish                          Push feature branch to remote"
-    echo "  list                             List all feature branches"
+    echo "  start <ticket-id> <description>  Start a new fix branch"
+    echo "  finish                           Finish current fix branch"
+    echo "  publish                          Push fix branch to remote"
+    echo "  list                             List all fix branches"
     echo "  help                             Show this help message"
     echo ""
     echo "Examples:"
-    echo "  $0 start TG-123 login-social"
+    echo "  $0 start TG-456 login-validation"
     echo "  $0 finish"
     echo "  $0 publish"
 }
@@ -39,32 +39,32 @@ case "$1" in
         
         TICKET_ID="$2"
         DESCRIPTION="$3"
-        BRANCH_NAME="feature/${TICKET_ID}-${DESCRIPTION}"
+        BRANCH_NAME="fix/${TICKET_ID}-${DESCRIPTION}"
         
-        echo "🚀 Starting new feature: $BRANCH_NAME"
+        echo "🔧 Starting new fix: $BRANCH_NAME"
         
         # Ensure we're on develop and up to date
         git checkout develop
         git pull origin develop
         
-        # Create and checkout new feature branch
+        # Create and checkout new fix branch
         git checkout -b "$BRANCH_NAME"
         
-        echo "✅ Feature branch created: $BRANCH_NAME"
-        echo "💡 You can now start working on your feature"
+        echo "✅ Fix branch created: $BRANCH_NAME"
+        echo "💡 You can now work on the fix"
         ;;
         
     finish)
         # Get current branch
         CURRENT_BRANCH=$(git branch --show-current)
         
-        if [[ ! "$CURRENT_BRANCH" =~ ^feature/ ]]; then
-            echo "❌ Error: Not on a feature branch"
+        if [[ ! "$CURRENT_BRANCH" =~ ^fix/ ]]; then
+            echo "❌ Error: Not on a fix branch"
             echo "Current branch: $CURRENT_BRANCH"
             exit 1
         fi
         
-        echo "🏁 Finishing feature: $CURRENT_BRANCH"
+        echo "🏁 Finishing fix: $CURRENT_BRANCH"
         
         # Check if there are uncommitted changes
         check_clean_working_tree
@@ -77,10 +77,10 @@ case "$1" in
         
         # Push current branch to remote if it's not already there
         if ! branch_exists_remote "$CURRENT_BRANCH"; then
-            echo "📤 Pushing feature branch to remote..."
+            echo "📤 Pushing fix branch to remote..."
             git push -u origin "$CURRENT_BRANCH"
         else
-            echo "📝 Feature branch already exists on remote"
+            echo "📝 Fix branch already exists on remote"
             
             # Make sure local branch is up to date with remote
             echo "🔄 Updating local branch from remote..."
@@ -88,14 +88,14 @@ case "$1" in
         fi
         
         # Create PR/MR title based on branch name
-        BRANCH_DESCRIPTION=$(echo "$CURRENT_BRANCH" | sed -E 's/^feature\/[A-Z]+-[0-9]+-(.+)/\1/')
-        PR_TITLE="feature-${TICKET_ID}: $(echo $BRANCH_DESCRIPTION | tr '-' ' ' | sed 's/\b\(.\)/\u\1/g')"
+        BRANCH_DESCRIPTION=$(echo "$CURRENT_BRANCH" | sed -E 's/^fix\/[A-Z]+-[0-9]+-(.+)/\1/')
+        PR_TITLE="fix-${TICKET_ID}: $(echo $BRANCH_DESCRIPTION | tr '-' ' ' | sed 's/\b\(.\)/\u\1/g')"
         
         # Create pull request
         echo "🔗 Creating pull request..."
         create_pull_request "$CURRENT_BRANCH" "develop" "$PR_TITLE"
         
-        echo "✅ Feature completed and pull request created!"
+        echo "✅ Fix completed and pull request created!"
         echo "💡 After the pull request is approved and merged, you can delete your local branch with:"
         echo "   git branch -d $CURRENT_BRANCH"
         ;;
@@ -104,22 +104,22 @@ case "$1" in
         # Get current branch
         CURRENT_BRANCH=$(git branch --show-current)
         
-        if [[ ! "$CURRENT_BRANCH" =~ ^feature/ ]]; then
-            echo "❌ Error: Not on a feature branch"
+        if [[ ! "$CURRENT_BRANCH" =~ ^fix/ ]]; then
+            echo "❌ Error: Not on a fix branch"
             echo "Current branch: $CURRENT_BRANCH"
             exit 1
         fi
         
-        echo "📤 Publishing feature: $CURRENT_BRANCH"
+        echo "📤 Publishing fix: $CURRENT_BRANCH"
         git push -u origin "$CURRENT_BRANCH"
         
-        echo "✅ Feature published to remote"
+        echo "✅ Fix published to remote"
         echo "💡 You can now create a merge request on GitLab/GitHub"
         ;;
         
     list)
-        echo "📋 Feature branches:"
-        git branch -a | grep "feature/" | sed 's/remotes\/origin\///'  | sort | uniq
+        echo "📋 Fix branches:"
+        git branch -a | grep "fix/" | sed 's/remotes\/origin\///'  | sort | uniq
         ;;
         
     help|--help|-h)
