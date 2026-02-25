@@ -1,7 +1,7 @@
 # GitLab CI/CD Setup Guide (Meup)
 
-**Last Updated:** Feb 24, 2026  
-**Scope:** GitLab CI V1 (Android build-first, fastlane skeleton only)
+**Last Updated:** Feb 25, 2026  
+**Scope:** GitLab CI V2 (macOS shell pipeline active, Linux templates reusable)
 
 ## 1. Why this pipeline exists
 Think of CI/CD as a factory:
@@ -16,29 +16,39 @@ This keeps mistakes caught early and build outputs consistent across branches.
 | Trigger | What runs |
 |---|---|
 | Merge Request | `prepare + quality` (quality runs only when relevant code/build files change) |
-| Push `develop` | Build APK for enabled flavors (`ENABLE_BUILD_DEV/STG=1`) + optional Firebase Distribution |
+| Push `develop` | `prepare + quality +` build APK for enabled flavors (`ENABLE_BUILD_DEV/STG=1`) + optional Firebase Distribution |
 | Push `main` | `prepare + quality +` build APK/AAB for enabled flavors (`ENABLE_BUILD_DEV/STG/PROD=1`) + optional Firebase Distribution (`prod`) |
 | Tag `v*` | Same as `main` |
 
 ## 3. Pipeline files
-- `.gitlab-ci.yml` (entry)
-- `ci/templates/00-workflow.yml` (workflow, defaults, cache)
-- `ci/templates/10-prepare.yml`
-- `ci/templates/20-quality.yml`
-- `ci/templates/30-build.yml`
-- `ci/templates/40-release-skeleton.yml`
-- `ci/templates/45-firebase-distribution.yml`
-- `ci/scripts/bootstrap-secrets.sh`
+- `.gitlab/ci/pipeline.yml` (single entrypoint; configured by GitLab `ci_config_path`)
+- `.gitlab/ci/macos/00-workflow.yml` (workflow, defaults, cache)
+- `.gitlab/ci/macos/10-prepare.yml`
+- `.gitlab/ci/macos/20-quality.yml`
+- `.gitlab/ci/macos/30-build.yml`
+- `.gitlab/ci/macos/40-release-skeleton.yml`
+- `.gitlab/ci/macos/45-firebase-distribution.yml`
+- `.gitlab/scripts/bootstrap-secrets.sh`
 
 ## 4. Runtime requirements
-For Linux runner jobs:
+For macOS shell runner jobs:
 - `flutter`, `dart`
 - `jq`, `python3`, `python3-venv`, `python3-pip`
+- `ruby`, `bundler` (fastlane skeleton jobs)
+- `node`, `npm`, `firebase-tools` (Firebase distribution jobs)
 
-The pipeline installs missing runtime deps in job `before_script` only when needed.  
-If you use a custom image that already has tools, set:
-- `CI_IMAGE=<your-image>`
-- `CI_SKIP_SYSTEM_SETUP=1`
+The pipeline validates required tooling in `before_script`.  
+Set `CI_SKIP_SYSTEM_SETUP=1` only when the runner is already pre-provisioned.
+
+Linux templates are still kept in the repository for reuse:
+- `.gitlab/ci/linux/00-workflow.yml`
+- `.gitlab/ci/linux/10-prepare.yml`
+- `.gitlab/ci/linux/20-quality.yml`
+- `.gitlab/ci/linux/30-build.yml`
+- `.gitlab/ci/linux/40-release-skeleton.yml`
+- `.gitlab/ci/linux/45-firebase-distribution.yml`
+
+They are intentionally not included by `.gitlab/ci/pipeline.yml` in the current setup.
 
 ## 5. CI variable contract
 ### Required for portable mode
@@ -66,7 +76,7 @@ If you use a custom image that already has tools, set:
 - `FIREBASE_TOKEN`
 
 ## 6. How bootstrap works
-`ci/scripts/bootstrap-secrets.sh` does this:
+`.gitlab/scripts/bootstrap-secrets.sh` does this:
 1. Creates `build/ci/runtime.env`
 2. Maps `ENV_*` variables to `.env/.env.dev|stg|prod`
 3. Writes localization SA file when provided
@@ -117,12 +127,12 @@ These jobs use:
 These jobs reuse APK artifacts via `needs`, so they do not rebuild APK.
 
 ## 10. First-time setup checklist
-1. Add `.gitlab-ci.yml` and all `ci/templates/*`
-2. Add `ci/scripts/bootstrap-secrets.sh`
-3. Configure GitLab runner (Linux)
+1. Add `.gitlab/ci/pipeline.yml`, `.gitlab/ci/{macos,linux}/*`, and `.gitlab/scripts/bootstrap-secrets.sh`
+2. Set GitLab project `ci_config_path` to `.gitlab/ci/pipeline.yml`
+3. Configure GitLab runner (macOS shell, tag `macos`)
 4. Add required CI variables in GitLab CI/CD settings
 5. Push MR and verify `prepare` + conditional `quality`
-6. Merge to `develop` and verify only enabled build flavors (`ENABLE_BUILD_DEV/STG`)
+6. Merge to `develop` and verify `quality` + only enabled build flavors (`ENABLE_BUILD_DEV/STG`)
 7. Merge to `main` and verify only enabled build flavors (`ENABLE_BUILD_DEV/STG/PROD`) + optional `prod` AAB
 8. Push tag `v1.x.x` and verify same full matrix behavior
 
@@ -143,10 +153,12 @@ These jobs reuse APK artifacts via `needs`, so they do not rebuild APK.
 
 ## 12. Migration to another project
 To reuse this architecture:
-1. Copy `.gitlab-ci.yml`, `ci/templates/*`, `ci/scripts/bootstrap-secrets.sh`
-2. Keep script interface unchanged (`tools/linux/build/*.sh`, localization script)
-3. Update `.info/app/*.json` for new app/flavors/paths
-4. Provide project-specific CI variables matching the same contract
+1. Copy `.gitlab/ci/pipeline.yml`, `.gitlab/ci/{macos,linux}/*`, `.gitlab/scripts/bootstrap-secrets.sh`
+2. Set target project `ci_config_path` to `.gitlab/ci/pipeline.yml`
+3. Keep script interface unchanged (`tools/macos/build/*.sh`, localization script)
+4. Update `.info/app/*.json` for new app/flavors/paths
+5. Provide project-specific CI variables matching the same contract
+6. If you want Linux CI later, switch `.gitlab/ci/pipeline.yml` includes to the Linux template set.
 
 ## 13. Security note
 Current repo still tracks sensitive files. CI masking is only minimum protection. Long-term safe state:

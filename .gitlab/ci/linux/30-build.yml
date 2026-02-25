@@ -5,6 +5,8 @@ build:apk:develop:
     matrix:
       - FLAVOR: ["dev", "stg"]
   needs:
+    - quality:analyze
+    - quality:test
     - job: prepare:generated
       artifacts: true
   script:

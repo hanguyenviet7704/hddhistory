@@ -147,22 +147,35 @@ flutter run \
 
 ## 4. CI/CD Pipeline Overview
 
-### GitLab CI Workflow (`.gitlab-ci.yml`)
+### GitLab CI Workflow (Single Entrypoint)
 
-Pipeline definition is modular and lives in:
-- `.gitlab-ci.yml`
-- `ci/templates/00-workflow.yml`
-- `ci/templates/10-prepare.yml`
-- `ci/templates/20-quality.yml`
-- `ci/templates/30-build.yml`
-- `ci/templates/40-release-skeleton.yml`
-- `ci/templates/45-firebase-distribution.yml`
+Pipeline is activated from GitLab project setting:
+- `ci_config_path=.gitlab/ci/pipeline.yml`
+
+Single source of truth:
+- `.gitlab/ci/pipeline.yml`
+
+Pipeline modules:
+- `.gitlab/ci/macos/00-workflow.yml`
+- `.gitlab/ci/macos/10-prepare.yml`
+- `.gitlab/ci/macos/20-quality.yml`
+- `.gitlab/ci/macos/30-build.yml`
+- `.gitlab/ci/macos/40-release-skeleton.yml`
+- `.gitlab/ci/macos/45-firebase-distribution.yml`
+
+Linux templates are intentionally kept as reusable modules but are not included in `.gitlab/ci/pipeline.yml`:
+- `.gitlab/ci/linux/00-workflow.yml`
+- `.gitlab/ci/linux/10-prepare.yml`
+- `.gitlab/ci/linux/20-quality.yml`
+- `.gitlab/ci/linux/30-build.yml`
+- `.gitlab/ci/linux/40-release-skeleton.yml`
+- `.gitlab/ci/linux/45-firebase-distribution.yml`
 
 #### Triggers
 | Trigger | Environment | Target |
 |---------|-----------|--------|
 | `merge_request_event` | Validation | `prepare` + `quality` (quality runs only when relevant Dart/build config files change) |
-| Push to `develop` | Dev/Staging | Build APK for enabled flavors (`ENABLE_BUILD_DEV/STG=1`) + optional Firebase Distribution |
+| Push to `develop` | Dev/Staging | `prepare + quality +` build APK for enabled flavors (`ENABLE_BUILD_DEV/STG=1`) + optional Firebase Distribution |
 | Push to `main` | Full matrix | Build APK/AAB for enabled flavors (`ENABLE_BUILD_DEV/STG/PROD=1`) + optional Firebase Distribution (`prod`) |
 | Git tag `v*` | Release candidate | Same as `main` full matrix |
 
@@ -170,7 +183,7 @@ Pipeline definition is modular and lives in:
 
 ```
 1. PREPARE
-   ├─ bootstrap secrets/runtime files (`ci/scripts/bootstrap-secrets.sh`)
+   ├─ bootstrap secrets/runtime files (`.gitlab/scripts/bootstrap-secrets.sh`)
    ├─ localization pull (Google Sheets -> YAML)
    ├─ slang generation
    └─ build_runner generation
@@ -179,6 +192,7 @@ Pipeline definition is modular and lives in:
    ├─ flutter analyze
    └─ flutter test
    (MR: runs only when relevant code/build files change such as `lib/**`, `test/**`, `pubspec.yaml`, `build.yaml`, ...)
+   (develop/main/tag: always)
 
 3. BUILD
    ├─ APK matrix by branch policy
@@ -194,10 +208,9 @@ Pipeline definition is modular and lives in:
 ```
 
 ### Access Requirements
-- **GitLab Runner:** Linux for build pipeline, optional macOS runner for iOS fastlane skeleton.
+- **GitLab Runner:** macOS shell runner for the active pipeline (tag `macos`).
 - **GitLab CI/CD Variables:**
-  - `CI_IMAGE` (optional override custom CI image)
-  - `CI_SKIP_SYSTEM_SETUP=1` (optional, enable when your custom image already includes `jq/python/pip` to skip the `apt-get` step)
+  - `CI_SKIP_SYSTEM_SETUP=1` (optional, skip macOS tool checks if the runner is already pre-provisioned)
   - `ENABLE_BUILD_DEV=1` (optional, enable `dev` APK build)
   - `ENABLE_BUILD_STG=1` (optional, enable `stg` APK build)
   - `ENABLE_BUILD_PROD=1` (optional, enable `prod` APK/AAB build)
@@ -210,6 +223,7 @@ Pipeline definition is modular and lives in:
   - `ENV_PROD_FILE` / `ENV_PROD_CONTENT`
   - `LOCALIZATION_SA_JSON` (recommended when pulling l10n in CI)
   - `ENABLE_FASTLANE=1` (to enable manual skeleton jobs)
+  - Runner host tools: `flutter`, `dart`, `jq`, `python3`, `ruby`, `bundler`, `node`, `npm`, `firebase-tools`
 - **Optional phase-2 variables (fastlane release):**
   - `PLAYSTORE_JSON`
   - `APPSTORE_P8`, `APPSTORE_ISSUER_ID`, `APPSTORE_KEY_ID`
