@@ -7,5 +7,5 @@ abstract class OnboardBranchingApi {
   factory OnboardBranchingApi(@Named(DIKey.appDio) Dio dio) = _OnboardBranchingApi;
 
   @GET(AppEndpoint.onboardingsScenarios)
-  Future<BaseResponse<OnboardingScenarioBranchingModel>> getOnboardingScenarioBranching(@Path('id') String id);
+  Future<BaseResponse<OnboardingScenarioBranchingModel>> getOnboardingScenarioBranching();
 }

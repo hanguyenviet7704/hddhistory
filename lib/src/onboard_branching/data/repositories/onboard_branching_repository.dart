@@ -11,14 +11,21 @@ class OnboardBranchingRepository with RestfulRequestHandlerMixin implements IOnb
   );
 
   @override
-  TaskEither<AppException, OnboardingScenarioBranchingEntity> getOnboardingScenarioBranching(String id) {
+  TaskEither<AppException, OnboardingScenarioBranchingEntity> getOnboardingScenarioBranching() {
     return callApiWithTransform<OnboardingScenarioBranchingModel, OnboardingScenarioBranchingEntity>(
-      apiCall: () => _api.getOnboardingScenarioBranching(id),
+      apiCall: () => _api.getOnboardingScenarioBranching(),
       transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheOnboardingScenarioBranching(id, data ?? OnboardingScenarioBranchingModel()),
+      onSuccess: (data) async {
+        if (data != null) {
+          await _localDataSource.cacheOnboardingScenarioBranching(data);
+        }
+      },
       onError: () async {
-        final cachedModel = await _localDataSource.getCachedOnboardingScenarioBranching(id);
-        return cachedModel?.toEntity();
+        final cachedModel = await _localDataSource.getCachedOnboardingScenarioBranching();
+        if (cachedModel != null) {
+          return cachedModel.toEntity();
+        }
+        return null;
       },
       defaultValue: OnboardingScenarioBranchingEntity(),
     );

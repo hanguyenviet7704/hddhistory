@@ -6,30 +6,12 @@ part of '../../../onboard_branching.dart';
 /// Note: For paginated APIs, only the items are cached, not pagination metadata.
 /// Pagination info (currentPage, totalPages, etc.) should always come fresh from the API.
 abstract class OnboardBranchingLocalDataSource {
-  /// Get all cached onboarding_scenario_branchings
-  ///
-  /// Used as fallback when API fails. The repository will construct
-  /// a BasePageBreak with these items for offline support.
-  Future<List<OnboardingScenarioBranchingModel>> getCachedOnboardingScenarioBranchings();
+  Future<OnboardingScenarioBranchingModel?> getCachedOnboardingScenarioBranching();
 
-  /// Cache multiple onboarding_scenario_branchings
-  ///
-  /// For paginated APIs, the repository passes `pageData.items` (not the entire BasePageBreak).
-  /// This keeps the cache simple and avoids stale pagination metadata.
-  Future<void> cacheOnboardingScenarioBranchings(List<OnboardingScenarioBranchingModel> models);
+  Future<void> cacheOnboardingScenarioBranching(OnboardingScenarioBranchingModel model);
 
-  /// Get cached onboarding_scenario_branching by id
-  Future<OnboardingScenarioBranchingModel?> getCachedOnboardingScenarioBranching(String id);
+  Future<void> deleteCachedOnboardingScenarioBranching();
 
-  /// Cache single onboarding_scenario_branching
-  ///
-  /// Used for caching individual items from GET, POST, PUT responses.
-  Future<void> cacheOnboardingScenarioBranching(String id, OnboardingScenarioBranchingModel model);
-
-  /// Delete cached onboarding_scenario_branching
-  Future<void> deleteCachedOnboardingScenarioBranching(String id);
-
-  /// Clear all cached data
   Future<void> clearCache();
 }
 
@@ -42,7 +24,6 @@ class OnboardBranchingLocalDataSourceImpl implements OnboardBranchingLocalDataSo
 
   OnboardBranchingLocalDataSourceImpl(this._localStoreService);
 
-  @override
   Future<List<OnboardingScenarioBranchingModel>> getCachedOnboardingScenarioBranchings() async {
     try {
       final data = await _localStoreService.getMap(key: _cacheListKey);
@@ -55,7 +36,6 @@ class OnboardBranchingLocalDataSourceImpl implements OnboardBranchingLocalDataSo
     }
   }
 
-  @override
   Future<void> cacheOnboardingScenarioBranchings(List<OnboardingScenarioBranchingModel> models) async {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
@@ -69,10 +49,9 @@ class OnboardBranchingLocalDataSourceImpl implements OnboardBranchingLocalDataSo
   }
 
   @override
-  Future<OnboardingScenarioBranchingModel?> getCachedOnboardingScenarioBranching(String id) async {
+  Future<OnboardingScenarioBranchingModel?> getCachedOnboardingScenarioBranching() async {
     try {
-      final cacheKey = '${_cacheKey}_$id';
-      final data = await _localStoreService.getMap(key: cacheKey);
+      final data = await _localStoreService.getMap(key: _cacheKey);
       if (data.isEmpty) return null;
 
       return OnboardingScenarioBranchingModel.fromJson(data);
@@ -82,11 +61,10 @@ class OnboardBranchingLocalDataSourceImpl implements OnboardBranchingLocalDataSo
   }
 
   @override
-  Future<void> cacheOnboardingScenarioBranching(String id, OnboardingScenarioBranchingModel model) async {
+  Future<void> cacheOnboardingScenarioBranching(OnboardingScenarioBranchingModel model) async {
     try {
-      final cacheKey = '${_cacheKey}_$id';
       await _localStoreService.setMap(
-        key: cacheKey,
+        key: _cacheKey,
         value: model.toJson(),
       );
     } catch (e) {
@@ -95,10 +73,9 @@ class OnboardBranchingLocalDataSourceImpl implements OnboardBranchingLocalDataSo
   }
 
   @override
-  Future<void> deleteCachedOnboardingScenarioBranching(String id) async {
+  Future<void> deleteCachedOnboardingScenarioBranching() async {
     try {
-      final cacheKey = '${_cacheKey}_$id';
-      await _localStoreService.remove(key: cacheKey);
+      await _localStoreService.remove(key: _cacheKey);
     } catch (e) {
       // Handle error silently or log
     }

@@ -1,14 +1,14 @@
 part of '../../onboard_branching.dart';
 
 @lazySingleton
-class GetOnboardingScenarioBranchingUseCase implements UseCaseWithParams<String, OnboardingScenarioBranchingEntity> {
+class GetOnboardingScenarioBranchingUseCase implements UseCaseWithoutParams<OnboardingScenarioBranchingEntity> {
   final IOnboardBranchingRepository _repository;
 
   GetOnboardingScenarioBranchingUseCase(this._repository);
 
   @override
-  TaskEither<AppException, OnboardingScenarioBranchingEntity> call(String params) {
-    return _repository.getOnboardingScenarioBranching(params);
+  TaskEither<AppException, OnboardingScenarioBranchingEntity> call() {
+    return _repository.getOnboardingScenarioBranching();
   }
 }
 
