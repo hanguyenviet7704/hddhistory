@@ -121,11 +121,11 @@ class LessonBodyFactory {
 
 ### Use Case Pattern
 ```dart
-abstract class UseCase<Type, Params> {
-  TaskEither<AppException, Type> call(Params params);
+abstract interface class BaseUseCase<Params, Result> {
+  TaskEither<AppException, Result> call(Params params);
 }
 
-class GetUserUseCase extends UseCase<UserEntity, String> {
+class GetUserUseCase implements BaseUseCase<String, UserEntity> {
   final UserRepository _repository;
 
   GetUserUseCase(this._repository);

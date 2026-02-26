@@ -15,7 +15,7 @@ abstract class VoiceFeedbackRequest with _$VoiceFeedbackRequest {
 }
 
 @lazySingleton
-class SendVoiceFeedbackStreamUseCase implements UseCaseWithParams<VoiceFeedbackRequest, ResponseBody> {
+class SendVoiceFeedbackStreamUseCase implements BaseUseCase<VoiceFeedbackRequest, ResponseBody> {
   final ILessonRepository _repository;
 
   SendVoiceFeedbackStreamUseCase(this._repository);

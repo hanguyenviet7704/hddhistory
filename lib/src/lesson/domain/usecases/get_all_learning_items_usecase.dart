@@ -12,14 +12,15 @@ abstract class LearningItemFilter with _$LearningItemFilter implements JsonReque
 
 enum LearningItemFilterType {
   theory('theory'),
-  exercise('exercise');
+  exercise('exercise')
+  ;
 
   const LearningItemFilterType(this.name);
   final String name;
 }
 
 @lazySingleton
-class GetAllLearningItemsUseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<LearningItemEntity>> {
+class GetAllLearningItemsUseCase implements BaseUseCase<PageBreakRequest, BasePageBreak<LearningItemEntity>> {
   final ILessonRepository _repository;
 
   GetAllLearningItemsUseCase(this._repository);

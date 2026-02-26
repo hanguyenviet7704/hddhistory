@@ -1,7 +1,7 @@
 part of '../../progress.dart';
 
 @lazySingleton
-class GetUserProgressExerciseUseCase implements UseCaseWithParams<UserProgressFilter, ExerciseResultEntity> {
+class GetUserProgressExerciseUseCase implements BaseUseCase<UserProgressFilter, ExerciseResultEntity> {
   final IProgressRepository _repository;
 
   GetUserProgressExerciseUseCase(this._repository);

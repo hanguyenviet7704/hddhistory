@@ -1,7 +1,7 @@
 part of '../../home.dart';
 
 @lazySingleton
-class GetAllSkillsetsUseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<SkillsetEntity>> {
+class GetAllSkillsetsUseCase implements BaseUseCase<PageBreakRequest, BasePageBreak<SkillsetEntity>> {
   final IHomeRepository _repository;
 
   GetAllSkillsetsUseCase(this._repository);

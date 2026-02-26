@@ -1,7 +1,7 @@
 part of '../../profile.dart';
 
 @lazySingleton
-class GetUserUseCase implements UseCaseWithParams<String, UserEntity> {
+class GetUserUseCase implements BaseUseCase<String, UserEntity> {
   final IProfileRepository _repository;
 
   GetUserUseCase(this._repository);

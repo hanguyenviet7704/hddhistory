@@ -1,7 +1,7 @@
 part of '../../lesson.dart';
 
 @lazySingleton
-class GetLearningItemUseCase implements UseCaseWithParams<String, LearningItemEntity> {
+class GetLearningItemUseCase implements BaseUseCase<String, LearningItemEntity> {
   final ILessonRepository _repository;
 
   GetLearningItemUseCase(this._repository);

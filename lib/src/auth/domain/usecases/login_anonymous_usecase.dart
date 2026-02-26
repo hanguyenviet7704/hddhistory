@@ -1,7 +1,7 @@
 part of '../../auth.dart';
 
 @lazySingleton
-class LoginAnonymousUsecase implements UseCaseWithParams<Map<String, dynamic>, AuthEntity> {
+class LoginAnonymousUsecase implements BaseUseCase<Map<String, dynamic>, AuthEntity> {
   final IAuthRepository _authRepository;
   LoginAnonymousUsecase(this._authRepository);
 

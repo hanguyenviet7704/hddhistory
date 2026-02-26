@@ -24,7 +24,7 @@ class VerifyParams {
 }
 
 @lazySingleton
-class VerifyUsecase implements UseCaseWithParams<VerifyParams, IapVerifyEntity> {
+class VerifyUsecase implements BaseUseCase<VerifyParams, IapVerifyEntity> {
   final IMonetizationRepository _repository;
 
   VerifyUsecase(this._repository);

@@ -1,10 +1,7 @@
-
-
 part of '../../onboard_branching.dart';
 
 @lazySingleton
-class OnboardBranchingCubit extends Cubit<OnboardBranchingState>
-    with CubitUseCaseHandlerMixin<OnboardBranchingState> {
+class OnboardBranchingCubit extends Cubit<OnboardBranchingState> with CubitUseCaseHandlerMixin<OnboardBranchingState> {
   final GetOnboardingScenarioBranchingUseCase _getUseCase;
 
   OnboardBranchingCubit(
@@ -13,24 +10,24 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState>
 
   void loadOnboardingScenarioBranching() async {
     await runUseCase<OnboardingScenarioBranchingEntity>(
-      usecase: () => _getUseCase(),
+      usecase: () => _getUseCase(unit),
       buildLoadingState: () => state.copyWith(status: OnboardBranchingStatus.loading),
       onFailure: (error) {
-        emit(state.copyWith(
-          status: OnboardBranchingStatus.failure,
-          errorMessage: error,
-        ));
+        emit(
+          state.copyWith(
+            status: OnboardBranchingStatus.failure,
+            errorMessage: error,
+          ),
+        );
       },
       onSuccess: (item) {
-        emit(state.copyWith(
-          status: OnboardBranchingStatus.success,
-          selectedItem: item,
-        ));
+        emit(
+          state.copyWith(
+            status: OnboardBranchingStatus.success,
+            selectedItem: item,
+          ),
+        );
       },
     );
   }
-
-  
 }
-
-

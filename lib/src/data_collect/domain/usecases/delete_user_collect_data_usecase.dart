@@ -1,7 +1,7 @@
 part of '../../data_collect.dart';
 
 @lazySingleton
-class DeleteUserCollectDataUseCase implements UseCaseWithParams<String, Unit> {
+class DeleteUserCollectDataUseCase implements BaseUseCase<String, Unit> {
   final IDataCollectRepository _repository;
 
   DeleteUserCollectDataUseCase(this._repository);

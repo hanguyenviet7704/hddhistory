@@ -1,7 +1,7 @@
 part of '../../../course.dart';
 
 @lazySingleton
-class GetCourseUseCase implements UseCaseWithParams<String, CourseEntity> {
+class GetCourseUseCase implements BaseUseCase<String, CourseEntity> {
   final ICourseRepository _repository;
 
   GetCourseUseCase(this._repository);

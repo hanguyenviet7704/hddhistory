@@ -1,7 +1,7 @@
 part of '../../auth.dart';
 
 @lazySingleton
-class DeletePermanentUserUsecase implements UseCaseWithParams<String, Unit> {
+class DeletePermanentUserUsecase implements BaseUseCase<String, Unit> {
   final IAuthRepository _authRepository;
   DeletePermanentUserUsecase(this._authRepository);
 

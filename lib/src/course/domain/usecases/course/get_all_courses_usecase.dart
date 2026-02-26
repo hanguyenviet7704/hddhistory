@@ -1,7 +1,7 @@
 part of '../../../course.dart';
 
 @lazySingleton
-class GetAllCoursesUseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<CourseEntity>> {
+class GetAllCoursesUseCase implements BaseUseCase<PageBreakRequest, BasePageBreak<CourseEntity>> {
   final ICourseRepository _repository;
 
   GetAllCoursesUseCase(this._repository);

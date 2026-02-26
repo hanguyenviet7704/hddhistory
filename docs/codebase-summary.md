@@ -196,8 +196,12 @@ Extensions: `message`, `displayMessage` (user-friendly fallback)
 
 #### Use Case Pattern (use_case/use_case.dart)
 ```dart
-abstract class UseCase<Type, Params> {
-  TaskEither<AppException, Type> call(Params params);
+abstract interface class BaseUseCase<Params, Result> {
+  TaskEither<AppException, Result> call(Params params);
+}
+
+abstract interface class BasePageBreakUseCase<Params extends PageBreakRequest, Result> {
+  TaskEither<AppException, BasePageBreak<Result>> call(Params params);
 }
 ```
 Returns `TaskEither` for functional error handling (fpdart)

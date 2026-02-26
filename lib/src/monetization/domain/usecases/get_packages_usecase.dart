@@ -10,7 +10,7 @@ abstract class GetPackagesParams with _$GetPackagesParams implements JsonRequest
 }
 
 @lazySingleton
-class GetPackagesUsecase implements UseCaseWithParams<GetPackagesParams, List<IapProductEntity>> {
+class GetPackagesUsecase implements BaseUseCase<GetPackagesParams, List<IapProductEntity>> {
   final IMonetizationRepository _iapRepository;
 
   GetPackagesUsecase(this._iapRepository);

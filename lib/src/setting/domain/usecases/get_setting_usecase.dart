@@ -1,7 +1,7 @@
 part of '../../setting.dart';
 
 @lazySingleton
-class GetSettingUseCase implements UseCaseWithParams<String, SettingEntity> {
+class GetSettingUseCase implements BaseUseCase<String, SettingEntity> {
   final ISettingRepository _repository;
 
   GetSettingUseCase(this._repository);
@@ -11,4 +11,3 @@ class GetSettingUseCase implements UseCaseWithParams<String, SettingEntity> {
     return _repository.getSetting(params);
   }
 }
-

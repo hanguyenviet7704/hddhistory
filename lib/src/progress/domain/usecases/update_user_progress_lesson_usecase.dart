@@ -8,7 +8,7 @@ class UpdateUserProgressLessonParams {
 }
 
 @lazySingleton
-class UpdateUserProgressLessonUseCase implements UseCaseWithParams<UpdateUserProgressLessonParams, UserProgressEntity> {
+class UpdateUserProgressLessonUseCase implements BaseUseCase<UpdateUserProgressLessonParams, UserProgressEntity> {
   final IProgressRepository _repository;
 
   UpdateUserProgressLessonUseCase(this._repository);

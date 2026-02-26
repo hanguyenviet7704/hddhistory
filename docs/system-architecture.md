@@ -162,7 +162,7 @@ void loadCourses() {
 }
 
 // 2. Use case
-class GetCoursesUseCase extends UseCase<List<CourseEntity>, PageBreakRequest> {
+class GetCoursesUseCase implements BaseUseCase<PageBreakRequest, List<CourseEntity>> {
   @override
   TaskEither<AppException, List<CourseEntity>> call(PageBreakRequest params) {
     return _repository.getCourses(params);
