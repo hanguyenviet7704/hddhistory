@@ -9,3 +9,10 @@ abstract class OnboardingScenarioActivationContentModel with _$OnboardingScenari
 
   factory OnboardingScenarioActivationContentModel.fromJson(Map<String, dynamic> json) => _$OnboardingScenarioActivationContentModelFromJson(json);
 }
+
+extension OnboardingScenarioActivationContentModelExtension on OnboardingScenarioActivationContentModel {
+  OnboardingScenarioActivationContentEntity toEntity() => OnboardingScenarioActivationContentEntity(
+        icon: icon,
+        labels: labels.map((label) => label.toEntity()).toList(),
+      );
+}

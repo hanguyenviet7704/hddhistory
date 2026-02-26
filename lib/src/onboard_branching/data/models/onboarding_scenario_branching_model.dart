@@ -11,5 +11,8 @@ abstract class OnboardingScenarioBranchingModel with _$OnboardingScenarioBranchi
 }
 
 extension OnboardingScenarioBranchingModelExtension on OnboardingScenarioBranchingModel {
-  OnboardingScenarioBranchingEntity toEntity() => OnboardingScenarioBranchingEntity.fromJson(toJson());
+  OnboardingScenarioBranchingEntity toEntity() => OnboardingScenarioBranchingEntity(
+        entrySceneId: entrySceneId,
+        scenes: scenes.map((scene) => scene.toEntity()).toList(),
+      );
 }

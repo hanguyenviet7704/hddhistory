@@ -12,3 +12,13 @@ abstract class OnboardingScenarioBranchOptionModel with _$OnboardingScenarioBran
 
   factory OnboardingScenarioBranchOptionModel.fromJson(Map<String, dynamic> json) => _$OnboardingScenarioBranchOptionModelFromJson(json);
 }
+
+extension OnboardingScenarioBranchOptionModelExtension on OnboardingScenarioBranchOptionModel {
+  OnboardingScenarioBranchOptionEntity toEntity() => OnboardingScenarioBranchOptionEntity(
+        id: id,
+        label: label,
+        icon: icon,
+        nextSceneId: nextSceneId,
+        courses: courses,
+      );
+}

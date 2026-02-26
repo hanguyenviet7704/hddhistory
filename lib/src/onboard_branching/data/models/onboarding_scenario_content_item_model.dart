@@ -14,3 +14,30 @@ abstract class OnboardingScenarioContentItemModel with _$OnboardingScenarioConte
 
   factory OnboardingScenarioContentItemModel.fromJson(Map<String, dynamic> json) => _$OnboardingScenarioContentItemModelFromJson(json);
 }
+
+extension OnboardingScenarioContentItemModelExtension on OnboardingScenarioContentItemModel {
+  OnboardingScenarioContentItemEntity toEntity() => OnboardingScenarioContentItemEntity(
+        id: id,
+        type: type,
+        fact: fact?.toEntity(),
+        activation: activation?.toEntity(),
+        branch: branch?.toEntity(),
+        fixed: fixed?.toEntity(),
+        personAdmire: personAdmire?.toEntity(),
+      );
+}
+
+enum OnboardingContentType {
+  @JsonValue('fact')
+  fact,
+  @JsonValue('activation')
+  activation,
+  @JsonValue('branch')
+  branch,
+  @JsonValue('fixed')
+  fixed,
+  @JsonValue('person_admire')
+  personAdmire,
+  @JsonValue('unknown')
+  unknown,
+}

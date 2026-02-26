@@ -10,3 +10,11 @@ abstract class OnboardingScenarioPersonAdmireModel with _$OnboardingScenarioPers
 
   factory OnboardingScenarioPersonAdmireModel.fromJson(Map<String, dynamic> json) => _$OnboardingScenarioPersonAdmireModelFromJson(json);
 }
+
+extension OnboardingScenarioPersonAdmireModelExtension on OnboardingScenarioPersonAdmireModel {
+  OnboardingScenarioPersonAdmireEntity toEntity() => OnboardingScenarioPersonAdmireEntity(
+        subQuestion: subQuestion,
+        question: question,
+        options: options.map((option) => option.toEntity()).toList(),
+      );
+}

@@ -11,7 +11,6 @@ import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Data Layer - Models, Datasources, Repositories
-part 'data/models/onboarding_content_type_model.dart';
 part 'data/models/onboarding_scenario_branching_model.dart';
 part 'data/models/onboarding_scenario_scene_model.dart';
 part 'data/models/onboarding_scenario_content_item_model.dart';
@@ -28,6 +27,15 @@ part 'data/repositories/onboard_branching_repository.dart';
 
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/onboarding_scenario_branching_entity.dart';
+part 'domain/entities/onboarding_scenario_scene_entity.dart';
+part 'domain/entities/onboarding_scenario_content_item_entity.dart';
+part 'domain/entities/onboarding_scenario_activation_entity.dart';
+part 'domain/entities/onboarding_scenario_activation_content_entity.dart';
+part 'domain/entities/onboarding_scenario_branch_entity.dart';
+part 'domain/entities/onboarding_scenario_branch_option_entity.dart';
+part 'domain/entities/onboarding_scenario_fixed_entity.dart';
+part 'domain/entities/onboarding_scenario_person_admire_entity.dart';
+part 'domain/entities/onboarding_scenario_person_option_entity.dart';
 part 'domain/repositories/i_onboard_branching_repository.dart';
 part 'domain/usecases/get_onboarding_scenario_branching_usecase.dart';
 

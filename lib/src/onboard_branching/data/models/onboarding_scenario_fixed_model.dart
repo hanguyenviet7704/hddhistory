@@ -10,3 +10,11 @@ abstract class OnboardingScenarioFixedModel with _$OnboardingScenarioFixedModel 
 
   factory OnboardingScenarioFixedModel.fromJson(Map<String, dynamic> json) => _$OnboardingScenarioFixedModelFromJson(json);
 }
+
+extension OnboardingScenarioFixedModelExtension on OnboardingScenarioFixedModel {
+  OnboardingScenarioFixedEntity toEntity() => OnboardingScenarioFixedEntity(
+        subQuestion: subQuestion,
+        question: question,
+        options: options.map((option) => option.toEntity()).toList(),
+      );
+}

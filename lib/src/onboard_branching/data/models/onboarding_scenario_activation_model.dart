@@ -12,3 +12,12 @@ abstract class OnboardingScenarioActivationModel with _$OnboardingScenarioActiva
   factory OnboardingScenarioActivationModel.fromJson(Map<String, dynamic> json) => _$OnboardingScenarioActivationModelFromJson(json);
 }
 
+extension OnboardingScenarioActivationModelExtension on OnboardingScenarioActivationModel {
+  OnboardingScenarioActivationEntity toEntity() => OnboardingScenarioActivationEntity(
+        id: id,
+        title: title,
+        description: description,
+        content: content.toEntity(),
+      );
+}
+
