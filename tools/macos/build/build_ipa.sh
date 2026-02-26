@@ -148,6 +148,7 @@ BUILD_ARGS=(
     "--flavor" "$FLAVOR"
     "--dart-define-from-file=$ENV_FILE"
     "-t" "lib/main_$FLAVOR.dart"
+    "--export-method=$EXPORT_METHOD"
     "--no-tree-shake-icons"
 )
 
