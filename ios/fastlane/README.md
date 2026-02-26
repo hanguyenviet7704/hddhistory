@@ -35,6 +35,7 @@ If `bundle` points to system Ruby and fails, run with Homebrew Ruby:
 - Flutter + FVM installed.
 - CocoaPods installed (`pod install` in `ios/` when needed).
 - App Store Connect API key configured in `.info/app/app.json`.
+- App Store Connect team configured in `ios/fastlane/Appfile` (`itc_team_id`).
 - Firebase CLI logged in (for Firebase distribution).
 
 ## 3) Lane commands
@@ -67,10 +68,14 @@ bundle exec fastlane build_ipa flavor:prod export_method:app-store
 bundle exec fastlane beta flavor:dev
 
 # TestFlight
-bundle exec fastlane beta_ipa flavor:dev
-bundle exec fastlane beta_ipa flavor:dev changelog:"Build notes"
+# Default flavor for beta_ipa is prod
+bundle exec fastlane beta_ipa
+bundle exec fastlane beta_ipa flavor:prod
+bundle exec fastlane beta_ipa flavor:stg changelog:"Build notes"
 bundle exec fastlane beta_ipa flavor:dev distribute_external:true groups:"qa-team"
 ```
+
+When `distribute_external:true`, `groups` is required and `skip_waiting_for_build_processing` must be `false`.
 
 ### Deploy (Android-like API)
 
@@ -177,5 +182,8 @@ bundle exec fastlane deliver --app_identifier com.eup.meup --screenshots_path fa
 - `beta` uses `tools/macos/distribution/distribute_ios.sh` for Firebase.
 - `beta_ipa` uses `upload_to_testflight`.
 - `deploy` with `method:appstore` (or `track:production`) uses `upload_to_app_store`.
+- `itc_provider` for uploads resolves in this order:
+  1) `itc_team_id` in `ios/fastlane/Appfile`
+  2) fallback: `.info/app/app.json` -> `ios.contentProviderId`
 - Metadata flag mapping for App Store deploy: `upload_metadata` or `upload_all_metadata` enables metadata upload, and `upload_screenshots`/`upload_images`/`upload_all_metadata` enables screenshot upload.
 - Running `bundle exec fastlane lanes` may regenerate this README automatically.
