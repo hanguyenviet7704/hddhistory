@@ -45,17 +45,16 @@ Bundler behavior:
   Then run: bundle config set path vendor/bundle -> bundle check -> auto bundle install --jobs 4 --retry 3 (if missing).
 Quick examples:
   tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
-  tools/macos/distribution/fastlane/ios_fastlane.sh build_ipa flavor:prod export_method:app-store
   tools/macos/distribution/fastlane/ios_fastlane.sh deploy --dry-run flavor:prod track:production
   tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
-More examples:
-  tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:internal
-  tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:stg track:alpha
+  tools/macos/distribution/fastlane/ios_fastlane.sh deploy track:internal                           # flavor default: prod
   tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:beta
-  tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:production
-  tools/macos/distribution/fastlane/ios_fastlane.sh deploy_alpha flavor:stg | deploy_beta flavor:stg | deploy_production flavor:prod
+  tools/macos/distribution/fastlane/ios_fastlane.sh deploy_production                               # flavor default: prod
+  tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:production upload_metadata:true | lane deploy flavor:prod track:production upload_metadata:true | raw deploy flavor:prod track:production upload_metadata:true
+  tools/macos/distribution/fastlane/ios_fastlane.sh deploy_alpha flavor:stg | deploy_beta flavor:stg
   tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod method:firebase|testflight|both|appstore
-  tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:production upload_metadata:true upload_screenshots:true
+  tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:production upload_metadata:true upload_screenshots:true|upload_all_metadata:true
+  Note: use 'deploy ...' (or lane/raw deploy) when passing metadata flags; deploy_production is shortcut lane.
 Deploy mapping to raw:
   deploy ... == lane deploy ... == raw deploy ...
   deploy_alpha ... == raw deploy_alpha ... | deploy_beta ... == raw deploy_beta ... | deploy_production ... == raw deploy_production ...

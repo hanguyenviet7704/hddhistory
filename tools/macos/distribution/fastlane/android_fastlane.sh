@@ -45,17 +45,14 @@ Bundler behavior:
   Then run: bundle config set path vendor/bundle -> bundle check -> auto bundle install --jobs 4 --retry 3 (if missing).
 Quick examples:
   tools/macos/distribution/fastlane/android_fastlane.sh lanes --ci
-  tools/macos/distribution/fastlane/android_fastlane.sh build_apk flavor:dev
   tools/macos/distribution/fastlane/android_fastlane.sh deploy --dry-run flavor:prod track:internal
   tools/macos/distribution/fastlane/android_fastlane.sh raw supply --skip_upload_aab true --skip_upload_apk true
-More examples:
-  tools/macos/distribution/fastlane/android_fastlane.sh deploy flavor:prod track:internal
+  tools/macos/distribution/fastlane/android_fastlane.sh deploy track:internal                       # flavor default: prod
   tools/macos/distribution/fastlane/android_fastlane.sh deploy_alpha flavor:stg
   tools/macos/distribution/fastlane/android_fastlane.sh deploy_beta flavor:stg
-  tools/macos/distribution/fastlane/android_fastlane.sh deploy_production flavor:prod
-  tools/macos/distribution/fastlane/android_fastlane.sh deploy flavor:prod track:internal upload_metadata:true
-  tools/macos/distribution/fastlane/android_fastlane.sh deploy flavor:prod track:internal upload_images:true upload_screenshots:true
-  tools/macos/distribution/fastlane/android_fastlane.sh deploy flavor:prod track:internal upload_all_metadata:true
+  tools/macos/distribution/fastlane/android_fastlane.sh deploy_production                            # flavor default: prod
+  tools/macos/distribution/fastlane/android_fastlane.sh deploy track:production | lane deploy flavor:prod track:production | raw deploy flavor:prod track:production
+  tools/macos/distribution/fastlane/android_fastlane.sh deploy flavor:prod track:internal upload_metadata:true|upload_images:true upload_screenshots:true|upload_all_metadata:true
 Deploy mapping to raw:
   deploy ... == lane deploy ... == raw deploy ...
   deploy_alpha ... == raw deploy_alpha ... | deploy_beta ... == raw deploy_beta ... | deploy_production ... == raw deploy_production ...
