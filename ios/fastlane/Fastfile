@@ -75,6 +75,12 @@ def groups_list(value)
   value.to_s.split(",").map(&:strip).reject(&:empty?)
 end
 
+def sh_unbundled(command)
+  Bundler.with_unbundled_env do
+    sh(command)
+  end
+end
+
 def deploy_method_from_track(track)
   case track
   when "internal"
@@ -94,7 +100,7 @@ platform :ios do
   desc "Runs Flutter tests"
   # Example: bundle exec fastlane test
   lane :test do
-    sh("cd #{Shellwords.escape(project_root)} && fvm flutter test")
+    sh_unbundled("cd #{Shellwords.escape(project_root)} && fvm flutter test")
   end
 
   # Example: bundle exec fastlane build_ios
@@ -105,7 +111,7 @@ platform :ios do
   lane :build_ios do |options|
     ensure_macos!
     flavor = options[:flavor] || "dev"
-    sh("#{Shellwords.escape(tools_script_path('build', 'build_ios.sh'))} #{Shellwords.escape(flavor)}")
+    sh_unbundled("#{Shellwords.escape(tools_script_path('build', 'build_ios.sh'))} #{Shellwords.escape(flavor)}")
   end
 
   # Example: bundle exec fastlane build_ipa
@@ -120,7 +126,7 @@ platform :ios do
     export_method = options[:export_method]
     command = "#{Shellwords.escape(tools_script_path('build', 'build_ipa.sh'))} #{Shellwords.escape(flavor)}"
     command += " --export-method #{Shellwords.escape(export_method)}" if export_method
-    sh(command)
+    sh_unbundled(command)
   end
 
   # Example: bundle exec fastlane beta
@@ -131,7 +137,7 @@ platform :ios do
   lane :beta do |options|
     ensure_macos!
     flavor = options[:flavor] || "dev"
-    sh("#{Shellwords.escape(tools_script_path('distribution', 'distribute_ios.sh'))} #{Shellwords.escape(flavor)} --build-first --method firebase")
+    sh_unbundled("#{Shellwords.escape(tools_script_path('distribution', 'distribute_ios.sh'))} #{Shellwords.escape(flavor)} --build-first --method firebase")
   end
 
   # Example: bundle exec fastlane beta_ipa
