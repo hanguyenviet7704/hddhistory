@@ -81,3 +81,4 @@ repomix-output.xml
 
 # Mason
 bricks/**/hooks/build/
+report.xml
