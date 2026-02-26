@@ -42,6 +42,34 @@ If `bundle` points to system Ruby and fails, run with Homebrew Ruby:
 
 Run all commands from `ios/`.
 
+### Fastlane wrapper (recommended from repo root)
+
+You can run iOS fastlane via wrapper:
+
+```sh
+bash tools/macos/distribution/fastlane/ios_fastlane.sh <command> [args...]
+```
+
+Wrapper global flags:
+- `--dry-run`
+- `--verbose`
+- `--ci`
+- `-h` / `--help`
+
+Wrapper command types:
+- lane aliases: `test`, `build_ios`, `build_ipa`, `beta`, `beta_ipa`, `deploy`, `deploy_alpha`, `deploy_beta`, `deploy_production`
+- `lane <lane_name> [key:value ...]` for any lane
+- `raw <fastlane args...>` for direct Fastlane actions (`deliver`, `lanes`, ...)
+
+Examples:
+
+```sh
+bash tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
+bash tools/macos/distribution/fastlane/ios_fastlane.sh build_ipa flavor:prod export_method:app-store
+bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy --dry-run flavor:prod track:production
+bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
+```
+
 ### Test
 
 ```sh
