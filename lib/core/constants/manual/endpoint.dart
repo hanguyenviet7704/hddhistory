@@ -46,6 +46,7 @@ mixin AppEndpoint {
 
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';
+  static const String onboardingsScenarios = '/api/v2/onboardings';
   static const String onboardingsById = '/api/v1/onboardings/{id}';
 
   //* Chats API
