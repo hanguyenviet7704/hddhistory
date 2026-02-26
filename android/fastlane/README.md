@@ -44,6 +44,34 @@ Verify Fastlane:
 
 All commands below are run inside `android/`.
 
+### Fastlane wrapper (recommended from repo root)
+
+You can run Android fastlane via wrapper:
+
+```sh
+bash tools/macos/distribution/fastlane/android_fastlane.sh <command> [args...]
+```
+
+Wrapper global flags:
+- `--dry-run`
+- `--verbose`
+- `--ci`
+- `-h` / `--help`
+
+Wrapper command types:
+- lane aliases: `test`, `build_apk`, `build_bundle`, `beta`, `beta_bundle`, `deploy`, `deploy_alpha`, `deploy_beta`, `deploy_production`
+- `lane <lane_name> [key:value ...]` for any lane
+- `raw <fastlane args...>` for direct Fastlane actions (`supply`, `lanes`, ...)
+
+Examples:
+
+```sh
+bash tools/macos/distribution/fastlane/android_fastlane.sh lanes --ci
+bash tools/macos/distribution/fastlane/android_fastlane.sh build_apk flavor:dev
+bash tools/macos/distribution/fastlane/android_fastlane.sh deploy --dry-run flavor:prod track:internal
+bash tools/macos/distribution/fastlane/android_fastlane.sh raw supply init --package_name com.eup.meup
+```
+
 ### Build
 
 ```sh

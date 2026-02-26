@@ -33,7 +33,8 @@ release:android:fastlane:skeleton:
       elif [ -f ".info/key/fastlane_playstore_key.json" ]; then
         ruby -rjson -e 'JSON.parse(File.read(ARGV[0]))' ".info/key/fastlane_playstore_key.json"
       fi
-    - cd android && bundle config set path vendor/bundle && bundle install --jobs 4 --retry 3 && bundle exec fastlane lanes
+    - bash tools/macos/distribution/fastlane/android_fastlane.sh lanes --ci
+    - bash tools/macos/distribution/fastlane/android_fastlane.sh deploy --ci --dry-run flavor:prod track:internal
   rules:
     - if: '$ENABLE_FASTLANE == "1" && $CI_COMMIT_BRANCH == "main"'
       when: manual
@@ -72,7 +73,8 @@ release:ios:fastlane:skeleton:
         echo "Missing App Store issuer/key contract. Set APPSTORE_ISSUER_ID + APPSTORE_KEY_ID or provide values in .info/app/app.json"
         exit 1
       fi
-    - cd ios && bundle config set path vendor/bundle && bundle install --jobs 4 --retry 3 && bundle exec fastlane lanes
+    - bash tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
+    - bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy --ci --dry-run flavor:prod track:production
   rules:
     - if: '$ENABLE_FASTLANE == "1" && $CI_COMMIT_BRANCH == "main"'
       when: manual

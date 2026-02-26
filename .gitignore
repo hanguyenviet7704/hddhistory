@@ -95,3 +95,4 @@ plans/
 bricks/**/hooks/build/
 
 .ignore
+report.xml

@@ -35,11 +35,40 @@ If `bundle` points to system Ruby and fails, run with Homebrew Ruby:
 - Flutter + FVM installed.
 - CocoaPods installed (`pod install` in `ios/` when needed).
 - App Store Connect API key configured in `.info/app/app.json`.
+- App Store Connect team configured in `ios/fastlane/Appfile` (`itc_team_id`).
 - Firebase CLI logged in (for Firebase distribution).
 
 ## 3) Lane commands
 
 Run all commands from `ios/`.
+
+### Fastlane wrapper (recommended from repo root)
+
+You can run iOS fastlane via wrapper:
+
+```sh
+bash tools/macos/distribution/fastlane/ios_fastlane.sh <command> [args...]
+```
+
+Wrapper global flags:
+- `--dry-run`
+- `--verbose`
+- `--ci`
+- `-h` / `--help`
+
+Wrapper command types:
+- lane aliases: `test`, `build_ios`, `build_ipa`, `beta`, `beta_ipa`, `deploy`, `deploy_alpha`, `deploy_beta`, `deploy_production`
+- `lane <lane_name> [key:value ...]` for any lane
+- `raw <fastlane args...>` for direct Fastlane actions (`deliver`, `lanes`, ...)
+
+Examples:
+
+```sh
+bash tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
+bash tools/macos/distribution/fastlane/ios_fastlane.sh build_ipa flavor:prod export_method:app-store
+bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy --dry-run flavor:prod track:production
+bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
+```
 
 ### Test
 
@@ -67,12 +96,16 @@ bundle exec fastlane build_ipa flavor:prod export_method:app-store
 bundle exec fastlane beta flavor:dev
 
 # TestFlight
-bundle exec fastlane beta_ipa flavor:dev
-bundle exec fastlane beta_ipa flavor:dev changelog:"Build notes"
+# Default flavor for beta_ipa is prod
+bundle exec fastlane beta_ipa
+bundle exec fastlane beta_ipa flavor:prod
+bundle exec fastlane beta_ipa flavor:stg changelog:"Build notes"
 bundle exec fastlane beta_ipa flavor:dev distribute_external:true groups:"qa-team"
 ```
 
-### Deploy (Android-like API)
+When `distribute_external:true`, `groups` is required and `skip_waiting_for_build_processing` must be `false`.
+
+### Deploy
 
 ```sh
 # Default: flavor=prod, track=internal -> method=testflight
@@ -115,13 +148,7 @@ bundle exec fastlane deploy_beta flavor:stg
 bundle exec fastlane deploy_production flavor:prod
 ```
 
-## 4) Metadata workflow (same idea as Android)
-
-Android uses:
-
-```text
-android/fastlane/metadata/android/<locale>/
-```
+## 4) Metadata workflow 
 
 iOS equivalent is:
 
@@ -177,5 +204,8 @@ bundle exec fastlane deliver --app_identifier com.eup.meup --screenshots_path fa
 - `beta` uses `tools/macos/distribution/distribute_ios.sh` for Firebase.
 - `beta_ipa` uses `upload_to_testflight`.
 - `deploy` with `method:appstore` (or `track:production`) uses `upload_to_app_store`.
+- `itc_provider` for uploads resolves in this order:
+  1) `itc_team_id` in `ios/fastlane/Appfile`
+  2) fallback: `.info/app/app.json` -> `ios.contentProviderId`
 - Metadata flag mapping for App Store deploy: `upload_metadata` or `upload_all_metadata` enables metadata upload, and `upload_screenshots`/`upload_images`/`upload_all_metadata` enables screenshot upload.
 - Running `bundle exec fastlane lanes` may regenerate this README automatically.

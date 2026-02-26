@@ -148,6 +148,48 @@ All distribution tools use centralized configuration and print commands before e
 ./distribute_ios.sh [dev|stg|prod] [--build-first] [--ipa <path>] [--dry-run]
 ```
 
+### Fastlane Wrappers (Android + iOS)
+
+Fastlane wrappers are available at:
+
+```bash
+tools/macos/distribution/fastlane/android_fastlane.sh
+tools/macos/distribution/fastlane/ios_fastlane.sh
+```
+
+Both wrappers support:
+- lane aliases for all current lanes
+- `lane <lane_name>` generic execution
+- `raw <fastlane args...>` passthrough for any Fastlane command/action
+- global flags: `--dry-run`, `--verbose`, `--ci`, `--help`
+
+Examples:
+
+```bash
+# Android
+bash tools/macos/distribution/fastlane/android_fastlane.sh lanes --ci
+bash tools/macos/distribution/fastlane/android_fastlane.sh build_apk flavor:dev
+bash tools/macos/distribution/fastlane/android_fastlane.sh deploy --dry-run flavor:prod track:internal
+bash tools/macos/distribution/fastlane/android_fastlane.sh deploy track:production
+bash tools/macos/distribution/fastlane/android_fastlane.sh lane deploy flavor:prod track:production
+bash tools/macos/distribution/fastlane/android_fastlane.sh raw deploy flavor:prod track:production
+bash tools/macos/distribution/fastlane/android_fastlane.sh raw supply init --package_name com.eup.meup
+
+# iOS
+bash tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
+bash tools/macos/distribution/fastlane/ios_fastlane.sh beta_ipa flavor:stg changelog:"Build notes"
+bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy --dry-run flavor:prod track:production
+bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy flavor:prod track:production upload_metadata:true
+bash tools/macos/distribution/fastlane/ios_fastlane.sh lane deploy flavor:prod track:production upload_metadata:true
+bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deploy flavor:prod track:production upload_metadata:true
+bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
+```
+
+Notes:
+- Default flavor in deploy lanes is `prod`.
+- For iOS metadata flags (`upload_metadata`, `upload_screenshots`), use `deploy ...` / `lane deploy ...` / `raw deploy ...`.
+- `deploy_production` is a shortcut lane and not the best choice when you need metadata flags.
+
 ### Tester Management
 
 #### `manage_testers.sh`
