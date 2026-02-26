@@ -57,6 +57,14 @@ def app_store_api_key
   )
 end
 
+def itc_provider
+  provider = CredentialsManager::AppfileConfig.try_fetch_value(:itc_team_id)
+  provider = app_config.dig("ios", "contentProviderId") if provider.to_s.strip.empty?
+  return nil if provider.to_s.strip.empty?
+
+  provider.to_s
+end
+
 def latest_ipa_path
   ipa_files = Dir.glob(File.join(project_root, "build", "ios", "ipa", "**", "*.ipa"))
   ipa_files.max_by { |file| File.mtime(file) }
@@ -149,7 +157,7 @@ platform :ios do
   desc "Submit a new Beta Build to TestFlight"
   lane :beta_ipa do |options|
     ensure_macos!
-    flavor = options[:flavor] || "dev"
+    flavor = options[:flavor] || "prod"
     build_ipa(flavor: flavor, export_method: "app-store")
 
     ipa_path = latest_ipa_path
@@ -161,6 +169,8 @@ platform :ios do
       ipa: ipa_path,
       skip_waiting_for_build_processing: options.key?(:skip_waiting_for_build_processing) ? truthy?(options[:skip_waiting_for_build_processing]) : false
     }
+    provider = itc_provider
+    upload_options[:itc_provider] = provider if provider
 
     upload_options[:changelog] = options[:changelog] if options[:changelog]
     if truthy?(options[:distribute_external])
@@ -233,14 +243,18 @@ platform :ios do
       metadata_enabled = upload_all_metadata || upload_metadata
       screenshots_enabled = upload_all_metadata || upload_images || upload_screenshots
 
-      upload_to_app_store(
+      upload_options = {
         api_key: app_store_api_key,
         app_identifier: bundle_id_for_flavor(flavor),
         ipa: ipa_path,
         skip_metadata: !metadata_enabled,
         skip_screenshots: !screenshots_enabled,
         skip_binary_upload: truthy?(options[:skip_binary_upload])
-      )
+      }
+      provider = itc_provider
+      upload_options[:itc_provider] = provider if provider
+
+      upload_to_app_store(upload_options)
     else
       UI.user_error!("Unsupported deploy method '#{method}'. Use firebase, testflight, both, or appstore.")
     end
