@@ -77,7 +77,7 @@ bundle exec fastlane beta_ipa flavor:dev distribute_external:true groups:"qa-tea
 
 When `distribute_external:true`, `groups` is required and `skip_waiting_for_build_processing` must be `false`.
 
-### Deploy (Android-like API)
+### Deploy
 
 ```sh
 # Default: flavor=prod, track=internal -> method=testflight
@@ -120,13 +120,7 @@ bundle exec fastlane deploy_beta flavor:stg
 bundle exec fastlane deploy_production flavor:prod
 ```
 
-## 4) Metadata workflow (same idea as Android)
-
-Android uses:
-
-```text
-android/fastlane/metadata/android/<locale>/
-```
+## 4) Metadata workflow 
 
 iOS equivalent is:
 
