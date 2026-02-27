@@ -7,7 +7,7 @@ class GetCourseUseCase implements BaseUseCase<String, CourseEntity> {
   GetCourseUseCase(this._repository);
 
   @override
-  TaskEither<AppException, CourseEntity> call(String params) {
-    return _repository.getCourse(params);
+  TaskEither<AppException, CourseEntity> call(String courseId) {
+    return _repository.getCourse(courseId);
   }
 }
