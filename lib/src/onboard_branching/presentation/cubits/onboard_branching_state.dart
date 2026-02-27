@@ -7,7 +7,9 @@ enum OnboardBranchingStatus { initial, loading, success, failure }
 abstract class OnboardBranchingState with _$OnboardBranchingState {
   const factory OnboardBranchingState({
     @Default(OnboardBranchingStatus.initial) OnboardBranchingStatus status,
-    OnboardingScenarioBranchingEntity? selectedItem,
+    @Default(OnboardingScenarioBranchingEntity()) OnboardingScenarioBranchingEntity onboardScenarioData,
+    @Default(0) int currentSceneIndex,
+    @Default([]) List<OnboardingScenarioBranchOptionEntity> selectedBranchOptions,
     String? errorMessage,
   }) = _OnboardBranchingState;
 

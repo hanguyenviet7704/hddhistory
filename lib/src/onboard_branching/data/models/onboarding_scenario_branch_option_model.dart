@@ -6,7 +6,7 @@ abstract class OnboardingScenarioBranchOptionModel with _$OnboardingScenarioBran
     @Default(0) int id,
     @Default(BaseMultiLanguage()) BaseMultiLanguage label,
     @Default('') String icon,
-    String? nextSceneId,
+    @Default('') String nextSceneId,
     @Default([]) List<String> courses,
   }) = _OnboardingScenarioBranchOptionModel;
 

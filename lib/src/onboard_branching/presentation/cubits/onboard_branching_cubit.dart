@@ -24,7 +24,7 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> with CubitUseCa
         emit(
           state.copyWith(
             status: OnboardBranchingStatus.success,
-            selectedItem: item,
+            onboardScenarioData: item,
           ),
         );
       },
