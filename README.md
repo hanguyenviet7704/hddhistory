@@ -1,54 +1,79 @@
 # Meup Flutter Application
 
-Meup is a multi-platform Flutter product delivering interactive language-learning experiences with 13 feature modules using Clean Architecture, TaskEither-based use cases, and cross-platform tooling. This README stays concise—treat the `docs/` directory as the canonical source of truth.
+Meup is a multi-platform Flutter product for interactive language learning.
+The app uses Clean Architecture with feature modules under `lib/src`, `TaskEither<AppException, T>` use cases, and cross-platform build/localization tooling.
 
 ## Quick Start
-1. **Bootstrap tooling**
-   ```bash
-   tools/<os>/config/setup_project.sh        # add --non-interactive for CI
-   tools/<os>/smoke.sh                       # sanity check (tools\windows\smoke.bat)
-   ```
-2. **Generate code + localization**
-   ```bash
-   dart run build_runner build --delete-conflicting-outputs
-   tools/<os>/localization/localization.sh pull
-   dart run slang && dart run slang_build_runner
-   ```
-3. **Run quality gates**
-   ```bash
-   flutter analyze
-   flutter test
-   ```
-4. **Launch an environment**
-   ```bash
-   flutter run --flavor dev -t lib/main_dev.dart
-   # or use IDE run configurations (VS Code/.vscode, Android Studio/.idea)
-   ```
+1. Bootstrap tooling
+```bash
+# macOS
+tools/macos/config/setup_project.sh --non-interactive
 
-Additional flows (builds, distribution, Firebase config) are documented inside `docs/system-architecture.md` and `docs/code-standards.md`.
+# Linux
+tools/linux/config/setup_project.sh --non-interactive
+
+tools/smoke.sh
+
+# Windows
+tools\\windows\\config\\setup_project.bat --non-interactive
+tools\\windows\\smoke.bat
+```
+
+2. Generate code and localization
+```bash
+dart run build_runner build --delete-conflicting-outputs
+
+# macOS
+tools/macos/localization/localization.sh pull
+tools/macos/localization/localization.sh slang
+
+# Linux
+tools/linux/localization/localization.sh pull
+tools/linux/localization/localization.sh slang
+
+# Windows
+tools\\windows\\localization\\localization.bat pull
+tools\\windows\\localization\\localization.bat slang
+```
+
+3. Run quality checks
+```bash
+flutter analyze
+flutter test
+```
+
+4. Launch a flavor
+```bash
+flutter run --flavor dev -t lib/main_dev.dart
+# stg: --flavor stg -t lib/main_stg.dart
+# prod: --flavor prod -t lib/main_prod.dart
+```
+
+## Current Repo Facts
+- Feature modules in `lib/src`: **15**.
+- Module folders: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
+- Dart SDK constraint (`pubspec.yaml`): `>=3.11.0 <4.0.0`.
+- iOS deployment target (`ios/Podfile`): `15.0`.
 
 ## Core Documentation
 | Topic | Location |
 | --- | --- |
-| Product Development Requirements | `docs/project-overview-pdr.md` |
-| Code Standards & Processes | `docs/code-standards.md` |
+| Project Overview & PDR | `docs/project-overview-pdr.md` |
+| Code Standards | `docs/code-standards.md` |
 | System Architecture | `docs/system-architecture.md` |
-| Codebase Snapshot | `docs/codebase-summary.md` |
-| Tooling & Configuration Reference | `tools/README.md`, `.info/README.md` |
+| Codebase Summary | `docs/codebase-summary.md` |
+| Deployment | `docs/deployment-guide.md` |
+| Design Guidelines | `docs/design-guidelines.md` |
+| API Integration | `docs/api-integration-guide.md` |
+| GitLab CI/CD Setup | `docs/gitlab-cicd-setup-guide.md` |
+| Tooling & Configuration | `tools/README.md`, `.info/README.md` |
 
 ## Architecture Highlights
-- 13 feature modules in `lib/src/<feature>/` split into presentation, domain (TaskEither use cases), and data (Retrofit/GraphQL repos).
-- `lib/config/di` bootstraps `get_it` + `injectable`; `lib/config/routes` uses `go_router` for typed navigation.
-- State management via BLoC/Cubit with `CubitUseCaseHandlerMixin` for boilerplate reduction.
-- Localization assets live under `assets/i18n/` and regenerate via `slang`.
-- Build scripts in `tools/<os>/build` honor `.env/.env.<flavor>` and `.info/app/*.json` for flavor-specific settings.
-
-## Testing & Quality
-- Workflow: build_runner → analyze → test → optional coverage.
-- TaskEither adoption is complete—repositories, use cases, and cubits must maintain the pattern to ensure consistent error semantics.
-
-## Support
-If an answer is not in this README, check `docs/`. Update those docs before sharing process changes with other developers.
+- `lib/config/di` wires `get_it` + `injectable`.
+- `lib/config/routes` uses typed `go_router` route data.
+- Feature state uses Cubit/BLoC with `runUseCase`, `runUseCaseList`, `runUseCaseVoid`, `runUseCasePageBreak` mixins.
+- Localization source is `assets/i18n/<locale>/<module>.yaml`; generated output is in `lib/config/l10n/`.
+- Build scripts in `tools/macos|linux|windows/` apply flavor env files from `.env/.env.<flavor>`.
 
 ## License
 See `LICENSE.md`.

@@ -1,796 +1,165 @@
-# Code Standards & Conventions
+# Code Standards
 
-**Last Updated:** Feb 10, 2026
-**Applies To:** All Dart/Flutter code in Meup project
+**Last Updated:** 2026-02-27  
+**Scope:** Dart/Flutter source in this repository
 
----
-
-## 1. Architecture Pattern: Clean Architecture + BLoC
-
-### Layer Separation (Mandatory)
+## 1. Architecture Rules
+### Layer boundaries
+```text
+presentation -> domain -> data
 ```
-Presentation Layer (Pages, Widgets, Cubits)
-         ↓
-Domain Layer (Entities, Repository Interfaces, Use Cases)
-         ↓
-Data Layer (Models, APIs, Repository Implementations, Data Sources)
-```
+- `presentation`: pages/widgets/cubits/blocs and UI-only mapping.
+- `domain`: entities, repository interfaces, use cases.
+- `data`: API clients, models, repository implementations, local/remote sources.
 
-### Rules
-- **Never** import data types in presentation (no Dio, Retrofit, or Models)
-- **Never** import presentation types in domain/data
-- Domain layer must be **platform-agnostic** (no Flutter imports except for value types)
-- Repository interface lives in domain, implementation in data
+### Mandatory constraints
+1. Do not import data-layer types (Retrofit models, Dio classes) into presentation/domain.
+2. Keep repository interfaces in `domain`, implementations in `data`.
+3. Keep domain logic platform-agnostic where possible.
+4. Keep feature work inside `lib/src/<feature>/` unless explicitly shared.
 
----
+## 2. State Management Standards
+- Primary pattern: Cubit/Bloc via `flutter_bloc`.
+- Persistent state: HydratedCubit only where persistence is needed.
+- Use mixins from `lib/core/base/bloc/`:
+  - `runUseCase<T>`
+  - `runUseCaseList<T>`
+  - `runUseCaseVoid`
+  - `runUseCasePageBreak<T>()`
 
-## 2. State Management: BLoC/Cubit Pattern
-
-### Cubit Structure
-```dart
-class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin {
-  final GetCoursesUseCase _getCoursesUseCase;
-
-  CourseCubit(this._getCoursesUseCase) : super(const CourseState.initial());
-
-  void loadCourses() {
-    runUseCase<List<CourseEntity>>(
-      useCase: () => _getCoursesUseCase(const PageBreakRequest()),
-      onSuccess: (courses) => emit(CourseState.success(courses: courses)),
-    );
-  }
-}
+### Preferred flow
+```text
+Widget/Page -> Cubit/Bloc -> UseCase -> Repository Interface -> Repository Impl -> API/Cache
 ```
 
-### State Definition with Freezed
-```dart
-@freezed
-class CourseState with _$CourseState {
-  const factory CourseState.initial() = _Initial;
-  const factory CourseState.loading() = _Loading;
-  const factory CourseState.success({required List<CourseEntity> courses}) = _Success;
-  const factory CourseState.failure({required String errorMessage}) = _Failure;
-}
-```
-
-### Cubit vs BLoC
-- **Use Cubit:** Simple states, single source of truth, function-driven
-- **Use BLoC:** Complex multi-event flows, multiple listeners (e.g., AuthBloc)
-- Prefer Cubits for new features
-
-### HydratedCubit (Persistence)
-Extend `HydratedCubit<T>` and override `fromJson`/`toJson` for persistent state (e.g., `ThemeCubit`, `LocaleCubit`). State survives app restarts.
-
----
-
-## 2.5 Factory Pattern for Type Routing (MEUP-637)
-
-**When to Use:** Route different types to appropriate UI bodies/handlers
-
-```dart
-// Union type for payload variants
-@freezed
-class QuestionPayloadEntity with _$QuestionPayloadEntity {
-  const factory QuestionPayloadEntity.singleChoice({
-    required List<ChoiceOptionEntity> options,
-    required String correctOptionId,
-  }) = QuestionPayloadSingleChoice;
-
-  const factory QuestionPayloadEntity.singleChoiceNoCorrectAnswer({
-    required List<ChoiceOptionEntity> options,
-    required String documentUrl,
-  }) = QuestionPayloadSingleChoiceNoCorrectAnswer;
-
-  const factory QuestionPayloadEntity.speaking({
-    required String instruction,
-    required int maxDuration,
-  }) = QuestionPayloadSpeaking;
-  // ... other variants
-}
-
-// Factory for routing to correct UI body
-class LessonBodyFactory {
-  static Widget createBody({
-    required QuestionPayloadEntity payload,
-    required QuestionEntity question,
-  }) {
-    return payload.when(
-      singleChoice: (options, correctId) => ChoiceQuestionBody(
-        options: options,
-        correctId: correctId,
-      ),
-      singleChoiceNoCorrectAnswer: (options, docUrl) => NoCorrectAnswerChoiceBody(
-        options: options,
-        documentUrl: docUrl,
-      ),
-      speaking: (instruction, duration) => SpeakingQuestionBody(
-        instruction: instruction,
-        maxDuration: duration,
-      ),
-      // ... other cases — exhaustive matching enforced by compiler
-    );
-  }
-}
-```
-
-**Benefits:** Type-safe exhaustive matching, centralized routing, easy to extend with new question types.
-
----
-
-## 3. Error Handling: Functional with TaskEither
-
-### Use Case Pattern
-```dart
-abstract interface class BaseUseCase<Params, Result> {
-  TaskEither<AppException, Result> call(Params params);
-}
-
-class GetUserUseCase implements BaseUseCase<String, UserEntity> {
-  final UserRepository _repository;
-
-  GetUserUseCase(this._repository);
-
-  @override
-  TaskEither<AppException, UserEntity> call(String userId) {
-    return _repository.getUserById(userId);
-  }
-}
-```
-
-### AppException Sealed Class
-```dart
-sealed class AppException {
-  // Generic errors
-  factory AppException.generic({String? message}) = _Generic;
-  factory AppException.server({String? statusCode}) = _Server;
-  factory AppException.connection() = _Connection;
-  factory AppException.database() = _Database;
-
-  // HTTP errors
-  factory AppException.notFound() = _NotFound;
-  factory AppException.unauthorized() = _Unauthorized;
-  factory AppException.invalidInput({String? field}) = _InvalidInput;
-
-  String get message; // Raw error message
-  String get displayMessage; // User-friendly message
-}
-```
-
-### Repository Implementation
-```dart
-class UserRepositoryImpl implements UserRepository {
-  final UserRemoteDataSource _remoteDataSource;
-
-  @override
-  TaskEither<AppException, UserEntity> getUserById(String userId) {
-    return TaskEither.tryCatch(
-      () async => (await _remoteDataSource.getUserById(userId)).toEntity(),
-      (error, stackTrace) => AppException.server(statusCode: '500'),
-    );
-  }
-}
-```
-
-### In Cubits (Using Mixin)
-```dart
-void loadUser(String userId) {
-  runUseCase<UserEntity>(
-    useCase: () => _getUserUseCase(userId),
-    onSuccess: (user) {
-      emit(UserState.success(user: user));
-    },
-  );
-  // Mixin handles loading state, error display automatically
-}
-```
-
----
+## 3. Error Handling and Result Types
+- Use functional return types: `TaskEither<AppException, T>`.
+- Use `AppException` for normalized error categories and user-facing display messages.
+- For network and transform pipelines, prefer helpers in the restful request handler mixin.
 
 ## 4. Naming Conventions
+### Files and directories
+- Dart files: `snake_case.dart`.
+- Feature folders: existing path names are canonical and must be preserved (`achievenment`, `onboard_branching`, etc.).
 
-### Files
-| Item | Convention | Example |
-|------|-----------|---------|
-| Dart file | `snake_case` | `auth_bloc.dart`, `user_entity.dart` |
-| Page | `{name}_page.dart` | `login_page.dart`, `course_page.dart` |
-| Widget | `{name}_widget.dart` | `course_card.dart`, `lesson_item.dart` |
-| Service | `{name}_service.dart` | `auth_service.dart`, `tracking_service.dart` |
-| Use Case | `{name}_usecase.dart` | `login_usecase.dart`, `get_courses_usecase.dart` |
-| Repository | `{name}_repository_impl.dart` | `user_repository_impl.dart` |
-| Data Source | `{name}_data_source.dart` | `user_remote_data_source.dart` |
+### Types and members
+- Classes/enums/types: PascalCase.
+- Variables/functions/methods: camelCase.
+- Private members: `_camelCase`.
 
-### Classes & Types
-| Item | Convention | Example |
-|------|-----------|---------|
-| Class | `PascalCase` | `LoginPage`, `CourseEntity`, `UserCubit` |
-| Enum | `PascalCase` | `ExerciseType`, `UserRole` |
-| Typedef | `PascalCase` | `UserCallback`, `ResultHandler` |
-| Constant | `SCREAMING_SNAKE_CASE` | `API_BASE_URL`, `CACHE_KEY_USER` |
+### Suffix patterns
+- Cubits/Blocs: `*Cubit`, `*Bloc`.
+- Use cases: `*UseCase` / `*Usecase` (keep existing local naming where already established).
+- Entities/models: `*Entity`, `*Model`.
+- API clients: `*Api`.
 
-### Cubit/BLoC
-| Item | Convention | Example |
-|------|-----------|---------|
-| Cubit | `{Name}Cubit` | `AuthCubit`, `CourseCubit` |
-| BLoC | `{Name}Bloc` | `AuthBloc` |
-| State | `{Name}State` | `AuthState`, `CourseState` |
-| Event | `{Name}Event` | `AuthEvent`, `CourseEvent` |
-
-### API & Endpoints
-| Item | Convention | Example |
-|------|-----------|---------|
-| API Class | `{Name}Api` | `UserApi`, `CourseApi` |
-| Endpoint | `/path/to/resource` | `/users/{id}`, `/courses?page=1` |
-| Model (API) | `{Name}Model` | `UserModel`, `CourseModel` |
-| Entity (Domain) | `{Name}Entity` | `UserEntity`, `CourseEntity` |
-
-### Variables & Functions
-```dart
-// Local variables: camelCase
-String firstName;
-int itemCount;
-
-// Private members: _camelCase prefix
-String _privateField;
-void _privateMethod() {}
-
-// Function/Method: camelCase
-void loadCourses() {}
-Future<UserEntity> fetchUserById(String id) {}
-
-// Callbacks: camelCase with Action/Callback suffix
-Function onSuccess;
-void Function(String) onError;
-VoidCallback onTap;
-```
-
----
-
-## 5. Code Organization & File Structure
-
-### Feature Module Structure (Mandatory)
-```
-lib/src/feature_name/
-├── domain/
-│   ├── entities/
-│   │   ├── {entity}_entity.dart
-│   │   └── ...
-│   ├── repositories/
-│   │   └── {repository}_repository.dart
-│   └── usecases/
-│       ├── {usecase}_usecase.dart
-│       └── ...
+## 5. Module Layout Standard
+Canonical layout for features:
+```text
+lib/src/<feature>/
 ├── data/
 │   ├── datasources/
-│   │   ├── remote/
-│   │   │   └── {name}_api.dart (Retrofit)
-│   │   └── local/
-│   │       └── {name}_local_data_source.dart
 │   ├── models/
-│   │   ├── {model}_model.dart
-│   │   └── ...
 │   └── repositories/
-│       └── {repository}_repository.dart
+├── domain/
+│   ├── entities/
+│   ├── repositories/
+│   └── usecases/
 └── presentation/
-    ├── cubits/
-    │   ├── {cubit}_cubit.dart
-    │   └── ...
+    ├── cubits/ or blocs/
     ├── pages/
-    │   ├── {page}_page.dart
-    │   └── ...
     └── widgets/
-        ├── {widget}_widget.dart
-        └── ...
 ```
 
-### Maximums Per File (IMPORTANT)
-- **Max 200 lines per code file** (excluding generated code)
-- **Split when approaching limit:** Create focused sub-widgets or services
-- **Use composition over inheritance** for widgets
-- **Extract utilities into separate files** for reusability
+Notes:
+- Some existing modules do not have all subfolders (for example `common`, `setting`).
+- Do not force structural churn unless required by task scope.
 
-### Part File Usage (When Necessary)
-```dart
-// main_file.dart
-library auth;
+## 6. Pagination and API Contract Standards
+- Use `PageBreakRequest` for paginated endpoints.
+- App-facing fields: `page`, `limit`, `orderBy`, `order`, `search`, `filter`.
+- Serialized query fields: `page`, `take`, `orderBy`, `order`, `search`.
+- Paginated response shape: `BasePageBreak<T>` with `totalPages`, `currentPage`, `itemsPerPage`, `items`.
 
-part 'auth_bloc.dart';
-part 'auth_state.dart';
-part 'auth_event.dart';
-```
+## 7. Dependency Injection Standards
+- DI stack: `get_it` + `injectable`.
+- Annotate DI registrations (`@lazySingleton`, `@factoryMethod`) following existing patterns.
+- Resolve dependencies through DI container, not ad-hoc global constructors.
 
----
+## 8. Code Generation Standards
+Do not edit generated files directly:
+- `*.g.dart`
+- `*.freezed.dart`
+- `*.config.dart`
+- `*.graphql.dart`
 
-## 6. Code Generation Workflow
-
-### Freezed (Immutable Classes)
-```dart
-import 'package:freezed_annotation/freezed_annotation.dart';
-
-part 'user_entity.freezed.dart';
-part 'user_entity.g.dart';
-
-@freezed
-class UserEntity with _$UserEntity {
-  const factory UserEntity({
-    required String id,
-    required String name,
-    String? email,
-  }) = _UserEntity;
-
-  factory UserEntity.fromJson(Map<String, dynamic> json) =>
-      _$UserEntityFromJson(json);
-}
-```
-
-**Usage:** Immutable, auto-equality, copyWith, pattern matching
-
-### Retrofit (REST API)
-```dart
-import 'package:retrofit/retrofit.dart';
-import 'package:dio/dio.dart';
-
-part 'user_api.g.dart';
-
-@RestApi(baseUrl: 'https://api.meup.com')
-abstract class UserApi {
-  factory UserApi(Dio dio, {String baseUrl}) = _UserApi;
-
-  @GET('/users/{id}')
-  Future<UserModel> getUser(@Path('id') String id);
-
-  @POST('/users')
-  Future<UserModel> createUser(@Body() UserModel user);
-
-  @GET('/users')
-  Future<List<UserModel>> listUsers(
-    @Query('page') int page,
-    @Query('limit') int limit,
-  );
-}
-```
-
-### Injectable (Dependency Injection)
-```dart
-@LazySingleton()
-class UserService {
-  final UserRepository _repository;
-
-  UserService(this._repository);
-}
-
-@factoryMethod
-Future<DatabaseConnection> provideDatabaseConnection() async {
-  return DatabaseConnection();
-}
-```
-
-### Go Router (Type-Safe Navigation)
-```dart
-@TypedGoRoute<CourseRoute>(
-  path: '/course/:id',
-  name: 'course',
-  routes: [
-    TypedGoRoute<LessonRoute>(
-      path: 'lesson/:lessonId',
-      name: 'lesson',
-    ),
-  ],
-)
-class CourseRoute extends GoRouteData {
-  final String id;
-
-  @override
-  Page<void> buildPage(BuildContext context, GoRouterState state) {
-    return CupertinoPage(
-      child: CoursePage(courseId: id),
-    );
-  }
-}
-```
-
-**Command to regenerate all:**
+Regenerate with:
 ```bash
 dart run build_runner build --delete-conflicting-outputs
-dart run build_runner watch --delete-conflicting-outputs  # Development
 ```
 
----
-
-## 7. Testing Patterns
-
-### Unit Test Structure
-```dart
-void main() {
-  group('GetUserUseCase', () {
-    late GetUserUseCase useCase;
-    late MockUserRepository mockRepository;
-
-    setUp(() {
-      mockRepository = MockUserRepository();
-      useCase = GetUserUseCase(mockRepository);
-    });
-
-    test('returns UserEntity when repository succeeds', () async {
-      // Arrange
-      final user = UserEntity(id: '1', name: 'John');
-      when(mockRepository.getUserById('1'))
-          .thenAnswer((_) => TaskEither.right(user));
-
-      // Act
-      final result = await useCase('1').run();
-
-      // Assert
-      expect(result.isRight(), true);
-      expect(result.getOrElse((_) => null), user);
-    });
-
-    test('returns AppException on failure', () async {
-      // Arrange
-      when(mockRepository.getUserById('1'))
-          .thenAnswer((_) => TaskEither.left(AppException.notFound()));
-
-      // Act
-      final result = await useCase('1').run();
-
-      // Assert
-      expect(result.isLeft(), true);
-    });
-  });
-}
-```
-
-### Cubit Test Structure
-```dart
-void main() {
-  group('CourseCubit', () {
-    late CourseCubit cubit;
-    late MockGetCoursesUseCase mockUseCase;
-
-    setUp(() {
-      mockUseCase = MockGetCoursesUseCase();
-      cubit = CourseCubit(mockUseCase);
-    });
-
-    blocTest<CourseCubit, CourseState>(
-      'emits loading then success when courses loaded',
-      build: () {
-        final courses = [CourseEntity(id: '1', title: 'English')];
-        when(mockUseCase(...)).thenAnswer(
-          (_) => TaskEither.right(courses),
-        );
-        return cubit;
-      },
-      act: (cubit) => cubit.loadCourses(),
-      expect: () => [
-        isA<CourseState>().having(...),  // loading
-        isA<CourseState>().having(...),  // success
-      ],
-    );
-  });
-}
-```
-
-### Entity Union Type Test (MEUP-637)
-```dart
-void main() {
-  group('QuestionPayloadEntity', () {
-    test('correctly identifies single choice payload', () {
-      final payload = QuestionPayloadEntity.singleChoice(
-        options: [],
-        correctOptionId: '1',
-      );
-
-      payload.when(
-        singleChoice: (options, correctId) {
-          expect(correctId, '1');
-        },
-        singleChoiceNoCorrectAnswer: (_, __) => fail('Wrong type'),
-        // ... other cases fail
-      );
-    });
-
-    test('factory creates correct UI body for payload type', () {
-      final payload = QuestionPayloadEntity.singleChoice(
-        options: [...],
-        correctOptionId: '1',
-      );
-
-      final body = LessonBodyFactory.createBody(
-        payload: payload,
-        question: mockQuestion,
-      );
-
-      expect(body, isA<ChoiceQuestionBody>());
-    });
-  });
-}
-```
-
-### Mock Creation
-```dart
-import 'package:mockito/mockito.dart';
-
-class MockUserRepository extends Mock implements UserRepository {}
-class MockGetUserUseCase extends Mock implements GetUserUseCase {}
-
-// Or using Mockito generators (requires build_runner)
-```
-
----
-
-## 8. Commit Message Format
-
-### Convention (Conventional Commits)
-```
-type/TICKET-ID: subject
-```
-
-### Structure
-- **Type:** `feature`, `fix`, `refactor`, `style`, `docs`, `test`, `chore`, `perf`
-- **TICKET-ID:** Extracted from branch (e.g., `MEUP-123`)
-- **Subject:** Imperative, lowercase, no period, max 50 chars
-
-### Examples
-```
-feature/MEUP-123: add course roadmap visualization
-fix/MEUP-456: resolve lesson loading timeout
-refactor/MEUP-789: simplify exercise state management
-docs/MEUP-101: update authentication guide
-test/MEUP-202: add unit tests for progress tracking
-```
-
-### Extraction
-From branch `feature/MEUP-123-add-login`:
-- Type: `feature`
-- Ticket ID: `MEUP-123`
-- Subject: Commit description
-
----
-
-## 9. Code Quality Standards
-
-### Analyzer Configuration
-**File:** `analysis_options.yaml`
-
-```yaml
-linter:
-  rules:
-    - avoid_empty_else
-    - avoid_null_checks_in_equality_operators
-    - prefer_final_in_for_each
-    - prefer_single_quotes
-    - unnecessary_const
-    - unnecessary_constructor_name
-```
-
-**Excluded files (auto-generated):**
-```yaml
-exclude:
-  - '**/*.g.dart'
-  - '**/*.freezed.dart'
-  - '**/*.graphql.dart'
-  - '**/config/routes/routes.g.dart'
-```
-
-### Running Analysis
+## 9. Localization Standards
+- Source of truth: `assets/i18n/<locale>/<module>.yaml`.
+- Generated outputs: `lib/config/l10n/`.
+- Key style: lowerCamelCase, with module namespace implied by file.
+- Standard sync flow:
 ```bash
-flutter analyze                     # Static analysis
-dart format lib/ test/              # Auto-format (180 char width)
-flutter test                        # Run all tests
-flutter test test/unit/             # Specific test directory
+# macOS/Linux
+tools/<os>/localization/localization.sh pull
+tools/<os>/localization/localization.sh push --apply
+tools/<os>/localization/localization.sh slang
+
+# Windows
+tools\\windows\\localization\\localization.bat pull
+tools\\windows\\localization\\localization.bat push --apply
+tools\\windows\\localization\\localization.bat slang
 ```
 
-### Pre-Commit Checks (MANDATORY)
-1. Run `flutter analyze` - Fix linter warnings
-2. Run `dart format lib/ test/` - Auto-format code
-3. Run `flutter test` - Ensure all tests pass
-4. Verify no secrets in .env files (.gitignored)
-5. Commit with conventional message format
-
----
-
-## 10. Anti-Patterns & Forbidden Practices
-
-### ❌ NEVER
-```dart
-// 1. Import data types in presentation
-import 'package:dio/dio.dart';  // ❌ FORBIDDEN in presentation layer
-import 'package:retrofit/retrofit.dart';  // ❌ FORBIDDEN
-
-// 2. Use try-catch in domain layer
-try {
-  return repository.getData();  // ❌ Should use TaskEither
-} catch (e) {
-  // ...
-}
-
-// 3. Hardcode strings in widgets
-Text('Hello World');  // ❌ Should use localization
-
-// 4. Large files (> 200 LOC)
-class MegaWidget extends StatefulWidget {
-  // ... 500 lines of code  // ❌ Split into smaller widgets
-}
-
-// 5. Widget state mutation
-_courses = courses;  // ❌ In immutable state, use freezed
-
-// 6. Bypass DI container
-final service = UserService();  // ❌ Use getIt<UserService>()
-
-// 7. Direct Dio/GraphQL in presentation
-final response = await dio.get('/users');  // ❌ Use repository
-
-// 8. Circular module imports
-// auth imports course, course imports auth  // ❌ Refactor
-
-// 9. Multiple responsibilities per Cubit
-// CourseCubit handles loading + filtering + sorting  // ❌ Create separate cubits
-
-// 10. Ignored test failures
-// flutter test  // Output: 3 tests failed  // ❌ ALWAYS fix
+## 10. Testing and Quality Gates
+### Required local checks before merge
+```bash
+flutter analyze
+flutter test
 ```
 
-### ✅ DO
+### Test organization
+- Mirror features under `test/unit/<feature>/`.
+- Test file naming: `<target>_test.dart`.
+- Cover success and failure branches for new business logic.
 
-```dart
-// 1. Proper layer separation
-// Presentation imports domain, domain stands alone
-import 'package:meup/src/course/domain/repositories/course_repository.dart';
+## 11. Security and Secrets
+1. Never commit production secrets, signing keys, or private provisioning files.
+2. Keep credentials in CI variables or local secure storage.
+3. Keep release builds obfuscated with split debug info output.
+4. Keep symbol upload behavior explicit in CI (or intentionally skipped with env switch).
 
-// 2. Use TaskEither in domain
-TaskEither<AppException, CourseEntity> getCourse(String id) {
-  return repository.getCourseById(id);
-}
+## 12. Build and Runtime Constraints
+- Dart SDK (`pubspec.yaml`): `>=3.11.0 <4.0.0`.
+- iOS deployment target (`ios/Podfile`): `15.0`.
+- Flavors: `dev`, `stg`, `prod` (`lib/main_<flavor>.dart`).
 
-// 3. Use localization
-Text(context.text.course.courseTitle)
+## 13. Git and Change Hygiene
+- Keep changes scoped and reviewable.
+- Avoid unrelated refactors in feature/fix PRs.
+- Prefer conventional commit style.
 
-// 4. Keep files under 200 LOC
-// Split large widgets into smaller, focused components
-
-// 5. Immutable states with freezed
-@freezed
-class CourseState with _$CourseState {
-  const factory CourseState.success({required List<CourseEntity> courses}) = _Success;
-}
-
-// 6. Use DI container
-final cubit = getIt<CourseCubit>();
-
-// 7. Access data via repository
-final course = await _courseRepository.getCourseById(id);
-
-// 8. Avoid circular dependencies
-// Use dependency injection to break cycles
-
-// 9. Single responsibility per Cubit
-// CourseCubit: loads & selects course
-// CourseFilterCubit: manages filters separately
-
-// 10. Fix all test failures before commit
-flutter test  // Must pass 100%
+Examples:
+```text
+feat: add roleplay feedback summary card
+fix: handle null filter in page break request
+docs: sync deployment variable contract
 ```
 
----
+## 14. Documentation Sync Rules
+Update docs when any of the following change:
+1. Module inventory under `lib/src`.
+2. Runtime constraints (SDK, iOS/Android minimums).
+3. API request/response contracts.
+4. Build/deployment script flags or CI variable contracts.
 
-## 11. Documentation Comments
-
-### Class Documentation
-```dart
-/// Manages user authentication and session lifecycle.
-///
-/// Handles login, logout, token refresh, and OAuth flows.
-/// Persists auth state via HydratedCubit for app restarts.
-class AuthCubit extends HydratedCubit<AuthState> {
-  // ...
-}
-```
-
-### Function Documentation
-```dart
-/// Loads courses from the backend with pagination.
-///
-/// Parameters:
-/// - [page] - Page number (1-indexed)
-/// - [limit] - Items per page
-///
-/// Returns:
-/// - Success: List of [CourseEntity] objects
-/// - Failure: [AppException] with error details
-///
-/// Throws:
-/// - No exceptions (uses TaskEither for error handling)
-Future<TaskEither<AppException, List<CourseEntity>>> loadCourses(
-  int page,
-  int limit,
-) async {
-  // ...
-}
-```
-
-### Complex Logic Comments
-```dart
-// Calculate completion percentage based on attempts and passes
-// Formula: (totalCorrectAnswers / totalAttempts) * 100
-final completionPercentage = (correctAnswers / totalAttempts) * 100;
-```
-
----
-
-## 12. Localization Standards
-
-### Key Naming (camelCase, module as namespace)
-```yaml
-# assets/i18n/en/course.yaml
-courseCatalog: "Course Catalog"
-courseTitle: "Course Title"
-startLearning: "Start Learning"
-completeLesson: "Complete Lesson"
-```
-
-### In Code (NEVER hardcode)
-```dart
-// ✅ CORRECT: Text(context.text.course.courseCatalog)
-// ❌ WRONG:   Text('Course Catalog')
-```
-
-### Workflow
-`pull → edit YAML → push --apply → pull → slang → commit`
-See `docs/deployment-guide.md` Section 7 for detailed commands.
-
----
-
-## 13. Security Standards
-
-### Secrets Management
-- **NEVER** commit `.env` files, API keys, keystores
-- **ALWAYS** use `.gitignore` for sensitive files
-- **USE** environment variables with `--dart-define-from-file`
-- **Store** secrets in `.info/key/` (git-ignored)
-
-### Data Protection
-- Encrypt sensitive data in local storage
-- Use HTTPS for all API calls
-- Enable code obfuscation in release builds (`--obfuscate`)
-- Use secure token storage (system keychain when possible)
-
-### Error Handling
-- Never expose sensitive info in error messages
-- Log errors to Crashlytics (stripped of PII)
-- Use generic error messages for users
-
----
-
-## 14. Performance Guidelines
-
-- Use `const` constructors everywhere possible
-- Push `BlocBuilder` down the tree (wrap only the widget that changes)
-- Use `ListView.builder` for large lists (lazy rendering)
-- Dispose controllers and listeners properly
-- Use `late` for lazy initialization
-- Avoid circular references in cubits
-- Profile with DevTools before claiming performance
-
----
-
-## 15. Service Patterns
-
-- **Tracking**: 170+ events via `ITrackingService` → Firebase Analytics, Sentry. See `tracking_key.dart` for catalog.
-- **Remote Config**: `AppVersionConfigEntity`, `CourseConfigEntity`, `PaywallConfigEntity` auto-fetched on launch.
-- **Entity Extensions**: Use for computed properties (`bool get hasExplanation => explanationText.isNotEmpty;`).
-- See `docs/api-integration-guide.md` for detailed service patterns.
-
----
-
-## 16. Branch Naming
-
-Format: `type/TICKET-ID-description` (e.g., `feature/MEUP-123-add-course-roadmap`, `fix/MEUP-456-lesson-loading-timeout`)
-
----
-
-**Enforcement:** Code review validates adherence. Questions → architecture team or recent merged PRs.
-
-**Document Maintained By:** Architecture Team
-**Last Review:** Feb 10, 2026
-**Next Review:** Mar 22, 2026
+Minimum docs to review after technical changes:
+- `docs/codebase-summary.md`
+- `docs/system-architecture.md`
+- `docs/deployment-guide.md`
+- `docs/api-integration-guide.md`
+- `docs/gitlab-cicd-setup-guide.md`

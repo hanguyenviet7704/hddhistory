@@ -1,169 +1,124 @@
-# GitLab CI/CD Setup Guide (Meup)
+# GitLab CI/CD Setup Guide
 
-**Last Updated:** Feb 25, 2026  
-**Scope:** GitLab CI V2 (macOS shell pipeline active, Linux templates reusable)
+**Last Updated:** 2026-02-27  
+**Scope:** `.gitlab/ci/*` pipelines and required variable contracts
 
-## 1. Why this pipeline exists
-Think of CI/CD as a factory:
-- `prepare`: prepare raw materials
-- `quality`: quality gate
-- `build`: package products
-- `release_skeleton`: verify release desk is ready (manual)
+## 1. Pipeline Topology
+Top-level pipeline file:
+- `.gitlab/ci/pipeline.yml`
 
-This keeps mistakes caught early and build outputs consistent across branches.
-
-## 2. What runs on each trigger
-| Trigger | What runs |
-|---|---|
-| Merge Request | `prepare + quality` (quality runs only when relevant code/build files change) |
-| Push `develop` | `prepare + quality +` build APK for enabled flavors (`ENABLE_BUILD_DEV/STG=1`) + optional Firebase Distribution |
-| Push `main` | `prepare + quality +` build APK/AAB for enabled flavors (`ENABLE_BUILD_DEV/STG/PROD=1`) + optional Firebase Distribution (`prod`) |
-| Tag `v*` | Same as `main` |
-
-## 3. Pipeline files
-- `.gitlab/ci/pipeline.yml` (single entrypoint; configured by GitLab `ci_config_path`)
-- `.gitlab/ci/macos/00-workflow.yml` (workflow, defaults, cache)
+Current top-level includes target macOS templates:
+- `.gitlab/ci/macos/00-workflow.yml`
 - `.gitlab/ci/macos/10-prepare.yml`
 - `.gitlab/ci/macos/20-quality.yml`
 - `.gitlab/ci/macos/30-build.yml`
 - `.gitlab/ci/macos/40-release-skeleton.yml`
 - `.gitlab/ci/macos/45-firebase-distribution.yml`
+
+Linux template files also exist under `.gitlab/ci/linux/` and can be used for alternative include strategy.
+
+## 2. Pipeline Stages
+Defined stages:
+1. `prepare`
+2. `quality`
+3. `build`
+4. `release_skeleton`
+
+Typical flow:
+- prepare generated artifacts -> analyze/test -> conditional build jobs -> optional release skeleton/distribution jobs.
+
+## 3. Trigger Rules
+Workflow rules run on:
+- merge requests
+- `develop` branch
+- `main` branch
+- tags matching `v*`
+
+## 4. Bootstrap and Secret Injection
+Bootstrap script:
 - `.gitlab/scripts/bootstrap-secrets.sh`
 
-## 4. Runtime requirements
-For macOS shell runner jobs:
-- `flutter`, `dart`
-- `jq`, `python3`, `python3-venv`, `python3-pip`
-- `ruby`, `bundler` (fastlane skeleton jobs)
-- `node`, `npm`, `firebase-tools` (Firebase distribution jobs)
+Script responsibilities:
+1. Creates `.env/.env.dev|stg|prod` from CI vars if provided.
+2. Writes optional key files under `.info/key/`.
+3. Generates `build/ci/runtime.env` with exported runtime values.
+4. Falls back to `.info/app/firebase.json` token when `FIREBASE_TOKEN` is not set.
 
-The pipeline validates required tooling in `before_script`.  
-Set `CI_SKIP_SYSTEM_SETUP=1` only when the runner is already pre-provisioned.
+## 5. CI Variable Contract
+### 5.1 Build/distribution toggles
+- `ENABLE_BUILD_DEV`
+- `ENABLE_BUILD_STG`
+- `ENABLE_BUILD_PROD`
+- `ENABLE_DISTRIBUTE_DEV`
+- `ENABLE_DISTRIBUTE_STG`
+- `ENABLE_DISTRIBUTE_PROD`
+- `ENABLE_FASTLANE`
 
-Linux templates are still kept in the repository for reuse:
-- `.gitlab/ci/linux/00-workflow.yml`
-- `.gitlab/ci/linux/10-prepare.yml`
-- `.gitlab/ci/linux/20-quality.yml`
-- `.gitlab/ci/linux/30-build.yml`
-- `.gitlab/ci/linux/40-release-skeleton.yml`
-- `.gitlab/ci/linux/45-firebase-distribution.yml`
-
-They are intentionally not included by `.gitlab/ci/pipeline.yml` in the current setup.
-
-## 5. CI variable contract
-### Required for portable mode
+### 5.2 Environment payloads (one of each pair)
 - `ENV_DEV_FILE` or `ENV_DEV_CONTENT`
 - `ENV_STG_FILE` or `ENV_STG_CONTENT`
 - `ENV_PROD_FILE` or `ENV_PROD_CONTENT`
 
-### Recommended
-- `LOCALIZATION_SA_JSON` (for localization pull in CI)
+### 5.3 Localization credentials
+- `LOCALIZATION_SA_PATH` or `LOCALIZATION_SA_JSON`
 
-### Optional (phase-2 release)
-- `ENABLE_FASTLANE=1`
-- `PLAYSTORE_JSON`
-- `APPSTORE_P8`
+### 5.4 Release skeleton credentials
+Android:
+- `PLAYSTORE_JSON_FILE` or `PLAYSTORE_JSON`
+
+iOS:
+- `APPSTORE_P8_FILE` or `APPSTORE_P8`
 - `APPSTORE_ISSUER_ID`
 - `APPSTORE_KEY_ID`
 
-### Optional (Firebase distribution)
-- `ENABLE_BUILD_DEV=1`
-- `ENABLE_BUILD_STG=1`
-- `ENABLE_BUILD_PROD=1`
-- `ENABLE_DISTRIBUTE_DEV=1`
-- `ENABLE_DISTRIBUTE_STG=1`
-- `ENABLE_DISTRIBUTE_PROD=1`
-- `FIREBASE_TOKEN`
+### 5.5 Distribution
+- `FIREBASE_TOKEN` (required by Firebase distribution jobs)
 
-## 6. How bootstrap works
-`.gitlab/scripts/bootstrap-secrets.sh` does this:
-1. Creates `build/ci/runtime.env`
-2. Maps `ENV_*` variables to `.env/.env.dev|stg|prod`
-3. Writes localization SA file when provided
-4. Writes optional fastlane credential files
-5. Never prints secret values
+## 6. CI Build Flags and Behavior
+In build jobs, CI explicitly sets:
+- `CI=true`
+- `SKIP_SYMBOL_UPLOAD=true`
 
-Jobs then source `build/ci/runtime.env`.
+Then runs Android build scripts with `--ci` (macOS/Linux templates):
+```bash
+bash tools/<os>/build/build_apk.sh "$FLAVOR" --ci
+bash tools/<os>/build/build_appbundle.sh prod --ci
+```
 
-## 7. Why CI mode matters
-Build scripts now support `--ci` (or `CI=true`):
-- hide `.env` content from logs
-- skip opening output folders (`open`, `xdg-open`)
-- keep behavior deterministic in non-interactive runners
+## 7. `SKIP_SYMBOL_UPLOAD` Behavior
+- macOS/Linux Android build scripts honor `SKIP_SYMBOL_UPLOAD=true` and skip Crashlytics symbol upload.
+- Windows Android build scripts do not currently expose this skip behavior.
 
-And if `SKIP_SYMBOL_UPLOAD=true`, symbol upload is skipped (useful in V1 build-only).
+## 8. Script Parity Notes
+- macOS/Linux: `.sh` wrappers support `--ci` in APK/AAB build scripts.
+- Windows: `.bat` wrappers do not currently support `--ci`.
+- Localization wrapper naming differs by platform:
+  - macOS/Linux: `localization.sh`
+  - Windows: `localization.bat`
 
-## 8. Artifacts policy
-Retention: **14 days**
+## 9. Artifacts and Outputs
+Common artifact expectations in build jobs:
+- APK outputs under `build/app/outputs/flutter-apk/`
+- AAB output under `build/app/outputs/bundle/prodRelease/`
+- `.obfuscation/` split-debug-info artifacts
 
-Produced artifacts:
-- Generated sources from `prepare`
-- APKs from matrix build
-- AAB for `prod`
-- `.obfuscation` symbols for crash debugging
+## 10. First-Time Setup Checklist
+1. Add build/distribution toggle variables.
+2. Add env payload variables for all flavors.
+3. Add localization credential variable(s).
+4. Add Firebase token for distribution jobs.
+5. Add fastlane credential variables if release skeleton jobs are enabled.
+6. Trigger pipeline on `develop` (build/test validation) and verify stage progression.
 
-## 9. Release skeleton jobs
-Manual only, gated by `ENABLE_FASTLANE=1`:
-- `release:android:fastlane:skeleton`
-- `release:ios:fastlane:skeleton` (requires macOS runner tag)
+## 11. Quick Troubleshooting
+### Build job is not created
+- Verify branch/tag and corresponding `ENABLE_BUILD_*` switches.
 
-These jobs validate release contracts and lane readiness only. They do not publish apps in V1.
+### Distribution job fails early
+- Verify `FIREBASE_TOKEN` is present.
 
-## 9.1 Firebase Distribution jobs
-When `ENABLE_DISTRIBUTE_DEV=1` and `ENABLE_BUILD_DEV=1` on `develop`, pipeline runs:
-- `release:android:firebase:distribution:dev`
+### Localization fails in prepare stage
+- Verify `LOCALIZATION_SA_PATH`/`LOCALIZATION_SA_JSON` and retry pull/slang commands.
 
-When `ENABLE_DISTRIBUTE_STG=1` and `ENABLE_BUILD_STG=1` on `develop`, pipeline runs:
-- `release:android:firebase:distribution:stg`
-
-When `ENABLE_DISTRIBUTE_PROD=1` and `ENABLE_BUILD_PROD=1` on `main` or tag `v*`, pipeline runs:
-- `release:android:firebase:distribution:prod`
-
-These jobs use:
-- `tools/macos/distribution/distribute_android.sh apk dev`
-- `tools/macos/distribution/distribute_android.sh apk stg`
-- `tools/macos/distribution/distribute_android.sh apk prod`
-
-These jobs reuse APK artifacts via `needs`, so they do not rebuild APK.
-
-## 10. First-time setup checklist
-1. Add `.gitlab/ci/pipeline.yml`, `.gitlab/ci/{macos,linux}/*`, and `.gitlab/scripts/bootstrap-secrets.sh`
-2. Set GitLab project `ci_config_path` to `.gitlab/ci/pipeline.yml`
-3. Configure GitLab runner (macOS shell, tag `macos`)
-4. Add required CI variables in GitLab CI/CD settings
-5. Push MR and verify `prepare` + conditional `quality`
-6. Merge to `develop` and verify `quality` + only enabled build flavors (`ENABLE_BUILD_DEV/STG`)
-7. Merge to `main` and verify only enabled build flavors (`ENABLE_BUILD_DEV/STG/PROD`) + optional `prod` AAB
-8. Push tag `v1.x.x` and verify same full matrix behavior
-
-## 11. Quick debug playbook
-### Localization pull fails
-- Verify `LOCALIZATION_SA_JSON`
-- Verify sheet permissions for service account
-- Retry job after checking network
-
-### Build fails due env file
-- Check `ENV_*` variables
-- Open job log and verify bootstrap summary (no secret values)
-- Confirm `.env/.env.<flavor>` exists in workspace
-
-### No build job appears on branch
-- Check `workflow:rules` and job `rules`
-- Confirm branch/tag matches policy (`develop`, `main`, `v*`)
-
-## 12. Migration to another project
-To reuse this architecture:
-1. Copy `.gitlab/ci/pipeline.yml`, `.gitlab/ci/{macos,linux}/*`, `.gitlab/scripts/bootstrap-secrets.sh`
-2. Set target project `ci_config_path` to `.gitlab/ci/pipeline.yml`
-3. Keep script interface unchanged (`tools/macos/build/*.sh`, localization script)
-4. Update `.info/app/*.json` for new app/flavors/paths
-5. Provide project-specific CI variables matching the same contract
-6. If you want Linux CI later, switch `.gitlab/ci/pipeline.yml` includes to the Linux template set.
-
-## 13. Security note
-Current repo still tracks sensitive files. CI masking is only minimum protection. Long-term safe state:
-- remove secrets from git history
-- move all credentials to protected CI variables/secrets manager
-
-## Unresolved Questions
-- None.
+### Runtime env is missing in job
+- Check whether `build/ci/runtime.env` was generated and sourced in `before_script`.
