@@ -23,6 +23,9 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
           'enable': true,
           'finishOptionalKp': true,
         }),
+        RemoteConfigKey.onboardingConfig: jsonEncode({
+          'flowType': OnboardingFlowType.normal.name,
+        }),
         RemoteConfigKey.paywallConfig: jsonEncode({
           'enableLessonLock': false,
           'lessonLock': 5,
@@ -71,6 +74,17 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
     } catch (e) {
       LogDev.error('Error parsing CourseConfigEntity from Remote Config: $e');
       return CourseConfigEntity();
+    }
+  }
+
+  @override
+  OnboardingConfigEntity get onboardingConfig {
+    try {
+      final jsonString = _remoteConfig.getString(RemoteConfigKey.onboardingConfig);
+      return OnboardingConfigEntity.fromRawConfig(jsonString);
+    } catch (e) {
+      LogDev.error('Error parsing OnboardingConfigEntity from Remote Config: $e');
+      return const OnboardingConfigEntity();
     }
   }
 

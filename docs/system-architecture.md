@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-03-02  
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -81,8 +81,9 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 1. `AppInterceptor` decorates requests with auth + locale headers.
 2. On `401`, it attempts one refresh-token retry through `AuthBloc.refreshAccessToken()`.
 3. If refresh succeeds, original request is retried with updated bearer token.
-4. If refresh fails, app session is reset and user is routed back to auth flow.
-5. For non-401 failures, repository/request helpers map transport errors to `AppException` and return `TaskEither` left states.
+4. If refresh fails and onboarding branching transition is active, register redirect is suppressed and a silent anonymous re-login is attempted.
+5. If refresh fails outside onboarding branching transition, app session is reset and user is routed back to auth flow.
+6. For non-401 failures, repository/request helpers map transport errors to `AppException` and return `TaskEither` left states.
 
 ## 6. Pagination Contract
 - Request type: `PageBreakRequest<T extends JsonRequestConvertible>`.
@@ -110,6 +111,12 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `RoleplayIntroRoute` and `RoleplayRoute` provide roleplay orchestration via `RoleplayCubit` (+ feedback where needed).
 - `RoleplayFeedbackRoute` merges `RoleplayCubit`, `RoleplayPointCubit`, `HomeCubit`, and `FeedbackCubit` for post-session analytics and UI.
 - Route-level provider composition keeps runtime concerns scoped to each flow stage.
+
+### Onboarding branching runtime flow
+- Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.
+- Name step (`data_collect`) uses replace-style route handoff to `OnboardBranchingRoute`.
+- Branching runtime uses scene/content pointers (`currentSceneId`, `currentContentIndex`) with deterministic transitions.
+- Mandatory fallback path routes safely back to `DataCollectRoute` and preserves duplicate-anonymous-login guard.
 
 ## 9. Localization and Theming
 ### Localization

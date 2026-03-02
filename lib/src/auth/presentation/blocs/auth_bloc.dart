@@ -105,6 +105,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     );
   }
 
+  Future<bool> loginAnonymousSilently(Map<String, dynamic> data) async {
+    try {
+      final result = await _loginAnonymousUsecase(data).run();
+      return result.fold(
+        (failure) => false,
+        (auth) {
+          _onAuthSuccess(auth);
+          return true;
+        },
+      );
+    } catch (error) {
+      LogDev.warning('[AuthBloc] loginAnonymousSilently failed: $error');
+      return false;
+    }
+  }
+
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
     _loginAnonymous(event.data);
   }

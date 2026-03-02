@@ -12,6 +12,19 @@ class OnboardRoute extends GoRouteData with $OnboardRoute {
   );
 }
 
+@TypedGoRoute<OnboardBranchingRoute>(path: RoutePath.onboardBranching, name: RouteNamed.onboardBranching)
+class OnboardBranchingRoute extends GoRouteData with $OnboardBranchingRoute {
+  const OnboardBranchingRoute({this.userName = ''});
+
+  final String userName;
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => BlocProvider.value(
+    value: AppDI.injector.get<OnboardBranchingCubit>(),
+    child: OnboardBranchingPage(userName: userName),
+  );
+}
+
 //* Data Collect Page
 @TypedGoRoute<DataCollectRoute>(path: RoutePath.dataCollect, name: RouteNamed.dataCollect)
 class DataCollectRoute extends GoRouteData with $DataCollectRoute {

@@ -70,6 +70,7 @@ import '../../src/course/course.dart';
 import '../../src/home/home.dart';
 import '../../src/lesson/lesson.dart';
 import '../../src/monetization/monetization.dart';
+import '../../src/onboard_branching/onboard_branching.dart';
 import '../../src/roleplay/roleplay.dart';
 import '../di/di.dart';
 import '../routes/routes.dart';

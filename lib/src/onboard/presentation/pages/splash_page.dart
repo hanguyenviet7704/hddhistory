@@ -101,7 +101,7 @@ class _SplashPageState extends State<SplashPage> {
 
       if (AppGlobalValue.accessToken.isEmpty) {
         if (isUserPassOnboarding) {
-          OnboardIntroduceRoute().go(context);
+          _goOnboardingEntryByFlowConfig();
           return;
         }
 
@@ -119,6 +119,11 @@ class _SplashPageState extends State<SplashPage> {
 
       HomeRoute().go(context);
     });
+  }
+
+  void _goOnboardingEntryByFlowConfig() {
+    // Branching decision happens at DataCollect name step.
+    OnboardIntroduceRoute().go(context);
   }
 
   void _handleUpdatePressed() async {

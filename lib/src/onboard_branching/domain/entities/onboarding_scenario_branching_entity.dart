@@ -16,5 +16,6 @@ extension OnboardingScenarioBranchingEntityExtension on OnboardingScenarioBranch
 
   OnboardingScenarioSceneEntity getSceneById(String id) => scenes.firstWhere((scene) => scene.id == id, orElse: () => OnboardingScenarioSceneEntity());
 
-
+  bool hasScene(String id) => scenes.any((scene) => scene.id == id);
+  bool get hasEntryScene => entrySceneId.trim().isNotEmpty && hasScene(entrySceneId.trim());
 }

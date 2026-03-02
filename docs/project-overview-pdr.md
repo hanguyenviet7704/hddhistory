@@ -1,6 +1,6 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-03-02  
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
@@ -21,6 +21,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 4. Roleplay practice and performance feedback.
 5. Progress and profile review.
 6. Subscription purchase and management.
+7. Scenario-branching onboarding handoff and recommendation-based course entry.
 
 ## 3. Current Module Scope (Code-Verified)
 `lib/src` currently contains 15 feature modules:
@@ -85,6 +86,12 @@ Notes:
 - Pull and push localization via script wrappers.
 - Regenerate localization code after localization sync.
 
+9. Branching onboarding orchestration
+- Allow remote-config flow switching between normal and branching onboarding.
+- Preserve deep-link precedence over onboarding.
+- Enforce deterministic fallback from malformed branching scenario data to normal onboarding.
+- Prevent forced register redirects during active onboarding branching transition.
+
 ## 5. Non-Functional Requirements
 1. Architecture consistency
 - Maintain `presentation -> domain -> data` flow for feature work.
@@ -139,4 +146,5 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-03-02 | Added branching onboarding orchestration requirements (flow switch, fallback safety, no-register gate in transition). |
 | 2026-02-27 | Removed branch/ticket-specific labels; synced module scope to 15 modules; synced SDK/iOS constraints; refreshed pagination and build contract references. |

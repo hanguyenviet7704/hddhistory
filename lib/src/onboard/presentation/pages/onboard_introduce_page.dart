@@ -100,6 +100,9 @@ class _OnboardIntroduceContentState extends State<_OnboardIntroduceContent> {
 
     if (isLastPage) {
       AppService.instance.appTrackingService.trackObdIntro2Click();
+      final dataCollectCubit = AppDI.injector.get<DataCollectCubit>();
+      dataCollectCubit.setShouldSkipBranchingFlow(false);
+      dataCollectCubit.setShouldSkipAnonymousLogin(false);
       DataCollectRoute().go(context);
       return;
     }

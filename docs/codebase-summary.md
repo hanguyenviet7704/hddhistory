@@ -1,6 +1,6 @@
 # Codebase Summary
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-03-02  
 **Source Inputs:** `repomix-output.xml` (refreshed 2026-02-27) + direct repository verification
 
 ## 1. Snapshot Metrics
@@ -55,7 +55,7 @@ meup/
 | `lesson` | 146 | 27,649 | Largest module: learning/exercise runtime |
 | `monetization` | 38 | 5,650 | Products, purchase, verification |
 | `onboard` | 37 | 5,544 | Intro/onboarding flow |
-| `onboard_branching` | 31 | 7,641 | Branching onboarding scenario module |
+| `onboard_branching` | 31 | 7,641 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
 | `profile` | 35 | 4,879 | User profile and upload |
 | `progress` | 34 | 8,261 | Progress and achievement progress |
 | `roleplay` | 70 | 11,319 | Roleplay + AI feedback |

@@ -59,6 +59,15 @@ mixin TrackingKey {
   static const String obdMotivation3Click = 'obd_motivation3_click';
   static const String obdCompleteScrView = 'obd_complete_scr_view';
   static const String obdCompleteClick = 'obd_complete_click';
+  static const String obBranchingP1View = 'ob_branching_p1_view';
+  static const String obBranchingP1Continue = 'ob_branching_p1_continue';
+  static const String obBranchingContentView = 'ob_branching_content_view';
+  static const String obBranchingOptionSelect = 'ob_branching_option_select';
+  static const String obBranchingP6View = 'ob_branching_p6_view';
+  static const String obBranchingP7View = 'ob_branching_p7_view';
+  static const String obBranchingTryNowClick = 'ob_branching_try_now_click';
+  static const String obBranchingChooseMyselfClick = 'ob_branching_choose_myself_click';
+  static const String obBranchingFallback = 'ob_branching_fallback';
 
   //* Home events
   static const String homeScrView = 'home_scr_view';

@@ -14,3 +14,27 @@ abstract class OnboardingScenarioContentItemEntity with _$OnboardingScenarioCont
 
   factory OnboardingScenarioContentItemEntity.fromJson(Map<String, dynamic> json) => _$OnboardingScenarioContentItemEntityFromJson(json);
 }
+
+extension OnboardingScenarioContentItemEntityExtension on OnboardingScenarioContentItemEntity {
+  bool get hasValidPayload {
+    return switch (type) {
+      OnboardingContentType.fact => fact != null,
+      OnboardingContentType.activation => activation != null,
+      OnboardingContentType.branch => branch != null && branch!.options.isNotEmpty,
+      OnboardingContentType.fixed => fixed != null && fixed!.options.isNotEmpty,
+      OnboardingContentType.personAdmire => personAdmire != null && personAdmire!.options.isNotEmpty,
+      OnboardingContentType.unknown => false,
+    };
+  }
+
+  String get trackingType {
+    return switch (type) {
+      OnboardingContentType.fact => 'fact',
+      OnboardingContentType.activation => 'activation',
+      OnboardingContentType.branch => 'branch',
+      OnboardingContentType.fixed => 'fixed',
+      OnboardingContentType.personAdmire => 'person_admire',
+      OnboardingContentType.unknown => 'unknown',
+    };
+  }
+}
