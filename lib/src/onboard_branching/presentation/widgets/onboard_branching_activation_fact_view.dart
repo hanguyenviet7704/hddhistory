@@ -20,47 +20,86 @@ class OnboardBranchingActivationView extends StatelessWidget {
           Expanded(
             child: SingleChildScrollView(
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (activation.content.icon.trim().isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18.r),
-                      child: CacheNetworkGraphic(
-                        url: activation.content.icon,
-                        width: double.infinity,
-                        height: 180.h,
-                        fit: BoxFit.cover,
-                      ),
-                    ),
-                  16.verticalSpace,
                   DText(
                     text: activation.title.text,
-                    textAlign: TextAlign.start,
+                    textAlign: TextAlign.center,
                     textType: DTextType.titleLarge,
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
                   ),
                   if (activation.description.text.trim().isNotEmpty) ...[
-                    10.verticalSpace,
+                    4.verticalSpace,
                     DText(
                       text: activation.description.text,
-                      textAlign: TextAlign.start,
+                      textAlign: TextAlign.center,
                       textType: DTextType.textDefault,
+                      color: const Color(0xE6FFFFFF),
                     ),
                   ],
-                  12.verticalSpace,
-                  ...activation.content.labels.map(
-                    (label) => Container(
-                      margin: EdgeInsets.only(bottom: 10.h),
-                      padding: EdgeInsets.all(12.w),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF8FAFC),
-                        borderRadius: BorderRadius.circular(12.r),
-                        border: Border.all(color: const Color(0xFFE2E8F0)),
-                      ),
-                      child: DText(
-                        text: label.label.text,
-                        textAlign: TextAlign.start,
-                        textType: DTextType.textDefault,
-                      ),
+                  20.verticalSpace,
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16.r),
+                      boxShadow: const [
+                        BoxShadow(
+                          color: Color(0x14000000),
+                          blurRadius: 3,
+                          offset: Offset(0, 1),
+                        ),
+                      ],
+                    ),
+                    padding: EdgeInsets.fromLTRB(16.w, 16.h, 16.w, 12.h),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        if (activation.content.icon.trim().isNotEmpty) ...[
+                          Center(
+                            child: CacheNetworkGraphic(
+                              url: activation.content.icon,
+                              width: 120.w,
+                              height: 120.w,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                          8.verticalSpace,
+                        ],
+                        for (var index = 0; index < activation.content.labels.length; index++) ...[
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Padding(
+                                padding: EdgeInsets.only(top: 2.h),
+                                child: AppText(
+                                  '${index + 1}.',
+                                  style: AppStyle.text14.copyWith(
+                                    color: const Color(0xB3110751),
+                                    fontWeight: FontWeight.w700,
+                                    height: 1.75,
+                                  ),
+                                ),
+                              ),
+                              14.horizontalSpace,
+                              Expanded(
+                                child: DText(
+                                  text: activation.content.labels[index].label.text,
+                                  textAlign: TextAlign.start,
+                                  textType: DTextType.textDefault,
+                                  color: const Color(0xB3110751),
+                                ),
+                              ),
+                            ],
+                          ),
+                          if (index != activation.content.labels.length - 1)
+                            Padding(
+                              padding: EdgeInsets.symmetric(vertical: 12.h),
+                              child: const Divider(height: 1, color: Color(0xFFE3E8EF)),
+                            ),
+                        ],
+                      ],
                     ),
                   ),
                 ],
@@ -71,6 +110,7 @@ class OnboardBranchingActivationView extends StatelessWidget {
           OnboardBranchingPrimaryButton(
             text: context.text.onboarding.onboardingSkipGreetingButton,
             onPressed: onContinue,
+            isLightStyle: true,
           ),
         ],
       ),
@@ -100,21 +140,79 @@ class OnboardBranchingFactView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  if (fact.icon.trim().isNotEmpty)
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(18.r),
-                      child: CacheNetworkGraphic(
-                        url: fact.icon,
-                        width: double.infinity,
-                        height: 180.h,
-                        fit: BoxFit.cover,
+                  Stack(
+                    alignment: Alignment.center,
+                    children: [
+                      Transform.rotate(
+                        angle: 0.07,
+                        child: Container(
+                          width: 196.w,
+                          height: 240.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEBEAFD),
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x3CE7E7E9),
+                                blurRadius: 3,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
-                  16.verticalSpace,
-                  DText(
-                    text: fact.label.text,
-                    textAlign: TextAlign.start,
-                    textType: DTextType.textDefault,
+                      Transform.rotate(
+                        angle: -0.07,
+                        child: Container(
+                          width: 196.w,
+                          height: 240.h,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFEBEAFD),
+                            borderRadius: BorderRadius.circular(12.r),
+                            boxShadow: const [
+                              BoxShadow(
+                                color: Color(0x3CE7E7E9),
+                                blurRadius: 3,
+                                offset: Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      Container(
+                        width: 250.w,
+                        padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 20.h),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12.r),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Color(0x3CE7E7E9),
+                              blurRadius: 3,
+                              offset: Offset(0, 4),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            if (fact.icon.trim().isNotEmpty)
+                              CacheNetworkGraphic(
+                                url: fact.icon,
+                                width: 48.w,
+                                height: 48.w,
+                                fit: BoxFit.cover,
+                              ),
+                            if (fact.icon.trim().isNotEmpty) 16.verticalSpace,
+                            DText(
+                              text: fact.label.text,
+                              textAlign: TextAlign.start,
+                              textType: DTextType.textLarge,
+                              color: const Color(0xB3110751),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

@@ -34,6 +34,7 @@ void main() {
       AppConfig.instance.rootNaviKey = GlobalKey<NavigatorState>();
       await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));
+      var continueTapCount = 0;
 
       await tester.pumpWidget(
         buildTestableWidget(
@@ -45,21 +46,25 @@ void main() {
             ],
             selectedOptionId: null,
             onSelect: (_) {},
-            onContinue: () {},
+            onContinue: () {
+              continueTapCount += 1;
+            },
             continueEnabled: false,
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
-      expect(button.onPressed, isNull);
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(continueTapCount, 0);
     });
 
     testWidgets('P8 person admire select keeps continue disabled when gating is false', (tester) async {
       AppConfig.instance.rootNaviKey = GlobalKey<NavigatorState>();
       await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));
+      var continueTapCount = 0;
 
       await tester.pumpWidget(
         buildTestableWidget(
@@ -75,15 +80,18 @@ void main() {
             ],
             selectedOptionName: null,
             onSelect: (_) {},
-            onContinue: () {},
+            onContinue: () {
+              continueTapCount += 1;
+            },
             continueEnabled: false,
           ),
         ),
       );
       await tester.pumpAndSettle();
 
-      final button = tester.widget<ElevatedButton>(find.byType(ElevatedButton));
-      expect(button.onPressed, isNull);
+      await tester.tap(find.text('Continue'));
+      await tester.pumpAndSettle();
+      expect(continueTapCount, 0);
     });
 
     testWidgets('P6 loading view triggers completion once after timer', (tester) async {

@@ -15,6 +15,7 @@ class OnboardBranchingLoadingView extends StatefulWidget {
 class _OnboardBranchingLoadingViewState extends State<OnboardBranchingLoadingView> {
   Timer? _timer;
   bool _didComplete = false;
+  static const double _targetProgress = 0.23;
 
   @override
   void initState() {
@@ -37,25 +38,53 @@ class _OnboardBranchingLoadingViewState extends State<OnboardBranchingLoadingVie
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 24.w),
+      padding: EdgeInsets.symmetric(horizontal: 36.w),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          SizedBox(
-            width: 56.w,
-            height: 56.w,
-            child: const CircularProgressIndicator(
-              strokeWidth: 3,
-              color: Color(0xFF554FF0),
-            ),
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: _targetProgress),
+            duration: const Duration(seconds: 3),
+            builder: (context, value, _) {
+              final percent = (value * 100).round();
+              return Stack(
+                alignment: Alignment.center,
+                children: [
+                  SizedBox(
+                    width: 135.w,
+                    height: 135.w,
+                    child: CircularProgressIndicator(
+                      value: value,
+                      strokeWidth: 12,
+                      backgroundColor: const Color(0x4DFFFFFF),
+                      color: Colors.white,
+                    ),
+                  ),
+                  AppText(
+                    '$percent%',
+                    style: AppStyle.textBold24.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
-          24.verticalSpace,
-          AppText(
-            context.text.onboarding.onboardingLoadingPersonalizationText,
+          32.verticalSpace,
+          DText(
+            text: context.text.onboarding.onboardingLoadingPersonalizationText,
             textAlign: TextAlign.center,
             maxLines: 3,
-            style: AppStyle.text16.copyWith(
-              color: const Color(0xFF364152),
+            textType: DTextType.textDefault,
+            color: const Color(0xCCFFFFFF),
+          ),
+          4.verticalSpace,
+          AppText(
+            context.text.onboarding.onboardingBranchingLoadingSubtitle,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: AppStyle.textBold20.copyWith(
+              color: Colors.white,
               height: 1.5,
             ),
           ),

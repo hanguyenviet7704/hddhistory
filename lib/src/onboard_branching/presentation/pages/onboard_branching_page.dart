@@ -28,38 +28,61 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
       listener: (context, state) {
         DMessage.showMessage(type: MessageType.error, message: state.p7ErrorMessage ?? '');
       },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('Onboarding'),
-        ),
-        body: SafeArea(
-          child: BlocBuilder<OnboardBranchingCubit, OnboardBranchingState>(
-            builder: (context, state) {
-              if (state.status == OnboardBranchingStatus.loading && state.onboardScenarioData.scenes.isEmpty) {
-                return const Center(child: CircularProgressIndicator());
-              }
+      child: BlocBuilder<OnboardBranchingCubit, OnboardBranchingState>(
+        builder: (context, state) {
+          if (state.status == OnboardBranchingStatus.loading && state.onboardScenarioData.scenes.isEmpty) {
+            return const Scaffold(
+              backgroundColor: Color(0xFFF3F2F8),
+              body: Center(child: CircularProgressIndicator()),
+            );
+          }
 
-              return switch (state.stage) {
-                OnboardBranchingStage.welcome => OnboardBranchingWelcomeView(
-                  userName: state.userName,
-                  onContinue: context.read<OnboardBranchingCubit>().continueFromWelcome,
-                ),
-                OnboardBranchingStage.content => _buildContentStage(context, state),
-                OnboardBranchingStage.loading => OnboardBranchingLoadingView(
-                  onCompleted: context.read<OnboardBranchingCubit>().onLoadingCompleted,
-                ),
-                OnboardBranchingStage.recommendation => _buildRecommendationStage(context, state),
-              };
-            },
-          ),
-        ),
+          final body = switch (state.stage) {
+            OnboardBranchingStage.welcome => OnboardBranchingWelcomeView(
+              userName: state.userName,
+              onContinue: context.read<OnboardBranchingCubit>().continueFromWelcome,
+            ),
+            OnboardBranchingStage.content => _buildContentStage(context, state),
+            OnboardBranchingStage.loading => OnboardBranchingLoadingView(
+              onCompleted: context.read<OnboardBranchingCubit>().onLoadingCompleted,
+            ),
+            OnboardBranchingStage.recommendation => _buildRecommendationStage(context, state),
+          };
+
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Container(
+              decoration: _buildBackgroundDecoration(state),
+              child: SafeArea(child: body),
+            ),
+          );
+        },
       ),
     );
   }
 
+  BoxDecoration _buildBackgroundDecoration(OnboardBranchingState state) {
+    final isActivationContent = state.stage == OnboardBranchingStage.content && state.hasCurrentContent && state.currentContent.type == OnboardingContentType.activation;
+
+    if (state.stage == OnboardBranchingStage.loading || isActivationContent) {
+      return const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color(0xFF5953EA),
+            Color(0xFF838AF2),
+          ],
+        ),
+      );
+    }
+
+    return const BoxDecoration(color: Color(0xFFF3F2F8));
+  }
+
   Widget _buildContentStage(BuildContext context, OnboardBranchingState state) {
     if (!state.hasCurrentContent) {
-      return const SizedBox.shrink();
+      return _buildContentFallbackView(context);
     }
 
     final content = state.currentContent;
@@ -68,7 +91,7 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
     switch (content.type) {
       case OnboardingContentType.branch:
         final branch = content.branch;
-        if (branch == null) return const SizedBox.shrink();
+        if (branch == null) return _buildContentFallbackView(context);
         return OnboardBranchingOptionContentView(
           title: branch.question.text,
           subTitle: branch.subQuestion.text,
@@ -95,7 +118,7 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
         );
       case OnboardingContentType.fixed:
         final fixed = content.fixed;
-        if (fixed == null) return const SizedBox.shrink();
+        if (fixed == null) return _buildContentFallbackView(context);
         return OnboardBranchingOptionContentView(
           title: fixed.question.text,
           subTitle: fixed.subQuestion.text,
@@ -122,7 +145,7 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
         );
       case OnboardingContentType.personAdmire:
         final personAdmire = content.personAdmire;
-        if (personAdmire == null) return const SizedBox.shrink();
+        if (personAdmire == null) return _buildContentFallbackView(context);
         if (!state.isPersonAdmireDetailVisible) {
           return OnboardBranchingPersonAdmireSelectView(
             question: personAdmire.question.text,
@@ -135,27 +158,27 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
           );
         }
         final selectedOption = state.selectedPersonAdmireOption;
-        if (selectedOption == null) return const SizedBox.shrink();
+        if (selectedOption == null) return _buildContentFallbackView(context);
         return OnboardBranchingPersonAdmireDetailView(
           option: selectedOption,
           onContinue: cubit.continueCurrentContent,
         );
       case OnboardingContentType.activation:
         final activation = content.activation;
-        if (activation == null) return const SizedBox.shrink();
+        if (activation == null) return _buildContentFallbackView(context);
         return OnboardBranchingActivationView(
           activation: activation,
           onContinue: cubit.continueCurrentContent,
         );
       case OnboardingContentType.fact:
         final fact = content.fact;
-        if (fact == null) return const SizedBox.shrink();
+        if (fact == null) return _buildContentFallbackView(context);
         return OnboardBranchingFactView(
           fact: fact,
           onContinue: cubit.continueCurrentContent,
         );
       case OnboardingContentType.unknown:
-        return const SizedBox.shrink();
+        return _buildContentFallbackView(context);
     }
   }
 
@@ -181,6 +204,33 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
         cubit.onChooseMyselfPressed();
         CourseRoute().go(context);
       },
+    );
+  }
+
+  Widget _buildContentFallbackView(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 24.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              width: 24.w,
+              height: 24.w,
+              child: const CircularProgressIndicator(strokeWidth: 2.4),
+            ),
+            12.verticalSpace,
+            AppText(
+              context.text.onboarding.onboardingLoadingPersonalizationText,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              style: AppStyle.text14.copyWith(
+                color: const Color(0xB3110751),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
