@@ -61,55 +61,13 @@ class OnboardBranchingOptionContentView extends StatelessWidget {
               itemBuilder: (context, index) {
                 final option = options[index];
                 final isSelected = option.id == selectedOptionId;
-                return InkWell(
+                return OnboardBranchingSelectableOptionCard(
+                  label: option.label,
+                  isSelected: isSelected,
                   onTap: () => onSelect(option.id),
-                  borderRadius: BorderRadius.circular(16.r),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFF4B44CA) : Colors.transparent,
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? null
-                          : const [
-                              BoxShadow(
-                                color: Color(0x3CE7E7E9),
-                                blurRadius: 3,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Padding(
-                          padding: EdgeInsets.only(right: 12.w, top: 1.h),
-                          child: option.icon.isNotEmpty
-                              ? CacheNetworkGraphic(
-                                  url: option.icon,
-                                  width: 24.w,
-                                  height: 24.w,
-                                  fit: BoxFit.cover,
-                                )
-                              : SizedBox(width: 24.w, height: 24.w),
-                        ),
-                        Expanded(
-                          child: DText(
-                            text: option.label,
-                            textAlign: TextAlign.start,
-                            textType: DTextType.textDefault,
-                            color: isSelected ? const Color(0xFF0D121C) : const Color(0xFF364152),
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  leadingIconUrl: option.icon,
+                  leadingSize: 24,
+                  placeholderColor: Colors.transparent,
                 );
               },
             ),

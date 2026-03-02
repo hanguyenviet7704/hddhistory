@@ -1,124 +1,5 @@
 part of '../../../onboard_branching.dart';
 
-class OnboardBranchingPersonAdmireSelectView extends StatelessWidget {
-  const OnboardBranchingPersonAdmireSelectView({
-    super.key,
-    required this.question,
-    required this.subQuestion,
-    required this.options,
-    required this.selectedOptionName,
-    required this.onSelect,
-    required this.onContinue,
-    required this.continueEnabled,
-  });
-
-  final String question;
-  final String subQuestion;
-  final List<OnboardingScenarioPersonOptionEntity> options;
-  final String? selectedOptionName;
-  final ValueChanged<OnboardingScenarioPersonOptionEntity> onSelect;
-  final VoidCallback onContinue;
-  final bool continueEnabled;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (subQuestion.trim().isNotEmpty)
-            DText(
-              text: subQuestion,
-              textAlign: TextAlign.center,
-              textType: DTextType.textDefault,
-              color: const Color(0xB3110751),
-            ),
-          DText(
-            text: question,
-            textAlign: TextAlign.center,
-            textType: DTextType.titleLarge,
-            color: const Color(0xFF110751),
-            fontWeight: FontWeight.w700,
-          ),
-          16.verticalSpace,
-          Expanded(
-            child: ListView.separated(
-              itemCount: options.length,
-              separatorBuilder: (_, _) => 12.verticalSpace,
-              itemBuilder: (context, index) {
-                final option = options[index];
-                final isSelected = option.name == selectedOptionName;
-                return InkWell(
-                  onTap: () => onSelect(option),
-                  borderRadius: BorderRadius.circular(16.r),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 180),
-                    padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(16.r),
-                      border: Border.all(
-                        color: isSelected ? const Color(0xFF4B44CA) : Colors.transparent,
-                        width: isSelected ? 2 : 1,
-                      ),
-                      boxShadow: isSelected
-                          ? null
-                          : const [
-                              BoxShadow(
-                                color: Color(0x3CE7E7E9),
-                                blurRadius: 3,
-                                offset: Offset(0, 4),
-                              ),
-                            ],
-                    ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(8.r),
-                          child: option.image?.trim().isNotEmpty == true
-                              ? CacheNetworkGraphic(
-                                  url: option.image!,
-                                  width: 44.w,
-                                  height: 44.w,
-                                  fit: BoxFit.cover,
-                                )
-                              : Container(
-                                  width: 44.w,
-                                  height: 44.w,
-                                  color: const Color(0xFFC7C5FA),
-                                ),
-                        ),
-                        12.horizontalSpace,
-                        Expanded(
-                          child: DText(
-                            text: option.name,
-                            textAlign: TextAlign.start,
-                            textType: DTextType.textDefault,
-                            color: isSelected ? const Color(0xFF0D121C) : const Color(0xFF364152),
-                            fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
-          12.verticalSpace,
-          OnboardBranchingPrimaryButton(
-            text: context.text.onboarding.onboardingSkipGreetingButton,
-            enabled: continueEnabled,
-            onPressed: onContinue,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
   const OnboardBranchingPersonAdmireDetailView({
     super.key,
@@ -168,7 +49,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                         Positioned(
                           top: 12.h,
                           right: 32.w,
-                          child: _OnboardBranchingTagChip(
+                          child: OnboardBranchingPersonAdmireTagChip(
                             text: badgeTexts[0],
                             backgroundColor: const Color(0xFFD9C3F2),
                             textColor: const Color(0xFF4A3979),
@@ -177,7 +58,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                         Positioned(
                           left: 24.w,
                           bottom: 110.h,
-                          child: _OnboardBranchingTagChip(
+                          child: OnboardBranchingPersonAdmireTagChip(
                             text: badgeTexts[1],
                             backgroundColor: const Color(0xFFB2DDFF),
                             textColor: const Color(0xFF294575),
@@ -186,7 +67,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                         Positioned(
                           left: 34.w,
                           bottom: 68.h,
-                          child: _OnboardBranchingTagChip(
+                          child: OnboardBranchingPersonAdmireTagChip(
                             text: badgeTexts[2],
                             backgroundColor: const Color(0xFFFECDCA),
                             textColor: const Color(0xFF773531),
@@ -195,7 +76,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                         Positioned(
                           left: 8.w,
                           bottom: 28.h,
-                          child: _OnboardBranchingTagChip(
+                          child: OnboardBranchingPersonAdmireTagChip(
                             text: badgeTexts[3],
                             backgroundColor: const Color(0xFFFEDF89),
                             textColor: const Color(0xFF6D4533),
@@ -282,36 +163,5 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
     if (normalized.isEmpty) return '';
     if (normalized.length <= 22) return normalized;
     return '${normalized.substring(0, 19)}...';
-  }
-}
-
-class _OnboardBranchingTagChip extends StatelessWidget {
-  const _OnboardBranchingTagChip({
-    required this.text,
-    required this.backgroundColor,
-    required this.textColor,
-  });
-
-  final String text;
-  final Color backgroundColor;
-  final Color textColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
-      decoration: BoxDecoration(
-        color: backgroundColor,
-        borderRadius: BorderRadius.circular(1000.r),
-      ),
-      child: AppText(
-        text,
-        style: AppStyle.text10.copyWith(
-          color: textColor,
-          fontWeight: FontWeight.w700,
-          height: 1.75,
-        ),
-      ),
-    );
   }
 }
