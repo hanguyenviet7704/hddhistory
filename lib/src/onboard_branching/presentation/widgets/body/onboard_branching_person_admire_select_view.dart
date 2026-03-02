@@ -31,6 +31,7 @@ class OnboardBranchingPersonAdmireSelectView extends StatelessWidget {
           if (subQuestion.trim().isNotEmpty)
             AppText(
               subQuestion,
+              maxLines: 3,
               textAlign: TextAlign.center,
               style: AppStyle.text14.copyWith(
                 color: const Color(0xB3110751),
@@ -38,6 +39,7 @@ class OnboardBranchingPersonAdmireSelectView extends StatelessWidget {
             ),
           AppText(
             question,
+            maxLines: 5,
             textAlign: TextAlign.center,
             style: AppStyle.text20.copyWith(
               color: const Color(0xFF110751),

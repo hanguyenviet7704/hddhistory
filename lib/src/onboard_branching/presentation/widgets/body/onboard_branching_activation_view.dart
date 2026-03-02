@@ -24,6 +24,7 @@ class OnboardBranchingActivationView extends StatelessWidget {
                 AppText(
                   activation.title.text,
                   textAlign: TextAlign.center,
+                  maxLines: 5,
                   style: AppStyle.text20.copyWith(
                     color: Colors.white,
                     fontWeight: FontWeight.w700,
@@ -33,6 +34,7 @@ class OnboardBranchingActivationView extends StatelessWidget {
                   4.verticalSpace,
                   AppText(
                     activation.description.text,
+                    maxLines: 5,
                     textAlign: TextAlign.center,
                     style: AppStyle.text14.copyWith(
                       color: const Color(0xE6FFFFFF),

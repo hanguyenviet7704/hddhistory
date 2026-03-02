@@ -50,14 +50,14 @@ class OnboardBranchingSelectableOptionCard extends StatelessWidget {
           children: [
             _buildLeading(),
             12.horizontalSpace,
-            Expanded(
-              child: AppText(
-                label,
-                textAlign: TextAlign.start,
-                style: AppStyle.text14.copyWith(
-                  color: isSelected ? const Color(0xFF0D121C) : const Color(0xFF364152),
-                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
-                ),
+            AppText(
+              label,
+              expandFlex: 1,
+              maxLines: 5,
+              textAlign: TextAlign.start,
+              style: AppStyle.text14.copyWith(
+                color: isSelected ? const Color(0xFF0D121C) : const Color(0xFF364152),
+                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
               ),
             ),
           ],

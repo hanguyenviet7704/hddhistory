@@ -42,6 +42,7 @@ class OnboardBranchingOptionContentView extends StatelessWidget {
           if (subTitle.trim().isNotEmpty)
             AppText(
               subTitle,
+              maxLines: 3,
               textAlign: TextAlign.center,
               style: AppStyle.text14.copyWith(
                 color: const Color(0xB3110751),
@@ -49,6 +50,7 @@ class OnboardBranchingOptionContentView extends StatelessWidget {
             ),
           AppText(
             title,
+            maxLines: 5,
             textAlign: TextAlign.center,
             style: AppStyle.text20.copyWith(
               color: const Color(0xFF110751),
