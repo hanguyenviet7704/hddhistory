@@ -24,12 +24,10 @@ class OnboardBranchingWelcomeView extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                AppText(
-                  '👋🏻',
-                  style: TextStyle(
-                    fontSize: 58.sp,
-                    height: 1,
-                  ),
+                Image.asset(
+                  AppAsset.images.app.wavingHand.path,
+                  width: 58.w,
+                  height: 58.w,
                 ),
                 20.verticalSpace,
                 AppText(
@@ -55,7 +53,7 @@ class OnboardBranchingWelcomeView extends StatelessWidget {
             ),
           ),
           OnboardBranchingPrimaryButton(
-            text: context.text.onboarding.onboardingSkipGreetingButton,
+            text: context.text.onboarding.onboardingBranchingCreatePathButton,
             onPressed: onContinue,
           ),
         ],

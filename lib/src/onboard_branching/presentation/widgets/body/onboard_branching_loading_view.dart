@@ -15,7 +15,7 @@ class OnboardBranchingLoadingView extends StatefulWidget {
 class _OnboardBranchingLoadingViewState extends State<OnboardBranchingLoadingView> {
   Timer? _timer;
   bool _didComplete = false;
-  static const double _targetProgress = 0.23;
+  static const double _targetProgress = 1;
 
   @override
   void initState() {
@@ -71,12 +71,13 @@ class _OnboardBranchingLoadingViewState extends State<OnboardBranchingLoadingVie
             },
           ),
           32.verticalSpace,
-          DText(
-            text: context.text.onboarding.onboardingLoadingPersonalizationText,
+          AppText(
+            context.text.onboarding.onboardingLoadingPersonalizationText,
             textAlign: TextAlign.center,
             maxLines: 3,
-            textType: DTextType.textDefault,
-            color: const Color(0xCCFFFFFF),
+            style: AppStyle.text14.copyWith(
+              color: const Color(0xCCFFFFFF),
+            ),
           ),
           4.verticalSpace,
           AppText(

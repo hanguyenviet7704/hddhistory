@@ -40,37 +40,40 @@ class OnboardBranchingOptionContentView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (subTitle.trim().isNotEmpty)
-            DText(
-              text: subTitle,
+            AppText(
+              subTitle,
               textAlign: TextAlign.center,
-              textType: DTextType.textDefault,
-              color: const Color(0xB3110751),
+              style: AppStyle.text14.copyWith(
+                color: const Color(0xB3110751),
+              ),
             ),
-          DText(
-            text: title,
+          AppText(
+            title,
             textAlign: TextAlign.center,
-            textType: DTextType.titleLarge,
-            color: const Color(0xFF110751),
-            fontWeight: FontWeight.w700,
+            style: AppStyle.text20.copyWith(
+              color: const Color(0xFF110751),
+              fontWeight: FontWeight.w700,
+            ),
           ),
           16.verticalSpace,
-          Expanded(
-            child: ListView.separated(
-              itemCount: options.length,
-              separatorBuilder: (_, _) => 12.verticalSpace,
-              itemBuilder: (context, index) {
-                final option = options[index];
-                final isSelected = option.id == selectedOptionId;
-                return OnboardBranchingSelectableOptionCard(
-                  label: option.label,
-                  isSelected: isSelected,
-                  onTap: () => onSelect(option.id),
-                  leadingIconUrl: option.icon,
-                  leadingSize: 24,
-                  placeholderColor: Colors.transparent,
-                );
-              },
-            ),
+          Spacer(),
+          ListView.separated(
+            itemCount: options.length,
+            separatorBuilder: (_, _) => 12.verticalSpace,
+            padding: EdgeInsets.symmetric(vertical: 20.h),
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              final option = options[index];
+              final isSelected = option.id == selectedOptionId;
+              return OnboardBranchingSelectableOptionCard(
+                label: option.label,
+                isSelected: isSelected,
+                onTap: () => onSelect(option.id),
+                leadingIconUrl: option.icon,
+                leadingSize: 24,
+                placeholderColor: Colors.transparent,
+              );
+            },
           ),
           12.verticalSpace,
           OnboardBranchingPrimaryButton(

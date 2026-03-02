@@ -51,12 +51,13 @@ class OnboardBranchingSelectableOptionCard extends StatelessWidget {
             _buildLeading(),
             12.horizontalSpace,
             Expanded(
-              child: DText(
-                text: label,
+              child: AppText(
+                label,
                 textAlign: TextAlign.start,
-                textType: DTextType.textDefault,
-                color: isSelected ? const Color(0xFF0D121C) : const Color(0xFF364152),
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                style: AppStyle.text14.copyWith(
+                  color: isSelected ? const Color(0xFF0D121C) : const Color(0xFF364152),
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.w400,
+                ),
               ),
             ),
           ],

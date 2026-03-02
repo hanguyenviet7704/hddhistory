@@ -28,130 +28,110 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Expanded(
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                children: [
-                  12.verticalSpace,
-                  Container(
-                    width: 199.w,
-                    height: 250.h,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12.r),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x3CE7E7E9),
-                          blurRadius: 3,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    padding: EdgeInsets.fromLTRB(16.w, 22.h, 16.w, 22.h),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12.r),
-                      child: course.image.trim().isNotEmpty
-                          ? CacheNetworkGraphic(
-                              url: course.image,
-                              fit: BoxFit.cover,
-                            )
-                          : Container(
-                              color: const Color(0xFFEBEAFD),
-                              alignment: Alignment.center,
-                              child: Icon(
-                                Icons.auto_awesome_rounded,
-                                size: 46.w,
-                                color: const Color(0xFF554FF0),
-                              ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                12.verticalSpace,
+                Container(
+                  width: 200.w,
+                  height: 250.h,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x3CE7E7E9),
+                        blurRadius: 3,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  padding: EdgeInsets.fromLTRB(16.w, 22.h, 16.w, 22.h),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12.r),
+                    child: course.image.trim().isNotEmpty
+                        ? CacheNetworkGraphic(
+                            url: course.image,
+                            fit: BoxFit.cover,
+                          )
+                        : Container(
+                            color: const Color(0xFFEBEAFD),
+                            alignment: Alignment.center,
+                            child: Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 46.w,
+                              color: const Color(0xFF554FF0),
                             ),
-                    ),
+                          ),
                   ),
-                  16.verticalSpace,
-                  AppText(
-                    context.text.onboarding.onboardingBranchingRecommendationLabel,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.text13.copyWith(
-                      color: const Color(0x80110751),
-                      fontWeight: FontWeight.w600,
-                      height: 1.75,
-                    ),
+                ),
+                16.verticalSpace,
+                AppText(
+                  context.text.onboarding.onboardingBranchingRecommendationLabel.toUpperCase(),
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text13.copyWith(
+                    color: const Color(0x80110751),
+                    fontWeight: FontWeight.w600,
+                    height: 1.75,
                   ),
-                  4.verticalSpace,
-                  DText(
-                    text: courseTitle,
-                    textAlign: TextAlign.center,
-                    textType: DTextType.titleLarge,
+                ),
+                4.verticalSpace,
+                AppText(
+                  courseTitle,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text20.copyWith(
                     color: const Color(0xFF110751),
                     fontWeight: FontWeight.w700,
                   ),
-                  24.verticalSpace,
-                  Container(
-                    width: double.infinity,
-                    padding: EdgeInsets.all(16.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFEBEAFD),
-                      borderRadius: BorderRadius.circular(12.r),
-                      boxShadow: const [
-                        BoxShadow(
-                          color: Color(0x3CE7E7E9),
-                          blurRadius: 3,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          right: -10.w,
-                          bottom: -14.h,
-                          child: Opacity(
-                            opacity: 0.22,
-                            child: Image.asset(
-                              AppAsset.images.app.successDecoration.path,
-                              width: 120.w,
-                              fit: BoxFit.cover,
-                            ),
-                          ),
-                        ),
-                        Row(
+                ),
+                56.verticalSpace,
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(16.w),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEBEAFD),
+                    borderRadius: BorderRadius.circular(12.r),
+                    boxShadow: const [
+                      BoxShadow(
+                        color: Color(0x3CE7E7E9),
+                        blurRadius: 3,
+                        offset: Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Image.asset(
+                        AppAsset.images.app.successDecoration.path,
+                        width: 35.w,
+                        fit: BoxFit.cover,
+                      ),
+                      12.horizontalSpace,
+                      Expanded(
+                        child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Icon(
-                              Icons.verified_rounded,
-                              size: 36.w,
-                              color: const Color(0xFF32B38C),
+                            AppText(
+                              '$percentText ${context.text.onboarding.onboardingBranchingRecommendationUsersSuffix}',
+                              maxLines: 1,
+                              textAlign: TextAlign.start,
+                              style: AppStyle.textBold16.copyWith(color: const Color(0xFF110751), height: 1.1),
                             ),
-                            12.horizontalSpace,
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  AppText(
-                                    '$percentText ${context.text.onboarding.onboardingBranchingRecommendationUsersSuffix}',
-                                    maxLines: 1,
-                                    textAlign: TextAlign.start,
-                                    style: AppStyle.textBold24.copyWith(
-                                      color: const Color(0xFF110751),
-                                      fontSize: 30.sp,
-                                      height: 1.1,
-                                    ),
-                                  ),
-                                  DText(
-                                    text: courseSubtitle,
-                                    textAlign: TextAlign.start,
-                                    textType: DTextType.textSmall,
-                                    color: const Color(0xB3110751),
-                                  ),
-                                ],
-                              ),
+                            AppText(
+                              courseSubtitle,
+                              textAlign: TextAlign.start,
+                              style: AppStyle.text12.copyWith(color: const Color(0xB3110751)),
+                              maxLines: 2,
                             ),
                           ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           16.verticalSpace,

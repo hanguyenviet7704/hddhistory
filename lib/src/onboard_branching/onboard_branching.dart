@@ -55,6 +55,8 @@ part 'presentation/widgets/body/onboard_branching_person_admire_detail_view.dart
 part 'presentation/widgets/body/onboard_branching_person_admire_select_view.dart';
 part 'presentation/widgets/body/onboard_branching_recommendation_view.dart';
 part 'presentation/widgets/body/onboard_branching_welcome_view.dart';
+part 'presentation/widgets/items/activation/onboard_branching_activation_content_card.dart';
+part 'presentation/widgets/items/activation/onboard_branching_activation_label_row.dart';
 part 'presentation/widgets/items/common/onboard_branching_primary_button.dart';
 part 'presentation/widgets/items/common/onboard_branching_selectable_option_card.dart';
 part 'presentation/widgets/items/person_admire/onboard_branching_person_admire_tag_chip.dart';

@@ -27,38 +27,42 @@ class OnboardBranchingPersonAdmireSelectView extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          20.verticalSpace,
           if (subQuestion.trim().isNotEmpty)
-            DText(
-              text: subQuestion,
+            AppText(
+              subQuestion,
               textAlign: TextAlign.center,
-              textType: DTextType.textDefault,
-              color: const Color(0xB3110751),
+              style: AppStyle.text14.copyWith(
+                color: const Color(0xB3110751),
+              ),
             ),
-          DText(
-            text: question,
+          AppText(
+            question,
             textAlign: TextAlign.center,
-            textType: DTextType.titleLarge,
-            color: const Color(0xFF110751),
-            fontWeight: FontWeight.w700,
+            style: AppStyle.text20.copyWith(
+              color: const Color(0xFF110751),
+              fontWeight: FontWeight.w700,
+            ),
           ),
           16.verticalSpace,
-          Expanded(
-            child: ListView.separated(
-              itemCount: options.length,
-              separatorBuilder: (_, _) => 12.verticalSpace,
-              itemBuilder: (context, index) {
-                final option = options[index];
-                final isSelected = option.name == selectedOptionName;
-                return OnboardBranchingSelectableOptionCard(
-                  label: option.name,
-                  isSelected: isSelected,
-                  onTap: () => onSelect(option),
-                  leadingImageUrl: option.image ?? '',
-                  leadingSize: 44,
-                  placeholderColor: const Color(0xFFC7C5FA),
-                );
-              },
-            ),
+          Spacer(),
+          ListView.separated(
+            itemCount: options.length,
+            separatorBuilder: (_, _) => 12.verticalSpace,
+            padding: EdgeInsets.symmetric(vertical: 20.h),
+            shrinkWrap: true,
+            itemBuilder: (context, index) {
+              final option = options[index];
+              final isSelected = option.name == selectedOptionName;
+              return OnboardBranchingSelectableOptionCard(
+                label: option.name,
+                isSelected: isSelected,
+                onTap: () => onSelect(option),
+                leadingImageUrl: option.image ?? '',
+                leadingSize: 44,
+                placeholderColor: const Color(0xFFC7C5FA),
+              );
+            },
           ),
           12.verticalSpace,
           OnboardBranchingPrimaryButton(
