@@ -1,4 +1,4 @@
-part of '../../onboard_branching.dart';
+part of '../../../onboard_branching.dart';
 
 class OnboardBranchingLoadingView extends StatefulWidget {
   const OnboardBranchingLoadingView({

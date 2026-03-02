@@ -1,4 +1,4 @@
-part of '../../onboard_branching.dart';
+part of '../../../onboard_branching.dart';
 
 class OnboardBranchingActivationView extends StatelessWidget {
   const OnboardBranchingActivationView({
@@ -22,6 +22,32 @@ class OnboardBranchingActivationView extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  SizedBox(
+                    width: double.infinity,
+                    height: 110.h,
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: -120.h,
+                          left: -20.w,
+                          right: -20.w,
+                          child: Container(
+                            height: 260.h,
+                            decoration: const BoxDecoration(
+                              gradient: RadialGradient(
+                                center: Alignment.topCenter,
+                                radius: 0.95,
+                                colors: [
+                                  Color(0x99A5A9FF),
+                                  Color(0x005953EA),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                   DText(
                     text: activation.title.text,
                     textAlign: TextAlign.center,
@@ -195,14 +221,35 @@ class OnboardBranchingFactView extends StatelessWidget {
                         ),
                         child: Column(
                           children: [
-                            if (fact.icon.trim().isNotEmpty)
-                              CacheNetworkGraphic(
-                                url: fact.icon,
-                                width: 48.w,
-                                height: 48.w,
-                                fit: BoxFit.cover,
+                            SizedBox(
+                              width: 160.w,
+                              height: 86.h,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(8.r),
+                                    child: Opacity(
+                                      opacity: 0.32,
+                                      child: Image.asset(
+                                        'assets/images/app/onboarding_fact_background_decoration.jpg',
+                                        width: 160.w,
+                                        height: 86.h,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  if (fact.icon.trim().isNotEmpty)
+                                    CacheNetworkGraphic(
+                                      url: fact.icon,
+                                      width: 48.w,
+                                      height: 48.w,
+                                      fit: BoxFit.cover,
+                                    ),
+                                ],
                               ),
-                            if (fact.icon.trim().isNotEmpty) 16.verticalSpace,
+                            ),
+                            16.verticalSpace,
                             DText(
                               text: fact.label.text,
                               textAlign: TextAlign.start,

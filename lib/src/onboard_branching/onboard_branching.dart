@@ -47,13 +47,13 @@ part 'presentation/cubits/onboard_branching_cubit.dart';
 part 'presentation/pages/onboard_branching_page.dart';
 
 //* Presentation Layer - Widgets
-part 'presentation/widgets/onboard_branching_activation_fact_view.dart';
-part 'presentation/widgets/onboard_branching_loading_view.dart';
-part 'presentation/widgets/onboard_branching_option_content_view.dart';
-part 'presentation/widgets/onboard_branching_person_admire_view.dart';
-part 'presentation/widgets/onboard_branching_primary_button.dart';
-part 'presentation/widgets/onboard_branching_recommendation_view.dart';
-part 'presentation/widgets/onboard_branching_welcome_view.dart';
+part 'presentation/widgets/body/onboard_branching_activation_fact_view.dart';
+part 'presentation/widgets/body/onboard_branching_loading_view.dart';
+part 'presentation/widgets/body/onboard_branching_option_content_view.dart';
+part 'presentation/widgets/body/onboard_branching_person_admire_view.dart';
+part 'presentation/widgets/body/onboard_branching_primary_button.dart';
+part 'presentation/widgets/body/onboard_branching_recommendation_view.dart';
+part 'presentation/widgets/body/onboard_branching_welcome_view.dart';
 
 //* Parts for generated files
 part 'onboard_branching.freezed.dart';

@@ -1,4 +1,4 @@
-part of '../../onboard_branching.dart';
+part of '../../../onboard_branching.dart';
 
 class OnboardBranchingPrimaryButton extends StatelessWidget {
   const OnboardBranchingPrimaryButton({
@@ -9,6 +9,7 @@ class OnboardBranchingPrimaryButton extends StatelessWidget {
     this.loading = false,
     this.isLightStyle = false,
     this.showArrow = true,
+    this.fullWidth = false,
   });
 
   final String text;
@@ -17,6 +18,7 @@ class OnboardBranchingPrimaryButton extends StatelessWidget {
   final bool loading;
   final bool isLightStyle;
   final bool showArrow;
+  final bool fullWidth;
 
   @override
   Widget build(BuildContext context) {
@@ -45,8 +47,7 @@ class OnboardBranchingPrimaryButton extends StatelessWidget {
             color: const Color(0xFFE3E8EF),
           );
 
-    return SizedBox(
-      width: double.infinity,
+    final button = SizedBox(
       height: 54.h,
       child: DecoratedBox(
         decoration: decoration,
@@ -94,6 +95,21 @@ class OnboardBranchingPrimaryButton extends StatelessWidget {
             ),
           ),
         ),
+      ),
+    );
+
+    if (fullWidth) {
+      return SizedBox(width: double.infinity, child: button);
+    }
+
+    return Align(
+      alignment: Alignment.center,
+      child: ConstrainedBox(
+        constraints: BoxConstraints(
+          minWidth: 174.w,
+          maxWidth: 300.w,
+        ),
+        child: button,
       ),
     );
   }

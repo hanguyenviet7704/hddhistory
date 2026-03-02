@@ -1,4 +1,4 @@
-part of '../../onboard_branching.dart';
+part of '../../../onboard_branching.dart';
 
 class OnboardBranchingPersonAdmireSelectView extends StatelessWidget {
   const OnboardBranchingPersonAdmireSelectView({
@@ -184,50 +184,40 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                           ),
                         ),
                         Positioned(
-                          left: 8.w,
-                          bottom: 60.h,
+                          left: 34.w,
+                          bottom: 68.h,
                           child: _OnboardBranchingTagChip(
                             text: badgeTexts[2],
+                            backgroundColor: const Color(0xFFFECDCA),
+                            textColor: const Color(0xFF773531),
+                          ),
+                        ),
+                        Positioned(
+                          left: 8.w,
+                          bottom: 28.h,
+                          child: _OnboardBranchingTagChip(
+                            text: badgeTexts[3],
                             backgroundColor: const Color(0xFFFEDF89),
                             textColor: const Color(0xFF6D4533),
                           ),
                         ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(12.r),
-                              child: option.image?.trim().isNotEmpty == true
-                                  ? CacheNetworkGraphic(
-                                      url: option.image!,
-                                      width: 132.w,
-                                      height: 132.w,
-                                      fit: BoxFit.cover,
-                                    )
-                                  : Container(
-                                      width: 132.w,
-                                      height: 132.w,
-                                      color: const Color(0xFFF3F4F6),
-                                      alignment: Alignment.center,
-                                      child: Icon(
-                                        Icons.person_outline_rounded,
-                                        size: 42.w,
-                                        color: const Color(0xFF9CA3AF),
-                                      ),
-                                    ),
-                            ),
-                            16.verticalSpace,
-                            AppText(
-                              option.name,
-                              textAlign: TextAlign.center,
-                              maxLines: 2,
-                              style: AppStyle.text16.copyWith(
-                                color: const Color(0xFF110751),
-                                fontWeight: FontWeight.w600,
+                        if (option.image?.trim().isNotEmpty == true)
+                          Positioned.fill(
+                            child: Center(
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(12.r),
+                                child: Opacity(
+                                  opacity: 0.9,
+                                  child: CacheNetworkGraphic(
+                                    url: option.image!,
+                                    width: 200.w,
+                                    height: 300.h,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
                       ],
                     ),
                   ),
@@ -268,20 +258,23 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
       titleText,
       subTitleText,
       nameText,
+      selectedOption.name.replaceAll('_', ' ').trim(),
     ].map(_normalizeTag).where((item) => item.isNotEmpty).toList();
 
-    if (candidates.length >= 3) return candidates.take(3).toList();
+    if (candidates.length >= 4) return candidates.take(4).toList();
 
     final localizedFallbacks = <String>[
+      context.text.onboarding.onboardingBranchingBadgeFallbackOne,
+      context.text.onboarding.onboardingBranchingBadgeFallbackTwo,
       context.text.onboarding.onboardingBranchingBadgeFallbackOne,
       context.text.onboarding.onboardingBranchingBadgeFallbackTwo,
     ].map(_normalizeTag).where((item) => item.isNotEmpty);
 
     candidates.addAll(localizedFallbacks);
-    while (candidates.length < 3) {
+    while (candidates.length < 4) {
       candidates.add('•');
     }
-    return candidates.take(3).toList();
+    return candidates.take(4).toList();
   }
 
   String _normalizeTag(String value) {

@@ -1,4 +1,4 @@
-part of '../../onboard_branching.dart';
+part of '../../../onboard_branching.dart';
 
 class OnboardBranchingWelcomeView extends StatelessWidget {
   const OnboardBranchingWelcomeView({

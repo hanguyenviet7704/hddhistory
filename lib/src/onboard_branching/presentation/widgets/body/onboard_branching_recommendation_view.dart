@@ -1,4 +1,4 @@
-part of '../../onboard_branching.dart';
+part of '../../../onboard_branching.dart';
 
 class OnboardBranchingRecommendationView extends StatelessWidget {
   const OnboardBranchingRecommendationView({
@@ -99,37 +99,53 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
                         ),
                       ],
                     ),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Stack(
                       children: [
-                        Icon(
-                          Icons.verified_rounded,
-                          size: 36.w,
-                          color: const Color(0xFF32B38C),
-                        ),
-                        12.horizontalSpace,
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              AppText(
-                                '$percentText ${context.text.onboarding.onboardingBranchingRecommendationUsersSuffix}',
-                                maxLines: 1,
-                                textAlign: TextAlign.start,
-                                style: AppStyle.textBold24.copyWith(
-                                  color: const Color(0xFF110751),
-                                  fontSize: 30.sp,
-                                  height: 1.1,
-                                ),
-                              ),
-                              DText(
-                                text: courseSubtitle,
-                                textAlign: TextAlign.start,
-                                textType: DTextType.textSmall,
-                                color: const Color(0xB3110751),
-                              ),
-                            ],
+                        Positioned(
+                          right: -10.w,
+                          bottom: -14.h,
+                          child: Opacity(
+                            opacity: 0.22,
+                            child: Image.asset(
+                              AppAsset.images.app.successDecoration.path,
+                              width: 120.w,
+                              fit: BoxFit.cover,
+                            ),
                           ),
+                        ),
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Icon(
+                              Icons.verified_rounded,
+                              size: 36.w,
+                              color: const Color(0xFF32B38C),
+                            ),
+                            12.horizontalSpace,
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  AppText(
+                                    '$percentText ${context.text.onboarding.onboardingBranchingRecommendationUsersSuffix}',
+                                    maxLines: 1,
+                                    textAlign: TextAlign.start,
+                                    style: AppStyle.textBold24.copyWith(
+                                      color: const Color(0xFF110751),
+                                      fontSize: 30.sp,
+                                      height: 1.1,
+                                    ),
+                                  ),
+                                  DText(
+                                    text: courseSubtitle,
+                                    textAlign: TextAlign.start,
+                                    textType: DTextType.textSmall,
+                                    color: const Color(0xB3110751),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -143,6 +159,7 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
             text: context.text.onboarding.onboardingStartNowButton,
             loading: isLoadingTryNow,
             onPressed: onTryNow,
+            fullWidth: true,
           ),
           8.verticalSpace,
           SizedBox(
