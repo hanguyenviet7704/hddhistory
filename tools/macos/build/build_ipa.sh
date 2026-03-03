@@ -22,6 +22,7 @@ source "${ROOT_DIR}/tools/macos/common/common.sh" || {
 FLAVOR=""
 OBFUSCATE=true
 EXPORT_METHOD="app-store"  # Default to app-store for App Store Connect/TestFlight
+UPLOAD_IOS_SYMBOLS=true
 
 # Function to display usage information
 show_usage() {
@@ -30,6 +31,7 @@ show_usage() {
     echo "Options:"
     echo "  -o, --no-obfuscate        Skip code obfuscation"
     echo "  --export-method METHOD    Export method: app-store (default), ad-hoc, development"
+    echo "  --upload-ios-symbols V    Upload iOS dSYM to Crashlytics: true|false (default: true)"
     echo "  -h, --help                Show this help message"
     echo ""
     echo "This script builds iOS IPA files using centralized configuration."
@@ -39,10 +41,113 @@ show_usage() {
     echo "  $(basename "$0") dev                         # Build IPA for App Store (default)"
     echo "  $(basename "$0") dev --export-method ad-hoc  # Build for Firebase Distribution"
     echo "  $(basename "$0") dev --no-obfuscate          # Build without obfuscation"
+    echo "  $(basename "$0") dev --upload-ios-symbols false  # Skip dSYM upload"
     echo ""
     echo "To build and distribute:"
     echo "  tools/macos/distribution/distribute_ios.sh dev --build-first    # Firebase Distribution"
     exit 0
+}
+
+# Resolve GoogleService-Info.plist for a flavor (fallback to default)
+get_ios_gsp_path() {
+    local flavor="$1"
+    local flavored_path="ios/Runner/${flavor}/GoogleService-Info.plist"
+    local default_path="ios/Runner/GoogleService-Info.plist"
+
+    if [[ -f "$flavored_path" ]]; then
+        echo "$flavored_path"
+        return 0
+    fi
+
+    if [[ -f "$default_path" ]]; then
+        echo "$default_path"
+        return 0
+    fi
+
+    return 1
+}
+
+# Find a directory containing dSYM files for iOS
+find_ios_dsym_dir() {
+    local archive_dir
+    local ipa_dir
+    local app_dir
+    local search_dirs=()
+
+    archive_dir=$(get_output_path "ios" "archive" 2>/dev/null)
+    [[ -z "$archive_dir" ]] && archive_dir="build/ios/archive"
+
+    ipa_dir=$(get_output_path "ios" "ipa" 2>/dev/null)
+    [[ -z "$ipa_dir" ]] && ipa_dir="build/ios/ipa"
+
+    app_dir=$(get_output_path "ios" "app" 2>/dev/null)
+    [[ -z "$app_dir" ]] && app_dir="build/ios/iphoneos"
+
+    # Prefer the archive dSYMs folder if available
+    if [[ -d "$archive_dir/Runner.xcarchive/dSYMs" ]]; then
+        echo "$archive_dir/Runner.xcarchive/dSYMs"
+        return 0
+    fi
+
+    # Build a safe search list
+    for dir in "$archive_dir" "$ipa_dir" "$app_dir" "build/ios"; do
+        if [[ -d "$dir" ]]; then
+            search_dirs+=("$dir")
+        fi
+    done
+
+    if [[ ${#search_dirs[@]} -eq 0 ]]; then
+        return 1
+    fi
+
+    local dsym_path
+    dsym_path=$(find "${search_dirs[@]}" -name "Runner.app.dSYM" -type d 2>/dev/null | head -n 1)
+    if [[ -n "$dsym_path" ]]; then
+        dirname "$dsym_path"
+        return 0
+    fi
+
+    dsym_path=$(find "${search_dirs[@]}" -name "*.dSYM" -type d 2>/dev/null | head -n 1)
+    if [[ -n "$dsym_path" ]]; then
+        dirname "$dsym_path"
+        return 0
+    fi
+
+    return 1
+}
+
+# Upload iOS dSYM files to Crashlytics (explicit fallback)
+upload_ios_symbols() {
+    local flavor="$1"
+    local upload_script="ios/Pods/FirebaseCrashlytics/upload-symbols"
+    local gsp_path
+    local dsym_dir
+
+    if ! dsym_dir=$(find_ios_dsym_dir); then
+        log_warning "No iOS dSYM files found; skipping Crashlytics symbol upload."
+        return 0
+    fi
+
+    if ! gsp_path=$(get_ios_gsp_path "$flavor"); then
+        log_warning "GoogleService-Info.plist not found; skipping Crashlytics symbol upload."
+        return 0
+    fi
+
+    if [[ ! -f "$upload_script" ]]; then
+        log_warning "Crashlytics upload-symbols script not found at: $upload_script"
+        log_info "Run 'pod install' in ios/ to generate it."
+        return 0
+    fi
+
+    log_step "Uploading iOS dSYM files to Crashlytics..."
+    log_info "dSYM path: $dsym_dir"
+    log_info "GoogleService-Info.plist: $gsp_path"
+
+    if "$upload_script" -gsp "$gsp_path" -p ios "$dsym_dir"; then
+        log_success "Crashlytics dSYM upload completed."
+    else
+        log_warning "Crashlytics dSYM upload failed. You can retry manually."
+    fi
 }
 
 # Parse command line arguments
@@ -63,6 +168,26 @@ while [[ $# -gt 0 ]]; do
             ;;
         --export-method)
             EXPORT_METHOD="$2"
+            shift 2
+            ;;
+        --upload-ios-symbols)
+            if [[ -z "${2:-}" || "${2:-}" == -* ]]; then
+                log_error "--upload-ios-symbols requires a value: true|false"
+                exit 1
+            fi
+            case "$2" in
+                true|TRUE|True|1|yes|YES|on|ON)
+                    UPLOAD_IOS_SYMBOLS=true
+                    ;;
+                false|FALSE|False|0|no|NO|off|OFF)
+                    UPLOAD_IOS_SYMBOLS=false
+                    ;;
+                *)
+                    log_error "Invalid value for --upload-ios-symbols: $2"
+                    log_info "Valid values: true|false"
+                    exit 1
+                    ;;
+            esac
             shift 2
             ;;
         -h|--help)
@@ -172,6 +297,7 @@ echo
 log_step "Executing build command:"
 echo "Command: $FLUTTER_CMD build ipa ${BUILD_ARGS[*]}"
 echo "Export Method: $EXPORT_METHOD"
+echo "Upload iOS symbols: $UPLOAD_IOS_SYMBOLS"
 if [[ -n "$EXPORT_OPTIONS_PLIST" ]]; then
     echo "Export Options: $EXPORT_OPTIONS_PLIST"
 fi
@@ -188,12 +314,13 @@ fi
 log_success "IPA built successfully for $FLAVOR flavor."
 log_info "Output location: $IPA_OUTPUT_PATH"
 
-# Note about automatic Crashlytics symbol uploads
-echo
-log_info "Debug symbols for iOS are automatically uploaded to Firebase Crashlytics."
-log_info "This is handled by the 'FlutterFire: upload-crashlytics-symbols' build phase"
-log_info "configured in the Xcode project (project.pbxproj file)."
-log_info "No manual upload is required for iOS builds."
+if [[ "$UPLOAD_IOS_SYMBOLS" == "true" ]]; then
+    echo
+    upload_ios_symbols "$FLAVOR"
+else
+    echo
+    log_info "Skipping iOS dSYM upload to Crashlytics (--upload-ios-symbols false)."
+fi
 
 # Open the folder in Finder
 echo
@@ -209,6 +336,7 @@ echo "Version: $APP_VERSION"
 echo "Bundle ID: $BUNDLE_ID"
 echo "Flavor: $FLAVOR"
 echo "Output: $IPA_OUTPUT_PATH"
+echo "Upload iOS symbols: $UPLOAD_IOS_SYMBOLS"
 echo ""
 echo "To distribute this build:"
 echo "  Firebase only:  tools/macos/distribution/distribute_ios.sh $FLAVOR --ipa \"\$(find $IPA_OUTPUT_PATH -name '*.ipa' | head -n 1)\""

@@ -1,211 +1,96 @@
-# iOS Fastlane Guide (New Joiner)
+fastlane documentation
+----
 
-This iOS Fastlane setup mirrors Android lane intent:
-- test
-- build
-- beta distribution
-- deploy + deploy aliases
+# Installation
 
-Fastlane docs used for this setup:
-- `upload_to_app_store`: https://docs.fastlane.tools/actions/upload_to_app_store/
-- `upload_to_testflight`: https://docs.fastlane.tools/actions/upload_to_testflight/
-- `app_store_connect_api_key`: https://docs.fastlane.tools/actions/app_store_connect_api_key/
-- `deliver`: https://docs.fastlane.tools/actions/appstore/
-
-## 1) First-time setup
-
-From repo root:
+Make sure you have the latest version of the Xcode command line tools installed:
 
 ```sh
-cd ios
-bundle install
-bundle exec fastlane --version
+xcode-select --install
 ```
 
-If `bundle` points to system Ruby and fails, run with Homebrew Ruby:
+For _fastlane_ installation instructions, see [Installing _fastlane_](https://docs.fastlane.tools/#installing-fastlane)
+
+# Available Actions
+
+## iOS
+
+### ios test
 
 ```sh
-/opt/homebrew/opt/ruby/bin/bundle install
-/opt/homebrew/opt/ruby/bin/bundle exec fastlane --version
+[bundle exec] fastlane ios test
 ```
 
-## 2) Prerequisites
+Runs Flutter tests
 
-- macOS + Xcode installed.
-- Flutter + FVM installed.
-- CocoaPods installed (`pod install` in `ios/` when needed).
-- App Store Connect API key configured in `.info/app/app.json`.
-- App Store Connect team configured in `ios/fastlane/Appfile` (`itc_team_id`).
-- Firebase CLI logged in (for Firebase distribution).
-
-## 3) Lane commands
-
-Run all commands from `ios/`.
-
-### Fastlane wrapper (recommended from repo root)
-
-You can run iOS fastlane via wrapper:
+### ios build_ios
 
 ```sh
-bash tools/macos/distribution/fastlane/ios_fastlane.sh <command> [args...]
+[bundle exec] fastlane ios build_ios
 ```
 
-Wrapper global flags:
-- `--dry-run`
-- `--verbose`
-- `--ci`
-- `-h` / `--help`
+Build iOS app for specified flavor
 
-Wrapper command types:
-- lane aliases: `test`, `build_ios`, `build_ipa`, `beta`, `beta_ipa`, `deploy`, `deploy_alpha`, `deploy_beta`, `deploy_production`
-- `lane <lane_name> [key:value ...]` for any lane
-- `raw <fastlane args...>` for direct Fastlane actions (`deliver`, `lanes`, ...)
-
-Examples:
+### ios build_ipa
 
 ```sh
-bash tools/macos/distribution/fastlane/ios_fastlane.sh lanes --ci
-bash tools/macos/distribution/fastlane/ios_fastlane.sh build_ipa flavor:prod export_method:app-store
-bash tools/macos/distribution/fastlane/ios_fastlane.sh deploy --dry-run flavor:prod track:production
-bash tools/macos/distribution/fastlane/ios_fastlane.sh raw deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
+[bundle exec] fastlane ios build_ipa
 ```
 
-### Test
+Build IPA for specified flavor
+
+### ios beta
 
 ```sh
-bundle exec fastlane test
+[bundle exec] fastlane ios beta
 ```
 
-### Build
+Submit a new Beta Build to Firebase App Distribution
+
+### ios beta_ipa
 
 ```sh
-bundle exec fastlane build_ios flavor:dev
-bundle exec fastlane build_ios flavor:stg
-bundle exec fastlane build_ios flavor:prod
-
-bundle exec fastlane build_ipa flavor:dev
-bundle exec fastlane build_ipa flavor:stg
-bundle exec fastlane build_ipa flavor:prod
-bundle exec fastlane build_ipa flavor:prod export_method:app-store
+[bundle exec] fastlane ios beta_ipa
 ```
 
-### Beta distribution
+Submit a new Beta Build to TestFlight
+
+### ios deploy
 
 ```sh
-# Firebase App Distribution
-bundle exec fastlane beta flavor:dev
-
-# TestFlight
-# Default flavor for beta_ipa is prod
-bundle exec fastlane beta_ipa
-bundle exec fastlane beta_ipa flavor:prod
-bundle exec fastlane beta_ipa flavor:stg changelog:"Build notes"
-bundle exec fastlane beta_ipa flavor:dev distribute_external:true groups:"qa-team"
+[bundle exec] fastlane ios deploy
 ```
 
-When `distribute_external:true`, `groups` is required and `skip_waiting_for_build_processing` must be `false`.
+Deploy a new version for iOS
 
-### Deploy
+### ios deploy_alpha
 
 ```sh
-# Default: flavor=prod, track=internal -> method=testflight
-bundle exec fastlane deploy
-
-bundle exec fastlane deploy flavor:prod track:internal
-bundle exec fastlane deploy flavor:stg track:alpha
-bundle exec fastlane deploy flavor:prod track:beta
-bundle exec fastlane deploy flavor:prod track:production
+[bundle exec] fastlane ios deploy_alpha
 ```
 
-Direct method override:
+Deploy to iOS Alpha equivalent (Firebase)
+
+### ios deploy_beta
 
 ```sh
-bundle exec fastlane deploy flavor:prod method:firebase
-bundle exec fastlane deploy flavor:prod method:testflight
-bundle exec fastlane deploy flavor:prod method:both
-bundle exec fastlane deploy flavor:prod method:appstore
+[bundle exec] fastlane ios deploy_beta
 ```
 
-App Store metadata/screenshot upload flags:
+Deploy to iOS Beta equivalent (Firebase + TestFlight)
+
+### ios deploy_production
 
 ```sh
-bundle exec fastlane deploy flavor:prod track:production upload_metadata:true
-bundle exec fastlane deploy flavor:prod track:production upload_screenshots:true
-bundle exec fastlane deploy flavor:prod track:production upload_all_metadata:true
+[bundle exec] fastlane ios deploy_production
 ```
 
-Track mapping:
-- `internal` -> `testflight`
-- `alpha` -> `firebase`
-- `beta` -> `both` (Firebase + TestFlight)
-- `production` -> `appstore`
+Deploy to iOS Production (App Store Connect)
 
-Alias lanes:
+----
 
-```sh
-bundle exec fastlane deploy_alpha flavor:stg
-bundle exec fastlane deploy_beta flavor:stg
-bundle exec fastlane deploy_production flavor:prod
-```
+This README.md is auto-generated and will be re-generated every time [_fastlane_](https://fastlane.tools) is run.
 
-## 4) Metadata workflow 
+More information about _fastlane_ can be found on [fastlane.tools](https://fastlane.tools).
 
-iOS equivalent is:
-
-```text
-ios/fastlane/metadata/<locale>/
-```
-
-Examples:
-- `ios/fastlane/metadata/en-US/name.txt`
-- `ios/fastlane/metadata/en-US/subtitle.txt`
-- `ios/fastlane/metadata/en-US/description.txt`
-- `ios/fastlane/metadata/en-US/release_notes.txt`
-
-### Pull metadata from App Store Connect
-
-```sh
-cd ios
-
-# Prod app metadata -> ios/fastlane/metadata
-bundle exec fastlane deliver download_metadata --app_identifier com.eup.meup --metadata_path fastlane/metadata
-
-# Optional: screenshots -> ios/fastlane/screenshots
-bundle exec fastlane deliver download_screenshots --app_identifier com.eup.meup --screenshots_path fastlane/screenshots
-```
-
-For dev/stg apps (if they exist in App Store Connect), use custom folders:
-
-```sh
-bundle exec fastlane deliver download_metadata --app_identifier com.eup.meup.dev --metadata_path fastlane/metadata/dev
-bundle exec fastlane deliver download_metadata --app_identifier com.eup.meup.stg --metadata_path fastlane/metadata/stg
-```
-
-### Push metadata only (no binary upload)
-
-```sh
-cd ios
-bundle exec fastlane deliver --app_identifier com.eup.meup --metadata_path fastlane/metadata --skip_binary_upload true --skip_screenshots true
-```
-
-Push screenshots only:
-
-```sh
-bundle exec fastlane deliver --app_identifier com.eup.meup --screenshots_path fastlane/screenshots --skip_binary_upload true --skip_metadata true
-```
-
-### With deploy lane
-
-`bundle exec fastlane deploy flavor:prod track:production upload_metadata:true` uses `upload_to_app_store` and uploads metadata from default Fastlane path (`ios/fastlane/metadata`) unless you override paths in Fastlane config.
-
-## 5) Notes
-
-- iOS build is delegated to `tools/macos/build/*`.
-- `beta` uses `tools/macos/distribution/distribute_ios.sh` for Firebase.
-- `beta_ipa` uses `upload_to_testflight`.
-- `deploy` with `method:appstore` (or `track:production`) uses `upload_to_app_store`.
-- `itc_provider` for uploads resolves in this order:
-  1) `itc_team_id` in `ios/fastlane/Appfile`
-  2) fallback: `.info/app/app.json` -> `ios.contentProviderId`
-- Metadata flag mapping for App Store deploy: `upload_metadata` or `upload_all_metadata` enables metadata upload, and `upload_screenshots`/`upload_images`/`upload_all_metadata` enables screenshot upload.
-- Running `bundle exec fastlane lanes` may regenerate this README automatically.
+The documentation of _fastlane_ can be found on [docs.fastlane.tools](https://docs.fastlane.tools).

@@ -96,3 +96,4 @@ bricks/**/hooks/build/
 
 .ignore
 report.xml
+ios/vendor/
