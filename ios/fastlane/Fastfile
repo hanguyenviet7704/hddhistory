@@ -253,6 +253,8 @@ platform :ios do
       }
       provider = itc_provider
       upload_options[:itc_provider] = provider if provider
+      # Fastlane precheck cannot validate IAP when authenticating via API key.
+      upload_options[:precheck_include_in_app_purchases] = false
 
       upload_to_app_store(upload_options)
     else

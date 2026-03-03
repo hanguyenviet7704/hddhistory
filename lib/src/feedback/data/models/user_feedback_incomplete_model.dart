@@ -29,8 +29,15 @@ enum IncompleteFeedbackReason {
   @JsonValue('needs_more_examples')
   needsMoreExamples,
   @JsonValue('unknown')
-  unknown
-  ;
+  unknown;
+
+  static List<IncompleteFeedbackReason> get displayReasons => [
+    hardToUnderstand,
+    notEngaging,
+    poorVisuals,
+    hardQuestions,
+    needsMoreExamples,
+  ];
 
   static IncompleteFeedbackReason fromRawValue(String value) {
     return switch (value) {
@@ -78,7 +85,6 @@ extension IncompleteFeedbackReasonListExtension on List<IncompleteFeedbackReason
       IncompleteFeedbackReason.poorVisuals: context.text.feedback.reasonPoorVisuals,
       IncompleteFeedbackReason.hardQuestions: context.text.feedback.reasonHardQuestions,
       IncompleteFeedbackReason.needsMoreExamples: context.text.feedback.reasonNeedsMoreExamples,
-      IncompleteFeedbackReason.unknown: context.text.feedback.reasonHardToUnderstand,
     };
   }
 }
