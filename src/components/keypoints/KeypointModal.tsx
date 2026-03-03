@@ -3,6 +3,7 @@ import {
   IKeypoint,
   KeypointPayload,
 } from "../../types/interface/keypoint.interface";
+import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { ITranslation } from "../../utils/translate";
@@ -125,6 +126,20 @@ const KeypointModal: React.FC<Props> = ({
               )
             }
           />
+
+          {/* Image */}
+          <div>
+            <label className="block text-sm font-medium mb-1">Image URL</label>
+            <CloudflareFileUpload
+              initialUrl={image || ""}
+              onUrlChange={setImage}
+              label=""
+              uploadPayload={{
+                prefix: "",
+                folder: "keypoints",
+              }}
+            />
+          </div>
 
           {/* Actions */}
           <div className="flex justify-end gap-2 pt-4">

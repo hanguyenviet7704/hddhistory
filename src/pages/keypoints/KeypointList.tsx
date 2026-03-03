@@ -13,6 +13,7 @@ import KeypointConfirm from "../../components/keypoints/KeypointConfirm";
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { getTranslationValue } from "../../utils/translation";
+import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 const KeypointList: React.FC = () => {
   const navigate = useNavigate();
@@ -180,8 +181,19 @@ const KeypointList: React.FC = () => {
               className="flex justify-between items-center bg-white border border-gray-100 rounded-xl p-5 shadow-sm hover:shadow-lg transition-all duration-200 transform"
             >
               <div className="flex items-center gap-4 w-full">
-                <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-md">
-                  <PuzzlePieceIcon className="h-7 w-7 text-white" />
+                <div className="w-20 h-20 rounded-xl overflow-hidden border border-gray-200 bg-gray-50 flex items-center justify-center flex-shrink-0">
+                  {kp.image ? (
+                    <CloudflareAssetPreview
+                      src={kp.image}
+                      fallbackSrc="https://placehold.co/160x160?text=Keypoint&font=roboto"
+                      alt={getTranslationValue(kp.title, lang) || "Keypoint image"}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="p-3 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-xl shadow-md">
+                      <PuzzlePieceIcon className="h-7 w-7 text-white" />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-1">
                   <h2

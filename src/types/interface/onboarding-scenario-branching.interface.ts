@@ -29,15 +29,12 @@ export interface IOnboardingScenarioFixed {
   options: ILablel[];
 }
 
-export interface IOnboardingScenarioPersonOption {
+export interface IOnboardingScenarioPersonAdmireOption {
   image: string;
   name: string;
   title: ITranslation;
   subTitle: ITranslation;
 }
-
-export type IOnboardingScenarioPersonAdmireOption =
-  IOnboardingScenarioPersonOption;
 
 export interface IOnboardingScenarioPersonAdmire {
   subQuestion: ITranslation;
