@@ -31,6 +31,7 @@ import { LearningItemType } from "../../types/enum/learningItem.enum";
 import { getTranslationValue } from "../../utils/translation";
 
 // Custom SortableItem for grid layout
+// rebuild dev
 const SortableItem = ({
   id,
   children,
@@ -71,7 +72,7 @@ const KeypointDetail: React.FC = () => {
   const [hasChanges, setHasChanges] = useState(false);
   const estimateCompleTimeLabel = getTranslationValue(
     keypoint?.estimateCompleTime,
-    lang
+    lang,
   );
 
   // Cảm biến cho dnd-kit
@@ -81,7 +82,7 @@ const KeypointDetail: React.FC = () => {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   // Fetch keypoint details
@@ -110,7 +111,7 @@ const KeypointDetail: React.FC = () => {
         const res = await learningItemService.getList({ keypointId });
         // Sort by index initially (giả sử index từ API đã bắt đầu từ 1)
         const sortedItems = [...res.data.items].sort(
-          (a, b) => a.index - b.index
+          (a, b) => a.index - b.index,
         );
         setLearningItems(sortedItems);
       } catch (err) {
