@@ -23,7 +23,6 @@ import 'package:intl/intl.dart' as df;
 import 'package:lottie/lottie.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:skeletonizer/skeletonizer.dart' as sk;
-import 'package:syncfusion_flutter_datepicker/datepicker.dart';
 
 //* Import all files here
 import '../../config/di/di.dart';
