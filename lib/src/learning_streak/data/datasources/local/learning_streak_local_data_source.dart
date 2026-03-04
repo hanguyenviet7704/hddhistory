@@ -36,6 +36,7 @@ class LearningStreakLocalDataSourceImpl implements LearningStreakLocalDataSource
         value: model.toJson(),
       );
     } catch (e) {
+      //
     }
   }
 
@@ -44,6 +45,7 @@ class LearningStreakLocalDataSourceImpl implements LearningStreakLocalDataSource
     try {
       await _localStoreService.remove(key: _cacheKey);
     } catch (e) {
+      //
     }
   }
 }

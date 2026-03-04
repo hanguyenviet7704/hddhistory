@@ -12,6 +12,7 @@ abstract class UserState with _$UserState {
     @Default(true) bool isFirstTimeUserAccessLessonList,
     @Default(true) bool isFirstTimeUserChooseCourse,
     @Default(true) bool isFirstTimeLessonNavigationGuide,
+    @Default(null) DateTime? lastStreakCountedDate,
   }) = _UserState;
 
   factory UserState.initial() => UserState();
