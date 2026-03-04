@@ -1,0 +1,39 @@
+library;
+
+//* Single project import
+import 'package:meup/meup.dart';
+
+//* Package imports
+import 'package:dio/dio.dart';
+import 'package:fpdart/fpdart.dart' hide State;
+import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:injectable/injectable.dart';
+import 'package:retrofit/retrofit.dart';
+
+
+//* Data Layer - Models, Datasources, Repositories
+part 'data/models/user_learning_streak_model.dart';
+part 'data/datasources/remote/learning_streak_api.dart';
+part 'data/datasources/local/learning_streak_local_data_source.dart';
+part 'data/repositories/learning_streak_repository.dart';
+
+
+//* Domain Layer - Entities, Repositories, Use Cases
+part 'domain/entities/user_learning_streak_entity.dart';
+part 'domain/repositories/i_learning_streak_repository.dart';
+part 'domain/usecases/get_user_learning_streak_usecase.dart';
+
+
+//* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
+part 'presentation/cubits/learning_streak_state.dart';
+part 'presentation/cubits/learning_streak_cubit.dart';
+
+//* Presentation Layer - Pages
+part 'presentation/pages/learning_streak_page.dart';
+
+//* Presentation Layer - Widgets
+
+//* Parts for generated files
+part 'learning_streak.freezed.dart';
+part 'learning_streak.g.dart';
+
