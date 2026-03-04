@@ -29,7 +29,6 @@ const KeypointList: React.FC = () => {
   const [loadingMore, setLoadingMore] = useState(false);
   const observer = useRef<IntersectionObserver | null>(null);
 
-  // Bộ lọc
   const [search, setSearch] = useState("");
 
   // Fetch dữ liệu ban đầu
@@ -100,7 +99,7 @@ const KeypointList: React.FC = () => {
 
       if (node) observer.current.observe(node);
     },
-    [loading, loadingMore, hasMore, page]
+    [loading, loadingMore, hasMore, page],
   );
 
   // Xóa keypoint
@@ -170,14 +169,13 @@ const KeypointList: React.FC = () => {
       {/* Danh sách Keypoint */}
       <div className="space-y-4">
         {keypoints.map((kp, index) => {
-          const estimateCompleTimeLabel = getTranslationValue(
-            kp.estimateCompleTime,
-            lang
-          ) || formatEstimateCompleteTimeLabel(
-            kp.estimateCompleTime,
-            kp.estimateCompleTimeNumber,
-            lang
-          );
+          const estimateCompleTimeLabel =
+            getTranslationValue(kp.estimateCompleTime, lang) ||
+            formatEstimateCompleteTimeLabel(
+              kp.estimateCompleTime,
+              kp.estimateCompleTimeNumber,
+              lang,
+            );
 
           return (
             <div
@@ -191,7 +189,9 @@ const KeypointList: React.FC = () => {
                     <CloudflareAssetPreview
                       src={kp.image}
                       fallbackSrc="https://placehold.co/160x160?text=Keypoint&font=roboto"
-                      alt={getTranslationValue(kp.title, lang) || "Keypoint image"}
+                      alt={
+                        getTranslationValue(kp.title, lang) || "Keypoint image"
+                      }
                       className="w-full h-full object-cover"
                     />
                   ) : (
