@@ -26,11 +26,18 @@ import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 import { ITag } from "../../types/interface/tag.interface";
 import { tagService } from "../../services/tagService";
+import { LangCode } from "../../types/enum/common.enum";
 import {
   getTranslationValue,
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
+import {
+  EstimateCompleteTimeUnit,
+  buildEstimateCompleteTimeValue,
+  getEstimateCompleteTimeUnitLabel,
+  parseEstimateCompleteTimeInput,
+} from "../../utils/estimate-complete-time";
 
 interface LessonFormProps {
   lesson?: ILesson; // Nếu có -> edit mode, không có -> create mode
@@ -67,6 +74,24 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
   useEffect(() => {
     if (lesson) setCurrentLesson(lesson);
   }, [lesson]);
+
+  const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
+  const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =
+    useState<EstimateCompleteTimeUnit>("minute");
+
+  useEffect(() => {
+    const parsed = parseEstimateCompleteTimeInput(
+      currentLesson.estimateCompleTime,
+      currentLesson.estimateCompleTimeNumber,
+      lang
+    );
+    setEstimateCompleTimeInput(parsed.amount);
+    setEstimateCompleTimeUnit(parsed.unit);
+  }, [
+    currentLesson.estimateCompleTime,
+    currentLesson.estimateCompleTimeNumber,
+    lang,
+  ]);
 
   const [saving, setSaving] = useState(false);
   const [modalOpen, setModalOpen] = useState<{
@@ -159,6 +184,22 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
     }));
   };
 
+  const applyEstimateCompleTime = (
+    amount: string,
+    unit: EstimateCompleteTimeUnit
+  ) => {
+    const { label, estimateCompleTimeNumber } = buildEstimateCompleteTimeValue(
+      amount,
+      unit,
+      lang
+    );
+    setCurrentLesson((prev) => ({
+      ...prev,
+      estimateCompleTime: updateTranslationValue(prev.estimateCompleTime, lang, label),
+      estimateCompleTimeNumber,
+    }));
+  };
+
   // Fetch courses based on query
   useEffect(() => {
     let active = true;
@@ -223,11 +264,19 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
           currentLesson.description?.[lang] || ""
         )
       );
+      const {
+        label: estimateCompleTimeLabel,
+        estimateCompleTimeNumber,
+      } = buildEstimateCompleteTimeValue(
+        estimateCompleTimeInput,
+        estimateCompleTimeUnit,
+        lang
+      );
       const estimateCompleTime = cleanTranslation(
         updateTranslationValue(
           currentLesson.estimateCompleTime,
           lang,
-          currentLesson.estimateCompleTime?.[lang] || ""
+          estimateCompleTimeLabel
         )
       );
 
@@ -243,6 +292,9 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
         title: title || { [lang]: "" }, // Always include title for validation
         ...(description && { description }),
         ...(estimateCompleTime && { estimateCompleTime }),
+        ...(Number.isFinite(estimateCompleTimeNumber) && {
+          estimateCompleTimeNumber,
+        }),
         icon: (currentLesson.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         lightIcon: (currentLesson.lightIcon as any)?._id || "",
         AIConfig: currentLesson.AIConfig || "",
@@ -644,22 +696,41 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                 <label className="block mb-1 text-sm font-medium text-gray-700">
                   Time complete
                 </label>
-                <input
-                  value={currentLesson.estimateCompleTime?.[lang] || ""}
-                  onChange={(e) =>
-                    setCurrentLesson((prev) => ({
-                      ...prev,
-                      estimateCompleTime: updateTranslationValue(
-                        prev.estimateCompleTime,
-                        lang,
-                        e.target.value
-                      ),
-                    }))
-                  }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  placeholder="Lesson estimate complete time..."
-                  required
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <select
+                    value={estimateCompleTimeUnit}
+                    onChange={(e) => {
+                      const nextUnit = e.target.value as EstimateCompleteTimeUnit;
+                      setEstimateCompleTimeUnit(nextUnit);
+                      applyEstimateCompleTime(estimateCompleTimeInput, nextUnit);
+                    }}
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  >
+                    <option value="minute">
+                      {getEstimateCompleteTimeUnitLabel(
+                        "minute",
+                        lang as LangCode,
+                        2
+                      )}
+                    </option>
+                    <option value="hour">
+                      {getEstimateCompleteTimeUnitLabel("hour", lang as LangCode, 2)}
+                    </option>
+                  </select>
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={estimateCompleTimeInput}
+                    onChange={(e) => {
+                      const nextAmount = e.target.value;
+                      setEstimateCompleTimeInput(nextAmount);
+                      applyEstimateCompleTime(nextAmount, estimateCompleTimeUnit);
+                    }}
+                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Enter number..."
+                  />
+                </div>
               </div>
 
               <div>

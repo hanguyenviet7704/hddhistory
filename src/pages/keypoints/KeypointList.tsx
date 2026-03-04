@@ -13,6 +13,7 @@ import KeypointConfirm from "../../components/keypoints/KeypointConfirm";
 import { PuzzlePieceIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { getTranslationValue } from "../../utils/translation";
+import { formatEstimateCompleteTimeLabel } from "../../utils/estimate-complete-time";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 
 const KeypointList: React.FC = () => {
@@ -171,6 +172,10 @@ const KeypointList: React.FC = () => {
         {keypoints.map((kp, index) => {
           const estimateCompleTimeLabel = getTranslationValue(
             kp.estimateCompleTime,
+            lang
+          ) || formatEstimateCompleteTimeLabel(
+            kp.estimateCompleTime,
+            kp.estimateCompleTimeNumber,
             lang
           );
 
