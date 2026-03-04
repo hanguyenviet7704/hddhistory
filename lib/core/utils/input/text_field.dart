@@ -65,6 +65,10 @@ enum DTextInputType {
   }
 }
 
+/// Local replacement for Syncfusion's `DateRangePickerView`.
+/// Keeps existing `DTextField` API stable while using Flutter built-in date picker.
+enum DateRangePickerView { month, year, decade, century }
+
 class DTextField extends StatefulWidget {
   final TextEditingController controller;
   final String label;
@@ -172,7 +176,6 @@ class DTextField extends StatefulWidget {
 
 class _DTextFieldState extends State<DTextField> {
   bool isShowPassword = false;
-  final DateRangePickerController _dateRangePickerController = DateRangePickerController();
 
   Widget? get suffix {
     Widget? result;
@@ -323,60 +326,73 @@ class _DTextFieldState extends State<DTextField> {
     }
   }
 
-  void _onTapDate() {
-    showStandardDDiaLog(
-      context,
-      title: 'Chọn ngày',
-      enableBackButton: false,
-      insetPadding: EdgeInsets.symmetric(horizontal: 16.w),
-      body: [
-        SfDateRangePicker(
-          controller: _dateRangePickerController,
-          selectionMode: DateRangePickerSelectionMode.single,
-          initialSelectedDate: DateTime.now(),
-          initialSelectedRange: PickerDateRange(DateTime.now().subtract(const Duration(days: 4)), DateTime.now().add(const Duration(days: 3))),
-          monthViewSettings: const DateRangePickerMonthViewSettings(
-            firstDayOfWeek: 1,
-          ),
-          showNavigationArrow: true,
-          allowViewNavigation: widget.datePickerType == DateRangePickerView.month,
-          view: widget.datePickerType,
-          monthCellStyle: DateRangePickerMonthCellStyle(
-            todayTextStyle: const TextStyle(color: Colors.blue),
-            todayCellDecoration: BoxDecoration(
-              border: Border.all(color: Colors.blue, width: 1),
-              shape: BoxShape.circle,
-            ),
-          ),
-          onCancel: () {
-            widget.controller.text = '';
-            FocusScope.of(context).requestFocus(FocusNode());
-            widget.onDateRemove == null ? null : widget.onDateRemove!();
-            Navigator.pop(context);
-          },
-          onSubmit:
-              widget.onSubmit ??
-              (date) {
-                FocusScope.of(context).requestFocus(FocusNode());
-                widget.controller.text = df.DateFormat(widget.customDateFormat).format(_dateRangePickerController.selectedDate!);
-                widget.onDateConfirm == null ? null : widget.onDateConfirm!();
-                Navigator.pop(context);
-              },
-          onViewChanged: (dateRangePickerViewChangedArgs) {
-            LogDev.info('View changed ${dateRangePickerViewChangedArgs.visibleDateRange}');
-          },
-          onSelectionChanged: (value) {
-            LogDev.info('Selection changed ${value.value}');
-          },
-          showActionButtons: true,
-          showTodayButton: widget.datePickerType == DateRangePickerView.month,
-          minDate: DateTime(1900, 1, 1),
-          maxDate: DateTime(2100, 12, 31),
-          confirmText: 'Xác nhận',
-          cancelText: 'Hủy',
-        ),
-      ],
+  Future<void> _onTapDate() async {
+    final DateTime minDate = DateTime(1900, 1, 1);
+    final DateTime maxDate = DateTime(2100, 12, 31);
+    final DateTime now = DateTime.now();
+    final DateTime parsedDate = _parseCurrentDate() ?? now;
+    final DateTime initialDate = parsedDate.isBefore(minDate)
+        ? minDate
+        : parsedDate.isAfter(maxDate)
+            ? maxDate
+            : parsedDate;
+
+    final DateTime? selectedDate = await showDatePicker(
+      context: context,
+      initialDate: initialDate,
+      firstDate: minDate,
+      lastDate: maxDate,
+      barrierDismissible: false,
+      initialDatePickerMode: _datePickerModeFromView(widget.datePickerType),
+      helpText: 'Chọn ngày',
+      cancelText: 'Hủy',
+      confirmText: 'Xác nhận',
+      builder: (dialogContext, child) {
+        return PopScope(
+          canPop: false,
+          child: child ?? const SizedBox.shrink(),
+        );
+      },
     );
+
+    if (!mounted) return;
+
+    if (selectedDate == null) {
+      widget.controller.text = '';
+      FocusScope.of(context).requestFocus(FocusNode());
+      widget.onDateRemove == null ? null : widget.onDateRemove!();
+      return;
+    }
+
+    if (widget.onSubmit != null) {
+      widget.onSubmit!(selectedDate);
+    } else {
+      widget.controller.text = df.DateFormat(widget.customDateFormat).format(selectedDate);
+    }
+
+    FocusScope.of(context).requestFocus(FocusNode());
+    widget.onDateConfirm == null ? null : widget.onDateConfirm!();
+  }
+
+  DateTime? _parseCurrentDate() {
+    if (widget.controller.text.trim().isEmpty) return null;
+
+    try {
+      return df.DateFormat(widget.customDateFormat).parseStrict(widget.controller.text.trim());
+    } catch (_) {
+      return null;
+    }
+  }
+
+  DatePickerMode _datePickerModeFromView(DateRangePickerView view) {
+    return switch (view) {
+      DateRangePickerView.month => DatePickerMode.day,
+      DateRangePickerView.year => DatePickerMode.year,
+      DateRangePickerView.decade || DateRangePickerView.century => () {
+        LogDev.info('Date picker view "$view" is unsupported in Material picker. Fallback to year mode.');
+        return DatePickerMode.year;
+      }(),
+    };
   }
 
   Future<void> _onTapTime() async {

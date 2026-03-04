@@ -128,7 +128,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     });
 
     await runUseCase<IapVerifyEntity>(
-      usecase: _restoreUsecase.call,
+      usecase: () => _restoreUsecase(unit),
       onSuccess: (verify) {
         // Actual restored purchases will come through the purchase stream; keep awaiting until then.
       },

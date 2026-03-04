@@ -77,7 +77,7 @@ abstract class UpdateUserProgressExerciseRecordAnswer with _$UpdateUserProgressE
 }
 
 @lazySingleton
-class UpdateUserProgressExerciseUseCase implements UseCaseWithParams<UpdateUserProgressExerciseParams, UserProgressEntity> {
+class UpdateUserProgressExerciseUseCase implements BaseUseCase<UpdateUserProgressExerciseParams, UserProgressEntity> {
   final IProgressRepository _repository;
 
   UpdateUserProgressExerciseUseCase(this._repository);

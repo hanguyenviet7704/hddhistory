@@ -7,6 +7,7 @@ export 'home/home.dart';
 export 'lesson/lesson.dart';
 export 'monetization/monetization.dart';
 export 'onboard/onboard.dart';
+export 'onboard_branching/onboard_branching.dart';
 export 'profile/profile.dart';
 export 'progress/progress.dart';
 export 'roleplay/roleplay.dart';

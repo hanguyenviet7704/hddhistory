@@ -9,14 +9,13 @@ import 'package:meup/meup.dart';
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 
-
 //* Data Layer - Models, Datasources, Repositories
-
 
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/app_function_entity.dart';
 part 'domain/entities/app_version_config_entity.dart';
 part 'domain/entities/course_config_entity.dart';
+part 'domain/entities/onboarding_config_entity.dart';
 part 'domain/entities/paywall_config_entity.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs

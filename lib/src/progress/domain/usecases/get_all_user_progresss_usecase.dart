@@ -26,7 +26,7 @@ enum UserProgressFilterType {
 }
 
 @lazySingleton
-class GetAllUserProgresssUseCase implements UseCaseWithParams<UserProgressFilter, UserProgressEntity> {
+class GetAllUserProgresssUseCase implements BaseUseCase<UserProgressFilter, UserProgressEntity> {
   final IProgressRepository _repository;
 
   GetAllUserProgresssUseCase(this._repository);

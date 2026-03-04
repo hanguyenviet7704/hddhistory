@@ -1,7 +1,7 @@
 part of '../../lesson.dart';
 
 @lazySingleton
-class SendVoiceFeedbackUseCase implements UseCaseWithParams<VoiceFeedbackRequest, VoiceFeedbackEntity> {
+class SendVoiceFeedbackUseCase implements BaseUseCase<VoiceFeedbackRequest, VoiceFeedbackEntity> {
   final ILessonRepository _repository;
 
   SendVoiceFeedbackUseCase(this._repository);

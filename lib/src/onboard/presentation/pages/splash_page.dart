@@ -72,6 +72,7 @@ class _SplashPageState extends State<SplashPage> {
 
   void _getAppData() async {
     AppDI.injector.get<OnboardCubit>().loadAllOnboards();
+    AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
     UserState userState = context.read<UserCubit>().state;
     AppGlobalValue.accessToken = userState.accessToken;
     AppGlobalValue.refreshToken = userState.refreshToken;
@@ -100,7 +101,7 @@ class _SplashPageState extends State<SplashPage> {
 
       if (AppGlobalValue.accessToken.isEmpty) {
         if (isUserPassOnboarding) {
-          OnboardIntroduceRoute().go(context);
+          _goOnboardingEntryByFlowConfig();
           return;
         }
 
@@ -118,6 +119,11 @@ class _SplashPageState extends State<SplashPage> {
 
       HomeRoute().go(context);
     });
+  }
+
+  void _goOnboardingEntryByFlowConfig() {
+    // Branching decision happens at DataCollect name step.
+    OnboardIntroduceRoute().go(context);
   }
 
   void _handleUpdatePressed() async {

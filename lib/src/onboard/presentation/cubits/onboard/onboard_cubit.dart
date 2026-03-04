@@ -13,7 +13,7 @@ class OnboardCubit extends Cubit<OnboardState> with CubitUseCaseHandlerMixin<Onb
     if (state.status == OnboardStatus.loading) return;
 
     await runUseCase<OnboardEntity>(
-      usecase: () => _getAllUseCase(),
+      usecase: () => _getAllUseCase(unit),
       buildLoadingState: () => state.copyWith(status: OnboardStatus.loading),
       onFailure: (error) {
         emit(

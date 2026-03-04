@@ -4,6 +4,7 @@ abstract interface class IRemoteConfigService {
   AppVersionConfigEntity get appVersionConfig;
   AppFunctionEntity get appFunction;
   CourseConfigEntity get courseConfig;
+  OnboardingConfigEntity get onboardingConfig;
   PaywallConfigEntity get paywallConfig;
   Future<void> initialize();
   Future<bool> shouldForceUpdate();

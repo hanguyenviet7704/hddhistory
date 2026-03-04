@@ -1,7 +1,7 @@
 part of '../../achievenment.dart';
 
 @lazySingleton
-class GetAchievenmentResponseUseCase implements UseCaseWithParams<String, AchievenmentResponseEntity> {
+class GetAchievenmentResponseUseCase implements BaseUseCase<String, AchievenmentResponseEntity> {
   final IAchievenmentRepository _repository;
 
   GetAchievenmentResponseUseCase(this._repository);
@@ -11,4 +11,3 @@ class GetAchievenmentResponseUseCase implements UseCaseWithParams<String, Achiev
     return _repository.getAchievenmentResponse(params);
   }
 }
-

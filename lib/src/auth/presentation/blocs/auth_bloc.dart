@@ -105,13 +105,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     );
   }
 
+  Future<bool> loginAnonymousSilently(Map<String, dynamic> data) async {
+    try {
+      final result = await _loginAnonymousUsecase(data).run();
+      return result.fold(
+        (failure) => false,
+        (auth) {
+          _onAuthSuccess(auth);
+          return true;
+        },
+      );
+    } catch (error) {
+      LogDev.warning('[AuthBloc] loginAnonymousSilently failed: $error');
+      return false;
+    }
+  }
+
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
     _loginAnonymous(event.data);
   }
 
   FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {
     runUseCase(
-      usecase: () => _loginSSOGoogleUsecase(),
+      usecase: () => _loginSSOGoogleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
         _authSuccessNaviagate();
@@ -122,7 +138,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {
     runUseCase(
-      usecase: () => _loginSSOAppleUsecase(),
+      usecase: () => _loginSSOAppleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
         _authSuccessNaviagate();
@@ -150,7 +166,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     String deviceName = await _deviceInfoService.deviceName;
     String languageCode = _localeCubit.state.languageCode;
     runUseCase(
-      usecase: () => _logoutUsecase(),
+      usecase: () => _logoutUsecase(unit),
       onSuccess: (data) {
         _onResetAuth();
         _loginAnonymous({

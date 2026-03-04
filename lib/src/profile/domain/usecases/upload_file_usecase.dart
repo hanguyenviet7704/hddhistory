@@ -15,7 +15,7 @@ class UploadFileParams {
 }
 
 @lazySingleton
-class UploadFileUseCase implements UseCaseWithParams<UploadFileParams, UploadEntity> {
+class UploadFileUseCase implements BaseUseCase<UploadFileParams, UploadEntity> {
   final IUploadRepository _repository;
 
   UploadFileUseCase(this._repository);
@@ -25,4 +25,3 @@ class UploadFileUseCase implements UseCaseWithParams<UploadFileParams, UploadEnt
     return _repository.uploadFile(params);
   }
 }
-

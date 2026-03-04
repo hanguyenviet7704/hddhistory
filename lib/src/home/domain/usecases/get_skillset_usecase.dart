@@ -1,7 +1,7 @@
 part of '../../home.dart';
 
 @lazySingleton
-class GetSkillsetUseCase implements UseCaseWithParams<String, SkillsetEntity> {
+class GetSkillsetUseCase implements BaseUseCase<String, SkillsetEntity> {
   final IHomeRepository _repository;
 
   GetSkillsetUseCase(this._repository);
