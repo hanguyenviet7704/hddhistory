@@ -14,6 +14,7 @@ import { ITag } from "../../types/interface/tag.interface";
 import { IAvatar } from "../../types/interface/avatar.interface";
 import { ILesson, LessonPayload } from "../../types/interface/lesson.interface";
 import { LessonStatus, LessonType } from "../../types/enum/lesson.enum";
+import { LangCode } from "../../types/enum/common.enum";
 import { courseService } from "../../services/courseService";
 import { tagService } from "../../services/tagService";
 import { avatarService } from "../../services/avatarService";
@@ -26,6 +27,12 @@ import {
   getTranslationValue,
   updateTranslationValue,
 } from "../../utils/translation";
+import {
+  EstimateCompleteTimeUnit,
+  buildEstimateCompleteTimeValue,
+  getEstimateCompleteTimeUnitLabel,
+  parseEstimateCompleteTimeInput,
+} from "../../utils/estimate-complete-time";
 
 interface OutputFormProps {
   output?: ILesson;
@@ -169,6 +176,9 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
   const [animations, setAnimations] = useState<IAvatar[]>([]);
   const [animationQuery, setAnimationQuery] = useState("");
   const [isAnimationSearchActive, setIsAnimationSearchActive] = useState(false);
+  const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
+  const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =
+    useState<EstimateCompleteTimeUnit>("minute");
 
   const normalizeTagList = (res: any): ITag[] => {
     const list = res?.data?.items ?? res?.data ?? res?.items ?? [];
@@ -189,6 +199,20 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
       animation: output.animation || null,
     });
   }, [output, lang]);
+
+  useEffect(() => {
+    const parsed = parseEstimateCompleteTimeInput(
+      currentOutput.estimateCompleTime,
+      currentOutput.estimateCompleTimeNumber,
+      lang
+    );
+    setEstimateCompleTimeInput(parsed.amount);
+    setEstimateCompleTimeUnit(parsed.unit);
+  }, [
+    currentOutput.estimateCompleTime,
+    currentOutput.estimateCompleTimeNumber,
+    lang,
+  ]);
 
   useEffect(() => {
     let active = true;
@@ -288,6 +312,22 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
   const getTagId = (tag: ITag | null | undefined) => (tag as any)?._id || "";
 
+  const applyEstimateCompleTime = (
+    amount: string,
+    unit: EstimateCompleteTimeUnit
+  ) => {
+    const { label, estimateCompleTimeNumber } = buildEstimateCompleteTimeValue(
+      amount,
+      unit,
+      lang
+    );
+    setCurrentOutput((prev) => ({
+      ...prev,
+      estimateCompleTime: updateTranslationValue(prev.estimateCompleTime, lang, label),
+      estimateCompleTimeNumber,
+    }));
+  };
+
   const handleSaveOutput = async () => {
     try {
       setSaving(true);
@@ -311,12 +351,20 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
           currentOutput.description?.[lang] || "",
         ),
       );
+      const {
+        label: estimateCompleTimeLabel,
+        estimateCompleTimeNumber,
+      } = buildEstimateCompleteTimeValue(
+        estimateCompleTimeInput,
+        estimateCompleTimeUnit,
+        lang
+      );
 
       const estimateCompleTime = cleanTranslation(
         updateTranslationValue(
           currentOutput.estimateCompleTime,
           lang,
-          currentOutput.estimateCompleTime?.[lang] || "",
+          estimateCompleTimeLabel,
         ),
       );
 
@@ -330,6 +378,9 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
         title: title || { en: "Practice" },
         ...(description && { description }),
         ...(estimateCompleTime && { estimateCompleTime }),
+        ...(Number.isFinite(estimateCompleTimeNumber) && {
+          estimateCompleTimeNumber,
+        }),
         image: currentOutput.image,
         status: currentOutput.status,
         keypoints: keypointIds,
@@ -513,6 +564,47 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-none"
                   placeholder="Short description..."
                 />
+              </div>
+
+              <div>
+                <label className="block mb-1 text-sm font-medium text-gray-700">
+                  Time complete
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <select
+                    value={estimateCompleTimeUnit}
+                    onChange={(e) => {
+                      const nextUnit = e.target.value as EstimateCompleteTimeUnit;
+                      setEstimateCompleTimeUnit(nextUnit);
+                      applyEstimateCompleTime(estimateCompleTimeInput, nextUnit);
+                    }}
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  >
+                    <option value="minute">
+                      {getEstimateCompleteTimeUnitLabel(
+                        "minute",
+                        lang as LangCode,
+                        2
+                      )}
+                    </option>
+                    <option value="hour">
+                      {getEstimateCompleteTimeUnitLabel("hour", lang as LangCode, 2)}
+                    </option>
+                  </select>
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={estimateCompleTimeInput}
+                    onChange={(e) => {
+                      const nextAmount = e.target.value;
+                      setEstimateCompleTimeInput(nextAmount);
+                      applyEstimateCompleTime(nextAmount, estimateCompleTimeUnit);
+                    }}
+                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Enter number..."
+                  />
+                </div>
               </div>
 
               <div>

@@ -7,7 +7,14 @@ import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { ITranslation } from "../../utils/translate";
+import { LangCode } from "../../types/enum/common.enum";
 import { updateTranslationValue, cleanTranslation } from "../../utils/translation";
+import {
+  EstimateCompleteTimeUnit,
+  buildEstimateCompleteTimeValue,
+  getEstimateCompleteTimeUnitLabel,
+  parseEstimateCompleteTimeInput,
+} from "../../utils/estimate-complete-time";
 
 interface Props {
   open: boolean;
@@ -27,8 +34,19 @@ const KeypointModal: React.FC<Props> = ({
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
   const [estimateCompleTime, setEstimateCompleTime] = useState<ITranslation>({});
+  const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
+  const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =
+    useState<EstimateCompleteTimeUnit>("minute");
   const [image, setImage] = useState("");
   const [tag, setTag] = useState<string[]>([]);
+
+  const applyEstimateCompleTime = (
+    amount: string,
+    unit: EstimateCompleteTimeUnit
+  ) => {
+    const { label } = buildEstimateCompleteTimeValue(amount, unit, lang);
+    setEstimateCompleTime((prev) => updateTranslationValue(prev, lang, label));
+  };
 
   useEffect(() => {
     if (keypoint) {
@@ -37,14 +55,24 @@ const KeypointModal: React.FC<Props> = ({
       setEstimateCompleTime(keypoint.estimateCompleTime ?? {});
       setImage(keypoint.image ?? "");
       setTag(keypoint.tag || []);
+
+      const parsed = parseEstimateCompleteTimeInput(
+        keypoint.estimateCompleTime,
+        keypoint.estimateCompleTimeNumber,
+        lang
+      );
+      setEstimateCompleTimeInput(parsed.amount);
+      setEstimateCompleTimeUnit(parsed.unit);
     } else {
       setTitle({});
       setDescription({});
       setEstimateCompleTime({});
+      setEstimateCompleTimeInput("");
+      setEstimateCompleTimeUnit("minute");
       setImage("");
       setTag([]);
     }
-  }, [keypoint]);
+  }, [keypoint, lang]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -56,11 +84,19 @@ const KeypointModal: React.FC<Props> = ({
     const cleanedDescription = cleanTranslation(
       updateTranslationValue(description, lang, description[lang] || "")
     );
+    const {
+      label: estimateCompleTimeLabel,
+      estimateCompleTimeNumber,
+    } = buildEstimateCompleteTimeValue(
+      estimateCompleTimeInput,
+      estimateCompleTimeUnit,
+      lang
+    );
     const cleanedEstimateCompleTime = cleanTranslation(
       updateTranslationValue(
         estimateCompleTime,
         lang,
-        estimateCompleTime[lang] || ""
+        estimateCompleTimeLabel
       )
     );
 
@@ -70,6 +106,9 @@ const KeypointModal: React.FC<Props> = ({
       ...(cleanedDescription && { description: cleanedDescription }),
       ...(cleanedEstimateCompleTime && {
         estimateCompleTime: cleanedEstimateCompleTime,
+      }),
+      ...(Number.isFinite(estimateCompleTimeNumber) && {
+        estimateCompleTimeNumber,
       }),
       image,
       tag,
@@ -116,16 +155,41 @@ const KeypointModal: React.FC<Props> = ({
           <label className="block text-sm font-medium mb-1">
             Time complete
           </label>
-          <input
-            className="w-full border rounded-lg px-3 py-2"
-            placeholder="Keypoint estimate complete time..."
-            value={estimateCompleTime[lang] || ""}
-            onChange={(e) =>
-              setEstimateCompleTime((prev) =>
-                updateTranslationValue(prev, lang, e.target.value)
-              )
-            }
-          />
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <select
+              value={estimateCompleTimeUnit}
+              onChange={(e) => {
+                const nextUnit = e.target.value as EstimateCompleteTimeUnit;
+                setEstimateCompleTimeUnit(nextUnit);
+                applyEstimateCompleTime(estimateCompleTimeInput, nextUnit);
+              }}
+              className="w-full border rounded-lg px-3 py-2 bg-white"
+            >
+              <option value="minute">
+                {getEstimateCompleteTimeUnitLabel(
+                  "minute",
+                  lang as LangCode,
+                  2
+                )}
+              </option>
+              <option value="hour">
+                {getEstimateCompleteTimeUnitLabel("hour", lang as LangCode, 2)}
+              </option>
+            </select>
+            <input
+              type="number"
+              min={1}
+              step={1}
+              className="w-full border rounded-lg px-3 py-2 sm:col-span-2"
+              placeholder="Enter number..."
+              value={estimateCompleTimeInput}
+              onChange={(e) => {
+                const nextAmount = e.target.value;
+                setEstimateCompleTimeInput(nextAmount);
+                applyEstimateCompleTime(nextAmount, estimateCompleTimeUnit);
+              }}
+            />
+          </div>
 
           {/* Image */}
           <div>

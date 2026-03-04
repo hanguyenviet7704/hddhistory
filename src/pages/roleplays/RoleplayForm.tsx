@@ -21,11 +21,18 @@ import { keypointService } from "../../services/keypointService";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { AnimatePresence } from "framer-motion";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
+import { LangCode } from "../../types/enum/common.enum";
 import {
   getTranslationValue,
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
+import {
+  EstimateCompleteTimeUnit,
+  buildEstimateCompleteTimeValue,
+  getEstimateCompleteTimeUnitLabel,
+  parseEstimateCompleteTimeInput,
+} from "../../utils/estimate-complete-time";
 import RoleplayFromDetail from "./RoleplayFromDetail";
 
 interface RoleplayFormProps {
@@ -94,6 +101,24 @@ export default function RoleplayForm({
       });
     }
   }, [roleplayLesson]);
+
+  const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
+  const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =
+    useState<EstimateCompleteTimeUnit>("minute");
+
+  useEffect(() => {
+    const parsed = parseEstimateCompleteTimeInput(
+      currentRoleplayLesson.estimateCompleTime,
+      currentRoleplayLesson.estimateCompleTimeNumber,
+      lang
+    );
+    setEstimateCompleTimeInput(parsed.amount);
+    setEstimateCompleTimeUnit(parsed.unit);
+  }, [
+    currentRoleplayLesson.estimateCompleTime,
+    currentRoleplayLesson.estimateCompleTimeNumber,
+    lang,
+  ]);
 
   const [saving, setSaving] = useState(false);
   const [courses, setCourses] = useState<ICourse[]>([]);
@@ -293,6 +318,26 @@ export default function RoleplayForm({
     }));
   };
 
+  const applyEstimateCompleTime = (
+    amount: string,
+    unit: EstimateCompleteTimeUnit
+  ) => {
+    const { label, estimateCompleTimeNumber } = buildEstimateCompleteTimeValue(
+      amount,
+      unit,
+      lang
+    );
+    setCurrentRoleplayLesson((prev) => ({
+      ...prev,
+      estimateCompleTime: updateTranslationValue(
+        prev.estimateCompleTime,
+        lang,
+        label
+      ),
+      estimateCompleTimeNumber,
+    }));
+  };
+
   // Fetch courses based on query
   useEffect(() => {
     let active = true;
@@ -378,11 +423,19 @@ export default function RoleplayForm({
           currentRoleplayLesson.description?.[lang] || ""
         )
       );
+      const {
+        label: estimateCompleTimeLabel,
+        estimateCompleTimeNumber,
+      } = buildEstimateCompleteTimeValue(
+        estimateCompleTimeInput,
+        estimateCompleTimeUnit,
+        lang
+      );
       const estimateCompleTime = cleanTranslation(
         updateTranslationValue(
           currentRoleplayLesson.estimateCompleTime,
           lang,
-          currentRoleplayLesson.estimateCompleTime?.[lang] || ""
+          estimateCompleTimeLabel
         )
       );
 
@@ -404,6 +457,9 @@ export default function RoleplayForm({
         title: title || { [lang]: "" },
         ...(description && { description }),
         ...(estimateCompleTime && { estimateCompleTime }),
+        ...(Number.isFinite(estimateCompleTimeNumber) && {
+          estimateCompleTimeNumber,
+        }),
         icon: (currentRoleplayLesson.icon as any)?._id || "", // Extract ID string from ITag object for LessonPayload
         lightIcon: (currentRoleplayLesson.lightIcon as any)?._id || "",
         AIConfig: currentRoleplayLesson.AIConfig || "",
@@ -607,22 +663,41 @@ export default function RoleplayForm({
                 <label className="block mb-1 text-sm font-medium text-gray-700">
                   Time complete
                 </label>
-                <input
-                  value={currentRoleplayLesson.estimateCompleTime?.[lang] || ""}
-                  onChange={(e) =>
-                    setCurrentRoleplayLesson((prev) => ({
-                      ...prev,
-                      estimateCompleTime: updateTranslationValue(
-                        prev.estimateCompleTime,
-                        lang,
-                        e.target.value
-                      ),
-                    }))
-                  }
-                  className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                  placeholder="Lesson estimate complete time..."
-                  required
-                />
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <select
+                    value={estimateCompleTimeUnit}
+                    onChange={(e) => {
+                      const nextUnit = e.target.value as EstimateCompleteTimeUnit;
+                      setEstimateCompleTimeUnit(nextUnit);
+                      applyEstimateCompleTime(estimateCompleTimeInput, nextUnit);
+                    }}
+                    className="border rounded-lg w-full p-3 bg-white focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                  >
+                    <option value="minute">
+                      {getEstimateCompleteTimeUnitLabel(
+                        "minute",
+                        lang as LangCode,
+                        2
+                      )}
+                    </option>
+                    <option value="hour">
+                      {getEstimateCompleteTimeUnitLabel("hour", lang as LangCode, 2)}
+                    </option>
+                  </select>
+                  <input
+                    type="number"
+                    min={1}
+                    step={1}
+                    value={estimateCompleTimeInput}
+                    onChange={(e) => {
+                      const nextAmount = e.target.value;
+                      setEstimateCompleTimeInput(nextAmount);
+                      applyEstimateCompleTime(nextAmount, estimateCompleTimeUnit);
+                    }}
+                    className="border rounded-lg w-full p-3 sm:col-span-2 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
+                    placeholder="Enter number..."
+                  />
+                </div>
               </div>
 
               {/* Status + Course row */}
