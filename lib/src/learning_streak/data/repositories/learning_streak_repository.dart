@@ -4,7 +4,6 @@ part of '../../learning_streak.dart';
 class LearningStreakRepository with RestfulRequestHandlerMixin implements ILearningStreakRepository {
   final LearningStreakApi _api;
   final LearningStreakLocalDataSource _localDataSource;
-  
 
   LearningStreakRepository(
     this._api,
@@ -12,39 +11,16 @@ class LearningStreakRepository with RestfulRequestHandlerMixin implements ILearn
   );
 
   @override
-  TaskEither<AppException, UserLearningStreakEntity> getUserLearningStreak(String id) {
+  TaskEither<AppException, UserLearningStreakEntity> getUserLearningStreak() {
     return callApiWithTransform<UserLearningStreakModel, UserLearningStreakEntity>(
-      apiCall: () => _api.getUserLearningStreak(id),
+      apiCall: () => _api.getUserLearningStreak(),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserLearningStreak(data ?? UserLearningStreakModel()),
       onError: () async {
-        final cachedModel = await _localDataSource.getCachedUserLearningStreak(id);
+        final cachedModel = await _localDataSource.getCachedUserLearningStreak();
         return cachedModel?.toEntity();
       },
       defaultValue: UserLearningStreakEntity(),
-    );
-  }
-
-  
-
-  // ==================== HELPER METHODS ====================
-
-  /// Converts UserLearningStreakEntity to JSON Map for API requests
-  /// Provides flexibility to customize the request body structure without affecting domain models
-  /// Reusable helper to avoid duplication in create/update methods
-  Map<String, dynamic> _entityToJson(UserLearningStreakEntity entity) {
-    return {
-      'id': entity.id,
-      'name': entity.name,
-      // TODO: Add more fields as needed
-    };
-  }
-  
-
-  TaskEither<AppException, T> _missingDataSourceTask<T>(String operation) {
-    
-    return TaskEither.left(
-      AppException.unexpected('$operation is not implemented. Please provide a remote or local data source.'),
     );
   }
 }

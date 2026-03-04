@@ -3,10 +3,12 @@ part of '../../learning_streak.dart';
 @freezed
 abstract class UserLearningStreakModel with _$UserLearningStreakModel {
   const factory UserLearningStreakModel({
-    @Default('') String id,
-    @Default('') String name,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    @Default('') String userId,
+    DateTime? weekStartDate,
+    @Default(<bool>[]) List<bool> weekStudy,
+    @Default(0) int studyTime,
+    @Default(0) int currentStreak,
+    @Default(0) int bestStreak,
   }) = _UserLearningStreakModel;
 
 
@@ -15,10 +17,12 @@ abstract class UserLearningStreakModel with _$UserLearningStreakModel {
 
 extension UserLearningStreakModelExtension on UserLearningStreakModel {
   UserLearningStreakEntity toEntity() => UserLearningStreakEntity(
-        id: id,
-        name: name,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
+        userId: userId,
+        weekStartDate: weekStartDate,
+        weekStudy: weekStudy,
+        studyTime: studyTime,
+        currentStreak: currentStreak,
+        bestStreak: bestStreak,
       );
 }
 

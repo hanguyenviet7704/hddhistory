@@ -6,16 +6,14 @@ part of '../../learning_streak.dart';
 class LearningStreakCubit extends Cubit<LearningStreakState>
     with CubitUseCaseHandlerMixin<LearningStreakState> {
   final GetUserLearningStreakUseCase _getUseCase;
-  
 
   LearningStreakCubit(
     this._getUseCase,
-    
   ) : super(LearningStreakState.initial());
 
-  void loadUserLearningStreak(String id) async {
+  void loadUserLearningStreak() async {
     await runUseCase<UserLearningStreakEntity>(
-      usecase: () => _getUseCase(id),
+      usecase: () => _getUseCase(),
       buildLoadingState: () => state.copyWith(status: LearningStreakStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(
@@ -31,8 +29,6 @@ class LearningStreakCubit extends Cubit<LearningStreakState>
       },
     );
   }
-
-  
 }
 
 
