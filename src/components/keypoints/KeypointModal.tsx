@@ -9,6 +9,7 @@ import { RootState } from "../../store";
 import { ITranslation } from "../../utils/translate";
 import { LangCode } from "../../types/enum/common.enum";
 import { updateTranslationValue, cleanTranslation } from "../../utils/translation";
+import { useNotification } from "../../utils/hooks/useNotification";
 import {
   EstimateCompleteTimeUnit,
   buildEstimateCompleteTimeValue,
@@ -20,7 +21,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   keypoint: IKeypoint | null;
-  onSave: (data: KeypointPayload) => void;
+  onSave: (data: KeypointPayload) => Promise<void> | void;
 }
 
 const KeypointModal: React.FC<Props> = ({
@@ -30,6 +31,7 @@ const KeypointModal: React.FC<Props> = ({
   onSave,
 }) => {
   const lang = useSelector((state: RootState) => state.lang.code);
+  const { showSuccess, showError } = useNotification();
 
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
@@ -39,6 +41,7 @@ const KeypointModal: React.FC<Props> = ({
     useState<EstimateCompleteTimeUnit>("minute");
   const [image, setImage] = useState("");
   const [tag, setTag] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const applyEstimateCompleTime = (
     amount: string,
@@ -74,12 +77,18 @@ const KeypointModal: React.FC<Props> = ({
     }
   }, [keypoint, lang]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const titleValue = (title[lang] || "").trim();
+
+    if (!titleValue) {
+      showError("Title is required");
+      return;
+    }
 
     // Update and clean translations
     const cleanedTitle = cleanTranslation(
-      updateTranslationValue(title, lang, title[lang] || "")
+      updateTranslationValue(title, lang, titleValue)
     );
     const cleanedDescription = cleanTranslation(
       updateTranslationValue(description, lang, description[lang] || "")
@@ -114,7 +123,18 @@ const KeypointModal: React.FC<Props> = ({
       tag,
     };
 
-    onSave(payload);
+    try {
+      setIsSubmitting(true);
+      await onSave(payload);
+      showSuccess(
+        keypoint ? "Saved keypoint successfully" : "Create keypoint successfully"
+      );
+    } catch (err) {
+      console.error("Save keypoint failed:", err);
+      showError((err as any)?.response?.data?.message || "Failed to save keypoint");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   if (!open) return null;
@@ -216,9 +236,10 @@ const KeypointModal: React.FC<Props> = ({
             </button>
             <button
               type="submit"
+              disabled={isSubmitting}
               className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700"
             >
-              Save
+              {isSubmitting ? "Saving..." : "Save"}
             </button>
           </div>
         </form>
