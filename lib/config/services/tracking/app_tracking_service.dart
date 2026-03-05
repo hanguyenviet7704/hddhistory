@@ -468,6 +468,36 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackHomeStreakChipClick({required int currentStreak}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeStreakChipClick,
+      parameters: {
+        'current_streak': currentStreak,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHomeStreakPopupView({required int currentStreak}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeStreakPopupView,
+      parameters: {
+        'current_streak': currentStreak,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHomeStreakPopupClose({required int currentStreak}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeStreakPopupClose,
+      parameters: {
+        'current_streak': currentStreak,
+      },
+    );
+  }
+
+  @override
   Future<void> trackCourseSelectAllCourseView({required String source}) async {
     _appTrackingService.trackEvent(
       TrackingKey.courseSelectAllCourseView,
@@ -907,6 +937,34 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(
       TrackingKey.keypointPopupNavContinue,
       parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackCompletionStreakSuccessView({
+    required String variant,
+    required int currentStreak,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.completionStreakSuccessView,
+      parameters: {
+        'variant': variant,
+        'current_streak': currentStreak,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackCompletionStreakSuccessCommitClick({
+    required String variant,
+    required int currentStreak,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.completionStreakSuccessCommitClick,
+      parameters: {
+        'variant': variant,
+        'current_streak': currentStreak,
+      },
     );
   }
 

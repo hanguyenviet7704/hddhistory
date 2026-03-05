@@ -1,12 +1,12 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-03-02  
+**Last Updated:** 2026-03-05  
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, roleplay practice, and progress visibility.
-The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, and subscription features.
+Meup is a language-learning app focused on structured lessons, roleplay practice, daily streak continuity, and progress visibility.
+The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
 ### Primary user groups
@@ -22,9 +22,10 @@ The product combines course content, interactive exercise formats, AI-assisted s
 5. Progress and profile review.
 6. Subscription purchase and management.
 7. Scenario-branching onboarding handoff and recommendation-based course entry.
+8. Daily streak check/commit from home and lesson-completion moments.
 
 ## 3. Current Module Scope (Code-Verified)
-`lib/src` currently contains 15 feature modules:
+`lib/src` currently contains 16 feature modules:
 
 | Module | Primary responsibility |
 | --- | --- |
@@ -35,6 +36,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `data_collect` | Onboarding survey and profile intake steps |
 | `feedback` | User feedback submission/view |
 | `home` | Skillset and dashboard entry |
+| `learning_streak` | Home streak popup and completion streak success overlays |
 | `lesson` | Learning-item and exercise flows |
 | `monetization` | Paywall, products, purchase verification |
 | `onboard` | Intro/onboarding screens |
@@ -46,7 +48,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 
 Notes:
 - Naming intentionally follows code paths, including `achievenment`.
-- `feedback` and `onboard_branching` are part of the current module map.
+- `feedback`, `learning_streak`, and `onboard_branching` are part of the current module map.
 
 ## 4. Functional Requirements
 1. Authentication and session handling
@@ -71,6 +73,7 @@ Notes:
 5. Progress tracking
 - Retrieve user progress and paginated “my courses” data.
 - Show achievement/course-level progress status.
+- Show streak progress from home and completion-triggered success overlays.
 
 6. Profile and settings
 - Retrieve/update user profile.
@@ -141,10 +144,11 @@ Notes:
 - Stable CI completion for prepare/quality/build stages.
 - No undocumented drift in runtime constraints (SDK/platform/flavor).
 - No unresolved contract mismatch between scripts and deployment docs.
-- Measurable learning-flow coverage across course, lesson, roleplay, and progress modules.
+- Measurable learning-flow coverage across course, lesson, roleplay, learning_streak, and progress modules.
 
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-03-05 | Added learning streak module scope and requirements (home streak popup + completion-triggered streak success gate). |
 | 2026-03-02 | Added branching onboarding orchestration requirements (flow switch, fallback safety, no-register gate in transition). |
 | 2026-02-27 | Removed branch/ticket-specific labels; synced module scope to 15 modules; synced SDK/iOS constraints; refreshed pagination and build contract references. |

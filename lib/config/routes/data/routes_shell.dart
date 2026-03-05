@@ -7,6 +7,12 @@ part of '../routes.dart';
         TypedGoRoute<HomeRoute>(
           path: RoutePath.home,
           name: RouteNamed.home,
+          routes: [
+            TypedGoRoute<HomeLearningStreakRoute>(
+              path: RoutePath.homeLearningStreak,
+              name: RouteNamed.homeLearningStreak,
+            ),
+          ],
         ),
       ],
     ),

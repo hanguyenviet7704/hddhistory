@@ -6,8 +6,7 @@ class GetUserLearningStreakUseCase {
 
   GetUserLearningStreakUseCase(this._repository);
 
-  TaskEither<AppException, UserLearningStreakEntity> call() {
-    return _repository.getUserLearningStreak();
+  TaskEither<AppException, LearningStreakFetchEntity> call(String userId) {
+    return _repository.getUserLearningStreak(userId);
   }
 }
-

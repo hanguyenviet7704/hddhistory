@@ -21,10 +21,24 @@ class _HomePageState extends State<HomePage> {
     AppService.instance.appTrackingService.trackHomeScrView();
   }
 
+  Future<void> _prefetchLearningStreak() async {
+    final userId = context.read<UserCubit>().state.user.id;
+    await context.read<LearningStreakCubit>().loadUserLearningStreak(
+      triggerSource: LearningStreakTriggerSource.homeChip,
+      requestedUserId: userId,
+      timeout: const Duration(seconds: 2),
+      emitLoading: false,
+      allowSafeDefaultOnFailure: true,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _trackHomeScrView());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _trackHomeScrView();
+      await _prefetchLearningStreak();
+    });
   }
 
   @override

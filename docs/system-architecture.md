@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-02  
+**Last Updated:** 2026-03-05  
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -48,7 +48,7 @@ Widget/Page
 - `lib/core/`: base request/response/error/use-case abstractions, helper utilities.
 
 ## 3. Module Topology (`lib/src`)
-Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
+Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -100,7 +100,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - Router implementation: `go_router` with generated route data.
 - Root configuration under `lib/config/routes/base/`.
 - Feature route data under `lib/config/routes/data/`.
-- Shell-based navigation and nested course/lesson/roleplay flows are handled in route config files.
+- Shell-based navigation and nested home/course/lesson/roleplay flows are handled in route config files.
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.
@@ -111,6 +111,12 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `RoleplayIntroRoute` and `RoleplayRoute` provide roleplay orchestration via `RoleplayCubit` (+ feedback where needed).
 - `RoleplayFeedbackRoute` merges `RoleplayCubit`, `RoleplayPointCubit`, `HomeCubit`, and `FeedbackCubit` for post-session analytics and UI.
 - Route-level provider composition keeps runtime concerns scoped to each flow stage.
+
+### Learning streak runtime flow
+- `HomeRoute` composes `LearningStreakCubit`, and nested `HomeLearningStreakRoute` maps to `LearningStreakPage`.
+- `HomePage` prefetches streak data with a short timeout and safe-default fallback before/while rendering the header streak chip.
+- `LearningStreakPage` is used as a bottom-sheet style popup flow and emits home streak popup view/close tracking events.
+- `KeypointCompletePage` and `RoleplayFeedbackPage` run a streak gate on primary CTA: load streak, show success overlay only on remote positive streak, then persist commit day via `UserCubit.lastStreakCountedDate` (UTC-day guard).
 
 ### Onboarding branching runtime flow
 - Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.
