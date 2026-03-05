@@ -45,12 +45,13 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   Future<void> _handleLearningStreakGate() async {
     final userCubit = AppDI.injector.get<UserCubit>();
     final userState = userCubit.state;
+    final learningStreakCubit = AppDI.injector.get<LearningStreakCubit>();
     final nowUtc = DateTime.now().toUtc();
     final gateUtcDay = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
 
-    if (userState.isSameStreakCountedUtcDay(gateUtcDay)) return;
+    if (learningStreakCubit.isSameStreakCountedUtcDay(gateUtcDay)) return;
 
-    final streakResult = await AppDI.injector.get<LearningStreakCubit>().loadUserLearningStreak(
+    final streakResult = await learningStreakCubit.loadUserLearningStreak(
       triggerSource: LearningStreakTriggerSource.completionCta,
       requestedUserId: userState.user.id,
       timeout: const Duration(seconds: 2),
@@ -67,7 +68,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     if (!mounted) return;
 
     if (committed) {
-      userCubit.setLastStreakCountedDate(gateUtcDay);
+      learningStreakCubit.setLastStreakCountedDate(gateUtcDay);
     }
   }
 

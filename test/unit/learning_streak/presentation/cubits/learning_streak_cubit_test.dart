@@ -2,6 +2,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:meup/meup.dart';
 
+import '../../../../support/test_di.dart';
+
 class _FakeLearningStreakRepository implements ILearningStreakRepository {
   _FakeLearningStreakRepository(this.handler);
 
@@ -15,6 +17,14 @@ class _FakeLearningStreakRepository implements ILearningStreakRepository {
 
 void main() {
   group('LearningStreakCubit', () {
+    setUp(() async {
+      await setupLocaleCubitForTests();
+    });
+
+    tearDown(() async {
+      await resetInjectorForTests();
+    });
+
     test('emits success with remote origin', () async {
       final repo = _FakeLearningStreakRepository(
         (_) => TaskEither.right(

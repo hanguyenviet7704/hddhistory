@@ -19,7 +19,6 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
   void setIsFirstTimeUserChooseCourse(bool isFirstTimeUserChooseCourse) => emit(state.copyWith(isFirstTimeUserChooseCourse: isFirstTimeUserChooseCourse));
   void setIsFirstTimeLessonNavigationGuide(bool isFirstTimeLessonNavigationGuide) => emit(state.copyWith(isFirstTimeLessonNavigationGuide: isFirstTimeLessonNavigationGuide));
-  void setLastStreakCountedDate(DateTime? utcDate) => emit(state.copyWith(lastStreakCountedDate: utcDate?.toUtc()));
 
   void setAccessToken(String accessToken) {
     AppGlobalValue.accessToken = accessToken;
@@ -33,12 +32,7 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     final nextUserId = auth.user.id;
     final isUserChanged = previousUserId != nextUserId;
 
-    emit(
-      state.copyWith(
-        auth: auth,
-        lastStreakCountedDate: isUserChanged ? null : state.lastStreakCountedDate,
-      ),
-    );
+    emit(state.copyWith(auth: auth));
 
     if (isUserChanged && previousUserId.isNotEmpty) {
       unawaited(_clearLearningStreakCacheForUser(previousUserId));

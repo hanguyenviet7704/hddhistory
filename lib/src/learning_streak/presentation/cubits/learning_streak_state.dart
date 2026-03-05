@@ -14,9 +14,25 @@ abstract class LearningStreakState with _$LearningStreakState {
     @Default(LearningStreakTriggerSource.unknown) LearningStreakTriggerSource triggerSource,
     @Default('') String requestedUserId,
     @Default(LearningStreakDataOrigin.unknown) LearningStreakDataOrigin dataOrigin,
+    @Default(null) DateTime? lastStreakCountedDate,
   }) = _LearningStreakState;
 
   factory LearningStreakState.initial() => LearningStreakState();
 
   factory LearningStreakState.fromJson(Map<String, dynamic> json) => _$LearningStreakStateFromJson(json);
+}
+
+extension LearningStreakStateExtension on LearningStreakState {
+  DateTime? get lastStreakCountedUtcDay {
+    if (lastStreakCountedDate == null) return null;
+    final value = lastStreakCountedDate!.toUtc();
+    return DateTime.utc(value.year, value.month, value.day);
+  }
+
+  bool isSameStreakCountedUtcDay(DateTime utcDate) {
+    final previousDay = lastStreakCountedUtcDay;
+    if (previousDay == null) return false;
+    final normalized = DateTime.utc(utcDate.year, utcDate.month, utcDate.day);
+    return previousDay == normalized;
+  }
 }

@@ -2,7 +2,6 @@ part of '../../learning_streak.dart';
 
 @lazySingleton
 class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitUseCaseHandlerMixin<LearningStreakState> {
-  
   final GetUserLearningStreakUseCase _getUseCase;
   LearningStreakCubit(this._getUseCase) : super(LearningStreakState.initial());
 
@@ -15,6 +14,8 @@ class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitU
   int _requestSerial = 0;
 
   void reset() => emit(LearningStreakState.initial());
+  void setLastStreakCountedDate(DateTime? utcDate) => emit(state.copyWith(lastStreakCountedDate: utcDate?.toUtc()));
+  bool isSameStreakCountedUtcDay(DateTime utcDate) => state.isSameStreakCountedUtcDay(utcDate.toUtc());
 
   Future<LearningStreakRequestResult> loadUserLearningStreak({
     required LearningStreakTriggerSource triggerSource,

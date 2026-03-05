@@ -30,7 +30,7 @@ class _LearningStreakPageHarness {
 }
 
 Future<_LearningStreakPageHarness> _pumpHarness(WidgetTester tester) async {
-  await tester.binding.setSurfaceSize(const Size(375, 812));
+  await tester.binding.setSurfaceSize(const Size(800, 1600));
   addTearDown(() async {
     await tester.binding.setSurfaceSize(null);
   });
