@@ -12,99 +12,87 @@ class StreakHomePopupContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
+    return SizedBox(
+      height: 753.h,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 20.h),
         decoration: BoxDecoration(
-          color: AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.08),
-              blurRadius: 24,
-              offset: const Offset(0, -4),
-            ),
-          ],
+          color: AppCustomColor.backgroundBrandSoft,
+          borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
         ),
         child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Row(
               children: [
                 const Spacer(),
                 GestureDetector(
+                  key: const ValueKey('learningStreakPopupCloseButton'),
                   onTap: onClose,
-                  child: Container(
-                    width: 28.w,
-                    height: 28.w,
-                    decoration: BoxDecoration(
-                      color: AppCustomColor.backgroundGray,
-                      shape: BoxShape.circle,
+                  child: SizedBox(
+                    width: 24.r,
+                    height: 24.r,
+                    child: SvgPicture.asset(
+                      AppAsset.svg.app.icClose,
+                      fit: BoxFit.contain,
                     ),
-                    child: Icon(Icons.close, size: 18.sp, color: AppCustomColor.textSecondary),
                   ),
                 ),
               ],
             ),
-            8.verticalSpace,
-            Row(
+            SizedBox(height: 12.r),
+            Column(
               children: [
-                Expanded(
-                  child: Column(
-                    children: [
-                      SizedBox(
-                        width: 100.w,
-                        height: 100.w,
-                        child: Lottie.asset(
-                          AppAsset.lottie.flame,
-                          fit: BoxFit.contain,
-                        ),
-                      ),
-                      AppText(
-                        context.text.learningStreak.streakDays(count: streak.currentStreak),
-                        textAlign: TextAlign.center,
-                        style: AppStyle.textBold24.copyWith(color: AppCustomColor.textBrand),
-                      ),
-                      4.verticalSpace,
-                      AppText(
-                        context.text.learningStreak.popupSubtitle,
-                        textAlign: TextAlign.center,
-                        style: AppStyle.text12.copyWith(
-                          color: AppCustomColor.streakTextMuted,
-                          fontWeight: FontWeight.w500,
-                          height: 1.75,
-                        ),
-                      ),
-                    ],
+                SizedBox(
+                  width: 100.r,
+                  height: 100.r,
+                  child: Lottie.asset(
+                    AppAsset.lottie.flame,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+                AppText(
+                  context.text.learningStreak.streakDays(count: streak.currentStreak),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: AppStyle.textBold24.copyWith(color: AppCustomColor.textBrand),
+                ),
+                4.verticalSpace,
+                AppText(
+                  context.text.learningStreak.popupSubtitle,
+                  textAlign: TextAlign.center,
+                  maxLines: 3,
+                  style: AppStyle.text12.copyWith(
+                    color: AppCustomColor.streakTextMuted,
+                    fontWeight: FontWeight.w500,
+                    height: 1.75,
                   ),
                 ),
               ],
             ),
-            16.verticalSpace,
+            SizedBox(height: 12.r),
             Row(
               children: [
                 Expanded(
                   child: _StreakMetricCard(
                     icon: SvgPicture.asset(
                       AppAsset.svg.app.icRingClock,
-                      width: 22.w,
-                      height: 22.w,
+                      width: 24.r,
+                      height: 24.r,
                       fit: BoxFit.contain,
                     ),
                     title: context.text.learningStreak.thisWeekLabel,
                     value: context.text.learningStreak.minutesShort(count: streak.studyTime),
                   ),
                 ),
-                12.horizontalSpace,
+                SizedBox(width: 12.r),
                 Expanded(
                   child: _StreakMetricCard(
                     icon: SvgPicture.asset(
                       AppAsset.svg.app.icFlame,
-                      width: 18.w,
-                      height: 22.w,
+                      width: 19.2.r,
+                      height: 24.r,
                       fit: BoxFit.contain,
                     ),
                     title: context.text.learningStreak.bestStreakLabel,
@@ -116,14 +104,14 @@ class StreakHomePopupContent extends StatelessWidget {
             16.verticalSpace,
             Container(
               width: double.infinity,
-              padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+              padding: EdgeInsets.symmetric(vertical: 20.h),
               decoration: BoxDecoration(
                 color: AppCustomColor.backgroundWhite,
                 borderRadius: BorderRadius.circular(16.r),
-                border: Border.all(color: AppCustomColor.borderDefault, width: 2),
               ),
               child: StreakWeekBar(weekStudy: streak.normalizedWeekStudy),
             ),
+            const Spacer(),
           ],
         ),
       ),
@@ -145,36 +133,35 @@ class _StreakMetricCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
+      padding: EdgeInsets.all(16.r),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(14.r),
-        border: Border.all(color: AppCustomColor.borderDefault, width: 1.5),
+        borderRadius: BorderRadius.circular(16.r),
         color: AppCustomColor.backgroundWhite,
       ),
       child: Row(
         children: [
           SizedBox(
-            width: 22.w,
-            height: 22.w,
-            child: icon,
+            width: 24.r,
+            height: 24.r,
+            child: Center(child: icon),
           ),
-          8.horizontalSpace,
+          SizedBox(width: 8.r),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 AppText(
-                  title,
-                  style: AppStyle.text10.copyWith(
-                    color: AppCustomColor.textTertiary,
-                    fontWeight: FontWeight.w600,
+                  value,
+                  style: AppStyle.textBold16.copyWith(
+                    color: AppCustomColor.textSecondary,
                   ),
                 ),
-                2.verticalSpace,
                 AppText(
-                  value,
-                  style: AppStyle.textBold14.copyWith(
-                    color: AppCustomColor.textSecondary,
+                  title,
+                  style: AppStyle.text12.copyWith(
+                    color: AppCustomColor.textTertiary,
+                    fontWeight: FontWeight.w500,
+                    height: 1.75,
                   ),
                 ),
               ],

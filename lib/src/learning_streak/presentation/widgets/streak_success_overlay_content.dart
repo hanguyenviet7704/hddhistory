@@ -77,54 +77,44 @@ class StreakSuccessOverlayContent extends StatelessWidget {
           child: Column(
             children: [
               const Spacer(),
+              Column(
+                children: [
+                  SizedBox(
+                    width: 120.r,
+                    height: 120.r,
+                    child: Lottie.asset(
+                      AppAsset.lottie.flame,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                  AppText(
+                    variant == LearningStreakSuccessVariant.p1 ? context.text.learningStreak.startedTitle : context.text.learningStreak.streakDays(count: streak.currentStreak),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    style: AppStyle.textBold24.copyWith(color: AppCustomColor.textBrand),
+                  ),
+                  AppText(
+                    context.text.learningStreak.successSubtitle,
+                    textAlign: TextAlign.center,
+                    maxLines: 3,
+                    style: AppStyle.text12.copyWith(
+                      color: AppCustomColor.streakTextMuted,
+                      fontWeight: FontWeight.w500,
+                      height: 1.75,
+                    ),
+                  ),
+                ],
+              ),
+              16.verticalSpace,
               Container(
                 width: double.infinity,
-                padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 18.h),
+                padding: EdgeInsets.symmetric(vertical: 20.h),
                 decoration: BoxDecoration(
                   color: AppCustomColor.backgroundWhite,
                   borderRadius: BorderRadius.circular(16.r),
                   border: Border.all(color: AppCustomColor.borderDefault, width: 2),
                 ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizedBox(
-                      width: 120.w,
-                      height: 120.w,
-                      child: Lottie.asset(
-                        AppAsset.lottie.flame,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    12.verticalSpace,
-                    AppText(
-                      variant == LearningStreakSuccessVariant.p1 ? context.text.learningStreak.startedTitle : context.text.learningStreak.streakDays(count: streak.currentStreak),
-                      textAlign: TextAlign.center,
-                      style: AppStyle.textBold24.copyWith(color: AppCustomColor.textBrand),
-                    ),
-                    8.verticalSpace,
-                    AppText(
-                      context.text.learningStreak.successSubtitle,
-                      textAlign: TextAlign.center,
-                      style: AppStyle.text12.copyWith(
-                        color: AppCustomColor.streakTextMuted,
-                        fontWeight: FontWeight.w500,
-                        height: 1.7,
-                      ),
-                    ),
-                    16.verticalSpace,
-                    Container(
-                      width: double.infinity,
-                      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 14.h),
-                      decoration: BoxDecoration(
-                        color: AppCustomColor.backgroundWhite,
-                        borderRadius: BorderRadius.circular(14.r),
-                        border: Border.all(color: AppCustomColor.borderDefault, width: 1.5),
-                      ),
-                      child: StreakWeekBar(weekStudy: streak.normalizedWeekStudy),
-                    ),
-                  ],
-                ),
+                child: StreakWeekBar(weekStudy: streak.normalizedWeekStudy),
               ),
               const Spacer(),
               GestureDetector(

@@ -25,7 +25,6 @@ class StreakWeekBar extends StatelessWidget {
       context.text.learningStreak.weekSat,
       context.text.learningStreak.weekSun,
     ];
-
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: List.generate(7, (index) {
@@ -36,42 +35,45 @@ class StreakWeekBar extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               SizedBox(
-                width: 24.w,
-                height: isLatestActive ? 30.h : 24.h,
+                width: 24.r,
+                height: 30.r,
                 child: isLatestActive
                     ? SvgPicture.asset(
                         AppAsset.svg.app.icFlameCheck,
                         fit: BoxFit.contain,
                       )
-                    : Container(
-                        width: 24.w,
-                        height: 24.w,
-                        margin: EdgeInsets.only(bottom: 6.h),
-                        decoration: BoxDecoration(
-                          shape: BoxShape.circle,
-                          color: isActive ? AppCustomColor.streakActive : AppCustomColor.backgroundWhite,
-                          border: Border.all(
-                            color: isActive ? AppCustomColor.streakActive : AppCustomColor.borderDefault,
-                            width: 2,
+                    : Align(
+                        alignment: Alignment.bottomCenter,
+                        child: Container(
+                          width: 24.r,
+                          height: 24.r,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isActive ? AppCustomColor.streakActive : AppCustomColor.backgroundWhite,
+                            border: Border.all(
+                              color: isActive ? AppCustomColor.streakActive : AppCustomColor.borderDefault,
+                              width: 2,
+                            ),
                           ),
+                          child: isActive
+                              ? Icon(
+                                  Icons.check,
+                                  color: AppCustomColor.textWhite,
+                                  size: 14.sp,
+                                )
+                              : null,
                         ),
-                        child: isActive
-                            ? Icon(
-                                Icons.check,
-                                color: AppCustomColor.textWhite,
-                                size: 14.sp,
-                              )
-                            : null,
                       ),
               ),
-              6.verticalSpace,
+              SizedBox(height: 4.r),
               AppText(
                 labels[index],
                 maxLines: 1,
                 textAlign: TextAlign.center,
-                style: AppStyle.text10.copyWith(
+                style: AppStyle.text12.copyWith(
                   color: isActive ? AppCustomColor.streakActive : AppCustomColor.streakTextMuted,
                   fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                  height: 1.75,
                 ),
               ),
             ],

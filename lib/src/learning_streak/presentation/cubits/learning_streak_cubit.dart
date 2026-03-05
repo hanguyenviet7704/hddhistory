@@ -1,10 +1,17 @@
 part of '../../learning_streak.dart';
 
 @lazySingleton
-class LearningStreakCubit extends Cubit<LearningStreakState> with CubitUseCaseHandlerMixin<LearningStreakState> {
+class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitUseCaseHandlerMixin<LearningStreakState> {
+  
+  final GetUserLearningStreakUseCase _getUseCase;
   LearningStreakCubit(this._getUseCase) : super(LearningStreakState.initial());
 
-  final GetUserLearningStreakUseCase _getUseCase;
+  @override
+  LearningStreakState fromJson(Map<String, dynamic> json) => LearningStreakState.fromJson(json);
+
+  @override
+  Map<String, dynamic> toJson(LearningStreakState state) => state.toJson();
+
   int _requestSerial = 0;
 
   void reset() => emit(LearningStreakState.initial());

@@ -124,7 +124,7 @@ void main() {
   testWidgets('tracks popup view and close exactly once when close button is tapped', (tester) async {
     final harness = await _pumpHarness(tester);
 
-    await tester.tap(find.byIcon(Icons.close));
+    await tester.tap(find.byKey(const ValueKey('learningStreakPopupCloseButton')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 
@@ -135,7 +135,7 @@ void main() {
   testWidgets('tracks popup view and close exactly once when scrim is tapped', (tester) async {
     final harness = await _pumpHarness(tester);
 
-    await tester.tapAt(const Offset(12, 100));
+    await tester.tapAt(const Offset(12, 12));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 120));
 

@@ -33,9 +33,9 @@ class StreakHomeChip extends StatelessWidget {
             ),
             4.horizontalSpace,
             SvgPicture.asset(
-              AppAsset.svg.app.icFlame,
-              width: 20.w,
-              height: 24.h,
+              AppAsset.svg.app.icFlameActive,
+              width: 24.r,
+              height: 24.r,
               fit: BoxFit.contain,
             ),
           ],
