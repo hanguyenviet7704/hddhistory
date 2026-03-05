@@ -15,9 +15,11 @@ import { useNavigate } from "react-router-dom";
 import { getTranslationValue } from "../../utils/translation";
 import { formatEstimateCompleteTimeLabel } from "../../utils/estimate-complete-time";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
+import { useNotification } from "../../utils/hooks/useNotification";
 
 const KeypointList: React.FC = () => {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
   const lang = useSelector((state: RootState) => state.lang.code);
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [selected, setSelected] = useState<IKeypoint | null>(null);
@@ -78,6 +80,7 @@ const KeypointList: React.FC = () => {
       setHasMore(pageNum < totalPages);
     } catch (err) {
       console.error("Fetch failed", err);
+      showError("Failed to fetch keypoints");
     } finally {
       setLoading(false);
       setLoadingMore(false);
@@ -109,8 +112,10 @@ const KeypointList: React.FC = () => {
       setKeypoints((prev) => prev.filter((c) => c._id !== id));
       setIsConfirmOpen(false);
       setSelected(null);
+      showSuccess("Delete keypoint successfully");
     } catch (err) {
       console.error("Delete failed", err);
+      showError("Failed to delete keypoint");
     }
   };
 
@@ -124,15 +129,23 @@ const KeypointList: React.FC = () => {
   const handleSave = async (data: KeypointPayload) => {
     try {
       if (selected) {
-        await keypointService.update(selected._id, data);
+        const selectedId = selected._id;
+        await keypointService.update(selectedId, data);
+        const updated = await keypointService.getById(selectedId);
+        setKeypoints((prev) =>
+          prev.map((item) =>
+            item._id === selectedId ? updated.data : item,
+          ),
+        );
       } else {
         await keypointService.create(data);
+        resetAndFetch();
       }
       setIsModalOpen(false);
       setSelected(null);
-      resetAndFetch();
     } catch (err) {
       console.error("Save failed", err);
+      throw err;
     }
   };
 

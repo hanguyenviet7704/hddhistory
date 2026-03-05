@@ -1,11 +1,14 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { learningItemService } from "../../services/learningItemService";
 import { keypointService } from "../../services/keypointService";
-import { IKeypoint } from "../../types/interface/keypoint.interface";
-import { ArrowLeftIcon } from "@heroicons/react/24/outline";
+import {
+  IKeypoint,
+  KeypointPayload,
+} from "../../types/interface/keypoint.interface";
+import { ArrowLeftIcon, PencilIcon } from "@heroicons/react/24/outline";
 import {
   DndContext,
   closestCenter,
@@ -29,6 +32,7 @@ import {
 } from "../../types/interface/learning-item/learning-item.interface";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
 import { getTranslationValue } from "../../utils/translation";
+import KeypointModal from "../../components/keypoints/KeypointModal";
 
 // Custom SortableItem for grid layout
 // rebuild dev
@@ -69,7 +73,9 @@ const KeypointDetail: React.FC = () => {
   const [learningItems, setLearningItems] = useState<ILearningItemBrief[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [savingKeypoint, setSavingKeypoint] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const estimateCompleTimeLabel = getTranslationValue(
     keypoint?.estimateCompleTime,
     lang,
@@ -85,21 +91,21 @@ const KeypointDetail: React.FC = () => {
     }),
   );
 
+  const fetchKeypoint = useCallback(async () => {
+    if (!keypointId) return;
+
+    try {
+      const res = await keypointService.getById(keypointId);
+      setKeypoint(res.data);
+    } catch (err) {
+      console.error("Failed to fetch keypoint:", err);
+    }
+  }, [keypointId]);
+
   // Fetch keypoint details
   useEffect(() => {
-    const fetchKeypoint = async () => {
-      if (!keypointId) return;
-
-      try {
-        const res = await keypointService.getById(keypointId);
-        setKeypoint(res.data);
-      } catch (err) {
-        console.error("Failed to fetch keypoint:", err);
-      }
-    };
-
     fetchKeypoint();
-  }, [keypointId]);
+  }, [fetchKeypoint]);
 
   // Fetch learning items
   useEffect(() => {
@@ -185,6 +191,22 @@ const KeypointDetail: React.FC = () => {
     }
   };
 
+  const handleSaveKeypoint = async (data: KeypointPayload) => {
+    if (!keypointId || !keypoint) return;
+
+    setSavingKeypoint(true);
+    try {
+      await keypointService.update(keypointId, data);
+      setIsEditModalOpen(false);
+      await fetchKeypoint();
+    } catch (err) {
+      console.error("Failed to update keypoint:", err);
+      throw err;
+    } finally {
+      setSavingKeypoint(false);
+    }
+  };
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
       {/* Header */}
@@ -213,16 +235,27 @@ const KeypointDetail: React.FC = () => {
           </div>
         </div>
 
-        {hasChanges && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={handleSaveOrder}
-            disabled={saving}
-            className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            onClick={() => setIsEditModalOpen(true)}
+            disabled={!keypoint || savingKeypoint}
+            title="Edit Keypoint"
+            aria-label="Edit Keypoint"
+            className="px-3 py-1.5 rounded-lg bg-gray-200 hover:bg-gray-300 text-blue-600 transition-colors shadow-sm disabled:opacity-50"
           >
-            <SaveIcon className="w-4 h-4" />
-            {saving ? "Saving..." : "Save Order"}
+            <PencilIcon className="w-5 h-5" />
           </button>
-        )}
+          {hasChanges && (
+            <button
+              onClick={handleSaveOrder}
+              disabled={saving}
+              className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors disabled:opacity-50"
+            >
+              <SaveIcon className="w-4 h-4" />
+              {saving ? "Saving..." : "Save Order"}
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Loading state */}
@@ -328,6 +361,15 @@ const KeypointDetail: React.FC = () => {
             </DndContext>
           )}
         </div>
+      )}
+
+      {isEditModalOpen && (
+        <KeypointModal
+          open={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          keypoint={keypoint}
+          onSave={handleSaveKeypoint}
+        />
       )}
     </div>
   );
