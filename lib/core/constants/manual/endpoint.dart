@@ -37,6 +37,7 @@ mixin AppEndpoint {
   static const String getUserProfile = '/api/v1/users/me';
   static const String users = '/api/v1/users';
   static const String usersById = '/api/v1/users/{id}';
+  static const String userByDeviceId = '/api/v1/users/by-device/{deviceId}';
 
   //* IAP
   static const String packages = '/api/v1/payment/products';
