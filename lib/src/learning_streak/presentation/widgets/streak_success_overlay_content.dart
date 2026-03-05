@@ -88,7 +88,14 @@ class StreakSuccessOverlayContent extends StatelessWidget {
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    AppAsset.icons.common.flame.image(width: 56.w, height: 56.w),
+                    SizedBox(
+                      width: 120.w,
+                      height: 120.w,
+                      child: Lottie.asset(
+                        AppAsset.lottie.flame,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                     12.verticalSpace,
                     AppText(
                       variant == LearningStreakSuccessVariant.p1 ? context.text.learningStreak.startedTitle : context.text.learningStreak.streakDays(count: streak.currentStreak),

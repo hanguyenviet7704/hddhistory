@@ -52,19 +52,26 @@ class StreakHomePopupContent extends StatelessWidget {
             8.verticalSpace,
             Row(
               children: [
-                AppAsset.icons.common.flame.image(width: 44.w, height: 44.w),
-                12.horizontalSpace,
                 Expanded(
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
+                      SizedBox(
+                        width: 100.w,
+                        height: 100.w,
+                        child: Lottie.asset(
+                          AppAsset.lottie.flame,
+                          fit: BoxFit.contain,
+                        ),
+                      ),
                       AppText(
                         context.text.learningStreak.streakDays(count: streak.currentStreak),
+                        textAlign: TextAlign.center,
                         style: AppStyle.textBold24.copyWith(color: AppCustomColor.textBrand),
                       ),
                       4.verticalSpace,
                       AppText(
                         context.text.learningStreak.popupSubtitle,
+                        textAlign: TextAlign.center,
                         style: AppStyle.text12.copyWith(
                           color: AppCustomColor.streakTextMuted,
                           fontWeight: FontWeight.w500,
@@ -81,7 +88,12 @@ class StreakHomePopupContent extends StatelessWidget {
               children: [
                 Expanded(
                   child: _StreakMetricCard(
-                    icon: AppAsset.icons.common.cup.path,
+                    icon: SvgPicture.asset(
+                      AppAsset.svg.app.icRingClock,
+                      width: 22.w,
+                      height: 22.w,
+                      fit: BoxFit.contain,
+                    ),
                     title: context.text.learningStreak.thisWeekLabel,
                     value: context.text.learningStreak.minutesShort(count: streak.studyTime),
                   ),
@@ -89,7 +101,12 @@ class StreakHomePopupContent extends StatelessWidget {
                 12.horizontalSpace,
                 Expanded(
                   child: _StreakMetricCard(
-                    icon: AppAsset.icons.common.flame.path,
+                    icon: SvgPicture.asset(
+                      AppAsset.svg.app.icFlame,
+                      width: 18.w,
+                      height: 22.w,
+                      fit: BoxFit.contain,
+                    ),
                     title: context.text.learningStreak.bestStreakLabel,
                     value: context.text.learningStreak.daysShort(count: streak.bestStreak),
                   ),
@@ -121,7 +138,7 @@ class _StreakMetricCard extends StatelessWidget {
     required this.value,
   });
 
-  final String icon;
+  final Widget icon;
   final String title;
   final String value;
 
@@ -136,7 +153,11 @@ class _StreakMetricCard extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Image.asset(icon, width: 22.w, height: 22.w),
+          SizedBox(
+            width: 22.w,
+            height: 22.w,
+            child: icon,
+          ),
           8.horizontalSpace,
           Expanded(
             child: Column(

@@ -24,14 +24,19 @@ class StreakHomeChip extends StatelessWidget {
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            AppAsset.icons.common.flame.image(width: 20.w, height: 20.w),
-            4.horizontalSpace,
             AppText(
               '$currentStreak',
               style: AppStyle.text14.copyWith(
                 color: AppCustomColor.brandPrimary700,
                 fontWeight: FontWeight.w700,
               ),
+            ),
+            4.horizontalSpace,
+            SvgPicture.asset(
+              AppAsset.svg.app.icFlame,
+              width: 20.w,
+              height: 24.h,
+              fit: BoxFit.contain,
             ),
           ],
         ),
