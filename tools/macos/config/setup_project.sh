@@ -123,8 +123,19 @@ else
     log_warning "flutter_launcher_icons not found, skipping icon generation"
 fi
 
-# Localization handled by slang; gen-l10n removed
-log_step "Localization generation skipped (slang is used instead)"
+# Generate slang output when localization sources are available locally.
+LOCALIZATION_DIR="assets/i18n"
+if [[ -d "$LOCALIZATION_DIR" ]] && find "$LOCALIZATION_DIR" -name "*.yaml" -print -quit | grep -q .; then
+    log_step "Generating localization output (slang)..."
+    if [[ -f "tools/macos/localization/localization.sh" ]]; then
+        bash tools/macos/localization/localization.sh slang
+    else
+        log_warning "Localization script not found, skipping slang generation"
+    fi
+else
+    log_warning "Localization sources not found under $LOCALIZATION_DIR, skipping slang generation"
+    log_info "Run tools/macos/localization/localization.sh pull then tools/macos/localization/localization.sh slang after configuring localization access."
+fi
 
 # Validate environment files
 log_step "Validating environment files..."
