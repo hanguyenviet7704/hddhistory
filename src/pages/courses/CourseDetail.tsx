@@ -113,6 +113,13 @@ const RoadmapPage: React.FC = () => {
   const [entranceLessons, setEntranceLessons] = useState<ILessonBrief[]>([]);
   const [outputLessons, setOutputLessons] = useState<ILessonBrief[]>([]);
   const [lessonLessons, setLessonLessons] = useState<ILessonBrief[]>([]);
+  const [lessonCacheLoaded, setLessonCacheLoaded] = useState<
+    Record<FieldKey, boolean>
+  >({
+    roleplay: false,
+    lessons: false,
+    output: false,
+  });
 
   // Delete confirms
   const [deleteLevel, setDeleteLevel] = useState<{
@@ -157,6 +164,17 @@ const RoadmapPage: React.FC = () => {
     fetchRoadmap();
   }, [fetchRoadmap]);
 
+  useEffect(() => {
+    setEntranceLessons([]);
+    setOutputLessons([]);
+    setLessonLessons([]);
+    setLessonCacheLoaded({
+      roleplay: false,
+      lessons: false,
+      output: false,
+    });
+  }, [courseId]);
+
   const fetchLessonsByType = useCallback(
     async (type: LessonType, search = "") => {
       try {
@@ -171,13 +189,28 @@ const RoadmapPage: React.FC = () => {
         if (!normalizedSearch) {
           switch (type) {
             case LessonType.ROLEPLAY:
-              setEntranceLessons(items);
+              setEntranceLessons((prev) =>
+                prev.length === 0 && items.length === 0 ? prev : items,
+              );
+              setLessonCacheLoaded((prev) =>
+                prev.roleplay ? prev : { ...prev, roleplay: true },
+              );
               break;
             case LessonType.OUTPUT:
-              setOutputLessons(items);
+              setOutputLessons((prev) =>
+                prev.length === 0 && items.length === 0 ? prev : items,
+              );
+              setLessonCacheLoaded((prev) =>
+                prev.output ? prev : { ...prev, output: true },
+              );
               break;
             case LessonType.LESSON:
-              setLessonLessons(items);
+              setLessonLessons((prev) =>
+                prev.length === 0 && items.length === 0 ? prev : items,
+              );
+              setLessonCacheLoaded((prev) =>
+                prev.lessons ? prev : { ...prev, lessons: true },
+              );
               break;
           }
         }
@@ -219,7 +252,13 @@ const RoadmapPage: React.FC = () => {
             : editingField === "output"
               ? outputLessons
               : lessonLessons;
-        if (cached.length) {
+        const isCachedLoaded =
+          editingField === "roleplay"
+            ? lessonCacheLoaded.roleplay
+            : editingField === "output"
+              ? lessonCacheLoaded.output
+              : lessonCacheLoaded.lessons;
+        if (isCachedLoaded) {
           applyList(cached);
           return;
         }
@@ -240,6 +279,7 @@ const RoadmapPage: React.FC = () => {
     entranceLessons,
     outputLessons,
     lessonLessons,
+    lessonCacheLoaded,
     fetchLessonsByType,
   ]);
 
@@ -383,8 +423,9 @@ const RoadmapPage: React.FC = () => {
   const openCreateNode = async (levelIndex: number) => {
     setTitleError("");
     setNewNodeDescription("");
-    if (!entranceLessons.length) await fetchLessonsByType(LessonType.ROLEPLAY);
-    if (!outputLessons.length) await fetchLessonsByType(LessonType.OUTPUT);
+    if (!lessonCacheLoaded.roleplay)
+      await fetchLessonsByType(LessonType.ROLEPLAY);
+    if (!lessonCacheLoaded.output) await fetchLessonsByType(LessonType.OUTPUT);
     setIsCreatingNode({ on: true, levelIndex });
   };
 
@@ -444,15 +485,15 @@ const RoadmapPage: React.FC = () => {
   ) => {
     let lessonList: ILessonBrief[] = [];
     if (field === "roleplay") {
-      lessonList = entranceLessons.length
+      lessonList = lessonCacheLoaded.roleplay
         ? entranceLessons
         : await fetchLessonsByType(LessonType.ROLEPLAY);
     } else if (field === "output") {
-      lessonList = outputLessons.length
+      lessonList = lessonCacheLoaded.output
         ? outputLessons
         : await fetchLessonsByType(LessonType.OUTPUT);
     } else {
-      lessonList = lessonLessons.length
+      lessonList = lessonCacheLoaded.lessons
         ? lessonLessons
         : await fetchLessonsByType(LessonType.LESSON);
     }
