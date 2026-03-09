@@ -8,4 +8,7 @@ abstract class OnboardApi {
 
   @GET(AppEndpoint.onboardings)
   Future<BaseResponse<OnboardModel>> getAllOnboard();
+
+  @GET(AppEndpoint.userByDeviceId)
+  Future<BaseResponse<UserModel>> getUserByDeviceId(@Path('deviceId') String deviceId);
 }

@@ -69,6 +69,9 @@ abstract interface class ITrackingService {
   Future<void> trackHomeScrView();
   Future<void> trackHomeTabSwitch(String tabType);
   Future<void> trackHomeSkillClick(SkillsetEntity skillset);
+  Future<void> trackHomeStreakChipClick({required int currentStreak});
+  Future<void> trackHomeStreakPopupView({required int currentStreak});
+  Future<void> trackHomeStreakPopupClose({required int currentStreak});
 
   //* Course selection events
   Future<void> trackCourseSelectAllCourseView({required String source});
@@ -149,6 +152,14 @@ abstract interface class ITrackingService {
   });
   Future<void> trackKeypointPopupNavView(KeypointTrackingData trackingData);
   Future<void> trackKeypointPopupNavContinue(KeypointTrackingData trackingData);
+  Future<void> trackCompletionStreakSuccessView({
+    required String variant,
+    required int currentStreak,
+  });
+  Future<void> trackCompletionStreakSuccessCommitClick({
+    required String variant,
+    required int currentStreak,
+  });
 
   //* Roleplay events
   Future<void> trackRoleplayInfoScrView(RoleplayTrackingData trackingData);

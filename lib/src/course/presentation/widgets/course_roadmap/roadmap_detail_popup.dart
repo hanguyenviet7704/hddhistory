@@ -105,7 +105,7 @@ class RoadmapDetailPopup extends StatelessWidget {
           AppText(
             keypoint.title.text,
             style: AppStyle.textBold24,
-            enableFitScaleDown: true,
+            maxLines: 3,
             textAlign: TextAlign.center,
           ),
           8.verticalSpace,

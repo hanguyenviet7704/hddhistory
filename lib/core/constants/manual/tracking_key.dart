@@ -73,6 +73,9 @@ mixin TrackingKey {
   static const String homeScrView = 'home_scr_view';
   static const String homeTabSwitch = 'home_tab_switch';
   static const String homeSkillClick = 'home_skill_click';
+  static const String homeStreakChipClick = 'home_streak_chip_click';
+  static const String homeStreakPopupView = 'home_streak_popup_view';
+  static const String homeStreakPopupClose = 'home_streak_popup_close';
 
   //* Course selection events
   static const String courseSelectAllCourseView = 'course_select_all_course_view';
@@ -125,6 +128,8 @@ mixin TrackingKey {
   static const String keypointExitPopupClick = 'keypoint_exit_popup_click';
   static const String keypointPopupNavView = 'keypoint_popup_nav_view';
   static const String keypointPopupNavContinue = 'keypoint_popup_nav_continue';
+  static const String completionStreakSuccessView = 'completion_streak_success_view';
+  static const String completionStreakSuccessCommitClick = 'completion_streak_success_commit_click';
 
   //* Roleplay events
   static const String roleplayInfoScrView = 'roleplay_info_scr_view';

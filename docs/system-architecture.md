@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-02  
+**Last Updated:** 2026-03-09
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -48,7 +48,7 @@ Widget/Page
 - `lib/core/`: base request/response/error/use-case abstractions, helper utilities.
 
 ## 3. Module Topology (`lib/src`)
-Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
+Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -100,7 +100,16 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - Router implementation: `go_router` with generated route data.
 - Root configuration under `lib/config/routes/base/`.
 - Feature route data under `lib/config/routes/data/`.
-- Shell-based navigation and nested course/lesson/roleplay flows are handled in route config files.
+- Shell-based navigation and nested home/course/lesson/roleplay flows are handled in route config files.
+
+### Splash and auth-entry runtime flow
+- `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
+- In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; otherwise it routes straight to the normal `RegisterRoute()` path.
+- `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
+- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding and route to `RegisterRoute(forceChooseCourseAfterLogin: true)`.
+- Unrecognized devices or safe lookup misses continue the existing onboarding intro path without surfacing a splash auth error.
+- The register handoff flag is scoped to that splash entry only; Google, Apple, and Guest auth from that entry go directly to `CourseRoute` after successful auth.
+- Only that forced Guest path performs a real anonymous login through `AuthBloc` using device metadata plus locale before forcing the course chooser; the default register Guest CTA keeps the existing local navigation behavior.
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.
@@ -111,6 +120,12 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `RoleplayIntroRoute` and `RoleplayRoute` provide roleplay orchestration via `RoleplayCubit` (+ feedback where needed).
 - `RoleplayFeedbackRoute` merges `RoleplayCubit`, `RoleplayPointCubit`, `HomeCubit`, and `FeedbackCubit` for post-session analytics and UI.
 - Route-level provider composition keeps runtime concerns scoped to each flow stage.
+
+### Learning streak runtime flow
+- `HomeRoute` composes `LearningStreakCubit`, and nested `HomeLearningStreakRoute` maps to `LearningStreakPage`.
+- `HomePage` prefetches streak data with a short timeout and safe-default fallback before/while rendering the header streak chip.
+- `LearningStreakPage` is used as a bottom-sheet style popup flow and emits home streak popup view/close tracking events.
+- `KeypointCompletePage` and `RoleplayFeedbackPage` run a streak gate on primary CTA: load streak, show success overlay only on remote positive streak, then persist commit day via `UserCubit.lastStreakCountedDate` (UTC-day guard).
 
 ### Onboarding branching runtime flow
 - Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.

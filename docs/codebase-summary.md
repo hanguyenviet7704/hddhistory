@@ -1,6 +1,6 @@
 # Codebase Summary
 
-**Last Updated:** 2026-03-02  
+**Last Updated:** 2026-03-05  
 **Source Inputs:** `repomix-output.xml` (refreshed 2026-02-27) + direct repository verification
 
 ## 1. Snapshot Metrics
@@ -12,17 +12,17 @@
 - Binary-excluded files: **3**
 
 ### Dart metrics (live repository)
-- Dart files in `lib/`: **855**
-- Dart LOC in `lib/`: **135,261**
-- Dart files in `test/`: **18**
-- Dart LOC in `test/`: **1,549**
+- Dart files in `lib/`: **889**
+- Dart LOC in `lib/`: **140,541**
+- Dart files in `test/`: **26**
+- Dart LOC in `test/`: **2,390**
 
 ### Major app layers
 | Path | Dart files | Dart LOC |
 | --- | ---: | ---: |
-| `lib/config` | 87 | 16,453 |
-| `lib/core` | 105 | 13,857 |
-| `lib/src` | 657 | 104,822 |
+| `lib/config` | 87 | 16,868 |
+| `lib/core` | 105 | 13,668 |
+| `lib/src` | 691 | 109,876 |
 
 ## 2. Repository Structure (High-Level)
 ```text
@@ -41,24 +41,25 @@ meup/
 ```
 
 ## 3. Feature Module Inventory (`lib/src`)
-`lib/src` currently has **15** modules:
+`lib/src` currently has **16** modules:
 
 | Module | Dart files | Dart LOC | Notes |
 | --- | ---: | ---: | --- |
 | `achievenment` | 15 | 2,268 | Spelling matches codebase path |
-| `auth` | 48 | 5,609 | Auth/session lifecycle |
-| `common` | 20 | 2,456 | Shared state/pages/widgets |
-| `course` | 76 | 11,175 | Course, roadmap, course lessons |
-| `data_collect` | 45 | 4,148 | Intake/onboarding data collection |
-| `feedback` | 29 | 4,677 | User feedback flow |
-| `home` | 18 | 2,035 | Dashboard/skillset entry |
-| `lesson` | 146 | 27,649 | Largest module: learning/exercise runtime |
+| `auth` | 48 | 5,675 | Auth/session lifecycle |
+| `common` | 21 | 2,508 | Shared state/pages/widgets |
+| `course` | 76 | 11,299 | Course, roadmap, course lessons |
+| `data_collect` | 45 | 4,178 | Intake/onboarding data collection |
+| `feedback` | 29 | 4,683 | User feedback flow |
+| `home` | 18 | 2,083 | Dashboard/skillset entry + streak chip trigger |
+| `learning_streak` | 20 | 2,435 | Home streak popup + completion streak success flow |
+| `lesson` | 146 | 27,696 | Largest module: learning/exercise runtime |
 | `monetization` | 38 | 5,650 | Products, purchase, verification |
-| `onboard` | 37 | 5,544 | Intro/onboarding flow |
-| `onboard_branching` | 31 | 7,641 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
+| `onboard` | 37 | 5,553 | Intro/onboarding flow |
+| `onboard_branching` | 44 | 9,832 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
 | `profile` | 35 | 4,879 | User profile and upload |
 | `progress` | 34 | 8,261 | Progress and achievement progress |
-| `roleplay` | 70 | 11,319 | Roleplay + AI feedback |
+| `roleplay` | 70 | 11,362 | Roleplay + AI feedback |
 | `setting` | 14 | 1,498 | Theme/language/settings |
 
 ## 4. Architecture and Runtime Contracts
@@ -90,7 +91,7 @@ meup/
 - CI bootstrap script: `.gitlab/scripts/bootstrap-secrets.sh` writes runtime files and exports `build/ci/runtime.env`.
 
 ## 8. Drift Watch Items
-1. Keep module count references at 15 unless `lib/src/*` changes.
+1. Keep module count references at 16 unless `lib/src/*` changes.
 2. Keep folder/module spelling as implemented (`achievenment`).
 3. Keep use-case helper naming aligned with `runUseCase*` APIs.
 4. Keep deployment docs aligned with platform script differences (`--ci` and `SKIP_SYMBOL_UPLOAD` parity gaps on Windows).

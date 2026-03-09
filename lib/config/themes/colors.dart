@@ -70,6 +70,8 @@ mixin AppCustomColor {
   static const Color roleplayFeedbackRadarGrid = Color(0xFFE1E6F5);
   static const Color bottomSheetScrim = Color(0x80151123);
   static const Color borderBrand = Color(0xFFC7C5FA);
+  static const Color streakActive = Color(0xFF4B44CA);
+  static const Color streakTextMuted = Color(0xFF5F6F86);
   static const Color roleplayIntroDotInactive = Color(0xFFF2F1FE);
   static const Color feedbackGradientMid = Color(0xFF7667F3);
   static const Color feedbackGradientEnd = Color(0xFF5E5ACB);

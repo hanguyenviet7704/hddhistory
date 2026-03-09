@@ -175,7 +175,7 @@ class LessonKeypointCard extends StatelessWidget {
                         color: style.textColor,
                         height: 1.75,
                       ),
-                      maxLines: 2,
+                      maxLines: 5,
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),

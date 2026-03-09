@@ -16,6 +16,7 @@ quality:analyze:
       artifacts: true
   script:
     - flutter pub get
+    - bash tools/macos/localization/localization.sh slang
     - flutter analyze
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
@@ -33,6 +34,7 @@ quality:test:
       artifacts: true
   script:
     - flutter pub get
+    - bash tools/macos/localization/localization.sh slang
     - flutter test
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'

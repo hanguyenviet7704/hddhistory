@@ -84,7 +84,8 @@ class ChangePasswordRoute extends GoRouteData with $ChangePasswordRoute {
 
 @TypedGoRoute<RegisterRoute>(path: RoutePath.register, name: RouteNamed.register)
 class RegisterRoute extends GoRouteData with $RegisterRoute {
-  const RegisterRoute();
+  final bool forceChooseCourseAfterLogin;
+  const RegisterRoute({this.forceChooseCourseAfterLogin = false});
 
   @override
   Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
@@ -93,6 +94,6 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
       BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
     ],
-    child: const RegisterPage(),
+    child: RegisterPage(forceChooseCourseAfterLogin: forceChooseCourseAfterLogin),
   );
 }

@@ -24,6 +24,7 @@ part 'domain/entities/onboard_motivation_entity.dart';
 part 'domain/entities/onboard_option_entity.dart';
 part 'domain/repositories/i_onboard_repository.dart';
 part 'domain/usecases/get_all_onboards_usecase.dart';
+part 'domain/usecases/get_user_by_device_id_usecase.dart';
 //* Parts for generated files
 part 'onboard.freezed.dart';
 part 'onboard.g.dart';

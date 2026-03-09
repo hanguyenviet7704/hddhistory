@@ -9,6 +9,7 @@ class KeypointCompletePage extends StatefulWidget {
 
 class _KeypointCompletePageState extends State<KeypointCompletePage> {
   bool _hasShownFeedbackPopup = false;
+  bool _isHandlingPrimaryCta = false;
 
   @override
   void initState() {
@@ -18,6 +19,70 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
       if (trackingData == null) return;
       AppService.instance.appTrackingService.trackKeypointFinishScrView(trackingData);
       context.read<FeedbackCubit>().loadUserFeedbacks();
+    });
+  }
+
+  Future<void> _handlePrimaryCta(CourseLessonState lessonState) async {
+    if (_isHandlingPrimaryCta) return;
+    setState(() => _isHandlingPrimaryCta = true);
+
+    try {
+      final trackingData = KeypointTrackingData.fromContext();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointFinishComplete(trackingData);
+      }
+
+      await _handleLearningStreakGate();
+      if (!mounted) return;
+      _navigateAfterCompletion(lessonState);
+    } finally {
+      if (mounted) {
+        setState(() => _isHandlingPrimaryCta = false);
+      }
+    }
+  }
+
+  Future<void> _handleLearningStreakGate() async {
+    final userCubit = AppDI.injector.get<UserCubit>();
+    final userState = userCubit.state;
+    final learningStreakCubit = AppDI.injector.get<LearningStreakCubit>();
+    final nowUtc = DateTime.now().toUtc();
+    final gateUtcDay = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
+
+    if (learningStreakCubit.isSameStreakCountedUtcDay(gateUtcDay)) return;
+
+    final streakResult = await learningStreakCubit.loadUserLearningStreak(
+      triggerSource: LearningStreakTriggerSource.completionCta,
+      requestedUserId: userState.user.id,
+      timeout: const Duration(seconds: 2),
+    );
+
+    if (!mounted) return;
+    if (!streakResult.isRemoteSuccessWithPositiveStreak) return;
+    if (LearningStreakModalGuard.hasBlockingModal(context)) return;
+
+    final committed = await LearningStreakSuccessOverlay.show(
+      context,
+      streak: streakResult.streak,
+    );
+    if (!mounted) return;
+
+    if (committed) {
+      learningStreakCubit.setLastStreakCountedDate(gateUtcDay);
+    }
+  }
+
+  void _navigateAfterCompletion(CourseLessonState lessonState) {
+    if (lessonState.wasLessonCompletedBefore) {
+      CourseRoadmapRoute().go(context);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+      });
+      return;
+    }
+    BadgeProgressRoute().go(context);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
     });
   }
 
@@ -84,24 +149,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
               ),
               LessonCompletionPrimaryButton(
                 label: context.text.exercise.exerciseCompleteKeypointSkipButton,
-                onPressed: () {
-                  final trackingData = KeypointTrackingData.fromContext();
-                  if (trackingData != null) {
-                    AppService.instance.appTrackingService.trackKeypointFinishComplete(trackingData);
-                  }
-
-                  if (lessonState.wasLessonCompletedBefore) {
-                    CourseRoadmapRoute().go(context);
-                    Future.delayed(const Duration(milliseconds: 100), () {
-                      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
-                    });
-                    return;
-                  }
-                  BadgeProgressRoute().go(context);
-                  Future.delayed(const Duration(milliseconds: 100), () {
-                    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
-                  });
-                },
+                onPressed: () => _handlePrimaryCta(lessonState),
                 margin: EdgeInsets.only(bottom: 16.h, top: 16.h),
               ),
             ],

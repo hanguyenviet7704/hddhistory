@@ -14,6 +14,7 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
   bool _hasTrackedScrollBottom = false;
   bool _hasShownFeedbackPopup = false;
   bool _hasSubmittedProgress = false;
+  bool _isHandlingPrimaryCta = false;
 
   void _trackResultView() {
     if (_hasTrackedView) return;
@@ -50,6 +51,59 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
       lessonReview: state.feedback.feedbackText,
     );
     _hasSubmittedProgress = true;
+  }
+
+  Future<void> _handlePrimaryCta() async {
+    if (_isHandlingPrimaryCta) return;
+    setState(() => _isHandlingPrimaryCta = true);
+
+    try {
+      final trackingData = RoleplayTrackingData.fromContext();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackRoleplayResultContinue(trackingData);
+      }
+
+      await _handleLearningStreakGate();
+      if (!mounted) return;
+
+      AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
+      CourseRoadmapRoute().go(context);
+      AppDI.injector.get<PageCubit>().setCurrentIndex(1);
+    } finally {
+      if (mounted) {
+        setState(() => _isHandlingPrimaryCta = false);
+      }
+    }
+  }
+
+  Future<void> _handleLearningStreakGate() async {
+    final userCubit = AppDI.injector.get<UserCubit>();
+    final userState = userCubit.state;
+    final learningStreakCubit = AppDI.injector.get<LearningStreakCubit>();
+    final nowUtc = DateTime.now().toUtc();
+    final gateUtcDay = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
+
+    if (learningStreakCubit.isSameStreakCountedUtcDay(gateUtcDay)) return;
+
+    final streakResult = await learningStreakCubit.loadUserLearningStreak(
+      triggerSource: LearningStreakTriggerSource.completionCta,
+      requestedUserId: userState.user.id,
+      timeout: const Duration(seconds: 2),
+    );
+
+    if (!mounted) return;
+    if (!streakResult.isRemoteSuccessWithPositiveStreak) return;
+    if (LearningStreakModalGuard.hasBlockingModal(context)) return;
+
+    final committed = await LearningStreakSuccessOverlay.show(
+      context,
+      streak: streakResult.streak,
+    );
+    if (!mounted) return;
+
+    if (committed) {
+      learningStreakCubit.setLastStreakCountedDate(gateUtcDay);
+    }
   }
 
   @override
@@ -93,9 +147,7 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
           },
         ),
         BlocListener<RoleplayCubit, RoleplayState>(
-          listenWhen: (previous, current) =>
-              previous.status != current.status ||
-              previous.feedback.feedbackText != current.feedback.feedbackText,
+          listenWhen: (previous, current) => previous.status != current.status || previous.feedback.feedbackText != current.feedback.feedbackText,
           listener: (context, state) {
             _maybeFinishRoleplayLesson(state);
           },
@@ -125,15 +177,7 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
                   ),
                 ),
                 RoleplayFeedbackBottomCTA(
-                  onPressed: () {
-                    final trackingData = RoleplayTrackingData.fromContext();
-                    if (trackingData != null) {
-                      AppService.instance.appTrackingService.trackRoleplayResultContinue(trackingData);
-                    }
-                    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource('nav_course');
-                    CourseRoadmapRoute().go(context);
-                    AppDI.injector.get<PageCubit>().setCurrentIndex(1);
-                  },
+                  onPressed: _handlePrimaryCta,
                   label: context.text.roleplay.rolePlayResultStartLearningButton,
                   helperText: context.text.roleplay.rolePlayHelperTextStartLearnButton,
                 ),
