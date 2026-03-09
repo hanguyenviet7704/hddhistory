@@ -8,6 +8,7 @@ abstract class OnboardState with _$OnboardState {
     @Default(OnboardStatus.initial) OnboardStatus status,
     @Default(OnboardEntity()) OnboardEntity onboardData,
     OnboardEntity? selectedItem,
+    UserEntity? userByDeviceId,
     String? errorMessage,
   }) = _OnboardState;
 

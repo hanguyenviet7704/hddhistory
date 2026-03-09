@@ -20,4 +20,13 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
       defaultValue: OnboardEntity(),
     );
   }
+
+  @override
+  TaskEither<AppException, UserEntity> getUserByDeviceId(String deviceId) {
+    return callApiWithTransform<UserModel, UserEntity>(
+      apiCall: () => _api.getUserByDeviceId(deviceId),
+      transform: (model) => model.toEntity(),
+      defaultValue: UserEntity(),
+    );
+  }
 }
