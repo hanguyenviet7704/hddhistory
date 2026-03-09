@@ -15,7 +15,8 @@
         "1257181392",
         "2086165409",
         "1381626910",
-        "1775221007"
+        "1775221007",
+        "238144991"
       ],
       "tabs": [
         {
@@ -87,6 +88,11 @@
           "module": "feedback",
           "title": "feedback",
           "gid": "1775221007"
+        },
+        {
+          "module": "learning_streak",
+          "title": "learning_streak",
+          "gid": "238144991"
         }
       ],
       "columns": {
