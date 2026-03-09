@@ -66,6 +66,7 @@ const RoadmapPage: React.FC = () => {
 
   const [roadmap, setRoadmap] = useState<IRoadmap | null>(null);
   const [loading, setLoading] = useState(true);
+  const [savingRoadmap, setSavingRoadmap] = useState(false);
 
   // Level create/edit
   const [isCreatingLevel, setIsCreatingLevel] = useState(false);
@@ -534,7 +535,8 @@ const RoadmapPage: React.FC = () => {
 
   const handleLessonSelect = (lessonId: string) => {
     if (!editingNode) return;
-    const { field, levelIndex, nodeIndex, lessonList } = editingNode;
+    const { field, levelIndex, nodeIndex, lessonList, currentValues } =
+      editingNode;
 
     if (field === "lessons") {
       const newSelected = (() => {
@@ -559,34 +561,64 @@ const RoadmapPage: React.FC = () => {
           .filter(Boolean) as ILessonBrief[],
       }));
     } else {
-      const selected =
-        lessonList.find((l) => l._id === lessonId) ||
-        (field === "roleplay"
-          ? entranceLessons.find((l) => l._id === lessonId)
-          : outputLessons.find((l) => l._id === lessonId)) ||
-        null;
-      if (field === "roleplay") {
-        applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
-          ...node,
-          roleplayId: selected?._id || "",
-          roleplay: selected,
-        }));
-      } else if (field === "output") {
-        applyNodeUpdate(levelIndex, nodeIndex, (node) => ({
-          ...node,
-          outputId: selected?._id || "",
-          output: selected,
-        }));
-      }
-      setEditingNode(null);
-      setSearchTerm("");
+      const selectedId = typeof currentValues === "string" ? currentValues : "";
+      const nextId = selectedId === lessonId ? "" : lessonId;
+      setEditingNode((prev) =>
+        prev ? { ...prev, currentValues: nextId } : prev,
+      );
     }
   };
 
-  const handleCompleteLessonSelection = () => {
+  const handleCompleteLessonSelection = async () => {
+    if (!editingNode || !roadmap) return;
+    const { field, levelIndex, nodeIndex, lessonList, currentValues } =
+      editingNode;
+
+    const newLevels = [...roadmap.levels];
+    const level = { ...newLevels[levelIndex] };
+    const nodes = [...level.nodes];
+    const currentNode = { ...nodes[nodeIndex] };
+
+    if (field === "lessons") {
+      currentNode.lessonIds = selectedLessons;
+      currentNode.lessons = selectedLessons
+        .map((id) => lessonList.find((l) => l._id === id))
+        .filter(Boolean) as ILessonBrief[];
+    } else {
+      const selectedId = typeof currentValues === "string" ? currentValues : "";
+      const selected = selectedId
+        ? lessonList.find((l) => l._id === selectedId) ||
+          (field === "roleplay"
+            ? entranceLessons.find((l) => l._id === selectedId)
+            : outputLessons.find((l) => l._id === selectedId)) ||
+          null
+        : null;
+
+      if (field === "roleplay") {
+        currentNode.roleplayId = selectedId;
+        currentNode.roleplay = selected;
+      } else if (field === "output") {
+        currentNode.outputId = selectedId;
+        currentNode.output = selected;
+      }
+    }
+
+    nodes[nodeIndex] = currentNode;
+    level.nodes = nodes;
+    newLevels[levelIndex] = level;
+    const nextRoadmap = { ...roadmap, levels: newLevels };
+
+    setRoadmap(nextRoadmap);
     setEditingNode(null);
     setSearchTerm("");
     setSelectedLessons([]);
+
+    await handleSaveRoadmap(nextRoadmap);
+  };
+
+  const handleClearSingleLessonSelection = () => {
+    if (!editingNode || editingNode.field === "lessons") return;
+    setEditingNode((prev) => (prev ? { ...prev, currentValues: "" } : prev));
   };
 
   const handleCopyNodeId = async (nodeId: string) => {
@@ -623,10 +655,11 @@ const RoadmapPage: React.FC = () => {
   };
 
   // ---------- Save ----------
-  const handleSaveRoadmap = async () => {
-    if (!roadmap) return;
+  const handleSaveRoadmap = async (targetRoadmap?: IRoadmap) => {
+    const roadmapToSave = targetRoadmap || roadmap;
+    if (!roadmapToSave || savingRoadmap) return;
 
-    const levelLabels = roadmap.levels.map((level) => level.level);
+    const levelLabels = roadmapToSave.levels.map((level) => level.level);
     const hasDuplicateLevel = new Set(levelLabels).size !== levelLabels.length;
     if (hasDuplicateLevel) {
       showError(
@@ -636,7 +669,7 @@ const RoadmapPage: React.FC = () => {
     }
 
     const titleErrors: Record<number, string> = {};
-    roadmap.levels.forEach((lvl, idx) => {
+    roadmapToSave.levels.forEach((lvl, idx) => {
       const hasTitle = !!cleanTranslation(lvl.titleBadge);
       if (!hasTitle) {
         titleErrors[idx] = "Vui lòng nhập tiêu đề badge";
@@ -650,7 +683,7 @@ const RoadmapPage: React.FC = () => {
     }
 
     const payload: any = {
-      levels: roadmap.levels.map((level) => ({
+      levels: roadmapToSave.levels.map((level) => ({
         id: level.id,
         level: level.level,
         lightBadge: level.lightBadge || "",
@@ -659,10 +692,14 @@ const RoadmapPage: React.FC = () => {
         nodes: level.nodes.map((n) => {
           const cleanedTitle = cleanTranslation(n.title);
           const cleanedDescription = cleanTranslation(n.description);
+          const normalizedLessonIds = Array.isArray(n.lessonIds)
+            ? n.lessonIds
+            : [];
           const nodePayload: any = {
-            roleplayId: n.roleplayId || "",
-            lessonIds: n.lessonIds || [],
-            outputId: n.outputId || "",
+            id: n.id ?? "",
+            roleplayId: n.roleplayId ?? "",
+            lessonIds: normalizedLessonIds,
+            outputId: n.outputId ?? "",
           };
 
           // Only include title if it has values
@@ -679,12 +716,15 @@ const RoadmapPage: React.FC = () => {
     };
 
     try {
+      setSavingRoadmap(true);
       await courseService.updateRoadmap(courseId!, payload);
       showSuccess("Lưu roadmap thành công");
       await fetchRoadmap();
     } catch (e) {
       console.error(e);
       showError("Lưu roadmap thất bại");
+    } finally {
+      setSavingRoadmap(false);
     }
   };
 
@@ -819,14 +859,22 @@ const RoadmapPage: React.FC = () => {
           )}
 
           <div className="mt-6 flex justify-end">
-            {isMultiple && (
+            {!isMultiple && (
               <button
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg mr-2"
-                onClick={handleCompleteLessonSelection}
+                className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg mr-2"
+                onClick={handleClearSingleLessonSelection}
+                disabled={savingRoadmap}
               >
-                Hoàn thành
+                Bỏ chọn
               </button>
             )}
+            <button
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg mr-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              onClick={handleCompleteLessonSelection}
+              disabled={savingRoadmap}
+            >
+              {savingRoadmap ? "Đang lưu..." : "Hoàn thành"}
+            </button>
             <button
               className="px-4 py-2 bg-gray-200 rounded-lg"
               onClick={() => {
@@ -834,6 +882,7 @@ const RoadmapPage: React.FC = () => {
                 setSearchTerm("");
                 setSelectedLessons([]);
               }}
+              disabled={savingRoadmap}
             >
               Hủy
             </button>
@@ -1062,9 +1111,33 @@ const RoadmapPage: React.FC = () => {
                               }`}
                             >
                               <div className="flex items-center justify-between gap-2 mb-2">
-                                <h2 className="block text-sm font-medium text-gray-700">
-                                  Node
-                                </h2>
+                                <div className="flex items-center gap-2">
+                                  <h2 className="block text-sm font-medium text-gray-700">
+                                    Node
+                                  </h2>
+                                  <IconButton
+                                    onClick={() => void handleSaveRoadmap()}
+                                    disabled={savingRoadmap}
+                                    title="Cập nhật roadmap"
+                                    aria-label="Cập nhật roadmap"
+                                    className="p-1.5 bg-emerald-100 hover:bg-emerald-200 text-emerald-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="w-4 h-4"
+                                      viewBox="0 0 24 24"
+                                      fill="none"
+                                      stroke="currentColor"
+                                      strokeWidth={2}
+                                      strokeLinecap="round"
+                                      strokeLinejoin="round"
+                                    >
+                                      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                                      <polyline points="17 21 17 13 7 13 7 21" />
+                                      <polyline points="7 3 7 8 15 8" />
+                                    </svg>
+                                  </IconButton>
+                                </div>
                                 <div className="flex items-center gap-2 min-w-0">
                                   <span
                                     className="text-xs font-mono text-gray-500 truncate"
@@ -1398,10 +1471,11 @@ const RoadmapPage: React.FC = () => {
             Thêm Level
           </button>
           <button
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-            onClick={handleSaveRoadmap}
+            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => void handleSaveRoadmap()}
+            disabled={savingRoadmap}
           >
-            Lưu Roadmap
+            {savingRoadmap ? "Đang lưu..." : "Lưu Roadmap"}
           </button>
         </div>
 

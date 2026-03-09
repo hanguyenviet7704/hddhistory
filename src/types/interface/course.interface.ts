@@ -82,6 +82,7 @@ export interface IRoadmap {
 }
 
 export interface RoadmapNodePayload {
+  id: string;
   title: ITranslation;
   description?: ITranslation;
   roleplayId: string;
