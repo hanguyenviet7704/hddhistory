@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-05  
+**Last Updated:** 2026-03-09
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -101,6 +101,15 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - Root configuration under `lib/config/routes/base/`.
 - Feature route data under `lib/config/routes/data/`.
 - Shell-based navigation and nested home/course/lesson/roleplay flows are handled in route config files.
+
+### Splash and auth-entry runtime flow
+- `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
+- In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; otherwise it routes straight to the normal `RegisterRoute()` path.
+- `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
+- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding and route to `RegisterRoute(forceChooseCourseAfterLogin: true)`.
+- Unrecognized devices or safe lookup misses continue the existing onboarding intro path without surfacing a splash auth error.
+- The register handoff flag is scoped to that splash entry only; Google, Apple, and Guest auth from that entry go directly to `CourseRoute` after successful auth.
+- Only that forced Guest path performs a real anonymous login through `AuthBloc` using device metadata plus locale before forcing the course chooser; the default register Guest CTA keeps the existing local navigation behavior.
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.

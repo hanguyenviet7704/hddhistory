@@ -2,6 +2,35 @@
 
 part of '../../auth.dart';
 
+enum AuthSuccessRouteDestination { course, home }
+
+@visibleForTesting
+Map<String, dynamic> buildAnonymousDeviceAuthPayload({
+  required String deviceId,
+  required String deviceName,
+  required String languageCode,
+}) {
+  return {
+    "device": {
+      "deviceId": deviceId,
+      "deviceName": deviceName,
+    },
+    "language": languageCode,
+  };
+}
+
+@visibleForTesting
+AuthSuccessRouteDestination resolveAuthSuccessRouteDestination({
+  required bool forceChooseCourseAfterLogin,
+  required bool hasCourseData,
+}) {
+  if (forceChooseCourseAfterLogin || !hasCourseData) {
+    return AuthSuccessRouteDestination.course;
+  }
+
+  return AuthSuccessRouteDestination.home;
+}
+
 @lazySingleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<AuthEvent, AuthState> {
   final LoginUsecase _loginUsecase;
@@ -20,6 +49,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final IDeviceInfoService _deviceInfoService;
   final UserCubit _userCubit;
   final ProfileCubit _profileCubit;
+  final HomeCubit _homeCubit;
   final ProgressCubit _progressCubit;
   final PageCubit _pageCubit;
   final CourseRoadmapCubit _courseRoadmapCubit;
@@ -43,12 +73,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._deviceInfoService,
     this._userCubit,
     this._profileCubit,
+    this._homeCubit,
     this._progressCubit,
     this._pageCubit,
     this._courseRoadmapCubit,
     this._localeCubit,
   ) : super(AuthState.initial()) {
     on<_LoginAnonymous>(_onLoginAnonymous);
+    on<_LoginAnonymousGuest>(_onLoginAnonymousGuest);
     on<_LoginSSOGoogle>(_onLoginSSOGoogle);
     on<_LoginSSOApple>(_onLoginSSOApple);
     on<_Register>(_onRegister);
@@ -71,15 +103,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     return myCourses.isNotEmpty;
   }
 
-  Future<void> _authSuccessNaviagate() async {
-    bool userHaveCourseData = await _userHaveCourseData();
-    if (!userHaveCourseData) {
-      CourseRoute().go(AppConfig.instance.context!);
-      return;
-    }
+  Future<void> _navigateAfterAuth({bool forceChooseCourseAfterLogin = false}) async {
+    final destination = resolveAuthSuccessRouteDestination(
+      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      hasCourseData: forceChooseCourseAfterLogin ? false : await _userHaveCourseData(),
+    );
 
-    HomeRoute().go(AppConfig.instance.context!);
-    _pageCubit.setCurrentIndex(0);
+    switch (destination) {
+      case AuthSuccessRouteDestination.course:
+        await _homeCubit.initializeData();
+        CourseRoute().go(AppConfig.instance.context!);
+        return;
+      case AuthSuccessRouteDestination.home:
+        HomeRoute().go(AppConfig.instance.context!);
+        _pageCubit.setCurrentIndex(0);
+    }
   }
 
   void _onResetAuth() {
@@ -95,13 +133,32 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     _progressCubit.reset();
   }
 
-  void _loginAnonymous(Map<String, dynamic> data) {
+  void _loginAnonymous(
+    Map<String, dynamic> data, {
+    bool navigateAfterSuccess = false,
+    bool forceChooseCourseAfterLogin = false,
+  }) {
     runUseCase(
       usecase: () => _loginAnonymousUsecase(data),
       onSuccess: (data) {
         _onAuthSuccess(data);
+        if (navigateAfterSuccess) {
+          _navigateAfterAuth(forceChooseCourseAfterLogin: forceChooseCourseAfterLogin);
+        }
       },
       onFailure: (error) {},
+    );
+  }
+
+  Future<Map<String, dynamic>> _buildAnonymousDeviceLoginPayload() async {
+    String deviceId = await _deviceInfoService.deviceToken;
+    String deviceName = await _deviceInfoService.deviceName;
+    String languageCode = _localeCubit.state.languageCode;
+
+    return buildAnonymousDeviceAuthPayload(
+      deviceId: deviceId,
+      deviceName: deviceName,
+      languageCode: languageCode,
     );
   }
 
@@ -125,12 +182,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     _loginAnonymous(event.data);
   }
 
+  Future<void> _onLoginAnonymousGuest(_LoginAnonymousGuest event, Emitter<AuthState> emit) async {
+    final payload = await _buildAnonymousDeviceLoginPayload();
+    _loginAnonymous(
+      payload,
+      navigateAfterSuccess: true,
+      forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
+    );
+  }
+
   FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {
     runUseCase(
       usecase: () => _loginSSOGoogleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
-        _authSuccessNaviagate();
+        _navigateAfterAuth(forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin);
       },
       onFailure: (error) {},
     );
@@ -141,7 +207,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       usecase: () => _loginSSOAppleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
-        _authSuccessNaviagate();
+        _navigateAfterAuth(forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin);
       },
       onFailure: (error) {},
     );
@@ -162,40 +228,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   FutureOr<void> _onLogout(_Logout event, Emitter<AuthState> emit) async {
-    String deviceId = await _deviceInfoService.deviceToken;
-    String deviceName = await _deviceInfoService.deviceName;
-    String languageCode = _localeCubit.state.languageCode;
+    final payload = await _buildAnonymousDeviceLoginPayload();
     runUseCase(
       usecase: () => _logoutUsecase(unit),
       onSuccess: (data) {
         _onResetAuth();
-        _loginAnonymous({
-          "device": {
-            "deviceId": deviceId,
-            "deviceName": deviceName,
-          },
-          "language": languageCode,
-        });
+        _loginAnonymous(payload);
       },
       onFailure: (error) {},
     );
   }
 
   Future<void> _onDeletePermanentUser(_DeleteAccountPermanently event, Emitter<AuthState> emit) async {
-    String deviceId = await _deviceInfoService.deviceToken;
-    String deviceName = await _deviceInfoService.deviceName;
-    String languageCode = _localeCubit.state.languageCode;
+    final payload = await _buildAnonymousDeviceLoginPayload();
     runUseCase(
       usecase: () => _deletePermanentUserUsecase(event.userId),
       onSuccess: (data) {
         _onResetAuth();
-        _loginAnonymous({
-          "device": {
-            "deviceId": deviceId,
-            "deviceName": deviceName,
-          },
-          "language": languageCode,
-        });
+        _loginAnonymous(payload);
       },
       onFailure: (error) {},
     );
@@ -270,16 +320,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   Future<void> _onClearSession(_ClearSession event, Emitter<AuthState> emit) async {
-    String deviceId = await _deviceInfoService.deviceToken;
-    String deviceName = await _deviceInfoService.deviceName;
-    String languageCode = _localeCubit.state.languageCode;
+    final payload = await _buildAnonymousDeviceLoginPayload();
     _onResetAuth();
-    _loginAnonymous({
-      "device": {
-        "deviceId": deviceId,
-        "deviceName": deviceName,
-      },
-      "language": languageCode,
-    });
+    _loginAnonymous(payload);
   }
 }

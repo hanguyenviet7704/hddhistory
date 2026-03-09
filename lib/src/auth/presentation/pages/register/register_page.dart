@@ -1,9 +1,21 @@
 part of '../../../auth.dart';
 
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({super.key});
+  final bool forceChooseCourseAfterLogin;
+
+  const RegisterPage({
+    super.key,
+    this.forceChooseCourseAfterLogin = false,
+  });
 
   void _onLoginGuest(BuildContext context) {
+    if (forceChooseCourseAfterLogin) {
+      context.read<AuthBloc>().add(
+        const AuthEvent.loginAnonymousGuest(forceChooseCourseAfterLogin: true),
+      );
+      return;
+    }
+
     final RoadmapEntity roadmap = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap;
     if (roadmap.id.isEmpty) {
       CourseRoute(selectedTabIndex: 0).go(context);
@@ -87,7 +99,11 @@ class RegisterPage extends StatelessWidget {
                           if (Platform.isIOS) ...[
                             AppleLoginButton(
                               onPressed: () {
-                                context.read<AuthBloc>().add(const AuthEvent.loginSSOApple());
+                                context.read<AuthBloc>().add(
+                                  AuthEvent.loginSSOApple(
+                                    forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+                                  ),
+                                );
                               },
                             ),
                             16.verticalSpace,
@@ -96,7 +112,11 @@ class RegisterPage extends StatelessWidget {
                           // Google button
                           GoogleLoginButton(
                             onPressed: () {
-                              context.read<AuthBloc>().add(const AuthEvent.loginSSOGoogle());
+                              context.read<AuthBloc>().add(
+                                AuthEvent.loginSSOGoogle(
+                                  forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+                                ),
+                              );
                             },
                           ),
 

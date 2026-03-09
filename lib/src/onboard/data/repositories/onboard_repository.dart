@@ -27,6 +27,7 @@ class OnboardRepository with RestfulRequestHandlerMixin implements IOnboardRepos
       apiCall: () => _api.getUserByDeviceId(deviceId),
       transform: (model) => model.toEntity(),
       defaultValue: UserEntity(),
+      enableErrorMessages: false,
     );
   }
 }
