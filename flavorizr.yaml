@@ -181,6 +181,6 @@ flavors:
         API_BASE_URL:
           value: "https://prod.api.com"
         GID_CLIENT_ID:
-          value: "116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc.apps.googleusercontent.com"
+          value: "116378588635-b1cdtenlrjjabjn443sb0el4ll47msog.apps.googleusercontent.com"
         REVERSED_CLIENT_ID:
-          value: "com.googleusercontent.apps.116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc"
+          value: "com.googleusercontent.apps.116378588635-b1cdtenlrjjabjn443sb0el4ll47msog"
