@@ -5,9 +5,6 @@ import { useSelector } from "react-redux";
 import { Combobox } from "@headlessui/react";
 import { useNavigate } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
-import { EditorContent, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import { Bold, Italic, List, ListOrdered } from "lucide-react";
 import { RootState } from "../../store";
 import { ICourse } from "../../types/interface/course.interface";
 import { ITag } from "../../types/interface/tag.interface";
@@ -45,90 +42,14 @@ interface AIConfigEditorProps {
 }
 
 const AIConfigEditor: React.FC<AIConfigEditorProps> = ({ value, onChange }) => {
-  const editor = useEditor({
-    extensions: [
-      StarterKit.configure({
-        heading: false,
-        blockquote: false,
-        codeBlock: false,
-        horizontalRule: false,
-      }),
-    ],
-    content: value || "<p></p>",
-    editorProps: {
-      attributes: {
-        class:
-          "ai-config-editor-content min-h-[180px] rounded-b-lg border border-t-0 border-gray-300 p-3 focus:outline-none",
-      },
-    },
-    onUpdate: ({ editor: nextEditor }) => {
-      onChange(nextEditor.getHTML());
-    },
-  });
-
-  useEffect(() => {
-    if (!editor) return;
-    const current = editor.getHTML();
-    if (value !== current) {
-      editor.commands.setContent(value || "<p></p>", false);
-    }
-  }, [editor, value]);
-
-  if (!editor) return null;
-
-  const toolbarBtn = (active: boolean) =>
-    `p-2 rounded-md border transition ${
-      active
-        ? "bg-blue-100 text-blue-700 border-blue-300"
-        : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-    }`;
-
   return (
-    <div className="rounded-lg overflow-hidden">
-      <div className="flex flex-wrap items-center gap-2 border border-gray-300 border-b-0 rounded-t-lg bg-gray-50 p-2">
-        <button
-          type="button"
-          aria-label="Bold"
-          title="Bold"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBold().run()}
-          className={toolbarBtn(editor.isActive("bold"))}
-        >
-          <Bold className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          aria-label="Italic"
-          title="Italic"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleItalic().run()}
-          className={toolbarBtn(editor.isActive("italic"))}
-        >
-          <Italic className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          aria-label="Bullet list"
-          title="Bullet List"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleBulletList().run()}
-          className={toolbarBtn(editor.isActive("bulletList"))}
-        >
-          <List className="h-4 w-4" />
-        </button>
-        <button
-          type="button"
-          aria-label="Ordered list"
-          title="Ordered List"
-          onMouseDown={(e) => e.preventDefault()}
-          onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          className={toolbarBtn(editor.isActive("orderedList"))}
-        >
-          <ListOrdered className="h-4 w-4" />
-        </button>
-      </div>
-      <EditorContent editor={editor} />
-    </div>
+    <textarea
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      rows={8}
+      className="w-full rounded-lg border border-gray-300 p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition resize-y"
+      placeholder="Enter AI config..."
+    />
   );
 };
 
