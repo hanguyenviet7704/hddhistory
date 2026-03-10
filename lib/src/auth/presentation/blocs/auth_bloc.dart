@@ -111,7 +111,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
     switch (destination) {
       case AuthSuccessRouteDestination.course:
-        await _homeCubit.initializeData();
+        await _homeCubit.initializeData(isInit: true);
         CourseRoute().go(AppConfig.instance.context!);
         return;
       case AuthSuccessRouteDestination.home:

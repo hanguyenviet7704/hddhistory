@@ -1,5 +1,14 @@
 part of '../../../auth.dart';
 
+@visibleForTesting
+AuthEvent buildGuestRegisterAuthEvent({
+  required bool forceChooseCourseAfterLogin,
+}) {
+  return AuthEvent.loginAnonymousGuest(
+    forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+  );
+}
+
 class RegisterPage extends StatelessWidget {
   final bool forceChooseCourseAfterLogin;
 
@@ -9,21 +18,11 @@ class RegisterPage extends StatelessWidget {
   });
 
   void _onLoginGuest(BuildContext context) {
-    if (forceChooseCourseAfterLogin) {
-      context.read<AuthBloc>().add(
-        const AuthEvent.loginAnonymousGuest(forceChooseCourseAfterLogin: true),
-      );
-      return;
-    }
-
-    final RoadmapEntity roadmap = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap;
-    if (roadmap.id.isEmpty) {
-      CourseRoute(selectedTabIndex: 0).go(context);
-      return;
-    }
-
-    HomeRoute().go(context);
-    context.read<PageCubit>().setCurrentIndex(0);
+    context.read<AuthBloc>().add(
+      buildGuestRegisterAuthEvent(
+        forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      ),
+    );
   }
 
   @override

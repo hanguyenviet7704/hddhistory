@@ -63,10 +63,11 @@
               "client_type": 3
             },
             {
-              "client_id": "116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a.apps.googleusercontent.com",
+              "client_id": "116378588635-b1cdtenlrjjabjn443sb0el4ll47msog.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.eup.meup.dev"
+                "bundle_id": "com.eup.meup",
+                "app_store_id": "6755175330"
               }
             }
           ]
@@ -115,10 +116,11 @@
               "client_type": 3
             },
             {
-              "client_id": "116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a.apps.googleusercontent.com",
+              "client_id": "116378588635-b1cdtenlrjjabjn443sb0el4ll47msog.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.eup.meup.dev"
+                "bundle_id": "com.eup.meup",
+                "app_store_id": "6755175330"
               }
             }
           ]
@@ -167,10 +169,11 @@
               "client_type": 3
             },
             {
-              "client_id": "116378588635-iuqg7kp6q2h1ejr85tq0g328iqu8711a.apps.googleusercontent.com",
+              "client_id": "116378588635-b1cdtenlrjjabjn443sb0el4ll47msog.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "com.eup.meup.dev"
+                "bundle_id": "com.eup.meup",
+                "app_store_id": "6755175330"
               }
             }
           ]
