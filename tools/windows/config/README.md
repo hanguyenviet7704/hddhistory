@@ -11,15 +11,21 @@ Configures Firebase project settings for different environments using the Flutte
 **Usage:**
 
 ```cmd
-flutterfire_config.bat [dev|stg|prod]
+flutterfire_config.bat [all|dev|stg|prod ...]
 ```
+
+**Prerequisites:**
+
+- FlutterFire CLI must be installed: `dart pub global activate flutterfire_cli`
 
 **What it does:**
 
+- Configures all flavors by default in one run (`dev`, `stg`, `prod`)
 - Generates environment-specific Firebase configuration files
 - Creates `firebase_options_[env].dart` files
 - Sets up platform-specific Firebase configuration files
-- Configures iOS bundle IDs and Android package names
+- Configures Android package names
+- Supports Android-only setup on Windows
 
 ### 2. `firebase_setup.bat` - Firebase Crashlytics Setup
 
@@ -87,9 +93,13 @@ The scripts support three environments:
 
 1. **Configure FlutterFire for all environments:**
    ```cmd
-   flutterfire_config.bat dev
+   flutterfire_config.bat
+   ```
+
+2. **Reconfigure only the flavors you need:**
+   ```cmd
+   flutterfire_config.bat dev stg
    flutterfire_config.bat stg
-   flutterfire_config.bat prod
    ```
 
 ## 🚀 Automated Workflow (Recommended)
@@ -153,10 +163,10 @@ The script automatically extracts these Firebase App IDs from your `google-servi
 
 ### Common Issues
 
-1. **"Firebase CLI is not installed"**
+1. **"FlutterFire CLI is not installed"**
 
    ```cmd
-   npm install -g firebase-tools
+   dart pub global activate flutterfire_cli
    ```
 
 2. **"Not logged in to Firebase CLI"**

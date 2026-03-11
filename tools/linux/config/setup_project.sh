@@ -93,6 +93,11 @@ if ! command -v jq >/dev/null 2>&1; then
     MISSING_TOOLS+=("jq")
 fi
 
+# Check for FlutterFire CLI
+if ! command -v flutterfire >/dev/null 2>&1; then
+    MISSING_TOOLS+=("flutterfire-cli")
+fi
+
 # Check for Firebase CLI
 if ! command -v firebase >/dev/null 2>&1; then
     MISSING_TOOLS+=("firebase-tools")
@@ -147,6 +152,18 @@ for FLAVOR in dev stg prod; do
 done
 
 echo
+log_step "Setting up Firebase configuration for all flavors..."
+if [[ -f "tools/linux/config/flutterfire_config.sh" ]]; then
+    if command -v flutterfire >/dev/null 2>&1; then
+        tools/linux/config/flutterfire_config.sh
+    else
+        log_warning "FlutterFire CLI not found, skipping Firebase setup"
+    fi
+else
+    log_warning "Firebase config script not found, skipping Firebase setup"
+fi
+
+echo
 log_step "Setup Summary"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "✅ Project configuration validated"
@@ -160,7 +177,7 @@ echo ""
 echo "Next steps:"
 echo "1. Run 'flutter pub get' to fetch dependencies"
 echo "2. Use build scripts: tools/linux/build/build_apk.sh [flavor]"
-echo "3. Configure Firebase if not already done"
+echo "3. Re-run tools/linux/config/flutterfire_config.sh if Firebase config needs refresh"
 echo "4. Test builds with different flavors"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 

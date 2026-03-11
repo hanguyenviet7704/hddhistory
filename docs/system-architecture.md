@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-09
+**Last Updated:** 2026-03-11
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -108,8 +108,10 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
 - Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding and route to `RegisterRoute(forceChooseCourseAfterLogin: true)`.
 - Unrecognized devices or safe lookup misses continue the existing onboarding intro path without surfacing a splash auth error.
-- The register handoff flag is scoped to that splash entry only; Google, Apple, and Guest auth from that entry go directly to `CourseRoute` after successful auth.
-- Only that forced Guest path performs a real anonymous login through `AuthBloc` using device metadata plus locale before forcing the course chooser; the default register Guest CTA keeps the existing local navigation behavior.
+- Opening `RegisterRoute()` now silently bootstraps an anonymous guest session through `AuthBloc`, preloads `HomeCubit.initializeData(isInit: true)`, and keeps the register UI visible while the user picks Guest, Google, or Apple.
+- The register handoff flag is still scoped to the recognized-device splash entry only; it changes post-choice routing, not the silent bootstrap itself.
+- Guest continue now reuses the bootstrapped anonymous session when available and only falls back to a fresh anonymous login if bootstrap failed.
+- Google and Apple continue to replace the guest session through the existing auth-success path, and any guest course handoff now routes with `CourseRoute(selectedTabIndex: 0)` while resetting home selection to the first category to avoid stale post-logout state.
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.

@@ -35,7 +35,7 @@
     "configOutput": {
       "dart": "lib/config/services/firebase",
       "android": "android/app/src",
-      "ios": "ios/flavors"
+      "ios": "ios/Runner"
     }
   },
   "build": {

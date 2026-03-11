@@ -23,6 +23,18 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
     ]);
   }
 
+  void resetSelection({
+    int skillsetIndex = 0,
+    int courseIndex = 0,
+  }) {
+    emit(
+      state.copyWith(
+        selectedSkillsetIndex: skillsetIndex,
+        selectedCourseIndex: courseIndex,
+      ),
+    );
+  }
+
   void selectSkillsetIndex(int index) => emit(state.copyWith(selectedSkillsetIndex: index));
   void selectSkillset(SkillsetEntity skillset) {
     int skillSetIndex = state.skillsets.indexWhere((s) => s.id == skillset.id);
