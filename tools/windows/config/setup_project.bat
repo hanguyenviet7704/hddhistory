@@ -102,6 +102,13 @@ if %errorlevel% neq 0 (
     set /a missing_tools+=1
 )
 
+REM Check for FlutterFire CLI
+where flutterfire >nul 2>&1
+if %errorlevel% neq 0 (
+    call :log_warning "flutterfire-cli not found"
+    set /a missing_tools+=1
+)
+
 REM Check for Firebase CLI
 where firebase >nul 2>&1
 if %errorlevel% neq 0 (
@@ -155,6 +162,20 @@ for %%f in (dev stg prod) do (
 )
 
 echo.
+call :log_step "Setting up Firebase configuration for all flavors..."
+if exist "tools\windows\config\flutterfire_config.bat" (
+    where flutterfire >nul 2>&1
+    if !errorlevel! equ 0 (
+        call "tools\windows\config\flutterfire_config.bat"
+        if !errorlevel! neq 0 exit /b 1
+    ) else (
+        call :log_warning "FlutterFire CLI not found, skipping Firebase setup"
+    )
+) else (
+    call :log_warning "Firebase config script not found, skipping Firebase setup"
+)
+
+echo.
 call :log_step "Setup Summary"
 echo ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 echo ✅ Project configuration validated
@@ -168,7 +189,7 @@ echo.
 echo Next steps:
 echo 1. Run 'flutter pub get' to fetch dependencies
 echo 2. Use build scripts: tools\windows\build\build_apk.bat [flavor]
-echo 3. Configure Firebase if not already done
+echo 3. Re-run tools\windows\config\flutterfire_config.bat if Firebase config needs refresh
 echo 4. Test builds with different flavors
 echo ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 

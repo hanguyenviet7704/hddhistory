@@ -21,29 +21,42 @@ if %errorlevel% neq 0 (
 )
 
 REM Initialize variables
-set "FLAVOR="
+set "FLAVORS="
+set "RUN_ALL=false"
+set "ARGS_PROVIDED=false"
 set "PLATFORMS=android"
+set "WITH_IOS_REQUESTED=false"
+set "FLAVOR_COUNT=0"
 
 REM Parse command line arguments
 :parse_args
 if "%~1"=="" goto :args_done
+if /i "%~1"=="all" (
+    set "ARGS_PROVIDED=true"
+    set "RUN_ALL=true"
+    shift
+    goto :parse_args
+)
 if "%~1"=="dev" (
-    set "FLAVOR=%~1"
+    set "ARGS_PROVIDED=true"
+    call :append_flavor "%~1"
     shift
     goto :parse_args
 )
 if "%~1"=="stg" (
-    set "FLAVOR=%~1"
+    set "ARGS_PROVIDED=true"
+    call :append_flavor "%~1"
     shift
     goto :parse_args
 )
 if "%~1"=="prod" (
-    set "FLAVOR=%~1"
+    set "ARGS_PROVIDED=true"
+    call :append_flavor "%~1"
     shift
     goto :parse_args
 )
 if "%~1"=="--with-ios" (
-    set "PLATFORMS=ios,android"
+    set "WITH_IOS_REQUESTED=true"
     shift
     goto :parse_args
 )
@@ -55,18 +68,20 @@ echo Use -h or --help for usage information
 exit /b 1
 
 :show_help
-echo Usage: %~nx0 [dev^|stg^|prod] [--with-ios]
+echo Usage: %~nx0 [all^|dev^|stg^|prod ...]
 echo.
 echo Arguments:
-echo   dev^|stg^|prod    Environment flavor (required)
-echo   --with-ios       Include iOS configuration (optional, not recommended on Windows)
+echo   all               Configure all flavors ^(default when omitted^)
+echo   dev^|stg^|prod    Configure one or more specific flavors
+echo   --with-ios       Ignored on Windows ^(iOS setup requires macOS^)
 echo   -h, --help      Show this help message
 echo.
 echo This script uses centralized configuration from .info\ directory.
 echo.
 echo Examples:
-echo   %~nx0 dev                  Configure Firebase for dev environment (Android only)
-echo   %~nx0 prod --with-ios     Configure Firebase for prod environment (Android + iOS)
+echo   %~nx0                      Configure Firebase for all flavors (Android only)
+echo   %~nx0 dev stg              Configure Firebase for multiple flavors
+echo   %~nx0 prod                 Configure Firebase for one flavor
 exit /b 0
 
 :args_done
@@ -75,70 +90,88 @@ REM Validate environment and parameters
 call :validate_environment
 if %errorlevel% neq 0 exit /b 1
 
-if "%FLAVOR%"=="" (
-    call :log_error "No environment specified."
-    echo Usage: %~nx0 [dev^|stg^|prod] [--with-ios]
-    echo Use -h or --help for more information
-    exit /b 1
+if /i "%RUN_ALL%"=="true" (
+    set "FLAVORS=dev stg prod"
 )
 
-call :validate_flavor "%FLAVOR%"
+if "%FLAVORS%"=="" (
+    set "FLAVORS=dev stg prod"
+    if /i "%ARGS_PROVIDED%"=="false" (
+        call :log_info "No flavor specified. Defaulting to all flavors: %FLAVORS%"
+    )
+)
+
+if /i "%WITH_IOS_REQUESTED%"=="true" (
+    call :log_warning "Ignoring --with-ios on Windows. iOS setup requires macOS."
+)
+
+call :ensure_flutterfire_cli
 if %errorlevel% neq 0 exit /b 1
 
-REM Get configuration from centralized system
-call :get_android_package_name "%FLAVOR%" ANDROID_PACKAGE
-call :get_firebase_project_id "%FLAVOR%" FIREBASE_PROJECT
+for %%f in (%FLAVORS%) do (
+    call :validate_flavor "%%f"
+    if !errorlevel! neq 0 exit /b 1
+)
 
-REM Check if FlutterFire CLI is available
+for %%f in (%FLAVORS%) do (
+    call :configure_flavor "%%f"
+    if !errorlevel! neq 0 exit /b 1
+)
+
+echo.
+for %%f in (%FLAVORS%) do set "LAST_FLAVOR=%%f"
+for %%f in (%FLAVORS%) do set /a FLAVOR_COUNT+=1
+if %FLAVOR_COUNT% gtr 1 (
+    call :log_success "Firebase configuration completed for flavors: %FLAVORS%"
+) else (
+    call :log_success "Firebase configuration completed for flavor: %LAST_FLAVOR%"
+)
+
+exit /b 0
+
+:append_flavor
+set "candidate=%~1"
+if "%FLAVORS%"=="" (
+    set "FLAVORS=%candidate%"
+) else (
+    echo %FLAVORS% | findstr /i /c:"%candidate%" >nul
+    if errorlevel 1 (
+        set "FLAVORS=%FLAVORS% %candidate%"
+    )
+)
+exit /b 0
+
+:ensure_flutterfire_cli
 where flutterfire >nul 2>&1
 if %errorlevel% neq 0 (
     call :log_error "FlutterFire CLI not found"
     call :log_error "Please install it with: dart pub global activate flutterfire_cli"
     exit /b 1
 )
+exit /b 0
+
+:configure_flavor
+set "FLAVOR=%~1"
+call :get_android_package_name "%FLAVOR%" ANDROID_PACKAGE
+call :get_firebase_project_id "%FLAVOR%" FIREBASE_PROJECT
 
 call :log_step "Configuring Firebase for %FLAVOR% environment"
 echo Firebase Project: %FIREBASE_PROJECT%
 echo Android Package: %ANDROID_PACKAGE%
-echo Platforms: %PLATFORMS%
+echo Platforms: android
 echo.
 
 REM Execute FlutterFire configuration
 call :log_info "Running FlutterFire configuration..."
 
-REM Build the command based on platforms
-if "%PLATFORMS%"=="android" (
-    flutterfire config ^
-        --overwrite-firebase-options ^
-        --project=%FIREBASE_PROJECT% ^
-        --out=lib/config/services/firebase/firebase_options_%FLAVOR%.dart ^
-        --android-package-name=%ANDROID_PACKAGE% ^
-        --android-out=android/app/src/%FLAVOR%/google-services.json ^
-        --platforms=android
-) else (
-    REM Include iOS configuration (requires iOS bundle ID from config)
-    call :get_ios_bundle_id "%FLAVOR%" IOS_BUNDLE_ID
-    if "!IOS_BUNDLE_ID!"=="" (
-        call :log_warning "iOS bundle ID not configured for %FLAVOR%, using Android-only configuration"
-        flutterfire config ^
-            --overwrite-firebase-options ^
-            --project=%FIREBASE_PROJECT% ^
-            --out=lib/config/services/firebase/firebase_options_%FLAVOR%.dart ^
-            --android-package-name=%ANDROID_PACKAGE% ^
-            --android-out=android/app/src/%FLAVOR%/google-services.json ^
-            --platforms=android
-    ) else (
-        flutterfire config ^
-            --overwrite-firebase-options ^
-            --project=%FIREBASE_PROJECT% ^
-            --out=lib/config/services/firebase/firebase_options_%FLAVOR%.dart ^
-            --ios-bundle-id=!IOS_BUNDLE_ID! ^
-            --ios-out=ios/Runner/%FLAVOR%/GoogleService-Info.plist ^
-            --android-package-name=%ANDROID_PACKAGE% ^
-            --android-out=android/app/src/%FLAVOR%/google-services.json ^
-            --platforms=ios,android
-    )
-)
+flutterfire config ^
+    --yes ^
+    --overwrite-firebase-options ^
+    --project=%FIREBASE_PROJECT% ^
+    --out=lib/config/services/firebase/firebase_options_%FLAVOR%.dart ^
+    --android-package-name=%ANDROID_PACKAGE% ^
+    --android-out=android/app/src/%FLAVOR%/google-services.json ^
+    --platforms=android
 
 if %errorlevel% neq 0 (
     call :log_error "Firebase configuration for %FLAVOR% failed"
@@ -150,8 +183,6 @@ echo.
 call :log_info "Generated files:"
 call :log_info "  • Android: android/app/src/%FLAVOR%/google-services.json"
 call :log_info "  • Flutter: lib/config/services/firebase/firebase_options_%FLAVOR%.dart"
-if not "%PLATFORMS%"=="android" (
-    call :log_info "  • iOS: ios/Runner/%FLAVOR%/GoogleService-Info.plist"
-)
+call :log_info "  • Platform: Android only"
 
-exit /b 0 
+exit /b 0
