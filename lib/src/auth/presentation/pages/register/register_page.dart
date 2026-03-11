@@ -4,9 +4,8 @@ part of '../../../auth.dart';
 bool shouldBootstrapRegisterGuestSession({
   required Future<bool>? bootstrapFuture,
   String accessToken = '',
-  bool hasAttemptedBootstrap = false,
 }) {
-  return accessToken.isEmpty && bootstrapFuture == null && !hasAttemptedBootstrap;
+  return accessToken.isEmpty && bootstrapFuture == null;
 }
 
 @visibleForTesting
@@ -32,8 +31,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   Future<bool>? _bootstrapFuture;
-  bool _isBootstrapInProgress = false;
-  bool _hasAttemptedBootstrap = false;
+  final ValueNotifier<bool> _isBootstrapInProgress = ValueNotifier(false);
 
   @override
   void initState() {
@@ -54,33 +52,32 @@ class _RegisterPageState extends State<RegisterPage> {
     if (!shouldBootstrapRegisterGuestSession(
       accessToken: accessToken,
       bootstrapFuture: _bootstrapFuture,
-      hasAttemptedBootstrap: _hasAttemptedBootstrap,
     )) {
       return Future.value(false);
     }
 
-    _hasAttemptedBootstrap = true;
-
-    setState(() => _isBootstrapInProgress = true);
+    _isBootstrapInProgress.value = true;
 
     final task = context
         .read<AuthBloc>()
         .bootstrapGuestSessionForRegister()
         .then((success) {
-          if (mounted) {
-            setState(() => _isBootstrapInProgress = false);
-          }
+          _isBootstrapInProgress.value = false;
           return success;
         })
         .catchError((_) {
-          if (mounted) {
-            setState(() => _isBootstrapInProgress = false);
-          }
+          _isBootstrapInProgress.value = false;
           return false;
         });
 
     _bootstrapFuture = task;
     return task;
+  }
+
+  @override
+  void dispose() {
+    _isBootstrapInProgress.dispose();
+    super.dispose();
   }
 
   void _onLoginGuest() {
@@ -163,8 +160,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       textAlign: TextAlign.center,
                     ),
                     126.verticalSpace,
-                    IgnorePointer(
-                      ignoring: _isBootstrapInProgress,
+                    ValueListenableBuilder<bool>(
+                      valueListenable: _isBootstrapInProgress,
+                      builder: (context, isBootstrapInProgress, child) => IgnorePointer(
+                        ignoring: isBootstrapInProgress,
+                        child: child,
+                      ),
                       child: Column(
                         children: [
                           if (Platform.isIOS) ...[

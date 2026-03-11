@@ -7,7 +7,6 @@ void main() {
       final shouldBootstrap = shouldBootstrapRegisterGuestSession(
         accessToken: '',
         bootstrapFuture: null,
-        hasAttemptedBootstrap: false,
       );
 
       expect(shouldBootstrap, isTrue);
@@ -17,7 +16,6 @@ void main() {
       final shouldBootstrap = shouldBootstrapRegisterGuestSession(
         accessToken: '',
         bootstrapFuture: Future<bool>.value(true),
-        hasAttemptedBootstrap: false,
       );
 
       expect(shouldBootstrap, isFalse);
@@ -27,17 +25,6 @@ void main() {
       final shouldBootstrap = shouldBootstrapRegisterGuestSession(
         accessToken: 'token',
         bootstrapFuture: null,
-        hasAttemptedBootstrap: false,
-      );
-
-      expect(shouldBootstrap, isFalse);
-    });
-
-    test('returns false when register page already attempted bootstrap once', () {
-      final shouldBootstrap = shouldBootstrapRegisterGuestSession(
-        accessToken: '',
-        bootstrapFuture: null,
-        hasAttemptedBootstrap: true,
       );
 
       expect(shouldBootstrap, isFalse);
