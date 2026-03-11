@@ -133,7 +133,7 @@ if "%PLATFORMS%"=="android" (
             --project=%FIREBASE_PROJECT% ^
             --out=lib/config/services/firebase/firebase_options_%FLAVOR%.dart ^
             --ios-bundle-id=!IOS_BUNDLE_ID! ^
-            --ios-out=ios/flavors/%FLAVOR%/GoogleService-Info.plist ^
+            --ios-out=ios/Runner/%FLAVOR%/GoogleService-Info.plist ^
             --android-package-name=%ANDROID_PACKAGE% ^
             --android-out=android/app/src/%FLAVOR%/google-services.json ^
             --platforms=ios,android
@@ -151,7 +151,7 @@ call :log_info "Generated files:"
 call :log_info "  • Android: android/app/src/%FLAVOR%/google-services.json"
 call :log_info "  • Flutter: lib/config/services/firebase/firebase_options_%FLAVOR%.dart"
 if not "%PLATFORMS%"=="android" (
-    call :log_info "  • iOS: ios/flavors/%FLAVOR%/GoogleService-Info.plist"
+    call :log_info "  • iOS: ios/Runner/%FLAVOR%/GoogleService-Info.plist"
 )
 
 exit /b 0 
