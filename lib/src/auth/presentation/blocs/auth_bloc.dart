@@ -4,6 +4,8 @@ part of '../../auth.dart';
 
 enum AuthSuccessRouteDestination { course, home }
 
+enum RegisterGuestContinueAction { continueCurrentSession, loginAnonymousAndNavigate }
+
 @visibleForTesting
 Map<String, dynamic> buildAnonymousDeviceAuthPayload({
   required String deviceId,
@@ -31,6 +33,29 @@ AuthSuccessRouteDestination resolveAuthSuccessRouteDestination({
   return AuthSuccessRouteDestination.home;
 }
 
+@visibleForTesting
+RegisterGuestContinueAction resolveRegisterGuestContinueAction({
+  required bool hasBootstrappedGuestSession,
+}) {
+  if (hasBootstrappedGuestSession) {
+    return RegisterGuestContinueAction.continueCurrentSession;
+  }
+
+  return RegisterGuestContinueAction.loginAnonymousAndNavigate;
+}
+
+@visibleForTesting
+int? resolveAuthSuccessSelectedCourseTabIndex({
+  required AuthSuccessRouteDestination destination,
+  required bool resetToFirstCourseCategory,
+}) {
+  if (destination != AuthSuccessRouteDestination.course || !resetToFirstCourseCategory) {
+    return null;
+  }
+
+  return 0;
+}
+
 @lazySingleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<AuthEvent, AuthState> {
   final LoginUsecase _loginUsecase;
@@ -56,6 +81,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final LocaleCubit _localeCubit;
 
   static Completer<bool>? _refreshCompleter;
+  Completer<bool>? _anonymousAuthCompleter;
 
   AuthBloc(
     this._loginUsecase,
@@ -103,16 +129,26 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     return myCourses.isNotEmpty;
   }
 
-  Future<void> _navigateAfterAuth({bool forceChooseCourseAfterLogin = false}) async {
+  Future<void> _navigateAfterAuth({
+    bool forceChooseCourseAfterLogin = false,
+    bool resetToFirstCourseCategory = false,
+  }) async {
     final destination = resolveAuthSuccessRouteDestination(
       forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
       hasCourseData: forceChooseCourseAfterLogin ? false : await _userHaveCourseData(),
+    );
+    final selectedTabIndex = resolveAuthSuccessSelectedCourseTabIndex(
+      destination: destination,
+      resetToFirstCourseCategory: resetToFirstCourseCategory,
     );
 
     switch (destination) {
       case AuthSuccessRouteDestination.course:
         await _homeCubit.initializeData(isInit: true);
-        CourseRoute().go(AppConfig.instance.context!);
+        if (selectedTabIndex != null) {
+          _homeCubit.resetSelection(skillsetIndex: selectedTabIndex);
+        }
+        CourseRoute(selectedTabIndex: selectedTabIndex).go(AppConfig.instance.context!);
         return;
       case AuthSuccessRouteDestination.home:
         HomeRoute().go(AppConfig.instance.context!);
@@ -133,21 +169,99 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     _progressCubit.reset();
   }
 
+  bool get hasActiveAnonymousSession => _userCubit.state.user.anonymous && AppGlobalValue.accessToken.isNotEmpty;
+
+  Future<bool> bootstrapGuestSessionForRegister() async {
+    try {
+      if (hasActiveAnonymousSession) {
+        await _homeCubit.initializeData(isInit: true);
+        return true;
+      }
+
+      final payload = await _buildAnonymousDeviceLoginPayload();
+      final success = await _authenticateAnonymousSession(payload);
+      if (success) {
+        await _homeCubit.initializeData(isInit: true);
+      }
+      return success;
+    } catch (error) {
+      LogDev.warning('[AuthBloc] bootstrapGuestSessionForRegister failed: $error');
+      return false;
+    }
+  }
+
+  Future<void> continueWithCurrentGuestSession({bool forceChooseCourseAfterLogin = false}) async {
+    final action = resolveRegisterGuestContinueAction(
+      hasBootstrappedGuestSession: hasActiveAnonymousSession,
+    );
+
+    if (action == RegisterGuestContinueAction.loginAnonymousAndNavigate) {
+      final payload = await _buildAnonymousDeviceLoginPayload();
+      final success = await _authenticateAnonymousSession(payload);
+      if (!success) {
+        return;
+      }
+    }
+
+    await _navigateAfterAuth(
+      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      resetToFirstCourseCategory: true,
+    );
+  }
+
   void _loginAnonymous(
     Map<String, dynamic> data, {
     bool navigateAfterSuccess = false,
     bool forceChooseCourseAfterLogin = false,
   }) {
+    unawaited(
+      _authenticateAnonymousSession(
+        data,
+        navigateAfterSuccess: navigateAfterSuccess,
+        forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      ),
+    );
+  }
+
+  Future<bool> _authenticateAnonymousSession(
+    Map<String, dynamic> data, {
+    bool navigateAfterSuccess = false,
+    bool forceChooseCourseAfterLogin = false,
+  }) async {
+    final inFlight = _anonymousAuthCompleter;
+    if (inFlight != null) {
+      final success = await inFlight.future;
+      if (success && navigateAfterSuccess) {
+        await _navigateAfterAuth(forceChooseCourseAfterLogin: forceChooseCourseAfterLogin);
+      }
+      return success;
+    }
+
+    final completer = Completer<bool>();
+    _anonymousAuthCompleter = completer;
+
+    void complete(bool success) {
+      if (!completer.isCompleted) {
+        completer.complete(success);
+      }
+      if (identical(_anonymousAuthCompleter, completer)) {
+        _anonymousAuthCompleter = null;
+      }
+    }
+
     runUseCase(
       usecase: () => _loginAnonymousUsecase(data),
-      onSuccess: (data) {
-        _onAuthSuccess(data);
+      onSuccess: (auth) {
+        _onAuthSuccess(auth);
+        complete(true);
         if (navigateAfterSuccess) {
-          _navigateAfterAuth(forceChooseCourseAfterLogin: forceChooseCourseAfterLogin);
+          unawaited(_navigateAfterAuth(forceChooseCourseAfterLogin: forceChooseCourseAfterLogin));
         }
       },
-      onFailure: (error) {},
+      onFailure: (error) => complete(false),
     );
+
+    return completer.future;
   }
 
   Future<Map<String, dynamic>> _buildAnonymousDeviceLoginPayload() async {
@@ -164,14 +278,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   Future<bool> loginAnonymousSilently(Map<String, dynamic> data) async {
     try {
-      final result = await _loginAnonymousUsecase(data).run();
-      return result.fold(
-        (failure) => false,
-        (auth) {
-          _onAuthSuccess(auth);
-          return true;
-        },
-      );
+      return await _authenticateAnonymousSession(data);
     } catch (error) {
       LogDev.warning('[AuthBloc] loginAnonymousSilently failed: $error');
       return false;
@@ -183,10 +290,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   Future<void> _onLoginAnonymousGuest(_LoginAnonymousGuest event, Emitter<AuthState> emit) async {
-    final payload = await _buildAnonymousDeviceLoginPayload();
-    _loginAnonymous(
-      payload,
-      navigateAfterSuccess: true,
+    await continueWithCurrentGuestSession(
       forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
     );
   }
@@ -228,24 +332,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   FutureOr<void> _onLogout(_Logout event, Emitter<AuthState> emit) async {
-    final payload = await _buildAnonymousDeviceLoginPayload();
     runUseCase(
       usecase: () => _logoutUsecase(unit),
       onSuccess: (data) {
         _onResetAuth();
-        _loginAnonymous(payload);
+        unawaited(bootstrapGuestSessionForRegister());
       },
       onFailure: (error) {},
     );
   }
 
   Future<void> _onDeletePermanentUser(_DeleteAccountPermanently event, Emitter<AuthState> emit) async {
-    final payload = await _buildAnonymousDeviceLoginPayload();
     runUseCase(
       usecase: () => _deletePermanentUserUsecase(event.userId),
       onSuccess: (data) {
         _onResetAuth();
-        _loginAnonymous(payload);
+        unawaited(bootstrapGuestSessionForRegister());
       },
       onFailure: (error) {},
     );
@@ -320,8 +422,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   Future<void> _onClearSession(_ClearSession event, Emitter<AuthState> emit) async {
-    final payload = await _buildAnonymousDeviceLoginPayload();
     _onResetAuth();
-    _loginAnonymous(payload);
+    unawaited(bootstrapGuestSessionForRegister());
   }
 }

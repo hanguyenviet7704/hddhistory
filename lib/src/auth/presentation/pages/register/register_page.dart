@@ -1,6 +1,15 @@
 part of '../../../auth.dart';
 
 @visibleForTesting
+bool shouldBootstrapRegisterGuestSession({
+  required Future<bool>? bootstrapFuture,
+  String accessToken = '',
+  bool hasAttemptedBootstrap = false,
+}) {
+  return accessToken.isEmpty && bootstrapFuture == null && !hasAttemptedBootstrap;
+}
+
+@visibleForTesting
 AuthEvent buildGuestRegisterAuthEvent({
   required bool forceChooseCourseAfterLogin,
 }) {
@@ -9,7 +18,7 @@ AuthEvent buildGuestRegisterAuthEvent({
   );
 }
 
-class RegisterPage extends StatelessWidget {
+class RegisterPage extends StatefulWidget {
   final bool forceChooseCourseAfterLogin;
 
   const RegisterPage({
@@ -17,132 +26,197 @@ class RegisterPage extends StatelessWidget {
     this.forceChooseCourseAfterLogin = false,
   });
 
-  void _onLoginGuest(BuildContext context) {
-    context.read<AuthBloc>().add(
-      buildGuestRegisterAuthEvent(
-        forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
-      ),
-    );
-  }
+  @override
+  State<RegisterPage> createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  Future<bool>? _bootstrapFuture;
+  bool _isBootstrapInProgress = false;
+  bool _hasAttemptedBootstrap = false;
 
   @override
-  Widget build(BuildContext context) {
-    return AuthLayout(
-      body: Container(
-        color: const Color(0xFFEBEAFD), // Background color from Figma
-        child: SafeArea(
-          child: Column(
-            children: [
-              // Top section with "Already member? Log in" text
-              if (kDebugMode)
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      AppText(
-                        context.text.auth.authAlreadyMember,
-                        style: AppStyle.text14.copyWith(
-                          color: const Color(0xFF110751),
-                          fontWeight: FontWeight.normal,
-                        ),
-                      ),
-                      4.horizontalSpace,
-                      GestureDetector(
-                        onTap: () {
-                          // Navigate to login page
-                          // DNavigator.goNamed(RouteNamed.login);
-                        },
-                        child: AppText(
-                          context.text.auth.authLogIn,
-                          style: AppStyle.text14.copyWith(
-                            color: const Color(0xFF110751),
-                            fontWeight: FontWeight.w600,
-                            decoration: TextDecoration.underline,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      unawaited(_ensureGuestBootstrapStarted());
+    });
+  }
 
-              // Main content
-              Expanded(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 20.w),
-                  child: Column(
-                    children: [
-                      Image.asset(
-                        AppAsset.images.common.logoBanner.path,
-                        height: 60.h,
-                      ),
-                      66.verticalSpace,
-                      AppText(
-                        context.text.auth.authHeadLine,
-                        maxLines: 5,
-                        margin: EdgeInsets.symmetric(horizontal: 20.w),
-                        style: AppStyle.textBold20.copyWith(
-                          color: const Color(0xFF110751),
-                          fontWeight: FontWeight.w600,
-                          height: 1.5,
-                        ),
-                        textAlign: TextAlign.center,
-                      ),
+  Future<bool> _ensureGuestBootstrapStarted() {
+    final inFlight = _bootstrapFuture;
+    if (inFlight != null) {
+      return inFlight;
+    }
 
-                      126.verticalSpace,
+    final accessToken = context.read<UserCubit>().state.accessToken;
+    if (!shouldBootstrapRegisterGuestSession(
+      accessToken: accessToken,
+      bootstrapFuture: _bootstrapFuture,
+      hasAttemptedBootstrap: _hasAttemptedBootstrap,
+    )) {
+      return Future.value(false);
+    }
 
-                      // Social login buttons
-                      Column(
-                        children: [
-                          // Apple button
-                          if (Platform.isIOS) ...[
-                            AppleLoginButton(
-                              onPressed: () {
-                                context.read<AuthBloc>().add(
-                                  AuthEvent.loginSSOApple(
-                                    forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
-                                  ),
-                                );
-                              },
-                            ),
-                            16.verticalSpace,
-                          ],
+    _hasAttemptedBootstrap = true;
 
-                          // Google button
-                          GoogleLoginButton(
-                            onPressed: () {
-                              context.read<AuthBloc>().add(
-                                AuthEvent.loginSSOGoogle(
-                                  forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
-                                ),
-                              );
-                            },
-                          ),
+    setState(() => _isBootstrapInProgress = true);
 
-                          16.verticalSpace,
+    final task = context
+        .read<AuthBloc>()
+        .bootstrapGuestSessionForRegister()
+        .then((success) {
+          if (mounted) {
+            setState(() => _isBootstrapInProgress = false);
+          }
+          return success;
+        })
+        .catchError((_) {
+          if (mounted) {
+            setState(() => _isBootstrapInProgress = false);
+          }
+          return false;
+        });
 
-                          // Guest button
-                          GuestLoginButton(
-                            onPressed: () => _onLoginGuest(context),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+    _bootstrapFuture = task;
+    return task;
+  }
 
-              // Bottom section with privacy policy and terms
-              Padding(
-                padding: EdgeInsets.only(bottom: 20.h, left: 30.w, right: 30.w),
-                child: const _RegisterLegalLinks(),
-              ),
-            ],
+  void _onLoginGuest() {
+    unawaited(_handleGuestLogin());
+  }
+
+  Future<void> _handleGuestLogin() async {
+    final authBloc = context.read<AuthBloc>();
+    await _ensureGuestBootstrapStarted();
+    if (!mounted) return;
+
+    switch (resolveRegisterGuestContinueAction(
+      hasBootstrappedGuestSession: authBloc.hasActiveAnonymousSession,
+    )) {
+      case RegisterGuestContinueAction.continueCurrentSession:
+        await authBloc.continueWithCurrentGuestSession(
+          forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
+        );
+        return;
+      case RegisterGuestContinueAction.loginAnonymousAndNavigate:
+        authBloc.add(
+          buildGuestRegisterAuthEvent(
+            forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
           ),
+        );
+        return;
+    }
+  }
+
+  void _onLoginGoogle() {
+    unawaited(
+      _dispatchAuthChoice(
+        AuthEvent.loginSSOGoogle(
+          forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
         ),
       ),
     );
   }
+
+  void _onLoginApple() {
+    unawaited(
+      _dispatchAuthChoice(
+        AuthEvent.loginSSOApple(
+          forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
+        ),
+      ),
+    );
+  }
+
+  Future<void> _dispatchAuthChoice(AuthEvent event) async {
+    await _ensureGuestBootstrapStarted();
+    if (!mounted) return;
+    context.read<AuthBloc>().add(event);
+  }
+
+  @override
+  Widget build(BuildContext context) => AuthLayout(
+    body: Container(
+      color: const Color(0xFFEBEAFD),
+      child: SafeArea(
+        child: Column(
+          children: [
+            if (kDebugMode) const _RegisterTopLoginHint(),
+            Expanded(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 20.w),
+                child: Column(
+                  children: [
+                    Image.asset(AppAsset.images.common.logoBanner.path, height: 60.h),
+                    66.verticalSpace,
+                    AppText(
+                      context.text.auth.authHeadLine,
+                      maxLines: 5,
+                      margin: EdgeInsets.symmetric(horizontal: 20.w),
+                      style: AppStyle.textBold20.copyWith(
+                        color: const Color(0xFF110751),
+                        fontWeight: FontWeight.w600,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    126.verticalSpace,
+                    IgnorePointer(
+                      ignoring: _isBootstrapInProgress,
+                      child: Column(
+                        children: [
+                          if (Platform.isIOS) ...[
+                            AppleLoginButton(onPressed: _onLoginApple),
+                            16.verticalSpace,
+                          ],
+                          GoogleLoginButton(onPressed: _onLoginGoogle),
+                          16.verticalSpace,
+                          GuestLoginButton(onPressed: _onLoginGuest),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Padding(
+              padding: EdgeInsets.only(bottom: 20.h, left: 30.w, right: 30.w),
+              child: const _RegisterLegalLinks(),
+            ),
+          ],
+        ),
+      ),
+    ),
+  );
+}
+
+class _RegisterTopLoginHint extends StatelessWidget {
+  const _RegisterTopLoginHint();
+
+  @override
+  Widget build(BuildContext context) => Padding(
+    padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.end,
+      children: [
+        AppText(
+          context.text.auth.authAlreadyMember,
+          style: AppStyle.text14.copyWith(color: const Color(0xFF110751)),
+        ),
+        4.horizontalSpace,
+        AppText(
+          context.text.auth.authLogIn,
+          style: AppStyle.text14.copyWith(
+            color: const Color(0xFF110751),
+            fontWeight: FontWeight.w600,
+            decoration: TextDecoration.underline,
+          ),
+        ),
+      ],
+    ),
+  );
 }
 
 class _RegisterLegalLinks extends StatelessWidget {
@@ -189,11 +263,9 @@ class _InlineLegalLink extends StatelessWidget {
   const _InlineLegalLink({required this.label, required this.url, required this.style});
 
   @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
-      onTap: url.launchURL,
-      child: Text(label, style: style),
-    );
-  }
+  Widget build(BuildContext context) => GestureDetector(
+    behavior: HitTestBehavior.opaque,
+    onTap: url.launchURL,
+    child: Text(label, style: style),
+  );
 }
