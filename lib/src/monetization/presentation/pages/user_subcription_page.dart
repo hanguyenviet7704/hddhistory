@@ -33,7 +33,7 @@ class _UserSubcriptionPageState extends State<UserSubcriptionPage> {
                   _CurrentPlanRow(
                     actionLabel: hasSubscription ? t.monetization.manageChangeCta : t.monetization.manageUpgradeCta,
                     onAction: () {
-                      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+                      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.manageSubscription);
                       const PaywallRoute().replace(context);
                     },
                   ),

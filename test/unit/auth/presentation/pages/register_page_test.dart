@@ -35,6 +35,7 @@ void main() {
     test('builds anonymous guest auth event for default register flow', () {
       final event = buildGuestRegisterAuthEvent(
         forceChooseCourseAfterLogin: false,
+        showPaywallAfterAuth: false,
       );
 
       expect(event, const AuthEvent.loginAnonymousGuest());
@@ -43,12 +44,27 @@ void main() {
     test('preserves force course chooser flag for device-recognized flow', () {
       final event = buildGuestRegisterAuthEvent(
         forceChooseCourseAfterLogin: true,
+        showPaywallAfterAuth: false,
       );
 
       expect(
         event,
         const AuthEvent.loginAnonymousGuest(
           forceChooseCourseAfterLogin: true,
+        ),
+      );
+    });
+
+    test('carries first-time paywall intent for onboarding register flow', () {
+      final event = buildGuestRegisterAuthEvent(
+        forceChooseCourseAfterLogin: false,
+        showPaywallAfterAuth: true,
+      );
+
+      expect(
+        event,
+        const AuthEvent.loginAnonymousGuest(
+          showPaywallAfterAuth: true,
         ),
       );
     });

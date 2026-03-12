@@ -88,10 +88,25 @@ final class AppTrackingService extends ITrackingService {
     try {
       final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
       return {
-        'source': entryPoint == PaywallEntryPoint.courseRoadmap ? 'course_roadmap' : 'setting_pre',
+        'source': resolvePremiumTrackingSource(entryPoint),
       };
     } catch (_) {
       return {};
+    }
+  }
+
+  @visibleForTesting
+  String resolvePremiumTrackingSource(PaywallEntryPoint entryPoint) {
+    switch (entryPoint) {
+      case PaywallEntryPoint.firstTimeUser:
+        return 'first_time_user';
+      case PaywallEntryPoint.courseRoadmap:
+        return 'course_roadmap';
+      case PaywallEntryPoint.settingPre:
+      case PaywallEntryPoint.profile:
+      case PaywallEntryPoint.manageSubscription:
+      case PaywallEntryPoint.other:
+        return 'setting_pre';
     }
   }
 

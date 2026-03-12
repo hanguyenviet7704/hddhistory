@@ -28,7 +28,7 @@ class PaywallPlanOption extends StatelessWidget {
               borderRadius: BorderRadius.circular(16.r),
               border: Border.all(
                 color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderDefault,
-                width: 2,
+                width: selected ? 2 : 1,
               ),
               boxShadow: selected
                   ? [
@@ -51,8 +51,10 @@ class PaywallPlanOption extends StatelessWidget {
                         children: [
                           AppText(
                             product.title.toUpperCase(),
-                            style: AppStyle.textBold12.copyWith(
+                            style: AppStyle.text12.copyWith(
                               color: AppCustomColor.textSecondary,
+                              fontWeight: FontWeight.w700,
+                              height: 1.75,
                             ),
                           ),
                           if (product.hasDiscount) ...[
@@ -67,15 +69,22 @@ class PaywallPlanOption extends StatelessWidget {
                           children: [
                             AppText(
                               product.pricePerPeriodString,
-                              style: AppStyle.text14.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textSecondary),
+                              style: AppStyle.text14.copyWith(
+                                fontWeight: FontWeight.w600,
+                                color: AppCustomColor.textSecondary,
+                                height: 1.75,
+                              ),
                             ),
                             4.horizontalSpace,
-                            if (product.periodLabel.isNotEmpty) ...[
-                            AppText(
-                              '/${product.periodLabel}',
-                                style: AppStyle.text10.copyWith(fontWeight: FontWeight.w500, color: AppCustomColor.textTertiary),
+                            if (product.periodLabel.isNotEmpty)
+                              AppText(
+                                '/${product.periodLabel}',
+                                style: AppStyle.text10.copyWith(
+                                  fontWeight: FontWeight.w500,
+                                  color: AppCustomColor.textTertiary,
+                                  height: 1.75,
+                                ),
                               ),
-                            ],
                           ],
                         ),
                       ],
@@ -87,7 +96,11 @@ class PaywallPlanOption extends StatelessWidget {
                   children: [
                     AppText(
                       product.price,
-                      style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textSecondary),
+                      style: AppStyle.text16.copyWith(
+                        fontWeight: FontWeight.w700,
+                        color: AppCustomColor.textSecondary,
+                        height: 1.5,
+                      ),
                     ),
                     if (product.hasDiscount) ...[
                       4.verticalSpace,
@@ -97,6 +110,7 @@ class PaywallPlanOption extends StatelessWidget {
                           color: AppCustomColor.textTertiary,
                           fontWeight: FontWeight.w600,
                           decoration: TextDecoration.lineThrough,
+                          height: 1.75,
                         ),
                       ),
                     ],
@@ -132,7 +146,11 @@ class _DiscountPill extends StatelessWidget {
       ),
       child: AppText(
         label,
-        style: AppStyle.textBold10.copyWith(color: AppCustomColor.brandPrimary900),
+        style: AppStyle.text10.copyWith(
+          color: AppCustomColor.brandPrimary900,
+          fontWeight: FontWeight.w700,
+          height: 1.75,
+        ),
       ),
     );
   }
@@ -153,7 +171,11 @@ class _BestDealBadge extends StatelessWidget {
       ),
       child: AppText(
         label,
-        style: AppStyle.text10.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
+        style: AppStyle.text10.copyWith(
+          fontWeight: FontWeight.w700,
+          color: AppCustomColor.textPrimary,
+          height: 1.75,
+        ),
       ),
     );
   }

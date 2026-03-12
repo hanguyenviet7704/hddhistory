@@ -41,6 +41,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     }
   }
 
+  void resetPaywallEntryPoint() {
+    setPaywallEntryPoint(PaywallEntryPoint.other);
+  }
+
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
   final Set<String> _processedTransactionIds = {};
   final Set<String> _verifyingTransactionIds = {};

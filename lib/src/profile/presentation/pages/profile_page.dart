@@ -79,7 +79,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
                         return SettingPreminumCard(
                           onUpgrade: () {
-                            AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+                            AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.profile);
                             const PaywallRoute().push(context);
                           },
                         );
