@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-11
+**Last Updated:** 2026-03-12
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -108,10 +108,13 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
 - Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding and route to `RegisterRoute(forceChooseCourseAfterLogin: true)`.
 - Unrecognized devices or safe lookup misses continue the existing onboarding intro path without surfacing a splash auth error.
-- Opening `RegisterRoute()` now silently bootstraps an anonymous guest session through `AuthBloc`, preloads `HomeCubit.initializeData(isInit: true)`, and keeps the register UI visible while the user picks Guest, Google, or Apple.
-- The register handoff flag is still scoped to the recognized-device splash entry only; it changes post-choice routing, not the silent bootstrap itself.
+- Opening `RegisterRoute()` still silently bootstraps an anonymous guest session through `AuthBloc`, preloads `HomeCubit.initializeData(isInit: true)`, and keeps the register UI visible while the user picks Guest, Google, or Apple.
+- First-time onboarding completion now routes through `StartJourneyButton -> RegisterRoute(showPaywallAfterAuth: true)` so the paywall handoff is explicit and opt-in.
+- The recognized-device splash entry keeps using `RegisterRoute(forceChooseCourseAfterLogin: true)`; the course chooser path and the first-time paywall path stay separate.
+- Silent register bootstrap never opens paywall by itself. The paywall branch is only evaluated after an explicit Guest, Google, or Apple auth success.
 - Guest continue now reuses the bootstrapped anonymous session when available and only falls back to a fresh anonymous login if bootstrap failed.
 - Google and Apple continue to replace the guest session through the existing auth-success path, and any guest course handoff now routes with `CourseRoute(selectedTabIndex: 0)` while resetting home selection to the first category to avoid stale post-logout state.
+- `PaywallRoute(firstTimeUserFlow: true)` marks the first-time onboarding paywall session. In that mode, closing the paywall or dismissing purchase success routes to `CourseRoute(selectedTabIndex: 0)` after home data reset; purchase failure or cancel leaves the user on paywall.
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.

@@ -4,9 +4,18 @@ part of '../../auth.dart';
 sealed class AuthEvent with _$AuthEvent {
   const factory AuthEvent.login(String email, String password) = _Login;
   const factory AuthEvent.loginAnonymous(Map<String, dynamic> data) = _LoginAnonymous;
-  const factory AuthEvent.loginAnonymousGuest({@Default(false) bool forceChooseCourseAfterLogin}) = _LoginAnonymousGuest;
-  const factory AuthEvent.loginSSOGoogle({@Default(false) bool forceChooseCourseAfterLogin}) = _LoginSSOGoogle;
-  const factory AuthEvent.loginSSOApple({@Default(false) bool forceChooseCourseAfterLogin}) = _LoginSSOApple;
+  const factory AuthEvent.loginAnonymousGuest({
+    @Default(false) bool forceChooseCourseAfterLogin,
+    @Default(false) bool showPaywallAfterAuth,
+  }) = _LoginAnonymousGuest;
+  const factory AuthEvent.loginSSOGoogle({
+    @Default(false) bool forceChooseCourseAfterLogin,
+    @Default(false) bool showPaywallAfterAuth,
+  }) = _LoginSSOGoogle;
+  const factory AuthEvent.loginSSOApple({
+    @Default(false) bool forceChooseCourseAfterLogin,
+    @Default(false) bool showPaywallAfterAuth,
+  }) = _LoginSSOApple;
   const factory AuthEvent.logout() = _Logout;
   const factory AuthEvent.register(String email, String password, String passwordConfirm) = _Register;
   const factory AuthEvent.forgotPassword(String phone) = _ForgotPassword;

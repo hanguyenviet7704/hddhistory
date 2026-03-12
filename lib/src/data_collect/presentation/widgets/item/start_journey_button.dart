@@ -20,7 +20,7 @@ class StartJourneyButton extends StatelessWidget {
             AppService.instance.appTrackingService.trackObdCompleteClick();
             AppDI.injector.get<HomeCubit>().initializeData();
             AppDI.injector.get<UserCubit>().setIsUserPassOnboarding(false);
-            RegisterRoute().go(context);
+            const RegisterRoute(showPaywallAfterAuth: true).go(context);
           },
           borderRadius: BorderRadius.circular(1000.r),
           child: Center(

@@ -10,7 +10,7 @@ class SettingPreminumCard extends StatelessWidget {
     final text = context.text.setting;
     void handleUpgrade() {
       AppService.instance.appTrackingService.trackSettingPremiumClick();
-      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.settingPre);
       if (onUpgrade != null) {
         onUpgrade!();
         return;

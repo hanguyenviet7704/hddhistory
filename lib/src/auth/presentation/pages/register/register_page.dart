@@ -11,19 +11,26 @@ bool shouldBootstrapRegisterGuestSession({
 @visibleForTesting
 AuthEvent buildGuestRegisterAuthEvent({
   required bool forceChooseCourseAfterLogin,
+  required bool showPaywallAfterAuth,
 }) {
   return AuthEvent.loginAnonymousGuest(
     forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+    showPaywallAfterAuth: showPaywallAfterAuth,
   );
 }
 
 class RegisterPage extends StatefulWidget {
   final bool forceChooseCourseAfterLogin;
+  final bool showPaywallAfterAuth;
 
   const RegisterPage({
     super.key,
     this.forceChooseCourseAfterLogin = false,
-  });
+    this.showPaywallAfterAuth = false,
+  }) : assert(
+         !(forceChooseCourseAfterLogin && showPaywallAfterAuth),
+         'RegisterPage cannot force course selection and show paywall after auth at the same time.',
+       );
 
   @override
   State<RegisterPage> createState() => _RegisterPageState();
@@ -32,6 +39,8 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   Future<bool>? _bootstrapFuture;
   final ValueNotifier<bool> _isBootstrapInProgress = ValueNotifier(false);
+
+  bool get _showPaywallAfterAuth => widget.showPaywallAfterAuth && !widget.forceChooseCourseAfterLogin;
 
   @override
   void initState() {
@@ -95,12 +104,14 @@ class _RegisterPageState extends State<RegisterPage> {
       case RegisterGuestContinueAction.continueCurrentSession:
         await authBloc.continueWithCurrentGuestSession(
           forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: _showPaywallAfterAuth,
         );
         return;
       case RegisterGuestContinueAction.loginAnonymousAndNavigate:
         authBloc.add(
           buildGuestRegisterAuthEvent(
             forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
+            showPaywallAfterAuth: _showPaywallAfterAuth,
           ),
         );
         return;
@@ -112,6 +123,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _dispatchAuthChoice(
         AuthEvent.loginSSOGoogle(
           forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: _showPaywallAfterAuth,
         ),
       ),
     );
@@ -122,6 +134,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _dispatchAuthChoice(
         AuthEvent.loginSSOApple(
           forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: _showPaywallAfterAuth,
         ),
       ),
     );

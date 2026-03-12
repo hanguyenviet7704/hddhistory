@@ -34,6 +34,14 @@ AuthSuccessRouteDestination resolveAuthSuccessRouteDestination({
 }
 
 @visibleForTesting
+bool shouldOpenFirstTimeUserPaywall({
+  required bool forceChooseCourseAfterLogin,
+  required bool showPaywallAfterAuth,
+}) {
+  return showPaywallAfterAuth && !forceChooseCourseAfterLogin;
+}
+
+@visibleForTesting
 RegisterGuestContinueAction resolveRegisterGuestContinueAction({
   required bool hasBootstrappedGuestSession,
 }) {
@@ -79,6 +87,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final PageCubit _pageCubit;
   final CourseRoadmapCubit _courseRoadmapCubit;
   final LocaleCubit _localeCubit;
+  final IapCubit _iapCubit;
 
   static Completer<bool>? _refreshCompleter;
   Completer<bool>? _anonymousAuthCompleter;
@@ -104,6 +113,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._pageCubit,
     this._courseRoadmapCubit,
     this._localeCubit,
+    this._iapCubit,
   ) : super(AuthState.initial()) {
     on<_LoginAnonymous>(_onLoginAnonymous);
     on<_LoginAnonymousGuest>(_onLoginAnonymousGuest);
@@ -131,8 +141,18 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   Future<void> _navigateAfterAuth({
     bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
     bool resetToFirstCourseCategory = false,
   }) async {
+    if (shouldOpenFirstTimeUserPaywall(
+      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      showPaywallAfterAuth: showPaywallAfterAuth,
+    )) {
+      _iapCubit.setPaywallEntryPoint(PaywallEntryPoint.firstTimeUser);
+      const PaywallRoute(firstTimeUserFlow: true).go(AppConfig.instance.context!);
+      return;
+    }
+
     final destination = resolveAuthSuccessRouteDestination(
       forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
       hasCourseData: forceChooseCourseAfterLogin ? false : await _userHaveCourseData(),
@@ -190,7 +210,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     }
   }
 
-  Future<void> continueWithCurrentGuestSession({bool forceChooseCourseAfterLogin = false}) async {
+  Future<void> continueWithCurrentGuestSession({
+    bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
+  }) async {
     final action = resolveRegisterGuestContinueAction(
       hasBootstrappedGuestSession: hasActiveAnonymousSession,
     );
@@ -205,6 +228,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
     await _navigateAfterAuth(
       forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      showPaywallAfterAuth: showPaywallAfterAuth,
       resetToFirstCourseCategory: true,
     );
   }
@@ -213,12 +237,14 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     Map<String, dynamic> data, {
     bool navigateAfterSuccess = false,
     bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
   }) {
     unawaited(
       _authenticateAnonymousSession(
         data,
         navigateAfterSuccess: navigateAfterSuccess,
         forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+        showPaywallAfterAuth: showPaywallAfterAuth,
       ),
     );
   }
@@ -227,12 +253,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     Map<String, dynamic> data, {
     bool navigateAfterSuccess = false,
     bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
   }) async {
     final inFlight = _anonymousAuthCompleter;
     if (inFlight != null) {
       final success = await inFlight.future;
       if (success && navigateAfterSuccess) {
-        await _navigateAfterAuth(forceChooseCourseAfterLogin: forceChooseCourseAfterLogin);
+        await _navigateAfterAuth(
+          forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: showPaywallAfterAuth,
+        );
       }
       return success;
     }
@@ -255,7 +285,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         _onAuthSuccess(auth);
         complete(true);
         if (navigateAfterSuccess) {
-          unawaited(_navigateAfterAuth(forceChooseCourseAfterLogin: forceChooseCourseAfterLogin));
+          unawaited(
+            _navigateAfterAuth(
+              forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+              showPaywallAfterAuth: showPaywallAfterAuth,
+            ),
+          );
         }
       },
       onFailure: (error) => complete(false),
@@ -292,6 +327,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   Future<void> _onLoginAnonymousGuest(_LoginAnonymousGuest event, Emitter<AuthState> emit) async {
     await continueWithCurrentGuestSession(
       forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
+      showPaywallAfterAuth: event.showPaywallAfterAuth,
     );
   }
 
@@ -300,7 +336,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       usecase: () => _loginSSOGoogleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
-        _navigateAfterAuth(forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin);
+        _navigateAfterAuth(
+          forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: event.showPaywallAfterAuth,
+        );
       },
       onFailure: (error) {},
     );
@@ -311,7 +350,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       usecase: () => _loginSSOAppleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
-        _navigateAfterAuth(forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin);
+        _navigateAfterAuth(
+          forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: event.showPaywallAfterAuth,
+        );
       },
       onFailure: (error) {},
     );

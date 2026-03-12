@@ -10,17 +10,17 @@ class PaywallTopBar extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        SizedBox(width: 40.w),
-        PremiumPill(),
+        SizedBox(width: 36.w, height: 36.w),
+        const PremiumPill(),
         InkWell(
           onTap: onClose,
           child: SizedBox(
-            width: 40.w,
-            height: 40.w,
+            width: 36.w,
+            height: 36.w,
             child: Icon(
               Icons.close_rounded,
               color: AppCustomColor.textTertiary,
-              size: 24.w,
+              size: 22.w,
             ),
           ),
         ),
@@ -35,30 +35,50 @@ class PremiumPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 6.h),
+      padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 4.h),
       decoration: BoxDecoration(
-        color: AppCustomColor.brandPrimary,
-        borderRadius: BorderRadius.circular(12.r),
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF362F82),
+            Color(0xFF4B44CA),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(8.r),
         border: Border.all(color: AppCustomColor.backgroundWhite),
-        boxShadow: [
+        boxShadow: const [
           BoxShadow(
-            color: AppCustomColor.borderDefault.withValues(alpha: 0.8),
-            blurRadius: 4,
+            color: Color(0x3D453EB4),
+            blurRadius: 16,
+            offset: Offset(0, 6),
           ),
         ],
       ),
-      child: AppText(
-        t.monetization.premiumBadge,
-        onTap: !kDebugMode
-            ? null
-            : () {
-                AppDI.injector.get<UserSubscriptionLocalDataSource>().cacheProcessedTransactionIds([]);
-                LogDev.one('Processed transaction ids cleared');
-              },
-        style: AppStyle.text12.copyWith(
-          fontWeight: FontWeight.w600,
-          color: AppCustomColor.textWhite,
-        ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppText(
+            t.monetization.premiumBadge,
+            onTap: !kDebugMode
+                ? null
+                : () {
+                    AppDI.injector.get<UserSubscriptionLocalDataSource>().cacheProcessedTransactionIds([]);
+                    LogDev.one('Processed transaction ids cleared');
+                  },
+            style: AppStyle.text14.copyWith(
+              fontWeight: FontWeight.w700,
+              color: AppCustomColor.textWhite,
+              height: 1.75,
+            ),
+          ),
+          2.horizontalSpace,
+          Icon(
+            Icons.star_rounded,
+            color: AppCustomColor.textWhite,
+            size: 10.w,
+          ),
+        ],
       ),
     );
   }
