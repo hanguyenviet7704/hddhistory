@@ -8,6 +8,6 @@ class MainActivity: FlutterActivity() {
         super.configureFlutterEngine(flutterEngine)
         
         // Register TikTok plugin
-        // TikTokPlugin(applicationContext).registerWith(flutterEngine)
+        TikTokPlugin(applicationContext).registerWith(flutterEngine)
     }
 }
