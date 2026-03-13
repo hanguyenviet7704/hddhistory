@@ -54,7 +54,7 @@ class PaywallFeedbackList extends StatelessWidget {
     bool hasTriggeredScroll = false;
 
     return SizedBox(
-      height: 168.h,
+      height: 195.h,
       child: NotificationListener<ScrollNotification>(
         onNotification: (notification) {
           if (hasTriggeredScroll || notification.metrics.axis != Axis.horizontal || notification.metrics.pixels <= 0) {

@@ -37,8 +37,9 @@ AuthSuccessRouteDestination resolveAuthSuccessRouteDestination({
 bool shouldOpenFirstTimeUserPaywall({
   required bool forceChooseCourseAfterLogin,
   required bool showPaywallAfterAuth,
+  bool hasPendingFirstTimePaywallAfterAuth = false,
 }) {
-  return showPaywallAfterAuth && !forceChooseCourseAfterLogin;
+  return !forceChooseCourseAfterLogin && (showPaywallAfterAuth || hasPendingFirstTimePaywallAfterAuth);
 }
 
 @visibleForTesting
@@ -147,7 +148,9 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     if (shouldOpenFirstTimeUserPaywall(
       forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
       showPaywallAfterAuth: showPaywallAfterAuth,
+      hasPendingFirstTimePaywallAfterAuth: _userCubit.state.hasPendingFirstTimePaywallAfterAuth,
     )) {
+      _userCubit.consumeFirstTimePaywallAfterAuthIntent();
       _iapCubit.setPaywallEntryPoint(PaywallEntryPoint.firstTimeUser);
       const PaywallRoute(firstTimeUserFlow: true).go(AppConfig.instance.context!);
       return;

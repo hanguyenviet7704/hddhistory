@@ -92,7 +92,12 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _handleUnauthenticatedEntry() async {
     final userCubit = context.read<UserCubit>();
     if (!userCubit.state.isUserPassOnboarding) {
-      const RegisterRoute().go(context);
+      _goToRegister(
+        showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
+          hasRecognizedDevice: false,
+          hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
+        ),
+      );
       return;
     }
 
@@ -101,8 +106,13 @@ class _SplashPageState extends State<SplashPage> {
     if (!mounted) return;
 
     if (onboardCubit.state.hasRecognizedDevice) {
-      userCubit.setIsUserPassOnboarding(false);
-      const RegisterRoute(forceChooseCourseAfterLogin: true).go(context);
+      userCubit.startFirstTimeRegisterFlow();
+      _goToRegister(
+        showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
+          hasRecognizedDevice: onboardCubit.state.hasRecognizedDevice,
+          hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
+        ),
+      );
       return;
     }
 
@@ -120,6 +130,10 @@ class _SplashPageState extends State<SplashPage> {
 
   void _goOnboardingEntryByFlowConfig() {
     OnboardIntroduceRoute().go(context);
+  }
+
+  void _goToRegister({required bool showPaywallAfterAuth}) {
+    RegisterRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
   }
 
   void _handleUpdatePressed() async {
@@ -195,4 +209,12 @@ class _SplashPageState extends State<SplashPage> {
       ),
     );
   }
+}
+
+@visibleForTesting
+bool shouldShowRegisterPaywallAfterAuth({
+  required bool hasRecognizedDevice,
+  required bool hasPendingFirstTimePaywallAfterAuth,
+}) {
+  return hasRecognizedDevice || hasPendingFirstTimePaywallAfterAuth;
 }
