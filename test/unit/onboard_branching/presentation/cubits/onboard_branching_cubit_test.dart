@@ -88,6 +88,24 @@ void main() {
     await cubit.close();
   });
 
+  test('recommendation picks the last valid course id after cleanup', () {
+    const state = OnboardBranchingState(
+      selectedBranchOptions: [
+        OnboardingScenarioBranchOptionEntity(
+          id: 1,
+          courses: ['course_1', ' ', 'course_2'],
+        ),
+        OnboardingScenarioBranchOptionEntity(
+          id: 2,
+          courses: ['course_2', 'course_3', ''],
+        ),
+      ],
+    );
+
+    expect(state.recommendedCourseIds, ['course_1', 'course_2', 'course_3']);
+    expect(state.recommendedCourseCandidateId, 'course_3');
+  });
+
   test('initializeFlow resets previous runtime state for singleton re-entry', () async {
     const scenario = OnboardingScenarioBranchingEntity(
       entrySceneId: 'scene_1',

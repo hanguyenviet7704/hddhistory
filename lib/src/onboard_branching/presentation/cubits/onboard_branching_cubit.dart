@@ -387,14 +387,7 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
     if (sessionVersion != _flowSessionVersion) return;
     if (state.isRecommendationInitialized) return;
 
-    final flattenedIds = state.selectedBranchOptions
-        .expand((option) => option.courses)
-        .map((courseId) => courseId.trim())
-        .where((courseId) => courseId.isNotEmpty)
-        .toSet()
-        .toList();
-
-    final recommendedCourseId = flattenedIds.isEmpty ? '' : flattenedIds[_random.nextInt(flattenedIds.length)];
+    final recommendedCourseId = state.recommendedCourseCandidateId;
     final randomPercent = 80 + _random.nextDouble() * 20;
 
     emit(

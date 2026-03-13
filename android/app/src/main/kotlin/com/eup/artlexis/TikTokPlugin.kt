@@ -12,8 +12,8 @@ import org.json.JSONObject
 
 class TikTokPlugin(private val context: Context) : MethodCallHandler {
     private val flutterChannel: String = "com.eup.meup/tiktok"
-    private val tikTokAppId: String = "7532723286929621000"
-    private val accessToken: String = "TTNh3AIqEW1SeJ1wKQsZonrzIBC2FuNh"
+    private val tikTokAppId: String = "7616621808527228944"
+    private val accessToken: String = "TTX8C4DdJdoMsO0FRBaUTNcnZr7HnGjC"
     private val packageName: String = "com.eup.meup"
 
     fun registerWith(flutterEngine: FlutterEngine) {

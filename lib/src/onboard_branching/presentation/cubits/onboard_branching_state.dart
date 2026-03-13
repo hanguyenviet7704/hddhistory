@@ -93,6 +93,15 @@ extension OnboardBranchingStateExtension on OnboardBranchingState {
     return currentContent.type.name;
   }
 
+  List<String> get recommendedCourseIds {
+    return selectedBranchOptions.expand((option) => option.courses).map((courseId) => courseId.trim()).where((courseId) => courseId.isNotEmpty).toSet().toList();
+  }
+
+  String get recommendedCourseCandidateId {
+    final courseIds = recommendedCourseIds;
+    return courseIds.isEmpty ? '' : courseIds.last;
+  }
+
   bool get canContinueCurrentContent {
     if (!hasCurrentContent) return false;
 
