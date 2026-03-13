@@ -1101,7 +1101,6 @@ export default function OnboardingManagemantScenarioBranching() {
 
   useEffect(() => {
     if (!activeContentData) return;
-    if (activeContentData.sceneId !== scenario.entrySceneId) return;
     if (activeContentData.content.type !== OnboardingContentType.BRANCH) return;
     const courseIds = (
       activeContentData.content.branch?.options.flatMap(
@@ -1145,7 +1144,7 @@ export default function OnboardingManagemantScenarioBranching() {
     return () => {
       active = false;
     };
-  }, [activeContentData, scenario.entrySceneId, courseMap]);
+  }, [activeContentData, courseMap]);
 
   useEffect(() => {
     if (contentModal && !activeContentData) {
@@ -2063,8 +2062,7 @@ export default function OnboardingManagemantScenarioBranching() {
                     </button>
                   </div>
                 </div>
-                {selectedScene?.id === scenario.entrySceneId ? (
-                  <div className="mt-4 space-y-2">
+                <div className="mt-4 space-y-2">
                     <span className={`${labelTextClass} ${toneClasses.amber}`}>
                       Courses
                     </span>
@@ -2183,7 +2181,6 @@ export default function OnboardingManagemantScenarioBranching() {
                       );
                     })()}
                   </div>
-                ) : null}
               </div>
             ))}
           </div>
