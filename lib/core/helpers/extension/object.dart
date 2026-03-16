@@ -174,10 +174,6 @@ extension OpEx on Color {
   Color op(double opacity) => withValues(alpha: opacity);
 }
 
-extension AppTranslationsHelper on BuildContext {
-  Translations get text => TranslationProvider.of(this).translations;
-}
-
 extension MapHelper on Map<String, dynamic> {
   Map<String, String> get toMapString {
     return map((key, value) => MapEntry(key, value.toString()));

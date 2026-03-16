@@ -6,7 +6,7 @@ class CourseTabBar extends StatelessWidget {
 
   List<String> _buildTabList(BuildContext context, List<SkillsetEntity> skillsets) {
     return [
-      context.text.allcourse.allcourseMyCourse,
+      context.l10n.allcourse.allcourseMyCourse,
       ...skillsets.map((skillset) => skillset.title.text),
     ];
   }

@@ -2,11 +2,13 @@
 description: UI Generation Guidelines for MCP and Flutter Component Creation
 alwaysApply: false
 ---
+
 # UI Generation Guidelines
 
 This rule provides comprehensive guidelines for generating UI components using MCP (Model Context Protocol) or when creating new Flutter UI elements in the Meup project.
 
 ## Core Principles
+
 - Follow established design system patterns and components
 - Maintain consistency across the application
 - Use predefined utilities and components before creating new ones
@@ -15,6 +17,7 @@ This rule provides comprehensive guidelines for generating UI components using M
 ## Component Guidelines
 
 ### Text Components
+
 Use `AppText` from [lib/core/utils/text/d_text.dart](mdc:lib/core/utils/text/d_text.dart) for all text elements:
 
 ```dart
@@ -34,6 +37,7 @@ AppText(
 ```
 
 ### Text Styles
+
 Use predefined styles from `AppStyle` in [lib/config/themes/text_theme.dart](mdc:lib/config/themes/text_theme.dart):
 
 ```dart
@@ -51,6 +55,7 @@ AppText(
 ```
 
 ### Color Usage
+
 Check existing colors in `CustomColor` from [lib/config/themes/colors.dart](mdc:lib/config/themes/colors.dart) before adding new ones:
 
 ```dart
@@ -71,6 +76,7 @@ Container(
 ```
 
 ### Spacing and Sizing
+
 Use `ScreenUtil` for responsive spacing and sizing (already imported):
 
 ```dart
@@ -95,6 +101,7 @@ fontSize: 16.sp,               // Responsive font size
 ### Image Components
 
 #### Network/Cached Images (PNG, JPG, JPEG)
+
 Use `DCachedImage` from [lib/core/utils/images/cache_image.dart](mdc:lib/core/utils/images/cache_image.dart):
 
 ```dart
@@ -118,6 +125,7 @@ DCachedImage(
 ```
 
 #### SVG Images
+
 Use `SvgPicture.asset` for SVG images:
 
 ```dart
@@ -141,6 +149,7 @@ SvgPicture.asset(
 ```
 
 #### Asset References
+
 Get all assets from `AppAssets` in [lib/core/constants/gen/assets.gen.dart](mdc:lib/core/constants/gen/assets.gen.dart):
 
 ```dart
@@ -159,12 +168,13 @@ AppAssets.svg.common.success
 ```
 
 ### Localization
-Use existing localized strings with `context.text.key`:
+
+Use existing localized strings with `context.l10n.key`:
 
 ```dart
 // For existing text strings
 AppText(
-  context.text.welcomeMessage,
+  context.l10n.welcomeMessage,
   style: AppStyle.textMedium16,
 )
 
@@ -172,7 +182,7 @@ AppText(
 ElevatedButton(
   onPressed: () {},
   child: AppText(
-    context.text.continueButton,
+    context.l10n.continueButton,
     style: AppStyle.textSemiBold16,
   ),
 )
@@ -181,12 +191,13 @@ ElevatedButton(
 ## Layout Guidelines
 
 ### Common Layout Patterns
+
 ```dart
 // Standard page layout
 Scaffold(
   appBar: AppBar(
     title: AppText(
-      context.text.pageTitle,
+      context.l10n.pageTitle,
       style: AppStyle.textBold18,
     ),
   ),
@@ -225,6 +236,7 @@ Container(
 ```
 
 ### Button Components
+
 Use `AppButton` from [lib/core/utils/button/app_button.dart](mdc:lib/core/utils/button/app_button.dart) for all button elements:
 
 ```dart
@@ -302,11 +314,12 @@ When generating UI components, ensure:
 - [ ] Reference assets through `AppAssets`
 - [ ] Use `DCachedImage` for raster images
 - [ ] Use `SvgPicture.asset` for SVG images
-- [ ] Use `context.text.key` for localized strings
+- [ ] Use `context.l10n.key` for localized strings
 - [ ] Follow consistent spacing and layout patterns
 - [ ] Ensure accessibility and responsive design
 
 ## Related Components
+
 - [lib/core/utils/text/d_text.dart](mdc:lib/core/utils/text/d_text.dart) - Text component utilities
 - [lib/config/themes/text_theme.dart](mdc:lib/config/themes/text_theme.dart) - Text styles
 - [lib/config/themes/colors.dart](mdc:lib/config/themes/colors.dart) - Color definitions
@@ -314,6 +327,7 @@ When generating UI components, ensure:
 - [lib/core/constants/gen/assets.gen.dart](mdc:lib/core/constants/gen/assets.gen.dart) - Asset references
 
 ## Related Rules
+
 - [11-design-system.mdc](mdc:.cursor/rules/11-design-system.mdc) - Design system components
 - [03-core-utilities.mdc](mdc:.cursor/rules/03-core-utilities.mdc) - Core utility usage
 - [05-configuration.mdc](mdc:.cursor/rules/05-configuration.mdc) - Theme and configuration

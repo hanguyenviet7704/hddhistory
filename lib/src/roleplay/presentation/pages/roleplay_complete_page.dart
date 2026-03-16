@@ -56,7 +56,7 @@ class _RoleplayCompletePageState extends State<RoleplayCompletePage> {
                         fit: BoxFit.contain,
                       ),
                       36.verticalSpace,
-                      RoleplayCompleteTitle(text: context.text.roleplay.rolePlayComplete),
+                      RoleplayCompleteTitle(text: context.l10n.roleplay.rolePlayComplete),
                     ],
                   ),
                 ),

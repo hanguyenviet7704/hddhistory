@@ -25,7 +25,7 @@ class UnsupportedLessonBody extends LessonBodyWidget {
     if (isReadOnly || onContinue == null) return const SizedBox.shrink();
     return ExerciseContinueButton(
       onPressed: onContinue,
-      text: context.text.lesson.navigationPopupTapToContinue,
+      text: context.l10n.lesson.navigationPopupTapToContinue,
       isEnabled: true,
     );
   }
@@ -52,7 +52,7 @@ class UnsupportedLessonBody extends LessonBodyWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
-                context.text.lesson.emptyPopupTitle,
+                context.l10n.lesson.emptyPopupTitle,
                 style: AppStyle.text16.copyWith(
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0D121C),
@@ -60,7 +60,7 @@ class UnsupportedLessonBody extends LessonBodyWidget {
               ),
               8.verticalSpace,
               AppText(
-                context.text.lesson.emptyPopupDescription,
+                context.l10n.lesson.emptyPopupDescription,
                 maxLines: 4,
                 style: AppStyle.text14.copyWith(
                   color: const Color(0xFF364152),

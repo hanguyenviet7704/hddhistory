@@ -568,6 +568,6 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
     if (context == null) {
       return 'Login failed, please try again.';
     }
-    return context.text.auth.authLoginFailedPleaseTryAgain;
+    return context.l10n.auth.authLoginFailedPleaseTryAgain;
   }
 }

@@ -162,7 +162,7 @@ class _RegisterPageState extends State<RegisterPage> {
                     Image.asset(AppAsset.images.common.logoBanner.path, height: 60.h),
                     66.verticalSpace,
                     AppText(
-                      context.text.auth.authHeadLine,
+                      context.l10n.auth.authHeadLine,
                       maxLines: 5,
                       margin: EdgeInsets.symmetric(horizontal: 20.w),
                       style: AppStyle.textBold20.copyWith(
@@ -216,12 +216,12 @@ class _RegisterTopLoginHint extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
         AppText(
-          context.text.auth.authAlreadyMember,
+          context.l10n.auth.authAlreadyMember,
           style: AppStyle.text14.copyWith(color: const Color(0xFF110751)),
         ),
         4.horizontalSpace,
         AppText(
-          context.text.auth.authLogIn,
+          context.l10n.auth.authLogIn,
           style: AppStyle.text14.copyWith(
             color: const Color(0xFF110751),
             fontWeight: FontWeight.w600,
@@ -247,18 +247,18 @@ class _RegisterLegalLinks extends StatelessWidget {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Text(context.text.auth.authLegalNoticePrefix, style: baseStyle, textAlign: TextAlign.center),
+        Text(context.l10n.auth.authLegalNoticePrefix, style: baseStyle, textAlign: TextAlign.center),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             _InlineLegalLink(
-              label: context.text.auth.privacyPolicy,
+              label: context.l10n.auth.privacyPolicy,
               url: LegalUrl.privacyPolicy,
               style: linkStyle,
             ),
             Text(', ', style: baseStyle),
             _InlineLegalLink(
-              label: context.text.auth.termsAndConditions,
+              label: context.l10n.auth.termsAndConditions,
               url: LegalUrl.termsAndConditions,
               style: linkStyle,
             ),

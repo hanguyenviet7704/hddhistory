@@ -6,9 +6,9 @@ class CommonErrorPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ErrorLayout(
-      title: context.text.common.errorSomethingHappened,
-      description: context.text.common.errorTakingAPauseIsAlsoPart,
-      buttonText: context.text.common.canvasTryAgain,
+      title: context.l10n.common.errorSomethingHappened,
+      description: context.l10n.common.errorTakingAPauseIsAlsoPart,
+      buttonText: context.l10n.common.canvasTryAgain,
       illustration: AppAsset.images.common.folderResearchError.path,
       onTryAgain: () => HomeRoute().go(context),
     );

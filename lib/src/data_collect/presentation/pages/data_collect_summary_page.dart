@@ -74,7 +74,7 @@ class _DataCollectSummaryPageState extends State<DataCollectSummaryPage> {
                           children: [
                             // First progress bar - starts immediately
                             AnimatedSummaryProgressBar(
-                              title: context.text.onboarding.onboardingEvaluateBackground,
+                              title: context.l10n.onboarding.onboardingEvaluateBackground,
                               progress: state.personalBackgroundProgress,
                               progressColor: const Color(0xFF0BA5EC), // Blue
                               delay: Duration.zero,
@@ -83,7 +83,7 @@ class _DataCollectSummaryPageState extends State<DataCollectSummaryPage> {
 
                             // Second progress bar - starts after first one completes
                             AnimatedSummaryProgressBar(
-                              title: context.text.onboarding.onboardingEvaluateDificulty,
+                              title: context.l10n.onboarding.onboardingEvaluateDificulty,
                               progress: state.difficultiesProgress,
                               progressColor: const Color(0xFF23AE86), // Green
                               delay: const Duration(milliseconds: 1500),
@@ -92,7 +92,7 @@ class _DataCollectSummaryPageState extends State<DataCollectSummaryPage> {
 
                             // Third progress bar - starts after second one completes
                             AnimatedSummaryProgressBar(
-                              title: context.text.onboarding.onboardingEvaluateLearningGoal,
+                              title: context.l10n.onboarding.onboardingEvaluateLearningGoal,
                               progress: state.learningGoalProgress,
                               progressColor: const Color(0xFFF99E0B), // Orange
                               delay: const Duration(milliseconds: 3000),
@@ -101,7 +101,7 @@ class _DataCollectSummaryPageState extends State<DataCollectSummaryPage> {
 
                             // Fourth progress bar - starts after third one completes
                             AnimatedSummaryProgressBar(
-                              title: context.text.onboarding.onboardingEvaluateStudyHabits,
+                              title: context.l10n.onboarding.onboardingEvaluateStudyHabits,
                               progress: state.studyHabitsProgress,
                               progressColor: const Color(0xFFF04438), // Red
                               delay: const Duration(milliseconds: 4500),

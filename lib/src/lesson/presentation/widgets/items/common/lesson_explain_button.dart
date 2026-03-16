@@ -37,7 +37,7 @@ class LessonExplainButton extends StatelessWidget {
               ),
               8.horizontalSpace,
               AppText(
-                context.text.exercise.exerciseExplainButton,
+                context.l10n.exercise.exerciseExplainButton,
                 textAlign: TextAlign.center,
                 style: AppStyle.text14.copyWith(
                   color: AppCustomColor.textTertiary,

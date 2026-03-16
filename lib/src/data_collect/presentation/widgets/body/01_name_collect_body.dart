@@ -12,7 +12,7 @@ class NameCollectBody extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AppText(
-          context.text.onboarding.onboardingUserNameQuestion,
+          context.l10n.onboarding.onboardingUserNameQuestion,
           textAlign: TextAlign.center,
           maxLines: 3,
           enableFitScaleDown: true,
@@ -24,7 +24,7 @@ class NameCollectBody extends StatelessWidget {
         ),
         20.verticalSpace,
         OnboardingInput(
-          hintText: context.text.onboarding.onboardingUserNamePlaceholder,
+          hintText: context.l10n.onboarding.onboardingUserNamePlaceholder,
           controller: context.read<DataCollectCubit>().nameController,
           onChanged: (value) => context.read<DataCollectCubit>().updateUserName(value),
           onTap: () => AppService.instance.appTrackingService.trackObdNameClick(),

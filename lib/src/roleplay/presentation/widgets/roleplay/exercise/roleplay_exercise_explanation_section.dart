@@ -24,7 +24,7 @@ class _RoleplayExerciseExplanationSection extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               AppText(
-                t.exercise.exerciseExplanationTitle.toUpperCase(),
+                l10n.exercise.exerciseExplanationTitle.toUpperCase(),
                 maxLines: 1,
                 overflow: TextOverflow.visible,
                 style: AppStyle.text12.copyWith(

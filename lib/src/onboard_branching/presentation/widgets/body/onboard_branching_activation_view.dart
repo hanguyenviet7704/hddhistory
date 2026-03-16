@@ -48,7 +48,7 @@ class OnboardBranchingActivationView extends StatelessWidget {
           ),
           12.verticalSpace,
           OnboardBranchingPrimaryButton(
-            text: context.text.onboarding.onboardingSkipGreetingButton,
+            text: context.l10n.onboarding.onboardingSkipGreetingButton,
             onPressed: onContinue,
             isLightStyle: true,
           ),

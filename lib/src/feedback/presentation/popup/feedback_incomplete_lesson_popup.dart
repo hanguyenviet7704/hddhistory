@@ -94,8 +94,8 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
               Padding(
                 padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 24.h),
                 child: FeedbackHeader(
-                  title: context.text.feedback.incompleteTitle,
-                  subtitle: context.text.feedback.incompleteSubtitle,
+                  title: context.l10n.feedback.incompleteTitle,
+                  subtitle: context.l10n.feedback.incompleteSubtitle,
                 ),
               ),
               Padding(
@@ -113,7 +113,7 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
-                            context.text.feedback.incompleteReasonTitle,
+                            context.l10n.feedback.incompleteReasonTitle,
                             style: AppStyle.text14.copyWith(
                               fontWeight: FontWeight.w600,
                               color: AppCustomColor.textSecondary,
@@ -129,12 +129,12 @@ class _FeedbackIncompleteLessonPopupState extends State<FeedbackIncompleteLesson
                           24.verticalSpace,
                           FeedbackCommentField(
                             value: state.draftComment,
-                            hint: context.text.feedback.commentHint,
+                            hint: context.l10n.feedback.commentHint,
                             onChanged: context.read<FeedbackCubit>().updateComment,
                           ),
                           32.verticalSpace,
                           FeedbackPrimaryButton(
-                            title: context.text.feedback.sendFeedback,
+                            title: context.l10n.feedback.sendFeedback,
                             enabled: state.feedbackIncompleteCanSubmit,
                             onTap: () {
                               if (!state.feedbackIncompleteCanSubmit) return;

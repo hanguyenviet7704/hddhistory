@@ -30,8 +30,8 @@ class ReviewTimePage extends StatelessWidget {
 
                     // Title and subtitle
                     AppText(
-                      // context.text.reviewTimeTitle,
-                      context.text.exercise.exerciseRedoTitle,
+                      // context.l10n.reviewTimeTitle,
+                      context.l10n.exercise.exerciseRedoTitle,
                       style: AppStyle.textBold24.copyWith(
                         color: const Color(0xFF1A202C),
                         height: 1.5,
@@ -40,8 +40,8 @@ class ReviewTimePage extends StatelessWidget {
                     ),
                     4.verticalSpace,
                     AppText(
-                      // context.text.reviewTimeSubtitle,
-                      context.text.exercise.exerciseRedoMessage,
+                      // context.l10n.reviewTimeSubtitle,
+                      context.l10n.exercise.exerciseRedoMessage,
                       style: AppStyle.text14.copyWith(
                         color: const Color(0xFF7F8EA4),
                         height: 1.75,
@@ -75,7 +75,7 @@ class ReviewTimePage extends StatelessWidget {
                   ),
                   child: Center(
                     child: AppText(
-                      context.text.exercise.exerciseSkipButton,
+                      context.l10n.exercise.exerciseSkipButton,
                       style: AppStyle.textBold16.copyWith(
                         color: Colors.white,
                         height: 1.5,

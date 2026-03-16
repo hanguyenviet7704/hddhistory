@@ -7,8 +7,8 @@ class OnboardPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: OnboardChatItem(
-        title: context.text.onboarding.onboardingMascotGreetingTitle,
-        subtitle: context.text.onboarding.onboardingMascotGreetingMessage,
+        title: context.l10n.onboarding.onboardingMascotGreetingTitle,
+        subtitle: context.l10n.onboarding.onboardingMascotGreetingMessage,
         characterImagePath: AppAsset.images.common.birdStand.path,
       ),
     );

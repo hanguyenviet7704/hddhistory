@@ -115,7 +115,7 @@ class RoadmapDetailPopup extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AppText(
-                context.text.courseroadmap.keypointLabel.toUpperCase(),
+                context.l10n.courseroadmap.keypointLabel.toUpperCase(),
                 style: AppStyle.text12.copyWith(
                   fontSize: 11.sp,
                   fontWeight: FontWeight.w700,
@@ -175,7 +175,7 @@ class RoadmapDetailPopup extends StatelessWidget {
             height: 54.h,
             borderRadius: BorderRadius.circular(1000.r),
             child: AppText(
-              context.text.courseroadmap.startLearningButton,
+              context.l10n.courseroadmap.startLearningButton,
               style: AppStyle.textBold16.copyWith(
                 color: AppCustomColor.textWhite,
               ),

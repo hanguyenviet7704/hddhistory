@@ -2,20 +2,22 @@
 description: UI and widget patterns including page-view separation, responsive design, and component organization
 alwaysApply: false
 ---
+
 # UI and Widget Patterns
 
 ## Page-View Separation Pattern
 
 ### Page (Provider)
+
 ```dart
 class UserProfilePage extends StatelessWidget {
   final String userId;
-  
+
   const UserProfilePage({
     super.key,
     required this.userId,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -28,15 +30,16 @@ class UserProfilePage extends StatelessWidget {
 ```
 
 ### View (UI Implementation)
+
 ```dart
 class UserProfileView extends StatelessWidget {
   const UserProfileView({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(context.text.userProfile),
+        title: Text(context.l10n.userProfile),
         actions: [
           BlocBuilder<UserProfileCubit, UserProfileState>(
             builder: (context, state) {
@@ -67,7 +70,7 @@ class UserProfileView extends StatelessWidget {
       ),
     );
   }
-  
+
   void _navigateToEdit(BuildContext context, User user) {
     // Navigate to edit page
   }
@@ -77,6 +80,7 @@ class UserProfileView extends StatelessWidget {
 ## Responsive Design with ScreenUtil
 
 ### Setup in Main App
+
 ```dart
 class MyApp extends StatelessWidget {
   @override
@@ -95,12 +99,13 @@ class MyApp extends StatelessWidget {
 ```
 
 ### Using ScreenUtil in Widgets
+
 ```dart
 class UserCard extends StatelessWidget {
   final User user;
-  
+
   const UserCard({super.key, required this.user});
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -160,6 +165,7 @@ class UserCard extends StatelessWidget {
 ## Widget Composition Patterns
 
 ### Feature-Based Widget Organization
+
 ```dart
 // lib/src/presentation/widgets/user/
 // ├── user_avatar.dart
@@ -171,19 +177,19 @@ class UserAvatar extends StatelessWidget {
   final String? imageUrl;
   final String initials;
   final double radius;
-  
+
   const UserAvatar({
     super.key,
     this.imageUrl,
     required this.initials,
     this.radius = 24,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return CircleAvatar(
       radius: radius.r,
-      backgroundImage: imageUrl != null 
+      backgroundImage: imageUrl != null
           ? CachedNetworkImageProvider(imageUrl!)
           : null,
       child: imageUrl == null
@@ -201,19 +207,20 @@ class UserAvatar extends StatelessWidget {
 ```
 
 ### Reusable Loading States
+
 ```dart
 class LoadingOverlay extends StatelessWidget {
   final bool isLoading;
   final Widget child;
   final String? message;
-  
+
   const LoadingOverlay({
     super.key,
     required this.isLoading,
     required this.child,
     this.message,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -250,17 +257,18 @@ class LoadingOverlay extends StatelessWidget {
 ## Form Patterns
 
 ### Form with Validation
+
 ```dart
 class UserForm extends StatefulWidget {
   final User? initialUser;
   final Function(UserFormData) onSubmit;
-  
+
   const UserForm({
     super.key,
     this.initialUser,
     required this.onSubmit,
   });
-  
+
   @override
   State<UserForm> createState() => _UserFormState();
 }
@@ -269,7 +277,7 @@ class _UserFormState extends State<UserForm> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
-  
+
   @override
   void initState() {
     super.initState();
@@ -278,7 +286,7 @@ class _UserFormState extends State<UserForm> {
       _emailController.text = widget.initialUser!.email;
     }
   }
-  
+
   @override
   Widget build(BuildContext context) {
     return Form(
@@ -288,15 +296,15 @@ class _UserFormState extends State<UserForm> {
           TextFormField(
             controller: _nameController,
             decoration: InputDecoration(
-              labelText: context.text.name,
+              labelText: context.l10n.name,
               border: const OutlineInputBorder(),
             ),
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return context.text.nameRequired;
+                return context.l10n.nameRequired;
               }
               if (value.length < 2) {
-                return context.text.nameMinLength;
+                return context.l10n.nameMinLength;
               }
               return null;
             },
@@ -305,16 +313,16 @@ class _UserFormState extends State<UserForm> {
           TextFormField(
             controller: _emailController,
             decoration: InputDecoration(
-              labelText: context.text.email,
+              labelText: context.l10n.email,
               border: const OutlineInputBorder(),
             ),
             keyboardType: TextInputType.emailAddress,
             validator: (value) {
               if (value == null || value.isEmpty) {
-                return context.text.emailRequired;
+                return context.l10n.emailRequired;
               }
               if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
-                return context.text.emailInvalid;
+                return context.l10n.emailInvalid;
               }
               return null;
             },
@@ -325,14 +333,14 @@ class _UserFormState extends State<UserForm> {
             height: 48.h,
             child: ElevatedButton(
               onPressed: _submitForm,
-              child: Text(context.text.save),
+              child: Text(context.l10n.save),
             ),
           ),
         ],
       ),
     );
   }
-  
+
   void _submitForm() {
     if (_formKey.currentState!.validate()) {
       final formData = UserFormData(
@@ -342,7 +350,7 @@ class _UserFormState extends State<UserForm> {
       widget.onSubmit(formData);
     }
   }
-  
+
   @override
   void dispose() {
     _nameController.dispose();
@@ -355,10 +363,11 @@ class _UserFormState extends State<UserForm> {
 ## List and Grid Patterns
 
 ### Infinite Scroll List
+
 ```dart
 class UserList extends StatelessWidget {
   const UserList({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<UserListCubit, UserListState>(
@@ -381,7 +390,7 @@ class UserList extends StatelessWidget {
                   ),
                 );
               }
-              
+
               return UserListItem(
                 user: users[index],
                 onTap: (user) => _navigateToProfile(context, user),
@@ -396,7 +405,7 @@ class UserList extends StatelessWidget {
       },
     );
   }
-  
+
   void _navigateToProfile(BuildContext context, User user) {
     // Navigate to user profile
   }
@@ -404,6 +413,7 @@ class UserList extends StatelessWidget {
 ```
 
 ### Pull-to-Refresh Pattern
+
 ```dart
 class RefreshableUserList extends StatelessWidget {
   @override
@@ -423,6 +433,7 @@ class RefreshableUserList extends StatelessWidget {
 ## Navigation Patterns
 
 ### GoRouter Integration
+
 ```dart
 @TypedGoRoute<UserProfileRoute>(
   path: '/user/:userId',
@@ -430,9 +441,9 @@ class RefreshableUserList extends StatelessWidget {
 )
 class UserProfileRoute extends GoRouteData {
   final String userId;
-  
+
   const UserProfileRoute({required this.userId});
-  
+
   @override
   Widget build(BuildContext context, GoRouterState state) {
     return UserProfilePage(userId: userId);
@@ -448,6 +459,7 @@ void _navigateToProfile(BuildContext context, String userId) {
 ## Theme and Styling
 
 ### Custom Theme Extensions
+
 ```dart
 @immutable
 class AppColors extends ThemeExtension<AppColors> {
@@ -456,7 +468,7 @@ class AppColors extends ThemeExtension<AppColors> {
   final Color success;
   final Color warning;
   final Color error;
-  
+
   const AppColors({
     required this.primary,
     required this.secondary,
@@ -464,7 +476,7 @@ class AppColors extends ThemeExtension<AppColors> {
     required this.warning,
     required this.error,
   });
-  
+
   @override
   ThemeExtension<AppColors> copyWith({
     Color? primary,
@@ -481,14 +493,14 @@ class AppColors extends ThemeExtension<AppColors> {
       error: error ?? this.error,
     );
   }
-  
+
   @override
   ThemeExtension<AppColors> lerp(
     ThemeExtension<AppColors>? other,
     double t,
   ) {
     if (other is! AppColors) return this;
-    
+
     return AppColors(
       primary: Color.lerp(primary, other.primary, t)!,
       secondary: Color.lerp(secondary, other.secondary, t)!,
@@ -502,11 +514,11 @@ class AppColors extends ThemeExtension<AppColors> {
 // Usage in widgets
 class UserStatusBadge extends StatelessWidget {
   final UserStatus status;
-  
+
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).extension<AppColors>()!;
-    
+
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
       decoration: BoxDecoration(
@@ -523,7 +535,7 @@ class UserStatusBadge extends StatelessWidget {
       ),
     );
   }
-  
+
   Color _getStatusColor(UserStatus status, AppColors colors) {
     switch (status) {
       case UserStatus.active:
@@ -535,3 +547,4 @@ class UserStatusBadge extends StatelessWidget {
     }
   }
 }
+```

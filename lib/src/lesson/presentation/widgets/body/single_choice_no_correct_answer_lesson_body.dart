@@ -27,7 +27,7 @@ class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
           builder: (context, state) {
             return ResultBottomSheet(
               type: type,
-              title: context.text.exercise.exerciseLessonCompleteTitle,
+              title: context.l10n.exercise.exerciseLessonCompleteTitle,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
               onContinue: onContinue,

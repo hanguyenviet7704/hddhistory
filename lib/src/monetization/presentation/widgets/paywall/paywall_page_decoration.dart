@@ -20,18 +20,18 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   List<_PaywallBenefitItem> get _benefits => [
     _PaywallBenefitItem(
       asset: AppAsset.images.app.openBook,
-      title: t.monetization.benefit1Title,
-      description: t.monetization.benefit1Desc,
+      title: l10n.monetization.benefit1Title,
+      description: l10n.monetization.benefit1Desc,
     ),
     _PaywallBenefitItem(
       asset: AppAsset.images.app.statistic,
-      title: t.monetization.benefit2Title,
-      description: t.monetization.benefit2Desc,
+      title: l10n.monetization.benefit2Title,
+      description: l10n.monetization.benefit2Desc,
     ),
     _PaywallBenefitItem(
       asset: AppAsset.images.app.chart,
-      title: t.monetization.benefit3Title,
-      description: t.monetization.benefit3Desc,
+      title: l10n.monetization.benefit3Title,
+      description: l10n.monetization.benefit3Desc,
     ),
   ];
 
@@ -80,7 +80,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             PaywallTopBar(onClose: () => unawaited(widget.onClose())),
             36.verticalSpace,
             AppText(
-              t.monetization.paywallHeroEyebrow,
+              l10n.monetization.paywallHeroEyebrow,
               textAlign: TextAlign.center,
               style: AppStyle.textBold24.copyWith(
                 color: AppCustomColor.textBrand.withValues(alpha: 0.4),
@@ -89,7 +89,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             ),
             4.verticalSpace,
             AppText(
-              t.monetization.paywallHeroTitle,
+              l10n.monetization.paywallHeroTitle,
               textAlign: TextAlign.center,
               maxLines: 3,
               style: AppStyle.textBold32.copyWith(
@@ -99,7 +99,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             ),
             20.verticalSpace,
             AppText(
-              t.monetization.paywallHeroSubtitle,
+              l10n.monetization.paywallHeroSubtitle,
               textAlign: TextAlign.center,
               style: AppStyle.textBold14.copyWith(
                 color: AppCustomColor.textBrand.withValues(alpha: 0.4),
@@ -119,7 +119,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             GestureDetector(
               onTap: _handleRestore,
               child: AppText(
-                t.monetization.restore,
+                l10n.monetization.restore,
                 textAlign: TextAlign.center,
                 style: AppStyle.text14.copyWith(
                   color: AppCustomColor.textBrand.withValues(alpha: 0.4),

@@ -140,7 +140,7 @@ class _CourseIntroPopupState extends State<CourseIntroPopup> {
                 ),
                 40.verticalSpace,
                 AppText(
-                  context.text.roleplay.rolePlayIntroPopupTapToContinue,
+                  context.l10n.roleplay.rolePlayIntroPopupTapToContinue,
                   style: AppStyle.text16.copyWith(
                     fontWeight: FontWeight.w600,
                     color: AppCustomColor.textWhite,
@@ -172,18 +172,18 @@ class _CourseIntroPopupState extends State<CourseIntroPopup> {
     return [
       _RoleplayIntroStep(
         decorationPath: CourseIntroPopup._introDecorations[0].text,
-        title: context.text.roleplay.rolePlayIntroPopupTitle1,
-        subtitle: context.text.roleplay.rolePlayIntroPopupSubtitle1,
+        title: context.l10n.roleplay.rolePlayIntroPopupTitle1,
+        subtitle: context.l10n.roleplay.rolePlayIntroPopupSubtitle1,
       ),
       _RoleplayIntroStep(
         decorationPath: CourseIntroPopup._introDecorations[1].text,
-        title: context.text.roleplay.rolePlayIntroPopupTitle2,
-        subtitle: context.text.roleplay.rolePlayIntroPopupSubtitle2,
+        title: context.l10n.roleplay.rolePlayIntroPopupTitle2,
+        subtitle: context.l10n.roleplay.rolePlayIntroPopupSubtitle2,
       ),
       _RoleplayIntroStep(
         decorationPath: CourseIntroPopup._introDecorations[2].text,
-        title: context.text.roleplay.rolePlayIntroPopupTitle3,
-        subtitle: context.text.roleplay.rolePlayIntroPopupSubtitle3,
+        title: context.l10n.roleplay.rolePlayIntroPopupTitle3,
+        subtitle: context.l10n.roleplay.rolePlayIntroPopupSubtitle3,
       ),
     ];
   }

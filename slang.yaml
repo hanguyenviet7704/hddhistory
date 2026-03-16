@@ -13,7 +13,7 @@ namespaces: true
 lazy: true # keep deferred loading for non-base locales
 locale_handling: true
 flutter_integration: true
-translate_var: t
+translate_var: l10n
 enum_name: AppLocale
 class_name: Translations
 translation_class_visibility: public

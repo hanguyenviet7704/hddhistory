@@ -41,7 +41,7 @@ extension IapProductEntityX on IapProductEntity {
     // if (productId.contains('week')) return t.monetization.pricePerWeek;
     // if (productId.contains('day')) return t.monetization.pricePerDay;
 
-    return t.monetization.pricePerMonth;
+    return l10n.monetization.pricePerMonth;
   }
 
   double get _perPeriodValue {

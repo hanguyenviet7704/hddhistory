@@ -41,7 +41,7 @@ class IntroLanguageSheet extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AppText(
-            context.text.setting.settingRowLanguage,
+            context.l10n.setting.settingRowLanguage,
             style: AppStyle.text16.copyWith(
               fontWeight: FontWeight.w600,
               color: AppCustomColor.textTertiary,

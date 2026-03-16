@@ -32,7 +32,7 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         AppText(
-          context.text.roleplay.rolePlayResultBreakdownTitle,
+          context.l10n.roleplay.rolePlayResultBreakdownTitle,
           style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
         ),
         if (kDebugMode)
@@ -42,7 +42,7 @@ class _RoleplayFeedbackBreakdownHeader extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 AppText(
-                  context.text.lesson.lessonLessonKeypointInstruction,
+                  context.l10n.lesson.lessonLessonKeypointInstruction,
                   style: AppStyle.text12.copyWith(
                     color: AppCustomColor.textQuaternary,
                     fontWeight: FontWeight.w600,
@@ -90,7 +90,7 @@ class _RoleplayFeedbackBreakdownEmpty extends StatelessWidget {
       ),
       alignment: Alignment.center,
       child: AppText(
-        context.text.common.emptyList,
+        context.l10n.common.emptyList,
         textAlign: TextAlign.center,
         style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
       ),
@@ -153,7 +153,7 @@ class RoleplayFeedbackPointTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String title = point.title.text.isNotEmpty ? point.title.text : context.text.roleplay.rolePlayResultSkillset;
+    final String title = point.title.text.isNotEmpty ? point.title.text : context.l10n.roleplay.rolePlayResultSkillset;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
       child: Row(

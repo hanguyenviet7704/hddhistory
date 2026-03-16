@@ -1,11 +1,14 @@
 # Update New UX/UI
 
 ## Usage
+
 Provide:
+
 - Figma design URL (required)
 - Specific component/page to implement (required)
 
 ## Agent Questions (Ask First)
+
 1. **Component type**: New page | Update existing page | New widget | Update widget
 2. **If updating**: Path to existing file(s) to update
 3. **Feature name**: Which feature does this belong to? (e.g., "onboard", "profile", "lesson")
@@ -15,10 +18,13 @@ Provide:
 ## Auto-Execute After Questions
 
 ### 1. Fetch & Analyze Figma Design
+
 ```bash
 # Use mcp__figma-dev-mode-mcp-server__get_design_context
 ```
+
 **Extract automatically:**
+
 - Color palette (hex codes)
 - Typography (font sizes, weights, families)
 - Spacing values (padding, margins)
@@ -27,19 +33,24 @@ Provide:
 - Asset URLs (images, icons)
 
 ### 2. Match Design Tokens to Project
+
 **Auto-map to existing:**
+
 - `AppCustomColor.*` constants
 - `AppStyle.*` text styles
 - `ScreenUtil` responsive values
 - Existing widgets from `lib/core/utils/widgets/`
 
 **Flag new tokens needed:**
+
 - New colors not in `AppCustomColor`
 - New text styles not in `AppStyle`
 - New reusable widgets
 
 ### 3. Find Similar Implementations
+
 **Search codebase for:**
+
 - Similar UI patterns
 - Same feature area pages/widgets
 - Reusable components to leverage
@@ -47,6 +58,7 @@ Provide:
 ### 4. Generate/Update Files
 
 #### For New Page:
+
 ```dart
 // lib/src/[feature]/presentation/pages/[page_name]/[page_name].dart
 // lib/src/[feature]/presentation/pages/[page_name]/[page_name]_view.dart
@@ -83,6 +95,7 @@ class [PageName]View extends StatelessWidget {
 ```
 
 #### For Widget:
+
 ```dart
 // lib/src/[feature]/presentation/widgets/[widget_name].dart
 
@@ -113,7 +126,9 @@ class [WidgetName] extends StatelessWidget {
 ```
 
 ### 5. Apply Responsive Design
+
 **Auto-convert all dimensions:**
+
 - Width: `XXpx` → `XX.w`
 - Height: `XXpx` → `XX.h`
 - Font size: `XXpx` → `XX.sp`
@@ -121,6 +136,7 @@ class [WidgetName] extends StatelessWidget {
 - Spacing: `XXpx` → `XX.w` or `XX.h`
 
 ### 6. Implement Figma Structure
+
 **Auto-generate from Figma layers:**
 
 ```dart
@@ -133,6 +149,7 @@ class [WidgetName] extends StatelessWidget {
 ```
 
 **Example transformation:**
+
 ```
 Figma: Frame (Auto Layout Vertical, gap: 16px)
   ↓
@@ -150,6 +167,7 @@ Flutter: Padding(
 ```
 
 ### 7. Add Assets (if needed)
+
 ```bash
 # Download images from Figma
 # Save to assets/images/[feature]/
@@ -157,6 +175,7 @@ Flutter: Padding(
 ```
 
 ### 8. Add Routes (if new page)
+
 ```dart
 // Add to lib/config/routes/app_router.dart
 @TypedGoRoute<[Page]Route>(path: '/[path]')
@@ -171,13 +190,15 @@ class [Page]Route extends GoRouteData {
 ```
 
 ### 9. Add Localization Keys (if text content)
+
 ```bash
 # Identify hardcoded text
 # Add to appropriate ARB file
-# Replace with context.text.[key]
+# Replace with context.l10n.[key]
 ```
 
 ### 10. Verify & Test
+
 ```bash
 flutter analyze
 # Check hot reload works
@@ -185,6 +206,7 @@ flutter analyze
 ```
 
 ## Output
+
 ```
 ✅ UI Implementation Complete: [Component Name]
 
@@ -229,6 +251,7 @@ Next Steps:
 ## Design Token Mapping Reference
 
 ### Colors
+
 ```dart
 // Auto-detect and map:
 Figma #194185 → AppCustomColor.primary
@@ -239,6 +262,7 @@ AppCustomColor.[newName] = Color(0x...)
 ```
 
 ### Typography
+
 ```dart
 // Auto-detect and map:
 Figma 32px Bold → AppStyle.textBold32
@@ -247,6 +271,7 @@ Figma 16px Regular → AppStyle.textRegular16
 ```
 
 ### Spacing
+
 ```dart
 // Common spacing patterns:
 8px → 8.w
@@ -256,6 +281,7 @@ Figma 16px Regular → AppStyle.textRegular16
 ```
 
 ### Layout Patterns
+
 ```dart
 // Auto Layout Vertical → Column
 // Auto Layout Horizontal → Row
@@ -267,6 +293,7 @@ Figma 16px Regular → AppStyle.textRegular16
 ## Common Widget Patterns
 
 ### Button from Figma
+
 ```dart
 GestureDetector(
   onTap: onTap,
@@ -285,6 +312,7 @@ GestureDetector(
 ```
 
 ### Card from Figma
+
 ```dart
 Container(
   padding: EdgeInsets.all(16.w),
@@ -309,6 +337,7 @@ Container(
 ```
 
 ### List Item from Figma
+
 ```dart
 ListView.separated(
   padding: EdgeInsets.all(16.w),

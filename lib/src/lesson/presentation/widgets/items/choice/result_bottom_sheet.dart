@@ -32,9 +32,9 @@ class ResultBottomSheet extends StatelessWidget {
         onContinue: onContinue,
         onExplain: hasExplanation ? onExplain : null,
         showExplanation: explanationVisible,
-        continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
-        explainLabel: context.text.exercise.exerciseExplainButton,
-        closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
+        continueLabel: context.l10n.onboarding.onboardingSkipGreetingButton,
+        explainLabel: context.l10n.exercise.exerciseExplainButton,
+        closeExplainLabel: context.l10n.exercise.exerciseCloseExplainButton,
         title: title,
       ),
     );
@@ -62,7 +62,7 @@ class ChoiceExplanationContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AppText(
-            context.text.exercise.exerciseExplanationTitle,
+            context.l10n.exercise.exerciseExplanationTitle,
             style: AppStyle.text20.copyWith(
               fontWeight: FontWeight.w600,
               color: const Color(0xFF0D121C),

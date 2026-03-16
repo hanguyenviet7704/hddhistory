@@ -35,10 +35,10 @@ class SpeakingResultBottomSheet extends StatelessWidget {
                   context.read<SpeakingCubit>().toggleExplanation();
                 }
               : null,
-          continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
-          explainLabel: context.text.exercise.exerciseExplainButton,
-          closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
-          title: context.text.exercise.exerciseCompleteVoiceTask,
+          continueLabel: context.l10n.onboarding.onboardingSkipGreetingButton,
+          explainLabel: context.l10n.exercise.exerciseExplainButton,
+          closeExplainLabel: context.l10n.exercise.exerciseCloseExplainButton,
+          title: context.l10n.exercise.exerciseCompleteVoiceTask,
         ),
       ),
     );
@@ -84,7 +84,7 @@ class SpeakingExplanationContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.exercise.exerciseVoiceAnalysisTitle,
+                context.l10n.exercise.exerciseVoiceAnalysisTitle,
                 style: AppStyle.text20.copyWith(
                   fontWeight: FontWeight.w600,
                   color: const Color(0xFF0D121C),
@@ -163,7 +163,7 @@ class SpeakingGoodPointsSection extends StatelessWidget {
               ),
               6.horizontalSpace,
               AppText(
-                context.text.exercise.exerciseGoodPointsTitle,
+                context.l10n.exercise.exerciseGoodPointsTitle,
                 style: AppStyle.textBold14.copyWith(
                   color: const Color(0xFF554FF0),
                   height: 1.75,
@@ -180,16 +180,16 @@ class SpeakingGoodPointsSection extends StatelessWidget {
                     highlightColor: Color(0xFFEBEAFD),
                   )
                 : points.isEmpty
-                    ? const SizedBox.shrink()
-                    : AnimatedPointsList(
-                        key: ValueKey('good-points'),
-                        points: points,
-                        textStyle: AppStyle.text14.copyWith(
-                          color: const Color(0xFF364152),
-                          height: 1.5,
-                        ),
-                        indexColor: const Color(0xFF554FF0),
-                      ),
+                ? const SizedBox.shrink()
+                : AnimatedPointsList(
+                    key: ValueKey('good-points'),
+                    points: points,
+                    textStyle: AppStyle.text14.copyWith(
+                      color: const Color(0xFF364152),
+                      height: 1.5,
+                    ),
+                    indexColor: const Color(0xFF554FF0),
+                  ),
           ),
         ],
       ),
@@ -231,7 +231,7 @@ class SpeakingImprovementSection extends StatelessWidget {
               ),
               6.horizontalSpace,
               AppText(
-                context.text.exercise.exerciseBadPointsTitle,
+                context.l10n.exercise.exerciseBadPointsTitle,
                 style: AppStyle.textBold14.copyWith(
                   color: const Color(0xFF41AE8C),
                   height: 1.75,
@@ -248,16 +248,16 @@ class SpeakingImprovementSection extends StatelessWidget {
                     highlightColor: Color(0xFFE6F4EE),
                   )
                 : points.isEmpty
-                    ? const SizedBox.shrink()
-                    : AnimatedPointsList(
-                        key: ValueKey('improvement-points'),
-                        points: points,
-                        textStyle: AppStyle.text14.copyWith(
-                          color: const Color(0xFF364152),
-                          height: 1.5,
-                        ),
-                        indexColor: const Color(0xFF41AE8C),
-                      ),
+                ? const SizedBox.shrink()
+                : AnimatedPointsList(
+                    key: ValueKey('improvement-points'),
+                    points: points,
+                    textStyle: AppStyle.text14.copyWith(
+                      color: const Color(0xFF364152),
+                      height: 1.5,
+                    ),
+                    indexColor: const Color(0xFF41AE8C),
+                  ),
           ),
         ],
       ),

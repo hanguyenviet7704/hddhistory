@@ -31,8 +31,7 @@ class _RoleplayPageState extends State<RoleplayPage> {
   @override
   Widget build(BuildContext context) {
     return BlocListener<RoleplayCubit, RoleplayState>(
-      listenWhen: (previous, current) =>
-          previous.status != current.status || previous.currentRoleplay.id != current.currentRoleplay.id,
+      listenWhen: (previous, current) => previous.status != current.status || previous.currentRoleplay.id != current.currentRoleplay.id,
       listener: (context, state) {
         if (state.status == RoleplayStatus.success) {
           _trackRoleplayConvScrView();
@@ -117,9 +116,7 @@ class _RoleplayPageError extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final errorMessage = (message?.isNotEmpty ?? false)
-        ? message!
-        : context.text.common.errorOopsSomethingWentWrongWhileLoading;
+    final errorMessage = (message?.isNotEmpty ?? false) ? message! : context.l10n.common.errorOopsSomethingWentWrongWhileLoading;
 
     return Center(
       child: Padding(
@@ -135,7 +132,7 @@ class _RoleplayPageError extends StatelessWidget {
             16.verticalSpace,
             DButton(
               onPressed: () => context.pop(),
-              text: context.text.common.close,
+              text: context.l10n.common.close,
               size: Size(180.w, 48.h),
               backgroundColor: AppCustomColor.brandPrimary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),

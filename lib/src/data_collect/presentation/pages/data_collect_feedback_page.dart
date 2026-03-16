@@ -36,7 +36,7 @@ class _DataCollectFeedbackPageState extends State<DataCollectFeedbackPage> {
 
   @override
   Widget build(BuildContext context) {
-    final texts = context.text.onboarding;
+    final texts = context.l10n.onboarding;
 
     return AnnotatedRegion<SystemUiOverlayStyle>(
       value: SystemUiOverlayStyle.light.copyWith(statusBarColor: Colors.transparent),
@@ -126,7 +126,7 @@ class _FeedbackContinueButton extends StatelessWidget {
         child: Material(
           color: Colors.transparent,
           child: AppText(
-            context.text.onboarding.onboardingSkipGreetingButton,
+            context.l10n.onboarding.onboardingSkipGreetingButton,
             style: AppStyle.text16.copyWith(
               fontWeight: FontWeight.w700,
               color: AppCustomColor.textPrimary,

@@ -23,7 +23,7 @@ class PaywallFeedbackList extends StatelessWidget {
   });
 
   List<FeedbackContent> get _feedbacks {
-    final monetizationTexts = t.monetization;
+    final monetizationTexts = l10n.monetization;
 
     return [
       FeedbackContent(

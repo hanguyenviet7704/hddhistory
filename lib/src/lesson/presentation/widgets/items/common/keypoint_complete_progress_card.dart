@@ -42,7 +42,7 @@ class KeypointCompleteProgressCard extends StatelessWidget {
                     ),
                     8.horizontalSpace,
                     AppText(
-                      context.text.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
+                      context.l10n.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
                       maxLines: 1,
                       style: AppStyle.text10.copyWith(
                         color: AppCustomColor.textWhite,

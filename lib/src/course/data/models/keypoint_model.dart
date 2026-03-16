@@ -37,10 +37,10 @@ enum StrengthLevel {
   };
 
   String title(BuildContext context) => switch (this) {
-    weakPoint => context.text.keypoint.keypointWeakpointTitle,
-    morePractice => context.text.keypoint.keypointImprovementTitle,
-    optionalPractice => context.text.keypoint.keypointSkipOptionPracticeType,
-    unknown => context.text.keypoint.keypointWeakpointTitle,
+    weakPoint => context.l10n.keypoint.keypointWeakpointTitle,
+    morePractice => context.l10n.keypoint.keypointImprovementTitle,
+    optionalPractice => context.l10n.keypoint.keypointSkipOptionPracticeType,
+    unknown => context.l10n.keypoint.keypointWeakpointTitle,
   };
 }
 

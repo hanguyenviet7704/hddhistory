@@ -73,6 +73,7 @@ import '../../src/monetization/monetization.dart';
 import '../../src/onboard_branching/onboard_branching.dart';
 import '../../src/roleplay/roleplay.dart';
 import '../di/di.dart';
+import '../l10n/l10n.g.dart';
 import '../routes/routes.dart';
 import '../share/share.dart';
 

@@ -1,6 +1,6 @@
 # Code Standards
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-03-16  
 **Scope:** Dart/Flutter source in this repository
 
 ## 1. Architecture Rules
@@ -102,18 +102,24 @@ dart run build_runner build --delete-conflicting-outputs
 - Source of truth: `assets/i18n/<locale>/<module>.yaml`.
 - Generated outputs: `lib/config/l10n/`.
 - Key style: lowerCamelCase, with module namespace implied by file.
+- Access translations in widgets with `context.l10n`; use `Translations.of(context)` only when an explicit local variable is clearer.
+- Use the generated global `l10n` accessor only for helpers that do not receive a `BuildContext`.
+- Do not add or restore custom translation helpers such as `context.text`.
 - Standard sync flow:
 ```bash
 # macOS/Linux
 tools/<os>/localization/localization.sh pull
 tools/<os>/localization/localization.sh push --apply
+tools/<os>/localization/localization.sh pull
 tools/<os>/localization/localization.sh slang
 
 # Windows
 tools\\windows\\localization\\localization.bat pull
 tools\\windows\\localization\\localization.bat push --apply
+tools\\windows\\localization\\localization.bat pull
 tools\\windows\\localization\\localization.bat slang
 ```
+- After localization config or key changes, rerun `slang` and `flutter analyze` before merge.
 
 ## 10. Testing and Quality Gates
 ### Required local checks before merge

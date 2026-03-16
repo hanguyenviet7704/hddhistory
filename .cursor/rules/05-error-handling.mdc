@@ -2,12 +2,15 @@
 description: Error handling patterns using AppException and Either type for proper error management
 alwaysApply: false
 ---
+
 # Error Handling Rules
 
 ## AppException Pattern
+
 Use AppException for all application errors instead of generic exceptions.
 
 ### AppException Definition
+
 ```dart
 @freezed
 class AppException with _$AppException implements Exception {
@@ -16,31 +19,31 @@ class AppException with _$AppException implements Exception {
     String? code,
     int? statusCode,
   }) = _ServerError;
-  
+
   const factory AppException.networkError({
     String? message,
   }) = _NetworkError;
-  
+
   const factory AppException.unauthorizedError({
     String? message,
   }) = _UnauthorizedError;
-  
+
   const factory AppException.validationError({
     required String message,
     Map<String, List<String>>? fieldErrors,
   }) = _ValidationError;
-  
+
   const factory AppException.notFoundError({
     String? message,
   }) = _NotFoundError;
-  
+
   const factory AppException.unknownError({
     required String message,
     Exception? originalException,
   }) = _UnknownError;
-  
+
   const AppException._();
-  
+
   String get displayMessage => when(
     serverError: (message, code, statusCode) => message,
     networkError: (message) => message ?? 'Network connection failed',
@@ -49,18 +52,18 @@ class AppException with _$AppException implements Exception {
     notFoundError: (message) => message ?? 'Resource not found',
     unknownError: (message, originalException) => message,
   );
-  
+
   factory AppException.fromException(Exception exception) {
     if (exception is DioException) {
       return AppException.fromDioException(exception);
     }
-    
+
     return AppException.unknownError(
       message: exception.toString(),
       originalException: exception,
     );
   }
-  
+
   factory AppException.fromDioException(DioException dioException) {
     switch (dioException.type) {
       case DioExceptionType.connectionTimeout:
@@ -69,17 +72,17 @@ class AppException with _$AppException implements Exception {
         return const AppException.networkError(
           message: 'Connection timeout. Please try again.',
         );
-      
+
       case DioExceptionType.connectionError:
         return const AppException.networkError(
           message: 'No internet connection. Please check your network.',
         );
-      
+
       case DioExceptionType.badResponse:
         final statusCode = dioException.response?.statusCode;
-        final message = dioException.response?.data?['message'] ?? 
+        final message = dioException.response?.data?['message'] ??
                         'Server error occurred';
-        
+
         switch (statusCode) {
           case 401:
             return AppException.unauthorizedError(message: message);
@@ -96,7 +99,7 @@ class AppException with _$AppException implements Exception {
               statusCode: statusCode,
             );
         }
-      
+
       default:
         return AppException.unknownError(
           message: dioException.message ?? 'An unexpected error occurred',
@@ -104,7 +107,7 @@ class AppException with _$AppException implements Exception {
         );
     }
   }
-  
+
   static Map<String, List<String>>? _parseFieldErrors(dynamic data) {
     if (data is Map<String, dynamic> && data.containsKey('errors')) {
       final errors = data['errors'] as Map<String, dynamic>?;
@@ -127,6 +130,7 @@ class AppException with _$AppException implements Exception {
 ## Either Pattern for Results
 
 ### Repository Return Types
+
 ```dart
 abstract class IUserRepository {
   TaskEither<AppException, User> getUser(String id);
@@ -137,13 +141,14 @@ abstract class IUserRepository {
 ```
 
 ### Repository Implementation
+
 ```dart
 @LazySingleton(as: IUserRepository)
 class UserRepository implements IUserRepository {
   final UserApiClient apiClient;
-  
+
   UserRepository(this.apiClient);
-  
+
   @override
   TaskEither<AppException, User> getUser(String id) async {
     try {
@@ -158,13 +163,14 @@ class UserRepository implements IUserRepository {
 ```
 
 ### Use Case Error Handling
+
 ```dart
 @lazySingleton
 class GetUserUseCase extends UseCaseWithParams<User, GetUserParams> {
   final IUserRepository repository;
-  
+
   GetUserUseCase(this.repository);
-  
+
   @override
   TaskEither<AppException, User> call(GetUserParams params) async {
     // Validation
@@ -173,10 +179,10 @@ class GetUserUseCase extends UseCaseWithParams<User, GetUserParams> {
         message: 'User ID cannot be empty',
       ));
     }
-    
+
     // Business logic
     final result = await repository.getUser(params.userId);
-    
+
     return result.fold(
       (error) => Left(error),
       (user) {
@@ -191,6 +197,7 @@ class GetUserUseCase extends UseCaseWithParams<User, GetUserParams> {
 ## BLoC Error Handling
 
 ### State with Error Handling
+
 ```dart
 @freezed
 class UserState with _$UserState {
@@ -202,24 +209,25 @@ class UserState with _$UserState {
 ```
 
 ### Cubit Error Handling
+
 ```dart
 @injectable
 class UserCubit extends HydratedCubit<UserState> {
   final GetUserUseCase getUserUseCase;
-  
+
   UserCubit(this.getUserUseCase) : super(const UserState.initial());
-  
+
   Future<void> loadUser(String userId) async {
     emit(const UserState.loading());
-    
+
     final result = await getUserUseCase(GetUserParams(userId: userId));
-    
+
     result.fold(
       (error) => emit(UserState.error(error)),
       (user) => emit(UserState.success(user)),
     );
   }
-  
+
   void clearError() {
     state.whenOrNull(
       error: (_) => emit(const UserState.initial()),
@@ -231,19 +239,20 @@ class UserCubit extends HydratedCubit<UserState> {
 ## UI Error Display
 
 ### Error Widget
+
 ```dart
 class ErrorDisplay extends StatelessWidget {
   final AppException exception;
   final VoidCallback? onRetry;
   final String? customMessage;
-  
+
   const ErrorDisplay({
     super.key,
     required this.exception,
     this.onRetry,
     this.customMessage,
   });
-  
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -266,14 +275,14 @@ class ErrorDisplay extends StatelessWidget {
             const SizedBox(height: 24),
             ElevatedButton(
               onPressed: onRetry,
-              child: Text(context.text.retry),
+              child: Text(context.l10n.retry),
             ),
           ],
         ],
       ),
     );
   }
-  
+
   IconData _getErrorIcon() {
     return exception.when(
       serverError: (_, __, ___) => Icons.error_outline,
@@ -288,6 +297,7 @@ class ErrorDisplay extends StatelessWidget {
 ```
 
 ### Error Handling in Views
+
 ```dart
 class UserView extends StatelessWidget {
   @override
@@ -312,6 +322,7 @@ class UserView extends StatelessWidget {
 ```
 
 ### Snackbar Error Display
+
 ```dart
 BlocListener<UserCubit, UserState>(
   listener: (context, state) {
@@ -322,7 +333,7 @@ BlocListener<UserCubit, UserState>(
             content: Text(exception.displayMessage),
             backgroundColor: Theme.of(context).colorScheme.error,
             action: SnackBarAction(
-              label: context.text.dismiss,
+              label: context.l10n.dismiss,
               onPressed: () => context.read<UserCubit>().clearError(),
             ),
           ),
@@ -337,10 +348,11 @@ BlocListener<UserCubit, UserState>(
 ## Validation Error Handling
 
 ### Form Validation with AppException
+
 ```dart
 class UserFormCubit extends Cubit<UserFormState> {
   UserFormCubit() : super(const UserFormState.initial());
-  
+
   Future<void> submitForm(UserFormData formData) async {
     // Client-side validation
     final validationResult = _validateForm(formData);
@@ -348,37 +360,37 @@ class UserFormCubit extends Cubit<UserFormState> {
       emit(UserFormState.error(validationResult));
       return;
     }
-    
+
     emit(const UserFormState.loading());
-    
+
     final result = await createUserUseCase(CreateUserParams.fromFormData(formData));
-    
+
     result.fold(
       (error) => emit(UserFormState.error(error)),
       (user) => emit(UserFormState.success(user)),
     );
   }
-  
+
   AppException? _validateForm(UserFormData formData) {
     final errors = <String, List<String>>{};
-    
+
     if (formData.email.isEmpty) {
       errors['email'] = ['Email is required'];
     } else if (!_isValidEmail(formData.email)) {
       errors['email'] = ['Invalid email format'];
     }
-    
+
     if (formData.password.length < 8) {
       errors['password'] = ['Password must be at least 8 characters'];
     }
-    
+
     if (errors.isNotEmpty) {
       return AppException.validationError(
         message: 'Please fix the following errors:',
         fieldErrors: errors,
       );
     }
-    
+
     return null;
   }
 }
@@ -387,6 +399,7 @@ class UserFormCubit extends Cubit<UserFormState> {
 ## Testing Error Handling
 
 ### Testing AppException Creation
+
 ```dart
 group('AppException', () {
   test('should create correct exception from DioException', () {
@@ -398,9 +411,9 @@ group('AppException', () {
         data: {'message': 'User not found'},
       ),
     );
-    
+
     final appException = AppException.fromDioException(dioException);
-    
+
     expect(appException, isA<_NotFoundError>());
     expect(appException.displayMessage, equals('User not found'));
   });
@@ -408,13 +421,14 @@ group('AppException', () {
 ```
 
 ### Testing Use Case Error Handling
+
 ```dart
 group('GetUserUseCase', () {
   test('should return validation error for empty user ID', () async {
     final useCase = GetUserUseCase(mockRepository);
-    
+
     final result = await useCase(const GetUserParams(userId: ''));
-    
+
     expect(result.isLeft(), true);
     result.fold(
       (error) => expect(error, isA<_ValidationError>()),
@@ -422,3 +436,4 @@ group('GetUserUseCase', () {
     );
   });
 });
+```

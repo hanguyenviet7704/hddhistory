@@ -60,11 +60,11 @@ class _SettingPageState extends State<SettingPage> {
                 selector: (state) => state.user,
                 builder: (context, user) {
                   return SettingSectionCard(
-                    title: context.text.setting.settingSectionHeaderGeneral,
+                    title: context.l10n.setting.settingSectionHeaderGeneral,
                     children: [
                       SettingOptionTile(
                         iconAsset: AppAsset.svg.app.icGlobe,
-                        title: context.text.setting.settingRowLanguage,
+                        title: context.l10n.setting.settingRowLanguage,
                         trailingText: context.select((LocaleCubit cubit) => cubit.state.label),
                         onTap: () {
                           AppService.instance.appTrackingService.trackSettingLanguageClick();
@@ -74,7 +74,7 @@ class _SettingPageState extends State<SettingPage> {
                       if (user.iapSubscriptions.isNotEmpty) ...[
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icCreditCard,
-                          title: context.text.setting.settingRowUpgradePremium,
+                          title: context.l10n.setting.settingRowUpgradePremium,
                           onTap: () {
                             AppService.instance.appTrackingService.trackSettingPremiumClick();
                             const ManageSubscriptionRoute().go(context);
@@ -84,7 +84,7 @@ class _SettingPageState extends State<SettingPage> {
                       if (user.iapSubscriptions.isEmpty) ...[
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icSet,
-                          title: context.text.setting.settingRowRestorePurchase,
+                          title: context.l10n.setting.settingRowRestorePurchase,
                           onTap: () {
                             AppService.instance.appTrackingService.trackSettingRestorePurchClick();
                             context.read<IapCubit>().restorePurchases();
@@ -100,11 +100,11 @@ class _SettingPageState extends State<SettingPage> {
                 selector: (state) => state.user,
                 builder: (context, user) {
                   return SettingSectionCard(
-                    title: context.text.setting.settingSectionHeaderAbout,
+                    title: context.l10n.setting.settingSectionHeaderAbout,
                     children: [
                       SettingOptionTile(
                         iconAsset: AppAsset.svg.app.icShieldPlus,
-                        title: context.text.setting.settingAboutSectionTerm,
+                        title: context.l10n.setting.settingAboutSectionTerm,
                         onTap: () {
                           AppService.instance.appTrackingService.trackSettingTermClick();
                           'https://meup.training/terms-and-conditions.html'.launchURL();
@@ -113,7 +113,7 @@ class _SettingPageState extends State<SettingPage> {
                       if (!user.anonymous)
                         SettingOptionTile(
                           iconAsset: AppAsset.svg.app.icLogOut,
-                          title: context.text.setting.settingLogOut,
+                          title: context.l10n.setting.settingLogOut,
                           titleColor: AppCustomColor.errorRed,
                           iconColor: AppCustomColor.errorRed,
                           iconBackgroundColor: AppCustomColor.errorRed.op(.08),
@@ -152,7 +152,7 @@ class SettingHeader extends StatelessWidget {
           ),
         ),
         AppText(
-          context.text.setting.settingTitle,
+          context.l10n.setting.settingTitle,
           style: AppStyle.textBold16.copyWith(
             color: AppCustomColor.textPrimary,
             height: 1.25,

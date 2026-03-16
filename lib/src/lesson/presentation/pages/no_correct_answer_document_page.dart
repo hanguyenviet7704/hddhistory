@@ -60,7 +60,7 @@ class _NoCorrectAnswerDocumentPageState extends State<NoCorrectAnswerDocumentPag
   Widget _buildBottomButton(BuildContext context) {
     return ExerciseContinueButton(
       onPressed: () => context.pop(true),
-      text: context.text.common.kContinue,
+      text: context.l10n.common.kContinue,
       isEnabled: true,
     );
   }

@@ -124,7 +124,7 @@ class PaywallPlanOption extends StatelessWidget {
           Positioned(
             right: 14.w,
             top: -8.h,
-            child: _BestDealBadge(label: t.monetization.mostPopularBadge.toUpperCase()),
+            child: _BestDealBadge(label: l10n.monetization.mostPopularBadge.toUpperCase()),
           ),
       ],
     );

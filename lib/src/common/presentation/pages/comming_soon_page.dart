@@ -21,7 +21,7 @@ class CommingSoonPage extends StatelessWidget {
               children: [
                 40.verticalSpace,
                 AppText(
-                  context.text.common.fakedoorComingSoon,
+                  context.l10n.common.fakedoorComingSoon,
                   style: AppStyle.text40.copyWith(color: AppColorLight.surface),
                   textAlign: TextAlign.center,
                 ),
@@ -29,7 +29,7 @@ class CommingSoonPage extends StatelessWidget {
                 Padding(
                   padding: EdgeInsets.symmetric(horizontal: 16.w),
                   child: AppText(
-                    context.text.common.fakedoorFeaturesNameIsAlmostReady(featuresName: 'Art Story'),
+                    context.l10n.common.fakedoorFeaturesNameIsAlmostReady(featuresName: 'Art Story'),
                     style: AppStyle.text24.copyWith(color: AppColorLight.surface),
                     maxLines: 2,
                     textAlign: TextAlign.center,
@@ -46,7 +46,7 @@ class CommingSoonPage extends StatelessWidget {
                       child: AppButton.secondary(
                         onPressed: () => context.back(),
                         child: AppText(
-                          context.text.common.fakedoorIDoNotWantNotifications,
+                          context.l10n.common.fakedoorIDoNotWantNotifications,
                           style: AppStyle.textBold20.copyWith(color: const Color(0xFF7F8EA4)),
                           textAlign: TextAlign.center,
                         ),
@@ -57,7 +57,7 @@ class CommingSoonPage extends StatelessWidget {
                       child: AppButton.primary(
                         onPressed: () => context.back(),
                         child: AppText(
-                          context.text.common.fakedoorNotifyMe,
+                          context.l10n.common.fakedoorNotifyMe,
                           style: AppStyle.textBold20.copyWith(color: Colors.white),
                           textAlign: TextAlign.center,
                         ),

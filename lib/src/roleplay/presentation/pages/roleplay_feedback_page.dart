@@ -178,8 +178,8 @@ class _RoleplayFeedbackPageState extends State<RoleplayFeedbackPage> {
                 ),
                 RoleplayFeedbackBottomCTA(
                   onPressed: _handlePrimaryCta,
-                  label: context.text.roleplay.rolePlayResultStartLearningButton,
-                  helperText: context.text.roleplay.rolePlayHelperTextStartLearnButton,
+                  label: context.l10n.roleplay.rolePlayResultStartLearningButton,
+                  helperText: context.l10n.roleplay.rolePlayHelperTextStartLearnButton,
                 ),
               ],
             ),

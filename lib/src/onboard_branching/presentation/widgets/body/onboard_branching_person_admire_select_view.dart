@@ -68,7 +68,7 @@ class OnboardBranchingPersonAdmireSelectView extends StatelessWidget {
           ),
           12.verticalSpace,
           OnboardBranchingPrimaryButton(
-            text: context.text.onboarding.onboardingSkipGreetingButton,
+            text: context.l10n.onboarding.onboardingSkipGreetingButton,
             enabled: continueEnabled,
             onPressed: onContinue,
           ),

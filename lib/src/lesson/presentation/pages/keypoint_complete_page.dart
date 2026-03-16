@@ -148,7 +148,7 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                 ),
               ),
               LessonCompletionPrimaryButton(
-                label: context.text.exercise.exerciseCompleteKeypointSkipButton,
+                label: context.l10n.exercise.exerciseCompleteKeypointSkipButton,
                 onPressed: () => _handlePrimaryCta(lessonState),
                 margin: EdgeInsets.only(bottom: 16.h, top: 16.h),
               ),

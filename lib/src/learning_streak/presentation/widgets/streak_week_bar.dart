@@ -17,13 +17,13 @@ class StreakWeekBar extends StatelessWidget {
     ];
     final latestActiveIndex = activeIndexes.isEmpty ? -1 : activeIndexes.last;
     final labels = [
-      context.text.learningStreak.weekMon,
-      context.text.learningStreak.weekTue,
-      context.text.learningStreak.weekWed,
-      context.text.learningStreak.weekThu,
-      context.text.learningStreak.weekFri,
-      context.text.learningStreak.weekSat,
-      context.text.learningStreak.weekSun,
+      context.l10n.learningStreak.weekMon,
+      context.l10n.learningStreak.weekTue,
+      context.l10n.learningStreak.weekWed,
+      context.l10n.learningStreak.weekThu,
+      context.l10n.learningStreak.weekFri,
+      context.l10n.learningStreak.weekSat,
+      context.l10n.learningStreak.weekSun,
     ];
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,

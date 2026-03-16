@@ -13,7 +13,7 @@ class OnboardBranchingWelcomeView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final displayName = userName.trim();
-    final title = displayName.isNotEmpty ? context.text.onboarding.onboardingBranchingWelcomeTitle(userName: displayName) : context.text.onboarding.onboardingMascotGreetingTitle;
+    final title = displayName.isNotEmpty ? context.l10n.onboarding.onboardingBranchingWelcomeTitle(userName: displayName) : context.l10n.onboarding.onboardingMascotGreetingTitle;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
@@ -41,7 +41,7 @@ class OnboardBranchingWelcomeView extends StatelessWidget {
                 ),
                 4.verticalSpace,
                 AppText(
-                  context.text.onboarding.onboardingBranchingWelcomeSubtitle,
+                  context.l10n.onboarding.onboardingBranchingWelcomeSubtitle,
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   style: AppStyle.text14.copyWith(
@@ -53,7 +53,7 @@ class OnboardBranchingWelcomeView extends StatelessWidget {
             ),
           ),
           OnboardBranchingPrimaryButton(
-            text: context.text.onboarding.onboardingBranchingCreatePathButton,
+            text: context.l10n.onboarding.onboardingBranchingCreatePathButton,
             onPressed: onContinue,
           ),
         ],

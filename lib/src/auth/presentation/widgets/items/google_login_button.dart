@@ -11,7 +11,7 @@ class GoogleLoginButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SocialLoginButton(
-      text: context.text.auth.authGoogleLabel,
+      text: context.l10n.auth.authGoogleLabel,
       icon: Image.asset(
         AppAsset.icons.common.logoGoogle.path,
         width: 18.w,

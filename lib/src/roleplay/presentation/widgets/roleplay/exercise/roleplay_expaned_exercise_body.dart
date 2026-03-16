@@ -201,7 +201,7 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
         }
         widget.onContinue?.call();
       },
-      text: t.exercise.exerciseSkipButton,
+      text: l10n.exercise.exerciseSkipButton,
       backgroundColor: accentColor,
       textColor: AppCustomColor.textWhite,
       isEnabled: true,
@@ -212,10 +212,10 @@ class _ExpandedExerciseBodyState extends State<_ExpandedExerciseBody> {
     final bool shouldShowSuccess = _isSpeakingPayload || _isNoCorrectSingleChoicePayload || _isUnsupportedPayload || widget.isCorrect;
     final Color accentColor = shouldShowSuccess ? AppCustomColor.successGreen : AppCustomColor.errorRed;
     final String statusText = _isSpeakingPayload
-        ? t.exercise.exerciseCompleteVoiceTask
+        ? l10n.exercise.exerciseCompleteVoiceTask
         : (_isNoCorrectSingleChoicePayload || _isUnsupportedPayload)
-        ? t.exercise.exerciseLessonCompleteTitle
-        : (widget.isCorrect ? t.exercise.exerciseFeedbackCorrectTitle : t.exercise.exerciseFeedbackIncorrectTitle);
+        ? l10n.exercise.exerciseLessonCompleteTitle
+        : (widget.isCorrect ? l10n.exercise.exerciseFeedbackCorrectTitle : l10n.exercise.exerciseFeedbackIncorrectTitle);
     final Widget icon = shouldShowSuccess ? AppAsset.icons.app.icTick.image(width: 24.w, height: 24.w) : AppAsset.icons.app.icClose.image(width: 24.w, height: 24.w);
 
     return Padding(

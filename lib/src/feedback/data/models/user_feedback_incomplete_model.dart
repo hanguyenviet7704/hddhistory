@@ -29,7 +29,8 @@ enum IncompleteFeedbackReason {
   @JsonValue('needs_more_examples')
   needsMoreExamples,
   @JsonValue('unknown')
-  unknown;
+  unknown
+  ;
 
   static List<IncompleteFeedbackReason> get displayReasons => [
     hardToUnderstand,
@@ -67,12 +68,12 @@ enum IncompleteFeedbackReason {
 
   String label(BuildContext context) {
     return switch (this) {
-      IncompleteFeedbackReason.hardToUnderstand => context.text.feedback.reasonHardToUnderstand,
-      IncompleteFeedbackReason.notEngaging => context.text.feedback.reasonNotEngaging,
-      IncompleteFeedbackReason.poorVisuals => context.text.feedback.reasonPoorVisuals,
-      IncompleteFeedbackReason.hardQuestions => context.text.feedback.reasonHardQuestions,
-      IncompleteFeedbackReason.needsMoreExamples => context.text.feedback.reasonNeedsMoreExamples,
-      IncompleteFeedbackReason.unknown => context.text.feedback.reasonHardToUnderstand,
+      IncompleteFeedbackReason.hardToUnderstand => context.l10n.feedback.reasonHardToUnderstand,
+      IncompleteFeedbackReason.notEngaging => context.l10n.feedback.reasonNotEngaging,
+      IncompleteFeedbackReason.poorVisuals => context.l10n.feedback.reasonPoorVisuals,
+      IncompleteFeedbackReason.hardQuestions => context.l10n.feedback.reasonHardQuestions,
+      IncompleteFeedbackReason.needsMoreExamples => context.l10n.feedback.reasonNeedsMoreExamples,
+      IncompleteFeedbackReason.unknown => context.l10n.feedback.reasonHardToUnderstand,
     };
   }
 }
@@ -80,11 +81,11 @@ enum IncompleteFeedbackReason {
 extension IncompleteFeedbackReasonListExtension on List<IncompleteFeedbackReason> {
   static Map<IncompleteFeedbackReason, String> buildReasonLabels(BuildContext context) {
     return {
-      IncompleteFeedbackReason.hardToUnderstand: context.text.feedback.reasonHardToUnderstand,
-      IncompleteFeedbackReason.notEngaging: context.text.feedback.reasonNotEngaging,
-      IncompleteFeedbackReason.poorVisuals: context.text.feedback.reasonPoorVisuals,
-      IncompleteFeedbackReason.hardQuestions: context.text.feedback.reasonHardQuestions,
-      IncompleteFeedbackReason.needsMoreExamples: context.text.feedback.reasonNeedsMoreExamples,
+      IncompleteFeedbackReason.hardToUnderstand: context.l10n.feedback.reasonHardToUnderstand,
+      IncompleteFeedbackReason.notEngaging: context.l10n.feedback.reasonNotEngaging,
+      IncompleteFeedbackReason.poorVisuals: context.l10n.feedback.reasonPoorVisuals,
+      IncompleteFeedbackReason.hardQuestions: context.l10n.feedback.reasonHardQuestions,
+      IncompleteFeedbackReason.needsMoreExamples: context.l10n.feedback.reasonNeedsMoreExamples,
     };
   }
 }

@@ -52,8 +52,8 @@ extension IapProductModelExtension on IapProductModel {
 
   String period(BuildContext context) {
     return switch (id) {
-      String _ when id.contains('monthly') => context.text.monetization.pricePerMonth,
-      String _ when id.contains('weekly') => context.text.monetization.pricePerWeek,
+      String _ when id.contains('monthly') => context.l10n.monetization.pricePerMonth,
+      String _ when id.contains('weekly') => context.l10n.monetization.pricePerWeek,
       _ => 'Not found product id',
     };
   }

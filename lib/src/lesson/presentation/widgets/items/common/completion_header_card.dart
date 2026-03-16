@@ -21,7 +21,7 @@ class CompletionHeaderCard extends StatelessWidget {
         ),
         16.verticalSpace,
         AppText(
-          context.text.exercise.exerciseLessonCompleteTitle.toUpperCase(),
+          context.l10n.exercise.exerciseLessonCompleteTitle.toUpperCase(),
           textAlign: TextAlign.center,
           style: AppStyle.text12.copyWith(
             color: AppCustomColor.textTertiary,

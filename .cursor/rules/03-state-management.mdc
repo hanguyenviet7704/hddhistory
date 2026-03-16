@@ -2,16 +2,19 @@
 description: BLoC state management patterns and guidelines for Cubit and Bloc usage
 alwaysApply: false
 ---
+
 # BLoC State Management Rules
 
 ## When to Use Cubit vs Bloc
 
 ### Use Cubit for Simple State (90% of cases)
+
 - Single responsibility
 - Simple state transitions
 - Direct method calls
 
-### Use Bloc for Complex State (10% of cases)  
+### Use Bloc for Complex State (10% of cases)
+
 - Multiple event types
 - Complex business logic
 - Event transformation needed
@@ -19,6 +22,7 @@ alwaysApply: false
 ## State Architecture Pattern
 
 ### State Definition with Freezed
+
 ```dart
 @freezed
 class UserState with _$UserState {
@@ -30,32 +34,33 @@ class UserState with _$UserState {
 ```
 
 ### Cubit Implementation
+
 ```dart
 @injectable
 class UserCubit extends HydratedCubit<UserState> {
   final GetUserUseCase getUserUseCase;
   final UpdateUserUseCase updateUserUseCase;
-  
-  UserCubit(this.getUserUseCase, this.updateUserUseCase) 
+
+  UserCubit(this.getUserUseCase, this.updateUserUseCase)
     : super(const UserState.initial());
-  
+
   Future<void> loadUser(String userId) async {
     emit(const UserState.loading());
-    
+
     final result = await getUserUseCase(GetUserParams(userId: userId));
-    
+
     result.fold(
       (error) => emit(UserState.error(error)),
       (user) => emit(UserState.success(user)),
     );
   }
-  
+
   @override
   UserState? fromJson(Map<String, dynamic> json) {
     // Implement persistence logic
     return null; // or parsed state
   }
-  
+
   @override
   Map<String, dynamic>? toJson(UserState state) {
     // Implement persistence logic
@@ -70,10 +75,11 @@ class UserCubit extends HydratedCubit<UserState> {
 ## UI Integration Patterns
 
 ### Page Structure
+
 ```dart
 class UserPage extends StatelessWidget {
   const UserPage({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
@@ -85,14 +91,15 @@ class UserPage extends StatelessWidget {
 ```
 
 ### View Implementation
+
 ```dart
 class UserView extends StatelessWidget {
   const UserView({super.key});
-  
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(context.text.userProfile)),
+      appBar: AppBar(title: Text(context.l10n.userProfile)),
       body: BlocBuilder<UserCubit, UserState>(
         builder: (context, state) {
           return state.when(
@@ -114,13 +121,14 @@ class UserView extends StatelessWidget {
 ```
 
 ### BlocListener for Side Effects
+
 ```dart
 BlocListener<UserCubit, UserState>(
   listener: (context, state) {
     state.whenOrNull(
       success: (user) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(context.text.userLoadedSuccessfully)),
+          SnackBar(content: Text(context.l10n.userLoadedSuccessfully)),
         );
       },
       error: (exception) {
@@ -135,6 +143,7 @@ BlocListener<UserCubit, UserState>(
 ```
 
 ### BlocConsumer for Both State and Side Effects
+
 ```dart
 BlocConsumer<UserCubit, UserState>(
   listener: (context, state) {
@@ -149,6 +158,7 @@ BlocConsumer<UserCubit, UserState>(
 ## State Persistence
 
 ### Hydrated Cubit Setup
+
 ```dart
 class UserCubit extends HydratedCubit<UserState> {
   @override
@@ -163,7 +173,7 @@ class UserCubit extends HydratedCubit<UserState> {
       return const UserState.initial();
     }
   }
-  
+
   @override
   Map<String, dynamic>? toJson(UserState state) {
     return state.maybeWhen(
@@ -180,16 +190,17 @@ class UserCubit extends HydratedCubit<UserState> {
 ## Testing BLoCs
 
 ### Cubit Testing
+
 ```dart
 group('UserCubit', () {
   late UserCubit cubit;
   late MockGetUserUseCase mockGetUserUseCase;
-  
+
   setUp(() {
     mockGetUserUseCase = MockGetUserUseCase();
     cubit = UserCubit(mockGetUserUseCase);
   });
-  
+
   blocTest<UserCubit, UserState>(
     'emits success state when user is loaded',
     build: () => cubit,
@@ -209,13 +220,14 @@ group('UserCubit', () {
 ## Error Handling in BLoC
 
 ### Always Handle Errors
+
 ```dart
 Future<void> performAction() async {
   emit(const FeatureState.loading());
-  
+
   try {
     final result = await useCase.call(params);
-    
+
     result.fold(
       (error) => emit(FeatureState.error(error)),
       (data) => emit(FeatureState.success(data)),
@@ -229,9 +241,11 @@ Future<void> performAction() async {
 ## Performance Considerations
 
 ### Use Equatable for State Comparison
+
 States with Freezed automatically implement equality checking.
 
 ### Avoid Rebuilds with BlocSelector
+
 ```dart
 BlocSelector<UserCubit, UserState, String>(
   selector: (state) => state.maybeWhen(

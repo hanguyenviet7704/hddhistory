@@ -52,7 +52,7 @@ class _DialogBody extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.setting.settingProfileDestructiveWarnTitle,
+                context.l10n.setting.settingProfileDestructiveWarnTitle,
                 textAlign: TextAlign.center,
                 enableFitScaleDown: true,
                 style: AppStyle.text20.copyWith(
@@ -63,7 +63,7 @@ class _DialogBody extends StatelessWidget {
               ),
               8.verticalSpace,
               AppText(
-                context.text.setting.settingProfileDestructiveWarnMessage,
+                context.l10n.setting.settingProfileDestructiveWarnMessage,
                 maxLines: 3,
                 textAlign: TextAlign.center,
                 style: AppStyle.text14.copyWith(
@@ -74,7 +74,7 @@ class _DialogBody extends StatelessWidget {
               ),
               24.verticalSpace,
               _DialogButton(
-                text: context.text.setting.settingProfileDestructiveYesButton,
+                text: context.l10n.setting.settingProfileDestructiveYesButton,
                 textColor: AppCustomColor.errorRed,
                 borderColor: AppCustomColor.borderDefault,
                 backgroundColor: AppCustomColor.backgroundWhite,
@@ -85,7 +85,7 @@ class _DialogBody extends StatelessWidget {
               ),
               16.verticalSpace,
               _DialogButton(
-                text: context.text.setting.settingProfileDestructiveNoButton,
+                text: context.l10n.setting.settingProfileDestructiveNoButton,
                 textColor: AppCustomColor.textWhite,
                 backgroundColor: AppCustomColor.brandPrimary,
                 onTap: () => Navigator.of(context).pop('no'),
