@@ -45,7 +45,7 @@
       <dict>
         <key>CFBundleURLSchemes</key>
         <array>
-          <string>fb568606332999314</string>
+          <string>fb890336437171010</string>
         </array>
       </dict>
       <dict>
@@ -62,13 +62,13 @@
     <key>FacebookAdvertiserIDCollectionEnabled</key>
     <true/>
     <key>FacebookAppID</key>
-    <string>568606332999314</string>
+    <string>890336437171010</string>
     <key>FacebookAutoInitEnabled</key>
     <true/>
     <key>FacebookAutoLogAppEventsEnabled</key>
     <true/>
     <key>FacebookClientToken</key>
-    <string>75878b786806651e61af6d824b1847dd</string>
+    <string>df6ed8acccb34631007fcba3e2d296da</string>
     <key>FacebookDisplayName</key>
     <string>Meup</string>
     <key>FlutterDeepLinkingEnabled</key>
