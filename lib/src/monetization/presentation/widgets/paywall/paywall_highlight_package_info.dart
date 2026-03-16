@@ -100,47 +100,67 @@ class _HighlightEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration,
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: AppCustomColor.textTertiary, size: 24.w),
-          12.horizontalSpace,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  t.monetization.emptyProductsTitle,
-                  style: AppStyle.text16.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: AppCustomColor.textPrimary,
-                  ),
-                ),
-                4.verticalSpace,
-                AppText(
-                  t.monetization.emptyProductsDesc,
-                  maxLines: 2,
-                  style: AppStyle.text14.copyWith(
-                    color: AppCustomColor.textSecondary,
-                  ),
-                ),
-              ],
-            ),
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 18.h),
+          decoration: _cardDecoration.copyWith(
+            color: const Color(0xFFF8F7FF),
+            border: Border.all(color: AppCustomColor.borderBrand),
           ),
-          AppButton.secondary(
-            height: 42.h,
-            padding: EdgeInsets.symmetric(horizontal: 12.w),
-            onPressed: onRetry,
-            child: AppText(
-              t.monetization.retry,
-              style: AppStyle.textBold20.copyWith(color: const Color(0xFF7F8EA4)),
-              textAlign: TextAlign.center,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.brandPrimary50,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppCustomColor.borderBrand),
+                ),
+                child: Icon(
+                  Icons.workspace_premium_rounded,
+                  color: AppCustomColor.brandPrimary,
+                  size: 26.w,
+                ),
+              ),
+              16.verticalSpace,
+              AppText(
+                t.monetization.emptyProductsTitle,
+                textAlign: TextAlign.center,
+                style: AppStyle.text18.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppCustomColor.textPrimary,
+                  height: 1.45,
+                ),
+              ),
+              8.verticalSpace,
+              AppText(
+                t.monetization.emptyProductsDesc,
+                maxLines: 3,
+                textAlign: TextAlign.center,
+                style: AppStyle.text14.copyWith(
+                  color: AppCustomColor.textSecondary,
+                  height: 1.65,
+                ),
+              ),
+              20.verticalSpace,
+              _HighlightActionButton(
+                label: t.monetization.retry,
+                onTap: onRetry,
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        12.verticalSpace,
+        const _PaywallLegalLinks(),
+        SizedBox(height: bottomPadding / 2 + 7.h),
+      ],
     );
   }
 }
@@ -178,46 +198,9 @@ class _HighlightCard extends StatelessWidget {
           ),
         ),
         12.verticalSpace,
-        Container(
-          width: double.infinity,
-          height: 48.h,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-              colors: [
-                Color(0xFF554FF0),
-                Color(0xFF4B44CA),
-              ],
-            ),
-            borderRadius: BorderRadius.circular(1000.r),
-            boxShadow: [
-              BoxShadow(
-                color: AppCustomColor.borderBrand.withValues(alpha: 0.85),
-                blurRadius: 24,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onPurchase,
-              borderRadius: BorderRadius.circular(1000.r),
-              child: Center(
-                child: AppText(
-                  t.monetization.paywallPrimaryCta,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  style: AppStyle.text16.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-            ),
-          ),
+        _HighlightActionButton(
+          label: t.monetization.paywallPrimaryCta,
+          onTap: onPurchase,
         ),
         12.verticalSpace,
         GestureDetector(
@@ -236,6 +219,61 @@ class _HighlightCard extends StatelessWidget {
         const _PaywallLegalLinks(),
         SizedBox(height: bottomPadding / 2 + 7.h),
       ],
+    );
+  }
+}
+
+class _HighlightActionButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _HighlightActionButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 48.h,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF554FF0),
+            Color(0xFF4B44CA),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(1000.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppCustomColor.borderBrand.withValues(alpha: 0.85),
+            blurRadius: 24,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(1000.r),
+          child: Center(
+            child: AppText(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: AppStyle.text16.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

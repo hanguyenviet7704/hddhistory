@@ -202,6 +202,15 @@ class _BottomSheetContent extends StatelessWidget {
             },
           ),
         ),
+        AppText(
+          t.monetization.paywallHighlightSubtitle,
+          textAlign: TextAlign.center,
+          style: AppStyle.text12.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppCustomColor.textQuaternary,
+            height: 1.75,
+          ),
+        ),
         12.verticalSpace,
         Container(
           width: double.infinity,

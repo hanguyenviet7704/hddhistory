@@ -16,6 +16,7 @@ void main() {
       final shouldOpen = shouldOpenFirstTimeUserPaywall(
         forceChooseCourseAfterLogin: true,
         showPaywallAfterAuth: true,
+        hasPendingFirstTimePaywallAfterAuth: true,
       );
 
       expect(shouldOpen, isFalse);
@@ -28,6 +29,16 @@ void main() {
       );
 
       expect(shouldOpen, isFalse);
+    });
+
+    test('returns true when persisted first-time paywall intent survives register re-entry', () {
+      final shouldOpen = shouldOpenFirstTimeUserPaywall(
+        forceChooseCourseAfterLogin: false,
+        showPaywallAfterAuth: false,
+        hasPendingFirstTimePaywallAfterAuth: true,
+      );
+
+      expect(shouldOpen, isTrue);
     });
   });
 }

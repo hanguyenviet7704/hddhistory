@@ -20,6 +20,20 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   void setIsFirstTimeUserChooseCourse(bool isFirstTimeUserChooseCourse) => emit(state.copyWith(isFirstTimeUserChooseCourse: isFirstTimeUserChooseCourse));
   void setIsFirstTimeLessonNavigationGuide(bool isFirstTimeLessonNavigationGuide) => emit(state.copyWith(isFirstTimeLessonNavigationGuide: isFirstTimeLessonNavigationGuide));
 
+  void startFirstTimeRegisterFlow() {
+    emit(
+      state.copyWith(
+        isUserPassOnboarding: false,
+        hasPendingFirstTimePaywallAfterAuth: true,
+      ),
+    );
+  }
+
+  void consumeFirstTimePaywallAfterAuthIntent() {
+    if (!state.hasPendingFirstTimePaywallAfterAuth) return;
+    emit(state.copyWith(hasPendingFirstTimePaywallAfterAuth: false));
+  }
+
   void setAccessToken(String accessToken) {
     AppGlobalValue.accessToken = accessToken;
     TokenEntity token = TokenEntity(accessToken: accessToken, refreshToken: state.refreshToken, expiresAt: DateTime.now().add(Duration(seconds: 30)));

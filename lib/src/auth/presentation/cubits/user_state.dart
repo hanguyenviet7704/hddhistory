@@ -9,6 +9,7 @@ abstract class UserState with _$UserState {
     @Default(AuthEntity()) AuthEntity auth,
     @Default(true) bool isAppEventConfigured,
     @Default(true) bool isUserPassOnboarding,
+    @Default(false) bool hasPendingFirstTimePaywallAfterAuth,
     @Default(true) bool isFirstTimeUserAccessLessonList,
     @Default(true) bool isFirstTimeUserChooseCourse,
     @Default(true) bool isFirstTimeLessonNavigationGuide,
