@@ -17,11 +17,13 @@ class NotificationTokenService {
   }
 
   Future<void> syncInitialToken(Future<String?> Function() getToken) async {
+    LogDev.data('[NotificationTokenService] syncInitialToken');
     final token = await getToken();
     await _publishToken(token, isFromRefresh: false, emitToStream: false);
   }
 
   Future<void> bindRefreshStream(Stream<String> refreshStream) async {
+    LogDev.data('[NotificationTokenService] bindRefreshStream');
     await _refreshSubscription?.cancel();
     _refreshSubscription = refreshStream.listen((token) {
       unawaited(_publishToken(token, isFromRefresh: true, emitToStream: true));
@@ -29,6 +31,7 @@ class NotificationTokenService {
   }
 
   Future<void> dispose() async {
+    LogDev.data('[NotificationTokenService] dispose');
     await _refreshSubscription?.cancel();
     await _controller.close();
   }
@@ -39,12 +42,19 @@ class NotificationTokenService {
     required bool emitToStream,
   }) async {
     final normalizedToken = token?.trim();
-    if (normalizedToken == null || normalizedToken.isEmpty) return;
+    if (normalizedToken == null || normalizedToken.isEmpty) {
+      LogDev.warning('[NotificationTokenService] publishToken skipped: empty token');
+      return;
+    }
 
     _tokenState = NotificationTokenState(
       token: normalizedToken,
       updatedAt: DateTime.now(),
       isFromRefresh: isFromRefresh,
+    );
+    LogDev.info(
+      '[NotificationTokenService] token updated: '
+      'source=${isFromRefresh ? 'refresh' : 'initial'} length=${normalizedToken.length}',
     );
 
     if (emitToStream && !_controller.isClosed) {

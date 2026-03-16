@@ -21,9 +21,14 @@ class NotificationInteractionService {
   }
 
   Future<void> publish(NotificationInteraction interaction) async {
+    LogDev.data(
+      '[NotificationInteractionService] publish: '
+      'type=${interaction.type} title="${interaction.payload.title}" actionKey=${interaction.actionKey}',
+    );
     if (_controller.hasListener) {
       _controller.add(interaction);
     } else {
+      LogDev.data('[NotificationInteractionService] queue interaction until listener is attached');
       _pendingInteractions.add(interaction);
     }
 
@@ -36,6 +41,9 @@ class NotificationInteractionService {
   Future<void> dispose() => _controller.close();
 
   void _flushPendingInteractions() {
+    if (_controller.hasListener && _pendingInteractions.isNotEmpty) {
+      LogDev.data('[NotificationInteractionService] flush pending interactions: count=${_pendingInteractions.length}');
+    }
     while (_controller.hasListener && _pendingInteractions.isNotEmpty) {
       _controller.add(_pendingInteractions.removeFirst());
     }

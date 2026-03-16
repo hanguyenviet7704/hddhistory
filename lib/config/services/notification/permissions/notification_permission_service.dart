@@ -30,6 +30,7 @@ class NotificationPermissionService {
     required bool enablePush,
     required bool enableLocal,
   }) async {
+    LogDev.data('[NotificationPermissionService] getPermissionState: push=$enablePush local=$enableLocal');
     if (!enablePush && !enableLocal) {
       return _disabledState();
     }
@@ -53,6 +54,7 @@ class NotificationPermissionService {
     required bool enablePush,
     required bool enableLocal,
   }) async {
+    LogDev.data('[NotificationPermissionService] requestPermission: push=$enablePush local=$enableLocal');
     if (!enablePush && !enableLocal) {
       return _disabledState();
     }
@@ -73,6 +75,7 @@ class NotificationPermissionService {
   }
 
   Future<void> openSettings() async {
+    LogDev.data('[NotificationPermissionService] openSettings');
     await openAppSettings();
   }
 

@@ -1,5 +1,72 @@
 part of '../../services.dart';
 
+const String _notificationActionPortName = 'meup.notification.action.port';
+
+ReceivePort? _notificationActionReceivePort;
+AwesomeLocalNotificationService? _notificationActionService;
+
+@pragma('vm:entry-point')
+Future<void> awesomeLocalNotificationActionEntryPoint(ReceivedAction receivedAction) async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final localService = _notificationActionService;
+  if (localService != null) {
+    await localService._handleActionReceived(receivedAction);
+    return;
+  }
+
+  final sendPort = ui.IsolateNameServer.lookupPortByName(_notificationActionPortName);
+  if (sendPort == null) {
+    LogDev.warning('[AwesomeLocalNotificationService] action dropped because main isolate port is unavailable');
+    return;
+  }
+
+  sendPort.send(receivedAction.toMap());
+}
+
+void _bindNotificationActionPort(AwesomeLocalNotificationService service) {
+  _notificationActionService = service;
+  if (_notificationActionReceivePort != null) {
+    return;
+  }
+
+  final receivePort = ReceivePort();
+  ui.IsolateNameServer.removePortNameMapping(_notificationActionPortName);
+  final isRegistered = ui.IsolateNameServer.registerPortWithName(
+    receivePort.sendPort,
+    _notificationActionPortName,
+  );
+
+  if (!isRegistered) {
+    receivePort.close();
+    LogDev.warning('[AwesomeLocalNotificationService] failed to register action port');
+    return;
+  }
+
+  receivePort.listen((dynamic message) async {
+    if (message is! Map) {
+      LogDev.warning('[AwesomeLocalNotificationService] ignored action payload with unsupported type');
+      return;
+    }
+
+    final action = ReceivedAction().fromMap(Map<String, dynamic>.from(message));
+    await _notificationActionService?._handleActionReceived(action);
+  });
+
+  _notificationActionReceivePort = receivePort;
+}
+
+void _unbindNotificationActionPort(AwesomeLocalNotificationService service) {
+  if (!identical(_notificationActionService, service)) {
+    return;
+  }
+
+  _notificationActionService = null;
+  _notificationActionReceivePort?.close();
+  _notificationActionReceivePort = null;
+  ui.IsolateNameServer.removePortNameMapping(_notificationActionPortName);
+}
+
 abstract interface class NotificationLocalNotifications implements NotificationLocalPermissionProvider {
   Future<void> initialize();
   Future<void> registerListeners();
@@ -144,20 +211,27 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
   Future<TransportLocalAction?> getInitialAction() async {
     final action = await _gateway.getInitialNotificationAction(removeFromActionEvents: true);
     if (action == null) {
+      LogDev.data('[AwesomeLocalNotificationService] getInitialAction: none');
       return null;
     }
+    LogDev.data('[AwesomeLocalNotificationService] getInitialAction: id=${action.id}');
     return _mapReceivedAction(action);
   }
 
   @override
   Future<void> show(NotificationRequest request) async {
     await initialize();
+    LogDev.data('[AwesomeLocalNotificationService] show: id=${request.id} title="${request.title}"');
     await _gateway.createNotification(content: _buildContent(request));
   }
 
   @override
   Future<void> schedule(NotificationScheduleRequest request) async {
     await initialize();
+    LogDev.data(
+      '[AwesomeLocalNotificationService] schedule: '
+      'id=${request.notification.id} scheduledAt=${request.scheduledAt} interval=${request.interval}',
+    );
     await _gateway.createNotification(
       content: _buildContent(request.notification),
       schedule: await _buildSchedule(request),
@@ -166,32 +240,52 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
 
   @override
   Future<void> cancel(int id) async {
+    LogDev.data('[AwesomeLocalNotificationService] cancel: id=$id');
     await _gateway.cancel(id);
   }
 
   @override
-  Future<void> cancelSchedule(int id) => _gateway.cancelSchedule(id);
+  Future<void> cancelSchedule(int id) {
+    LogDev.data('[AwesomeLocalNotificationService] cancelSchedule: id=$id');
+    return _gateway.cancelSchedule(id);
+  }
 
   @override
   Future<void> cancelAll() async {
+    LogDev.data('[AwesomeLocalNotificationService] cancelAll');
     await _gateway.cancelAll();
   }
 
   @override
-  Future<void> cancelAllSchedules() => _gateway.cancelAllSchedules();
+  Future<void> cancelAllSchedules() {
+    LogDev.data('[AwesomeLocalNotificationService] cancelAllSchedules');
+    return _gateway.cancelAllSchedules();
+  }
 
   @override
-  Future<bool> isPermissionGranted() => _gateway.isNotificationAllowed();
+  Future<bool> isPermissionGranted() async {
+    final isGranted = await _gateway.isNotificationAllowed();
+    LogDev.data('[AwesomeLocalNotificationService] isPermissionGranted: $isGranted');
+    return isGranted;
+  }
 
   @override
-  Future<bool> requestPermission() => _gateway.requestPermissionToSendNotifications();
+  Future<bool> requestPermission() async {
+    LogDev.data('[AwesomeLocalNotificationService] requestPermission');
+    final isGranted = await _gateway.requestPermissionToSendNotifications();
+    LogDev.data('[AwesomeLocalNotificationService] requestPermission result: $isGranted');
+    return isGranted;
+  }
 
   @override
   Future<void> dispose() async {
+    LogDev.data('[AwesomeLocalNotificationService] dispose');
+    _unbindNotificationActionPort(this);
     await _actionController.close();
   }
 
   Future<void> _initialize() async {
+    LogDev.data('[AwesomeLocalNotificationService] initialize');
     await _gateway.initialize(
       null,
       <NotificationChannel>[
@@ -217,12 +311,15 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
       ],
       debug: false,
     );
+    LogDev.info('[AwesomeLocalNotificationService] initialize completed');
   }
 
   Future<void> _registerListeners() async {
     await initialize();
+    LogDev.data('[AwesomeLocalNotificationService] registerListeners');
+    _bindNotificationActionPort(this);
     await _gateway.setListeners(
-      onActionReceivedMethod: _handleActionReceived,
+      onActionReceivedMethod: awesomeLocalNotificationActionEntryPoint,
     );
   }
 
@@ -261,6 +358,10 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
     if (_actionController.isClosed) {
       return;
     }
+    LogDev.data(
+      '[AwesomeLocalNotificationService] action received: '
+      'id=${action.id} button=${action.buttonKeyPressed} lifecycle=${action.actionLifeCycle}',
+    );
     _actionController.add(_mapReceivedAction(action));
   }
 

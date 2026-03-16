@@ -92,10 +92,15 @@ class NotificationService {
   Stream<NotificationInteraction> get interactionStreamInternal => _interactionService.stream;
 
   Future<void> initializeInternal(NotificationCoreConfig config) async {
+    LogDev.info(
+      '[NotificationService] initialize: '
+      'push=${config.enablePush}, local=${config.enableLocal}, autoRequest=${config.autoRequestPermissionOnInit}',
+    );
     _config = config;
     _interactionService.updateConfig(config);
     _tokenService.updateConfig(config);
     await _bootstrapService.initialize(config: config);
+    LogDev.info('[NotificationService] initialize completed');
   }
 
   Future<NotificationPermissionState> getPermissionStateInternal() {
@@ -116,30 +121,49 @@ class NotificationService {
 
   Future<String?> getTokenInternal() async {
     if (!_config.enablePush) {
+      LogDev.warning('[NotificationService] getToken skipped because push is disabled');
       return null;
     }
-    return _tokenService.currentToken ?? await _pushTransport.getToken();
+    final token = _tokenService.currentToken ?? await _pushTransport.getToken();
+    LogDev.data('[NotificationService] getToken resolved: hasToken=${token?.isNotEmpty ?? false}');
+    return token;
   }
 
   Future<void> showLocalInternal(NotificationRequest request) async {
     if (!_config.enableLocal) {
+      LogDev.warning('[NotificationService] showLocal skipped because local notifications are disabled');
       return;
     }
+    LogDev.data('[NotificationService] showLocal: title="${request.title}" id=${request.id}');
     await _localNotifications.show(request);
   }
 
   Future<void> scheduleLocalInternal(NotificationScheduleRequest request) async {
     if (!_config.enableLocal) {
+      LogDev.warning('[NotificationService] scheduleLocal skipped because local notifications are disabled');
       return;
     }
+    LogDev.data(
+      '[NotificationService] scheduleLocal: '
+      'id=${request.notification.id} title="${request.notification.title}" '
+      'scheduledAt=${request.scheduledAt} interval=${request.interval} repeats=${request.repeats}',
+    );
     await _scheduleService.schedule(request);
   }
 
-  Future<void> cancelInternal(int id) => _scheduleService.cancel(id);
-  Future<void> cancelAllInternal() => _scheduleService.cancelAll();
+  Future<void> cancelInternal(int id) {
+    LogDev.data('[NotificationService] cancel: id=$id');
+    return _scheduleService.cancel(id);
+  }
+
+  Future<void> cancelAllInternal() {
+    LogDev.data('[NotificationService] cancelAll');
+    return _scheduleService.cancelAll();
+  }
 
   @visibleForTesting
   Future<void> dispose() async {
+    LogDev.data('[NotificationService] dispose');
     await _bootstrapService.dispose();
     await _interactionService.dispose();
     await _tokenService.dispose();

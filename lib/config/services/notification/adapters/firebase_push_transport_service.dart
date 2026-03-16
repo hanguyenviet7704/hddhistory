@@ -23,6 +23,7 @@ class FirebasePushTransportService implements NotificationPushTransport {
 
   @override
   Future<void> configureForegroundPresentation() {
+    LogDev.data('[FirebasePushTransportService] configureForegroundPresentation');
     return _messaging.setForegroundNotificationPresentationOptions(
       alert: false,
       badge: true,
@@ -32,6 +33,7 @@ class FirebasePushTransportService implements NotificationPushTransport {
 
   @override
   Future<void> registerBackgroundHandler() async {
+    LogDev.data('[FirebasePushTransportService] registerBackgroundHandler');
     FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
   }
 
@@ -39,13 +41,19 @@ class FirebasePushTransportService implements NotificationPushTransport {
   Future<TransportRemoteMessage?> getInitialMessage() async {
     final initialMessage = await _messaging.getInitialMessage();
     if (initialMessage == null) {
+      LogDev.data('[FirebasePushTransportService] getInitialMessage: none');
       return null;
     }
+    LogDev.data('[FirebasePushTransportService] getInitialMessage: messageId=${initialMessage.messageId}');
     return _mapRemoteMessage(initialMessage);
   }
 
   @override
-  Future<String?> getToken() => _messaging.getToken();
+  Future<String?> getToken() async {
+    final token = await _messaging.getToken();
+    LogDev.data('[FirebasePushTransportService] \r\ngetToken: hasToken=${token?.isNotEmpty ?? false} \r\ntoken=$token');
+    return token;
+  }
 
   @override
   Stream<String> get tokenRefreshStream => _messaging.onTokenRefresh;
@@ -53,11 +61,13 @@ class FirebasePushTransportService implements NotificationPushTransport {
   @override
   Future<NotificationPermissionStatus> getPermissionStatus() async {
     final settings = await _messaging.getNotificationSettings();
+    LogDev.data('[FirebasePushTransportService] getPermissionStatus: ${settings.authorizationStatus}');
     return _mapAuthorizationStatus(settings.authorizationStatus);
   }
 
   @override
   Future<NotificationPermissionStatus> requestPermission() async {
+    LogDev.data('[FirebasePushTransportService] requestPermission');
     final settings = await _messaging.requestPermission(
       alert: true,
       badge: true,
@@ -69,6 +79,7 @@ class FirebasePushTransportService implements NotificationPushTransport {
       providesAppNotificationSettings: false,
     );
 
+    LogDev.data('[FirebasePushTransportService] requestPermission result: ${settings.authorizationStatus}');
     return _mapAuthorizationStatus(settings.authorizationStatus);
   }
 
@@ -97,18 +108,25 @@ class FirebasePushTransportService implements NotificationPushTransport {
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-  await Firebase.initializeApp(options: F.firebaseOptions);
+  try {
+    LogDev.data('[FirebasePushTransportService] background message: messageId=${message.messageId}');
+    await Firebase.initializeApp(options: F.firebaseOptions);
 
-  final router = const NotificationMessageRouter();
-  final localNotifications = AwesomeLocalNotificationService();
-  final payload = router.fromRemoteMessage(
-    FirebasePushTransportService._mapRemoteMessage(message),
-    config: const NotificationCoreConfig(),
-  );
+    final router = const NotificationMessageRouter();
+    final localNotifications = AwesomeLocalNotificationService();
+    final payload = router.fromRemoteMessage(
+      FirebasePushTransportService._mapRemoteMessage(message),
+      config: const NotificationCoreConfig(),
+    );
 
-  if (!payload.hasVisibleContent) {
-    return;
+    if (!payload.hasVisibleContent) {
+      LogDev.data('[FirebasePushTransportService] background message skipped: no visible content');
+      return;
+    }
+
+    await localNotifications.show(router.toLocalRequest(payload));
+    LogDev.info('[FirebasePushTransportService] background local notification rendered');
+  } catch (error, stackTrace) {
+    LogDev.error('[FirebasePushTransportService] background handler failed: $error\n$stackTrace');
   }
-
-  await localNotifications.show(router.toLocalRequest(payload));
 }
