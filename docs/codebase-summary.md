@@ -69,8 +69,8 @@ meup/
 - Error/result flow: `TaskEither<AppException, T>`.
 - REST integration: Retrofit + Dio, unified request helpers in the restful request handler mixin.
 - Notification boot now runs as a dedicated config-level core in `lib/config/services/notification/`, with app startup awaiting `NotificationService.initialize(NotificationCoreConfig)` after Firebase.
-- Notification module public boundary is limited to `notification_service.dart` and `notification_core_config.dart`; adapter/bootstrap/router internals stay inside grouped subfolders and do not leak Firebase/Awesome types into app code.
-- `lib/config/services/services.dart` now imports notification as a regular library seam; notification is no longer owned as a `part` of the shared services barrel.
+- Notification folder modularization stays grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`, but the files are now owned by the shared `library + part` architecture in `lib/config/services/services.dart`.
+- This reintroduces notification helper types into the exported services namespace as an intentional tradeoff, while Firebase/Awesome transport-specific package types still remain implementation-only.
 
 ## 5. API and Pagination Contract Summary
 - API endpoint constants live in `lib/core/constants/manual/endpoint.dart`.

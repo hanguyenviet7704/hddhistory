@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+part of '../../services.dart';
 
 enum NotificationPermissionStatus { authorized, denied, notDetermined, provisional, unsupported }
 

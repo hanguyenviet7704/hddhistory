@@ -1,4 +1,4 @@
-import '../models/notification_models.dart';
+part of '../../services.dart';
 
 abstract final class NotificationConstants {
   static const String defaultTitle = 'You have a new notification';

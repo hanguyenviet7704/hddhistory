@@ -1,5 +1,4 @@
-import '../constants/notification_constants.dart';
-import '../notification_core_config.dart';
+part of '../../services.dart';
 
 class NotificationForegroundPolicy {
   const NotificationForegroundPolicy();

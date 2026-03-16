@@ -76,10 +76,11 @@ Notes:
 - Do not force structural churn unless required by task scope.
 
 ### Config service boundaries
-- `lib/config/services/notification/` keeps only `notification_service.dart` and `notification_core_config.dart` as app-facing files.
-- Keep notification imported into `lib/config/services/services.dart` as a regular library seam; do not reintroduce notification as a `part` file.
+- `lib/config/services/notification/` stays modularized by folder, but its files are owned by the shared `library + part` architecture rooted at `lib/config/services/services.dart`.
+- Keep notification wired into `lib/config/services/services.dart` through `part` declarations, with notification-only imports centralized there.
 - Keep notification internals grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`.
-- Do not leak `firebase_messaging`, `awesome_notifications`, or other transport-specific types outside the notification core public API.
+- Treat the wider shared-library surface as an intentional tradeoff of this architecture. App and feature code should still prefer `NotificationService` and `NotificationCoreConfig` over helper internals when possible.
+- Do not leak `firebase_messaging`, `awesome_notifications`, or other transport-specific package types into feature-layer APIs.
 
 ## 6. Pagination and API Contract Standards
 - Use `PageBreakRequest` for paginated endpoints.

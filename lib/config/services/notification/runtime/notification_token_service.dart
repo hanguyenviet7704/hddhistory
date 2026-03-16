@@ -1,6 +1,4 @@
-import 'dart:async';
-
-import '../notification_core_config.dart';
+part of '../../services.dart';
 
 class NotificationTokenService {
   NotificationTokenService();

@@ -59,10 +59,10 @@ Widget/Page
 
 ### Notification core boundary
 - Notification runtime lives under `lib/config/services/notification/`.
-- Public entry files stay limited to `notification_service.dart` and `notification_core_config.dart`.
-- `lib/config/services/services.dart` imports the notification facade as a normal library seam instead of declaring notification as a `part`.
+- Notification files are owned by the shared `library + part` architecture rooted at `lib/config/services/services.dart`.
 - Internal concerns are grouped by `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`.
-- App-facing notification APIs expose normalized payload, interaction, permission, token, and local scheduling contracts only. Firebase Messaging and Awesome Notifications types stay internal to the module.
+- App and feature code should still prefer `NotificationService` and `NotificationCoreConfig` as the primary notification seam, even though helper types now live in the same exported services library namespace.
+- Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
 Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.

@@ -1,13 +1,4 @@
-import 'dart:async';
-
-import '../adapters/awesome_local_notification_service.dart';
-import '../adapters/firebase_push_transport_service.dart';
-import '../notification_core_config.dart';
-import '../permissions/notification_permission_service.dart';
-import '../routing/notification_interaction_service.dart';
-import '../routing/notification_message_router.dart';
-import '../runtime/notification_foreground_policy.dart';
-import '../runtime/notification_token_service.dart';
+part of '../../services.dart';
 
 class NotificationBootstrapService {
   NotificationBootstrapService({

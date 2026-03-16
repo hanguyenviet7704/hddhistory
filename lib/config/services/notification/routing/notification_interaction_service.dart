@@ -1,7 +1,4 @@
-import 'dart:async';
-import 'dart:collection';
-
-import '../notification_core_config.dart';
+part of '../../services.dart';
 
 class NotificationInteractionService {
   NotificationInteractionService() {

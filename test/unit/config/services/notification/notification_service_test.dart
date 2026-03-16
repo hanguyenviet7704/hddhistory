@@ -1,10 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/notification/adapters/awesome_local_notification_service.dart';
-import 'package:meup/config/services/notification/adapters/firebase_push_transport_service.dart';
-import 'package:meup/config/services/notification/notification_service.dart';
-import 'package:meup/config/services/notification/permissions/notification_permission_service.dart';
+import 'package:meup/config/services/services.dart';
 
 void main() {
   group('NotificationService', () {

@@ -1,11 +1,4 @@
-import 'package:firebase_core/firebase_core.dart';
-import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:meup/flavors.dart';
-
-import '../notification_core_config.dart';
-import '../permissions/notification_permission_service.dart';
-import '../routing/notification_message_router.dart';
-import 'awesome_local_notification_service.dart';
+part of '../../services.dart';
 
 abstract interface class NotificationPushTransport implements NotificationPushPermissionProvider {
   Future<void> configureForegroundPresentation();

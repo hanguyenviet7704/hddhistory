@@ -1,8 +1,4 @@
-import 'dart:io';
-
-import 'package:permission_handler/permission_handler.dart';
-
-import '../notification_core_config.dart';
+part of '../../services.dart';
 
 abstract interface class NotificationPushPermissionProvider {
   Future<NotificationPermissionStatus> getPermissionStatus();

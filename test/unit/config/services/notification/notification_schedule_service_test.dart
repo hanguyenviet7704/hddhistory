@@ -1,9 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/notification/adapters/awesome_local_notification_service.dart';
-import 'package:meup/config/services/notification/notification_core_config.dart';
-import 'package:meup/config/services/notification/schedulers/notification_schedule_service.dart';
+import 'package:meup/config/services/services.dart';
 
 void main() {
   group('NotificationScheduleService', () {

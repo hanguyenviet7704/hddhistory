@@ -1,6 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:meup/config/services/notification/notification_core_config.dart';
-import 'package:meup/config/services/notification/permissions/notification_permission_service.dart';
+import 'package:meup/config/services/services.dart';
 
 void main() {
   group('NotificationPermissionService', () {

@@ -1,10 +1,4 @@
-import 'dart:async';
-
-import 'package:flutter/foundation.dart';
-
-import 'models/notification_models.dart';
-
-export 'models/notification_models.dart';
+part of '../services.dart';
 
 typedef NotificationPayloadDecoder = NotificationPayload Function(Map<String, dynamic> raw);
 typedef NotificationTokenChangedCallback = FutureOr<void> Function(NotificationTokenState state);

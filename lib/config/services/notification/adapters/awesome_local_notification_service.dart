@@ -1,11 +1,4 @@
-import 'dart:async';
-
-import 'package:awesome_notifications/awesome_notifications.dart';
-import 'package:flutter/material.dart';
-
-import '../constants/notification_constants.dart';
-import '../notification_core_config.dart';
-import '../permissions/notification_permission_service.dart';
+part of '../../services.dart';
 
 abstract interface class NotificationLocalNotifications implements NotificationLocalPermissionProvider {
   Future<void> initialize();

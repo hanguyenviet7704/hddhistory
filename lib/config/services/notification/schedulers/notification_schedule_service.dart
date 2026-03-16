@@ -1,5 +1,4 @@
-import '../adapters/awesome_local_notification_service.dart';
-import '../notification_core_config.dart';
+part of '../../services.dart';
 
 class NotificationScheduleService {
   NotificationScheduleService(this._localNotifications);

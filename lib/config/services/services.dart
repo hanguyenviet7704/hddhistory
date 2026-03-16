@@ -1,12 +1,14 @@
 library;
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:isolate';
 import 'dart:ui' as ui;
 
 //* Import all dependencies here
+import 'package:awesome_notifications/awesome_notifications.dart';
 import 'package:app_links/app_links.dart';
 import 'package:app_tracking_transparency/app_tracking_transparency.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -17,6 +19,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'package:firebase_remote_config/firebase_remote_config.dart';
 import 'package:flutter/foundation.dart';
@@ -74,7 +77,6 @@ import '../di/di.dart';
 import '../l10n/l10n.g.dart';
 import '../routes/routes.dart';
 import '../share/share.dart';
-import 'notification/notification_service.dart';
 
 // import 'network/log_link_service.dart';
 
@@ -108,6 +110,19 @@ part 'graphql/graphql_service.dart';
 part 'graphql/performance_interceptor.dart';
 part 'iap/i_iap_service.dart';
 part 'iap/iap_service.dart';
+part 'notification/adapters/awesome_local_notification_service.dart';
+part 'notification/adapters/firebase_push_transport_service.dart';
+part 'notification/bootstrap/notification_bootstrap_service.dart';
+part 'notification/constants/notification_constants.dart';
+part 'notification/models/notification_models.dart';
+part 'notification/notification_core_config.dart';
+part 'notification/notification_service.dart';
+part 'notification/permissions/notification_permission_service.dart';
+part 'notification/routing/notification_interaction_service.dart';
+part 'notification/routing/notification_message_router.dart';
+part 'notification/runtime/notification_foreground_policy.dart';
+part 'notification/runtime/notification_token_service.dart';
+part 'notification/schedulers/notification_schedule_service.dart';
 part 'remote_config/firebase_remote_config_service.dart';
 part 'remote_config/i_remote_config.dart';
 part 'restful/app_interceptor.dart';
