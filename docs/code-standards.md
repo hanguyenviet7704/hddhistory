@@ -75,6 +75,12 @@ Notes:
 - Some existing modules do not have all subfolders (for example `common`, `setting`).
 - Do not force structural churn unless required by task scope.
 
+### Config service boundaries
+- `lib/config/services/notification/` keeps only `notification_service.dart` and `notification_core_config.dart` as app-facing files.
+- Keep notification imported into `lib/config/services/services.dart` as a regular library seam; do not reintroduce notification as a `part` file.
+- Keep notification internals grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`.
+- Do not leak `firebase_messaging`, `awesome_notifications`, or other transport-specific types outside the notification core public API.
+
 ## 6. Pagination and API Contract Standards
 - Use `PageBreakRequest` for paginated endpoints.
 - App-facing fields: `page`, `limit`, `orderBy`, `order`, `search`, `filter`.

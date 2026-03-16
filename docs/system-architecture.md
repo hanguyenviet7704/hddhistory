@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-12
+**Last Updated:** 2026-03-16
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -25,6 +25,16 @@ main_<flavor>.dart -> main.dart -> AppService.init()
 
 Each flavor sets `F.appFlavor` before calling shared `main()`.
 
+### App boot services
+`AppService._configService()` now awaits notification boot immediately after `Firebase.initializeApp(...)`.
+
+```text
+HydrateBlocService.initialize()
+  -> Firebase.initializeApp()
+  -> NotificationService.initialize(NotificationCoreConfig)
+  -> package/tracking/event/remote-config startup
+```
+
 ## 2. Layered Feature Architecture
 ```text
 lib/src/<feature>/
@@ -46,6 +56,13 @@ Widget/Page
 ### Shared foundations
 - `lib/config/`: DI, routing, services, themes, l10n.
 - `lib/core/`: base request/response/error/use-case abstractions, helper utilities.
+
+### Notification core boundary
+- Notification runtime lives under `lib/config/services/notification/`.
+- Public entry files stay limited to `notification_service.dart` and `notification_core_config.dart`.
+- `lib/config/services/services.dart` imports the notification facade as a normal library seam instead of declaring notification as a `part`.
+- Internal concerns are grouped by `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`.
+- App-facing notification APIs expose normalized payload, interaction, permission, token, and local scheduling contracts only. Firebase Messaging and Awesome Notifications types stay internal to the module.
 
 ## 3. Module Topology (`lib/src`)
 Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
