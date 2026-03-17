@@ -31,6 +31,28 @@ void main() {
       expect(request.payload['custom'], 'value');
     });
 
+    test('normalizes oversized source ids into a stable 32-bit local notification id', () {
+      const payload = NotificationPayload(
+        source: NotificationPayloadSource.remote,
+        sourceId: '9223372036854775807',
+        title: 'Oversized',
+        body: 'ID should be normalized',
+      );
+
+      final firstRequest = router.toLocalRequest(payload);
+      final secondRequest = router.toLocalRequest(payload);
+
+      expect(firstRequest.id, isNotNull);
+      expect(
+        firstRequest.id,
+        allOf(
+          greaterThanOrEqualTo(-0x80000000),
+          lessThanOrEqualTo(0x7FFFFFFF),
+        ),
+      );
+      expect(firstRequest.id, secondRequest.id);
+    });
+
     test('flattens nested map payloads from remote messages', () {
       final payload = router.fromRemoteMessage(
         const TransportRemoteMessage(
@@ -75,8 +97,7 @@ void main() {
       final payload = router.fromRemoteMessage(
         const TransportRemoteMessage(
           data: <String, dynamic>{
-            NotificationConstants.payloadNestedMessageKey:
-                '{"type":"promo","entityId":"promo-2","deeplink":"meup://promo/2"}',
+            NotificationConstants.payloadNestedMessageKey: '{"type":"promo","entityId":"promo-2","deeplink":"meup://promo/2"}',
           },
           messageId: 'remote-2',
         ),

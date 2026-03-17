@@ -81,6 +81,41 @@ void main() {
       await interactionService.dispose();
     });
 
+    test('normalizes oversized remote ids before rendering foreground local notifications', () async {
+      final pushTransport = _FakePushTransport();
+      final localNotifications = _FakeLocalNotifications();
+      final interactionService = NotificationInteractionService();
+      final bootstrap = _buildBootstrap(
+        pushTransport: pushTransport,
+        localNotifications: localNotifications,
+        interactionService: interactionService,
+      );
+
+      await bootstrap.initialize(config: const NotificationCoreConfig());
+      pushTransport.emitForeground(
+        const TransportRemoteMessage(
+          data: <String, dynamic>{'type': 'promo'},
+          messageId: '9223372036854775807',
+          title: 'Oversized message id',
+          body: 'Should still render on iOS',
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(localNotifications.shownRequests, hasLength(1));
+      expect(localNotifications.shownRequests.single.id, isNotNull);
+      expect(
+        localNotifications.shownRequests.single.id,
+        allOf(
+          greaterThanOrEqualTo(-0x80000000),
+          lessThanOrEqualTo(0x7FFFFFFF),
+        ),
+      );
+
+      await bootstrap.dispose();
+      await interactionService.dispose();
+    });
+
     test('publishes foreground interactions but skips rendering when policy blocks it', () async {
       final pushTransport = _FakePushTransport();
       final localNotifications = _FakeLocalNotifications();
@@ -287,10 +322,8 @@ class _FakePushTransport implements NotificationPushTransport {
     this.initialMessage,
   });
 
-  final StreamController<TransportRemoteMessage> _foregroundController =
-      StreamController<TransportRemoteMessage>.broadcast(sync: true);
-  final StreamController<TransportRemoteMessage> _openedController =
-      StreamController<TransportRemoteMessage>.broadcast(sync: true);
+  final StreamController<TransportRemoteMessage> _foregroundController = StreamController<TransportRemoteMessage>.broadcast(sync: true);
+  final StreamController<TransportRemoteMessage> _openedController = StreamController<TransportRemoteMessage>.broadcast(sync: true);
   final StreamController<String> _tokenController = StreamController<String>.broadcast(sync: true);
   String? token;
   TransportRemoteMessage? initialMessage;
@@ -343,8 +376,7 @@ class _FakeLocalNotifications implements NotificationLocalNotifications {
     this.initialAction,
   });
 
-  final StreamController<TransportLocalAction> _actionController =
-      StreamController<TransportLocalAction>.broadcast(sync: true);
+  final StreamController<TransportLocalAction> _actionController = StreamController<TransportLocalAction>.broadcast(sync: true);
   final List<NotificationRequest> shownRequests = <NotificationRequest>[];
   TransportLocalAction? initialAction;
   bool permissionGranted = true;

@@ -111,8 +111,7 @@ abstract class AwesomeLocalNotificationsGateway {
 }
 
 class DefaultAwesomeLocalNotificationsGateway implements AwesomeLocalNotificationsGateway {
-  DefaultAwesomeLocalNotificationsGateway({AwesomeNotifications? notifications})
-    : _notifications = notifications ?? AwesomeNotifications();
+  DefaultAwesomeLocalNotificationsGateway({AwesomeNotifications? notifications}) : _notifications = notifications ?? AwesomeNotifications();
 
   final AwesomeNotifications _notifications;
 
@@ -228,33 +227,53 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
   @override
   Future<void> show(NotificationRequest request) async {
     await initialize();
-    LogDev.data('[AwesomeLocalNotificationService] show: id=${request.id} title="${request.title}"');
-    await _gateway.createNotification(content: _buildContent(request));
+    if (!await _canCreateNotification(operation: 'show', requestedId: request.id)) {
+      return;
+    }
+    final content = _buildContent(request);
+    LogDev.data(
+      '[AwesomeLocalNotificationService] show: '
+      'requestedId=${request.id} normalizedId=${content.id} title="${request.title}"',
+    );
+    await _createNotification(
+      operation: 'show',
+      requestedId: request.id,
+      content: content,
+    );
   }
 
   @override
   Future<void> schedule(NotificationScheduleRequest request) async {
     await initialize();
+    if (!await _canCreateNotification(operation: 'schedule', requestedId: request.notification.id)) {
+      return;
+    }
+    final content = _buildContent(request.notification);
     LogDev.data(
       '[AwesomeLocalNotificationService] schedule: '
-      'id=${request.notification.id} scheduledAt=${request.scheduledAt} interval=${request.interval}',
+      'requestedId=${request.notification.id} normalizedId=${content.id} '
+      'scheduledAt=${request.scheduledAt} interval=${request.interval}',
     );
-    await _gateway.createNotification(
-      content: _buildContent(request.notification),
+    await _createNotification(
+      operation: 'schedule',
+      requestedId: request.notification.id,
+      content: content,
       schedule: await _buildSchedule(request),
     );
   }
 
   @override
   Future<void> cancel(int id) async {
-    LogDev.data('[AwesomeLocalNotificationService] cancel: id=$id');
-    await _gateway.cancel(id);
+    final normalizedId = _normalizeNotificationId(id);
+    LogDev.data('[AwesomeLocalNotificationService] cancel: requestedId=$id normalizedId=$normalizedId');
+    await _gateway.cancel(normalizedId);
   }
 
   @override
   Future<void> cancelSchedule(int id) {
-    LogDev.data('[AwesomeLocalNotificationService] cancelSchedule: id=$id');
-    return _gateway.cancelSchedule(id);
+    final normalizedId = _normalizeNotificationId(id);
+    LogDev.data('[AwesomeLocalNotificationService] cancelSchedule: requestedId=$id normalizedId=$normalizedId');
+    return _gateway.cancelSchedule(normalizedId);
   }
 
   @override
@@ -331,8 +350,9 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
   }
 
   NotificationContent _buildContent(NotificationRequest request) {
+    final notificationId = _normalizeNotificationId(request.id ?? _generateNotificationId());
     return NotificationContent(
-      id: request.id ?? DateTime.now().millisecondsSinceEpoch.remainder(1 << 31),
+      id: notificationId,
       channelKey: _channelConfig.channelKey,
       title: request.title,
       body: request.body,
@@ -342,6 +362,46 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
       actionType: ActionType.Default,
       notificationLayout: request.imageUrl == null ? NotificationLayout.Default : NotificationLayout.BigPicture,
     );
+  }
+
+  Future<bool> _canCreateNotification({
+    required String operation,
+    required int? requestedId,
+  }) async {
+    final isAllowed = await _gateway.isNotificationAllowed();
+    if (isAllowed) {
+      return true;
+    }
+
+    LogDev.warning(
+      '[AwesomeLocalNotificationService] skip $operation because notifications are disabled: requestedId=$requestedId',
+    );
+    return false;
+  }
+
+  Future<void> _createNotification({
+    required String operation,
+    required int? requestedId,
+    required NotificationContent content,
+    NotificationSchedule? schedule,
+  }) async {
+    try {
+      await _gateway.createNotification(
+        content: content,
+        schedule: schedule,
+      );
+    } on PlatformException catch (error, stackTrace) {
+      if (error.code == 'INSUFFICIENT_PERMISSIONS') {
+        LogDev.warning(
+          '[AwesomeLocalNotificationService] skip $operation because the platform rejected notification permissions: '
+          'requestedId=$requestedId normalizedId=${content.id}',
+        );
+        return;
+      }
+
+      LogDev.error('[AwesomeLocalNotificationService] $operation failed: $error \r\n $stackTrace');
+      rethrow;
+    }
   }
 
   Future<NotificationSchedule> _buildSchedule(NotificationScheduleRequest request) async {

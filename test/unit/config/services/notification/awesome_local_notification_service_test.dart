@@ -3,6 +3,7 @@ import 'dart:isolate';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:meup/config/services/services.dart';
 
@@ -26,15 +27,17 @@ void main() {
       final nextAction = service.actionStream.first;
 
       await service.registerListeners();
-      await gateway.onActionReceivedMethod!(_receivedAction(
-        id: 42,
-        title: 'Practice reminder',
-        body: 'Time to review',
-        payload: const <String, String?>{'lessonId': 'lesson-1'},
-        buttonKeyPressed: 'open',
-        actionLifeCycle: NotificationLifeCycle.Foreground,
-        actionDate: '2026-03-16 10:00:00',
-      ));
+      await gateway.onActionReceivedMethod!(
+        _receivedAction(
+          id: 42,
+          title: 'Practice reminder',
+          body: 'Time to review',
+          payload: const <String, String?>{'lessonId': 'lesson-1'},
+          buttonKeyPressed: 'open',
+          actionLifeCycle: NotificationLifeCycle.Foreground,
+          actionDate: '2026-03-16 10:00:00',
+        ),
+      );
 
       final action = await nextAction.timeout(const Duration(seconds: 1));
 
@@ -55,14 +58,16 @@ void main() {
       final completer = Completer<TransportLocalAction>();
 
       await service.registerListeners();
-      await gateway.onActionReceivedMethod!(_receivedAction(
-        id: 7003,
-        title: 'TERM Verify',
-        body: 'Tap terminated verify',
-        payload: const <String, String?>{'case': 'terminated'},
-        actionLifeCycle: NotificationLifeCycle.Terminated,
-        actionDate: '2026-03-17 08:50:47',
-      ));
+      await gateway.onActionReceivedMethod!(
+        _receivedAction(
+          id: 7003,
+          title: 'TERM Verify',
+          body: 'Tap terminated verify',
+          payload: const <String, String?>{'case': 'terminated'},
+          actionLifeCycle: NotificationLifeCycle.Terminated,
+          actionDate: '2026-03-17 08:50:47',
+        ),
+      );
 
       final subscription = service.actionStream.listen((action) {
         if (!completer.isCompleted) {
@@ -91,7 +96,7 @@ void main() {
           actionLifeCycle: NotificationLifeCycle.Background,
           actionDate: '2026-03-17 09:00:00',
         ),
-        permissionGranted: false,
+        permissionGranted: true,
         requestPermissionResult: true,
       );
       final service = AwesomeLocalNotificationService(gateway: gateway);
@@ -139,12 +144,100 @@ void main() {
       expect(initialAction?.id, 9);
       expect(initialAction?.fromBackground, isTrue);
       expect(initialAction?.payload['kind'], 'initial');
-      expect(isPermissionGranted, isFalse);
+      expect(isPermissionGranted, isTrue);
       expect(permissionRequested, isTrue);
       expect(gateway.cancelledIds, <int>[1]);
       expect(gateway.cancelledScheduleIds, <int>[2]);
       expect(gateway.cancelAllCalls, 1);
       expect(gateway.cancelAllSchedulesCalls, 1);
+
+      await service.dispose();
+    });
+
+    test('normalizes oversized ids for create and cancel operations', () async {
+      final gateway = _FakeAwesomeLocalNotificationsGateway();
+      final service = AwesomeLocalNotificationService(gateway: gateway);
+      final oversizedId = 9223372036854775807;
+
+      await service.show(
+        NotificationRequest(
+          id: oversizedId,
+          title: 'Oversized show',
+        ),
+      );
+      await service.schedule(
+        NotificationScheduleRequest(
+          notification: NotificationRequest(
+            id: oversizedId,
+            title: 'Oversized schedule',
+          ),
+          interval: const Duration(minutes: 5),
+        ),
+      );
+      await service.cancel(oversizedId);
+      await service.cancelSchedule(oversizedId);
+
+      final normalizedIds = gateway.createdNotifications.map((content) => content.id).toSet();
+
+      expect(gateway.createdNotifications, hasLength(2));
+      expect(normalizedIds, hasLength(1));
+      expect(
+        normalizedIds.single,
+        allOf(
+          greaterThanOrEqualTo(-0x80000000),
+          lessThanOrEqualTo(0x7FFFFFFF),
+        ),
+      );
+      expect(gateway.cancelledIds, <int>[normalizedIds.single!]);
+      expect(gateway.cancelledScheduleIds, <int>[normalizedIds.single!]);
+
+      await service.dispose();
+    });
+
+    test('skips show and schedule when notifications are disabled', () async {
+      final gateway = _FakeAwesomeLocalNotificationsGateway(
+        permissionGranted: false,
+      );
+      final service = AwesomeLocalNotificationService(gateway: gateway);
+
+      await service.show(
+        const NotificationRequest(
+          id: 11,
+          title: 'Disabled show',
+        ),
+      );
+      await service.schedule(
+        const NotificationScheduleRequest(
+          notification: NotificationRequest(
+            id: 12,
+            title: 'Disabled schedule',
+          ),
+          interval: Duration(minutes: 10),
+        ),
+      );
+
+      expect(gateway.createdNotifications, isEmpty);
+
+      await service.dispose();
+    });
+
+    test('swallows insufficient permission errors returned by the platform', () async {
+      final gateway = _FakeAwesomeLocalNotificationsGateway(
+        createNotificationError: PlatformException(
+          code: 'INSUFFICIENT_PERMISSIONS',
+          message: 'Notifications are disabled',
+        ),
+      );
+      final service = AwesomeLocalNotificationService(gateway: gateway);
+
+      await service.show(
+        const NotificationRequest(
+          id: 13,
+          title: 'Platform denied',
+        ),
+      );
+
+      expect(gateway.createdNotifications, hasLength(1));
 
       await service.dispose();
     });
@@ -161,12 +254,14 @@ void main() {
       expect(actionPort, isNotNull);
 
       actionPort!.send('unsupported');
-      actionPort.send(_receivedAction(
-        id: 77,
-        title: 'Port forwarded',
-        payload: const <String, String?>{'source': 'port'},
-        actionLifeCycle: NotificationLifeCycle.Foreground,
-      ).toMap());
+      actionPort.send(
+        _receivedAction(
+          id: 77,
+          title: 'Port forwarded',
+          payload: const <String, String?>{'source': 'port'},
+          actionLifeCycle: NotificationLifeCycle.Foreground,
+        ).toMap(),
+      );
       await Future<void>.delayed(Duration.zero);
 
       expect(received, hasLength(1));
@@ -294,12 +389,14 @@ class _FakeAwesomeLocalNotificationsGateway implements AwesomeLocalNotifications
     this.initialAction,
     this.permissionGranted = true,
     this.requestPermissionResult = true,
+    this.createNotificationError,
   });
 
   ActionHandler? onActionReceivedMethod;
   ReceivedAction? initialAction;
   bool permissionGranted;
   bool requestPermissionResult;
+  Object? createNotificationError;
   int initializeCalls = 0;
   int cancelAllCalls = 0;
   int cancelAllSchedulesCalls = 0;
@@ -327,6 +424,9 @@ class _FakeAwesomeLocalNotificationsGateway implements AwesomeLocalNotifications
   }) async {
     createdNotifications.add(content);
     createdSchedules[content.id!] = schedule;
+    if (createNotificationError case final PlatformException error) {
+      throw error;
+    }
     return true;
   }
 

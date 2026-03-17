@@ -80,7 +80,7 @@ class NotificationMessageRouter {
     requestPayload[NotificationConstants.payloadSourceKey] = payload.source.name;
 
     return NotificationRequest(
-      id: id ?? _tryParseInt(payload.sourceId),
+      id: id ?? _notificationIdFromString(payload.sourceId),
       title: payload.title.isNotEmpty ? payload.title : NotificationConstants.defaultTitle,
       body: payload.body.isNotEmpty ? payload.body : NotificationConstants.defaultBody,
       imageUrl: payload.imageUrl,
@@ -159,12 +159,5 @@ class NotificationMessageRouter {
       }
     }
     return null;
-  }
-
-  int? _tryParseInt(String? value) {
-    if (value == null) {
-      return null;
-    }
-    return int.tryParse(value);
   }
 }
