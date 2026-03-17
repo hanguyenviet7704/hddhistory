@@ -1,4 +1,4 @@
-part of '../../setting.dart';
+part of '../../../setting.dart';
 
 @lazySingleton
 class SettingCubit extends Cubit<SettingState> with CubitUseCaseHandlerMixin<SettingState> {

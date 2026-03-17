@@ -13,9 +13,9 @@ import 'package:meup/meup.dart';
 part 'domain/entities/setting_entity.dart';
 part 'domain/repositories/i_setting_repository.dart';
 part 'domain/usecases/get_setting_usecase.dart';
-part 'presentation/cubits/setting_cubit.dart';
+part 'presentation/cubits/setting/setting_cubit.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/cubits/setting_state.dart';
+part 'presentation/cubits/setting/setting_state.dart';
 part 'presentation/pages/change_language_page.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/setting_page.dart';

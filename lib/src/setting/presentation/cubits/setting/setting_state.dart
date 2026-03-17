@@ -1,5 +1,5 @@
 
-part of '../../setting.dart';
+part of '../../../setting.dart';
 
 enum SettingStatus { initial, loading, success, failure }
 
