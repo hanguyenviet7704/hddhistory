@@ -121,6 +121,7 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
                   AppText(
                     context.l10n.onboarding.onboardingNotificationRequestTitle,
                     textAlign: TextAlign.center,
+                    maxLines: 2,
                     style: AppStyle.textBold20.copyWith(
                       color: const Color(0xFF110751),
                       height: 1.35,
@@ -129,6 +130,7 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
                   12.verticalSpace,
                   AppText(
                     context.l10n.onboarding.onboardingNotificationRequestBody,
+                    maxLines: 5,
                     textAlign: TextAlign.center,
                     style: AppStyle.text16.copyWith(
                       color: const Color(0xFF5E6282),
