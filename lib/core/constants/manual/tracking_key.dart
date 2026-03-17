@@ -59,6 +59,9 @@ mixin TrackingKey {
   static const String obdMotivation3Click = 'obd_motivation3_click';
   static const String obdCompleteScrView = 'obd_complete_scr_view';
   static const String obdCompleteClick = 'obd_complete_click';
+  static const String obdNotificationGateView = 'obd_notification_gate_view';
+  static const String obdNotificationNotifyMeClick = 'obd_notification_notify_me_click';
+  static const String obdNotificationMaybeLaterClick = 'obd_notification_maybe_later_click';
   static const String obBranchingP1View = 'ob_branching_p1_view';
   static const String obBranchingP1Continue = 'ob_branching_p1_continue';
   static const String obBranchingContentView = 'ob_branching_content_view';
@@ -200,6 +203,8 @@ mixin TrackingKey {
   static const String settingRestorePurcClick = 'setting_restore_purc_click';
   static const String settingLogoutClick = 'setting_logout_click';
   static const String settingPremiumClick = 'setting_premium_click';
+  static const String settingNotificationToggleOn = 'setting_notification_toggle_on';
+  static const String settingNotificationToggleOff = 'setting_notification_toggle_off';
   static const String premiumScrView = 'premium_scr_view';
   static const String premiumScroll = 'premium_scroll';
   static const String premiumInforSwipe = 'premium_infor_swipe';

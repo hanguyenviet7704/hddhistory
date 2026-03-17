@@ -7,7 +7,7 @@ class SettingPage extends StatefulWidget {
   State<SettingPage> createState() => _SettingPageState();
 }
 
-class _SettingPageState extends State<SettingPage> {
+class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   bool _hasTrackedScroll = false;
   bool _hasTrackedView = false;
@@ -15,9 +15,13 @@ class _SettingPageState extends State<SettingPage> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     context.read<IapCubit>().loadIapProducts();
     _scrollController.addListener(_handleScroll);
-    WidgetsBinding.instance.addPostFrameCallback((_) => _trackView());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackView();
+      _refreshNotificationState();
+    });
   }
 
   void _trackView() {
@@ -33,12 +37,50 @@ class _SettingPageState extends State<SettingPage> {
     _hasTrackedScroll = true;
   }
 
+  void _refreshNotificationState() {
+    context.read<NotificationCubit>().refreshPermissionState(
+      syncAuthorizedPreference: true,
+    );
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != AppLifecycleState.resumed || !mounted) return;
+    _refreshNotificationState();
+  }
+
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _scrollController
       ..removeListener(_handleScroll)
       ..dispose();
     super.dispose();
+  }
+
+  void _onNotificationToggle(bool value) {
+    if (value) {
+      AppService.instance.appTrackingService.trackSettingNotificationToggleOn();
+    } else {
+      AppService.instance.appTrackingService.trackSettingNotificationToggleOff();
+    }
+    context.read<NotificationCubit>().toggleFromSettings(value);
+  }
+
+  String _resolveNotificationSubtitle(BuildContext context, NotificationState state) {
+    if (!state.hasLoadedPermissionState) {
+      return '${context.l10n.setting.notificationEffectiveStatusLabel}: ${context.l10n.setting.notificationStatusDisabled}';
+    }
+    final permissionLabel = switch (state.permissionStatus) {
+      NotificationPermissionStatus.authorized => context.l10n.setting.notificationPermissionAuthorized,
+      NotificationPermissionStatus.provisional => context.l10n.setting.notificationPermissionProvisional,
+      NotificationPermissionStatus.denied => context.l10n.setting.notificationPermissionDenied,
+      NotificationPermissionStatus.notDetermined when state.isCapabilityUnavailable => context.l10n.setting.notificationPermissionNotApplicable,
+      NotificationPermissionStatus.notDetermined => context.l10n.setting.notificationPermissionNotDetermined,
+      NotificationPermissionStatus.unsupported => context.l10n.setting.notificationPermissionNotApplicable,
+    };
+    final effectiveStatus = state.isEffectivelyEnabled ? context.l10n.setting.notificationStatusEnabled : context.l10n.setting.notificationStatusDisabled;
+    return '${context.l10n.setting.notificationEffectiveStatusLabel}: $effectiveStatus | ${context.l10n.setting.notificationPermissionStatusLabel}: $permissionLabel';
   }
 
   @override
@@ -69,6 +111,18 @@ class _SettingPageState extends State<SettingPage> {
                         onTap: () {
                           AppService.instance.appTrackingService.trackSettingLanguageClick();
                           const ChangeLanguageRoute().go(context);
+                        },
+                      ),
+                      BlocBuilder<NotificationCubit, NotificationState>(
+                        builder: (context, notificationState) {
+                          return SettingSwitchTile(
+                            iconAsset: AppAsset.svg.app.icBell,
+                            title: context.l10n.setting.settingRowNoti,
+                            subtitle: _resolveNotificationSubtitle(context, notificationState),
+                            value: notificationState.isEffectivelyEnabled,
+                            isLoading: notificationState.isLoading,
+                            onChanged: notificationState.isCapabilityUnavailable || notificationState.isLoading ? null : _onNotificationToggle,
+                          );
                         },
                       ),
                       if (user.iapSubscriptions.isNotEmpty) ...[

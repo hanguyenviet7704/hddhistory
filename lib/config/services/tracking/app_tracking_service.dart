@@ -456,6 +456,21 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(TrackingKey.obdCompleteClick);
   }
 
+  @override
+  Future<void> trackObdNotificationGateView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationGateView);
+  }
+
+  @override
+  Future<void> trackObdNotificationNotifyMeClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationNotifyMeClick);
+  }
+
+  @override
+  Future<void> trackObdNotificationMaybeLaterClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationMaybeLaterClick);
+  }
+
   //* Home events
   @override
   Future<void> trackHomeScrView() async {
@@ -1589,6 +1604,16 @@ final class AppTrackingService extends ITrackingService {
   @override
   Future<void> trackSettingPremiumClick() async {
     _appTrackingService.trackEvent(TrackingKey.settingPremiumClick);
+  }
+
+  @override
+  Future<void> trackSettingNotificationToggleOn() async {
+    _appTrackingService.trackEvent(TrackingKey.settingNotificationToggleOn);
+  }
+
+  @override
+  Future<void> trackSettingNotificationToggleOff() async {
+    _appTrackingService.trackEvent(TrackingKey.settingNotificationToggleOff);
   }
 
   @override

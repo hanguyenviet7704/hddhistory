@@ -64,6 +64,9 @@ abstract interface class ITrackingService {
   Future<void> trackObdMotivation3Click();
   Future<void> trackObdCompleteScrView();
   Future<void> trackObdCompleteClick();
+  Future<void> trackObdNotificationGateView();
+  Future<void> trackObdNotificationNotifyMeClick();
+  Future<void> trackObdNotificationMaybeLaterClick();
 
   //* Home events
   Future<void> trackHomeScrView();
@@ -277,6 +280,8 @@ abstract interface class ITrackingService {
   Future<void> trackSettingRestorePurchClick();
   Future<void> trackSettingLogoutClick();
   Future<void> trackSettingPremiumClick();
+  Future<void> trackSettingNotificationToggleOn();
+  Future<void> trackSettingNotificationToggleOff();
   Future<void> trackPremiumScrView();
   Future<void> trackPremiumScroll();
   Future<void> trackPremiumInforSwipe();
