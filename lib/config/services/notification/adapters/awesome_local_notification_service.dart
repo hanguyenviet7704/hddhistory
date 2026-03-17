@@ -111,7 +111,10 @@ abstract class AwesomeLocalNotificationsGateway {
 }
 
 class DefaultAwesomeLocalNotificationsGateway implements AwesomeLocalNotificationsGateway {
-  final AwesomeNotifications _notifications = AwesomeNotifications();
+  DefaultAwesomeLocalNotificationsGateway({AwesomeNotifications? notifications})
+    : _notifications = notifications ?? AwesomeNotifications();
+
+  final AwesomeNotifications _notifications;
 
   @override
   Future<void> cancel(int id) => _notifications.cancel(id);

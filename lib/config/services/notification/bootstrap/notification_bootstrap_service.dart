@@ -33,6 +33,7 @@ class NotificationBootstrapService {
   bool _pushInitialized = false;
   bool _localInitialized = false;
   bool _initialInteractionRestored = false;
+  bool _initPermissionRequested = false;
 
   Future<void> initialize({
     required NotificationCoreConfig config,
@@ -74,12 +75,13 @@ class NotificationBootstrapService {
       LogDev.info('[NotificationBootstrapService] push transport initialized');
     }
 
-    if (_config.autoRequestPermissionOnInit) {
+    if (_config.autoRequestPermissionOnInit && !_initPermissionRequested) {
       LogDev.data('[NotificationBootstrapService] requesting permission during initialize');
       await _permissionService.requestPermission(
         enablePush: _config.enablePush,
         enableLocal: _config.enableLocal,
       );
+      _initPermissionRequested = true;
     }
 
     if (!_initialInteractionRestored && (_config.enablePush || _config.enableLocal)) {

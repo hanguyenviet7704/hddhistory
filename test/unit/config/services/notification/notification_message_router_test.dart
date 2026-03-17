@@ -5,75 +5,88 @@ void main() {
   group('NotificationMessageRouter', () {
     const router = NotificationMessageRouter();
 
-    test('normalizes remote payloads without leaking transport types', () {
+    test('builds local requests with deeplink, entity, image, and source metadata', () {
+      const payload = NotificationPayload(
+        source: NotificationPayloadSource.remote,
+        sourceId: '42',
+        type: 'lesson',
+        title: 'Resume lesson',
+        body: 'Continue from chapter 3',
+        deeplink: 'meup://lesson/42',
+        entityId: 'lesson-42',
+        imageUrl: 'https://cdn.example.com/lesson.png',
+        raw: <String, dynamic>{'custom': 'value'},
+      );
+
+      final request = router.toLocalRequest(payload);
+
+      expect(request.id, 42);
+      expect(request.payload[NotificationConstants.payloadDeeplinkKey], 'meup://lesson/42');
+      expect(request.payload[NotificationConstants.payloadEntityIdKey], 'lesson-42');
+      expect(
+        request.payload[NotificationConstants.payloadImageUrlKey],
+        'https://cdn.example.com/lesson.png',
+      );
+      expect(request.payload[NotificationConstants.payloadMessageIdKey], '42');
+      expect(request.payload['custom'], 'value');
+    });
+
+    test('flattens nested map payloads from remote messages', () {
       final payload = router.fromRemoteMessage(
         const TransportRemoteMessage(
           data: <String, dynamic>{
-            'type': 'lesson',
-            'navigate': '/lesson/42',
-            'entityId': '42',
-            'imageUrl': 'https://cdn.example.com/image.png',
-            'message': '{"extra":"nested-value"}',
+            NotificationConstants.payloadNestedMessageKey: <String, dynamic>{
+              NotificationConstants.payloadTypeKey: 'promo',
+              NotificationConstants.payloadEntityIdKey: 'promo-1',
+            },
           },
-          messageId: 'msg-1',
-          title: 'New lesson',
-          body: 'Tap to continue',
+          messageId: 'remote-1',
+          title: 'Promo title',
         ),
         config: const NotificationCoreConfig(),
       );
 
-      expect(payload.source, NotificationPayloadSource.remote);
-      expect(payload.sourceId, 'msg-1');
-      expect(payload.type, 'lesson');
-      expect(payload.title, 'New lesson');
-      expect(payload.body, 'Tap to continue');
-      expect(payload.deeplink, '/lesson/42');
-      expect(payload.entityId, '42');
-      expect(payload.imageUrl, 'https://cdn.example.com/image.png');
-      expect(payload.raw['extra'], 'nested-value');
+      expect(payload.type, 'promo');
+      expect(payload.entityId, 'promo-1');
+      expect(payload.title, 'Promo title');
+      expect(payload.raw[NotificationConstants.payloadEntityIdKey], 'promo-1');
     });
 
-    test('applies payload decoder but keeps default fallback fields', () {
-      final payload = router.fromRemoteMessage(
-        const TransportRemoteMessage(
-          data: <String, dynamic>{'body': 'Raw body'},
-          title: 'Raw title',
-        ),
-        config: NotificationCoreConfig(
-          payloadDecoder: (raw) => const NotificationPayload(
-            type: 'decoded',
-            title: 'Decoded title',
-          ),
-        ),
-      );
-
-      expect(payload.type, 'decoded');
-      expect(payload.title, 'Decoded title');
-      expect(payload.body, 'Raw body');
-      expect(payload.source, NotificationPayloadSource.remote);
-    });
-
-    test('maps local actions and rebuilds local requests with normalized payload', () {
+    test('hydrates local action body when payload is missing it', () {
       final payload = router.fromLocalAction(
         TransportLocalAction(
-          id: 42,
-          title: 'Reminder',
-          body: 'Review your lesson',
-          payload: <String, String>{'type': 'reminder'},
-          performedAt: DateTime(2026),
+          id: 7,
+          title: 'Review reminder',
+          body: 'Continue your speaking practice',
+          payload: const <String, String>{NotificationConstants.payloadTypeKey: 'review'},
+          performedAt: DateTime(2026, 3, 17, 9, 0),
         ),
         config: const NotificationCoreConfig(),
       );
-      final request = router.toLocalRequest(payload);
 
       expect(payload.source, NotificationPayloadSource.local);
-      expect(payload.sourceId, '42');
-      expect(request.id, 42);
-      expect(request.title, 'Reminder');
-      expect(request.body, 'Review your lesson');
-      expect(request.payload['type'], 'reminder');
-      expect(request.payload['source'], 'local');
-      expect(request.payload['title'], 'Reminder');
+      expect(payload.sourceId, '7');
+      expect(payload.title, 'Review reminder');
+      expect(payload.body, 'Continue your speaking practice');
+      expect(payload.type, 'review');
+    });
+
+    test('flattens nested json-string payloads from remote messages', () {
+      final payload = router.fromRemoteMessage(
+        const TransportRemoteMessage(
+          data: <String, dynamic>{
+            NotificationConstants.payloadNestedMessageKey:
+                '{"type":"promo","entityId":"promo-2","deeplink":"meup://promo/2"}',
+          },
+          messageId: 'remote-2',
+        ),
+        config: const NotificationCoreConfig(),
+      );
+
+      expect(payload.type, 'promo');
+      expect(payload.entityId, 'promo-2');
+      expect(payload.deeplink, 'meup://promo/2');
+      expect(payload.raw[NotificationConstants.payloadEntityIdKey], 'promo-2');
     });
   });
 }

@@ -16,15 +16,24 @@ class NotificationPermissionService {
     required NotificationLocalPermissionProvider localPermissionProvider,
     bool? isApplePlatform,
     bool? isAndroidPlatform,
+    Future<PermissionStatus> Function()? systemPermissionStatus,
+    Future<PermissionStatus> Function()? systemPermissionRequest,
+    Future<void> Function()? openSettingsAction,
   }) : _pushPermissionProvider = pushPermissionProvider,
        _localPermissionProvider = localPermissionProvider,
        _isApplePlatform = isApplePlatform ?? (Platform.isIOS || Platform.isMacOS),
-       _isAndroidPlatform = isAndroidPlatform ?? Platform.isAndroid;
+       _isAndroidPlatform = isAndroidPlatform ?? Platform.isAndroid,
+       _systemPermissionStatus = systemPermissionStatus ?? (() => Permission.notification.status),
+       _systemPermissionRequest = systemPermissionRequest ?? (() => Permission.notification.request()),
+       _openSettingsAction = openSettingsAction ?? (() async { await openAppSettings(); });
 
   final NotificationPushPermissionProvider _pushPermissionProvider;
   final NotificationLocalPermissionProvider _localPermissionProvider;
   final bool _isApplePlatform;
   final bool _isAndroidPlatform;
+  final Future<PermissionStatus> Function() _systemPermissionStatus;
+  final Future<PermissionStatus> Function() _systemPermissionRequest;
+  final Future<void> Function() _openSettingsAction;
 
   Future<NotificationPermissionState> getPermissionState({
     required bool enablePush,
@@ -76,7 +85,7 @@ class NotificationPermissionService {
 
   Future<void> openSettings() async {
     LogDev.data('[NotificationPermissionService] openSettings');
-    await openAppSettings();
+    await _openSettingsAction();
   }
 
   NotificationPermissionState _disabledState() {
@@ -145,7 +154,7 @@ class NotificationPermissionService {
     required bool enableLocal,
     required bool shouldRequest,
   }) async {
-    final permissionStatus = shouldRequest ? await Permission.notification.request() : await Permission.notification.status;
+    final permissionStatus = shouldRequest ? await _systemPermissionRequest() : await _systemPermissionStatus();
     final mappedStatus = _mapPermissionStatus(permissionStatus);
     final isGranted = mappedStatus.isAuthorized;
 

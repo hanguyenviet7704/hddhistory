@@ -10,36 +10,157 @@ abstract interface class NotificationPushTransport implements NotificationPushPe
   Stream<String> get tokenRefreshStream;
 }
 
+typedef FirebasePushTransportForegroundPresentationSetter =
+    Future<void> Function(bool alert, bool badge, bool sound);
+typedef FirebasePushTransportBackgroundRegistrar = void Function(BackgroundMessageHandler handler);
+typedef FirebasePushTransportInitialMessageGetter = Future<RemoteMessage?> Function();
+typedef FirebasePushTransportTokenGetter = Future<String?> Function();
+typedef FirebasePushTransportNotificationSettingsGetter = Future<NotificationSettings> Function();
+typedef FirebasePushTransportPermissionRequester =
+    Future<NotificationSettings> Function(
+      bool alert,
+      bool badge,
+      bool sound,
+      bool announcement,
+      bool carPlay,
+      bool criticalAlert,
+      bool provisional,
+      bool providesAppNotificationSettings,
+    );
+
+Future<void> _defaultFirebasePushTransportInitializeApp() async {
+  await Firebase.initializeApp(options: F.firebaseOptions);
+}
+
+NotificationMessageRouter _defaultFirebasePushTransportMessageRouterFactory() => const NotificationMessageRouter();
+
+NotificationLocalNotifications _defaultFirebasePushTransportLocalNotificationsFactory() {
+  return AwesomeLocalNotificationService();
+}
+
+Future<void> _defaultFirebasePushTransportConfigureForegroundPresentation(bool alert, bool badge, bool sound) {
+  return FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
+    alert: alert,
+    badge: badge,
+    sound: sound,
+  );
+}
+
+Future<RemoteMessage?> _defaultFirebasePushTransportGetInitialMessage() {
+  return FirebaseMessaging.instance.getInitialMessage();
+}
+
+Future<String?> _defaultFirebasePushTransportGetToken() {
+  return FirebaseMessaging.instance.getToken();
+}
+
+Stream<String> _defaultFirebasePushTransportTokenRefreshStream() {
+  return FirebaseMessaging.instance.onTokenRefresh;
+}
+
+Future<NotificationSettings> _defaultFirebasePushTransportGetNotificationSettings() {
+  return FirebaseMessaging.instance.getNotificationSettings();
+}
+
+Future<NotificationSettings> _defaultFirebasePushTransportRequestPermission(
+  bool alert,
+  bool badge,
+  bool sound,
+  bool announcement,
+  bool carPlay,
+  bool criticalAlert,
+  bool provisional,
+  bool providesAppNotificationSettings,
+) {
+  return FirebaseMessaging.instance.requestPermission(
+    alert: alert,
+    badge: badge,
+    sound: sound,
+    announcement: announcement,
+    carPlay: carPlay,
+    criticalAlert: criticalAlert,
+    provisional: provisional,
+    providesAppNotificationSettings: providesAppNotificationSettings,
+  );
+}
+
+Future<void> Function() _firebasePushTransportInitializeApp = _defaultFirebasePushTransportInitializeApp;
+NotificationMessageRouter Function() _firebasePushTransportMessageRouterFactory =
+    _defaultFirebasePushTransportMessageRouterFactory;
+NotificationLocalNotifications Function() _firebasePushTransportLocalNotificationsFactory =
+    _defaultFirebasePushTransportLocalNotificationsFactory;
+
+@visibleForTesting
+void debugConfigureFirebasePushTransportDependencies({
+  Future<void> Function()? initializeApp,
+  NotificationMessageRouter Function()? messageRouterFactory,
+  NotificationLocalNotifications Function()? localNotificationsFactory,
+}) {
+  _firebasePushTransportInitializeApp = initializeApp ?? _defaultFirebasePushTransportInitializeApp;
+  _firebasePushTransportMessageRouterFactory =
+      messageRouterFactory ?? _defaultFirebasePushTransportMessageRouterFactory;
+  _firebasePushTransportLocalNotificationsFactory =
+      localNotificationsFactory ?? _defaultFirebasePushTransportLocalNotificationsFactory;
+}
+
 class FirebasePushTransportService implements NotificationPushTransport {
-  FirebasePushTransportService({FirebaseMessaging? messaging}) : _messaging = messaging ?? FirebaseMessaging.instance;
+  FirebasePushTransportService({
+    FirebasePushTransportForegroundPresentationSetter? configureForegroundPresentation,
+    FirebasePushTransportBackgroundRegistrar? backgroundHandlerRegistrar,
+    Stream<RemoteMessage>? foregroundRemoteMessages,
+    Stream<RemoteMessage>? openedRemoteMessages,
+    FirebasePushTransportInitialMessageGetter? initialMessageGetter,
+    FirebasePushTransportTokenGetter? tokenGetter,
+    Stream<String>? tokenRefreshEvents,
+    FirebasePushTransportNotificationSettingsGetter? notificationSettingsGetter,
+    FirebasePushTransportPermissionRequester? permissionRequester,
+  }) : _configureForegroundPresentation = configureForegroundPresentation,
+       _backgroundHandlerRegistrar = backgroundHandlerRegistrar,
+       _foregroundMessageStream = foregroundRemoteMessages,
+       _openedMessageStream = openedRemoteMessages,
+       _getInitialMessage = initialMessageGetter,
+       _getToken = tokenGetter,
+       _tokenRefreshStream = tokenRefreshEvents,
+       _getNotificationSettings = notificationSettingsGetter,
+       _requestPermission = permissionRequester;
 
-  final FirebaseMessaging _messaging;
+  final FirebasePushTransportForegroundPresentationSetter? _configureForegroundPresentation;
+  final FirebasePushTransportBackgroundRegistrar? _backgroundHandlerRegistrar;
+  final Stream<RemoteMessage>? _foregroundMessageStream;
+  final Stream<RemoteMessage>? _openedMessageStream;
+  final FirebasePushTransportInitialMessageGetter? _getInitialMessage;
+  final FirebasePushTransportTokenGetter? _getToken;
+  final Stream<String>? _tokenRefreshStream;
+  final FirebasePushTransportNotificationSettingsGetter? _getNotificationSettings;
+  final FirebasePushTransportPermissionRequester? _requestPermission;
 
   @override
-  Stream<TransportRemoteMessage> get foregroundMessages => FirebaseMessaging.onMessage.map(_mapRemoteMessage);
+  Stream<TransportRemoteMessage> get foregroundMessages =>
+      (_foregroundMessageStream ?? FirebaseMessaging.onMessage).map(_mapRemoteMessage);
 
   @override
-  Stream<TransportRemoteMessage> get openedMessages => FirebaseMessaging.onMessageOpenedApp.map(_mapRemoteMessage);
+  Stream<TransportRemoteMessage> get openedMessages =>
+      (_openedMessageStream ?? FirebaseMessaging.onMessageOpenedApp).map(_mapRemoteMessage);
 
   @override
   Future<void> configureForegroundPresentation() {
     LogDev.data('[FirebasePushTransportService] configureForegroundPresentation');
-    return _messaging.setForegroundNotificationPresentationOptions(
-      alert: false,
-      badge: true,
-      sound: false,
+    return (_configureForegroundPresentation ?? _defaultFirebasePushTransportConfigureForegroundPresentation)(
+      false,
+      true,
+      false,
     );
   }
 
   @override
   Future<void> registerBackgroundHandler() async {
     LogDev.data('[FirebasePushTransportService] registerBackgroundHandler');
-    FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
+    (_backgroundHandlerRegistrar ?? FirebaseMessaging.onBackgroundMessage)(firebaseMessagingBackgroundHandler);
   }
 
   @override
   Future<TransportRemoteMessage?> getInitialMessage() async {
-    final initialMessage = await _messaging.getInitialMessage();
+    final initialMessage = await (_getInitialMessage ?? _defaultFirebasePushTransportGetInitialMessage)();
     if (initialMessage == null) {
       LogDev.data('[FirebasePushTransportService] getInitialMessage: none');
       return null;
@@ -50,17 +171,17 @@ class FirebasePushTransportService implements NotificationPushTransport {
 
   @override
   Future<String?> getToken() async {
-    final token = await _messaging.getToken();
+    final token = await (_getToken ?? _defaultFirebasePushTransportGetToken)();
     LogDev.data('[FirebasePushTransportService] \r\ngetToken: hasToken=${token?.isNotEmpty ?? false} \r\ntoken=$token');
     return token;
   }
 
   @override
-  Stream<String> get tokenRefreshStream => _messaging.onTokenRefresh;
+  Stream<String> get tokenRefreshStream => _tokenRefreshStream ?? _defaultFirebasePushTransportTokenRefreshStream();
 
   @override
   Future<NotificationPermissionStatus> getPermissionStatus() async {
-    final settings = await _messaging.getNotificationSettings();
+    final settings = await (_getNotificationSettings ?? _defaultFirebasePushTransportGetNotificationSettings)();
     LogDev.data('[FirebasePushTransportService] getPermissionStatus: ${settings.authorizationStatus}');
     return _mapAuthorizationStatus(settings.authorizationStatus);
   }
@@ -68,15 +189,15 @@ class FirebasePushTransportService implements NotificationPushTransport {
   @override
   Future<NotificationPermissionStatus> requestPermission() async {
     LogDev.data('[FirebasePushTransportService] requestPermission');
-    final settings = await _messaging.requestPermission(
-      alert: true,
-      badge: true,
-      sound: true,
-      announcement: false,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      providesAppNotificationSettings: false,
+    final settings = await (_requestPermission ?? _defaultFirebasePushTransportRequestPermission)(
+      true,
+      true,
+      true,
+      false,
+      false,
+      false,
+      false,
+      false,
     );
 
     LogDev.data('[FirebasePushTransportService] requestPermission result: ${settings.authorizationStatus}');
@@ -110,10 +231,10 @@ class FirebasePushTransportService implements NotificationPushTransport {
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
   try {
     LogDev.data('[FirebasePushTransportService] background message: messageId=${message.messageId}');
-    await Firebase.initializeApp(options: F.firebaseOptions);
+    await _firebasePushTransportInitializeApp();
 
-    final router = const NotificationMessageRouter();
-    final localNotifications = AwesomeLocalNotificationService();
+    final router = _firebasePushTransportMessageRouterFactory();
+    final localNotifications = _firebasePushTransportLocalNotificationsFactory();
     final payload = router.fromRemoteMessage(
       FirebasePushTransportService._mapRemoteMessage(message),
       config: const NotificationCoreConfig(),

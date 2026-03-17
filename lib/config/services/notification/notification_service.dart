@@ -74,19 +74,35 @@ class NotificationService {
 
   NotificationCoreConfig _config = const NotificationCoreConfig();
 
-  static final NotificationService _instance = NotificationService();
+  static NotificationService? _instance;
 
-  static Future<void> initialize(NotificationCoreConfig config) => _instance.initializeInternal(config);
-  static Future<NotificationPermissionState> getPermissionState() => _instance.getPermissionStateInternal();
-  static Future<NotificationPermissionState> requestPermission() => _instance.requestPermissionInternal();
-  static Future<void> openSettings() => _instance.openSettingsInternal();
-  static Future<String?> getToken() => _instance.getTokenInternal();
-  static Stream<NotificationTokenState> get tokenRefreshStream => _instance.tokenRefreshStreamInternal;
-  static Stream<NotificationInteraction> get interactionStream => _instance.interactionStreamInternal;
-  static Future<void> showLocal(NotificationRequest request) => _instance.showLocalInternal(request);
-  static Future<void> scheduleLocal(NotificationScheduleRequest request) => _instance.scheduleLocalInternal(request);
-  static Future<void> cancel(int id) => _instance.cancelInternal(id);
-  static Future<void> cancelAll() => _instance.cancelAllInternal();
+  static NotificationService get _resolvedInstance => _instance ??= NotificationService();
+
+  static Future<void> initialize(NotificationCoreConfig config) => _resolvedInstance.initializeInternal(config);
+  static Future<NotificationPermissionState> getPermissionState() => _resolvedInstance.getPermissionStateInternal();
+  static Future<NotificationPermissionState> requestPermission() => _resolvedInstance.requestPermissionInternal();
+  static Future<void> openSettings() => _resolvedInstance.openSettingsInternal();
+  static Future<String?> getToken() => _resolvedInstance.getTokenInternal();
+  static Stream<NotificationTokenState> get tokenRefreshStream => _resolvedInstance.tokenRefreshStreamInternal;
+  static Stream<NotificationInteraction> get interactionStream => _resolvedInstance.interactionStreamInternal;
+  static Future<void> showLocal(NotificationRequest request) => _resolvedInstance.showLocalInternal(request);
+  static Future<void> scheduleLocal(NotificationScheduleRequest request) =>
+      _resolvedInstance.scheduleLocalInternal(request);
+  static Future<void> cancel(int id) => _resolvedInstance.cancelInternal(id);
+  static Future<void> cancelAll() => _resolvedInstance.cancelAllInternal();
+
+  @visibleForTesting
+  static NotificationService? get debugInstance => _instance;
+
+  @visibleForTesting
+  static void debugSetInstance(NotificationService instance) {
+    _instance = instance;
+  }
+
+  @visibleForTesting
+  static void debugResetInstance() {
+    _instance = null;
+  }
 
   Stream<NotificationTokenState> get tokenRefreshStreamInternal => _tokenService.stream;
   Stream<NotificationInteraction> get interactionStreamInternal => _interactionService.stream;
