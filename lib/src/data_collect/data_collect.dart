@@ -33,7 +33,6 @@ part 'presentation/pages/data_collect_feedback_page.dart';
 part 'presentation/pages/data_collect_motivation_step_page.dart';
 part 'presentation/pages/data_collect_page.dart';
 part 'presentation/pages/data_collect_summary_page.dart';
-part 'presentation/pages/notification_request_page.dart';
 //* Widgets
 part 'presentation/widgets/body/01_name_collect_body.dart';
 part 'presentation/widgets/body/02_age_collect_body.dart';
