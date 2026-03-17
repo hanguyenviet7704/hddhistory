@@ -155,7 +155,7 @@ class _StarRow extends StatelessWidget {
         final isFilled = index < stars;
         return Padding(
           padding: EdgeInsets.only(left: index == 0 ? 0 : 4.w),
-          child: Icon(
+          child: FaIcon(
             FontAwesomeIcons.solidStar,
             size: 16.w,
             color: isFilled ? const Color(0xFF4B44CA) : AppCustomColor.feedbackStarInactive,

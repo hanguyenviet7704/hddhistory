@@ -91,7 +91,7 @@ class DCachedImage extends StatelessWidget {
         color: color,
         // placeholder: (context, url) => _buildPlaceHolder(context, url),
         // colorBlendMode: colorBlendMode,
-        errorWidget: (_, _, _) => const Icon(FontAwesomeIcons.circleExclamation),
+        errorWidget: (_, _, _) => const FaIcon(FontAwesomeIcons.circleExclamation),
       );
     }
 
@@ -102,7 +102,7 @@ class DCachedImage extends StatelessWidget {
         width: width,
         height: height,
         color: color,
-        errorBuilder: (_, _, _) => const Icon(FontAwesomeIcons.circleExclamation),
+        errorBuilder: (_, _, _) => const FaIcon(FontAwesomeIcons.circleExclamation),
       );
     }
 
@@ -113,7 +113,7 @@ class DCachedImage extends StatelessWidget {
       height: height,
       alignment: Alignment.center,
       color: color,
-      errorBuilder: (_, _, _) => const Icon(FontAwesomeIcons.circleExclamation),
+      errorBuilder: (_, _, _) => const FaIcon(FontAwesomeIcons.circleExclamation),
     );
   }
 

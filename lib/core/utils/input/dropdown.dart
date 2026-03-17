@@ -108,7 +108,7 @@ class DDropDownButton<T> extends StatelessWidget {
       onChanged: onChanged,
       initialValue: selectedValue,
       style: inputStyle,
-      icon: Icon(FontAwesomeIcons.chevronDown, size: 15.sp, color: AppTheme.outlineVariant),
+      icon: FaIcon(FontAwesomeIcons.chevronDown, size: 15.sp, color: AppTheme.outlineVariant),
       decoration: InputDecoration(
         alignLabelWithHint: theme.alignLabelWithHint,
         floatingLabelBehavior: theme.floatingLabelBehavior,

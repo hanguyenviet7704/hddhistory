@@ -81,7 +81,7 @@ class SubLayout extends StatelessWidget {
                         DNavigator.back();
                         onBackSuccess?.call();
                       },
-                      child: Icon(FontAwesomeIcons.arrowLeft, size: 24.sp),
+                      child: FaIcon(FontAwesomeIcons.arrowLeft, size: 24.sp),
                     )
                   : SizedBox.shrink(),
               title: customTitle ?? AppText(title, style: AppStyle.text18.copyWith(fontWeight: FontWeight.w600)),

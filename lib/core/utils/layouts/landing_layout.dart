@@ -68,7 +68,7 @@ class LandingLayout extends StatelessWidget {
       elevation: 0,
       leading: InkWell(
         onTap: onBack ?? () => context.back(),
-        child: const Icon(FontAwesomeIcons.arrowLeftLong, color: Colors.black, size: 16),
+        child: const FaIcon(FontAwesomeIcons.arrowLeftLong, color: Colors.black, size: 16),
       ),
     );
   }
