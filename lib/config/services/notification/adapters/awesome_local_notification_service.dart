@@ -196,7 +196,11 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
   final NotificationChannelConfig _channelConfig;
   Future<void>? _initializeFuture;
   Future<void>? _registerListenersFuture;
-  final StreamController<TransportLocalAction> _actionController = StreamController<TransportLocalAction>.broadcast(sync: true);
+  final Queue<TransportLocalAction> _pendingActions = Queue<TransportLocalAction>();
+  late final StreamController<TransportLocalAction> _actionController = StreamController<TransportLocalAction>.broadcast(
+    sync: true,
+    onListen: _flushPendingActions,
+  );
 
   @override
   Stream<TransportLocalAction> get actionStream => _actionController.stream;
@@ -358,11 +362,28 @@ class AwesomeLocalNotificationService implements NotificationLocalNotifications 
     if (_actionController.isClosed) {
       return;
     }
+    final mappedAction = _mapReceivedAction(action);
     LogDev.data(
       '[AwesomeLocalNotificationService] action received: '
       'id=${action.id} button=${action.buttonKeyPressed} lifecycle=${action.actionLifeCycle}',
     );
-    _actionController.add(_mapReceivedAction(action));
+    if (_actionController.hasListener) {
+      _actionController.add(mappedAction);
+      return;
+    }
+
+    LogDev.data('[AwesomeLocalNotificationService] queue action until listener is attached');
+    _pendingActions.add(mappedAction);
+  }
+
+  void _flushPendingActions() {
+    if (_actionController.hasListener && _pendingActions.isNotEmpty) {
+      LogDev.data('[AwesomeLocalNotificationService] flush pending actions: count=${_pendingActions.length}');
+    }
+
+    while (_actionController.hasListener && _pendingActions.isNotEmpty) {
+      _actionController.add(_pendingActions.removeFirst());
+    }
   }
 
   TransportLocalAction _mapReceivedAction(ReceivedAction action) {

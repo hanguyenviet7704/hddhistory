@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:awesome_notifications/awesome_notifications.dart';
@@ -46,6 +47,40 @@ void main() {
       expect(action.fromBackground, isFalse);
       expect(action.fromTerminated, isFalse);
 
+      await service.dispose();
+    });
+
+    test('buffers actions received before the stream listener is attached', () async {
+      final gateway = _FakeAwesomeLocalNotificationsGateway();
+      final service = AwesomeLocalNotificationService(gateway: gateway);
+      final completer = Completer<TransportLocalAction>();
+
+      await service.registerListeners();
+      await gateway.onActionReceivedMethod!(
+        ReceivedAction().fromMap(<String, dynamic>{
+          'id': 7003,
+          'title': 'TERM Verify',
+          'body': 'Tap terminated verify',
+          'payload': <String, String?>{'case': 'terminated'},
+          'actionLifeCycle': NotificationLifeCycle.Terminated.name,
+          'actionDate': '2026-03-17 08:50:47',
+        }),
+      );
+
+      final subscription = service.actionStream.listen((action) {
+        if (!completer.isCompleted) {
+          completer.complete(action);
+        }
+      });
+
+      final action = await completer.future.timeout(const Duration(seconds: 1));
+
+      expect(action.id, 7003);
+      expect(action.title, 'TERM Verify');
+      expect(action.fromBackground, isFalse);
+      expect(action.fromTerminated, isTrue);
+
+      await subscription.cancel();
       await service.dispose();
     });
   });
