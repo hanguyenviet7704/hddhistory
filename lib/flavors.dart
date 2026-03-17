@@ -11,7 +11,11 @@ enum Flavor {
 }
 
 class F {
-  static Flavor? appFlavor;
+  static const String _appEnvironmentKey = 'APP_ENVIRONMENT';
+  static Flavor? _appFlavor;
+
+  static Flavor? get appFlavor => _appFlavor ??= _resolveFlavorFromEnvironment();
+  static set appFlavor(Flavor? flavor) => _appFlavor = flavor;
 
   static String get name => appFlavor?.name ?? '';
 
@@ -30,6 +34,15 @@ class F {
       Flavor.stg => stg.DefaultFirebaseOptions.currentPlatform,
       Flavor.prod => prod.DefaultFirebaseOptions.currentPlatform,
       _ => throw UnsupportedError('No Firebase options set for this flavor'),
+    };
+  }
+
+  static Flavor? _resolveFlavorFromEnvironment() {
+    return switch (const String.fromEnvironment(_appEnvironmentKey)) {
+      'dev' => Flavor.dev,
+      'stg' => Flavor.stg,
+      'prod' => Flavor.prod,
+      _ => null,
     };
   }
 }

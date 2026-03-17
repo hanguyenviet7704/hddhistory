@@ -160,12 +160,14 @@ class TransportRemoteMessage {
     this.messageId,
     this.title,
     this.body,
+    this.hasNotificationPayload = false,
   });
 
   final Map<String, dynamic> data;
   final String? messageId;
   final String? title;
   final String? body;
+  final bool hasNotificationPayload;
 }
 
 @immutable

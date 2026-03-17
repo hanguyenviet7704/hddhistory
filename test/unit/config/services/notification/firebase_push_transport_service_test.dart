@@ -159,15 +159,36 @@ void main() {
       await firebaseMessagingBackgroundHandler(
         _remoteMessage(
           messageId: 'bg-visible',
-          title: 'Render me',
-          body: 'Visible body',
-          data: const <String, dynamic>{'type': 'lesson'},
+          data: const <String, dynamic>{
+            'type': 'lesson',
+            NotificationConstants.payloadTitleKey: 'Render me',
+            NotificationConstants.payloadBodyKey: 'Visible body',
+          },
         ),
       );
 
       expect(localNotifications.shownRequests, hasLength(1));
       expect(localNotifications.shownRequests.single.title, 'Render me');
       expect(localNotifications.shownRequests.single.body, 'Visible body');
+    });
+
+    test('background handler skips local rendering when Android system already has a notification payload', () async {
+      final localNotifications = _FakeBackgroundLocalNotifications();
+      debugConfigureFirebasePushTransportDependencies(
+        initializeApp: () async {},
+        localNotificationsFactory: () => localNotifications,
+      );
+
+      await firebaseMessagingBackgroundHandler(
+        _remoteMessage(
+          messageId: 'bg-system',
+          title: 'System rendered',
+          body: 'Handled by Android',
+          data: const <String, dynamic>{'type': 'lesson'},
+        ),
+      );
+
+      expect(localNotifications.shownRequests, isEmpty);
     });
 
     test('background handler skips invisible payloads and swallows failures', () async {

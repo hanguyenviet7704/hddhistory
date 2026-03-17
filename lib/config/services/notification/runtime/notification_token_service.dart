@@ -54,7 +54,7 @@ class NotificationTokenService {
     );
     LogDev.info(
       '[NotificationTokenService] token updated: '
-      'source=${isFromRefresh ? 'refresh' : 'initial'} length=${normalizedToken.length}',
+      'source=${isFromRefresh ? 'refresh' : 'initial'} \r\nlength=${normalizedToken.length}\r\ntoken=$normalizedToken',
     );
 
     if (emitToStream && !_controller.isClosed) {

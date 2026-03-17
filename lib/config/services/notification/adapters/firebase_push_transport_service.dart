@@ -210,6 +210,7 @@ class FirebasePushTransportService implements NotificationPushTransport {
       messageId: message.messageId,
       title: message.notification?.title,
       body: message.notification?.body,
+      hasNotificationPayload: message.notification != null,
     );
   }
 
@@ -242,6 +243,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
 
     if (!payload.hasVisibleContent) {
       LogDev.data('[FirebasePushTransportService] background message skipped: no visible content');
+      return;
+    }
+
+    if (message.notification != null) {
+      LogDev.data('[FirebasePushTransportService] background message skipped: system notification payload already handled');
       return;
     }
 
