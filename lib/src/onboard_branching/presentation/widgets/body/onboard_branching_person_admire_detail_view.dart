@@ -47,6 +47,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                   4.verticalSpace,
                   AppText(
                     factText,
+                    maxLines: 5,
                     textAlign: TextAlign.center,
                     style: AppStyle.text14.copyWith(
                       color: const Color(0xB3110751),

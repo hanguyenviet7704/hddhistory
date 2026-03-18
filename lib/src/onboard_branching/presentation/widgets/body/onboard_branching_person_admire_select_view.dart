@@ -47,24 +47,24 @@ class OnboardBranchingPersonAdmireSelectView extends StatelessWidget {
             ),
           ),
           16.verticalSpace,
-          Spacer(),
-          ListView.separated(
-            itemCount: options.length,
-            separatorBuilder: (_, _) => 12.verticalSpace,
-            padding: EdgeInsets.symmetric(vertical: 20.h),
-            shrinkWrap: true,
-            itemBuilder: (context, index) {
-              final option = options[index];
-              final isSelected = option.name == selectedOptionName;
-              return OnboardBranchingSelectableOptionCard(
-                label: option.name,
-                isSelected: isSelected,
-                onTap: () => onSelect(option),
-                leadingImageUrl: option.image ?? '',
-                leadingSize: 44,
-                placeholderColor: const Color(0xFFC7C5FA),
-              );
-            },
+          Expanded(
+            child: ListView.separated(
+              itemCount: options.length,
+              separatorBuilder: (_, _) => 12.verticalSpace,
+              padding: EdgeInsets.symmetric(vertical: 20.h),
+              itemBuilder: (context, index) {
+                final option = options[index];
+                final isSelected = option.name == selectedOptionName;
+                return OnboardBranchingSelectableOptionCard(
+                  label: option.name,
+                  isSelected: isSelected,
+                  onTap: () => onSelect(option),
+                  leadingImageUrl: option.image ?? '',
+                  leadingSize: 44,
+                  placeholderColor: const Color(0xFFC7C5FA),
+                );
+              },
+            ),
           ),
           12.verticalSpace,
           OnboardBranchingPrimaryButton(

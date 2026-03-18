@@ -221,6 +221,7 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
 
   void onChooseMyselfPressed() {
     AppService.instance.appTrackingService.trackEvent(TrackingKey.obBranchingChooseMyselfClick);
+    AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
     _completeOnboardingTransition();
   }
 
