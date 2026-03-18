@@ -1,6 +1,9 @@
 part of '../../../../lesson.dart';
 
 class LessonPageController {
+  static const int _maxAutoScrollAttempts = 6;
+  static const Duration _autoScrollDuration = Duration(milliseconds: 320);
+
   LessonPageController({
     required void Function(bool isVisible) onBottomButtonVisibilityChanged,
     required VoidCallback onClearSuppressNextAutoScroll,
@@ -20,6 +23,7 @@ class LessonPageController {
   bool _didNotifyScroll = false;
   String _lastScrollKey = '';
   bool _didShowNavigationPopup = false;
+  int _latestAutoScrollRequestId = 0;
 
   void handleEmptyItems() {
     _lastRenderedItemCount = 0;
@@ -66,6 +70,7 @@ class LessonPageController {
     }
     if (itemCount <= previousCount) return;
 
+    _onBottomButtonVisibilityChanged(false);
     _scheduleBottomButtonVisibilityUpdate();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isMounted()) return;
@@ -73,20 +78,108 @@ class LessonPageController {
         _onClearSuppressNextAutoScroll();
         return;
       }
-      _scrollToLastItem();
+      _requestScrollToLastItem();
     });
   }
 
-  void _scrollToLastItem() {
-    if (!scrollController.hasClients) return;
+  void _requestScrollToLastItem() {
+    _tryScrollToLastItem(requestId: ++_latestAutoScrollRequestId);
+  }
+
+  void _tryScrollToLastItem({
+    required int requestId,
+    int attempt = 0,
+  }) {
+    if (!_isMounted() || requestId != _latestAutoScrollRequestId) return;
+    if (!scrollController.hasClients || !scrollController.position.hasContentDimensions) {
+      _retryScrollToLastItem(requestId: requestId, attempt: attempt);
+      return;
+    }
+
+    final position = scrollController.position;
     final targetContext = lastItemKey.currentContext;
-    if (targetContext == null) return;
-    Scrollable.ensureVisible(
-      targetContext,
-      alignment: 0,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
-    ).whenComplete(_updateBottomButtonVisibility);
+    if (targetContext == null) {
+      _scrollTowardsListEnd(
+        requestId: requestId,
+        attempt: attempt,
+        fallbackOffset: position.maxScrollExtent,
+      );
+      return;
+    }
+
+    final renderObject = targetContext.findRenderObject();
+    if (renderObject is! RenderBox || !renderObject.hasSize) {
+      _retryScrollToLastItem(requestId: requestId, attempt: attempt);
+      return;
+    }
+
+    final viewport = RenderAbstractViewport.of(renderObject);
+    final targetOffset = viewport.getOffsetToReveal(renderObject, 0).offset.clamp(position.minScrollExtent, position.maxScrollExtent).toDouble();
+    if ((scrollController.offset - targetOffset).abs() <= 1.0) {
+      _updateBottomButtonVisibility();
+      return;
+    }
+
+    _animateToOffset(
+      requestId: requestId,
+      attempt: attempt,
+      targetOffset: targetOffset,
+    );
+  }
+
+  void _retryScrollToLastItem({
+    required int requestId,
+    required int attempt,
+  }) {
+    if (attempt >= _maxAutoScrollAttempts) {
+      _scheduleBottomButtonVisibilityUpdate();
+      return;
+    }
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_isMounted() || requestId != _latestAutoScrollRequestId) return;
+      _tryScrollToLastItem(requestId: requestId, attempt: attempt + 1);
+    });
+  }
+
+  void _scrollTowardsListEnd({
+    required int requestId,
+    required int attempt,
+    required double fallbackOffset,
+  }) {
+    final currentOffset = scrollController.offset;
+    if ((fallbackOffset - currentOffset).abs() <= 1.0) {
+      _retryScrollToLastItem(requestId: requestId, attempt: attempt);
+      return;
+    }
+
+    _animateToOffset(
+      requestId: requestId,
+      attempt: attempt,
+      targetOffset: fallbackOffset,
+    );
+  }
+
+  void _animateToOffset({
+    required int requestId,
+    required int attempt,
+    required double targetOffset,
+  }) {
+    scrollController
+        .animateTo(
+          targetOffset,
+          duration: _autoScrollDuration,
+          curve: Curves.easeOutCubic,
+        )
+        .whenComplete(() {
+          if (!_isMounted() || requestId != _latestAutoScrollRequestId) return;
+          _updateBottomButtonVisibility();
+          if ((scrollController.offset - targetOffset).abs() > 1.0) {
+            _retryScrollToLastItem(requestId: requestId, attempt: attempt + 1);
+            return;
+          }
+          _retryScrollToLastItem(requestId: requestId, attempt: attempt);
+        });
   }
 
   void _scheduleBottomButtonVisibilityUpdate() {

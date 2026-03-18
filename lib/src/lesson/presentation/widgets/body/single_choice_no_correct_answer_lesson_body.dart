@@ -59,7 +59,10 @@ class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
           if (resolvedGroup != null) {
             await NoCorrectAnswerDocumentRoute(groupId: resolvedGroup.groupId).push(context);
             if (!context.mounted) return;
-            AppDI.injector.get<ExerciseCubit>().nextQuestion();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) return;
+              AppDI.injector.get<ExerciseCubit>().nextQuestion();
+            });
             return;
           }
         }
