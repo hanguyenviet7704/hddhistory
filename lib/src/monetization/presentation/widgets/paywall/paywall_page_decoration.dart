@@ -2,10 +2,12 @@ part of '../../../monetization.dart';
 
 class PaywallPageDecoration extends StatefulWidget {
   final Future<void> Function() onClose;
+  final bool showCloseButton;
 
   const PaywallPageDecoration({
     super.key,
     required this.onClose,
+    required this.showCloseButton,
   });
 
   @override
@@ -77,7 +79,10 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            PaywallTopBar(onClose: () => unawaited(widget.onClose())),
+            PaywallTopBar(
+              showCloseButton: widget.showCloseButton,
+              onClose: () => unawaited(widget.onClose()),
+            ),
             36.verticalSpace,
             AppText(
               l10n.monetization.paywallHeroEyebrow,

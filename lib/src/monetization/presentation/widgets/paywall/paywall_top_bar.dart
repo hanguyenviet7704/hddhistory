@@ -2,8 +2,13 @@ part of '../../../monetization.dart';
 
 class PaywallTopBar extends StatelessWidget {
   final VoidCallback? onClose;
+  final bool showCloseButton;
 
-  const PaywallTopBar({super.key, this.onClose});
+  const PaywallTopBar({
+    super.key,
+    this.onClose,
+    this.showCloseButton = true,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -12,18 +17,20 @@ class PaywallTopBar extends StatelessWidget {
       children: [
         SizedBox(width: 36.w, height: 36.w),
         const PremiumPill(),
-        InkWell(
-          onTap: onClose,
-          child: SizedBox(
-            width: 36.w,
-            height: 36.w,
-            child: Icon(
-              Icons.close_rounded,
-              color: AppCustomColor.textTertiary,
-              size: 22.w,
-            ),
-          ),
-        ),
+        showCloseButton
+            ? InkWell(
+                onTap: onClose,
+                child: SizedBox(
+                  width: 36.w,
+                  height: 36.w,
+                  child: Icon(
+                    Icons.close_rounded,
+                    color: AppCustomColor.textTertiary,
+                    size: 22.w,
+                  ),
+                ),
+              )
+            : SizedBox(width: 36.w, height: 36.w),
       ],
     );
   }
