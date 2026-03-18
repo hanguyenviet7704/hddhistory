@@ -303,7 +303,6 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         lastOrigin: PurchaseOrigin.none,
       ),
     );
-    _trackingService.trackPaywallStorePopupDismiss(AppConfig.instance.context!, state.selectedProductId);
     DMessage.showMessage(
       message: error.isEmpty ? l10n.monetization.paymentFailToast : error,
       type: MessageType.error,

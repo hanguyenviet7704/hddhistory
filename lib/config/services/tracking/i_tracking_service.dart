@@ -241,13 +241,6 @@ abstract interface class ITrackingService {
     required String source,
   });
 
-  //* Paywall events
-  Future<void> trackPaywallScrView(BuildContext context);
-  Future<void> trackPaywallPackageClick(BuildContext context, String packageId);
-  Future<void> trackPaywallExitClick(BuildContext context);
-  Future<void> trackPaywallStartPremiumClick(BuildContext context, String packageId);
-  Future<void> trackPaywallStorePopupDismiss(BuildContext context, String packageId);
-
   //* Subscription events
   Future<void> trackSubscriptionRenewed(String packageId);
   Future<void> trackSubscriptionCancelled(String packageId);
