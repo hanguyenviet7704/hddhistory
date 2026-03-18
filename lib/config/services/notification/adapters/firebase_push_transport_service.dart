@@ -251,6 +251,11 @@ Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
       return;
     }
 
+    if (!await isAppNotificationPreferenceEnabled()) {
+      LogDev.data('[FirebasePushTransportService] background message skipped: app notification preference disabled');
+      return;
+    }
+
     await localNotifications.show(router.toLocalRequest(payload));
     LogDev.info('[FirebasePushTransportService] background local notification rendered');
   } catch (error, stackTrace) {

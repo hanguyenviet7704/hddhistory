@@ -14,8 +14,16 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('FirebasePushTransportService', () {
+    setUp(() {
+      debugConfigureNotificationPreferenceStore(
+        readAction: () async => true,
+        writeAction: (_) async {},
+      );
+    });
+
     tearDown(() {
       debugConfigureFirebasePushTransportDependencies();
+      debugConfigureNotificationPreferenceStore();
     });
 
     test('maps streams and delegates transport operations through injected callbacks', () async {
@@ -221,6 +229,30 @@ void main() {
           body: 'Still swallowed',
         ),
       );
+    });
+
+    test('background handler skips local rendering when the app-level preference is disabled', () async {
+      final localNotifications = _FakeBackgroundLocalNotifications();
+      debugConfigureNotificationPreferenceStore(
+        readAction: () async => false,
+      );
+      debugConfigureFirebasePushTransportDependencies(
+        initializeApp: () async {},
+        localNotificationsFactory: () => localNotifications,
+      );
+
+      await firebaseMessagingBackgroundHandler(
+        _remoteMessage(
+          messageId: 'bg-disabled-by-app-preference',
+          data: const <String, dynamic>{
+            'type': 'lesson',
+            NotificationConstants.payloadTitleKey: 'Should not render',
+            NotificationConstants.payloadBodyKey: 'App preference is off',
+          },
+        ),
+      );
+
+      expect(localNotifications.shownRequests, isEmpty);
     });
 
     test('uses default Firebase platform bindings when platform interfaces are mocked', () async {

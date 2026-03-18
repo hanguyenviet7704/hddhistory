@@ -137,8 +137,9 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `NotificationRequestRoute` is a dedicated onboarding-only pre-register gate. It mirrors `RegisterRoute` query intent flags but keeps non-onboarding `RegisterRoute()` callers unchanged.
 - `NotificationRequestPage` persists one-time completion in `UserCubit.hasCompletedFirstTimeNotificationGate`.
 - Gate auto-skip happens when the one-time flag is already set or when notification capability is unavailable. Authorized/provisional runtime state now still shows the gate once so onboarding/bypass entry always lands on the explainer screen before auth.
-- `NotificationCubit` is now a hydrated shared boundary for both onboarding and settings. It persists only the app-level preference (`notificationsEnabled` + initialization flag) and always refreshes runtime permission state from `NotificationService`.
-- Settings now expose an inline notification toggle on `SettingPage`. Effective ON requires both app-level preference and runtime capability; app resume refreshes the runtime state to reflect OS settings changes.
+- `NotificationCubit` is now a hydrated shared boundary for both onboarding and settings. It persists only the app-level preference (`notificationsEnabled` + initialization flag), mirrors that preference into a shared store for service/background access, and always refreshes runtime permission state from `NotificationService`.
+- Settings now expose an inline notification toggle on `SettingPage`. Effective ON requires both app-level preference and runtime capability; app resume refreshes the runtime state to reflect OS settings changes. On iOS, tapping the settings toggle opens the app's system settings screen and the next resume syncs the app-level preference back from the live OS permission state.
+- `NotificationService`, foreground local rendering, and background data-only push rendering now read the shared app-level preference before showing or scheduling local notifications, so app-level OFF suppresses client-side notification rendering even when OS permission is still granted.
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.

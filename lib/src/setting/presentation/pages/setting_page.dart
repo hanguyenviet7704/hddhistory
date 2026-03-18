@@ -1,5 +1,37 @@
 part of '../../setting.dart';
 
+enum SettingNotificationToggleAction { openSystemSettings, toggleInAppPreference }
+
+@visibleForTesting
+SettingNotificationToggleAction resolveSettingNotificationToggleAction({
+  required TargetPlatform platform,
+}) {
+  return platform == TargetPlatform.iOS ? SettingNotificationToggleAction.openSystemSettings : SettingNotificationToggleAction.toggleInAppPreference;
+}
+
+@immutable
+@visibleForTesting
+class SettingNotificationRefreshRequest {
+  const SettingNotificationRefreshRequest({
+    required this.syncAuthorizedPreference,
+    required this.syncPreferenceToPermissionState,
+  });
+
+  final bool syncAuthorizedPreference;
+  final bool syncPreferenceToPermissionState;
+}
+
+@visibleForTesting
+SettingNotificationRefreshRequest resolveSettingNotificationRefreshRequest({
+  required SettingNotificationToggleAction toggleAction,
+}) {
+  final syncPreferenceToPermissionState = toggleAction == SettingNotificationToggleAction.openSystemSettings;
+  return SettingNotificationRefreshRequest(
+    syncAuthorizedPreference: !syncPreferenceToPermissionState,
+    syncPreferenceToPermissionState: syncPreferenceToPermissionState,
+  );
+}
+
 class SettingPage extends StatefulWidget {
   const SettingPage({super.key});
 
@@ -11,6 +43,8 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   bool _hasTrackedScroll = false;
   bool _hasTrackedView = false;
+
+  SettingNotificationToggleAction get _notificationToggleAction => resolveSettingNotificationToggleAction(platform: defaultTargetPlatform);
 
   @override
   void initState() {
@@ -38,8 +72,12 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   }
 
   void _refreshNotificationState() {
+    final refreshRequest = resolveSettingNotificationRefreshRequest(
+      toggleAction: _notificationToggleAction,
+    );
     context.read<NotificationCubit>().refreshPermissionState(
-      syncAuthorizedPreference: true,
+      syncAuthorizedPreference: refreshRequest.syncAuthorizedPreference,
+      syncPreferenceToPermissionState: refreshRequest.syncPreferenceToPermissionState,
     );
   }
 
@@ -64,23 +102,13 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
     } else {
       AppService.instance.appTrackingService.trackSettingNotificationToggleOff();
     }
-    context.read<NotificationCubit>().toggleFromSettings(value);
-  }
 
-  String _resolveNotificationSubtitle(BuildContext context, NotificationState state) {
-    if (!state.hasLoadedPermissionState) {
-      return '${context.l10n.setting.notificationEffectiveStatusLabel}: ${context.l10n.setting.notificationStatusDisabled}';
+    if (_notificationToggleAction == SettingNotificationToggleAction.openSystemSettings) {
+      unawaited(context.read<NotificationCubit>().openSettingsFromSettings());
+      return;
     }
-    final permissionLabel = switch (state.permissionStatus) {
-      NotificationPermissionStatus.authorized => context.l10n.setting.notificationPermissionAuthorized,
-      NotificationPermissionStatus.provisional => context.l10n.setting.notificationPermissionProvisional,
-      NotificationPermissionStatus.denied => context.l10n.setting.notificationPermissionDenied,
-      NotificationPermissionStatus.notDetermined when state.isCapabilityUnavailable => context.l10n.setting.notificationPermissionNotApplicable,
-      NotificationPermissionStatus.notDetermined => context.l10n.setting.notificationPermissionNotDetermined,
-      NotificationPermissionStatus.unsupported => context.l10n.setting.notificationPermissionNotApplicable,
-    };
-    final effectiveStatus = state.isEffectivelyEnabled ? context.l10n.setting.notificationStatusEnabled : context.l10n.setting.notificationStatusDisabled;
-    return '${context.l10n.setting.notificationEffectiveStatusLabel}: $effectiveStatus | ${context.l10n.setting.notificationPermissionStatusLabel}: $permissionLabel';
+
+    context.read<NotificationCubit>().toggleFromSettings(value);
   }
 
   @override
@@ -118,7 +146,6 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
                           return SettingSwitchTile(
                             iconAsset: AppAsset.svg.app.icBell,
                             title: context.l10n.setting.settingRowNoti,
-                            subtitle: _resolveNotificationSubtitle(context, notificationState),
                             value: notificationState.isEffectivelyEnabled,
                             isLoading: notificationState.isLoading,
                             onChanged: notificationState.isCapabilityUnavailable || notificationState.isLoading ? null : _onNotificationToggle,

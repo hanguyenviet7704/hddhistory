@@ -15,16 +15,22 @@ class NotificationCubit extends HydratedCubit<NotificationState> {
 
   Future<NotificationState> refreshPermissionState({
     bool syncAuthorizedPreference = false,
+    bool syncPreferenceToPermissionState = false,
   }) async {
+    assert(
+      !(syncAuthorizedPreference && syncPreferenceToPermissionState),
+      'Use either syncAuthorizedPreference or syncPreferenceToPermissionState, not both.',
+    );
     emit(state.copyWith(isLoading: true, errorMessage: null));
 
     try {
       final permissionState = await NotificationService.getPermissionState();
       final shouldSyncPreference = syncAuthorizedPreference && permissionState.isAuthorized && !state.hasInitializedPreference;
+      final shouldAdoptPermissionState = syncPreferenceToPermissionState;
       return _applyPermissionState(
         permissionState,
-        notificationsEnabled: shouldSyncPreference ? true : state.notificationsEnabled,
-        hasInitializedPreference: shouldSyncPreference || state.hasInitializedPreference,
+        notificationsEnabled: shouldAdoptPermissionState ? permissionState.isAuthorized : (shouldSyncPreference ? true : state.notificationsEnabled),
+        hasInitializedPreference: shouldAdoptPermissionState ? true : (shouldSyncPreference || state.hasInitializedPreference),
       );
     } catch (error) {
       return _emitError(error);
@@ -32,6 +38,16 @@ class NotificationCubit extends HydratedCubit<NotificationState> {
   }
 
   Future<NotificationState> enableFromOnboardingGate() => _enableNotifications();
+
+  Future<void> openSettingsFromSettings() async {
+    emit(state.copyWith(errorMessage: null));
+
+    try {
+      await NotificationService.openSettings();
+    } catch (error) {
+      _emitError(error);
+    }
+  }
 
   Future<NotificationState> toggleFromSettings(bool value) {
     if (value) {
@@ -108,6 +124,7 @@ class NotificationCubit extends HydratedCubit<NotificationState> {
     required bool notificationsEnabled,
     required bool hasInitializedPreference,
   }) {
+    unawaited(_persistAppPreferenceSafely(notificationsEnabled));
     final nextState = state.copyWith(
       hasInitializedPreference: hasInitializedPreference,
       hasLoadedPermissionState: true,
@@ -123,6 +140,14 @@ class NotificationCubit extends HydratedCubit<NotificationState> {
     );
     emit(nextState);
     return nextState;
+  }
+
+  Future<void> _persistAppPreferenceSafely(bool notificationsEnabled) async {
+    try {
+      await persistAppNotificationPreference(notificationsEnabled);
+    } catch (error) {
+      LogDev.error('[NotificationCubit] Failed to persist app notification preference: $error');
+    }
   }
 
   NotificationState _emitError(Object error) {

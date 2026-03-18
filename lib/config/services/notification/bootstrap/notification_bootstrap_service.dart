@@ -116,11 +116,17 @@ class NotificationBootstrapService {
       ),
     );
 
-    if (_foregroundPolicy.shouldRender(payload: payload, config: _config)) {
+    final shouldRenderForegroundNotification = _foregroundPolicy.shouldRender(payload: payload, config: _config);
+    final isAppNotificationEnabled = await isAppNotificationPreferenceEnabled();
+
+    if (shouldRenderForegroundNotification && isAppNotificationEnabled) {
       LogDev.data('[NotificationBootstrapService] rendering foreground message as local notification');
       await _localNotifications.show(_messageRouter.toLocalRequest(payload));
     } else {
-      LogDev.data('[NotificationBootstrapService] foreground render skipped by policy');
+      LogDev.data(
+        '[NotificationBootstrapService] foreground render skipped: '
+        'policy=$shouldRenderForegroundNotification appEnabled=$isAppNotificationEnabled',
+      );
     }
   }
 

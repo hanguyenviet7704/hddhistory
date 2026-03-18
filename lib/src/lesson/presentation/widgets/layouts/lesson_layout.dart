@@ -47,8 +47,11 @@ class LessonLayout extends StatelessWidget {
                 child: BlocSelector<LessonCubit, LessonState, bool>(
                   selector: (state) => state.isBottomButtonVisible,
                   builder: (context, isVisible) {
-                    if (bottom == null || !isVisible) return const SizedBox.shrink();
-                    return bottom!;
+                    if (bottom == null) return const SizedBox.shrink();
+                    return _AnimatedLessonBottomBar(
+                      isVisible: isVisible,
+                      child: bottom!,
+                    );
                   },
                 ),
               ),
@@ -62,6 +65,37 @@ class LessonLayout extends StatelessWidget {
                 ),
               ),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AnimatedLessonBottomBar extends StatelessWidget {
+  const _AnimatedLessonBottomBar({
+    required this.isVisible,
+    required this.child,
+  });
+
+  final bool isVisible;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      top: false,
+      child: IgnorePointer(
+        ignoring: !isVisible,
+        child: AnimatedSlide(
+          offset: isVisible ? Offset.zero : const Offset(0, 0.2),
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          child: AnimatedOpacity(
+            opacity: isVisible ? 1 : 0,
+            duration: const Duration(milliseconds: 180),
+            curve: Curves.easeOutCubic,
+            child: child,
           ),
         ),
       ),

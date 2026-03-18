@@ -5,6 +5,17 @@ import 'package:meup/config/services/services.dart';
 
 void main() {
   group('NotificationBootstrapService', () {
+    setUp(() {
+      debugConfigureNotificationPreferenceStore(
+        readAction: () async => true,
+        writeAction: (_) async {},
+      );
+    });
+
+    tearDown(() {
+      debugConfigureNotificationPreferenceStore();
+    });
+
     test('initializes local and push once, requests permission, and restores the initial remote interaction', () async {
       final pushTransport = _FakePushTransport(
         token: 'initial-token',
@@ -138,6 +149,41 @@ void main() {
           data: <String, dynamic>{'type': 'promo'},
           messageId: 'fg-2',
           title: 'Blocked offer',
+          body: 'Do not render',
+        ),
+      );
+      await Future<void>.delayed(Duration.zero);
+
+      expect(interactions, hasLength(1));
+      expect(interactions.single.type, NotificationInteractionType.foregroundReceived);
+      expect(localNotifications.shownRequests, isEmpty);
+
+      await subscription.cancel();
+      await bootstrap.dispose();
+      await interactionService.dispose();
+    });
+
+    test('publishes foreground interactions but skips rendering when the app-level preference is disabled', () async {
+      debugConfigureNotificationPreferenceStore(
+        readAction: () async => false,
+      );
+      final pushTransport = _FakePushTransport();
+      final localNotifications = _FakeLocalNotifications();
+      final interactionService = NotificationInteractionService();
+      final interactions = <NotificationInteraction>[];
+      final subscription = interactionService.stream.listen(interactions.add);
+      final bootstrap = _buildBootstrap(
+        pushTransport: pushTransport,
+        localNotifications: localNotifications,
+        interactionService: interactionService,
+      );
+
+      await bootstrap.initialize(config: const NotificationCoreConfig());
+      pushTransport.emitForeground(
+        const TransportRemoteMessage(
+          data: <String, dynamic>{'type': 'promo'},
+          messageId: 'fg-disabled-by-app-preference',
+          title: 'Disabled by app preference',
           body: 'Do not render',
         ),
       );

@@ -6,10 +6,18 @@ import '../../support/test_di.dart';
 void main() {
   group('NotificationCubit', () {
     late NotificationService? originalService;
+    late bool lastPersistedPreference;
 
     setUp(() async {
       await setupLocaleCubitForTests();
       originalService = NotificationService.debugInstance;
+      lastPersistedPreference = true;
+      debugConfigureNotificationPreferenceStore(
+        readAction: () async => lastPersistedPreference,
+        writeAction: (enabled) async {
+          lastPersistedPreference = enabled;
+        },
+      );
     });
 
     tearDown(() async {
@@ -18,6 +26,7 @@ void main() {
       } else {
         NotificationService.debugSetInstance(originalService!);
       }
+      debugConfigureNotificationPreferenceStore();
       await resetInjectorForTests();
     });
 
@@ -51,6 +60,7 @@ void main() {
       expect(cubit.state.hasInitializedPreference, isTrue);
       expect(cubit.state.notificationsEnabled, isTrue);
       expect(cubit.state.isEffectivelyEnabled, isTrue);
+      expect(lastPersistedPreference, isTrue);
       expect(permissionService.getPermissionStateCalls, 1);
     });
 
@@ -83,6 +93,7 @@ void main() {
       expect(cubit.state.permissionStatus, NotificationPermissionStatus.authorized);
       expect(cubit.state.notificationsEnabled, isTrue);
       expect(cubit.state.hasInitializedPreference, isTrue);
+      expect(lastPersistedPreference, isTrue);
       expect(permissionService.requestPermissionCalls, 1);
       expect(permissionService.openSettingsCalls, 0);
     });
@@ -118,8 +129,124 @@ void main() {
       expect(cubit.state.notificationsEnabled, isFalse);
       expect(cubit.state.isEffectivelyEnabled, isFalse);
       expect(cubit.state.hasInitializedPreference, isTrue);
+      expect(lastPersistedPreference, isFalse);
       expect(localNotifications.cancelAllCalls, 1);
       expect(localNotifications.cancelAllSchedulesCalls, 1);
+    });
+
+    test('Given iOS settings flow returns with authorized permission, When syncing preference to permission state, Then the app preference turns on', () async {
+      final permissionService = _RecordingPermissionService(
+        getStateResult: const NotificationPermissionState(
+          status: NotificationPermissionStatus.denied,
+          systemNotificationsEnabled: false,
+          localNotificationsEnabled: false,
+          pushNotificationsEnabled: false,
+          canRequest: false,
+          canOpenSettings: true,
+        ),
+        requestStateResult: const NotificationPermissionState(
+          status: NotificationPermissionStatus.authorized,
+          systemNotificationsEnabled: true,
+          localNotificationsEnabled: true,
+          pushNotificationsEnabled: true,
+          canRequest: false,
+        ),
+      );
+      _installDebugNotificationService(
+        permissionService: permissionService,
+        localNotifications: _FakeLocalNotifications(),
+      );
+      final cubit = NotificationCubit();
+      addTearDown(cubit.close);
+
+      await cubit.disableAppPreference();
+      permissionService.getStateResult = const NotificationPermissionState(
+        status: NotificationPermissionStatus.authorized,
+        systemNotificationsEnabled: true,
+        localNotificationsEnabled: true,
+        pushNotificationsEnabled: true,
+        canRequest: false,
+      );
+
+      await cubit.refreshPermissionState(syncPreferenceToPermissionState: true);
+
+      expect(cubit.state.notificationsEnabled, isTrue);
+      expect(cubit.state.isEffectivelyEnabled, isTrue);
+      expect(cubit.state.hasInitializedPreference, isTrue);
+      expect(lastPersistedPreference, isTrue);
+    });
+
+    test('Given iOS settings flow returns with denied permission, When syncing preference to permission state, Then the app preference turns off', () async {
+      final permissionService = _RecordingPermissionService(
+        getStateResult: const NotificationPermissionState(
+          status: NotificationPermissionStatus.authorized,
+          systemNotificationsEnabled: true,
+          localNotificationsEnabled: true,
+          pushNotificationsEnabled: true,
+          canRequest: false,
+        ),
+        requestStateResult: const NotificationPermissionState(
+          status: NotificationPermissionStatus.authorized,
+          systemNotificationsEnabled: true,
+          localNotificationsEnabled: true,
+          pushNotificationsEnabled: true,
+          canRequest: false,
+        ),
+      );
+      _installDebugNotificationService(
+        permissionService: permissionService,
+        localNotifications: _FakeLocalNotifications(),
+      );
+      final cubit = NotificationCubit();
+      addTearDown(cubit.close);
+
+      await cubit.refreshPermissionState(syncAuthorizedPreference: true);
+      permissionService.getStateResult = const NotificationPermissionState(
+        status: NotificationPermissionStatus.denied,
+        systemNotificationsEnabled: false,
+        localNotificationsEnabled: false,
+        pushNotificationsEnabled: false,
+        canRequest: false,
+        canOpenSettings: true,
+      );
+
+      await cubit.refreshPermissionState(syncPreferenceToPermissionState: true);
+
+      expect(cubit.state.notificationsEnabled, isFalse);
+      expect(cubit.state.isEffectivelyEnabled, isFalse);
+      expect(cubit.state.hasInitializedPreference, isTrue);
+      expect(lastPersistedPreference, isFalse);
+    });
+
+    test('Given settings toggle opens system settings on iOS, When opening from settings, Then the app settings deep link is triggered', () async {
+      final permissionService = _RecordingPermissionService(
+        getStateResult: const NotificationPermissionState(
+          status: NotificationPermissionStatus.authorized,
+          systemNotificationsEnabled: true,
+          localNotificationsEnabled: true,
+          pushNotificationsEnabled: true,
+          canRequest: false,
+          canOpenSettings: true,
+        ),
+        requestStateResult: const NotificationPermissionState(
+          status: NotificationPermissionStatus.authorized,
+          systemNotificationsEnabled: true,
+          localNotificationsEnabled: true,
+          pushNotificationsEnabled: true,
+          canRequest: false,
+        ),
+      );
+      _installDebugNotificationService(
+        permissionService: permissionService,
+        localNotifications: _FakeLocalNotifications(),
+      );
+      final cubit = NotificationCubit();
+      addTearDown(cubit.close);
+
+      await cubit.openSettingsFromSettings();
+
+      expect(permissionService.openSettingsCalls, 1);
+      expect(permissionService.requestPermissionCalls, 0);
     });
   });
 }
@@ -226,8 +353,8 @@ class _RecordingPermissionService extends NotificationPermissionService {
          isApplePlatform: true,
        );
 
-  final NotificationPermissionState getStateResult;
-  final NotificationPermissionState requestStateResult;
+  NotificationPermissionState getStateResult;
+  NotificationPermissionState requestStateResult;
   int getPermissionStateCalls = 0;
   int requestPermissionCalls = 0;
   int openSettingsCalls = 0;

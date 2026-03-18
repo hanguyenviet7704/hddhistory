@@ -5,6 +5,17 @@ import 'package:meup/config/services/services.dart';
 
 void main() {
   group('NotificationService', () {
+    setUp(() {
+      debugConfigureNotificationPreferenceStore(
+        readAction: () async => true,
+        writeAction: (_) async {},
+      );
+    });
+
+    tearDown(() {
+      debugConfigureNotificationPreferenceStore();
+    });
+
     test('boots through the bootstrap layer only once and emits token refresh state', () async {
       final pushTransport = _FakePushTransport(token: 'initial-token');
       final localNotifications = _FakeLocalNotifications();
@@ -141,6 +152,38 @@ void main() {
       await service.scheduleLocalInternal(
         const NotificationScheduleRequest(
           notification: NotificationRequest(title: 'Ignored'),
+          interval: Duration(minutes: 30),
+        ),
+      );
+
+      expect(localNotifications.shownRequests, isEmpty);
+      expect(localNotifications.scheduledRequests, isEmpty);
+
+      await service.dispose();
+      await pushTransport.dispose();
+    });
+
+    test('does not render or schedule local notifications when the app-level preference is disabled', () async {
+      debugConfigureNotificationPreferenceStore(
+        readAction: () async => false,
+      );
+      final pushTransport = _FakePushTransport();
+      final localNotifications = _FakeLocalNotifications();
+      final service = NotificationService(
+        pushTransport: pushTransport,
+        localNotifications: localNotifications,
+        permissionService: NotificationPermissionService(
+          pushPermissionProvider: pushTransport,
+          localPermissionProvider: localNotifications,
+          isApplePlatform: true,
+        ),
+      );
+
+      await service.initializeInternal(const NotificationCoreConfig());
+      await service.showLocalInternal(const NotificationRequest(title: 'Ignored by app preference'));
+      await service.scheduleLocalInternal(
+        const NotificationScheduleRequest(
+          notification: NotificationRequest(title: 'Ignored by app preference'),
           interval: Duration(minutes: 30),
         ),
       );

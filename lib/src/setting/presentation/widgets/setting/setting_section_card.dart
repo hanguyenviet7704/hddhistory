@@ -143,22 +143,18 @@ class SettingSwitchTile extends StatelessWidget {
     required this.iconAsset,
     required this.title,
     required this.value,
-    this.subtitle,
     this.onChanged,
     this.isLoading = false,
   });
 
   final String iconAsset;
   final String title;
-  final String? subtitle;
   final bool value;
   final bool isLoading;
   final ValueChanged<bool>? onChanged;
 
   @override
   Widget build(BuildContext context) {
-    final String? resolvedSubtitle = subtitle?.trim().isEmpty ?? true ? null : subtitle?.trim();
-
     return Material(
       color: Colors.transparent,
       child: InkWell(
@@ -174,31 +170,13 @@ class SettingSwitchTile extends StatelessWidget {
                 color: AppCustomColor.iconPrimary,
               ),
               SizedBox(width: 12.w),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      title,
-                      style: AppStyle.textBold14.copyWith(
-                        color: AppCustomColor.textPrimary,
-                      ),
-                    ),
-                    if (resolvedSubtitle != null) ...[
-                      SizedBox(height: 4.h),
-                      Text(
-                        resolvedSubtitle,
-                        style: AppStyle.text14.copyWith(
-                          color: AppCustomColor.textSecondary,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ],
+              AppText(
+                title,
+                style: AppStyle.textBold14.copyWith(
+                  color: AppCustomColor.textPrimary,
                 ),
               ),
-              SizedBox(width: 12.w),
+              Spacer(),
               AnimatedSwitcher(
                 duration: const Duration(milliseconds: 180),
                 child: isLoading

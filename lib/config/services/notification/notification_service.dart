@@ -150,6 +150,10 @@ class NotificationService {
       LogDev.warning('[NotificationService] showLocal skipped because local notifications are disabled');
       return;
     }
+    if (!await isAppNotificationPreferenceEnabled()) {
+      LogDev.warning('[NotificationService] showLocal skipped because app notification preference is disabled');
+      return;
+    }
     LogDev.data('[NotificationService] showLocal: title="${request.title}" id=${request.id}');
     await _localNotifications.show(request);
   }
@@ -157,6 +161,10 @@ class NotificationService {
   Future<void> scheduleLocalInternal(NotificationScheduleRequest request) async {
     if (!_config.enableLocal) {
       LogDev.warning('[NotificationService] scheduleLocal skipped because local notifications are disabled');
+      return;
+    }
+    if (!await isAppNotificationPreferenceEnabled()) {
+      LogDev.warning('[NotificationService] scheduleLocal skipped because app notification preference is disabled');
       return;
     }
     LogDev.data(

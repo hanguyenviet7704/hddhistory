@@ -121,6 +121,7 @@ part 'notification/permissions/notification_permission_service.dart';
 part 'notification/routing/notification_interaction_service.dart';
 part 'notification/routing/notification_message_router.dart';
 part 'notification/runtime/notification_foreground_policy.dart';
+part 'notification/runtime/notification_preference_store.dart';
 part 'notification/runtime/notification_token_service.dart';
 part 'notification/schedulers/notification_schedule_service.dart';
 part 'remote_config/firebase_remote_config_service.dart';
