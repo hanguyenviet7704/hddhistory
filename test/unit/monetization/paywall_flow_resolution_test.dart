@@ -73,19 +73,9 @@ void main() {
   });
 
   group('paywall close delay contract', () {
-    test('delays close button for first-time paywall flow', () {
-      expect(
-        shouldDelayPaywallCloseButton(firstTimeUserFlow: true),
-        isTrue,
-      );
+    test('delays close button for all paywall entries', () {
+      expect(shouldDelayPaywallCloseButton(), isTrue);
       expect(paywallCloseButtonDelay, const Duration(seconds: 5));
-    });
-
-    test('keeps close button immediate for standard paywall flow', () {
-      expect(
-        shouldDelayPaywallCloseButton(firstTimeUserFlow: false),
-        isFalse,
-      );
     });
   });
 

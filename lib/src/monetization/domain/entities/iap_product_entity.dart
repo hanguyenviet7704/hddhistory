@@ -57,7 +57,7 @@ extension IapProductEntityX on IapProductEntity {
 
   String get pricePerPeriodString {
     if (rawPrice <= 0) return price.isNotEmpty ? price : '--';
-    final value = (_perPeriodValue / 30).roundToDouble();
+    final value = (_perPeriodValue / 30).toStringAsFixed(2).toDouble;
     return currencySymbol.isNotEmpty ? '$currencySymbol${value.currency}' : value.currency;
   }
 

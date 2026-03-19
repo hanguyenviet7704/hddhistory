@@ -16,7 +16,7 @@ bool shouldHandlePaywallSuccess({
 }
 
 @visibleForTesting
-bool shouldDelayPaywallCloseButton({required bool firstTimeUserFlow}) => firstTimeUserFlow;
+bool shouldDelayPaywallCloseButton() => true;
 
 @visibleForTesting
 PaywallFlowDestination resolvePaywallFlowDestination({
@@ -56,9 +56,7 @@ class _PaywallPageState extends State<PaywallPage> {
   void initState() {
     super.initState();
 
-    _isCloseButtonVisible = !shouldDelayPaywallCloseButton(
-      firstTimeUserFlow: widget.firstTimeUserFlow,
-    );
+    _isCloseButtonVisible = !shouldDelayPaywallCloseButton();
     if (!_isCloseButtonVisible) {
       _closeButtonTimer = Timer(paywallCloseButtonDelay, _showCloseButton);
     }
