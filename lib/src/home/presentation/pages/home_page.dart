@@ -54,7 +54,10 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         body: SafeBody(
           child: RefreshIndicator(
-            onRefresh: () async => context.read<HomeCubit>().initializeData(isInit: true),
+            onRefresh: () async {
+              context.read<HomeCubit>().initializeData(isInit: true);
+              _prefetchLearningStreak();
+            },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(

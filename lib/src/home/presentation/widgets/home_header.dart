@@ -38,7 +38,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
             Row(
               children: [
                 Expanded(
-                  child: BlocSelector<UserCubit, UserState, String>(
+                  child: BlocSelector<ProfileCubit, ProfileState, String>(
                     selector: (state) => state.user.name,
                     builder: (context, username) {
                       return AppText(

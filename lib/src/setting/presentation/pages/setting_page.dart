@@ -5,8 +5,18 @@ enum SettingNotificationToggleAction { openSystemSettings, toggleInAppPreference
 @visibleForTesting
 SettingNotificationToggleAction resolveSettingNotificationToggleAction({
   required TargetPlatform platform,
+  required NotificationState state,
+  required bool value,
 }) {
-  return platform == TargetPlatform.iOS ? SettingNotificationToggleAction.openSystemSettings : SettingNotificationToggleAction.toggleInAppPreference;
+  if (platform != TargetPlatform.iOS || !state.hasLoadedPermissionState) {
+    return SettingNotificationToggleAction.toggleInAppPreference;
+  }
+
+  if (value) {
+    return state.canRequestPermission ? SettingNotificationToggleAction.toggleInAppPreference : SettingNotificationToggleAction.openSystemSettings;
+  }
+
+  return state.isPermissionGranted ? SettingNotificationToggleAction.openSystemSettings : SettingNotificationToggleAction.toggleInAppPreference;
 }
 
 @immutable
@@ -23,9 +33,9 @@ class SettingNotificationRefreshRequest {
 
 @visibleForTesting
 SettingNotificationRefreshRequest resolveSettingNotificationRefreshRequest({
-  required SettingNotificationToggleAction toggleAction,
+  required bool hasPendingSystemSettingsSync,
 }) {
-  final syncPreferenceToPermissionState = toggleAction == SettingNotificationToggleAction.openSystemSettings;
+  final syncPreferenceToPermissionState = hasPendingSystemSettingsSync;
   return SettingNotificationRefreshRequest(
     syncAuthorizedPreference: !syncPreferenceToPermissionState,
     syncPreferenceToPermissionState: syncPreferenceToPermissionState,
@@ -43,8 +53,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   final ScrollController _scrollController = ScrollController();
   bool _hasTrackedScroll = false;
   bool _hasTrackedView = false;
-
-  SettingNotificationToggleAction get _notificationToggleAction => resolveSettingNotificationToggleAction(platform: defaultTargetPlatform);
+  bool _hasPendingSystemSettingsSync = false;
 
   @override
   void initState() {
@@ -73,8 +82,9 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
 
   void _refreshNotificationState() {
     final refreshRequest = resolveSettingNotificationRefreshRequest(
-      toggleAction: _notificationToggleAction,
+      hasPendingSystemSettingsSync: _hasPendingSystemSettingsSync,
     );
+    _hasPendingSystemSettingsSync = false;
     context.read<NotificationCubit>().refreshPermissionState(
       syncAuthorizedPreference: refreshRequest.syncAuthorizedPreference,
       syncPreferenceToPermissionState: refreshRequest.syncPreferenceToPermissionState,
@@ -97,18 +107,36 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   }
 
   void _onNotificationToggle(bool value) {
+    unawaited(_handleNotificationToggle(value));
+  }
+
+  Future<void> _handleNotificationToggle(bool value) async {
     if (value) {
       AppService.instance.appTrackingService.trackSettingNotificationToggleOn();
     } else {
       AppService.instance.appTrackingService.trackSettingNotificationToggleOff();
     }
 
-    if (_notificationToggleAction == SettingNotificationToggleAction.openSystemSettings) {
-      unawaited(context.read<NotificationCubit>().openSettingsFromSettings());
+    final notificationCubit = context.read<NotificationCubit>();
+    final resolvedState = notificationCubit.state.hasLoadedPermissionState
+        ? notificationCubit.state
+        : await notificationCubit.refreshPermissionState(
+            syncAuthorizedPreference: !_hasPendingSystemSettingsSync,
+          );
+    if (!mounted) return;
+    final toggleAction = resolveSettingNotificationToggleAction(
+      platform: defaultTargetPlatform,
+      state: resolvedState,
+      value: value,
+    );
+
+    if (toggleAction == SettingNotificationToggleAction.openSystemSettings) {
+      _hasPendingSystemSettingsSync = true;
+      await notificationCubit.openSettingsFromSettings();
       return;
     }
 
-    context.read<NotificationCubit>().toggleFromSettings(value);
+    await notificationCubit.toggleFromSettings(value);
   }
 
   @override
