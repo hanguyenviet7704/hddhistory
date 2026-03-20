@@ -38,13 +38,13 @@ class PaywallSuccessPurchasePopup extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 AppText(
-                  t.monetization.successTitle,
+                  l10n.monetization.successTitle,
                   textAlign: TextAlign.center,
                   style: AppStyle.text20.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
                 ),
                 8.verticalSpace,
                 AppText(
-                  t.monetization.successDescription,
+                  l10n.monetization.successDescription,
                   textAlign: TextAlign.center,
                   maxLines: 3,
                   style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.55),
@@ -64,7 +64,7 @@ class PaywallSuccessPurchasePopup extends StatelessWidget {
                       borderRadius: BorderRadius.circular(1000.r),
                       child: Center(
                         child: AppText(
-                          t.monetization.successCta,
+                          l10n.monetization.successCta,
                           style: AppStyle.text16.copyWith(
                             fontWeight: FontWeight.w600,
                             color: Colors.white,

@@ -99,7 +99,7 @@ final class AppTrackingService extends ITrackingService {
   String resolvePremiumTrackingSource(PaywallEntryPoint entryPoint) {
     switch (entryPoint) {
       case PaywallEntryPoint.firstTimeUser:
-        return 'first_time_user';
+        return 'onboarding';
       case PaywallEntryPoint.courseRoadmap:
         return 'course_roadmap';
       case PaywallEntryPoint.settingPre:
@@ -454,6 +454,21 @@ final class AppTrackingService extends ITrackingService {
   @override
   Future<void> trackObdCompleteClick() async {
     _appTrackingService.trackEvent(TrackingKey.obdCompleteClick);
+  }
+
+  @override
+  Future<void> trackObdNotificationGateView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationGateView);
+  }
+
+  @override
+  Future<void> trackObdNotificationNotifyMeClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationNotifyMeClick);
+  }
+
+  @override
+  Future<void> trackObdNotificationMaybeLaterClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationMaybeLaterClick);
   }
 
   //* Home events
@@ -1359,65 +1374,6 @@ final class AppTrackingService extends ITrackingService {
     );
   }
 
-  //* Paywall events
-  @override
-  Future<void> trackPaywallScrView(BuildContext context) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallScrView,
-      parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallPackageClick(BuildContext context, String packageId) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallPackageClick,
-      parameters: {
-        'package': packageId,
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallExitClick(BuildContext context) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallExitClick,
-      parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallStartPremiumClick(BuildContext context, String packageId) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallStartPremiumClick,
-      parameters: {
-        'package': packageId,
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallStorePopupDismiss(BuildContext context, String packageId) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallStorePopupDismiss,
-      parameters: {
-        'package': packageId,
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
   //* Subscription events
   @override
   Future<void> trackSubscriptionRenewed(String packageId) async {
@@ -1589,6 +1545,16 @@ final class AppTrackingService extends ITrackingService {
   @override
   Future<void> trackSettingPremiumClick() async {
     _appTrackingService.trackEvent(TrackingKey.settingPremiumClick);
+  }
+
+  @override
+  Future<void> trackSettingNotificationToggleOn() async {
+    _appTrackingService.trackEvent(TrackingKey.settingNotificationToggleOn);
+  }
+
+  @override
+  Future<void> trackSettingNotificationToggleOff() async {
+    _appTrackingService.trackEvent(TrackingKey.settingNotificationToggleOff);
   }
 
   @override

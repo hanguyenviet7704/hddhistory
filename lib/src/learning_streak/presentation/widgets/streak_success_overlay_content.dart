@@ -88,13 +88,13 @@ class StreakSuccessOverlayContent extends StatelessWidget {
                     ),
                   ),
                   AppText(
-                    variant == LearningStreakSuccessVariant.p1 ? context.text.learningStreak.startedTitle : context.text.learningStreak.streakDays(count: streak.currentStreak),
+                    variant == LearningStreakSuccessVariant.p1 ? context.l10n.learningStreak.startedTitle : context.l10n.learningStreak.streakDays(count: streak.currentStreak),
                     textAlign: TextAlign.center,
                     maxLines: 2,
                     style: AppStyle.textBold24.copyWith(color: AppCustomColor.textBrand),
                   ),
                   AppText(
-                    context.text.learningStreak.successSubtitle,
+                    context.l10n.learningStreak.successSubtitle,
                     textAlign: TextAlign.center,
                     maxLines: 3,
                     style: AppStyle.text12.copyWith(
@@ -128,7 +128,7 @@ class StreakSuccessOverlayContent extends StatelessWidget {
                   ),
                   alignment: Alignment.center,
                   child: AppText(
-                    context.text.learningStreak.commitButton,
+                    context.l10n.learningStreak.commitButton,
                     style: AppStyle.textBold16.copyWith(
                       color: AppCustomColor.textWhite,
                       height: 1.5,

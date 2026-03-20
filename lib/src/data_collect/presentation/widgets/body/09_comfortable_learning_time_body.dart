@@ -11,8 +11,8 @@ class ComfortableLearningTimeBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              title: context.text.onboarding.onboardingTimeStudyQuestion,
-              subtitle: context.text.onboarding.onboardingTimeStudySubtitle,
+              title: context.l10n.onboarding.onboardingTimeStudyQuestion,
+              subtitle: context.l10n.onboarding.onboardingTimeStudySubtitle,
             ),
 
             Spacer(),

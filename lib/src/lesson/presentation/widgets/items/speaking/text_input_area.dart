@@ -80,7 +80,7 @@ class _TextInputAreaState extends State<TextInputArea> {
               maxLength: context.read<SpeakingCubit>().state.question.maxCharacter,
               decoration: InputDecoration(
                 border: InputBorder.none,
-                hintText: context.text.lesson.typeYourAnswerHint,
+                hintText: context.l10n.lesson.typeYourAnswerHint,
                 isDense: true,
                 contentPadding: EdgeInsets.zero,
                 counterText: '',
@@ -101,7 +101,7 @@ class _TextInputAreaState extends State<TextInputArea> {
                 buildWhen: (previous, current) => previous.currentChars != current.currentChars || previous.maxChars != current.maxChars,
                 builder: (context, state) {
                   return AppText(
-                    context.text.lesson.charCounter(
+                    context.l10n.lesson.charCounter(
                       currentChars: state.currentChars.toString(),
                       maxChars: state.maxChars.toString(),
                     ),

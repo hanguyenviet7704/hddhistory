@@ -41,7 +41,7 @@ extension IapProductEntityX on IapProductEntity {
     // if (productId.contains('week')) return t.monetization.pricePerWeek;
     // if (productId.contains('day')) return t.monetization.pricePerDay;
 
-    return t.monetization.pricePerMonth;
+    return l10n.monetization.pricePerDay;
   }
 
   double get _perPeriodValue {
@@ -57,7 +57,7 @@ extension IapProductEntityX on IapProductEntity {
 
   String get pricePerPeriodString {
     if (rawPrice <= 0) return price.isNotEmpty ? price : '--';
-    final value = _perPeriodValue.roundToDouble();
+    final value = (_perPeriodValue / 30).toStringAsFixed(2).toDouble;
     return currencySymbol.isNotEmpty ? '$currencySymbol${value.currency}' : value.currency;
   }
 

@@ -11,7 +11,6 @@ void showDYesNoDialog({
   required Function() onYes,
   void Function()? onNo,
 }) {
-
   assert(message.isNotEmpty || body != null, 'message or body must be provided');
   context ??= AppConfig.instance.context!;
 
@@ -19,10 +18,10 @@ void showDYesNoDialog({
     title = 'notification';
   }
   if (yesText.isEmpty) {
-    yesText = context.text.common.yes;
+    yesText = context.l10n.common.yes;
   }
   if (noText.isEmpty) {
-    noText = context.text.common.cancel;
+    noText = context.l10n.common.cancel;
   }
 
   showStandardDDiaLog(

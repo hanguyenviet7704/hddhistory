@@ -72,13 +72,20 @@ void main() {
     });
   });
 
+  group('paywall close delay contract', () {
+    test('delays close button for all paywall entries', () {
+      expect(shouldDelayPaywallCloseButton(), isTrue);
+      expect(paywallCloseButtonDelay, const Duration(seconds: 5));
+    });
+  });
+
   group('resolvePremiumTrackingSource', () {
     final trackingService = AppTrackingService(NoOpTrackingService());
 
-    test('returns first_time_user for onboarding paywall entry', () {
+    test('returns onboarding for onboarding paywall entry', () {
       expect(
         trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.firstTimeUser),
-        'first_time_user',
+        'onboarding',
       );
     });
 

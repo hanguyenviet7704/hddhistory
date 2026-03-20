@@ -1,7 +1,7 @@
 # Codebase Summary
 
-**Last Updated:** 2026-03-05  
-**Source Inputs:** `repomix-output.xml` (refreshed 2026-02-27) + direct repository verification
+**Last Updated:** 2026-03-16
+**Source Inputs:** `repomix-output.xml` (refreshed 2026-03-16) + direct repository verification
 
 ## 1. Snapshot Metrics
 ### Repomix package metrics
@@ -12,17 +12,17 @@
 - Binary-excluded files: **3**
 
 ### Dart metrics (live repository)
-- Dart files in `lib/`: **889**
-- Dart LOC in `lib/`: **140,541**
-- Dart files in `test/`: **26**
-- Dart LOC in `test/`: **2,390**
+- Dart files in `lib/`: **901**
+- Dart LOC in `lib/`: **143,082**
+- Dart files in `test/`: **40**
+- Dart LOC in `test/`: **3,615**
 
 ### Major app layers
 | Path | Dart files | Dart LOC |
 | --- | ---: | ---: |
-| `lib/config` | 87 | 16,868 |
-| `lib/core` | 105 | 13,668 |
-| `lib/src` | 691 | 109,876 |
+| `lib/config` | 98 | 18,398 |
+| `lib/core` | 105 | 13,700 |
+| `lib/src` | 692 | 110,855 |
 
 ## 2. Repository Structure (High-Level)
 ```text
@@ -68,6 +68,9 @@ meup/
 - Use-case execution helpers: `runUseCase`, `runUseCaseList`, `runUseCaseVoid`, `runUseCasePageBreak`.
 - Error/result flow: `TaskEither<AppException, T>`.
 - REST integration: Retrofit + Dio, unified request helpers in the restful request handler mixin.
+- Notification boot now runs as a dedicated config-level core in `lib/config/services/notification/`, with app startup awaiting `NotificationService.initialize(NotificationCoreConfig)` after Firebase.
+- Notification folder modularization stays grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`, but the files are now owned by the shared `library + part` architecture in `lib/config/services/services.dart`.
+- This reintroduces notification helper types into the exported services namespace as an intentional tradeoff, while Firebase/Awesome transport-specific package types still remain implementation-only.
 
 ## 5. API and Pagination Contract Summary
 - API endpoint constants live in `lib/core/constants/manual/endpoint.dart`.

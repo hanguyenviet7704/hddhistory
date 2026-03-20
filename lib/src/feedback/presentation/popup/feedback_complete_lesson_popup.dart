@@ -97,8 +97,8 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                     child: Column(
                       children: [
                         FeedbackHeader(
-                          title: context.text.feedback.completeTitle,
-                          subtitle: context.text.feedback.incompleteSubtitle,
+                          title: context.l10n.feedback.completeTitle,
+                          subtitle: context.l10n.feedback.incompleteSubtitle,
                         ),
                         16.verticalSpace,
                       ],
@@ -116,7 +116,7 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           FeedbackRatingRow(
-                            label: context.text.feedback.contentLabel,
+                            label: context.l10n.feedback.contentLabel,
                             rating: state.draftContentRating,
                             onRatingChanged: context.read<FeedbackCubit>().updateContentRating,
                             starSize: 24,
@@ -124,7 +124,7 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                           ),
                           16.verticalSpace,
                           FeedbackRatingRow(
-                            label: context.text.feedback.experienceLabel,
+                            label: context.l10n.feedback.experienceLabel,
                             rating: state.draftExperienceRating,
                             onRatingChanged: context.read<FeedbackCubit>().updateExperienceRating,
                             starSize: 24,
@@ -133,12 +133,12 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                           16.verticalSpace,
                           FeedbackCommentField(
                             value: state.draftComment,
-                            hint: context.text.feedback.commentHint,
+                            hint: context.l10n.feedback.commentHint,
                             onChanged: context.read<FeedbackCubit>().updateComment,
                           ),
                           32.verticalSpace,
                           FeedbackPrimaryButton(
-                            title: context.text.feedback.sendFeedback,
+                            title: context.l10n.feedback.sendFeedback,
                             enabled: state.feedbackCompleteCanSubmit,
                             onTap: () {
                               if (!state.feedbackCompleteCanSubmit) return;

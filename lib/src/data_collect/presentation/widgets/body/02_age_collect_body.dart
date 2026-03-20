@@ -11,7 +11,7 @@ class AgeCollectBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              title: context.text.onboarding.onboardingUserAgeQuestion,
+              title: context.l10n.onboarding.onboardingUserAgeQuestion,
             ),
 
             Spacer(),

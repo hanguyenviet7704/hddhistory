@@ -114,10 +114,10 @@ class _DataCollectMotivationStepPageState extends State<DataCollectMotivationSte
 
   String _localTitle(BuildContext context, String? userName) {
     return switch (widget.step) {
-      0 => context.text.onboarding.onboardingMotivationWelcomeTitle(userName: userName ?? ''),
-      1 => context.text.onboarding.onboardingMotivationOneTitle(userName: userName ?? ''),
-      2 => context.text.onboarding.onboardingMotivationTwoTitle(userName: userName ?? ''),
-      _ => context.text.onboarding.onboardingMotivationThreeTitle,
+      0 => context.l10n.onboarding.onboardingMotivationWelcomeTitle(userName: userName ?? ''),
+      1 => context.l10n.onboarding.onboardingMotivationOneTitle(userName: userName ?? ''),
+      2 => context.l10n.onboarding.onboardingMotivationTwoTitle(userName: userName ?? ''),
+      _ => context.l10n.onboarding.onboardingMotivationThreeTitle,
     };
   }
 }

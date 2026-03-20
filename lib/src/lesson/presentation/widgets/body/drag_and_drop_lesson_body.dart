@@ -35,9 +35,7 @@ class DragAndDropLessonBody extends LessonBodyWidget {
               placedWords: state.placedWords,
               correctAnswers: questionRuntimeAnswers(state.question).map((a) => a.correctAnswer.text).toList(),
               onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation
-                  ? () => context.read<DragAndDropCubit>().toggleExplanation()
-                  : null,
+              onExplain: showExplainAction && hasExplanation ? () => context.read<DragAndDropCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -102,7 +100,7 @@ class DragAndDropLessonBody extends LessonBodyWidget {
               ),
               24.verticalSpace,
               AppText(
-                context.text.exercise.exerciseGapFillingInstruction,
+                context.l10n.exercise.exerciseGapFillingInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w),
                 style: AppStyle.text12.copyWith(
                   color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
@@ -148,7 +146,7 @@ class DragAndDropLessonBody extends LessonBodyWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<DragAndDropCubit>().checkAnswer() : null,
-          text: context.text.lesson.checkButton,
+          text: context.l10n.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

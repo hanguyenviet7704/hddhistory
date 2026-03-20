@@ -45,7 +45,7 @@ class CourseLessonEmptyNotiPopup extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   AppText(
-                    context.text.lesson.emptyPopupTitle,
+                    context.l10n.lesson.emptyPopupTitle,
                     style: AppStyle.textBold20.copyWith(
                       color: AppCustomColor.textPrimary,
                       height: 1.5,
@@ -55,7 +55,7 @@ class CourseLessonEmptyNotiPopup extends StatelessWidget {
                   ),
                   8.verticalSpace,
                   AppText(
-                    context.text.lesson.emptyPopupDescription,
+                    context.l10n.lesson.emptyPopupDescription,
                     style: AppStyle.text14.copyWith(
                       color: AppCustomColor.textSecondary,
                       height: 1.75,
@@ -75,7 +75,7 @@ class CourseLessonEmptyNotiPopup extends StatelessWidget {
                       ),
                       alignment: Alignment.center,
                       child: AppText(
-                        context.text.lesson.emptyPopupCta,
+                        context.l10n.lesson.emptyPopupCta,
                         style: AppStyle.text16.copyWith(
                           color: AppCustomColor.textWhite,
                           fontWeight: FontWeight.w600,

@@ -19,8 +19,8 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final percentText = percent > 0 ? '${percent.toStringAsFixed(1)} %' : '--';
-    final courseTitle = course.title.text.trim().isNotEmpty ? course.title.text : context.text.onboarding.onboardingBranchingRecommendationDefaultTitle;
-    final courseSubtitle = course.description.text.trim().isNotEmpty ? course.description.text : context.text.onboarding.onboardingBranchingRecommendationDefaultSubtitle;
+    final courseTitle = course.title.text.trim().isNotEmpty ? course.title.text : context.l10n.onboarding.onboardingBranchingRecommendationDefaultTitle;
+    final courseSubtitle = course.description.text.trim().isNotEmpty ? course.description.text : context.l10n.onboarding.onboardingBranchingRecommendationDefaultSubtitle;
 
     return Padding(
       padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
@@ -68,7 +68,7 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
                 ),
                 16.verticalSpace,
                 AppText(
-                  context.text.onboarding.onboardingBranchingRecommendationLabel.toUpperCase(),
+                  context.l10n.onboarding.onboardingBranchingRecommendationLabel.toUpperCase(),
                   textAlign: TextAlign.center,
                   style: AppStyle.text13.copyWith(
                     color: const Color(0x80110751),
@@ -114,7 +114,7 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             AppText(
-                              '$percentText ${context.text.onboarding.onboardingBranchingRecommendationUsersSuffix}',
+                              '$percentText ${context.l10n.onboarding.onboardingBranchingRecommendationUsersSuffix}',
                               maxLines: 1,
                               textAlign: TextAlign.start,
                               style: AppStyle.textBold16.copyWith(color: const Color(0xFF110751), height: 1.1),
@@ -136,7 +136,7 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
           ),
           16.verticalSpace,
           OnboardBranchingPrimaryButton(
-            text: context.text.onboarding.onboardingStartNowButton,
+            text: context.l10n.onboarding.onboardingStartNowButton,
             loading: isLoadingTryNow,
             onPressed: onTryNow,
             fullWidth: true,
@@ -147,7 +147,7 @@ class OnboardBranchingRecommendationView extends StatelessWidget {
             child: TextButton(
               onPressed: isLoadingTryNow ? null : onChooseMyself,
               child: AppText(
-                context.text.onboarding.onboardingBranchingChooseMyselfButton,
+                context.l10n.onboarding.onboardingBranchingChooseMyselfButton,
                 style: AppStyle.text16.copyWith(
                   color: const Color(0xB3110751),
                   fontWeight: FontWeight.w400,

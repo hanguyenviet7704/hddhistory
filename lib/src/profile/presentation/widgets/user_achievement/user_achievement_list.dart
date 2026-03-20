@@ -11,7 +11,7 @@ class UserAchievementList extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         AppText(
-          context.text.setting.achievementsTitle,
+          context.l10n.setting.achievementsTitle,
           style: AppStyle.text16.copyWith(
             color: AppCustomColor.textSecondary,
             fontWeight: FontWeight.w700,

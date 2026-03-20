@@ -11,7 +11,7 @@ class GenderCollectBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              title: context.text.onboarding.onboardingUserGenderQuestion,
+              title: context.l10n.onboarding.onboardingUserGenderQuestion,
             ),
 
             Spacer(),

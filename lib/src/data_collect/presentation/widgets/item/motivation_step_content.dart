@@ -6,7 +6,7 @@ class MotivationStepContent extends StatelessWidget {
   final String? subtitle;
   final bool isDarkBackground;
   final VoidCallback onSkip;
-  
+
   const MotivationStepContent({
     super.key,
     required this.imageUrl,
@@ -63,7 +63,7 @@ class MotivationStepContent extends StatelessWidget {
             child: SizedBox(
               width: 200.w,
               child: ContinueButtonWidget(
-                text: context.text.onboarding.onboardingSkipGreetingButton,
+                text: context.l10n.onboarding.onboardingSkipGreetingButton,
                 onPressed: onSkip,
               ),
             ),

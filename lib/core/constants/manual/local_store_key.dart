@@ -12,4 +12,5 @@ class LocalStoreKey {
   static const String openedApp = "OPENED_APP";
   static const String authkey = "APP_AUTH_KEY";
   static const String deviceTokenUID = "DEVICE_TOKEN_UID";
+  static const String notificationAppPreferenceEnabled = "NOTIFICATION_APP_PREFERENCE_ENABLED";
 }

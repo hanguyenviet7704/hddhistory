@@ -54,7 +54,10 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         body: SafeBody(
           child: RefreshIndicator(
-            onRefresh: () async => context.read<HomeCubit>().initializeData(isInit: true),
+            onRefresh: () async {
+              context.read<HomeCubit>().initializeData(isInit: true);
+              _prefetchLearningStreak();
+            },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
@@ -72,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           4.verticalSpace,
                           AppText(
-                            context.text.home.continueLearning,
+                            context.l10n.home.continueLearning,
                             enableFitScaleDown: true,
                             margin: EdgeInsets.symmetric(horizontal: 20.w),
                             style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
@@ -100,8 +103,8 @@ class _HomePageState extends State<HomePage> {
 
                   // Skillsets section
                   SectionHeaderWidget(
-                    title: context.text.home.homeRecommendCourse,
-                    actionText: context.text.home.homeSeeAllLearningListButton,
+                    title: context.l10n.home.homeRecommendCourse,
+                    actionText: context.l10n.home.homeSeeAllLearningListButton,
                     onActionTap: () {
                       context.read<CourseCubit>().setAllCourseSource('home_skill_view');
                       CourseRoute().push(context);

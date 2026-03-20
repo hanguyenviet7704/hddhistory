@@ -27,7 +27,7 @@ class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
           builder: (context, state) {
             return ResultBottomSheet(
               type: type,
-              title: context.text.exercise.exerciseLessonCompleteTitle,
+              title: context.l10n.exercise.exerciseLessonCompleteTitle,
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
               onContinue: onContinue,
@@ -59,7 +59,10 @@ class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
           if (resolvedGroup != null) {
             await NoCorrectAnswerDocumentRoute(groupId: resolvedGroup.groupId).push(context);
             if (!context.mounted) return;
-            AppDI.injector.get<ExerciseCubit>().nextQuestion();
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) return;
+              AppDI.injector.get<ExerciseCubit>().nextQuestion();
+            });
             return;
           }
         }

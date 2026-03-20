@@ -50,7 +50,7 @@ class NextLessonCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.exercise.exerciseNextLessonLabel.toUpperCase(),
+                context.l10n.exercise.exerciseNextLessonLabel.toUpperCase(),
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textQuaternary,
                   fontWeight: FontWeight.w700,

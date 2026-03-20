@@ -1,6 +1,6 @@
 # Code Standards
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-03-16  
 **Scope:** Dart/Flutter source in this repository
 
 ## 1. Architecture Rules
@@ -75,6 +75,13 @@ Notes:
 - Some existing modules do not have all subfolders (for example `common`, `setting`).
 - Do not force structural churn unless required by task scope.
 
+### Config service boundaries
+- `lib/config/services/notification/` stays modularized by folder, but its files are owned by the shared `library + part` architecture rooted at `lib/config/services/services.dart`.
+- Keep notification wired into `lib/config/services/services.dart` through `part` declarations, with notification-only imports centralized there.
+- Keep notification internals grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`.
+- Treat the wider shared-library surface as an intentional tradeoff of this architecture. App and feature code should still prefer `NotificationService` and `NotificationCoreConfig` over helper internals when possible.
+- Do not leak `firebase_messaging`, `awesome_notifications`, or other transport-specific package types into feature-layer APIs.
+
 ## 6. Pagination and API Contract Standards
 - Use `PageBreakRequest` for paginated endpoints.
 - App-facing fields: `page`, `limit`, `orderBy`, `order`, `search`, `filter`.
@@ -102,18 +109,24 @@ dart run build_runner build --delete-conflicting-outputs
 - Source of truth: `assets/i18n/<locale>/<module>.yaml`.
 - Generated outputs: `lib/config/l10n/`.
 - Key style: lowerCamelCase, with module namespace implied by file.
+- Access translations in widgets with `context.l10n`; use `Translations.of(context)` only when an explicit local variable is clearer.
+- Use the generated global `l10n` accessor only for helpers that do not receive a `BuildContext`.
+- Do not add or restore custom translation helpers such as `context.text`.
 - Standard sync flow:
 ```bash
 # macOS/Linux
 tools/<os>/localization/localization.sh pull
 tools/<os>/localization/localization.sh push --apply
+tools/<os>/localization/localization.sh pull
 tools/<os>/localization/localization.sh slang
 
 # Windows
 tools\\windows\\localization\\localization.bat pull
 tools\\windows\\localization\\localization.bat push --apply
+tools\\windows\\localization\\localization.bat pull
 tools\\windows\\localization\\localization.bat slang
 ```
+- After localization config or key changes, rerun `slang` and `flutter analyze` before merge.
 
 ## 10. Testing and Quality Gates
 ### Required local checks before merge

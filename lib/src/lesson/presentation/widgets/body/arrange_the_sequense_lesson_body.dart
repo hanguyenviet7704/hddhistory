@@ -41,9 +41,7 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
               explanationText: state.question.explanationText,
               arrangedAnswers: correctAnswers,
               onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation
-                  ? () => context.read<ArrangeTheSequenceCubit>().toggleExplanation()
-                  : null,
+              onExplain: showExplainAction && hasExplanation ? () => context.read<ArrangeTheSequenceCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -96,7 +94,7 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exercise.exerciseSequenceInstruction,
+                context.l10n.exercise.exerciseSequenceInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12
@@ -180,7 +178,7 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<ArrangeTheSequenceCubit>().checkAnswer() : null,
-          text: context.text.lesson.checkButton,
+          text: context.l10n.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

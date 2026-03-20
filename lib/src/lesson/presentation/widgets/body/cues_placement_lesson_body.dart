@@ -39,9 +39,7 @@ class CuesPlacementLessonBody extends LessonBodyWidget {
                 for (var option in runtimeOptions) option.id: option,
               },
               onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation
-                  ? () => context.read<CuesPlacementCubit>().toggleExplanation()
-                  : null,
+              onExplain: showExplainAction && hasExplanation ? () => context.read<CuesPlacementCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -96,7 +94,7 @@ class CuesPlacementLessonBody extends LessonBodyWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exercise.exerciseStressMarkInstruction,
+                context.l10n.exercise.exerciseStressMarkInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12.copyWith(
@@ -209,7 +207,7 @@ class CuesPlacementLessonBody extends LessonBodyWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<CuesPlacementCubit>().checkAnswer() : null,
-          text: context.text.lesson.checkButton,
+          text: context.l10n.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

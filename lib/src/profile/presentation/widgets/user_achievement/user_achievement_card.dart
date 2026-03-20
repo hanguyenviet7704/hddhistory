@@ -11,7 +11,7 @@ class UserAchievementCard extends StatelessWidget {
   int get totalCourses => achievement.totalCourse;
   int get completedCourses => achievement.completedCourse;
 
-  String subtitle(BuildContext context) => context.text.setting.achievementsCompletedCount(
+  String subtitle(BuildContext context) => context.l10n.setting.achievementsCompletedCount(
     completed: completedCourses,
     total: totalCourses,
   );

@@ -26,6 +26,7 @@ import 'package:skeletonizer/skeletonizer.dart' as sk;
 
 //* Import all files here
 import '../../config/di/di.dart';
+import '../../config/l10n/l10n.g.dart';
 import '../../config/routes/routes.dart';
 import '../../config/services/services.dart';
 import '../../config/themes/themes.dart';

@@ -38,7 +38,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                   ),
                   40.verticalSpace,
                   AppText(
-                    context.text.onboarding.onboardingBranchingDidYouKnowTitle,
+                    context.l10n.onboarding.onboardingBranchingDidYouKnowTitle,
                     textAlign: TextAlign.center,
                     style: AppStyle.textBold20.copyWith(
                       color: const Color(0xFF110751),
@@ -47,6 +47,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
                   4.verticalSpace,
                   AppText(
                     factText,
+                    maxLines: 5,
                     textAlign: TextAlign.center,
                     style: AppStyle.text14.copyWith(
                       color: const Color(0xB3110751),
@@ -58,7 +59,7 @@ class OnboardBranchingPersonAdmireDetailView extends StatelessWidget {
           ),
           12.verticalSpace,
           OnboardBranchingPrimaryButton(
-            text: context.text.onboarding.onboardingSkipGreetingButton,
+            text: context.l10n.onboarding.onboardingSkipGreetingButton,
             onPressed: onContinue,
           ),
         ],

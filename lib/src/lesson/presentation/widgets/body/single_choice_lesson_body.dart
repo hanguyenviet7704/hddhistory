@@ -32,9 +32,7 @@ class SingleChoiceLessonBody extends LessonBodyWidget {
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
               onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation
-                  ? () => context.read<ChoiceCubit>().toggleExplanation()
-                  : null,
+              onExplain: showExplainAction && hasExplanation ? () => context.read<ChoiceCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -126,7 +124,7 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
           12.verticalSpace,
         ],
         AppText(
-          context.text.exercise.exerciseSingleChoiceInstruction,
+          context.l10n.exercise.exerciseSingleChoiceInstruction,
           margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
           maxLines: 10,
           style: AppStyle.text12.copyWith(
@@ -163,7 +161,7 @@ Widget _buildSingleChoiceBottomButton(BuildContext context) {
           if (!canCheck) return;
           context.read<ChoiceCubit>().checkAnswer();
         },
-        text: context.text.lesson.checkButton,
+        text: context.l10n.lesson.checkButton,
         isEnabled: canCheck,
       );
     },

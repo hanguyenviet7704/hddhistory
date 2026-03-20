@@ -63,7 +63,7 @@ class _RoleplayBackButton extends StatelessWidget {
         CourseRoadmapRoute().go(context);
         context.read<FeedbackCubit>().loadUserFeedbacks();
       },
-      icon: Icon(
+      icon: FaIcon(
         FontAwesomeIcons.xmark,
         size: 18.w,
         color: isLight ? Colors.white : AppCustomColor.textPrimary,

@@ -36,7 +36,7 @@ void showDataBottomSheet({
             DNavigator.back();
             onTapClose?.call();
           },
-          child: Icon(
+          child: FaIcon(
             FontAwesomeIcons.circleXmark,
             size: 20.sp,
             color: (colorTitle == AppColorLight.surface) ? AppColorLight.surface : AppColorLight.onSurface,

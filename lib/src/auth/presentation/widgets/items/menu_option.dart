@@ -95,7 +95,7 @@ class AboutMenu extends StatelessWidget {
                 // ),
                 // 12.horizontalSpace,
                 AppText(
-                  context.text.auth.aboutTitle,
+                  context.l10n.auth.aboutTitle,
                   style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
                 ),
               ],
@@ -108,12 +108,12 @@ class AboutMenu extends StatelessWidget {
           Column(
             children: [
               AboutMenuOption(
-                title: context.text.auth.privacyPolicy,
+                title: context.l10n.auth.privacyPolicy,
                 onTap: () => _launchURL('https://meup.com/privacy.html', context),
               ),
               4.verticalSpace,
               AboutMenuOption(
-                title: context.text.auth.termsOfUse,
+                title: context.l10n.auth.termsOfUse,
                 onTap: () => _launchURL('https://meup.com/terms.html', context),
               ),
             ],

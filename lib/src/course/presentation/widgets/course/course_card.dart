@@ -92,7 +92,7 @@ class CourseCard extends StatelessWidget {
         ),
         6.horizontalSpace,
         AppText(
-          context.text.allcourse.lessonsProgress(completed: completedLessons!, total: totalLessons!),
+          context.l10n.allcourse.lessonsProgress(completed: completedLessons!, total: totalLessons!),
           style: AppStyle.text12.copyWith(
             color: AppCustomColor.textTertiary,
             fontWeight: FontWeight.w500,
@@ -108,7 +108,7 @@ class CourseCard extends StatelessWidget {
         SvgPicture.asset(AppAsset.svg.app.icBook, width: 16.w),
         8.horizontalSpace,
         AppText(
-          context.text.allcourse.lessonsCount(count: course.numberOfLesson),
+          context.l10n.allcourse.lessonsCount(count: course.numberOfLesson),
           style: AppStyle.text12.copyWith(
             color: AppCustomColor.textTertiary,
             fontWeight: FontWeight.w500,

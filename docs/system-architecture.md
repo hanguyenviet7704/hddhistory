@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-12
+**Last Updated:** 2026-03-19
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -25,6 +25,16 @@ main_<flavor>.dart -> main.dart -> AppService.init()
 
 Each flavor sets `F.appFlavor` before calling shared `main()`.
 
+### App boot services
+`AppService._configService()` now awaits notification boot immediately after `Firebase.initializeApp(...)`.
+
+```text
+HydrateBlocService.initialize()
+  -> Firebase.initializeApp()
+  -> NotificationService.initialize(NotificationCoreConfig)
+  -> package/tracking/event/remote-config startup
+```
+
 ## 2. Layered Feature Architecture
 ```text
 lib/src/<feature>/
@@ -46,6 +56,13 @@ Widget/Page
 ### Shared foundations
 - `lib/config/`: DI, routing, services, themes, l10n.
 - `lib/core/`: base request/response/error/use-case abstractions, helper utilities.
+
+### Notification core boundary
+- Notification runtime lives under `lib/config/services/notification/`.
+- Notification files are owned by the shared `library + part` architecture rooted at `lib/config/services/services.dart`.
+- Internal concerns are grouped by `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`.
+- App and feature code should still prefer `NotificationService` and `NotificationCoreConfig` as the primary notification seam, even though helper types now live in the same exported services library namespace.
+- Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
 Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
@@ -104,17 +121,25 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 
 ### Splash and auth-entry runtime flow
 - `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
-- In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; otherwise it routes straight to the normal `RegisterRoute()` path.
+- In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; otherwise it routes straight to the onboarding notification gate and then into the normal register flow.
 - `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
-- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding and route to `RegisterRoute(forceChooseCourseAfterLogin: true)`.
+- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding content but now hand off through `NotificationRequestRoute(showPaywallAfterAuth: true)` before `RegisterRoute(showPaywallAfterAuth: true)`.
 - Unrecognized devices or safe lookup misses continue the existing onboarding intro path without surfacing a splash auth error.
 - Opening `RegisterRoute()` still silently bootstraps an anonymous guest session through `AuthBloc`, preloads `HomeCubit.initializeData(isInit: true)`, and keeps the register UI visible while the user picks Guest, Google, or Apple.
-- First-time onboarding completion now routes through `StartJourneyButton -> RegisterRoute(showPaywallAfterAuth: true)` so the paywall handoff is explicit and opt-in.
-- The recognized-device splash entry keeps using `RegisterRoute(forceChooseCourseAfterLogin: true)`; the course chooser path and the first-time paywall path stay separate.
+- First-time onboarding completion now routes through `StartJourneyButton -> NotificationRequestRoute(showPaywallAfterAuth: true) -> RegisterRoute(showPaywallAfterAuth: true)` so the gate stays onboarding-scoped and the paywall handoff stays explicit.
+- The no-onboarding splash path also routes through `NotificationRequestRoute(showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(...))`, so both first-time and recognized-device register entry resolve the notification gate before auth.
 - Silent register bootstrap never opens paywall by itself. The paywall branch is only evaluated after an explicit Guest, Google, or Apple auth success.
 - Guest continue now reuses the bootstrapped anonymous session when available and only falls back to a fresh anonymous login if bootstrap failed.
 - Google and Apple continue to replace the guest session through the existing auth-success path, and any guest course handoff now routes with `CourseRoute(selectedTabIndex: 0)` while resetting home selection to the first category to avoid stale post-logout state.
-- `PaywallRoute(firstTimeUserFlow: true)` marks the first-time onboarding paywall session. In that mode, closing the paywall or dismissing purchase success routes to `CourseRoute(selectedTabIndex: 0)` after home data reset; purchase failure or cancel leaves the user on paywall.
+- Every paywall entry keeps the top-bar close slot reserved but hides the close affordance for five seconds before revealing it. `PaywallRoute(firstTimeUserFlow: true)` still marks the first-time onboarding paywall session for destination handling only: closing the paywall or dismissing purchase success routes to `CourseRoute(selectedTabIndex: 0)` after home data reset, while standard paywall close/purchase-success flows still route back and purchase failure or cancel leaves the user on paywall.
+
+### Notification preference runtime flow
+- `NotificationRequestRoute` is a dedicated onboarding-only pre-register gate. It mirrors `RegisterRoute` query intent flags but keeps non-onboarding `RegisterRoute()` callers unchanged.
+- `NotificationRequestPage` persists one-time completion in `UserCubit.hasCompletedFirstTimeNotificationGate`.
+- Gate auto-skip happens when the one-time flag is already set or when notification capability is unavailable. Authorized/provisional runtime state now still shows the gate once so onboarding/bypass entry always lands on the explainer screen before auth.
+- `NotificationCubit` is now a hydrated shared boundary for both onboarding and settings. It persists only the app-level preference (`notificationsEnabled` + initialization flag), mirrors that preference into a shared store for service/background access, and always refreshes runtime permission state from `NotificationService`.
+- Settings now expose an inline notification toggle on `SettingPage`. Effective ON requires both app-level preference and runtime capability; app resume refreshes the runtime state to reflect OS settings changes. On iOS, enabling from settings still requests permission in-app while the OS permission is requestable, then falls back to the app's system settings screen only when the OS must own the change. A resume sync back from the live OS permission state only happens after an intentional settings roundtrip.
+- `NotificationService`, foreground local rendering, and background data-only push rendering now read the shared app-level preference before showing or scheduling local notifications, so app-level OFF suppresses client-side notification rendering even when OS permission is still granted.
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.

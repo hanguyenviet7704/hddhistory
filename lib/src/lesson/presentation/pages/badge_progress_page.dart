@@ -168,7 +168,7 @@ class _BadgeProgressContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.exercise.exerciseBadgeCompleteLabel.toUpperCase(),
+                context.l10n.exercise.exerciseBadgeCompleteLabel.toUpperCase(),
                 textAlign: TextAlign.center,
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textTertiary,
@@ -194,7 +194,7 @@ class _BadgeProgressContent extends StatelessWidget {
             _BadgeProgressBar(progress: progress.progress),
             4.verticalSpace,
             AppText(
-              context.text.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
+              context.l10n.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
               textAlign: TextAlign.center,
               style: AppStyle.text10.copyWith(
                 color: AppCustomColor.brandPrimary,
@@ -205,7 +205,7 @@ class _BadgeProgressContent extends StatelessWidget {
           ] else ...[
             12.verticalSpace,
             AppText(
-              context.text.exercise.exerciseBadgeCompleteMessage,
+              context.l10n.exercise.exerciseBadgeCompleteMessage,
               textAlign: TextAlign.center,
               maxLines: 2,
               style: AppStyle.text16.copyWith(

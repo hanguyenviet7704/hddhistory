@@ -194,7 +194,7 @@ class _RoleplayIntroViewState extends State<_RoleplayIntroView> {
                 builder: (context, step, _) {
                   final bool showMissions = _hasMissions && step == 1;
                   return RoleplayIntroActionButton(
-                    label: showMissions ? context.text.roleplay.rolePlayIntroStartButton : context.text.common.kContinue,
+                    label: showMissions ? context.l10n.roleplay.rolePlayIntroStartButton : context.l10n.common.kContinue,
                     onPressed: _handleCta,
                   );
                 },

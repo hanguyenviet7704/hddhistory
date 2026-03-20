@@ -7,7 +7,7 @@ class UserSubscriptionActiveCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final text = t.monetization;
+    final text = l10n.monetization;
     final nextBilling = _nextBillingText(
       productId: subscription.productId,
       date: subscription.currentPeriodEnd,

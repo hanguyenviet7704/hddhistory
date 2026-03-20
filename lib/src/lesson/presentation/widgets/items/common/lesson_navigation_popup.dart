@@ -81,7 +81,7 @@ class LessonNavigationPopup extends StatelessWidget {
                             child: Column(
                               children: [
                                 AppText(
-                                  context.text.lesson.navigationPopupTitle,
+                                  context.l10n.lesson.navigationPopupTitle,
                                   textAlign: TextAlign.center,
                                   style: AppStyle.text20.copyWith(
                                     fontWeight: FontWeight.bold,
@@ -92,12 +92,12 @@ class LessonNavigationPopup extends StatelessWidget {
                                 ),
                                 8.verticalSpace,
                                 _NavigationInstructionLine(
-                                  boldText: context.text.lesson.navigationPopupContinueBold,
-                                  regularText: context.text.lesson.navigationPopupContinueRest,
+                                  boldText: context.l10n.lesson.navigationPopupContinueBold,
+                                  regularText: context.l10n.lesson.navigationPopupContinueRest,
                                 ),
                                 _NavigationInstructionLine(
-                                  boldText: context.text.lesson.navigationPopupScrollBold,
-                                  regularText: context.text.lesson.navigationPopupScrollRest,
+                                  boldText: context.l10n.lesson.navigationPopupScrollBold,
+                                  regularText: context.l10n.lesson.navigationPopupScrollRest,
                                 ),
                               ],
                             ),
@@ -109,7 +109,7 @@ class LessonNavigationPopup extends StatelessWidget {
                 ),
                 40.verticalSpace,
                 AppText(
-                  context.text.lesson.navigationPopupTapToContinue,
+                  context.l10n.lesson.navigationPopupTapToContinue,
                   textAlign: TextAlign.center,
                   style: AppStyle.text16.copyWith(
                     fontWeight: FontWeight.w600,

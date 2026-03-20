@@ -5,12 +5,18 @@ enum PaywallFlowAction { close, purchaseSuccess }
 enum PaywallFlowDestination { back, course }
 
 @visibleForTesting
+const paywallCloseButtonDelay = Duration(seconds: 5);
+
+@visibleForTesting
 bool shouldHandlePaywallSuccess({
   required PurchaseAction action,
   required PurchaseOrigin origin,
 }) {
   return origin == PurchaseOrigin.paywall && action == PurchaseAction.purchase;
 }
+
+@visibleForTesting
+bool shouldDelayPaywallCloseButton() => true;
 
 @visibleForTesting
 PaywallFlowDestination resolvePaywallFlowDestination({
@@ -43,10 +49,17 @@ class PaywallPage extends StatefulWidget {
 class _PaywallPageState extends State<PaywallPage> {
   bool _hasTrackedView = false;
   bool _isHandlingPurchaseSuccess = false;
+  late bool _isCloseButtonVisible;
+  Timer? _closeButtonTimer;
 
   @override
   void initState() {
     super.initState();
+
+    _isCloseButtonVisible = !shouldDelayPaywallCloseButton();
+    if (!_isCloseButtonVisible) {
+      _closeButtonTimer = Timer(paywallCloseButtonDelay, _showCloseButton);
+    }
 
     final cubit = context.read<IapCubit>();
     cubit.init();
@@ -61,6 +74,13 @@ class _PaywallPageState extends State<PaywallPage> {
     if (_hasTrackedView) return;
     AppService.instance.appTrackingService.trackPremiumScrView();
     _hasTrackedView = true;
+  }
+
+  void _showCloseButton() {
+    if (!mounted || _isCloseButtonVisible) return;
+    setState(() {
+      _isCloseButtonVisible = true;
+    });
   }
 
   Future<void> _handleClose() async {
@@ -110,6 +130,7 @@ class _PaywallPageState extends State<PaywallPage> {
 
   @override
   void dispose() {
+    _closeButtonTimer?.cancel();
     AppDI.injector.get<IapCubit>().resetPaywallEntryPoint();
     super.dispose();
   }
@@ -144,7 +165,10 @@ class _PaywallPageState extends State<PaywallPage> {
             },
             child: Column(
               children: [
-                PaywallPageDecoration(onClose: _handleClose),
+                PaywallPageDecoration(
+                  onClose: _handleClose,
+                  showCloseButton: _isCloseButtonVisible,
+                ),
                 const PaywallHighlightPackageInfo(),
               ],
             ),

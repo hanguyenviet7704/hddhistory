@@ -150,7 +150,7 @@ class SelectSearchButton<T> extends StatelessWidget {
       onTap: () => _buildSearchDialog(context),
       child: InputDecorator(
         decoration: InputDecoration(
-          suffixIcon: Icon(FontAwesomeIcons.chevronDown, size: 15.sp, color: AppTheme.outlineVariant),
+          suffixIcon: FaIcon(FontAwesomeIcons.chevronDown, size: 15.sp, color: AppTheme.outlineVariant),
           alignLabelWithHint: theme.alignLabelWithHint,
           floatingLabelBehavior: theme.floatingLabelBehavior,
           floatingLabelAlignment: theme.floatingLabelAlignment,

@@ -60,7 +60,7 @@ class _LessonListPageState extends State<LessonListPage> {
                           ),
                           SizedBox(height: 16.h),
                           AppText(
-                            context.text.allcourse.errorOccurred,
+                            context.l10n.allcourse.errorOccurred,
                             style: AppStyle.text16.copyWith(
                               color: AppCustomColor.textSecondary,
                             ),
@@ -81,7 +81,7 @@ class _LessonListPageState extends State<LessonListPage> {
                     child: Padding(
                       padding: EdgeInsets.all(20.w),
                       child: AppText(
-                        context.text.allcourse.noLessonData,
+                        context.l10n.allcourse.noLessonData,
                         style: AppStyle.text16.copyWith(
                           color: AppCustomColor.textSecondary,
                         ),
@@ -119,7 +119,7 @@ class _LessonListPageState extends State<LessonListPage> {
                             padding: EdgeInsets.symmetric(vertical: 32.w),
                             child: Center(
                               child: AppText(
-                                context.text.allcourse.noKeypointsAvailable,
+                                context.l10n.allcourse.noKeypointsAvailable,
                                 style: AppStyle.text14.copyWith(
                                   color: AppCustomColor.textTertiary,
                                 ),

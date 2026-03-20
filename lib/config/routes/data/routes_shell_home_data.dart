@@ -39,6 +39,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
           BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
           BlocProvider.value(value: AppDI.injector.get<LearningStreakCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
         ],
         child: const HomePage(),
       ),

@@ -221,7 +221,7 @@ class _OnboardBranchingPageState extends State<OnboardBranchingPage> {
             ),
             12.verticalSpace,
             AppText(
-              context.text.onboarding.onboardingLoadingPersonalizationText,
+              context.l10n.onboarding.onboardingLoadingPersonalizationText,
               textAlign: TextAlign.center,
               maxLines: 3,
               style: AppStyle.text14.copyWith(

@@ -30,7 +30,7 @@ class RoleplayExerciseAnswerCard extends StatelessWidget {
 
   bool get _showsStatusHeader => !_isSpeakingPayload;
 
-  String get _answerLabel => _isSpeakingPayload ? t.exercise.exerciseYourAnswer : t.exercise.exerciseAnswer;
+  String get _answerLabel => _isSpeakingPayload ? l10n.exercise.exerciseYourAnswer : l10n.exercise.exerciseAnswer;
 
   @override
   Widget build(BuildContext context) {

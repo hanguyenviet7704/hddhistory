@@ -38,11 +38,11 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
             Row(
               children: [
                 Expanded(
-                  child: BlocSelector<UserCubit, UserState, String>(
+                  child: BlocSelector<ProfileCubit, ProfileState, String>(
                     selector: (state) => state.user.name,
                     builder: (context, username) {
                       return AppText(
-                        context.text.home.homeGreetingTitle(username: username),
+                        context.l10n.home.homeGreetingTitle(username: username),
                         enableFitScaleDown: true,
                         style: AppStyle.text12.copyWith(
                           color: AppCustomColor.textTertiary,

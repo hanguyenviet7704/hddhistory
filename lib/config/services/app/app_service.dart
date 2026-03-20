@@ -82,6 +82,13 @@ class AppService {
     // Initialize Firebase first
     await HydrateBlocService.instance.initialize();
     await Firebase.initializeApp(options: F.firebaseOptions);
+    await NotificationService.initialize(
+      NotificationCoreConfig(
+        onTokenChanged: (state) {
+          AppGlobalValue.firebaseToken = state.token;
+        },
+      ),
+    );
 
     await packageInfoService.initialize();
     appTrackingService.initialize();
@@ -95,7 +102,6 @@ class AppService {
     // DeepLinkService.init();
     // FlutterIsolateService.init();
     // GeolocatorService.init();
-    // NotificationService.initialize();
     // UnityAdsService.init();
     // AdMobService.init();
   }

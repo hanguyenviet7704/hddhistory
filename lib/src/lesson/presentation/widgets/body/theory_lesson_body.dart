@@ -48,7 +48,7 @@ class TheoryLessonBody extends LessonBodyWidget {
             }
             context.read<TheoryCubit>().nextDocument();
           },
-          text: context.text.common.kContinue,
+          text: context.l10n.common.kContinue,
           isEnabled: true,
         );
       },

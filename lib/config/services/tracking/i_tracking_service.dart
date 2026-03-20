@@ -64,6 +64,9 @@ abstract interface class ITrackingService {
   Future<void> trackObdMotivation3Click();
   Future<void> trackObdCompleteScrView();
   Future<void> trackObdCompleteClick();
+  Future<void> trackObdNotificationGateView();
+  Future<void> trackObdNotificationNotifyMeClick();
+  Future<void> trackObdNotificationMaybeLaterClick();
 
   //* Home events
   Future<void> trackHomeScrView();
@@ -238,13 +241,6 @@ abstract interface class ITrackingService {
     required String source,
   });
 
-  //* Paywall events
-  Future<void> trackPaywallScrView(BuildContext context);
-  Future<void> trackPaywallPackageClick(BuildContext context, String packageId);
-  Future<void> trackPaywallExitClick(BuildContext context);
-  Future<void> trackPaywallStartPremiumClick(BuildContext context, String packageId);
-  Future<void> trackPaywallStorePopupDismiss(BuildContext context, String packageId);
-
   //* Subscription events
   Future<void> trackSubscriptionRenewed(String packageId);
   Future<void> trackSubscriptionCancelled(String packageId);
@@ -277,6 +273,8 @@ abstract interface class ITrackingService {
   Future<void> trackSettingRestorePurchClick();
   Future<void> trackSettingLogoutClick();
   Future<void> trackSettingPremiumClick();
+  Future<void> trackSettingNotificationToggleOn();
+  Future<void> trackSettingNotificationToggleOff();
   Future<void> trackPremiumScrView();
   Future<void> trackPremiumScroll();
   Future<void> trackPremiumInforSwipe();

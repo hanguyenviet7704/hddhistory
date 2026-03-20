@@ -22,7 +22,7 @@ class UserSubscriptionEmptyState extends StatelessWidget {
       ),
       child: Center(
         child: AppText(
-          t.monetization.manageNoActiveSubscription,
+          l10n.monetization.manageNoActiveSubscription,
           textAlign: TextAlign.center,
           style: AppStyle.text14.copyWith(
             fontWeight: FontWeight.w500,

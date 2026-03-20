@@ -35,9 +35,7 @@ class MarkStressWordLessonBody extends LessonBodyWidget {
               selectedIndices: state.selectedWordIndices,
               correctIndices: state.correctWordIndices,
               onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation
-                  ? () => context.read<MarkStressWordCubit>().toggleExplanation()
-                  : null,
+              onExplain: showExplainAction && hasExplanation ? () => context.read<MarkStressWordCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -91,7 +89,7 @@ class MarkStressWordLessonBody extends LessonBodyWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exercise.exerciseStressMarkInstruction,
+                context.l10n.exercise.exerciseStressMarkInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12.copyWith(
@@ -168,7 +166,7 @@ class MarkStressWordLessonBody extends LessonBodyWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<MarkStressWordCubit>().checkAnswer() : null,
-          text: context.text.lesson.checkButton,
+          text: context.l10n.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

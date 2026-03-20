@@ -73,8 +73,8 @@ class _RoleplayStatusRow extends StatelessWidget {
 
   Color get statusColor => isCorrect ? AppCustomColor.successGreen : AppCustomColor.errorRed;
   String get statusText => isCorrect
-      ? t.exercise.exerciseFeedbackRight
-      : t.exercise.exerciseFeedbackNotTrue;
+      ? l10n.exercise.exerciseFeedbackRight
+      : l10n.exercise.exerciseFeedbackNotTrue;
   Widget get icon => isCorrect
       ? AppAsset.icons.app.icTick.image(width: 18.w, height: 18.w)
       : AppAsset.icons.app.icClose.image(width: 18.w, height: 18.w);

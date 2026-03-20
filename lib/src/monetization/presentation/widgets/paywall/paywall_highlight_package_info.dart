@@ -131,7 +131,7 @@ class _HighlightEmpty extends StatelessWidget {
               ),
               16.verticalSpace,
               AppText(
-                t.monetization.emptyProductsTitle,
+                l10n.monetization.emptyProductsTitle,
                 textAlign: TextAlign.center,
                 style: AppStyle.text18.copyWith(
                   fontWeight: FontWeight.w700,
@@ -141,7 +141,7 @@ class _HighlightEmpty extends StatelessWidget {
               ),
               8.verticalSpace,
               AppText(
-                t.monetization.emptyProductsDesc,
+                l10n.monetization.emptyProductsDesc,
                 maxLines: 3,
                 textAlign: TextAlign.center,
                 style: AppStyle.text14.copyWith(
@@ -151,7 +151,7 @@ class _HighlightEmpty extends StatelessWidget {
               ),
               20.verticalSpace,
               _HighlightActionButton(
-                label: t.monetization.retry,
+                label: l10n.monetization.retry,
                 onTap: onRetry,
               ),
             ],
@@ -189,7 +189,7 @@ class _HighlightCard extends StatelessWidget {
         ),
         10.verticalSpace,
         AppText(
-          t.monetization.paywallHighlightSubtitle,
+          l10n.monetization.paywallHighlightSubtitle,
           textAlign: TextAlign.center,
           style: AppStyle.text12.copyWith(
             fontWeight: FontWeight.w600,
@@ -199,14 +199,14 @@ class _HighlightCard extends StatelessWidget {
         ),
         12.verticalSpace,
         _HighlightActionButton(
-          label: t.monetization.paywallPrimaryCta,
+          label: l10n.monetization.paywallPrimaryCta,
           onTap: onPurchase,
         ),
         12.verticalSpace,
         GestureDetector(
           onTap: onSeeAllPlans,
           child: AppText(
-            t.monetization.seeAllPlans,
+            l10n.monetization.seeAllPlans,
             textAlign: TextAlign.center,
             style: AppStyle.text12.copyWith(
               color: AppCustomColor.brandPrimary,
@@ -287,7 +287,7 @@ class _PaywallLegalLinks extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _LegalLink(
-          label: t.auth.termsOfUse,
+          label: l10n.auth.termsOfUse,
           url: LegalUrl.termsAndConditions,
         ),
         Container(
@@ -297,7 +297,7 @@ class _PaywallLegalLinks extends StatelessWidget {
           color: AppCustomColor.textBrand.withValues(alpha: 0.2),
         ),
         _LegalLink(
-          label: t.auth.privacyPolicy,
+          label: l10n.auth.privacyPolicy,
           url: LegalUrl.privacyPolicy,
         ),
       ],

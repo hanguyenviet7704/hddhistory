@@ -72,7 +72,7 @@ class _OnboardBranchingLoadingViewState extends State<OnboardBranchingLoadingVie
           ),
           32.verticalSpace,
           AppText(
-            context.text.onboarding.onboardingLoadingPersonalizationText,
+            context.l10n.onboarding.onboardingLoadingPersonalizationText,
             textAlign: TextAlign.center,
             maxLines: 3,
             style: AppStyle.text14.copyWith(
@@ -81,7 +81,7 @@ class _OnboardBranchingLoadingViewState extends State<OnboardBranchingLoadingVie
           ),
           4.verticalSpace,
           AppText(
-            context.text.onboarding.onboardingBranchingLoadingSubtitle,
+            context.l10n.onboarding.onboardingBranchingLoadingSubtitle,
             textAlign: TextAlign.center,
             maxLines: 2,
             style: AppStyle.textBold20.copyWith(

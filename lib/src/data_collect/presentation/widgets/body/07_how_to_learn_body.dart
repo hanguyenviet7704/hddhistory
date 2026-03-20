@@ -11,8 +11,8 @@ class HowToLearnBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              note: context.text.onboarding.onboardingHowToLearnNote,
-              title: context.text.onboarding.onboardingHowToLearnTitle,
+              note: context.l10n.onboarding.onboardingHowToLearnNote,
+              title: context.l10n.onboarding.onboardingHowToLearnTitle,
             ),
 
             20.verticalSpace,

@@ -207,8 +207,6 @@ class _UserAchievementSheetContent extends StatelessWidget {
     required this.onGoToCourse,
   });
 
-  
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -270,7 +268,7 @@ class _UserAchievementGoToCourseButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(1000.r),
         ),
         child: AppText(
-          context.text.setting.achievementsGoToCourse,
+          context.l10n.setting.achievementsGoToCourse,
           style: AppStyle.text16.copyWith(
             color: AppCustomColor.textWhite,
             fontWeight: FontWeight.w700,
@@ -287,7 +285,7 @@ class _UserAchievementEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: AppText(
-        context.text.common.emptyList,
+        context.l10n.common.emptyList,
         style: AppStyle.text14.copyWith(
           color: AppCustomColor.textTertiary,
           height: 1.5,

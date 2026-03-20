@@ -35,9 +35,9 @@ class FeedbackBeforeYouGoPopup extends StatelessWidget {
       child: GestureDetector(
         onTap: () => context.back(),
         child: FeedbackThankYouBody(
-          titleLine1: context.text.feedback.thankYouTitleLine1,
-          titleLine2: context.text.feedback.thankYouTitleLine2,
-          subtitle: context.text.feedback.thankYouSubtitle,
+          titleLine1: context.l10n.feedback.thankYouTitleLine1,
+          titleLine2: context.l10n.feedback.thankYouTitleLine2,
+          subtitle: context.l10n.feedback.thankYouSubtitle,
         ),
       ),
     );

@@ -20,7 +20,7 @@ class ProfileDeleteButton extends StatelessWidget {
             borderRadius: BorderRadius.circular(999.r),
           ),
           child: Text(
-            context.text.setting.settingProfileDesstructiveButton,
+            context.l10n.setting.settingProfileDesstructiveButton,
             style: AppStyle.text14.copyWith(
               color: AppCustomColor.errorRed,
               height: 1.75,

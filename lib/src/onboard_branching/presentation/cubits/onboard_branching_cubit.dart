@@ -221,6 +221,7 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
 
   void onChooseMyselfPressed() {
     AppService.instance.appTrackingService.trackEvent(TrackingKey.obBranchingChooseMyselfClick);
+    AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
     _completeOnboardingTransition();
   }
 
@@ -568,6 +569,6 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
     if (context == null) {
       return 'Login failed, please try again.';
     }
-    return context.text.auth.authLoginFailedPleaseTryAgain;
+    return context.l10n.auth.authLoginFailedPleaseTryAgain;
   }
 }

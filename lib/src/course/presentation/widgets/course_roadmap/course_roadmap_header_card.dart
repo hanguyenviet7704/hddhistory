@@ -75,7 +75,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                 12.horizontalSpace,
                 // Lesson count
                 AppText(
-                  context.text.courseroadmap
+                  context.l10n.courseroadmap
                       .lessonsProgress(
                         completed: roadmapLevel.completedLessons,
                         total: roadmapLevel.totalLessons,

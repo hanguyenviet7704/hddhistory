@@ -12,7 +12,7 @@ class InProgressBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(8.r),
       ),
       child: AppText(
-        context.text.courseroadmap.inProgressStatusTag,
+        context.l10n.courseroadmap.inProgressStatusTag,
         style: AppStyle.text10.copyWith(
           fontWeight: FontWeight.w600,
           color: AppCustomColor.textWhite,

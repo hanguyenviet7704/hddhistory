@@ -133,7 +133,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _goToRegister({required bool showPaywallAfterAuth}) {
-    RegisterRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
+    NotificationRequestRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
   }
 
   void _handleUpdatePressed() async {

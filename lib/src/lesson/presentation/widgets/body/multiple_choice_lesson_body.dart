@@ -32,9 +32,7 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
               showExplanation: state.showExplanation,
               explanationText: state.question.explanationText,
               onContinue: onContinue,
-              onExplain: showExplainAction && hasExplanation
-                  ? () => context.read<ChoiceCubit>().toggleExplanation()
-                  : null,
+              onExplain: showExplainAction && hasExplanation ? () => context.read<ChoiceCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -87,7 +85,7 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exercise.exerciseMultiChoicesInstruction,
+                context.l10n.exercise.exerciseMultiChoicesInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12.copyWith(
@@ -141,7 +139,7 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<ChoiceCubit>().checkAnswer() : null,
-          text: context.text.lesson.checkButton,
+          text: context.l10n.lesson.checkButton,
           isEnabled: canCheck,
         );
       },
