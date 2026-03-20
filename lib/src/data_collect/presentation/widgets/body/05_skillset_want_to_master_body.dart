@@ -11,8 +11,8 @@ class SkillsetsWantToMasterBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              title: context.text.onboarding.onboardingChooseSkillsetTitle,
-              subtitle: context.text.onboarding.onboardingChooseSkillsetSubtitle,
+              title: context.l10n.onboarding.onboardingChooseSkillsetTitle,
+              subtitle: context.l10n.onboarding.onboardingChooseSkillsetSubtitle,
             ),
             Spacer(),
 

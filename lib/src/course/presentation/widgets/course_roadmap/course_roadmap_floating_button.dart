@@ -15,7 +15,7 @@ class CourseRoadmapFloatingButton extends StatelessWidget {
     final hasProgress = context.select<CourseRoadmapCubit, bool>(
       (cubit) => cubit.state.roadmap.levels.any((level) => level.hasRoadmapProgress),
     );
-    final labelText = label ?? (hasProgress ? context.text.courseroadmap.continueLearningButton : context.text.courseroadmap.startLessonButton);
+    final labelText = label ?? (hasProgress ? context.l10n.courseroadmap.continueLearningButton : context.l10n.courseroadmap.startLessonButton);
     return AppButton.primary(
       onPressed: onPressed,
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 10.h),

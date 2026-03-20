@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class TheoryLessonBody extends StatelessWidget {
+class TheoryLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
 
   const TheoryLessonBody({
@@ -36,7 +36,7 @@ class TheoryLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for theory questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<TheoryCubit, TheoryState>(
       builder: (context, state) {
@@ -48,7 +48,7 @@ class TheoryLessonBody extends StatelessWidget {
             }
             context.read<TheoryCubit>().nextDocument();
           },
-          text: context.text.common.kContinue,
+          text: context.l10n.common.kContinue,
           isEnabled: true,
         );
       },

@@ -1,7 +1,7 @@
 part of '../../roleplay.dart';
 
 @lazySingleton
-class SendFeedbackRoleplayUseCase implements UseCaseWithParams<Map<String, dynamic>, RoleplayFeedbackEntity> {
+class SendFeedbackRoleplayUseCase implements BaseUseCase<Map<String, dynamic>, RoleplayFeedbackEntity> {
   final IRoleplayRepository _repository;
 
   SendFeedbackRoleplayUseCase(this._repository);

@@ -20,13 +20,13 @@ class CourseSegmentedControl extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _CourseSegmentedTab(
-                label: context.text.allcourse.allcourseMyCourse,
+                label: context.l10n.allcourse.allcourseMyCourse,
                 isSelected: selectedIndex == 0,
                 onTap: () => context.read<CourseCubit>().selectTab(0),
               ),
               6.horizontalSpace,
               _CourseSegmentedTab(
-                label: context.text.allcourse.allcourseAllCourses,
+                label: context.l10n.allcourse.allcourseAllCourses,
                 isSelected: selectedIndex == 1,
                 onTap: () => context.read<CourseCubit>().selectTab(1),
               ),

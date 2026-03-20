@@ -6,7 +6,14 @@ enum PurchaseAction { none, purchase, restore }
 
 enum PurchaseOrigin { none, paywall, other }
 
-enum PaywallEntryPoint { courseRoadmap, other }
+enum PaywallEntryPoint {
+  settingPre,
+  profile,
+  manageSubscription,
+  firstTimeUser,
+  courseRoadmap,
+  other,
+}
 
 @freezed
 abstract class IapState with _$IapState {

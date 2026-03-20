@@ -11,8 +11,8 @@ class DailyLearningGoalBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              title: context.text.onboarding.onboardingTimeSpentTitle,
-              subtitle: context.text.onboarding.onboardingDailyGoalSubtitle,
+              title: context.l10n.onboarding.onboardingTimeSpentTitle,
+              subtitle: context.l10n.onboarding.onboardingDailyGoalSubtitle,
             ),
 
             Spacer(),

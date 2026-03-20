@@ -19,6 +19,27 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
   void setIsFirstTimeUserChooseCourse(bool isFirstTimeUserChooseCourse) => emit(state.copyWith(isFirstTimeUserChooseCourse: isFirstTimeUserChooseCourse));
   void setIsFirstTimeLessonNavigationGuide(bool isFirstTimeLessonNavigationGuide) => emit(state.copyWith(isFirstTimeLessonNavigationGuide: isFirstTimeLessonNavigationGuide));
+  void setHasCompletedFirstTimeNotificationGate(bool hasCompletedFirstTimeNotificationGate) =>
+      emit(state.copyWith(hasCompletedFirstTimeNotificationGate: hasCompletedFirstTimeNotificationGate));
+
+  void completeFirstTimeNotificationGate() {
+    if (state.hasCompletedFirstTimeNotificationGate) return;
+    emit(state.copyWith(hasCompletedFirstTimeNotificationGate: true));
+  }
+
+  void startFirstTimeRegisterFlow() {
+    emit(
+      state.copyWith(
+        isUserPassOnboarding: false,
+        hasPendingFirstTimePaywallAfterAuth: true,
+      ),
+    );
+  }
+
+  void consumeFirstTimePaywallAfterAuthIntent() {
+    if (!state.hasPendingFirstTimePaywallAfterAuth) return;
+    emit(state.copyWith(hasPendingFirstTimePaywallAfterAuth: false));
+  }
 
   void setAccessToken(String accessToken) {
     AppGlobalValue.accessToken = accessToken;
@@ -28,7 +49,19 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   }
 
   void setAuth(AuthEntity auth) {
+    final previousUserId = state.user.id;
+    final nextUserId = auth.user.id;
+    final isUserChanged = previousUserId != nextUserId;
+
     emit(state.copyWith(auth: auth));
+
+    if (isUserChanged && previousUserId.isNotEmpty) {
+      unawaited(_clearLearningStreakCacheForUser(previousUserId));
+      if (AppDI.injector.isRegistered<LearningStreakCubit>()) {
+        AppDI.injector.get<LearningStreakCubit>().reset();
+      }
+    }
+
     AppDI.injector.get<ProfileCubit>()
       ..setUser(auth.user)
       ..loadUser();
@@ -46,10 +79,23 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   }
 
   Future<void> clearData() async {
+    final previousUserId = state.user.id;
     bool isUserPassOnboarding = state.isUserPassOnboarding;
+    bool hasCompletedFirstTimeNotificationGate = state.hasCompletedFirstTimeNotificationGate;
     emit(UserState.initial());
     AppDI.injector.get<ProfileCubit>().reset();
-    emit(state.copyWith(isUserPassOnboarding: isUserPassOnboarding));
+    emit(
+      state.copyWith(
+        isUserPassOnboarding: isUserPassOnboarding,
+        hasCompletedFirstTimeNotificationGate: hasCompletedFirstTimeNotificationGate,
+      ),
+    );
+    if (previousUserId.isNotEmpty) {
+      await _clearLearningStreakCacheForUser(previousUserId);
+    }
+    if (AppDI.injector.isRegistered<LearningStreakCubit>()) {
+      AppDI.injector.get<LearningStreakCubit>().reset();
+    }
     _appTrackingService.setUserId(null);
     _appTrackingService.setUserProperties({});
   }
@@ -63,5 +109,10 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
 
     HomeRoute().go(AppConfig.instance.context!);
     onDone?.call();
+  }
+
+  Future<void> _clearLearningStreakCacheForUser(String userId) async {
+    if (!AppDI.injector.isRegistered<LearningStreakLocalDataSource>()) return;
+    await AppDI.injector.get<LearningStreakLocalDataSource>().clearCache(userId: userId);
   }
 }

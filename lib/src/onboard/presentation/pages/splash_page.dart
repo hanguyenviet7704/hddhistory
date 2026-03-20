@@ -10,7 +10,6 @@ class SplashPage extends StatefulWidget {
 class _SplashPageState extends State<SplashPage> {
   @override
   void initState() {
-    // _requestTrackingPermission();
     _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
@@ -25,15 +24,10 @@ class _SplashPageState extends State<SplashPage> {
     AppService.instance.appTrackingService.trackSplashScrView(userId: userId);
   }
 
-  // void _requestTrackingPermission() {
-  //   AppService.instance.appEventService.requestTrackingPermission();
-  // }
-
   Future<void> _configAppLocalization() async {
-    bool isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
+    final isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
     if (!isUserPassOnboarding) return;
-    AppLocale locale = await LocaleSettings.useDeviceLocale();
-
+    final locale = await LocaleSettings.useDeviceLocale();
     if (!mounted) return;
     context.read<LocaleCubit>().setLocale(locale);
   }
@@ -43,11 +37,9 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _onboardingUser() {
-    //* This is for setup tracking user by tiktok and facebook app events
     bool isAppEventConfigured = context.read<UserCubit>().state.isAppEventConfigured;
     if (!isAppEventConfigured) return;
     context.read<UserCubit>().setIsAppEventConfigured(false);
-    // AppService.instance.appEventService.logAppInstall();
   }
 
   Future<void> _checkForUpdate() async {
@@ -56,7 +48,6 @@ class _SplashPageState extends State<SplashPage> {
       if (!mounted) return;
 
       if (!shouldUpdate) {
-        // Only proceed with normal flow if no update is needed
         WidgetsBinding.instance.addPostFrameCallback(_initScreen);
         return;
       }
@@ -65,19 +56,16 @@ class _SplashPageState extends State<SplashPage> {
     } catch (e) {
       LogDev.error('Error checking for update: $e');
       if (!mounted) return;
-      // On error, proceed with normal flow
       WidgetsBinding.instance.addPostFrameCallback(_initScreen);
     }
   }
 
-  void _getAppData() async {
+  void _getAppData() {
     AppDI.injector.get<OnboardCubit>().loadAllOnboards();
+    AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
     UserState userState = context.read<UserCubit>().state;
     AppGlobalValue.accessToken = userState.accessToken;
     AppGlobalValue.refreshToken = userState.refreshToken;
-
-    // if (!mounted) return;
-    // Clipboard.setData(ClipboardData(text: 'access token: ${AppGlobalValue.accessToken}'));
 
     context.read<IapCubit>().init();
     context.read<PageCubit>().setIsPassSplashScreen(true);
@@ -86,45 +74,71 @@ class _SplashPageState extends State<SplashPage> {
     AppDI.injector.get<HomeCubit>().initializeData();
   }
 
-  void _initScreen(_) async {
+  Future<void> _initScreen(_) async {
+    if (!mounted) return;
+    final isInitialLink = await context.read<DeeplinkCubit>().initialLink();
+    if (!mounted || isInitialLink) return;
+    await Future<void>.delayed(const Duration(milliseconds: 1500));
     if (!mounted) return;
 
-    bool isInitialLink = await context.read<DeeplinkCubit>().initialLink();
-    if (isInitialLink) return;
+    if (AppGlobalValue.accessToken.isEmpty) {
+      await _handleUnauthenticatedEntry();
+      return;
+    }
 
+    _routeAuthenticatedEntry();
+  }
+
+  Future<void> _handleUnauthenticatedEntry() async {
+    final userCubit = context.read<UserCubit>();
+    if (!userCubit.state.isUserPassOnboarding) {
+      _goToRegister(
+        showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
+          hasRecognizedDevice: false,
+          hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
+        ),
+      );
+      return;
+    }
+
+    final onboardCubit = AppDI.injector.get<OnboardCubit>();
+    await onboardCubit.loadUserByDeviceId();
     if (!mounted) return;
-    bool isUserPassOnboarding = context.read<UserCubit>().state.isUserPassOnboarding;
 
-    Future.delayed(const Duration(milliseconds: 1500), () async {
-      if (!mounted) return;
+    if (onboardCubit.state.hasRecognizedDevice) {
+      userCubit.startFirstTimeRegisterFlow();
+      _goToRegister(
+        showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
+          hasRecognizedDevice: onboardCubit.state.hasRecognizedDevice,
+          hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
+        ),
+      );
+      return;
+    }
 
-      if (AppGlobalValue.accessToken.isEmpty) {
-        if (isUserPassOnboarding) {
-          OnboardIntroduceRoute().go(context);
-          return;
-        }
+    _goOnboardingEntryByFlowConfig();
+  }
 
-        RegisterRoute().go(context);
-        return;
-      }
+  void _routeAuthenticatedEntry() {
+    final roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
+    if (roadmapId.isEmpty) {
+      CourseRoute().go(context);
+      return;
+    }
+    HomeRoute().go(context);
+  }
 
-      String roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
-      if (!mounted) return;
+  void _goOnboardingEntryByFlowConfig() {
+    OnboardIntroduceRoute().go(context);
+  }
 
-      if (roadmapId.isEmpty) {
-        CourseRoute().go(context);
-        return;
-      }
-
-      HomeRoute().go(context);
-    });
+  void _goToRegister({required bool showPaywallAfterAuth}) {
+    NotificationRequestRoute(showPaywallAfterAuth: showPaywallAfterAuth).go(context);
   }
 
   void _handleUpdatePressed() async {
     try {
-      final String appStoreUrl = Platform.isIOS
-          ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' // Replace with your App Store ID
-          : 'https://play.google.com/store/apps/details?id=com.eup.meup'; // Replace with your package name
+      final String appStoreUrl = Platform.isIOS ? 'https://apps.apple.com/us/app/meup-up-your-skills/id6755175330' : 'https://play.google.com/store/apps/details?id=com.eup.meup';
 
       appStoreUrl.launchURL();
     } catch (e) {
@@ -195,4 +209,12 @@ class _SplashPageState extends State<SplashPage> {
       ),
     );
   }
+}
+
+@visibleForTesting
+bool shouldShowRegisterPaywallAfterAuth({
+  required bool hasRecognizedDevice,
+  required bool hasPendingFirstTimePaywallAfterAuth,
+}) {
+  return hasRecognizedDevice || hasPendingFirstTimePaywallAfterAuth;
 }

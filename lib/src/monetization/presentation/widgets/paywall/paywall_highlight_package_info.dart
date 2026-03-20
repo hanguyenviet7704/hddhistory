@@ -6,7 +6,7 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
+      padding: EdgeInsets.fromLTRB(20.w, 24.h, 20.w, 12.h),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
@@ -25,7 +25,7 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
           final isLoading = state.status == MonetizationStatus.loading && state.iapProducts.isEmpty;
 
           if (isLoading) {
-            return _HighlightLoading();
+            return const _HighlightLoading();
           }
 
           if (state.iapProducts.isEmpty) {
@@ -50,6 +50,8 @@ class PaywallHighlightPackageInfo extends StatelessWidget {
 }
 
 class _HighlightLoading extends StatelessWidget {
+  const _HighlightLoading();
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -98,42 +100,67 @@ class _HighlightEmpty extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.all(16.w),
-      decoration: _cardDecoration,
-      child: Row(
-        children: [
-          Icon(Icons.info_outline, color: AppCustomColor.textTertiary, size: 24.w),
-          12.horizontalSpace,
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                AppText(
-                  t.monetization.emptyProductsTitle,
-                  style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
-                ),
-                4.verticalSpace,
-                AppText(
-                  t.monetization.emptyProductsDesc,
-                  maxLines: 2,
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
-                ),
-              ],
-            ),
+    final bottomPadding = MediaQuery.paddingOf(context).bottom;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: double.infinity,
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 18.h),
+          decoration: _cardDecoration.copyWith(
+            color: const Color(0xFFF8F7FF),
+            border: Border.all(color: AppCustomColor.borderBrand),
           ),
-          AppButton.secondary(
-            height: 42.h,
-            padding: EdgeInsets.symmetric(horizontal: 12.w),
-            onPressed: onRetry,
-            child: AppText(
-              t.monetization.retry,
-              style: AppStyle.textBold20.copyWith(color: const Color(0xFF7F8EA4)),
-              textAlign: TextAlign.center,
-            ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 52.w,
+                height: 52.w,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.brandPrimary50,
+                  shape: BoxShape.circle,
+                  border: Border.all(color: AppCustomColor.borderBrand),
+                ),
+                child: Icon(
+                  Icons.workspace_premium_rounded,
+                  color: AppCustomColor.brandPrimary,
+                  size: 26.w,
+                ),
+              ),
+              16.verticalSpace,
+              AppText(
+                l10n.monetization.emptyProductsTitle,
+                textAlign: TextAlign.center,
+                style: AppStyle.text18.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppCustomColor.textPrimary,
+                  height: 1.45,
+                ),
+              ),
+              8.verticalSpace,
+              AppText(
+                l10n.monetization.emptyProductsDesc,
+                maxLines: 3,
+                textAlign: TextAlign.center,
+                style: AppStyle.text14.copyWith(
+                  color: AppCustomColor.textSecondary,
+                  height: 1.65,
+                ),
+              ),
+              20.verticalSpace,
+              _HighlightActionButton(
+                label: l10n.monetization.retry,
+                onTap: onRetry,
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        12.verticalSpace,
+        const _PaywallLegalLinks(),
+        SizedBox(height: bottomPadding / 2 + 7.h),
+      ],
     );
   }
 }
@@ -143,7 +170,11 @@ class _HighlightCard extends StatelessWidget {
   final VoidCallback onPurchase;
   final VoidCallback onSeeAllPlans;
 
-  const _HighlightCard({required this.product, required this.onPurchase, required this.onSeeAllPlans});
+  const _HighlightCard({
+    required this.product,
+    required this.onPurchase,
+    required this.onSeeAllPlans,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -156,51 +187,93 @@ class _HighlightCard extends StatelessWidget {
           product: product,
           selected: true,
         ),
-        24.verticalSpace,
-        Container(
-          width: double.infinity,
-          height: 48.h,
-          decoration: BoxDecoration(
-            color: const Color(0xFF554FF0),
-            borderRadius: BorderRadius.circular(1000.r),
-          ),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              onTap: onPurchase,
-              borderRadius: BorderRadius.circular(1000.r),
-              child: Center(
-                child: AppText(
-                  t.monetization.payNowCta,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  style: AppStyle.text16.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                    height: 1.5,
-                  ),
-                ),
-              ),
-            ),
+        10.verticalSpace,
+        AppText(
+          l10n.monetization.paywallHighlightSubtitle,
+          textAlign: TextAlign.center,
+          style: AppStyle.text12.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppCustomColor.textQuaternary,
+            height: 1.75,
           ),
         ),
-        16.verticalSpace,
+        12.verticalSpace,
+        _HighlightActionButton(
+          label: l10n.monetization.paywallPrimaryCta,
+          onTap: onPurchase,
+        ),
+        12.verticalSpace,
         GestureDetector(
           onTap: onSeeAllPlans,
           child: AppText(
-            t.monetization.seeAllPlans,
+            l10n.monetization.seeAllPlans,
             textAlign: TextAlign.center,
-            style: AppStyle.text14.copyWith(
+            style: AppStyle.text12.copyWith(
               color: AppCustomColor.brandPrimary,
-              fontWeight: FontWeight.w600,
-              decoration: TextDecoration.underline,
+              fontWeight: FontWeight.w500,
+              height: 1.75,
             ),
           ),
         ),
         12.verticalSpace,
         const _PaywallLegalLinks(),
-        SizedBox(height: bottomPadding / 2 + 8.h),
+        SizedBox(height: bottomPadding / 2 + 7.h),
       ],
+    );
+  }
+}
+
+class _HighlightActionButton extends StatelessWidget {
+  final String label;
+  final VoidCallback onTap;
+
+  const _HighlightActionButton({
+    required this.label,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      height: 48.h,
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          begin: Alignment.centerLeft,
+          end: Alignment.centerRight,
+          colors: [
+            Color(0xFF554FF0),
+            Color(0xFF4B44CA),
+          ],
+        ),
+        borderRadius: BorderRadius.circular(1000.r),
+        boxShadow: [
+          BoxShadow(
+            color: AppCustomColor.borderBrand.withValues(alpha: 0.85),
+            blurRadius: 24,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(1000.r),
+          child: Center(
+            child: AppText(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              style: AppStyle.text16.copyWith(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+                height: 1.5,
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -210,30 +283,24 @@ class _PaywallLegalLinks extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Row(
-        children: [
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerRight,
-              child: _LegalLink(label: t.auth.termsOfUse, url: LegalUrl.termsAndConditions),
-            ),
-          ),
-          Container(
-            margin: EdgeInsets.symmetric(horizontal: 12.w),
-            height: 12.h,
-            width: 1.w,
-            color: AppCustomColor.textQuaternary,
-          ),
-          Expanded(
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: _LegalLink(label: t.auth.privacyPolicy, url: LegalUrl.privacyPolicy),
-            ),
-          ),
-        ],
-      ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _LegalLink(
+          label: l10n.auth.termsOfUse,
+          url: LegalUrl.termsAndConditions,
+        ),
+        Container(
+          margin: EdgeInsets.symmetric(horizontal: 16.w),
+          height: 11.h,
+          width: 1.w,
+          color: AppCustomColor.textBrand.withValues(alpha: 0.2),
+        ),
+        _LegalLink(
+          label: l10n.auth.privacyPolicy,
+          url: LegalUrl.privacyPolicy,
+        ),
+      ],
     );
   }
 }
@@ -242,7 +309,10 @@ class _LegalLink extends StatelessWidget {
   final String label;
   final String url;
 
-  const _LegalLink({required this.label, required this.url});
+  const _LegalLink({
+    required this.label,
+    required this.url,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -252,8 +322,8 @@ class _LegalLink extends StatelessWidget {
       child: AppText(
         label,
         style: AppStyle.text12.copyWith(
-          fontWeight: FontWeight.w600,
-          color: AppCustomColor.textQuaternary,
+          fontWeight: FontWeight.w400,
+          color: AppCustomColor.textBrand.withValues(alpha: 0.4),
           height: 1.75,
         ),
       ),

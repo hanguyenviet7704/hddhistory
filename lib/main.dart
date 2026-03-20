@@ -12,7 +12,7 @@ class DMainApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp.router(
       debugShowCheckedModeBanner: false,
-      onGenerateTitle: (context) => context.text.common.appTitle,
+      onGenerateTitle: (context) => context.l10n.common.appTitle,
       onNavigationNotification: (notification) => AppService.instance.onNavigationNotification(notification),
       routeInformationParser: AppPages.routes.routeInformationParser,
       routerDelegate: AppPages.routes.routerDelegate,

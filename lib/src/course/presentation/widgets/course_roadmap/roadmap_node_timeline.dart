@@ -1,9 +1,26 @@
 part of '../../../course.dart';
 
+enum LessonLockAction {
+  proceed,
+  ignoreTap,
+  showPaywall,
+}
+
 class RoadmapNodeActionHelper {
   const RoadmapNodeActionHelper._();
 
   static bool _canTapLesson(LessonEntity lesson) => lesson.roadmapProgress != ProcessEnum.notStarted || kDebugMode;
+
+  @visibleForTesting
+  static LessonLockAction resolveLessonLockAction({
+    required bool isLocked,
+    required ProcessEnum progress,
+  }) {
+    if (!isLocked) return LessonLockAction.proceed;
+    if (progress == ProcessEnum.notStarted) return LessonLockAction.ignoreTap;
+    if (progress == ProcessEnum.inProgress) return LessonLockAction.showPaywall;
+    return LessonLockAction.proceed;
+  }
 
   static bool _handlePaywall(BuildContext context, LessonEntity lesson, bool isLocked) {
     if (!isLocked) return true;
@@ -52,8 +69,21 @@ class RoadmapNodeActionHelper {
 
     final paywallConfig = AppService.instance.remoteConfigService.paywallConfig;
     final lessonIsLocked = isLocked ?? state.roadmap.isLessonLocked(lesson, paywallConfig);
+    final lockAction = resolveLessonLockAction(
+      isLocked: lessonIsLocked,
+      progress: lesson.roadmapProgress,
+    );
+    if (lockAction == LessonLockAction.ignoreTap) return;
     if (!_canTapLesson(lesson)) return;
-    if (!_handlePaywall(context, lesson, lessonIsLocked)) return;
+    if (lockAction == LessonLockAction.showPaywall && !_handlePaywall(context, lesson, lessonIsLocked)) return;
+
+    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackRoadmapItemClick(
+        trackingData,
+        itemType: lesson.type.trackingName,
+      );
+    }
 
     switch (lesson.type) {
       case LessonType.roleplay:
@@ -67,7 +97,7 @@ class RoadmapNodeActionHelper {
           courseLevel: _resolveCourseLevel(state.roadmap, lesson, state.currentCourseLevel),
         );
         return;
-      case LessonType.output:
+      case LessonType.output || LessonType.unknown:
         return;
     }
   }

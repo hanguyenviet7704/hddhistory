@@ -3,7 +3,7 @@ import UIKit
 
 @main
 @objc class AppDelegate: FlutterAppDelegate {
-  // private var tikTokPlugin: TikTokPlugin?
+  private var tikTokPlugin: TikTokPlugin?
 
   override func application(
     _ application: UIApplication,
@@ -14,7 +14,7 @@ import UIKit
     
     // Instantiate TikTokPlugin with the FlutterViewController
     if let controller = window?.rootViewController as? FlutterViewController {
-      // tikTokPlugin = TikTokPlugin(controller: controller)
+      tikTokPlugin = TikTokPlugin(controller: controller)
     } else {
       NSLog("[AppDelegate] ⚠️ FlutterViewController not found")
     }

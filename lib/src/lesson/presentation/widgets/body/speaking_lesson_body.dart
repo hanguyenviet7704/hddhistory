@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class SpeakingLessonBody extends StatelessWidget {
+class SpeakingLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final VoidCallback? onRoleplayReplayTap;
   final bool isReadOnly;
@@ -12,33 +12,24 @@ class SpeakingLessonBody extends StatelessWidget {
     this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+  void _showResultOverlay(
+    BuildContext context,
+    ResultType type, {
+    bool isReview = false,
+    bool showExplainAction = true,
+  }) {
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<SpeakingCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<SpeakingCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: SpeakingResultBottomSheet(
           type: type,
-          onContinue: () {
-            if (isReview) {
-              LessonResultOverlayManager.hide();
-              context.read<LessonCubit>().setIsShowResultOverlay(false);
-              return;
-            }
-            if (trackingData != null) {
-              AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-            }
-            LessonResultOverlayManager.hide();
-            AppDI.injector.get<ExerciseCubit>().nextQuestion();
-          },
+          showExplainAction: showExplainAction,
+          onContinue: onContinue,
         ),
       ),
     );
@@ -51,7 +42,12 @@ class SpeakingLessonBody extends StatelessWidget {
     if (hasExplainData && !state.showExplanation) {
       context.read<SpeakingCubit>().toggleExplanation();
     }
-    _showResultOverlay(context, ResultType.correct, isReview: isReadOnly);
+    _showResultOverlay(
+      context,
+      ResultType.correct,
+      isReview: isReadOnly,
+      showExplainAction: false,
+    );
   }
 
   @override
@@ -77,8 +73,8 @@ class SpeakingLessonBody extends StatelessWidget {
         builder: (context, state) {
           final currentQuestion = state.question;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final hasExplainData = state.textInput.isNotEmpty || state.goodPoints.isNotEmpty || state.improvementPoints.isNotEmpty || (state.audioFilePath?.isNotEmpty ?? false);
-          final showExplainButton = isLessonExercise && state.status == SpeakingStatus.success && hasExplainData;
+          final hasExplainData = state.textInput.isNotEmpty || (state.audioFilePath?.isNotEmpty ?? false);
+          final showExplainButton = isLessonExercise && isReadOnly && hasExplainData;
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,7 +114,7 @@ class SpeakingLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for speaking questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return const SpeakingBottomAction();
   }

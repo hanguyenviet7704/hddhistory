@@ -1,189 +1,196 @@
 part of '../services.dart';
 
-mixin NotificationService {
-  static void initialize() async {
-    await AwesomeNotificationService.initialize();
-    await FireBaseNotificationService.initialize();
+class NotificationService {
+  factory NotificationService({
+    NotificationPushTransport? pushTransport,
+    NotificationLocalNotifications? localNotifications,
+    NotificationMessageRouter? messageRouter,
+    NotificationInteractionService? interactionService,
+    NotificationTokenService? tokenService,
+    NotificationForegroundPolicy? foregroundPolicy,
+    NotificationPermissionService? permissionService,
+    NotificationScheduleService? scheduleService,
+    NotificationBootstrapService? bootstrapService,
+  }) {
+    final resolvedPushTransport = pushTransport ?? FirebasePushTransportService();
+    final resolvedLocalNotifications = localNotifications ?? AwesomeLocalNotificationService();
+    final resolvedMessageRouter = messageRouter ?? const NotificationMessageRouter();
+    final resolvedInteractionService = interactionService ?? NotificationInteractionService();
+    final resolvedTokenService = tokenService ?? NotificationTokenService();
+    final resolvedForegroundPolicy = foregroundPolicy ?? const NotificationForegroundPolicy();
+    final resolvedPermissionService =
+        permissionService ??
+        NotificationPermissionService(
+          pushPermissionProvider: resolvedPushTransport,
+          localPermissionProvider: resolvedLocalNotifications,
+        );
+    final resolvedScheduleService = scheduleService ?? NotificationScheduleService(resolvedLocalNotifications);
+    final resolvedBootstrapService =
+        bootstrapService ??
+        NotificationBootstrapService(
+          pushTransport: resolvedPushTransport,
+          localNotifications: resolvedLocalNotifications,
+          messageRouter: resolvedMessageRouter,
+          interactionService: resolvedInteractionService,
+          tokenService: resolvedTokenService,
+          foregroundPolicy: resolvedForegroundPolicy,
+          permissionService: resolvedPermissionService,
+        );
 
-    LogDev.data('NOTIFICATION CONFIG INITIALIZED!');
+    return NotificationService._(
+      pushTransport: resolvedPushTransport,
+      localNotifications: resolvedLocalNotifications,
+      interactionService: resolvedInteractionService,
+      tokenService: resolvedTokenService,
+      permissionService: resolvedPermissionService,
+      scheduleService: resolvedScheduleService,
+      bootstrapService: resolvedBootstrapService,
+    );
   }
 
-  static Future<String> getDeviceToken() async => await FireBaseNotificationService.getDeviceToken();
-}
+  NotificationService._({
+    required NotificationPushTransport pushTransport,
+    required NotificationLocalNotifications localNotifications,
+    required NotificationInteractionService interactionService,
+    required NotificationTokenService tokenService,
+    required NotificationPermissionService permissionService,
+    required NotificationScheduleService scheduleService,
+    required NotificationBootstrapService bootstrapService,
+  }) : _pushTransport = pushTransport,
+       _localNotifications = localNotifications,
+       _interactionService = interactionService,
+       _tokenService = tokenService,
+       _permissionService = permissionService,
+       _scheduleService = scheduleService,
+       _bootstrapService = bootstrapService;
 
-mixin AwesomeNotificationService {
-  static Future<void> initialize() async {
-    await AwesomeNotifications().initialize(
-      null,
-      [
-        NotificationChannel(
-          channelGroupKey: 'high_importance_channel',
-          channelKey: 'high_importance_channel',
-          channelName: 'Basic notifications',
-          channelDescription: 'Notification channel for basic tests',
-          defaultColor: const Color(0xFF9D50DD),
-          ledColor: Colors.white,
-          importance: NotificationImportance.Max,
-          channelShowBadge: true,
-          onlyAlertOnce: true,
-          playSound: true,
-          criticalAlerts: true,
-        ),
-      ],
-      channelGroups: [
-        NotificationChannelGroup(
-          channelGroupKey: 'high_importance_channel_group',
-          channelGroupName: 'Group 1',
-        ),
-      ],
-      debug: true,
+  final NotificationPushTransport _pushTransport;
+  final NotificationLocalNotifications _localNotifications;
+  final NotificationInteractionService _interactionService;
+  final NotificationTokenService _tokenService;
+  final NotificationPermissionService _permissionService;
+  final NotificationScheduleService _scheduleService;
+  final NotificationBootstrapService _bootstrapService;
+
+  NotificationCoreConfig _config = const NotificationCoreConfig();
+
+  static NotificationService? _instance;
+
+  static NotificationService get _resolvedInstance => _instance ??= NotificationService();
+
+  static Future<void> initialize(NotificationCoreConfig config) => _resolvedInstance.initializeInternal(config);
+  static Future<NotificationPermissionState> getPermissionState() => _resolvedInstance.getPermissionStateInternal();
+  static Future<NotificationPermissionState> requestPermission() => _resolvedInstance.requestPermissionInternal();
+  static Future<void> openSettings() => _resolvedInstance.openSettingsInternal();
+  static Future<String?> getToken() => _resolvedInstance.getTokenInternal();
+  static Stream<NotificationTokenState> get tokenRefreshStream => _resolvedInstance.tokenRefreshStreamInternal;
+  static Stream<NotificationInteraction> get interactionStream => _resolvedInstance.interactionStreamInternal;
+  static Future<void> showLocal(NotificationRequest request) => _resolvedInstance.showLocalInternal(request);
+  static Future<void> scheduleLocal(NotificationScheduleRequest request) =>
+      _resolvedInstance.scheduleLocalInternal(request);
+  static Future<void> cancel(int id) => _resolvedInstance.cancelInternal(id);
+  static Future<void> cancelAll() => _resolvedInstance.cancelAllInternal();
+
+  @visibleForTesting
+  static NotificationService? get debugInstance => _instance;
+
+  @visibleForTesting
+  static void debugSetInstance(NotificationService instance) {
+    _instance = instance;
+  }
+
+  @visibleForTesting
+  static void debugResetInstance() {
+    _instance = null;
+  }
+
+  Stream<NotificationTokenState> get tokenRefreshStreamInternal => _tokenService.stream;
+  Stream<NotificationInteraction> get interactionStreamInternal => _interactionService.stream;
+
+  Future<void> initializeInternal(NotificationCoreConfig config) async {
+    LogDev.info(
+      '[NotificationService] initialize: '
+      'push=${config.enablePush}, local=${config.enableLocal}, autoRequest=${config.autoRequestPermissionOnInit}',
     );
+    _config = config;
+    _interactionService.updateConfig(config);
+    _tokenService.updateConfig(config);
+    await _bootstrapService.initialize(config: config);
+    LogDev.info('[NotificationService] initialize completed');
+  }
 
-    final isAllowed = await AwesomeNotifications().isNotificationAllowed();
+  Future<NotificationPermissionState> getPermissionStateInternal() {
+    return _permissionService.getPermissionState(
+      enablePush: _config.enablePush,
+      enableLocal: _config.enableLocal,
+    );
+  }
 
-    if (!isAllowed) {
-      await AwesomeNotifications().requestPermissionToSendNotifications();
+  Future<NotificationPermissionState> requestPermissionInternal() {
+    return _permissionService.requestPermission(
+      enablePush: _config.enablePush,
+      enableLocal: _config.enableLocal,
+    );
+  }
+
+  Future<void> openSettingsInternal() => _permissionService.openSettings();
+
+  Future<String?> getTokenInternal() async {
+    if (!_config.enablePush) {
+      LogDev.warning('[NotificationService] getToken skipped because push is disabled');
+      return null;
     }
-
-    await AwesomeNotifications().setListeners(
-      onActionReceivedMethod: onActionReceivedMethod,
-      onNotificationCreatedMethod: onNotificationCreatedMethod,
-      onNotificationDisplayedMethod: onNotificationDisplayedMethod,
-      onDismissActionReceivedMethod: onDismissActionReceivedMethod,
-    );
+    final token = _tokenService.currentToken ?? await _pushTransport.getToken();
+    LogDev.data('[NotificationService] getToken resolved: hasToken=${token?.isNotEmpty ?? false}');
+    return token;
   }
 
-  /// Use this method to detect when a new notification or a schedule is created
-  static Future<void> onNotificationCreatedMethod(ReceivedNotification receivedNotification) async {
-    LogDev.info('onNotificationCreatedMethod');
-  }
-
-  /// Use this method to detect every time that a new notification is displayed
-  static Future<void> onNotificationDisplayedMethod(ReceivedNotification receivedNotification) async {
-    LogDev.info('onNotificationDisplayedMethod');
-  }
-
-  /// Use this method to detect if the user dismissed a notification
-  static Future<void> onDismissActionReceivedMethod(ReceivedAction receivedAction) async {
-    LogDev.info('onDismissActionReceivedMethod');
-  }
-
-  /// Use this method to detect when the user taps on a notification or action button
-  static Future<void> onActionReceivedMethod(ReceivedAction receivedAction) async {
-    LogDev.info('onActionReceivedMethod: $receivedAction');
-
-    final payload = receivedAction.payload ?? {};
-    if (payload["message"] != null && payload["message"] != '') {
-      try {
-        // Map<String, dynamic> map = jsonDecode(payload["message"].toString());
-        // final conversation = Conversation.fromJson(map);
-        // DNavigator.goNamed(RouteNamed.message, extra: conversation);
-      } catch (e) {
-        LogDev.info(e.toString());
-      }
+  Future<void> showLocalInternal(NotificationRequest request) async {
+    if (!_config.enableLocal) {
+      LogDev.warning('[NotificationService] showLocal skipped because local notifications are disabled');
       return;
     }
-
-    if (payload['navigate'] != null) {
-      AppConfig.instance.context?.read<DeeplinkCubit>().navigationFromService(Uri.parse(payload['navigate'] ?? ''));
+    if (!await isAppNotificationPreferenceEnabled()) {
+      LogDev.warning('[NotificationService] showLocal skipped because app notification preference is disabled');
+      return;
     }
+    LogDev.data('[NotificationService] showLocal: title="${request.title}" id=${request.id}');
+    await _localNotifications.show(request);
   }
 
-  static Future<void> showNotification({
-    required final String title,
-    required final String body,
-    final String? summary,
-    final Map<String, String>? payload,
-    final ActionType actionType = ActionType.Default,
-    final NotificationLayout notificationLayout = NotificationLayout.Default,
-    final NotificationCategory? category,
-    final String? bigPicture,
-    final List<NotificationActionButton>? actionButtons,
-    final bool scheduled = false,
-    final int? interval,
-  }) async {
-    assert(!scheduled || (scheduled && interval != null));
-
-    await AwesomeNotifications().createNotification(
-      content: NotificationContent(
-        id: -1,
-        channelKey: 'high_importance_channel',
-        title: title,
-        body: body,
-        actionType: actionType,
-        notificationLayout: notificationLayout,
-        summary: summary,
-        category: category,
-        payload: payload,
-        bigPicture: bigPicture,
-      ),
-      actionButtons: actionButtons,
-      schedule: scheduled
-          ? NotificationInterval(
-              interval: Duration(seconds: interval ?? 3),
-              // interval: 3,
-              timeZone: await AwesomeNotifications().getLocalTimeZoneIdentifier(),
-              preciseAlarm: true,
-            )
-          : null,
+  Future<void> scheduleLocalInternal(NotificationScheduleRequest request) async {
+    if (!_config.enableLocal) {
+      LogDev.warning('[NotificationService] scheduleLocal skipped because local notifications are disabled');
+      return;
+    }
+    if (!await isAppNotificationPreferenceEnabled()) {
+      LogDev.warning('[NotificationService] scheduleLocal skipped because app notification preference is disabled');
+      return;
+    }
+    LogDev.data(
+      '[NotificationService] scheduleLocal: '
+      'id=${request.notification.id} title="${request.notification.title}" '
+      'scheduledAt=${request.scheduledAt} interval=${request.interval} repeats=${request.repeats}',
     );
-  }
-}
-
-mixin FireBaseNotificationService {
-  static final FirebaseMessaging _firebaseMessaging = FirebaseMessaging.instance;
-
-  static Future<void> initialize() async {
-    final fcmToken = await _firebaseMessaging.getToken();
-    LogDev.data('DEVICE TOKEN: $fcmToken');
-    AppGlobalValue.firebaseToken = fcmToken ?? '';
-
-    await _firebaseMessaging.setForegroundNotificationPresentationOptions(
-      alert: true, // Required to display a heads up notification
-      badge: true,
-      sound: true,
-    );
-
-    NotificationSettings settings = await _firebaseMessaging.requestPermission(
-      alert: true,
-      announcement: false,
-      badge: true,
-      carPlay: false,
-      criticalAlert: false,
-      provisional: false,
-      sound: true,
-    );
-
-    LogDev.data('USER GRANTED PERMISSION: ${settings.authorizationStatus}');
-
-    FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
-
-    FirebaseMessaging.onMessage.listen((RemoteMessage message) {
-      LogDev.data('GOT A MESSAGE WHILST IN THE FOREGROUND!\r\nMESSAGE DATA: ${message.toMap()}');
-
-      // if (message.data["notificationID"] != MessagePage.notificationID) _handleMessage(message);
-    });
+    await _scheduleService.schedule(request);
   }
 
-  static int getUniqueNotificationId() {
-    return DateTime.now().millisecond * DateTime.now().second * DateTime.now().minute;
+  Future<void> cancelInternal(int id) {
+    LogDev.data('[NotificationService] cancel: id=$id');
+    return _scheduleService.cancel(id);
   }
 
-  static Future<String> getDeviceToken() async {
-    return await _firebaseMessaging.getToken() ?? '';
+  Future<void> cancelAllInternal() {
+    LogDev.data('[NotificationService] cancelAll');
+    return _scheduleService.cancelAll();
   }
 
-  static Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
-    LogDev.data("HANDLING A BACKGROUND MESSAGE: ${message.toMap()}");
-    _handleMessage(message);
-  }
-
-  static void _handleMessage(RemoteMessage message) {
-    LogDev.data('MESSAGE DATA: ${message.toMap()}');
-    AwesomeNotificationService.showNotification(
-      title: message.notification?.title ?? 'You have new notification',
-      body: message.notification?.body ?? 'You have new notification',
-      payload: message.data.toMapString,
-    );
+  @visibleForTesting
+  Future<void> dispose() async {
+    LogDev.data('[NotificationService] dispose');
+    await _bootstrapService.dispose();
+    await _interactionService.dispose();
+    await _tokenService.dispose();
+    await _localNotifications.dispose();
   }
 }

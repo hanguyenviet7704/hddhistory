@@ -8,7 +8,7 @@ This directory contains scripts and tools for implementing GitFlow workflow in y
 
 ```bash
 # Run the setup script from project root
-./tools/macos/git/setup.sh
+./tools/linux/git/workflow/setup.sh
 ```
 
 This will:
@@ -21,22 +21,22 @@ This will:
 
 ```bash
 # Start a new feature
-./tools/macos/git/feature.sh start ARTLEXIS-123 login-social
+./tools/linux/git/workflow/feature.sh start ARTLEXIS-123 login-social
 
 # Publish feature to remote (for code review)
-./tools/macos/git/feature.sh publish
+./tools/linux/git/workflow/feature.sh publish
 
 # Finish feature (push to remote and create PR)
-./tools/macos/git/feature.sh finish
+./tools/linux/git/workflow/feature.sh finish
 
 # Start a bug fix
-./tools/macos/git/fix.sh start ARTLEXIS-456 validation-error
+./tools/linux/git/workflow/fix.sh start ARTLEXIS-456 validation-error
 
 # Create a release
-./tools/macos/git/release.sh start 1.2.0
+./tools/linux/git/workflow/release.sh start 1.2.0
 
 # Emergency hotfix
-./tools/macos/git/hotfix.sh start ARTLEXIS-789 critical-payment-fix
+./tools/linux/git/workflow/hotfix.sh start ARTLEXIS-789 critical-payment-fix
 ```
 
 ## 📋 GitFlow Overview
@@ -100,40 +100,138 @@ Initializes GitFlow in your project:
 - Sets up branch structure
 - Configures git flow settings
 
+### setup_gitlab_runner.sh
+Sets up the current machine as a GitLab project runner:
+```bash
+# One command mode (inside cloned repo with SSH remote + glab auth)
+./tools/linux/git/runner/gitlab/setup_gitlab_runner.sh
+
+# Auto-create runner token via glab API, then register + start service
+./tools/linux/git/runner/gitlab/setup_gitlab_runner.sh --project-path eup/meup/meup-flutter
+
+# Register using an existing runner token
+./tools/linux/git/runner/gitlab/setup_gitlab_runner.sh --runner-token glrt-xxxxx --name meup-linux-runner
+
+# Strict mode (fail when restart/verify fails)
+./tools/linux/git/runner/gitlab/setup_gitlab_runner.sh --project-path eup/meup/meup-flutter --strict
+```
+
+Main behaviors:
+- installs `gitlab-runner` binary if missing
+- creates project runner token via GitLab API when token is not provided
+- registers shell runner and injects a runner-level `PATH` into `~/.gitlab-runner/config.toml`
+- restarts service via `systemctl` first (fallback to `sudo gitlab-runner` commands)
+- updates `config.toml` atomically with file lock + timestamp backup (`config.toml.bak.*`)
+- idempotent by default: if runner name already exists in local config, registration is skipped
+
+Notes:
+- Requires `glab auth login` before first run if `--runner-token` is not provided.
+- Use `--force-register` to create a fresh runner registration with the same name.
+
+### manage_gitlab_runner.sh
+Manage local/remote GitLab runners on this machine:
+```bash
+# List runners from local config (+ remote status when glab auth is available)
+./tools/linux/git/runner/gitlab/manage_gitlab_runner.sh list
+./tools/linux/git/runner/gitlab/manage_gitlab_runner.sh list --json
+
+# Delete one runner by name or id (prints runner info before delete)
+./tools/linux/git/runner/gitlab/manage_gitlab_runner.sh delete-one --name <runner-name> --yes
+./tools/linux/git/runner/gitlab/manage_gitlab_runner.sh delete-one --id <runner-id> --yes
+./tools/linux/git/runner/gitlab/manage_gitlab_runner.sh delete-one --id <runner-id> --yes --strict --json
+
+# Delete all local runners (also attempts remote delete)
+./tools/linux/git/runner/gitlab/manage_gitlab_runner.sh delete-all --yes
+
+# Clean runner caches/workdirs
+./tools/linux/git/runner/gitlab/manage_gitlab_runner.sh clean-cache --yes
+```
+
+Runner management behavior:
+- `--strict`: fail if remote delete or service restart fails.
+- `--json`: machine-readable output for `list`, `delete-one`, `delete-all`, `clean-cache`.
+- config edits are protected by lock + backup (`~/.gitlab-runner/config.toml.bak.*`).
+
+### setup_github_runner.sh
+Sets up the current machine as a GitHub self-hosted runner:
+```bash
+# One command mode (inside cloned GitHub repo + gh auth)
+./tools/linux/git/runner/github/setup_github_runner.sh
+
+# Explicit target repo
+./tools/linux/git/runner/github/setup_github_runner.sh --repo owner/repo
+
+# Use an existing registration token
+./tools/linux/git/runner/github/setup_github_runner.sh --repo owner/repo --runner-token <token> --name meup-linux-gh-runner
+
+# Strict mode
+./tools/linux/git/runner/github/setup_github_runner.sh --repo owner/repo --strict
+```
+
+Main behaviors:
+- auto-detects `owner/repo` from git remote when possible
+- creates registration token via GitHub API (`gh`) when token is not provided
+- downloads/extracts GitHub Actions runner binary
+- configures runner in unattended mode and starts `svc.sh`
+- supports `--replace` to reconfigure existing runner
+
+### manage_github_runner.sh
+Manage local/remote GitHub self-hosted runners on this machine:
+```bash
+# List local runners
+./tools/linux/git/runner/github/manage_github_runner.sh list
+./tools/linux/git/runner/github/manage_github_runner.sh list --json
+
+# Delete one runner
+./tools/linux/git/runner/github/manage_github_runner.sh delete-one --name <runner-name> --yes
+./tools/linux/git/runner/github/manage_github_runner.sh delete-one --dir <runner-dir> --yes --strict --json
+
+# Delete all local runners
+./tools/linux/git/runner/github/manage_github_runner.sh delete-all --yes
+
+# Clean runner work cache (_work)
+./tools/linux/git/runner/github/manage_github_runner.sh clean-cache --yes
+```
+
+Runner management behavior:
+- `--strict`: fail if remote delete/local delete fails.
+- `--json`: machine-readable output for automation.
+- prints runner info before delete in non-JSON mode.
+
 ### feature.sh
 Manages feature branches:
 ```bash
-./tools/macos/git/feature.sh start <ticket-id> <description>  # Start new feature
-./tools/macos/git/feature.sh publish                          # Push to remote
-./tools/macos/git/feature.sh finish                           # Create PR to develop
-./tools/macos/git/feature.sh list                             # List features
+./tools/linux/git/workflow/feature.sh start <ticket-id> <description>  # Start new feature
+./tools/linux/git/workflow/feature.sh publish                          # Push to remote
+./tools/linux/git/workflow/feature.sh finish                           # Create PR to develop
+./tools/linux/git/workflow/feature.sh list                             # List features
 ```
 
 ### fix.sh
 Manages bug fix branches:
 ```bash
-./tools/macos/git/fix.sh start <ticket-id> <description>  # Start bug fix
-./tools/macos/git/fix.sh publish                          # Push to remote
-./tools/macos/git/fix.sh finish                           # Create PR to develop
-./tools/macos/git/fix.sh list                             # List fixes
+./tools/linux/git/workflow/fix.sh start <ticket-id> <description>  # Start bug fix
+./tools/linux/git/workflow/fix.sh publish                          # Push to remote
+./tools/linux/git/workflow/fix.sh finish                           # Create PR to develop
+./tools/linux/git/workflow/fix.sh list                             # List fixes
 ```
 
 ### release.sh
 Manages releases:
 ```bash
-./tools/macos/git/release.sh start <version>  # Start release
-./tools/macos/git/release.sh publish          # Push to remote
-./tools/macos/git/release.sh finish           # Create PRs to main & develop
-./tools/macos/git/release.sh list             # List releases
+./tools/linux/git/workflow/release.sh start <version>  # Start release
+./tools/linux/git/workflow/release.sh publish          # Push to remote
+./tools/linux/git/workflow/release.sh finish           # Create PRs to main & develop
+./tools/linux/git/workflow/release.sh list             # List releases
 ```
 
 ### hotfix.sh
 Manages emergency fixes:
 ```bash
-./tools/macos/git/hotfix.sh start <ticket-id> <description>  # Start hotfix
-./tools/macos/git/hotfix.sh publish                          # Push to remote
-./tools/macos/git/hotfix.sh finish                           # Create PRs to main & develop
-./tools/macos/git/hotfix.sh list                             # List hotfixes
+./tools/linux/git/workflow/hotfix.sh start <ticket-id> <description>  # Start hotfix
+./tools/linux/git/workflow/hotfix.sh publish                          # Push to remote
+./tools/linux/git/workflow/hotfix.sh finish                           # Create PRs to main & develop
+./tools/linux/git/workflow/hotfix.sh list                             # List hotfixes
 ```
 
 ## 🪝 Git Hooks
@@ -179,59 +277,59 @@ RUN_TESTS_BEFORE_PUSH=true
 
 ```bash
 # 1. Start feature
-./tools/macos/git/feature.sh start ARTLEXIS-123 user-profile
+./tools/linux/git/workflow/feature.sh start ARTLEXIS-123 user-profile
 
 # 2. Work on feature
 git add .
 git commit -m "feature(profile): Add user avatar upload"
 
 # 3. Push for review
-./tools/macos/git/feature.sh publish
+./tools/linux/git/workflow/feature.sh publish
 
 # 4. When ready, create a pull request
-./tools/macos/git/feature.sh finish
+./tools/linux/git/workflow/feature.sh finish
 ```
 
 ### Bug Fixing
 
 ```bash
 # 1. Start fix
-./tools/macos/git/fix.sh start ARTLEXIS-456 login-validation
+./tools/linux/git/workflow/fix.sh start ARTLEXIS-456 login-validation
 
 # 2. Fix the bug
 git add .
 git commit -m "fix(auth): Validate email format correctly"
 
 # 3. Create pull request
-./tools/macos/git/fix.sh finish
+./tools/linux/git/workflow/fix.sh finish
 ```
 
 ### Release Process
 
 ```bash
 # 1. Start release
-./tools/macos/git/release.sh start 1.2.0
+./tools/linux/git/workflow/release.sh start 1.2.0
 
 # 2. Update version, changelog
 git add .
 git commit -m "release: Prepare version 1.2.0"
 
 # 3. Create pull requests
-./tools/macos/git/release.sh finish
+./tools/linux/git/workflow/release.sh finish
 ```
 
 ### Emergency Hotfix
 
 ```bash
 # 1. Start hotfix from main
-./tools/macos/git/hotfix.sh start ARTLEXIS-789 payment-crash
+./tools/linux/git/workflow/hotfix.sh start ARTLEXIS-789 payment-crash
 
 # 2. Fix critical issue
 git add .
 git commit -m "hotfix(payment): Fix null pointer in checkout"
 
 # 3. Create pull requests
-./tools/macos/git/hotfix.sh finish
+./tools/linux/git/workflow/hotfix.sh finish
 ```
 
 ## 🤝 Team Collaboration
@@ -274,8 +372,8 @@ chmod +x .git/hooks/pre-push
 
 To use this GitFlow setup in another project:
 
-1. Copy the entire `tools/macos/git/` directory to your new project
-2. Run `./tools/macos/git/setup.sh` from the new project root
+1. Copy the entire `tools/linux/git/` directory to your new project
+2. Run `./tools/linux/git/workflow/setup.sh` from the new project root
 3. Adjust `.gitflow.config` if needed (e.g., different ticket prefixes)
 4. Commit the GitFlow setup to your new project
 

@@ -236,7 +236,9 @@ class MarkStressWordCubit extends Cubit<MarkStressWordState> {
 }
 
 bool _stressWordIsCorrect(QuestionEntity question, Set<int> selectedIndices) {
-  final correctIndices = question.answer.map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
+  final correctIndices = questionRuntimeAnswers(
+    question,
+  ).map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0).where((index) => index > 0).map((index) => index - 1).toSet();
 
   return selectedIndices.length == correctIndices.length && selectedIndices.every((index) => correctIndices.contains(index));
 }

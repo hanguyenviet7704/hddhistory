@@ -9,7 +9,7 @@ abstract class CourseModel with _$CourseModel {
     @Default('') String image,
     @Default('') String skillsetId,
     @Default(0) int numberOfLesson,
-    @Default(CoursePublishStatus.published) CoursePublishStatus status,
+    @JsonKey(unknownEnumValue: CoursePublishStatus.unknown) @Default(CoursePublishStatus.published) CoursePublishStatus status,
   }) = _CourseModel;
 
   factory CourseModel.fromJson(Map<String, dynamic> json) => _$CourseModelFromJson(json);
@@ -22,6 +22,8 @@ enum CoursePublishStatus {
   draft,
   @JsonValue('inactive')
   inactive,
+  @JsonValue('unknown')
+  unknown,
 }
 
 extension CourseModelExtension on CourseModel {

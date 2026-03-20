@@ -1,7 +1,7 @@
 part of '../../feedback.dart';
 
 @lazySingleton
-class UpdateUserFeedbackUseCase implements UseCaseWithParams<UserFeedbackSubmissionEntity, Unit> {
+class UpdateUserFeedbackUseCase implements BaseUseCase<UserFeedbackSubmissionEntity, Unit> {
   final IFeedbackRepository _repository;
 
   UpdateUserFeedbackUseCase(this._repository);

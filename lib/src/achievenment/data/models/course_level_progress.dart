@@ -3,7 +3,7 @@ part of '../../achievenment.dart';
 @freezed
 abstract class CourseLevelProgressModel with _$CourseLevelProgressModel {
   const factory CourseLevelProgressModel({
-    @Default(CourseLevel.level1) CourseLevel level,
+    @JsonKey(unknownEnumValue: CourseLevel.unknown) @Default(CourseLevel.level1) CourseLevel level,
     @Default('') String lightBadge,
     @Default('') String darkBadge,
     @Default(BaseMultiLanguage()) BaseMultiLanguage titleBadge,

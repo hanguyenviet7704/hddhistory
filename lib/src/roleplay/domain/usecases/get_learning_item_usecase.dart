@@ -1,7 +1,7 @@
 part of '../../roleplay.dart';
 
 @lazySingleton
-class GetRoleplayLearningItemUseCase implements UseCaseWithParams<String, LearningItemEntity> {
+class GetRoleplayLearningItemUseCase implements BaseUseCase<String, LearningItemEntity> {
   final IRoleplayRepository _repository;
 
   GetRoleplayLearningItemUseCase(this._repository);

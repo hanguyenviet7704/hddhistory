@@ -50,7 +50,7 @@ app:
       APP_ENVIRONMENT:
         type: "String"
         value: "${flavor}"
-  
+
   ios:
     flavorDimensions: "flavor-type"
     schema: true
@@ -73,10 +73,10 @@ flavors:
           type: string
           value: "development"
       buildConfigFields:
-        APP_ENVIRONMENT: 
+        APP_ENVIRONMENT:
           type: "String"
           value: "dev"
-        API_BASE_URL: 
+        API_BASE_URL:
           type: "String"
           value: "https://dev.api.com"
         IS_DEBUG:
@@ -87,10 +87,10 @@ flavors:
       bundleId: "com.eup.meup.dev"
       buildSettings:
         PRODUCT_BUNDLE_IDENTIFIER: "com.eup.meup.dev"
-        # DEVELOPMENT_TEAM: S84XV86MSV 
+        # DEVELOPMENT_TEAM: S84XV86MSV
         # PROVISIONING_PROFILE_SPECIFIER: "Dev-ProvisioningProfile"
       firebase:
-        config: "ios/flavors/dev/GoogleService-Info.plist"
+        config: "ios/Runner/dev/GoogleService-Info.plist"
       variables:
         API_BASE_URL:
           value: "https://dev.api.com"
@@ -116,10 +116,10 @@ flavors:
           type: string
           value: "staging"
       buildConfigFields:
-        APP_ENVIRONMENT: 
+        APP_ENVIRONMENT:
           type: "String"
           value: "stg"
-        API_BASE_URL: 
+        API_BASE_URL:
           type: "String"
           value: "https://stg.api.com"
         IS_DEBUG:
@@ -133,7 +133,7 @@ flavors:
         # DEVELOPMENT_TEAM: S84XV86MSV
         # PROVISIONING_PROFILE_SPECIFIER: "Staging-ProvisioningProfile"
       firebase:
-        config: "ios/flavors/stg/GoogleService-Info.plist"
+        config: "ios/Runner/stg/GoogleService-Info.plist"
       variables:
         API_BASE_URL:
           value: "https://stg.api.com"
@@ -159,10 +159,10 @@ flavors:
           type: string
           value: "production"
       buildConfigFields:
-        APP_ENVIRONMENT: 
+        APP_ENVIRONMENT:
           type: "String"
           value: "prod"
-        API_BASE_URL: 
+        API_BASE_URL:
           type: "String"
           value: "https://prod.api.com"
         IS_DEBUG:
@@ -176,11 +176,11 @@ flavors:
         # DEVELOPMENT_TEAM: S84XV86MSV
         # PROVISIONING_PROFILE_SPECIFIER: "Production-ProvisioningProfile"
       firebase:
-        config: "ios/flavors/prod/GoogleService-Info.plist"
+        config: "ios/Runner/prod/GoogleService-Info.plist"
       variables:
         API_BASE_URL:
           value: "https://prod.api.com"
         GID_CLIENT_ID:
-          value: "116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc.apps.googleusercontent.com"
+          value: "116378588635-b1cdtenlrjjabjn443sb0el4ll47msog.apps.googleusercontent.com"
         REVERSED_CLIENT_ID:
-          value: "com.googleusercontent.apps.116378588635-ttfo9n2in0ap3dgnedc6nv46m5a1g4dc"
+          value: "com.googleusercontent.apps.116378588635-b1cdtenlrjjabjn443sb0el4ll47msog"

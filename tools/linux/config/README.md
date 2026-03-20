@@ -11,15 +11,21 @@ Configures Firebase project settings for different environments using the Flutte
 **Usage:**
 
 ```bash
-./tools/linux/config/flutterfire_config.sh [dev|stg|prod]
+./tools/linux/config/flutterfire_config.sh [all|dev|stg|prod ...]
 ```
+
+**Prerequisites:**
+
+- FlutterFire CLI must be installed: `dart pub global activate flutterfire_cli`
 
 **What it does:**
 
+- Configures all flavors by default in one run (`dev`, `stg`, `prod`)
 - Generates environment-specific Firebase configuration files
 - Creates `firebase_options_[env].dart` files
 - Sets up platform-specific Firebase configuration files
-- Configures iOS bundle IDs and Android package names
+- Configures Android package names
+- Supports Android only on Linux
 
 ### 2. `firebase_setup.sh` - Firebase Crashlytics Setup
 
@@ -87,9 +93,13 @@ The scripts support three environments:
 
 1. **Configure FlutterFire for all environments:**
    ```bash
-   ./tools/linux/config/flutterfire_config.sh dev
+   ./tools/linux/config/flutterfire_config.sh
+   ```
+
+2. **Reconfigure only the flavors you need:**
+   ```bash
+   ./tools/linux/config/flutterfire_config.sh dev stg
    ./tools/linux/config/flutterfire_config.sh stg
-   ./tools/linux/config/flutterfire_config.sh prod
    ```
 
 ## 🚀 Automated Workflow (Recommended)
@@ -153,10 +163,10 @@ The script automatically extracts these Firebase App IDs from your `google-servi
 
 ### Common Issues
 
-1. **"Firebase CLI is not installed"**
+1. **"FlutterFire CLI is not installed"**
 
    ```bash
-   npm install -g firebase-tools
+   dart pub global activate flutterfire_cli
    ```
 
 2. **"Not logged in to Firebase CLI"**

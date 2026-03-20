@@ -10,6 +10,7 @@ class RoleplayFeedbackStrengthIndicator extends StatelessWidget {
       StrengthLevel.weakPoint => AppCustomColor.errorRed,
       StrengthLevel.morePractice => AppCustomColor.brandPrimary,
       StrengthLevel.optionalPractice => AppCustomColor.successGreen,
+      StrengthLevel.unknown => AppCustomColor.borderSecondary,
     };
   }
 
@@ -18,6 +19,7 @@ class RoleplayFeedbackStrengthIndicator extends StatelessWidget {
       StrengthLevel.weakPoint => 3,
       StrengthLevel.morePractice => 2,
       StrengthLevel.optionalPractice => 1,
+      StrengthLevel.unknown => 0,
     };
   }
 

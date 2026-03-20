@@ -12,7 +12,7 @@ class AchievenmentProgressCubit extends Cubit<AchievenmentProgressState> with Cu
 
   void loadAllAchievenmentResponses() async {
     await runUseCaseList<AchievenmentResponseEntity>(
-      usecase: () => _getAllAchievenmentResponsesUseCase(),
+      usecase: () => _getAllAchievenmentResponsesUseCase(unit),
       buildLoadingState: () => state.copyWith(status: AchievenmentProgressStatus.loading),
       onFailure: (error) {
         emit(

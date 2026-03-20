@@ -100,6 +100,9 @@ class _OnboardIntroduceContentState extends State<_OnboardIntroduceContent> {
 
     if (isLastPage) {
       AppService.instance.appTrackingService.trackObdIntro2Click();
+      final dataCollectCubit = AppDI.injector.get<DataCollectCubit>();
+      dataCollectCubit.setShouldSkipBranchingFlow(false);
+      dataCollectCubit.setShouldSkipAnonymousLogin(false);
       DataCollectRoute().go(context);
       return;
     }
@@ -118,7 +121,7 @@ class _OnboardIntroduceContentState extends State<_OnboardIntroduceContent> {
       builder: (context, introState) {
         if (introState.intros.isEmpty) {
           return _IntroduceError(
-            message: context.text.common.errorNoInternetConnection,
+            message: context.l10n.common.errorNoInternetConnection,
             onRetry: () => context.read<OnboardCubit>().loadAllOnboards(),
           );
         }
@@ -167,8 +170,8 @@ class _OnboardIntroduceContentState extends State<_OnboardIntroduceContent> {
                 width: 200.w,
                 child: ContinueButtonWidget(
                   text: introState.currentPage == introState.intros.length - 1
-                      ? context.text.onboarding.onboardingStartNowButton
-                      : context.text.onboarding.onboardingSkipGreetingButton,
+                      ? context.l10n.onboarding.onboardingStartNowButton
+                      : context.l10n.onboarding.onboardingSkipGreetingButton,
                   onPressed: () => _onNext(introState, context),
                 ),
               ),
@@ -211,7 +214,7 @@ class _IntroduceError extends StatelessWidget {
             16.verticalSpace,
             DButton(
               onPressed: onRetry,
-              text: context.text.common.canvasTryAgain,
+              text: context.l10n.common.canvasTryAgain,
               size: Size(140.w, 44.h),
               backgroundColor: AppCustomColor.brandPrimary,
               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.r)),

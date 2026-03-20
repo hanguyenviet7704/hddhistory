@@ -11,7 +11,7 @@ class _NoAuthPageState extends State<NoAuthPage> {
   @override
   Widget build(BuildContext context) {
     return SubLayout(
-      title: 'context.text.loginRegister',
+      title: context.l10n.auth.authLogIn,
       body: Column(
         children: [
           50.verticalSpace,
@@ -42,7 +42,7 @@ class _NoAuthPageState extends State<NoAuthPage> {
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
                 AppText(
-                  'context.text.loginMessage',
+                  context.l10n.auth.authHeadLine,
                   maxLines: 3,
                   textAlign: TextAlign.center,
                   style: AppStyle.text16.copyWith(color: Colors.white, fontWeight: FontWeight.w500),
@@ -50,7 +50,7 @@ class _NoAuthPageState extends State<NoAuthPage> {
                 30.verticalSpace,
                 DButton(
                   onPressed: () => DNavigator.replaceNamed(RouteNamed.login),
-                  text: 'context.text.continueText',
+                  text: context.l10n.auth.authLogIn,
                   backgroundColor: AppColorLight.surface,
                   style: AppStyle.text14.copyWith(color: AppCustomColor.textWhite, fontWeight: FontWeight.w600),
                 ),

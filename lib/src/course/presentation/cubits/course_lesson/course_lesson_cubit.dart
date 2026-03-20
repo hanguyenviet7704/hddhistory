@@ -14,7 +14,8 @@ class CourseLessonCubit extends Cubit<CourseLessonState> with CubitUseCaseHandle
   void setCurrentKeypointId(String id) => emit(state.copyWith(currentKeypointId: id));
   void setSelectedLesson(LessonEntity lesson) {
     if (lesson.id.isEmpty) return;
-    emit(state.copyWith(selectedLesson: lesson));
+    final wasCompletedBefore = lesson.roadmapProgress == ProcessEnum.done || lesson.progess == ProcessEnum.done;
+    emit(state.copyWith(selectedLesson: lesson, wasLessonCompletedBefore: wasCompletedBefore));
   }
 
   void loadLesson(String id) async {

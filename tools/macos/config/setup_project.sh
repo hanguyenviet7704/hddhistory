@@ -105,15 +105,11 @@ $FLUTTER_CMD pub run build_runner build --delete-conflicting-outputs
 # Setup Firebase for all flavors
 log_step "Setting up Firebase configuration for all flavors..."
 
-for flavor in dev stg prod; do
-    log_info "Configuring Firebase for $flavor..."
-    
-    if [[ -f "tools/macos/config/flutterfire_config.sh" ]]; then
-        tools/macos/config/flutterfire_config.sh "$flavor"
-    else
-        log_warning "Firebase config script not found, skipping $flavor"
-    fi
-done
+if [[ -f "tools/macos/config/flutterfire_config.sh" ]]; then
+    tools/macos/config/flutterfire_config.sh
+else
+    log_warning "Firebase config script not found, skipping Firebase setup"
+fi
 
 # Generate app icons
 log_step "Generating app icons..."
@@ -123,8 +119,19 @@ else
     log_warning "flutter_launcher_icons not found, skipping icon generation"
 fi
 
-# Localization handled by slang; gen-l10n removed
-log_step "Localization generation skipped (slang is used instead)"
+# Generate slang output when localization sources are available locally.
+LOCALIZATION_DIR="assets/i18n"
+if [[ -d "$LOCALIZATION_DIR" ]] && find "$LOCALIZATION_DIR" -name "*.yaml" -print -quit | grep -q .; then
+    log_step "Generating localization output (slang)..."
+    if [[ -f "tools/macos/localization/localization.sh" ]]; then
+        bash tools/macos/localization/localization.sh slang
+    else
+        log_warning "Localization script not found, skipping slang generation"
+    fi
+else
+    log_warning "Localization sources not found under $LOCALIZATION_DIR, skipping slang generation"
+    log_info "Run tools/macos/localization/localization.sh pull then tools/macos/localization/localization.sh slang after configuring localization access."
+fi
 
 # Validate environment files
 log_step "Validating environment files..."
@@ -183,7 +190,7 @@ echo "Available commands:"
 echo "  🔨 Build APK:        ./tools/macos/build/build_apk.sh [flavor]"
 echo "  📦 Build Bundle:     ./tools/macos/build/build_appbundle.sh [flavor]"
 echo "  🍎 Build iOS:        ./tools/macos/build/build_ios.sh [flavor]"
-echo "  🔥 Configure Firebase: ./tools/macos/config/flutterfire_config.sh [flavor]"
+echo "  🔥 Configure Firebase: ./tools/macos/config/flutterfire_config.sh [all|flavor ...]"
 echo ""
 echo "Available flavors: dev, stg, prod"
 echo ""

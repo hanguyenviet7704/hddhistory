@@ -37,6 +37,7 @@ mixin AppEndpoint {
   static const String getUserProfile = '/api/v1/users/me';
   static const String users = '/api/v1/users';
   static const String usersById = '/api/v1/users/{id}';
+  static const String userByDeviceId = '/api/v1/users/check-onboarding/{deviceId}';
 
   //* IAP
   static const String packages = '/api/v1/payment/products';
@@ -46,6 +47,7 @@ mixin AppEndpoint {
 
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';
+  static const String onboardingsScenarios = '/api/v2/onboardings';
   static const String onboardingsById = '/api/v1/onboardings/{id}';
 
   //* Chats API
@@ -85,6 +87,7 @@ mixin AppEndpoint {
   static const String coursesUserProgressMyCourses = '/api/v1/courses-user-progress/my-course';
   static const String coursesUserProgressAchievements = '/api/v1/courses-user-progress/achievements';
   static const String coursesUserProgressBadgeProgress = '/api/v1/courses-user-progress/badge-progress/{courseId}';
+  static const String coursesUserProgressStreak = '/api/v1/courses-user-progress/streak';
 
   //* Skillsets API
   static const String skillsets = '/api/v1/skillsets';

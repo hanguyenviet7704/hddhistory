@@ -1,4 +1,5 @@
 part of '../../../auth.dart';
+
 //
 // class OtpPage extends StatefulWidget {
 //   const OtpPage({super.key});
@@ -30,7 +31,7 @@ part of '../../../auth.dart';
 //   @override
 //   Widget build(BuildContext context) {
 //     return SubLayout(
-//       title: context.text.verifyAccount,
+//       title: context.l10n.verifyAccount,
 //       isLoading: context.select((AuthBloc bloc) => bloc.state.isLoading),
 //       body: SingleChildScrollView(
 //         child: Container(
@@ -42,7 +43,7 @@ part of '../../../auth.dart';
 //               BlocBuilder<AuthBloc, AuthState>(
 //                 builder: (context, state) {
 //                   return DHighlightText(
-//                     text: '${context.text.inputOtpSendToNumber} ${state.phone}',
+//                     text: '${context.l10n.inputOtpSendToNumber} ${state.phone}',
 //                     maxLines: 2,
 //                     highlights: [state.phone],
 //                     highlightStyles: [
@@ -88,7 +89,7 @@ part of '../../../auth.dart';
 //                       context.read<AuthBloc>().add(ResendOTPEvent());
 //                       countDownController.resetTimer();
 //                     },
-//                     context.text.resendCode,
+//                     context.l10n.resendCode,
 //                     style: AppStyle.text14,
 //                   ),
 //                   Spacer(),
@@ -100,10 +101,10 @@ part of '../../../auth.dart';
 //               ),
 //               28.verticalSpace,
 //               GradientButton(
-//                 text: context.text.verify,
+//                 text: context.l10n.verify,
 //                 onPressed: () {
 //                   if (otpController.text.isEmpty) {
-//                     DMessage.showMessage(type: MessageType.error, message: context.text.pleaseEnterOTP);
+//                     DMessage.showMessage(type: MessageType.error, message: context.l10n.pleaseEnterOTP);
 //                     return;
 //                   }
 //

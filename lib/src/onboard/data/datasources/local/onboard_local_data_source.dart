@@ -19,8 +19,7 @@ class OnboardLocalDataSourceImpl implements OnboardLocalDataSource {
   @override
   Future<OnboardModel?> getCachedOnboard(String id) async {
     try {
-      final cacheKey = '${_cacheKey}_$id';
-      final data = await _localStoreService.getMap(key: cacheKey);
+      final data = await _localStoreService.getMap(key: '${_cacheKey}_data');
       if (data.isEmpty) return null;
 
       return OnboardModel.fromJson(data);
@@ -32,13 +31,10 @@ class OnboardLocalDataSourceImpl implements OnboardLocalDataSource {
   @override
   Future<void> cacheOnboard(OnboardModel model) async {
     try {
-      final cacheKey = '${_cacheKey}_${model.hashCode}';
       await _localStoreService.setMap(
-        key: cacheKey,
+        key: '${_cacheKey}_data',
         value: model.toJson(),
       );
-    } catch (e) {
-      // Handle error silently or log
-    }
+    } catch (_) {}
   }
 }

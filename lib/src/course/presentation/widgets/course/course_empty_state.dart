@@ -7,7 +7,7 @@ class CourseEmptyState extends StatelessWidget {
   Widget build(BuildContext context) {
     return Center(
       child: AppText(
-        context.text.allcourse.emptyState,
+        context.l10n.allcourse.emptyState,
         style: AppStyle.text14.copyWith(
           color: AppCustomColor.textTertiary,
         ),

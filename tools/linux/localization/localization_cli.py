@@ -82,6 +82,39 @@ def open_spreadsheet_with_retry(client, sheet_id: str, retries: int = 4, base_de
             raise
 
 
+RETRYABLE_HTTP_STATUS_CODES = {429, 500, 502, 503, 504}
+RETRYABLE_ERROR_HINTS = (
+    "timeout",
+    "timed out",
+    "temporarily unavailable",
+    "service is currently unavailable",
+    "connection reset",
+    "connection aborted",
+    "remote disconnected",
+)
+
+
+def is_retryable_exception(exc: Exception) -> bool:
+    status = getattr(getattr(exc, "response", None), "status_code", None)
+    if status in RETRYABLE_HTTP_STATUS_CODES:
+        return True
+    message = str(exc).lower()
+    return any(hint in message for hint in RETRYABLE_ERROR_HINTS)
+
+
+def run_with_retry(action: str, fn, retries: int = 3, base_delay: int = 2):
+    for attempt in range(retries + 1):
+        try:
+            return fn()
+        except Exception as exc:
+            if attempt < retries and is_retryable_exception(exc):
+                delay = base_delay * (attempt + 1)
+                log_warning(f"{action} failed: {exc}. Retrying in {delay}s... ({attempt + 1}/{retries})")
+                time.sleep(delay)
+                continue
+            raise
+
+
 ALLOWED_TYPES = {"text", "rich", "plural", "select", "selectordinal", "context"}
 PLURAL_CATEGORIES = {"zero", "one", "two", "few", "many", "other"}
 VALID_STATUSES = {"active", "deprecated", "draft"}
@@ -698,10 +731,14 @@ def write_yaml_files(
 
 def fetch_sheet_csv(sheet_id: str, gid: str, encoding: str) -> str:
     url = f"https://docs.google.com/spreadsheets/d/{sheet_id}/export?format=csv&gid={gid}"
-    resp = requests.get(url, timeout=30)
-    resp.raise_for_status()
-    resp.encoding = encoding
-    return resp.text
+
+    def _request() -> str:
+        resp = requests.get(url, timeout=30)
+        resp.raise_for_status()
+        resp.encoding = encoding
+        return resp.text
+
+    return run_with_retry(f"Fetching CSV gid={gid}", _request)
 
 
 def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str, source_label: str, auth_cfg: Optional[Dict] = None) -> List[LocalizationRecord]:
@@ -717,6 +754,7 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
 
     if filtered_tabs:
         records: List[LocalizationRecord] = []
+        failed_tabs: List[str] = []
 
         def fetch_tab(tab_cfg: Dict) -> List[LocalizationRecord]:
             gid = tab_cfg.get("gid")
@@ -726,53 +764,77 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
                 log_warning(f"Tab {title} has no module name; skipping.")
                 return []
 
-            try:
-                if gid:
-                    log_step(f"Fetching sheet gid={gid} ({title}) from {sheet_id}")
-                    rows = []
-                    if prefer_auth and gspread is not None and Credentials is not None:
-                        client = gspread.authorize(creds)
-                        spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
-                        worksheet = spreadsheet.get_worksheet_by_id(int(gid))
-                        rows = worksheet.get_all_records()
-                    else:
-                        csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
-                        rows = read_csv_text(csv_text)
-                else:
-                    if gspread is None or Credentials is None:
-                        log_warning(f"Skipping tab '{title}' (no gid and gspread unavailable).")
-                        return []
-                    if creds is None:
-                        log_warning(f"Skipping tab '{title}' (no gid and credentials missing).")
-                        return []
-                    log_step(f"Fetching sheet '{title}' via gspread from {sheet_id}")
+            if gid:
+                log_step(f"Fetching sheet gid={gid} ({title}) from {sheet_id}")
+                rows = []
+                if prefer_auth and gspread is not None and Credentials is not None:
                     client = gspread.authorize(creds)
                     spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
-                    worksheet = spreadsheet.worksheet(title)
-                    rows = worksheet.get_all_records()
-                return parse_sheet_rows(rows, columns, languages, source_label, default_module=module_override)
-            except Exception as exc:  # pragma: no cover - network
-                log_warning(f"Failed to fetch tab '{title}': {exc}")
-                return []
+                    worksheet = run_with_retry(
+                        f"Opening worksheet gid={gid} ({title})",
+                        lambda: spreadsheet.get_worksheet_by_id(int(gid)),
+                    )
+                    rows = run_with_retry(
+                        f"Reading rows gid={gid} ({title})",
+                        lambda: worksheet.get_all_records(),
+                    )
+                else:
+                    csv_text = fetch_sheet_csv(sheet_id, str(gid), encoding=encoding)
+                    rows = read_csv_text(csv_text)
+            else:
+                if gspread is None or Credentials is None:
+                    raise RuntimeError(f"Tab '{title}' has no gid and gspread is unavailable")
+                if creds is None:
+                    raise RuntimeError(f"Tab '{title}' has no gid and credentials are missing")
+                log_step(f"Fetching sheet '{title}' via gspread from {sheet_id}")
+                client = gspread.authorize(creds)
+                spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
+                worksheet = run_with_retry(
+                    f"Opening worksheet title={title}",
+                    lambda: spreadsheet.worksheet(title),
+                )
+                rows = run_with_retry(
+                    f"Reading rows title={title}",
+                    lambda: worksheet.get_all_records(),
+                )
+            return parse_sheet_rows(rows, columns, languages, source_label, default_module=module_override)
 
         # Parallelize CSV exports to reduce wall time
         with ThreadPoolExecutor(max_workers=min(8, len(filtered_tabs))) as executor:
             future_to_tab = {executor.submit(fetch_tab, tab): tab for tab in filtered_tabs}
             for future in as_completed(future_to_tab):
-                records.extend(future.result())
+                tab_cfg = future_to_tab[future]
+                tab_title = tab_cfg.get("title") or tab_cfg.get("module") or tab_cfg.get("gid") or "unknown"
+                try:
+                    records.extend(future.result())
+                except Exception as exc:  # pragma: no cover - network
+                    failed_tabs.append(f"{tab_title}: {exc}")
+                    log_warning(f"Failed to fetch tab '{tab_title}': {exc}")
+
+        if failed_tabs:
+            raise RuntimeError("Failed to fetch required tabs: " + "; ".join(failed_tabs))
         return records
 
     # Legacy: list of gids (already filtered/ordered). No README should be included in this list.
     all_rows: List[Dict[str, str]] = []
+    failed_gids: List[str] = []
     if prefer_auth and gspread is not None and Credentials is not None:
         client = gspread.authorize(creds)
         spreadsheet = open_spreadsheet_with_retry(client, sheet_id)
         for gid in gids:
             try:
                 log_step(f"Fetching sheet gid={gid} via gspread from {sheet_id}")
-                worksheet = spreadsheet.get_worksheet_by_id(int(gid))
-                all_rows.extend(worksheet.get_all_records())
+                worksheet = run_with_retry(
+                    f"Opening worksheet gid={gid}",
+                    lambda: spreadsheet.get_worksheet_by_id(int(gid)),
+                )
+                rows = run_with_retry(
+                    f"Reading rows gid={gid}",
+                    lambda: worksheet.get_all_records(),
+                )
+                all_rows.extend(rows)
             except Exception as exc:
+                failed_gids.append(f"{gid}: {exc}")
                 log_warning(f"Failed to fetch gid {gid}: {exc}")
     else:
         with ThreadPoolExecutor(max_workers=min(8, len(gids) or 1)) as executor:
@@ -783,7 +845,11 @@ def load_sheet_records(sheet_cfg: Dict, languages: Sequence[str], encoding: str,
                     csv_text = future.result()
                     all_rows.extend(read_csv_text(csv_text))
                 except Exception as exc:
+                    failed_gids.append(f"{gid}: {exc}")
                     log_warning(f"Failed to fetch gid {gid}: {exc}")
+
+    if failed_gids:
+        raise RuntimeError("Failed to fetch required gids: " + "; ".join(failed_gids))
     return parse_sheet_rows(all_rows, columns, languages, source_label)
 
 
@@ -1086,7 +1152,11 @@ def handle_pull(cfg: Dict, sheet_gids: Optional[Sequence[str]] = None) -> None:
     encoding = cfg["generation"]["encoding"]
 
     sheet_cfg = filter_sheet_config_by_gids(cfg["active_sheet"], sheet_gids or [])
-    records = load_sheet_records(sheet_cfg, languages, encoding, "active-sheet", auth_cfg)
+    try:
+        records = load_sheet_records(sheet_cfg, languages, encoding, "active-sheet", auth_cfg)
+    except Exception as exc:  # pragma: no cover - depends on network
+        log_error(f"Localization pull failed: {exc}")
+        sys.exit(1)
     normalize_translations(records, languages, default_language)
     warnings, errors = validate_records(records, languages)
 

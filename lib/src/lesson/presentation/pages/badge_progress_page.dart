@@ -15,6 +15,7 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
   BadgeProgressStep _step = BadgeProgressStep.inProgress;
   Timer? _autoAdvanceTimer;
   bool _hasExited = false;
+  bool _hasTrackedBadgeUpdate = false;
   bool _hasTrackedComplete = false;
 
   @override
@@ -74,12 +75,19 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
     _hasTrackedComplete = true;
   }
 
+  void _trackBadgeUpdateScrView() {
+    if (_hasTrackedBadgeUpdate) return;
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData == null) return;
+    AppService.instance.appTrackingService.trackKeypointBadgeUpdateScrView(trackingData);
+    _hasTrackedBadgeUpdate = true;
+  }
+
   @override
   Widget build(BuildContext context) {
     return BlocListener<CourseRoadmapCubit, CourseRoadmapState>(
       listenWhen: (previous, current) =>
-          previous.currentLevelProgress.progress != current.currentLevelProgress.progress ||
-          previous.currentLevelProgress.isCompleted != current.currentLevelProgress.isCompleted,
+          previous.currentLevelProgress.progress != current.currentLevelProgress.progress || previous.currentLevelProgress.isCompleted != current.currentLevelProgress.isCompleted,
       listener: (context, state) {
         if (_step != BadgeProgressStep.inProgress) return;
         if (_isProgressComplete(state.currentLevelProgress)) {
@@ -109,6 +117,9 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
                   child: BlocSelector<CourseRoadmapCubit, CourseRoadmapState, CourseLevelProgressEntity>(
                     selector: (state) => state.currentLevelProgress,
                     builder: (context, progress) {
+                      if (_step == BadgeProgressStep.inProgress) {
+                        _trackBadgeUpdateScrView();
+                      }
                       if (_step == BadgeProgressStep.complete) {
                         _trackCompleteView();
                       }
@@ -157,7 +168,7 @@ class _BadgeProgressContent extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.exercise.exerciseBadgeCompleteLabel.toUpperCase(),
+                context.l10n.exercise.exerciseBadgeCompleteLabel.toUpperCase(),
                 textAlign: TextAlign.center,
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textTertiary,
@@ -183,7 +194,7 @@ class _BadgeProgressContent extends StatelessWidget {
             _BadgeProgressBar(progress: progress.progress),
             4.verticalSpace,
             AppText(
-              context.text.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
+              context.l10n.exercise.exerciseProgressCompletedPercent(percent: progress.progressPercent),
               textAlign: TextAlign.center,
               style: AppStyle.text10.copyWith(
                 color: AppCustomColor.brandPrimary,
@@ -194,7 +205,7 @@ class _BadgeProgressContent extends StatelessWidget {
           ] else ...[
             12.verticalSpace,
             AppText(
-              context.text.exercise.exerciseBadgeCompleteMessage,
+              context.l10n.exercise.exerciseBadgeCompleteMessage,
               textAlign: TextAlign.center,
               maxLines: 2,
               style: AppStyle.text16.copyWith(

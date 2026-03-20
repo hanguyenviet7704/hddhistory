@@ -1,6 +1,7 @@
 part of '../../../lesson.dart';
 
 enum ChoiceStatus { initial, loading, success, failure }
+
 enum AnswerState { normal, selected, correct, incorrect, disabled, correctNotSelected }
 
 @freezed
@@ -19,13 +20,24 @@ sealed class ChoiceState with _$ChoiceState {
 }
 
 extension ChoiceStateExtension on ChoiceState {
-  List<OptionEntity> get answerOptions => question.options;
+  QuestionPayloadEntity get payload => question.typedPayload;
+
+  bool get isMultipleChoiceQuestion => payload is QuestionMultipleChoicePayloadEntity;
+
+  bool get isNoCorrectSingleChoiceQuestion => payload is QuestionSingleChoiceNoCorrectAnswerPayloadEntity;
+
+  List<OptionEntity> get answerOptions => questionRuntimeOptions(question);
 
   /// Returns the list indices of correct options (not option IDs)
   Set<int> get correctOptionsIndices {
+    if (isNoCorrectSingleChoiceQuestion) {
+      if (selectedAnswerIndex < 0 || selectedAnswerIndex >= answerOptions.length) return {};
+      return {selectedAnswerIndex};
+    }
+
     final Set<int> indices = {};
-    for (int i = 0; i < question.options.length; i++) {
-      if (question.options[i].isCorrect) {
+    for (int i = 0; i < answerOptions.length; i++) {
+      if (answerOptions[i].isCorrect) {
         indices.add(i);
       }
     }
@@ -35,7 +47,7 @@ extension ChoiceStateExtension on ChoiceState {
   AnswerState getAnswerState(int index) {
     // Before checking answer, show selected state
     if (!hasChecked) {
-      if (question.type == QuestionTypeEnum.multipleChoice) {
+      if (isMultipleChoiceQuestion) {
         return selectedAnswersIndices.contains(index) ? AnswerState.selected : AnswerState.normal;
       } else {
         return selectedAnswerIndex == index ? AnswerState.selected : AnswerState.normal;
@@ -45,15 +57,17 @@ extension ChoiceStateExtension on ChoiceState {
     // After checking, show correct/incorrect states
     if (question.id == 0) return AnswerState.normal;
 
+    if (isNoCorrectSingleChoiceQuestion) {
+      return selectedAnswerIndex == index ? AnswerState.correct : AnswerState.disabled;
+    }
+
     final bool isCorrectOption = correctOptionsIndices.contains(index);
-    final bool wasSelected = question.type == QuestionTypeEnum.multipleChoice
-        ? selectedAnswersIndices.contains(index)
-        : selectedAnswerIndex == index;
+    final bool wasSelected = isMultipleChoiceQuestion ? selectedAnswersIndices.contains(index) : selectedAnswerIndex == index;
 
     // Show correct answers
     if (isCorrectOption) {
       // For multiple choice, distinguish between selected and not selected correct answers
-      if (question.type == QuestionTypeEnum.multipleChoice && !wasSelected) {
+      if (isMultipleChoiceQuestion && !wasSelected) {
         return AnswerState.correctNotSelected;
       }
       return AnswerState.correct;

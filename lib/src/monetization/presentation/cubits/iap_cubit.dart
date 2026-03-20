@@ -41,6 +41,10 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     }
   }
 
+  void resetPaywallEntryPoint() {
+    setPaywallEntryPoint(PaywallEntryPoint.other);
+  }
+
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
   final Set<String> _processedTransactionIds = {};
   final Set<String> _verifyingTransactionIds = {};
@@ -78,7 +82,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
   Future<void> purchaseProduct({bool isHighlight = false, PurchaseOrigin origin = PurchaseOrigin.paywall}) async {
     if (state.iapProducts.isEmpty) {
-      _onPurchaseFailure(error: AppConfig.instance.context?.text.monetization.emptyProductsDesc ?? '');
+      _onPurchaseFailure(error: l10n.monetization.emptyProductsDesc);
       return;
     }
 
@@ -114,7 +118,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
     _restoreTimeout?.cancel();
     DMessage.showMessage(
-      message: AppConfig.instance.context?.text.monetization.restoreProcessingToast ?? '',
+      message: l10n.monetization.restoreProcessingToast,
       type: MessageType.info,
     );
 
@@ -122,13 +126,13 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       if (state.status != MonetizationStatus.restoring) return;
       emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: 'restore_timeout'));
       DMessage.showMessage(
-        message: AppConfig.instance.context?.text.monetization.restoreNotFoundToast ?? '',
+        message: l10n.monetization.restoreNotFoundToast,
         type: MessageType.error,
       );
     });
 
     await runUseCase<IapVerifyEntity>(
-      usecase: _restoreUsecase.call,
+      usecase: () => _restoreUsecase(unit),
       onSuccess: (verify) {
         // Actual restored purchases will come through the purchase stream; keep awaiting until then.
       },
@@ -136,7 +140,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         _restoreTimeout?.cancel();
         emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString()));
         DMessage.showMessage(
-          message: AppConfig.instance.context?.text.monetization.paymentFailToast ?? '',
+          message: l10n.monetization.paymentFailToast,
           type: MessageType.error,
         );
       },
@@ -222,7 +226,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
 
       await _safeFinishTransaction(currentDetail);
       if (transactionId.isEmpty) {
-        _onPurchaseFailure(error: AppConfig.instance.context?.text.monetization.verificationFailToast ?? '');
+        _onPurchaseFailure(error: l10n.monetization.verificationFailToast);
         return;
       }
 
@@ -230,7 +234,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       if (nextDetail == null) {
         _markHandled(transactionId);
         _verifyingTransactionIds.remove(transactionId);
-        _onPurchaseFailure(error: AppConfig.instance.context?.text.monetization.verificationFailToast ?? '');
+        _onPurchaseFailure(error: l10n.monetization.verificationFailToast);
         return;
       }
 
@@ -283,7 +287,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       emit(state.copyWith(status: MonetizationStatus.purchaseSuccess));
       if (hasSubscription) return;
       DMessage.showMessage(
-        message: AppConfig.instance.context?.text.monetization.subscriptionActiveToast ?? '',
+        message: l10n.monetization.subscriptionActiveToast,
         type: MessageType.success,
       );
       // await PremiumPopupProductionUnlock.show(AppConfig.instance.context!);
@@ -299,9 +303,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
         lastOrigin: PurchaseOrigin.none,
       ),
     );
-    _trackingService.trackPaywallStorePopupDismiss(AppConfig.instance.context!, state.selectedProductId);
     DMessage.showMessage(
-      message: error.isEmpty ? AppConfig.instance.context?.text.monetization.paymentFailToast ?? '' : error,
+      message: error.isEmpty ? l10n.monetization.paymentFailToast : error,
       type: MessageType.error,
     );
   }
@@ -309,7 +312,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   void _onPurchasePending() {
     emit(state.copyWith(status: MonetizationStatus.initial));
     DMessage.showMessage(
-      message: AppConfig.instance.context?.text.monetization.paymentPendingToast ?? '',
+      message: l10n.monetization.paymentPendingToast,
       type: MessageType.info,
     );
   }

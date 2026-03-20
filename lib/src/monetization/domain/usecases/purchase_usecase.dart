@@ -8,7 +8,7 @@ class PurchaseParams {
 }
 
 @lazySingleton
-class PurchaseUsecase implements UseCaseWithParams<PurchaseParams, IapVerifyEntity> {
+class PurchaseUsecase implements BaseUseCase<PurchaseParams, IapVerifyEntity> {
   final IMonetizationRepository _iapRepository;
 
   PurchaseUsecase(this._iapRepository);

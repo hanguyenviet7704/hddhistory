@@ -4,6 +4,17 @@ class MyCourseTab extends StatelessWidget {
   const MyCourseTab({super.key});
 
   void _onTapCourse(BuildContext context, CourseEntity course, int index) {
+    final homeState = context.read<HomeCubit>().state;
+    final skillset = homeState.skillsets.resolveSkillsetByCourseId(
+      course.id,
+      fallback: homeState.currentSkillset,
+    );
+    AppService.instance.appTrackingService.trackCourseSelectCourseClick(
+      skillset,
+      course,
+      source: 'my_course',
+    );
+
     bool isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
     if (isFirstTimeUserChooseCourse) {
       CourseIntroPopup.show(

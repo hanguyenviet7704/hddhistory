@@ -11,7 +11,7 @@ class RoleplayIntroMissions extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         AppText(
-          context.text.roleplay.rolePlayIntroMissionTitle,
+          context.l10n.roleplay.rolePlayIntroMissionTitle,
           textAlign: TextAlign.center,
           style: AppStyle.text24.copyWith(
             fontWeight: FontWeight.w700,

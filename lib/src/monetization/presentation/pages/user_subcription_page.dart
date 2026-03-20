@@ -31,9 +31,9 @@ class _UserSubcriptionPageState extends State<UserSubcriptionPage> {
                   UserSubscriptionHeader(onBack: context.back),
                   12.verticalSpace,
                   _CurrentPlanRow(
-                    actionLabel: hasSubscription ? t.monetization.manageChangeCta : t.monetization.manageUpgradeCta,
+                    actionLabel: hasSubscription ? context.l10n.monetization.manageChangeCta : context.l10n.monetization.manageUpgradeCta,
                     onAction: () {
-                      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.other);
+                      AppDI.injector.get<IapCubit>().setPaywallEntryPoint(PaywallEntryPoint.manageSubscription);
                       const PaywallRoute().replace(context);
                     },
                   ),
@@ -60,7 +60,7 @@ class _CurrentPlanRow extends StatelessWidget {
     return Row(
       children: [
         AppText(
-          t.monetization.manageCurrentPlan,
+          context.l10n.monetization.manageCurrentPlan,
           style: AppStyle.text14.copyWith(
             fontWeight: FontWeight.w600,
             color: AppCustomColor.textSecondary,

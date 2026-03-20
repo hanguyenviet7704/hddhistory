@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class CuesPlacementLessonBody extends StatelessWidget {
+class CuesPlacementLessonBody extends LessonBodyWidget {
   final Function(bool) onAnswerChecked;
   final bool isReadOnly;
 
@@ -10,23 +10,24 @@ class CuesPlacementLessonBody extends StatelessWidget {
     this.isReadOnly = false,
   });
 
-  void _showResultOverlay(BuildContext context, ResultType type, {bool isReview = false}) {
-    final trackingData = KeypointTrackingData.fromContext();
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackKeypointExerciseResultView(trackingData);
-    }
-    context.read<LessonCubit>().setIsShowResultOverlay(true);
-    LessonResultOverlayManager.show(
+  void _showResultOverlay(
+    BuildContext context,
+    ResultType type, {
+    bool isReview = false,
+    bool showExplainAction = true,
+  }) {
+    LessonResultOverlayHelper.showResultOverlay(
       context: context,
-      builder: (_) => MultiBlocProvider(
+      isReview: isReview,
+      overlayBuilder: (parentContext, onContinue) => MultiBlocProvider(
         providers: [
-          BlocProvider.value(value: context.read<CuesPlacementCubit>()),
-          BlocProvider.value(value: context.read<LessonCubit>()),
+          BlocProvider.value(value: parentContext.read<CuesPlacementCubit>()),
+          BlocProvider.value(value: parentContext.read<LessonCubit>()),
         ],
         child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
           builder: (context, state) {
             final hasExplanation = state.question.hasExplanation;
-
+            final runtimeOptions = questionRuntimeOptions(state.question);
             return CuesPlacementResultBottomSheet(
               type: type,
               showExplanation: state.showExplanation,
@@ -35,25 +36,10 @@ class CuesPlacementLessonBody extends StatelessWidget {
               placedMarks: state.placedMarks,
               correctPositions: state.correctPositions,
               optionsById: {
-                for (var option in state.question.options) option.id: option,
+                for (var option in runtimeOptions) option.id: option,
               },
-              onContinue: () {
-                if (isReview) {
-                  LessonResultOverlayManager.hide();
-                  context.read<LessonCubit>().setIsShowResultOverlay(false);
-                  return;
-                }
-                if (trackingData != null) {
-                  AppService.instance.appTrackingService.trackKeypointExerciseContinue(trackingData);
-                }
-                LessonResultOverlayManager.hide();
-                AppDI.injector.get<ExerciseCubit>().nextQuestion();
-              },
-              onExplain: hasExplanation
-                  ? () {
-                      context.read<CuesPlacementCubit>().toggleExplanation();
-                    }
-                  : null,
+              onContinue: onContinue,
+              onExplain: showExplainAction && hasExplanation ? () => context.read<CuesPlacementCubit>().toggleExplanation() : null,
             );
           },
         ),
@@ -72,6 +58,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
       context,
       state.isCorrect ? ResultType.correct : ResultType.incorrect,
       isReview: isReadOnly,
+      showExplainAction: false,
     );
   }
 
@@ -94,9 +81,10 @@ class CuesPlacementLessonBody extends StatelessWidget {
       child: BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
         builder: (context, state) {
           final currentQuestion = state.question;
+          final runtimeOptions = questionRuntimeOptions(currentQuestion);
           final words = state.words;
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
-          final showExplainButton = isLessonExercise && state.hasChecked && currentQuestion.hasExplanation;
+          final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
           final content = Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -106,7 +94,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
                 12.verticalSpace,
               ],
               AppText(
-                context.text.exercise.exerciseStressMarkInstruction,
+                context.l10n.exercise.exerciseStressMarkInstruction,
                 margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
                 maxLines: 10,
                 style: AppStyle.text12.copyWith(
@@ -140,7 +128,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
                     (index) {
                       final placedMarkId = state.placedMarks[index];
                       final placedMark = placedMarkId != null
-                          ? currentQuestion.options.firstWhere(
+                          ? runtimeOptions.firstWhere(
                               (opt) => opt.id == placedMarkId,
                               orElse: () => const OptionEntity(),
                             )
@@ -179,7 +167,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: 20.w),
                 child: CuesPlacementAvailableMarks(
-                  allOptions: currentQuestion.options,
+                  allOptions: runtimeOptions,
                   availableOptions: state.availableOptions,
                   onAcceptReturn: (data) {
                     if (data.fromWordIndex != null) {
@@ -210,7 +198,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
     );
   }
 
-  /// Build the bottom button for cues placement questions
+  @override
   Widget buildBottomButton(BuildContext context) {
     return BlocBuilder<CuesPlacementCubit, CuesPlacementState>(
       buildWhen: (previous, current) => previous.availableOptions != current.availableOptions,
@@ -219,7 +207,7 @@ class CuesPlacementLessonBody extends StatelessWidget {
 
         return ExerciseContinueButton(
           onPressed: canCheck ? () => context.read<CuesPlacementCubit>().checkAnswer() : null,
-          text: context.text.lesson.checkButton,
+          text: context.l10n.lesson.checkButton,
           isEnabled: canCheck,
         );
       },

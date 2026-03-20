@@ -95,9 +95,9 @@ class CuesPlacementResultBottomSheet extends StatelessWidget {
         onContinue: onContinue,
         onExplain: hasExplanation ? onExplain : null,
         showExplanation: explanationVisible,
-        continueLabel: context.text.onboarding.onboardingSkipGreetingButton,
-        explainLabel: context.text.exercise.exerciseExplainButton,
-        closeExplainLabel: context.text.exercise.exerciseCloseExplainButton,
+        continueLabel: context.l10n.onboarding.onboardingSkipGreetingButton,
+        explainLabel: context.l10n.exercise.exerciseExplainButton,
+        closeExplainLabel: context.l10n.exercise.exerciseCloseExplainButton,
         successAccentColor: const Color(0xFF41AE8C),
       ),
     );
@@ -129,7 +129,7 @@ class CuesPlacementExplanationContent extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           AppText(
-            context.text.exercise.exerciseFeedbackCorrectAnswer,
+            context.l10n.exercise.exerciseFeedbackCorrectAnswer,
             style: AppStyle.textBold14.copyWith(
               color: const Color(0xFF3A9377),
               height: 1.75,
@@ -174,7 +174,7 @@ class CuesPlacementExplanationContent extends StatelessWidget {
                     ),
                     6.horizontalSpace,
                     AppText(
-                      context.text.exercise.exerciseExplanationTitle,
+                      context.l10n.exercise.exerciseExplanationTitle,
                       style: AppStyle.textBold14.copyWith(
                         color: const Color(0xFF175CD3),
                         height: 1.75,

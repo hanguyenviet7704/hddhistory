@@ -11,7 +11,7 @@ class LearningGoalBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              title: context.text.onboarding.onboardingLearningGoalQuestion,
+              title: context.l10n.onboarding.onboardingLearningGoalQuestion,
             ),
 
             const Spacer(),

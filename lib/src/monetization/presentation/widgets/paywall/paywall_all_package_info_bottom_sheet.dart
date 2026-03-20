@@ -81,7 +81,7 @@ class _BottomSheetLoading extends StatelessWidget {
           child: Column(
             children: [
               AppText(
-                t.monetization.loadingPlans,
+                context.l10n.monetization.loadingPlans,
                 style: AppStyle.text16.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
               ),
               24.verticalSpace,
@@ -104,12 +104,12 @@ class _BottomSheetEmpty extends StatelessWidget {
     return Column(
       children: [
         AppText(
-          t.monetization.emptyProductsTitle,
+          context.l10n.monetization.emptyProductsTitle,
           style: AppStyle.text18.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary),
         ),
         8.verticalSpace,
         AppText(
-          t.monetization.emptyProductsDesc,
+          context.l10n.monetization.emptyProductsDesc,
           textAlign: TextAlign.center,
           maxLines: 3,
           style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
@@ -129,7 +129,7 @@ class _BottomSheetEmpty extends StatelessWidget {
               borderRadius: BorderRadius.circular(1000.r),
               child: Center(
                 child: AppText(
-                  t.monetization.payNowCta,
+                  context.l10n.monetization.payNowCta,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   style: AppStyle.text16.copyWith(
@@ -170,7 +170,7 @@ class _BottomSheetContent extends StatelessWidget {
           children: [
             const Spacer(),
             AppText(
-              t.monetization.selectPlan,
+              context.l10n.monetization.selectPlan,
               style: AppStyle.text16.copyWith(fontWeight: FontWeight.w600, color: AppCustomColor.textTertiary),
             ),
             const Spacer(),
@@ -202,6 +202,15 @@ class _BottomSheetContent extends StatelessWidget {
             },
           ),
         ),
+        AppText(
+          context.l10n.monetization.paywallHighlightSubtitle,
+          textAlign: TextAlign.center,
+          style: AppStyle.text12.copyWith(
+            fontWeight: FontWeight.w600,
+            color: AppCustomColor.textQuaternary,
+            height: 1.75,
+          ),
+        ),
         12.verticalSpace,
         Container(
           width: double.infinity,
@@ -221,7 +230,7 @@ class _BottomSheetContent extends StatelessWidget {
               borderRadius: BorderRadius.circular(1000.r),
               child: Center(
                 child: AppText(
-                  t.monetization.payNowCta,
+                  context.l10n.monetization.payNowCta,
                   textAlign: TextAlign.center,
                   maxLines: 1,
                   style: AppStyle.text16.copyWith(

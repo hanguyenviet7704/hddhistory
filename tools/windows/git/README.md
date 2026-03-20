@@ -13,7 +13,6 @@ This GitFlow implementation provides a structured branching strategy and automat
 - **feature/**: New features (from develop)
 - **release/**: Prepare for production release (from develop)
 - **hotfix/**: Emergency fixes (from main)
-- **bugfix/**: Bug fixes in development (from develop)
 
 ## Branch Naming Convention
 
@@ -24,7 +23,6 @@ This GitFlow implementation provides a structured branching strategy and automat
 - `feature/ARTLEXIS-123/add-user-authentication`
 - `release/1.2.0/prepare-release`
 - `hotfix/ARTLEXIS-456/fix-login-crash`
-- `bugfix/ARTLEXIS-789/fix-ui-alignment`
 
 ## Commit Message Convention
 
@@ -70,27 +68,27 @@ ARTLEXIS-456
 
 ### 1. Setup GitFlow
 ```bash
-./tools/macos/git/setup.sh
+.\tools\windows\git\setup.bat
 ```
 
 ### 2. Start a Feature
 ```bash
-./tools/macos/git/feature.sh start ARTLEXIS-123 "add user authentication"
+.\tools\windows\git\feature.bat start ARTLEXIS-123 "add-user-authentication"
 ```
 
 ### 3. Finish a Feature
 ```bash
-./tools/macos/git/feature.sh finish
+.\tools\windows\git\feature.bat finish
 ```
 
 ### 4. Create a Release
 ```bash
-./tools/macos/git/release.sh start 1.2.0
+.\tools\windows\git\release.bat start 1.2.0
 ```
 
-### 5. Create a Hotfix
+### 5. Publish a Feature Branch
 ```bash
-./tools/macos/git/hotfix.sh start ARTLEXIS-456 "fix login crash"
+.\tools\windows\git\feature.bat publish
 ```
 
 ## Workflow Process
@@ -119,21 +117,18 @@ ARTLEXIS-456
 ## Git Hooks
 The following hooks are automatically installed:
 - **commit-msg**: Validates commit message format
-- **pre-commit**: Runs Flutter analyze and format check
-- **pre-push**: Validates branch naming convention
 
 ## Configuration
-Edit `.gitflow.config` to customize:
-- Branch prefixes
-- Commit types
-- Ticket prefix patterns
-- Version format
+Windows setup stores configuration in local git config (`git config gitflow.*`).
+If you need custom branch prefixes or branch names, update:
+- `.\tools\windows\git\setup.bat`
+- Local git config values in your repository
 
 ## Troubleshooting
 
 ### Hook Permission Issues
 ```bash
-chmod +x .git/hooks/*
+git config core.filemode false
 ```
 
 ### Bypass Hooks (Emergency Only)
@@ -143,5 +138,13 @@ git commit --no-verify
 
 ### Reset GitFlow
 ```bash
-./tools/macos/git/setup.sh --reset
-``` 
+.\tools\windows\git\setup.bat
+```
+
+### Hotfix Workflow on Windows
+There is no dedicated `hotfix.bat` script yet. Create and manage hotfix branches manually:
+```bash
+git checkout main
+git pull origin main
+git checkout -b hotfix/ARTLEXIS-456-fix-login-crash
+```

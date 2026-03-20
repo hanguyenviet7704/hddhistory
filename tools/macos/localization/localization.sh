@@ -117,17 +117,72 @@ fi
 
 log_step "Activating virtual environment..."
 source "$VENV_DIR/bin/activate"
+VENV_PYTHON="$VENV_DIR/bin/python3"
 
 REQ_FILE="${SCRIPT_DIR}/requirements.txt"
 if [[ -f "$REQ_FILE" ]]; then
-    REQ_HASH=$(md5sum "$REQ_FILE" | awk '{print $1}')
+    compute_requirements_hash() {
+        local file_path="$1"
+        if command -v md5sum >/dev/null 2>&1; then
+            md5sum "$file_path" | awk '{print $1}'
+            return 0
+        fi
+        if command -v md5 >/dev/null 2>&1; then
+            md5 -q "$file_path"
+            return 0
+        fi
+        python3 - "$file_path" <<'PY'
+import hashlib
+import pathlib
+import sys
+
+path = pathlib.Path(sys.argv[1])
+print(hashlib.md5(path.read_bytes()).hexdigest())
+PY
+    }
+
+    python_deps_healthy() {
+        "$VENV_PYTHON" - <<'PY' >/dev/null 2>&1
+import importlib
+import sys
+
+modules = [
+    "requests",
+    "gspread",
+    "google.auth",
+    "google_auth_oauthlib",
+    "yaml",
+    "tabulate",
+]
+for module in modules:
+    try:
+        importlib.import_module(module)
+    except Exception:
+        sys.exit(1)
+sys.exit(0)
+PY
+    }
+
+    REQ_HASH=$(compute_requirements_hash "$REQ_FILE")
     DEPS_STAMP="$VENV_DIR/.deps_hash"
     CURRENT_HASH=""
     [[ -f "$DEPS_STAMP" ]] && CURRENT_HASH=$(cat "$DEPS_STAMP")
+
+    NEEDS_INSTALL=0
     if [[ "$REQ_HASH" != "$CURRENT_HASH" ]]; then
+        NEEDS_INSTALL=1
+    elif ! python_deps_healthy; then
+        log_warning "Python dependency cache is stale or incomplete. Reinstalling requirements..."
+        NEEDS_INSTALL=1
+    fi
+
+    if [[ "$NEEDS_INSTALL" -eq 1 ]]; then
         log_step "Ensuring Python dependencies..."
-        pip install --upgrade pip >/dev/null
-        pip install -r "$REQ_FILE" >/dev/null
+        if ! "$VENV_PYTHON" -m pip --version >/dev/null 2>&1; then
+            "$VENV_PYTHON" -m ensurepip --upgrade >/dev/null
+        fi
+        "$VENV_PYTHON" -m pip install --upgrade pip >/dev/null
+        "$VENV_PYTHON" -m pip install -r "$REQ_FILE" >/dev/null
         echo "$REQ_HASH" > "$DEPS_STAMP"
     else
         log_info "Dependencies already satisfied (cached)."
@@ -142,12 +197,12 @@ cleanup() {
     deactivate >/dev/null 2>&1 || true
 }
 trap cleanup EXIT
-python3 "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" "$ACTION" "$@"
+"$VENV_PYTHON" "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" "$ACTION" "$@"
 EXIT_CODE=$?
 
 if [[ $EXIT_CODE -eq 0 && $APPLY_FLAG -eq 1 && ( "$ACTION" == "push" || "$ACTION" == "migrate" ) ]]; then
     log_step "Refreshing sheet gid cache after apply..."
-    python3 "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" cache-gids --ensure-readme || true
+    "$VENV_PYTHON" "$SCRIPT_DIR/localization_cli.py" --config "$PYTHON_CONFIG" cache-gids --ensure-readme || true
 fi
 
 exit $EXIT_CODE

@@ -114,18 +114,21 @@ nano .info/app/build.json
 # Build iOS
 ./tools/macos/build/build_ios.sh stg
 
-# Configure Firebase
+# Configure Firebase for all flavors
+./tools/macos/config/flutterfire_config.sh
+
+# Or reconfigure a single flavor
 ./tools/macos/config/flutterfire_config.sh dev
 ```
 
 ## Normal Developer Flow (fast path)
-1. **Setup**: Install deps (Flutter + manager, Android SDK + Java 17, Node + Firebase CLI, jq). Run `tools/<os>/config/setup_project.sh [--non-interactive]`.
+1. **Setup**: Install deps (Flutter + manager, Android SDK + Java 17, Node + Firebase CLI, FlutterFire CLI, jq). Run `tools/<os>/config/setup_project.sh [--non-interactive]`.
 2. **Localization**: `tools/<os>/localization/localization.sh pull` → edit YAML/sheet (module = namespace, keys lowerCamelCase) → `push --apply` → `pull` → `slang`.
 3. **Codegen & checks**: `dart run build_runner build --delete-conflicting-outputs`; `dart format lib/ test/`; `flutter analyze`.
 4. **Tests**: `flutter test test/unit/` or full `flutter test`.
 5. **Android builds** (all platforms): `build_apk.sh <dev|stg|prod>` / `build_appbundle.sh <flavor>`; distribute via `distribution/distribute_android.sh`.
 6. **iOS builds** (macOS only): `build_ios.sh <flavor>` → `build_ipa.sh <flavor>` → `distribution/distribute_ios.sh <flavor>`; requires Xcode + signing assets.
-7. **Firebase**: `config/flutterfire_config.sh <flavor>`; symbol upload runs automatically after obfuscated builds, manual fallback `config/firebase_setup.sh <flavor>`.
+7. **Firebase**: `config/flutterfire_config.sh` configures all flavors by default, or pass `<flavor>` to rerun one flavor; symbol upload runs automatically after obfuscated builds, manual fallback `config/firebase_setup.sh <flavor>`.
 
 ## Tested Versions Snapshot
 - See `.info/app/build.json` → `tested` for the latest recorded environment (OS/Flutter/Dart/Java/Xcode) and smoke status. Update after running `tools/smoke.sh` (macOS/Linux) or `tools\\windows\\smoke.bat`.
@@ -147,7 +150,7 @@ nano .info/app/build.json
 | Command | Description | Usage |
 |---------|-------------|-------|
 | `setup_project.sh` | Complete project setup | `./setup_project.sh [--non-interactive]` |
-| `flutterfire_config.sh` | Configure Firebase | `./flutterfire_config.sh [dev\|stg\|prod]` |
+| `flutterfire_config.sh` | Configure Firebase | `./flutterfire_config.sh [all\|dev\|stg\|prod ...]` |
 
 ### Utility Commands
 

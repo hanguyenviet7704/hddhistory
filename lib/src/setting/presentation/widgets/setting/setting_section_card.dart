@@ -4,7 +4,7 @@ class SettingSectionCard extends StatelessWidget {
   const SettingSectionCard({super.key, required this.title, required this.children});
 
   final String title;
-  final List<SettingOptionTile> children;
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
@@ -129,6 +129,72 @@ class SettingOptionTile extends StatelessWidget {
                   color: AppCustomColor.iconPrimary,
                 ),
               ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class SettingSwitchTile extends StatelessWidget {
+  const SettingSwitchTile({
+    super.key,
+    required this.iconAsset,
+    required this.title,
+    required this.value,
+    this.onChanged,
+    this.isLoading = false,
+  });
+
+  final String iconAsset;
+  final String title;
+  final bool value;
+  final bool isLoading;
+  final ValueChanged<bool>? onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onChanged == null ? null : () => onChanged!.call(!value),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 24.w, vertical: 18.h),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              _SettingIcon(
+                asset: iconAsset,
+                backgroundColor: AppCustomColor.surfaceMuted,
+                color: AppCustomColor.iconPrimary,
+              ),
+              SizedBox(width: 12.w),
+              AppText(
+                title,
+                style: AppStyle.textBold14.copyWith(
+                  color: AppCustomColor.textPrimary,
+                ),
+              ),
+              Spacer(),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 180),
+                child: isLoading
+                    ? SizedBox(
+                        width: 20.w,
+                        height: 20.w,
+                        child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: AppCustomColor.brandPrimary,
+                        ),
+                      )
+                    : Switch.adaptive(
+                        key: const Key('setting_notification_toggle'),
+                        value: value,
+                        onChanged: onChanged,
+                        activeTrackColor: AppCustomColor.brandPrimary,
+                      ),
+              ),
             ],
           ),
         ),

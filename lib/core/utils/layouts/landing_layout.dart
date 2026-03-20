@@ -49,9 +49,9 @@ class LandingLayout extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // DText(text: title, fontSize: 24, fontWeight: FontWeight.bold),
+              // AppText(title, style: AppStyle.text24.copyWith(fontWeight: FontWeight.bold)),
               // const SizedBox(height: 12),
-              // DText(text: subTitle, fontSize: 16, textAlign: TextAlign.center),
+              // AppText(subTitle, textAlign: TextAlign.center, style: AppStyle.text16),
               // const SizedBox(height: 40),
               ...body,
             ],
@@ -68,7 +68,7 @@ class LandingLayout extends StatelessWidget {
       elevation: 0,
       leading: InkWell(
         onTap: onBack ?? () => context.back(),
-        child: const Icon(FontAwesomeIcons.arrowLeftLong, color: Colors.black, size: 16),
+        child: const FaIcon(FontAwesomeIcons.arrowLeftLong, color: Colors.black, size: 16),
       ),
     );
   }

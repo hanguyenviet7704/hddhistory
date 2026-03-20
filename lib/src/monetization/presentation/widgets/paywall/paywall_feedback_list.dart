@@ -6,7 +6,7 @@ class FeedbackContent {
   final String description;
   final int stars;
 
-  FeedbackContent({
+  const FeedbackContent({
     required this.userName,
     required this.title,
     required this.description,
@@ -15,26 +15,31 @@ class FeedbackContent {
 }
 
 class PaywallFeedbackList extends StatelessWidget {
-  const PaywallFeedbackList({super.key});
+  final VoidCallback? onFirstScroll;
+
+  const PaywallFeedbackList({
+    super.key,
+    this.onFirstScroll,
+  });
 
   List<FeedbackContent> get _feedbacks {
-    final monetizationTexts = t.monetization;
+    final monetizationTexts = l10n.monetization;
 
     return [
       FeedbackContent(
-        userName: 'Trang',
+        userName: 'Bete Noir',
         title: monetizationTexts.review1Title,
         description: monetizationTexts.review1Body,
         stars: 5,
       ),
       FeedbackContent(
-        userName: 'Chi',
+        userName: 'Monilosa',
         title: monetizationTexts.review2Title,
         description: monetizationTexts.review2Body,
         stars: 5,
       ),
       FeedbackContent(
-        userName: 'Duy',
+        userName: 'Julie666',
         title: monetizationTexts.review3Title,
         description: monetizationTexts.review3Body,
         stars: 5,
@@ -46,14 +51,27 @@ class PaywallFeedbackList extends StatelessWidget {
   Widget build(BuildContext context) {
     if (_feedbacks.isEmpty) return const SizedBox.shrink();
 
-    return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.zero,
-      scrollDirection: Axis.horizontal,
-      clipBehavior: Clip.none,
-      child: IntrinsicHeight(
-        child: Row(
-          children: _feedbacks.map((feedback) => _FeedbackCard(feedback: feedback)).toList(),
+    bool hasTriggeredScroll = false;
+
+    return SizedBox(
+      height: 195.h,
+      child: NotificationListener<ScrollNotification>(
+        onNotification: (notification) {
+          if (hasTriggeredScroll || notification.metrics.axis != Axis.horizontal || notification.metrics.pixels <= 0) {
+            return false;
+          }
+          hasTriggeredScroll = true;
+          onFirstScroll?.call();
+          return false;
+        },
+        child: ListView.separated(
+          padding: EdgeInsets.zero,
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          clipBehavior: Clip.none,
+          itemCount: _feedbacks.length,
+          separatorBuilder: (_, _) => 16.horizontalSpace,
+          itemBuilder: (context, index) => _FeedbackCard(feedback: _feedbacks[index]),
         ),
       ),
     );
@@ -70,16 +88,15 @@ class _FeedbackCard extends StatelessWidget {
     return Container(
       width: 305.w,
       padding: EdgeInsets.all(20.w),
-      margin: EdgeInsets.only(right: 12.w),
       decoration: BoxDecoration(
         color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(20.r),
-        border: Border.all(color: AppCustomColor.borderSecondary),
+        border: Border.all(color: AppCustomColor.borderDefault),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 6),
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 3,
+            offset: const Offset(0, 1),
           ),
         ],
       ),
@@ -90,31 +107,33 @@ class _FeedbackCard extends StatelessWidget {
             children: [
               AppText(
                 feedback.userName,
-                style: AppStyle.text14.copyWith(
-                  fontWeight: FontWeight.w600,
+                style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textTertiary,
+                  fontWeight: FontWeight.w600,
+                  height: 1.75,
                 ),
               ),
               const Spacer(),
               _StarRow(stars: feedback.stars),
             ],
           ),
-          8.verticalSpace,
+          12.verticalSpace,
           AppText(
             feedback.title,
             maxLines: 2,
-            style: AppStyle.text16.copyWith(
-              fontWeight: FontWeight.w700,
+            style: AppStyle.text14.copyWith(
               color: AppCustomColor.textPrimary,
+              fontWeight: FontWeight.w700,
+              height: 1.75,
             ),
           ),
-          6.verticalSpace,
+          8.verticalSpace,
           AppText(
             feedback.description,
-            maxLines: 6,
-            style: AppStyle.text14.copyWith(
+            maxLines: 5,
+            style: AppStyle.text12.copyWith(
               color: AppCustomColor.textSecondary,
-              height: 1.4,
+              height: 1.75,
             ),
           ),
         ],
@@ -136,10 +155,10 @@ class _StarRow extends StatelessWidget {
         final isFilled = index < stars;
         return Padding(
           padding: EdgeInsets.only(left: index == 0 ? 0 : 4.w),
-          child: Icon(
+          child: FaIcon(
             FontAwesomeIcons.solidStar,
-            size: 14.w,
-            color: isFilled ? AppCustomColor.brandPrimary : AppCustomColor.greyC1,
+            size: 16.w,
+            color: isFilled ? const Color(0xFF4B44CA) : AppCustomColor.feedbackStarInactive,
           ),
         );
       }),

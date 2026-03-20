@@ -115,4 +115,12 @@ extension LessonEntityExtension on LessonEntity {
     if (lightIcon.url.isNotEmpty) return lightIcon.url;
     return icon.url;
   }
+
+  String get displayTitleForNextLesson {
+    if (type == LessonType.lesson) {
+      final keypointTitle = firstKeypoint.title.text;
+      if (keypointTitle.isNotEmpty) return keypointTitle;
+    }
+    return title.text;
+  }
 }

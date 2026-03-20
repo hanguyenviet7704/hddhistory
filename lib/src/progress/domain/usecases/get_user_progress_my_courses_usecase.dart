@@ -10,7 +10,7 @@ abstract class UserProgressMyCoursesUseCaseFilter with _$UserProgressMyCoursesUs
 }
 
 @lazySingleton
-class GetUserProgressMyCoursesUseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<CourseEntity>> {
+class GetUserProgressMyCoursesUseCase implements BaseUseCase<PageBreakRequest, BasePageBreak<CourseEntity>> {
   final IProgressRepository _repository;
 
   GetUserProgressMyCoursesUseCase(this._repository);
@@ -20,4 +20,3 @@ class GetUserProgressMyCoursesUseCase implements UseCaseWithParams<PageBreakRequ
     return _repository.getUserProgressMyCourses(params);
   }
 }
-

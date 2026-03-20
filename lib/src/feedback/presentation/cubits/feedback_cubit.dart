@@ -12,7 +12,7 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
 
   void loadUserFeedbacks() async {
     await runUseCase<UserFeedbackEntity>(
-      usecase: () => _getUserFeedbacksUseCase(),
+      usecase: () => _getUserFeedbacksUseCase(unit),
       buildLoadingState: () => state.copyWith(status: FeedbackStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(status: FeedbackStatus.failure, errorMessage: error));
@@ -141,7 +141,7 @@ class FeedbackCubit extends Cubit<FeedbackState> with CubitUseCaseHandlerMixin<F
       keypointId: keypointId,
       type: state.activeType,
       entry: state.activeEntry,
-      overallRating: state.activeType == FeedbackType.complete ? state.draftOverallRating : 0,
+      overallRating: 0,
       contentRating: state.activeType == FeedbackType.complete ? state.draftContentRating : 0,
       experienceRating: state.activeType == FeedbackType.complete ? state.draftExperienceRating : 0,
       reasons: state.activeType == FeedbackType.incomplete ? state.draftReasons : const [],

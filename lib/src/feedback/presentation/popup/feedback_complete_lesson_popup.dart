@@ -93,18 +93,14 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Padding(
-                    padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 16.h),
+                    padding: EdgeInsets.fromLTRB(12.w, 24.h, 12.w, 0),
                     child: Column(
                       children: [
-                        FeedbackHeader(title: context.text.feedback.completeTitle),
-                        12.verticalSpace,
-                        FeedbackRatingRow(
-                          rating: state.draftOverallRating,
-                          starSize: 36,
-                          spacing: 6,
-                          alignment: MainAxisAlignment.center,
-                          onRatingChanged: context.read<FeedbackCubit>().updateOverallRating,
+                        FeedbackHeader(
+                          title: context.l10n.feedback.completeTitle,
+                          subtitle: context.l10n.feedback.incompleteSubtitle,
                         ),
+                        16.verticalSpace,
                       ],
                     ),
                   ),
@@ -120,7 +116,7 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           FeedbackRatingRow(
-                            label: context.text.feedback.contentLabel,
+                            label: context.l10n.feedback.contentLabel,
                             rating: state.draftContentRating,
                             onRatingChanged: context.read<FeedbackCubit>().updateContentRating,
                             starSize: 24,
@@ -128,7 +124,7 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                           ),
                           16.verticalSpace,
                           FeedbackRatingRow(
-                            label: context.text.feedback.experienceLabel,
+                            label: context.l10n.feedback.experienceLabel,
                             rating: state.draftExperienceRating,
                             onRatingChanged: context.read<FeedbackCubit>().updateExperienceRating,
                             starSize: 24,
@@ -137,12 +133,12 @@ class _FeedbackCompleteLessonPopupState extends State<FeedbackCompleteLessonPopu
                           16.verticalSpace,
                           FeedbackCommentField(
                             value: state.draftComment,
-                            hint: context.text.feedback.commentHint,
+                            hint: context.l10n.feedback.commentHint,
                             onChanged: context.read<FeedbackCubit>().updateComment,
                           ),
-                          24.verticalSpace,
+                          32.verticalSpace,
                           FeedbackPrimaryButton(
-                            title: context.text.feedback.sendFeedback,
+                            title: context.l10n.feedback.sendFeedback,
                             enabled: state.feedbackCompleteCanSubmit,
                             onTap: () {
                               if (!state.feedbackCompleteCanSubmit) return;

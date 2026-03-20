@@ -18,12 +18,12 @@ sealed class MarkStressWordState with _$MarkStressWordState {
 
 extension MarkStressWordStateX on MarkStressWordState {
   /// Get list of words by splitting targetArea by space
-  List<String> get words => question.targetArea.text.split(' ');
+  List<String> get words => questionRuntimeTargetArea(question).text.split(' ');
 
   /// Get set of correct word indices (0-based)
   /// The answer contains 1-based indices, so we subtract 1
   Set<int> get correctWordIndices {
-    return question.answer
+    return questionRuntimeAnswers(question)
         .map((answer) => int.tryParse(answer.correctAnswer.text) ?? 0)
         .where((index) => index > 0)
         .map((index) => index - 1) // Convert from 1-based to 0-based

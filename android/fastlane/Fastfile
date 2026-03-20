@@ -15,6 +15,17 @@
 
 default_platform(:android)
 
+def tools_platform
+  return "macos" if RUBY_PLATFORM.include?("darwin")
+  return "linux" if RUBY_PLATFORM.include?("linux")
+
+  "macos"
+end
+
+def tools_script_path(*parts)
+  File.join("..", "..", "tools", tools_platform, *parts)
+end
+
 platform :android do
   desc "Runs all the tests"
   # Example: bundle exec fastlane test
@@ -29,7 +40,7 @@ platform :android do
   desc "Build APK for specified flavor"
   lane :build_apk do |options|
     flavor = options[:flavor] || "dev"
-    sh("../../tools/macos/build/build_apk.sh #{flavor}")
+    sh("#{tools_script_path('build', 'build_apk.sh')} #{flavor}")
   end
 
   # Example: bundle exec fastlane build_bundle
@@ -39,7 +50,7 @@ platform :android do
   desc "Build App Bundle for specified flavor"
   lane :build_bundle do |options|
     flavor = options[:flavor] || "dev"
-    sh("../../tools/macos/build/build_appbundle.sh #{flavor}")
+    sh("#{tools_script_path('build', 'build_appbundle.sh')} #{flavor}")
   end
 
   # Example: bundle exec fastlane beta
@@ -86,7 +97,7 @@ platform :android do
       )
     else
       # Default: Use custom distribution script with build-first option
-      sh("../../tools/macos/distribution/distribute_android.sh apk #{flavor} --build-first")
+      sh("#{tools_script_path('distribution', 'distribute_android.sh')} apk #{flavor} --build-first")
     end
   end
 
@@ -134,7 +145,7 @@ platform :android do
       )
     else
       # Default: Use custom distribution script with build-first option
-      sh("../../tools/macos/distribution/distribute_android.sh appbundle #{flavor} --build-first")
+      sh("#{tools_script_path('distribution', 'distribute_android.sh')} appbundle #{flavor} --build-first")
     end
   end
 

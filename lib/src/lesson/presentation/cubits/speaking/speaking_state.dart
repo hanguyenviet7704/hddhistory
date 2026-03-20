@@ -12,8 +12,9 @@ sealed class SpeakingState with _$SpeakingState {
     //* Speaking Cubit initial data
     @Default(SpeakingStatus.initial) SpeakingStatus status,
     @Default(QuestionEntity()) QuestionEntity question,
+    @Default(ExerciseResultEntity()) ExerciseResultEntity result,
     String? errorMessage,
-    
+
     //* Speaking Cubit input data
     PermissionStatus? microphonePermission,
     @Default(SpeakingInputMode.recording) SpeakingInputMode inputMode,
@@ -22,8 +23,7 @@ sealed class SpeakingState with _$SpeakingState {
     String? audioFilePath,
     @Default(Duration.zero) Duration recordingDuration,
     @Default(false) bool showExplanation,
-    @Default(<String>[]) List<String> goodPoints,
-    @Default(<String>[]) List<String> improvementPoints,
+    @Default(false) bool isFeedbackLoading,
   }) = _SpeakingState;
 
   factory SpeakingState.initial() => const SpeakingState();
@@ -36,4 +36,7 @@ extension SpeakingStateExtension on SpeakingState {
     if (question.maxDuration <= 0) return 0;
     return recordingDuration.inSeconds / question.maxDuration;
   }
+
+  List<String> get goodPoints => result.goodPoints;
+  List<String> get improvementPoints => result.improvementPoints;
 }

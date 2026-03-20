@@ -21,10 +21,24 @@ class _HomePageState extends State<HomePage> {
     AppService.instance.appTrackingService.trackHomeScrView();
   }
 
+  Future<void> _prefetchLearningStreak() async {
+    final userId = context.read<UserCubit>().state.user.id;
+    await context.read<LearningStreakCubit>().loadUserLearningStreak(
+      triggerSource: LearningStreakTriggerSource.homeChip,
+      requestedUserId: userId,
+      timeout: const Duration(seconds: 2),
+      emitLoading: false,
+      allowSafeDefaultOnFailure: true,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _trackHomeScrView());
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      _trackHomeScrView();
+      await _prefetchLearningStreak();
+    });
   }
 
   @override
@@ -40,7 +54,10 @@ class _HomePageState extends State<HomePage> {
       child: Scaffold(
         body: SafeBody(
           child: RefreshIndicator(
-            onRefresh: () async => context.read<HomeCubit>().initializeData(isInit: true),
+            onRefresh: () async {
+              context.read<HomeCubit>().initializeData(isInit: true);
+              _prefetchLearningStreak();
+            },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: Column(
@@ -58,7 +75,7 @@ class _HomePageState extends State<HomePage> {
                         children: [
                           4.verticalSpace,
                           AppText(
-                            context.text.home.continueLearning,
+                            context.l10n.home.continueLearning,
                             enableFitScaleDown: true,
                             margin: EdgeInsets.symmetric(horizontal: 20.w),
                             style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
@@ -86,8 +103,8 @@ class _HomePageState extends State<HomePage> {
 
                   // Skillsets section
                   SectionHeaderWidget(
-                    title: context.text.home.homeRecommendCourse,
-                    actionText: context.text.home.homeSeeAllLearningListButton,
+                    title: context.l10n.home.homeRecommendCourse,
+                    actionText: context.l10n.home.homeSeeAllLearningListButton,
                     onActionTap: () {
                       context.read<CourseCubit>().setAllCourseSource('home_skill_view');
                       CourseRoute().push(context);

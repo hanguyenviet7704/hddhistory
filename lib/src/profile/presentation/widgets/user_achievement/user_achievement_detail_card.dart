@@ -18,7 +18,7 @@ class UserAchievementDetailCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           _UserAchievementDetailHeader(
-            // levelLabel: context.text.setting.achievementsLevelLabel(level: levelName),
+            // levelLabel: context.l10n.setting.achievementsLevelLabel(level: levelName),
             levelLabel: levelName,
             title: course.title,
           ),
@@ -119,7 +119,7 @@ class _UserAchievementDetailProgress extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         AppText(
-          context.text.setting.achievementsCompleteCourseAtLevel(level: course.level.name),
+          context.l10n.setting.achievementsCompleteCourseAtLevel(level: course.level.name),
           textAlign: TextAlign.center,
           style: AppStyle.text16.copyWith(
             color: AppCustomColor.textTertiary,

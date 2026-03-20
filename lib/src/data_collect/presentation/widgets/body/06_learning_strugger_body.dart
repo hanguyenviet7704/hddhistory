@@ -11,9 +11,9 @@ class LearningStruggerBody extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             DataCollectSectionHeader(
-              note: context.text.onboarding.onboardingStruggleNote,
-              title: context.text.onboarding.onboardingStruggleQuestion,
-              subtitle: context.text.onboarding.onboardingStruggleQuestionSubtitle,
+              note: context.l10n.onboarding.onboardingStruggleNote,
+              title: context.l10n.onboarding.onboardingStruggleQuestion,
+              subtitle: context.l10n.onboarding.onboardingStruggleQuestionSubtitle,
             ),
             24.verticalSpace,
             // Topic Options

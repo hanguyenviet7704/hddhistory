@@ -19,7 +19,7 @@ class KeypointsSectionHeader extends StatelessWidget {
       children: [
         // "Key points" title
         AppText(
-          context.text.lesson.lessonLessonKeypointTitle,
+          context.l10n.lesson.lessonLessonKeypointTitle,
           style: AppStyle.text16.copyWith(
             color: AppCustomColor.textPrimary,
             fontWeight: FontWeight.w600,
@@ -30,19 +30,13 @@ class KeypointsSectionHeader extends StatelessWidget {
         GestureDetector(
           onTap: () {
             final trackingData = _buildTrackingData(context);
-            if (trackingData != null) {
-              AppService.instance.appTrackingService.trackHowItWorkClick(
-                trackingData,
-                source: trackingData.source,
-              );
-            }
             LessonExplainPopup.show(context, trackingData: trackingData);
           },
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               AppText(
-                context.text.lesson.lessonLessonKeypointInstruction,
+                context.l10n.lesson.lessonLessonKeypointInstruction,
                 style: AppStyle.text12.copyWith(
                   color: AppCustomColor.textQuaternary,
                   fontWeight: FontWeight.w600,

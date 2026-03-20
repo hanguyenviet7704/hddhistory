@@ -19,7 +19,7 @@ class LessonListHeader extends StatelessWidget {
           children: [
             36.horizontalSpace,
             AppText(
-              context.text.allcourse.lessonLabel,
+              context.l10n.allcourse.lessonLabel,
               style: AppStyle.text12.copyWith(
                 color: AppCustomColor.textTertiary,
                 fontWeight: FontWeight.w600,

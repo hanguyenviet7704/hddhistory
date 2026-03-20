@@ -38,9 +38,26 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
           BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
           BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<LearningStreakCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
         ],
         child: const HomePage(),
       ),
+    );
+  }
+}
+
+class HomeLearningStreakRoute extends BaseTransitionRouteData with $HomeLearningStreakRoute {
+  const HomeLearningStreakRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return BlocProvider.value(
+      value: AppDI.injector.get<LearningStreakCubit>(),
+      child: const LearningStreakPage(),
     );
   }
 }

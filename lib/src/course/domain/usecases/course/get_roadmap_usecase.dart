@@ -1,7 +1,7 @@
 part of '../../../course.dart';
 
 @lazySingleton
-class GetRoadmapUseCase implements UseCaseWithParams<String, RoadmapEntity> {
+class GetRoadmapUseCase implements BaseUseCase<String, RoadmapEntity> {
   final ICourseRepository _repository;
 
   GetRoadmapUseCase(this._repository);
@@ -11,4 +11,3 @@ class GetRoadmapUseCase implements UseCaseWithParams<String, RoadmapEntity> {
     return _repository.getRoadmap(courseId);
   }
 }
-

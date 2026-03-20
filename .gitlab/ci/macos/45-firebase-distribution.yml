@@ -1,0 +1,71 @@
+.firebase_distribution_android:
+  extends: .macos_job_base
+  stage: release_skeleton
+  allow_failure: false
+  script:
+    - |
+      set -e
+      if [ -z "${FIREBASE_TOKEN:-}" ]; then
+        echo "Missing FIREBASE_TOKEN in GitLab CI variables."
+        exit 1
+      fi
+    - |
+      set -e
+      if command -v firebase >/dev/null 2>&1; then
+        echo "Firebase CLI is already available."
+      else
+        if ! command -v node >/dev/null 2>&1 || ! command -v npm >/dev/null 2>&1; then
+          if command -v brew >/dev/null 2>&1; then
+            brew install node >/dev/null
+          else
+            echo "Node.js/npm are required on macOS runner. Install with: brew install node"
+            exit 1
+          fi
+        fi
+        npm install -g firebase-tools >/dev/null
+      fi
+    - firebase --version
+    - bash tools/macos/distribution/distribute_android.sh apk "$FLAVOR"
+
+release:android:firebase:distribution:dev:
+  extends: .firebase_distribution_android
+  variables:
+    FLAVOR: "dev"
+  needs:
+    - job: build:apk:develop
+      parallel:
+        matrix:
+          - FLAVOR: "dev"
+      artifacts: true
+  rules:
+    - if: '$ENABLE_DISTRIBUTE_DEV == "1" && $ENABLE_BUILD_DEV == "1" && $CI_COMMIT_BRANCH == "develop"'
+    - when: never
+
+release:android:firebase:distribution:stg:
+  extends: .firebase_distribution_android
+  variables:
+    FLAVOR: "stg"
+  needs:
+    - job: build:apk:develop
+      parallel:
+        matrix:
+          - FLAVOR: "stg"
+      artifacts: true
+  rules:
+    - if: '$ENABLE_DISTRIBUTE_STG == "1" && $ENABLE_BUILD_STG == "1" && $CI_COMMIT_BRANCH == "develop"'
+    - when: never
+
+release:android:firebase:distribution:prod:
+  extends: .firebase_distribution_android
+  variables:
+    FLAVOR: "prod"
+  needs:
+    - job: build:apk:release
+      parallel:
+        matrix:
+          - FLAVOR: "prod"
+      artifacts: true
+  rules:
+    - if: '$ENABLE_DISTRIBUTE_PROD == "1" && $ENABLE_BUILD_PROD == "1" && $CI_COMMIT_BRANCH == "main"'
+    - if: '$ENABLE_DISTRIBUTE_PROD == "1" && $ENABLE_BUILD_PROD == "1" && $CI_COMMIT_TAG =~ /^v.*/'
+    - when: never

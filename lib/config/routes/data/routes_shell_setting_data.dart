@@ -20,6 +20,7 @@ class SettingRoute extends BaseTransitionRouteData with $SettingRoute {
       BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
       BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
       BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
+      BlocProvider.value(value: AppDI.injector.get<NotificationCubit>()),
     ],
     child: const SettingPage(),
   );

@@ -88,10 +88,25 @@ final class AppTrackingService extends ITrackingService {
     try {
       final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
       return {
-        'source': entryPoint == PaywallEntryPoint.courseRoadmap ? 'course_roadmap' : 'setting_pre',
+        'source': resolvePremiumTrackingSource(entryPoint),
       };
     } catch (_) {
       return {};
+    }
+  }
+
+  @visibleForTesting
+  String resolvePremiumTrackingSource(PaywallEntryPoint entryPoint) {
+    switch (entryPoint) {
+      case PaywallEntryPoint.firstTimeUser:
+        return 'onboarding';
+      case PaywallEntryPoint.courseRoadmap:
+        return 'course_roadmap';
+      case PaywallEntryPoint.settingPre:
+      case PaywallEntryPoint.profile:
+      case PaywallEntryPoint.manageSubscription:
+      case PaywallEntryPoint.other:
+        return 'setting_pre';
     }
   }
 
@@ -441,6 +456,21 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(TrackingKey.obdCompleteClick);
   }
 
+  @override
+  Future<void> trackObdNotificationGateView() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationGateView);
+  }
+
+  @override
+  Future<void> trackObdNotificationNotifyMeClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationNotifyMeClick);
+  }
+
+  @override
+  Future<void> trackObdNotificationMaybeLaterClick() async {
+    _appTrackingService.trackEvent(TrackingKey.obdNotificationMaybeLaterClick);
+  }
+
   //* Home events
   @override
   Future<void> trackHomeScrView() async {
@@ -463,6 +493,36 @@ final class AppTrackingService extends ITrackingService {
       TrackingKey.homeSkillClick,
       parameters: {
         'skill_name': skillset.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHomeStreakChipClick({required int currentStreak}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeStreakChipClick,
+      parameters: {
+        'current_streak': currentStreak,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHomeStreakPopupView({required int currentStreak}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeStreakPopupView,
+      parameters: {
+        'current_streak': currentStreak,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackHomeStreakPopupClose({required int currentStreak}) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.homeStreakPopupClose,
+      parameters: {
+        'current_streak': currentStreak,
       },
     );
   }
@@ -513,6 +573,22 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(
       TrackingKey.courseSelectFirstCourseClick,
       parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackCourseSelectCourseClick(
+    SkillsetEntity skillset,
+    CourseEntity course, {
+    required String source,
+  }) async {
+    final trackingData = CourseTrackingData(skillset: skillset, course: course);
+    _appTrackingService.trackEvent(
+      TrackingKey.courseSelectCourseClick,
+      parameters: {
+        ..._courseParams(trackingData),
+        'source': source,
+      },
     );
   }
 
@@ -584,6 +660,54 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackPopupItemImp(CourseLessonTrackingData trackingData) async {
+    final keypoint = trackingData.lesson.firstKeypoint;
+    _appTrackingService.trackEvent(
+      TrackingKey.popupItemImp,
+      parameters: {
+        ..._courseLessonParams(trackingData),
+        'keypoint_id': keypoint.id,
+        'keypoint_name': keypoint.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackPopupItemClick(CourseLessonTrackingData trackingData) async {
+    final keypoint = trackingData.lesson.firstKeypoint;
+    _appTrackingService.trackEvent(
+      TrackingKey.popupItemClick,
+      parameters: {
+        ..._courseLessonParams(trackingData),
+        'keypoint_id': keypoint.id,
+        'keypoint_name': keypoint.trackingName,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackRoadmapItemScroll(CourseTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roadmapItemScroll,
+      parameters: _courseParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackRoadmapQuickLearningClick(
+    CourseTrackingData trackingData, {
+    required String actionType,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.roadmapQuickLearningClick,
+      parameters: {
+        ..._courseParams(trackingData),
+        'action_type': actionType,
+      },
+    );
+  }
+
+  @override
   Future<void> trackHowItWorkScrView(
     CourseLessonTrackingData trackingData, {
     required String source,
@@ -597,80 +721,15 @@ final class AppTrackingService extends ITrackingService {
     );
   }
 
-  @override
-  Future<void> trackHowItWorkDoneClick(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.howItWorkDoneClick,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'source': source,
-      },
-    );
-  }
-
-  @override
-  Future<void> trackHowItWorkExitTap(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.howItWorkExitTap,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'source': source,
-      },
-    );
-  }
-
-  @override
-  Future<void> trackHowItWorkClick(
-    CourseLessonTrackingData trackingData, {
-    required String source,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.howItWorkClick,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'source': source,
-      },
-    );
-  }
-
-  @override
-  Future<void> trackLessonKeypointScrView(CourseLessonTrackingData trackingData) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.lessonKeypointScrView,
-      parameters: _courseLessonParams(trackingData),
-    );
-  }
-
-  @override
-  Future<void> trackLessonKeypointExit(CourseLessonTrackingData trackingData) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.lessonKeypointExit,
-      parameters: _courseLessonParams(trackingData),
-    );
-  }
-
-  @override
-  Future<void> trackLessonKeypointClick(
-    CourseLessonTrackingData trackingData, {
-    required KeypointEntity keypoint,
-  }) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.lessonKeypointClick,
-      parameters: {
-        ..._courseLessonParams(trackingData),
-        'keypoint_id': keypoint.id,
-        'keypoint_name': keypoint.trackingName,
-      },
-    );
-  }
-
   //* Keypoint events
+  @override
+  Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointTheoryScroll,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
   @override
   Future<void> trackKeypointTheoryScrView(KeypointTrackingData trackingData) async {
     _appTrackingService.trackEvent(
@@ -842,6 +901,22 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackKeypointBadgeUpdateScrView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointBadgeUpdateScrView,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointFinishComplete(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointFinishComplete,
+      parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
   Future<void> trackLessonFinishScrView(CourseLessonTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.lessonFinishScrView,
@@ -892,6 +967,34 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(
       TrackingKey.keypointPopupNavContinue,
       parameters: _keypointParams(trackingData),
+    );
+  }
+
+  @override
+  Future<void> trackCompletionStreakSuccessView({
+    required String variant,
+    required int currentStreak,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.completionStreakSuccessView,
+      parameters: {
+        'variant': variant,
+        'current_streak': currentStreak,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackCompletionStreakSuccessCommitClick({
+    required String variant,
+    required int currentStreak,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.completionStreakSuccessCommitClick,
+      parameters: {
+        'variant': variant,
+        'current_streak': currentStreak,
+      },
     );
   }
 
@@ -1271,65 +1374,6 @@ final class AppTrackingService extends ITrackingService {
     );
   }
 
-  //* Paywall events
-  @override
-  Future<void> trackPaywallScrView(BuildContext context) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallScrView,
-      parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallPackageClick(BuildContext context, String packageId) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallPackageClick,
-      parameters: {
-        'package': packageId,
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallExitClick(BuildContext context) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallExitClick,
-      parameters: {
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallStartPremiumClick(BuildContext context, String packageId) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallStartPremiumClick,
-      parameters: {
-        'package': packageId,
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPaywallStorePopupDismiss(BuildContext context, String packageId) async {
-    _appTrackingService.trackEvent(
-      TrackingKey.paywallStorePopupDismiss,
-      parameters: {
-        'package': packageId,
-        ...TrackingParams.withDrawTopicContext(context),
-        ...TrackingParams.withPaywallSource(context),
-      },
-    );
-  }
-
   //* Subscription events
   @override
   Future<void> trackSubscriptionRenewed(String packageId) async {
@@ -1501,6 +1545,16 @@ final class AppTrackingService extends ITrackingService {
   @override
   Future<void> trackSettingPremiumClick() async {
     _appTrackingService.trackEvent(TrackingKey.settingPremiumClick);
+  }
+
+  @override
+  Future<void> trackSettingNotificationToggleOn() async {
+    _appTrackingService.trackEvent(TrackingKey.settingNotificationToggleOn);
+  }
+
+  @override
+  Future<void> trackSettingNotificationToggleOff() async {
+    _appTrackingService.trackEvent(TrackingKey.settingNotificationToggleOff);
   }
 
   @override

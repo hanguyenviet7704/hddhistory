@@ -208,11 +208,10 @@ class _RoleplayContentListState extends State<RoleplayContentList> {
                       child: RoleplayExerciseContentWidget(
                         exercise: content.exercise,
                         isCompleted: _controller.isExerciseCompleted(contentIndex, content.exercise),
-                        onTapResult: _controller.isExerciseCompleted(contentIndex, content.exercise)
-                            ? () => _showResultOverlay(contentIndex, content.exercise)
-                            : null,
+                        onTapResult: _controller.isExerciseCompleted(contentIndex, content.exercise) ? () => _showResultOverlay(contentIndex, content.exercise) : null,
                       ),
                     ),
+                    RoleplayContentType.unknown => const SizedBox.shrink(),
                   };
 
                   return SizeTransition(

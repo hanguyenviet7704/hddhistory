@@ -4,7 +4,7 @@ part of '../../roleplay.dart';
 abstract class RoleplayContentModel with _$RoleplayContentModel {
   const factory RoleplayContentModel({
     @Default(0) int id,
-    @Default(RoleplayContentType.conversation) RoleplayContentType type,
+    @JsonKey(unknownEnumValue: RoleplayContentType.unknown) @Default(RoleplayContentType.conversation) RoleplayContentType type,
     @Default(ConversationModel()) ConversationModel conversation,
     @Default(LeadingTextModel()) LeadingTextModel leadingText,
     @Default(TransitionModel()) TransitionModel transition,
@@ -34,4 +34,6 @@ enum RoleplayContentType {
   transition,
   @JsonValue('exercise')
   exercise,
+  @JsonValue('unknown')
+  unknown,
 }

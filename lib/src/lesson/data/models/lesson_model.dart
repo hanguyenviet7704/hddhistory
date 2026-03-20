@@ -6,16 +6,16 @@ abstract class LessonModel with _$LessonModel {
     @Default('') @JsonKey(name: '_id') String id,
     @Default('') String courseId,
     @Default('') String learningItemId,
-    @Default(LessonType.lesson) LessonType type,
+    @JsonKey(unknownEnumValue: LessonType.unknown) @Default(LessonType.lesson) LessonType type,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
-    @Default(LessonPublishStatus.draft) LessonPublishStatus status,
+    @JsonKey(unknownEnumValue: LessonPublishStatus.unknown) @Default(LessonPublishStatus.draft) LessonPublishStatus status,
     @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
     @Default(TagModel()) TagModel icon,
     @Default(TagModel()) TagModel lightIcon,
-    @Default(ProcessEnum.notStarted) ProcessEnum progess,
+    @JsonKey(unknownEnumValue: ProcessEnum.unknown) @Default(ProcessEnum.notStarted) ProcessEnum progess,
     @Default(0) int index,
   }) = _LessonModel;
 
@@ -29,6 +29,8 @@ enum LessonPublishStatus {
   draft,
   @JsonValue('inactive')
   inactive,
+  @JsonValue('unknown')
+  unknown,
 }
 
 enum LessonType {
@@ -38,6 +40,18 @@ enum LessonType {
   lesson,
   @JsonValue('output')
   output,
+  @JsonValue('unknown')
+  unknown
+  ;
+
+  String get trackingName {
+    return switch (this) {
+      roleplay => 'roleplay',
+      lesson => 'lesson',
+      output => 'output',
+      unknown => 'unknown',
+    };
+  }
 }
 
 enum ProcessEnum {
@@ -46,13 +60,17 @@ enum ProcessEnum {
   @JsonValue('in_progress')
   inProgress,
   @JsonValue('not_started')
-  notStarted;
+  notStarted,
+  @JsonValue('unknown')
+  unknown
+  ;
 
   int get rank {
     return switch (this) {
       done => 2,
       inProgress => 1,
-      notStarted => 0
+      notStarted => 0,
+      unknown => -1,
     };
   }
 }

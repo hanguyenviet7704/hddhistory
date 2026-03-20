@@ -84,7 +84,16 @@ class ChangePasswordRoute extends GoRouteData with $ChangePasswordRoute {
 
 @TypedGoRoute<RegisterRoute>(path: RoutePath.register, name: RouteNamed.register)
 class RegisterRoute extends GoRouteData with $RegisterRoute {
-  const RegisterRoute();
+  final bool forceChooseCourseAfterLogin;
+  final bool showPaywallAfterAuth;
+
+  const RegisterRoute({
+    this.forceChooseCourseAfterLogin = false,
+    this.showPaywallAfterAuth = false,
+  }) : assert(
+         !(forceChooseCourseAfterLogin && showPaywallAfterAuth),
+         'RegisterRoute cannot force course selection and show paywall after auth at the same time.',
+       );
 
   @override
   Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
@@ -93,6 +102,9 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
       BlocProvider.value(value: AppDI.injector.get<PageCubit>()),
       BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
     ],
-    child: const RegisterPage(),
+    child: RegisterPage(
+      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      showPaywallAfterAuth: showPaywallAfterAuth,
+    ),
   );
 }

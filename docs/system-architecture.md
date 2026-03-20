@@ -1,397 +1,188 @@
 # System Architecture
 
-**Last Updated:** Jan 22, 2026
-**Architecture Pattern:** Clean Architecture + BLoC State Management
-**Platforms:** iOS (12+) | Android (API 21+)
+**Last Updated:** 2026-03-19
+**Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
+**Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
----
-
-## 1. High-Level Architecture Overview
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    PRESENTATION LAYER                       │
-│  Pages (UI screens) → Widgets (UI components) → Cubits      │
-│  ↑ State Management (BLoC/Cubit)                            │
-│  ↓ Emits states, listens to domain layer                    │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────────────────┐
-│                     DOMAIN LAYER                            │
-│  Entities (data models) → Use Cases → Repository Interface  │
-│  ↑ Platform-agnostic, business logic                        │
-│  ↓ Returns TaskEither<Exception, T> (functional)            │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-┌──────────────────────▼──────────────────────────────────────┐
-│                      DATA LAYER                             │
-│  Models (JSON) → Repository Implementation → Data Sources   │
-│  ↑ REST API (Retrofit/Dio) | Local Storage | GraphQL        │
-│  ↓ Implements domain repository interface                   │
-└─────────────────────────────────────────────────────────────┘
-
-CROSS-LAYER SERVICES:
-┌────────────────────────────────────────────────────────────┐
-│  DI Container (GetIt) → Service Locator Pattern            │
-│  Config (theme, locale, settings) → App-wide state        │
-│  Error Handling (AppException) → Centralized exceptions   │
-│  Tracking (Analytics, Sentry) → Observability             │
-│  Remote Config (Firebase) → Feature toggles & versions    │
-│  Deep Linking (app_links) → Universal link navigation     │
-└────────────────────────────────────────────────────────────┘
+## 1. Runtime Overview
+```text
+main_<flavor>.dart -> main.dart -> AppService.init()
+                          |
+                          v
+                 AppProviders + DI
+                          |
+                          v
+                 MaterialApp.router
+                          |
+                          v
+                     Feature routes
 ```
 
----
+### Flavor entry points
+- `lib/main_dev.dart`
+- `lib/main_stg.dart`
+- `lib/main_prod.dart`
 
-## 2. Layer Details & Responsibilities
+Each flavor sets `F.appFlavor` before calling shared `main()`.
 
-### 2.1 Presentation Layer
-**Files:** `lib/src/{feature}/presentation/` + `lib/core/utils/`
+### App boot services
+`AppService._configService()` now awaits notification boot immediately after `Firebase.initializeApp(...)`.
 
-**Components:**
-- **Pages:** Full-screen widgets (e.g., LoginPage, CoursePage)
-- **Widgets:** Reusable UI components (buttons, cards, dialogs)
-- **Cubits/BLoCs:** State machines managing UI state
-- **Mixins:** CubitUseCaseHandlerMixin (boilerplate reduction)
-
-**Key Patterns:**
-- Immutable state classes via `@freezed`
-- Status pattern (loading → success/failure)
-- Unidirectional data flow: User Action → Cubit → State Emission
-
-**Restrictions:**
-- No direct REST/GraphQL calls (use repositories)
-- No database queries (use repositories)
-- No Business logic (only UI logic)
-
-### 2.2 Domain Layer
-**Files:** `lib/src/{feature}/domain/`
-
-**Components:**
-- **Entities:** Immutable domain models (e.g., CourseEntity)
-- **Repository Interfaces:** Abstract contracts for data access
-- **Use Cases:** Business logic orchestration (e.g., GetCoursesUseCase)
-- **Value Objects:** Primitives wrapped in classes for type safety
-
-**Key Patterns:**
-- No external dependencies (no Flutter, no Dio)
-- TaskEither<AppException, T> for functional error handling
-- Single Responsibility: One use case = one business operation
-
-**Restrictions:**
-- No imports from presentation or data layer
-- No platform-specific code
-- No external service calls (delegated to repositories)
-
-### 2.3 Data Layer
-**Files:** `lib/src/{feature}/data/`
-
-**Components:**
-- **Models:** JSON-serializable domain model copies
-- **Remote Data Sources:** REST/GraphQL API clients
-- **Local Data Sources:** Cache, SharedPreferences, databases
-- **Repository Implementations:** Implement domain interfaces, delegate to data sources
-
-**Key Patterns:**
-- Models extend domain entities (freezed + json_serializable)
-- Repository pattern: Interface (domain) → Implementation (data)
-- Data source abstraction (swap implementations for testing)
-
-**Responsibilities:**
-- Network requests (Retrofit/Dio)
-- Local persistence (HydratedBloc, SharedPreferences)
-- Data transformation (API response → domain entity)
-- Error mapping (HTTP error → AppException)
-
----
-
-## 3. Data Flow: User Action → UI Update
-
-### Example: Loading Courses
-
-```
-1. USER ACTION (UI Interaction)
-   └─ User taps "Load Courses" button
-
-2. CUBIT METHOD CALL
-   └─ CourseCubit.loadCourses()
-   └─ Calls runUseCase() mixin method
-
-3. EMIT LOADING STATE
-   └─ emit(CourseState.loading())
-
-4. USE CASE EXECUTION
-   └─ GetCoursesUseCase(PageBreakRequest(page: 1, limit: 20))
-   └─ Returns TaskEither<AppException, List<CourseEntity>>
-
-5. REPOSITORY CALL
-   └─ CourseRepository.getCourses(pageBreakRequest)
-   └─ Returns TaskEither
-
-6. DATA SOURCE REQUEST
-   └─ CourseRemoteDataSource.getCourses()
-   └─ Retrofit API: GET /courses?page=1&limit=20
-
-7. API RESPONSE
-   ├─ Success: JSON → Model → Entity mapping
-   └─ Failure: HTTP error → AppException mapping
-
-8. CUBIT STATE EMISSION
-   ├─ Success: emit(CourseState.success(courses: courses))
-   └─ Failure: emit(CourseState.failure(errorMessage: 'Failed to load'))
-
-9. UI REBUILD
-   └─ BlocBuilder listens to state change
-   └─ Rebuilds CourseList widget with new data
-
-10. USER SEES
-    ├─ Success: Course list displayed
-    └─ Failure: Error message + retry button
+```text
+HydrateBlocService.initialize()
+  -> Firebase.initializeApp()
+  -> NotificationService.initialize(NotificationCoreConfig)
+  -> package/tracking/event/remote-config startup
 ```
 
-### Code Implementation
-
-```dart
-// 1. Cubit method
-void loadCourses() {
-  runUseCase<List<CourseEntity>>(
-    useCase: () => _getCoursesUseCase(const PageBreakRequest(page: 1, limit: 20)),
-    onSuccess: (courses) => emit(CourseState.success(courses: courses)),
-  );
-}
-
-// 2. Use case
-class GetCoursesUseCase extends UseCase<List<CourseEntity>, PageBreakRequest> {
-  @override
-  TaskEither<AppException, List<CourseEntity>> call(PageBreakRequest params) {
-    return _repository.getCourses(params);
-  }
-}
-
-// 3. Repository implementation
-@override
-TaskEither<AppException, List<CourseEntity>> getCourses(PageBreakRequest request) {
-  return TaskEither.tryCatch(
-    () async {
-      final models = await _remoteDataSource.getCourses(request);
-      return models.map((m) => m.toEntity()).toList();
-    },
-    (error, stackTrace) => AppException.server(statusCode: '500'),
-  );
-}
-
-// 4. Remote data source (Retrofit)
-@GET('/courses')
-Future<List<CourseModel>> getCourses(
-  @Query('page') int page,
-  @Query('limit') int limit,
-);
-
-// 5. UI listening
-BlocBuilder<CourseCubit, CourseState>(
-  builder: (context, state) {
-    return state.when(
-      initial: () => SizedBox.shrink(),
-      loading: () => LoadingIndicator(),
-      success: (courses) => CourseList(courses),
-      failure: (error) => ErrorWidget(error: error),
-    );
-  },
-)
+## 2. Layered Feature Architecture
+```text
+lib/src/<feature>/
+  presentation/  # pages/widgets/cubits/blocs
+  domain/        # entities/repositories/usecases
+  data/          # datasources/models/repositories
 ```
 
----
-
-## 4. State Management Architecture
-
-### Cubit Structure & Lifecycle
-
-```
-1. INITIALIZATION
-   ├─ CourseCubit(GetCoursesUseCase) initialized
-   ├─ Initial state: CourseState.initial()
-   └─ Registered in GetIt dependency container
-
-2. LISTEN FOR UI EVENTS
-   ├─ Widget calls cubit.loadCourses()
-   ├─ Cubit calls use case
-   └─ runUseCase() mixin handles loading state
-
-3. STATE EMISSION
-   ├─ emit(CourseState.loading())
-   ├─ UI rebuilds (shows spinner)
-   ├─ Use case completes
-   ├─ emit(CourseState.success(courses: data))
-   └─ UI rebuilds (shows data)
-
-4. PERSISTENCE (HydratedCubit)
-   ├─ State automatically saved to local storage
-   ├─ On app restart, loads from cache
-   └─ Network call validates/refreshes data
-
-5. CLEANUP
-   ├─ Page dismissed
-   ├─ Cubit listeners disposed
-   └─ Memory released
+### Data flow
+```text
+Widget/Page
+  -> Cubit/Bloc
+  -> UseCase
+  -> Repository interface (domain)
+  -> Repository implementation (data)
+  -> Data source (Retrofit/Dio/GraphQL/cache)
 ```
 
-### HydratedCubit Pattern (Persistent State)
+### Shared foundations
+- `lib/config/`: DI, routing, services, themes, l10n.
+- `lib/core/`: base request/response/error/use-case abstractions, helper utilities.
 
-```dart
-class ThemeCubit extends HydratedCubit<ThemeMode> {
-  ThemeCubit() : super(ThemeMode.light);
+### Notification core boundary
+- Notification runtime lives under `lib/config/services/notification/`.
+- Notification files are owned by the shared `library + part` architecture rooted at `lib/config/services/services.dart`.
+- Internal concerns are grouped by `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`.
+- App and feature code should still prefer `NotificationService` and `NotificationCoreConfig` as the primary notification seam, even though helper types now live in the same exported services library namespace.
+- Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
-  void toggleTheme() => emit(
-    state == ThemeMode.light ? ThemeMode.dark : ThemeMode.light,
-  );
+## 3. Module Topology (`lib/src`)
+Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
 
-  @override
-  ThemeMode? fromJson(Map<String, dynamic> json) {
-    return ThemeMode.values[json['index'] as int? ?? 0];
-  }
+## 4. State and Use Case Execution
+### Core state stack
+- `flutter_bloc` for reactive state.
+- `HydratedCubit` for persisted state where needed.
 
-  @override
-  Map<String, dynamic>? toJson(ThemeMode state) {
-    return {'index': state.index};
-  }
-}
-```
+### Use case execution helpers
+Mixins in `lib/core/base/bloc/` provide standardized execution paths:
+- `runUseCase<T>`
+- `runUseCaseList<T>`
+- `runUseCaseVoid()`
+- `runUseCasePageBreak<T>()`
 
-**Flow:**
-```
-1. User changes theme → toggleTheme()
-2. emit(new theme state)
-3. HydratedCubit intercepts emit()
-4. Saves state to local storage (toJson)
-5. UI rebuilds with new theme
-6. App restart → fromJson() loads cached state
-```
+These helpers centralize loading/success/failure handling and reduce Cubit/Bloc boilerplate.
 
-### Mixin: CubitUseCaseHandlerMixin
+## 5. Error and Network Architecture
+### Error model
+- Unified domain error type: `AppException`.
+- Functional return contract: `TaskEither<AppException, T>`.
 
-**Purpose:** Reduce boilerplate for use case execution
+### Network stack
+- REST: Dio + Retrofit API interfaces in feature data sources.
+- Optional GraphQL client paths where configured.
+- Request handler mixins (`RestfulRequestHandlerMixin`) provide:
+  - transform wrappers for `BaseResponse<T>`
+  - list wrappers for `BaseResponseList<T>`
+  - paginated wrappers for `BaseResponse<BasePageBreak<T>>`
 
-```dart
-mixin CubitUseCaseHandlerMixin<State> on Cubit<State> {
-  void runUseCase<T>({
-    required TaskEither<AppException, T> Function() useCase,
-    required void Function(T) onSuccess,
-    void Function(String)? onError,
-  }) async {
-    emit(state.copyWith(status: Status.loading) as State);
+### Failure and unauthorized recovery flow (REST)
+1. `AppInterceptor` decorates requests with auth + locale headers.
+2. On `401`, it attempts one refresh-token retry through `AuthBloc.refreshAccessToken()`.
+3. If refresh succeeds, original request is retried with updated bearer token.
+4. If refresh fails and onboarding branching transition is active, register redirect is suppressed and a silent anonymous re-login is attempted.
+5. If refresh fails outside onboarding branching transition, app session is reset and user is routed back to auth flow.
+6. For non-401 failures, repository/request helpers map transport errors to `AppException` and return `TaskEither` left states.
 
-    final result = await useCase().run();
+## 6. Pagination Contract
+- Request type: `PageBreakRequest<T extends JsonRequestConvertible>`.
+- App-side fields: `page`, `limit`, `orderBy`, `order`, `search`, `filter`.
+- Serialized keys: `page`, `take`, `orderBy`, `order`, `search`.
+- Response type: `BasePageBreak<T>` with `totalPages`, `currentPage`, `itemsPerPage`, `items`.
 
-    result.fold(
-      (error) {
-        emit(state.copyWith(
-          status: Status.failure,
-          errorMessage: error.displayMessage,
-        ) as State);
-        onError?.call(error.displayMessage);
-      },
-      (data) {
-        onSuccess(data);
-      },
-    );
-  }
-}
-```
+## 7. Dependency Injection
+- DI framework: `get_it` + `injectable`.
+- Primary setup under `lib/config/di/`.
+- Feature services, APIs, repositories, and cubits/blocs are resolved through DI configuration.
 
----
+## 8. Routing Architecture
+- Router implementation: `go_router` with generated route data.
+- Root configuration under `lib/config/routes/base/`.
+- Feature route data under `lib/config/routes/data/`.
+- Shell-based navigation and nested home/course/lesson/roleplay flows are handled in route config files.
 
-## 5. Error Handling Strategy
+### Splash and auth-entry runtime flow
+- `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
+- In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; otherwise it routes straight to the onboarding notification gate and then into the normal register flow.
+- `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
+- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding content but now hand off through `NotificationRequestRoute(showPaywallAfterAuth: true)` before `RegisterRoute(showPaywallAfterAuth: true)`.
+- Unrecognized devices or safe lookup misses continue the existing onboarding intro path without surfacing a splash auth error.
+- Opening `RegisterRoute()` still silently bootstraps an anonymous guest session through `AuthBloc`, preloads `HomeCubit.initializeData(isInit: true)`, and keeps the register UI visible while the user picks Guest, Google, or Apple.
+- First-time onboarding completion now routes through `StartJourneyButton -> NotificationRequestRoute(showPaywallAfterAuth: true) -> RegisterRoute(showPaywallAfterAuth: true)` so the gate stays onboarding-scoped and the paywall handoff stays explicit.
+- The no-onboarding splash path also routes through `NotificationRequestRoute(showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(...))`, so both first-time and recognized-device register entry resolve the notification gate before auth.
+- Silent register bootstrap never opens paywall by itself. The paywall branch is only evaluated after an explicit Guest, Google, or Apple auth success.
+- Guest continue now reuses the bootstrapped anonymous session when available and only falls back to a fresh anonymous login if bootstrap failed.
+- Google and Apple continue to replace the guest session through the existing auth-success path, and any guest course handoff now routes with `CourseRoute(selectedTabIndex: 0)` while resetting home selection to the first category to avoid stale post-logout state.
+- Every paywall entry keeps the top-bar close slot reserved but hides the close affordance for five seconds before revealing it. `PaywallRoute(firstTimeUserFlow: true)` still marks the first-time onboarding paywall session for destination handling only: closing the paywall or dismissing purchase success routes to `CourseRoute(selectedTabIndex: 0)` after home data reset, while standard paywall close/purchase-success flows still route back and purchase failure or cancel leaves the user on paywall.
 
-### AppException Sealed Class Hierarchy
+### Notification preference runtime flow
+- `NotificationRequestRoute` is a dedicated onboarding-only pre-register gate. It mirrors `RegisterRoute` query intent flags but keeps non-onboarding `RegisterRoute()` callers unchanged.
+- `NotificationRequestPage` persists one-time completion in `UserCubit.hasCompletedFirstTimeNotificationGate`.
+- Gate auto-skip happens when the one-time flag is already set or when notification capability is unavailable. Authorized/provisional runtime state now still shows the gate once so onboarding/bypass entry always lands on the explainer screen before auth.
+- `NotificationCubit` is now a hydrated shared boundary for both onboarding and settings. It persists only the app-level preference (`notificationsEnabled` + initialization flag), mirrors that preference into a shared store for service/background access, and always refreshes runtime permission state from `NotificationService`.
+- Settings now expose an inline notification toggle on `SettingPage`. Effective ON requires both app-level preference and runtime capability; app resume refreshes the runtime state to reflect OS settings changes. On iOS, enabling from settings still requests permission in-app while the OS permission is requestable, then falls back to the app's system settings screen only when the OS must own the change. A resume sync back from the live OS permission state only happens after an intentional settings roundtrip.
+- `NotificationService`, foreground local rendering, and background data-only push rendering now read the shared app-level preference before showing or scheduling local notifications, so app-level OFF suppresses client-side notification rendering even when OS permission is still granted.
 
-```dart
-sealed class AppException {
-  // Generic errors (5xx, network, database)
-  factory AppException.generic({String? message}) = _Generic;
-  factory AppException.server({String? statusCode}) = _Server;
-  factory AppException.connection() = _Connection;
-  factory AppException.database() = _Database;
-  factory AppException.cache() = _Cache;
+### Lesson runtime flow
+- `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.
+- `LessonRoute` composes lesson execution providers (`LessonCubit`, exercise/theory/speaking variants, `ProgressCubit`, `FeedbackCubit`, `PageCubit`).
+- Completion routes (`KeypointCompleteRoute`, `BadgeProgressRoute`) merge lesson progress back into roadmap/home state.
 
-  // Client errors (4xx)
-  factory AppException.notFound() = _NotFound;
-  factory AppException.unauthorized() = _Unauthorized;
-  factory AppException.forbidden() = _Forbidden;
-  factory AppException.invalidInput({String? field}) = _InvalidInput;
+### Roleplay runtime flow
+- `RoleplayIntroRoute` and `RoleplayRoute` provide roleplay orchestration via `RoleplayCubit` (+ feedback where needed).
+- `RoleplayFeedbackRoute` merges `RoleplayCubit`, `RoleplayPointCubit`, `HomeCubit`, and `FeedbackCubit` for post-session analytics and UI.
+- Route-level provider composition keeps runtime concerns scoped to each flow stage.
 
-  // Pending/Async
-  factory AppException.pending() = _Pending;
+### Learning streak runtime flow
+- `HomeRoute` composes `LearningStreakCubit`, and nested `HomeLearningStreakRoute` maps to `LearningStreakPage`.
+- `HomePage` prefetches streak data with a short timeout and safe-default fallback before/while rendering the header streak chip.
+- `LearningStreakPage` is used as a bottom-sheet style popup flow and emits home streak popup view/close tracking events.
+- `KeypointCompletePage` and `RoleplayFeedbackPage` run a streak gate on primary CTA: load streak, show success overlay only on remote positive streak, then persist commit day via `UserCubit.lastStreakCountedDate` (UTC-day guard).
 
-  // Conversion from external exceptions
-  factory AppException.fromDioException(DioException e) { ... }
-  factory AppException.fromGraphQLError(OperationException e) { ... }
-}
-```
+### Onboarding branching runtime flow
+- Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.
+- Name step (`data_collect`) uses replace-style route handoff to `OnboardBranchingRoute`.
+- Branching runtime uses scene/content pointers (`currentSceneId`, `currentContentIndex`) with deterministic transitions.
+- Mandatory fallback path routes safely back to `DataCollectRoute` and preserves duplicate-anonymous-login guard.
 
-### Error Handling in Repository
+## 9. Localization and Theming
+### Localization
+- Source YAML: `assets/i18n/<locale>/<module>.yaml`.
+- Generated output: `lib/config/l10n/`.
+- Supported locales in repo: EN, VI, ZH.
 
-```dart
-TaskEither<AppException, CourseEntity> getCourse(String id) {
-  return TaskEither.tryCatch(
-    () async {
-      final model = await _remoteDataSource.getCourse(id);
-      return model.toEntity();
-    },
-    (error, stackTrace) {
-      // Map Dio/network errors to AppException
-      if (error is DioException) {
-        return AppException.fromDioException(error);
-      }
-      return AppException.generic(message: error.toString());
-    },
-  );
-}
-```
+### Theme
+- Core theme files: `lib/config/themes/`.
+- Active font family in theme config: `Mulish`.
+- Color contracts are defined in `AppCustomColor`, `AppColorLight`, and `AppColorDark`.
 
-### User-Facing Error Display
+## 10. Operational Constraints
+- Dart SDK: `>=3.11.0 <4.0.0`.
+- iOS minimum target: `15.0`.
+- Flavor env files: `.env/.env.dev`, `.env/.env.stg`, `.env/.env.prod`.
 
-```dart
-extension on AppException {
-  String get displayMessage {
-    return switch (this) {
-      _NotFound() => 'Resource not found. Please try again.',
-      _Unauthorized() => 'Session expired. Please log in again.',
-      _Connection() => 'No internet connection. Check your network.',
-      _Server(:final statusCode) => 'Server error ($statusCode). Try later.',
-      _ => 'Something went wrong. Please try again.',
-    };
-  }
-}
-```
-
-### Error Reporting
-
-```dart
-// Automatically sent to Sentry
-void runUseCase<T>({...}) async {
-  result.fold(
-    (error) {
-      // Log to Sentry with context
-      getIt<TrackingService>().logException(
-        error,
-        extra: {'cubit': runtimeType.toString()},
-      );
-    },
-    (data) { /* ... */ },
-  );
-}
-```
-
----
-
-## Related Documentation
-
-- **[API Integration Guide](./api-integration-guide.md)**: REST/GraphQL patterns, authentication, DI, analytics
-- **[Code Standards](./code-standards.md)**: Naming conventions, patterns, quality gates
-- **[Deployment Guide](./deployment-guide.md)**: Build commands, CI/CD, release process
-
----
-
-**Document Maintained By:** Architecture Team
-**Last Review:** Jan 22, 2026
-**Next Review:** Mar 22, 2026
+## 11. Architecture Change Checklist
+Update architecture docs when any of these change:
+1. Feature module set under `lib/src`.
+2. Use case helper APIs/mixin contracts.
+3. Request/response base contracts.
+4. DI boot path or route boot path.
+5. Runtime constraints (SDK/platform minimums).

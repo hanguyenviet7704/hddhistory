@@ -2,6 +2,69 @@
 
 part of '../../auth.dart';
 
+enum AuthSuccessRouteDestination { course, home }
+
+enum RegisterGuestContinueAction { continueCurrentSession, loginAnonymousAndNavigate }
+
+@visibleForTesting
+Map<String, dynamic> buildAnonymousDeviceAuthPayload({
+  required String deviceId,
+  required String deviceName,
+  required String languageCode,
+}) {
+  return {
+    "device": {
+      "deviceId": deviceId,
+      "deviceName": deviceName,
+    },
+    "language": languageCode,
+  };
+}
+
+@visibleForTesting
+AuthSuccessRouteDestination resolveAuthSuccessRouteDestination({
+  required bool forceChooseCourseAfterLogin,
+  required bool hasCourseData,
+}) {
+  if (forceChooseCourseAfterLogin || !hasCourseData) {
+    return AuthSuccessRouteDestination.course;
+  }
+
+  return AuthSuccessRouteDestination.home;
+}
+
+@visibleForTesting
+bool shouldOpenFirstTimeUserPaywall({
+  required bool forceChooseCourseAfterLogin,
+  required bool showPaywallAfterAuth,
+  bool hasPendingFirstTimePaywallAfterAuth = false,
+}) {
+  return !forceChooseCourseAfterLogin && (showPaywallAfterAuth || hasPendingFirstTimePaywallAfterAuth);
+}
+
+@visibleForTesting
+RegisterGuestContinueAction resolveRegisterGuestContinueAction({
+  required bool hasBootstrappedGuestSession,
+}) {
+  if (hasBootstrappedGuestSession) {
+    return RegisterGuestContinueAction.continueCurrentSession;
+  }
+
+  return RegisterGuestContinueAction.loginAnonymousAndNavigate;
+}
+
+@visibleForTesting
+int? resolveAuthSuccessSelectedCourseTabIndex({
+  required AuthSuccessRouteDestination destination,
+  required bool resetToFirstCourseCategory,
+}) {
+  if (destination != AuthSuccessRouteDestination.course || !resetToFirstCourseCategory) {
+    return null;
+  }
+
+  return 0;
+}
+
 @lazySingleton
 class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<AuthEvent, AuthState> {
   final LoginUsecase _loginUsecase;
@@ -20,12 +83,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final IDeviceInfoService _deviceInfoService;
   final UserCubit _userCubit;
   final ProfileCubit _profileCubit;
+  final HomeCubit _homeCubit;
   final ProgressCubit _progressCubit;
   final PageCubit _pageCubit;
   final CourseRoadmapCubit _courseRoadmapCubit;
   final LocaleCubit _localeCubit;
+  final IapCubit _iapCubit;
 
   static Completer<bool>? _refreshCompleter;
+  Completer<bool>? _anonymousAuthCompleter;
 
   AuthBloc(
     this._loginUsecase,
@@ -43,12 +109,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._deviceInfoService,
     this._userCubit,
     this._profileCubit,
+    this._homeCubit,
     this._progressCubit,
     this._pageCubit,
     this._courseRoadmapCubit,
     this._localeCubit,
+    this._iapCubit,
   ) : super(AuthState.initial()) {
     on<_LoginAnonymous>(_onLoginAnonymous);
+    on<_LoginAnonymousGuest>(_onLoginAnonymousGuest);
     on<_LoginSSOGoogle>(_onLoginSSOGoogle);
     on<_LoginSSOApple>(_onLoginSSOApple);
     on<_Register>(_onRegister);
@@ -71,15 +140,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     return myCourses.isNotEmpty;
   }
 
-  Future<void> _authSuccessNaviagate() async {
-    bool userHaveCourseData = await _userHaveCourseData();
-    if (!userHaveCourseData) {
-      CourseRoute().go(AppConfig.instance.context!);
+  Future<void> _navigateAfterAuth({
+    bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
+    bool resetToFirstCourseCategory = false,
+  }) async {
+    if (shouldOpenFirstTimeUserPaywall(
+      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      showPaywallAfterAuth: showPaywallAfterAuth,
+      hasPendingFirstTimePaywallAfterAuth: _userCubit.state.hasPendingFirstTimePaywallAfterAuth,
+    )) {
+      _userCubit.consumeFirstTimePaywallAfterAuthIntent();
+      _iapCubit.setPaywallEntryPoint(PaywallEntryPoint.firstTimeUser);
+      const PaywallRoute(firstTimeUserFlow: true).go(AppConfig.instance.context!);
       return;
     }
 
-    HomeRoute().go(AppConfig.instance.context!);
-    _pageCubit.setCurrentIndex(0);
+    final destination = resolveAuthSuccessRouteDestination(
+      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      hasCourseData: forceChooseCourseAfterLogin ? false : await _userHaveCourseData(),
+    );
+    final selectedTabIndex = resolveAuthSuccessSelectedCourseTabIndex(
+      destination: destination,
+      resetToFirstCourseCategory: resetToFirstCourseCategory,
+    );
+
+    switch (destination) {
+      case AuthSuccessRouteDestination.course:
+        await _homeCubit.initializeData(isInit: true);
+        if (selectedTabIndex != null) {
+          _homeCubit.resetSelection(skillsetIndex: selectedTabIndex);
+        }
+        CourseRoute(selectedTabIndex: selectedTabIndex).go(AppConfig.instance.context!);
+        return;
+      case AuthSuccessRouteDestination.home:
+        HomeRoute().go(AppConfig.instance.context!);
+        _pageCubit.setCurrentIndex(0);
+    }
   }
 
   void _onResetAuth() {
@@ -95,26 +192,157 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     _progressCubit.reset();
   }
 
-  void _loginAnonymous(Map<String, dynamic> data) {
+  bool get hasActiveAnonymousSession => _userCubit.state.user.anonymous && AppGlobalValue.accessToken.isNotEmpty;
+
+  Future<bool> bootstrapGuestSessionForRegister() async {
+    try {
+      if (hasActiveAnonymousSession) {
+        await _homeCubit.initializeData(isInit: true);
+        return true;
+      }
+
+      final payload = await _buildAnonymousDeviceLoginPayload();
+      final success = await _authenticateAnonymousSession(payload);
+      if (success) {
+        await _homeCubit.initializeData(isInit: true);
+      }
+      return success;
+    } catch (error) {
+      LogDev.warning('[AuthBloc] bootstrapGuestSessionForRegister failed: $error');
+      return false;
+    }
+  }
+
+  Future<void> continueWithCurrentGuestSession({
+    bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
+  }) async {
+    final action = resolveRegisterGuestContinueAction(
+      hasBootstrappedGuestSession: hasActiveAnonymousSession,
+    );
+
+    if (action == RegisterGuestContinueAction.loginAnonymousAndNavigate) {
+      final payload = await _buildAnonymousDeviceLoginPayload();
+      final success = await _authenticateAnonymousSession(payload);
+      if (!success) {
+        return;
+      }
+    }
+
+    await _navigateAfterAuth(
+      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      showPaywallAfterAuth: showPaywallAfterAuth,
+      resetToFirstCourseCategory: true,
+    );
+  }
+
+  void _loginAnonymous(
+    Map<String, dynamic> data, {
+    bool navigateAfterSuccess = false,
+    bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
+  }) {
+    unawaited(
+      _authenticateAnonymousSession(
+        data,
+        navigateAfterSuccess: navigateAfterSuccess,
+        forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+        showPaywallAfterAuth: showPaywallAfterAuth,
+      ),
+    );
+  }
+
+  Future<bool> _authenticateAnonymousSession(
+    Map<String, dynamic> data, {
+    bool navigateAfterSuccess = false,
+    bool forceChooseCourseAfterLogin = false,
+    bool showPaywallAfterAuth = false,
+  }) async {
+    final inFlight = _anonymousAuthCompleter;
+    if (inFlight != null) {
+      final success = await inFlight.future;
+      if (success && navigateAfterSuccess) {
+        await _navigateAfterAuth(
+          forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: showPaywallAfterAuth,
+        );
+      }
+      return success;
+    }
+
+    final completer = Completer<bool>();
+    _anonymousAuthCompleter = completer;
+
+    void complete(bool success) {
+      if (!completer.isCompleted) {
+        completer.complete(success);
+      }
+      if (identical(_anonymousAuthCompleter, completer)) {
+        _anonymousAuthCompleter = null;
+      }
+    }
+
     runUseCase(
       usecase: () => _loginAnonymousUsecase(data),
-      onSuccess: (data) {
-        _onAuthSuccess(data);
+      onSuccess: (auth) {
+        _onAuthSuccess(auth);
+        complete(true);
+        if (navigateAfterSuccess) {
+          unawaited(
+            _navigateAfterAuth(
+              forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+              showPaywallAfterAuth: showPaywallAfterAuth,
+            ),
+          );
+        }
       },
-      onFailure: (error) {},
+      onFailure: (error) => complete(false),
     );
+
+    return completer.future;
+  }
+
+  Future<Map<String, dynamic>> _buildAnonymousDeviceLoginPayload() async {
+    String deviceId = await _deviceInfoService.deviceToken;
+    String deviceName = await _deviceInfoService.deviceName;
+    String languageCode = _localeCubit.state.languageCode;
+
+    return buildAnonymousDeviceAuthPayload(
+      deviceId: deviceId,
+      deviceName: deviceName,
+      languageCode: languageCode,
+    );
+  }
+
+  Future<bool> loginAnonymousSilently(Map<String, dynamic> data) async {
+    try {
+      return await _authenticateAnonymousSession(data);
+    } catch (error) {
+      LogDev.warning('[AuthBloc] loginAnonymousSilently failed: $error');
+      return false;
+    }
   }
 
   FutureOr<void> _onLoginAnonymous(_LoginAnonymous event, Emitter<AuthState> emit) {
     _loginAnonymous(event.data);
   }
 
+  Future<void> _onLoginAnonymousGuest(_LoginAnonymousGuest event, Emitter<AuthState> emit) async {
+    await continueWithCurrentGuestSession(
+      forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
+      showPaywallAfterAuth: event.showPaywallAfterAuth,
+    );
+  }
+
   FutureOr<void> _onLoginSSOGoogle(_LoginSSOGoogle event, Emitter<AuthState> emit) {
     runUseCase(
-      usecase: () => _loginSSOGoogleUsecase(),
+      usecase: () => _loginSSOGoogleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
-        _authSuccessNaviagate();
+        _navigateAfterAuth(
+          forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: event.showPaywallAfterAuth,
+        );
       },
       onFailure: (error) {},
     );
@@ -122,10 +350,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   FutureOr<void> _onLoginSSOApple(_LoginSSOApple event, Emitter<AuthState> emit) {
     runUseCase(
-      usecase: () => _loginSSOAppleUsecase(),
+      usecase: () => _loginSSOAppleUsecase(unit),
       onSuccess: (data) {
         _onAuthSuccess(data);
-        _authSuccessNaviagate();
+        _navigateAfterAuth(
+          forceChooseCourseAfterLogin: event.forceChooseCourseAfterLogin,
+          showPaywallAfterAuth: event.showPaywallAfterAuth,
+        );
       },
       onFailure: (error) {},
     );
@@ -146,40 +377,22 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   FutureOr<void> _onLogout(_Logout event, Emitter<AuthState> emit) async {
-    String deviceId = await _deviceInfoService.deviceToken;
-    String deviceName = await _deviceInfoService.deviceName;
-    String languageCode = _localeCubit.state.languageCode;
     runUseCase(
-      usecase: () => _logoutUsecase(),
+      usecase: () => _logoutUsecase(unit),
       onSuccess: (data) {
         _onResetAuth();
-        _loginAnonymous({
-          "device": {
-            "deviceId": deviceId,
-            "deviceName": deviceName,
-          },
-          "language": languageCode,
-        });
+        unawaited(bootstrapGuestSessionForRegister());
       },
       onFailure: (error) {},
     );
   }
 
   Future<void> _onDeletePermanentUser(_DeleteAccountPermanently event, Emitter<AuthState> emit) async {
-    String deviceId = await _deviceInfoService.deviceToken;
-    String deviceName = await _deviceInfoService.deviceName;
-    String languageCode = _localeCubit.state.languageCode;
     runUseCase(
       usecase: () => _deletePermanentUserUsecase(event.userId),
       onSuccess: (data) {
         _onResetAuth();
-        _loginAnonymous({
-          "device": {
-            "deviceId": deviceId,
-            "deviceName": deviceName,
-          },
-          "language": languageCode,
-        });
+        unawaited(bootstrapGuestSessionForRegister());
       },
       onFailure: (error) {},
     );
@@ -254,16 +467,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   Future<void> _onClearSession(_ClearSession event, Emitter<AuthState> emit) async {
-    String deviceId = await _deviceInfoService.deviceToken;
-    String deviceName = await _deviceInfoService.deviceName;
-    String languageCode = _localeCubit.state.languageCode;
     _onResetAuth();
-    _loginAnonymous({
-      "device": {
-        "deviceId": deviceId,
-        "deviceName": deviceName,
-      },
-      "language": languageCode,
-    });
+    unawaited(bootstrapGuestSessionForRegister());
   }
 }

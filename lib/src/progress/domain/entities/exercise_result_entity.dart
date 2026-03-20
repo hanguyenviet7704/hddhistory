@@ -15,6 +15,8 @@ abstract class ExerciseResultEntity with _$ExerciseResultEntity {
     @Default(OptionEntity()) OptionEntity singleAnswer,
     @Default([]) List<OptionEntity> dragDropAnswer,
     @Default(AnswerEntity()) AnswerEntity recordAnswer,
+    @Default(<String>[]) List<String> goodPoints,
+    @Default(<String>[]) List<String> improvementPoints,
     DateTime? submittedAt,
   }) = _ExerciseResultEntity;
 

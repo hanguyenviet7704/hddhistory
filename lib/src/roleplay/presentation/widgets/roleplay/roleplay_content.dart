@@ -29,14 +29,11 @@ class RoleplayContent extends StatelessWidget {
                     ),
                     BlocBuilder<RoleplayCubit, RoleplayState>(
                       buildWhen: (previous, current) =>
-                          previous.isCurrentSectionRevealed != current.isCurrentSectionRevealed ||
-                          previous.currentLesson.progess != current.currentLesson.progess,
+                          previous.isCurrentSectionRevealed != current.isCurrentSectionRevealed || previous.currentLesson.progess != current.currentLesson.progess,
                       builder: (context, state) {
                         final isCompleted = state.isCurrentSectionRevealed;
                         final bool isLessonCompleted = state.currentLesson.progess == ProcessEnum.done;
-                        final String label = isLessonCompleted
-                            ? context.text.roleplay.rolePlayShowResultButton
-                            : context.text.roleplay.rolePlayCompleteButton;
+                        final String label = isLessonCompleted ? context.l10n.roleplay.rolePlayShowResultButton : context.l10n.roleplay.rolePlayCompleteButton;
                         return AnimatedSwitcher(
                           duration: const Duration(milliseconds: 250),
                           switchInCurve: Curves.easeOut,

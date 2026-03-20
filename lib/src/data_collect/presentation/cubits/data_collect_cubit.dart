@@ -56,6 +56,8 @@ class DataCollectCubit extends Cubit<DataCollectState> with CubitUseCaseHandlerM
   }
 
   void updateUserName(String name) => emit(state.copyWith(userName: name));
+  void setShouldSkipAnonymousLogin(bool shouldSkipAnonymousLogin) => emit(state.copyWith(shouldSkipAnonymousLogin: shouldSkipAnonymousLogin));
+  void setShouldSkipBranchingFlow(bool shouldSkipBranchingFlow) => emit(state.copyWith(shouldSkipBranchingFlow: shouldSkipBranchingFlow));
   void setOnboardData(OnboardEntity onboardData) => emit(state.copyWith(onboardData: onboardData));
   void selectAgeRange(OnboardOptionEntity ageRange) => emit(state.copyWith(selectedAgeRange: ageRange));
   void selectGender(OnboardOptionEntity gender) => emit(state.copyWith(selectedGender: gender));

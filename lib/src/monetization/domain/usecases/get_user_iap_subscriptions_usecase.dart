@@ -1,7 +1,7 @@
 part of '../../monetization.dart';
 
 @lazySingleton
-class GetUserIapSubscriptionsUseCase implements UseCaseWithParams<String, IapSubscriptionEntity> {
+class GetUserIapSubscriptionsUseCase implements BaseUseCase<String, IapSubscriptionEntity> {
   final IUserSubscriptionRepository _repository;
 
   GetUserIapSubscriptionsUseCase(this._repository);

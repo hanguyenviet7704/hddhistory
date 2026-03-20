@@ -1,9 +1,7 @@
 part of '../../lesson.dart';
 
-
-
 @lazySingleton
-class SendScoreRecordUseCase implements UseCaseWithParams<Map<String, dynamic>, VoiceScoreEntity> {
+class SendScoreRecordUseCase implements BaseUseCase<Map<String, dynamic>, VoiceScoreEntity> {
   final ILessonRepository _repository;
 
   SendScoreRecordUseCase(this._repository);

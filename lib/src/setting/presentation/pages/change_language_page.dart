@@ -16,7 +16,6 @@ class _ChangeLanguagePageState extends State<ChangeLanguagePage> {
     context.back();
   }
 
-
   void _trackView() {
     if (_hasTrackedView) return;
     final locale = context.read<LocaleCubit>().state;
@@ -62,7 +61,7 @@ class _ChangeLanguagePageState extends State<ChangeLanguagePage> {
                     child: _LanguageSheetBackButton(onPressed: () => context.pop()),
                   ),
                   Text(
-                    context.text.setting.settingRowLanguage,
+                    context.l10n.setting.settingRowLanguage,
                     style: AppStyle.text16.copyWith(
                       color: AppCustomColor.textTertiary,
                       height: 1.5,

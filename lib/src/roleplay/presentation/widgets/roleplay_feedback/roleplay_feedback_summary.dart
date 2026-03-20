@@ -15,17 +15,17 @@ class RoleplayFeedbackSummarySection extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             AppText(
-              context.text.roleplay.rolePlayResultFeedback,
+              context.l10n.roleplay.rolePlayResultFeedback,
               style: AppStyle.textBold18.copyWith(color: AppCustomColor.textPrimary),
             ),
             12.verticalSpace,
             _RoleplayFeedbackSummaryCard(
-              title: context.text.roleplay.rolePlayResultFeedbackStrength,
+              title: context.l10n.roleplay.rolePlayResultFeedbackStrength,
               items: strengths,
             ),
             12.verticalSpace,
             _RoleplayFeedbackSummaryCard(
-              title: context.text.roleplay.rolePlayResultFeedbackWeakness,
+              title: context.l10n.roleplay.rolePlayResultFeedbackWeakness,
               items: weaknesses,
             ),
             32.verticalSpace,

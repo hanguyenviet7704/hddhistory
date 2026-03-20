@@ -25,7 +25,7 @@ abstract class UpdateUserProgressKeypointData with _$UpdateUserProgressKeypointD
 }
 
 @lazySingleton
-class UpdateUserProgressKeypointUseCase implements UseCaseWithParams<UpdateUserProgressKeypointParams, UserProgressEntity> {
+class UpdateUserProgressKeypointUseCase implements BaseUseCase<UpdateUserProgressKeypointParams, UserProgressEntity> {
   final IProgressRepository _repository;
 
   UpdateUserProgressKeypointUseCase(this._repository);

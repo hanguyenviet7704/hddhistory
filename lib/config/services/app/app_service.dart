@@ -82,12 +82,19 @@ class AppService {
     // Initialize Firebase first
     await HydrateBlocService.instance.initialize();
     await Firebase.initializeApp(options: F.firebaseOptions);
+    await NotificationService.initialize(
+      NotificationCoreConfig(
+        onTokenChanged: (state) {
+          AppGlobalValue.firebaseToken = state.token;
+        },
+      ),
+    );
 
     await packageInfoService.initialize();
     appTrackingService.initialize();
 
     // Initialize app event services early - they now handle tracking permission internally
-    // await appEventService.initialize();
+    await appEventService.initialize();
 
     await remoteConfigService.initialize();
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
@@ -95,7 +102,6 @@ class AppService {
     // DeepLinkService.init();
     // FlutterIsolateService.init();
     // GeolocatorService.init();
-    // NotificationService.initialize();
     // UnityAdsService.init();
     // AdMobService.init();
   }

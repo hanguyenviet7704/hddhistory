@@ -59,7 +59,7 @@ class ForceUpdateContent extends StatelessWidget {
     return Column(
       children: [
         AppText(
-          'context.text.updateNewVersionAvailable',
+          context.l10n.lesson.emptyPopupTitle,
           style: AppStyle.textBold32.copyWith(
             color: const Color(0xFF0D121C),
             height: 40.h / 32.sp,
@@ -68,7 +68,7 @@ class ForceUpdateContent extends StatelessWidget {
         ),
         8.verticalSpace,
         AppText(
-          'context.text.updateUpdateNowToEnjoy',
+          context.l10n.lesson.emptyPopupDescription,
           style: AppStyle.text20.copyWith(
             fontWeight: FontWeight.w600,
             color: const Color(0xFF364152),
@@ -84,7 +84,7 @@ class ForceUpdateContent extends StatelessWidget {
     return AppButton.primary(
       onPressed: onUpdatePressed,
       child: AppText(
-        'context.text.updateUpdateNow',
+        context.l10n.onboarding.onboardingStartNowButton,
         style: AppStyle.textBold20.copyWith(
           color: Colors.white,
           height: 28.h / 20.sp,

@@ -93,3 +93,9 @@ plans/
 
 # Mason
 bricks/**/hooks/build/
+
+.ignore
+report.xml
+ios/vendor/
+android/vendor/
+.bundle/

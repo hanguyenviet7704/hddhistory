@@ -1,7 +1,7 @@
 part of '../../profile.dart';
 
 @lazySingleton
-class UpdateUserUseCase implements UseCaseWithParams<Map<String, dynamic>, UserEntity> {
+class UpdateUserUseCase implements BaseUseCase<Map<String, dynamic>, UserEntity> {
   final IProfileRepository _repository;
 
   UpdateUserUseCase(this._repository);

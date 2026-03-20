@@ -162,7 +162,7 @@ class _CacheNetworkLottieState extends State<CacheNetworkLottie> {
         color: AppCustomColor.textTertiary.op(0.06),
         borderRadius: BorderRadius.circular(12),
       ),
-      child: const Icon(
+      child: const FaIcon(
         FontAwesomeIcons.circleExclamation,
         color: AppCustomColor.textSecondary,
       ),

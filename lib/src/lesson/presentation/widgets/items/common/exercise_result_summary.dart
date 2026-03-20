@@ -40,7 +40,7 @@ class ExerciseResultSummary extends StatelessWidget {
 
   String _resolveTitle(BuildContext context) {
     if (title != null) return title!;
-    return isCorrect ? context.text.exercise.exerciseFeedbackCorrect : context.text.exercise.exerciseFeedbackIncorrect;
+    return isCorrect ? context.l10n.exercise.exerciseFeedbackCorrect : context.l10n.exercise.exerciseFeedbackIncorrect;
   }
 
   String get _iconAsset => isCorrect ? AppAsset.icons.app.icTick.path : AppAsset.icons.app.icClose.path;
@@ -77,7 +77,7 @@ class ExerciseResultSummary extends StatelessWidget {
                   ],
                 ),
               ),
-              if (onExplain != null && kDebugMode)
+              if (onExplain != null)
                 Opacity(
                   opacity: 0.5,
                   child: GestureDetector(

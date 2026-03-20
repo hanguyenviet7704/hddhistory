@@ -12,7 +12,7 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
 
   bool _isInitialized = false;
 
-  void initializeData({bool isInit = false}) async {
+  Future<void> initializeData({bool isInit = false}) async {
     if (_isInitialized && !isInit) return;
     _isInitialized = true;
     // Load both courses and skillsets]
@@ -21,6 +21,18 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
       AppDI.injector.get<ProgressCubit>().loadUserProgressMyCourses(isInit: true, recent: true),
       AppDI.injector.get<ProfileCubit>().loadUser(),
     ]);
+  }
+
+  void resetSelection({
+    int skillsetIndex = 0,
+    int courseIndex = 0,
+  }) {
+    emit(
+      state.copyWith(
+        selectedSkillsetIndex: skillsetIndex,
+        selectedCourseIndex: courseIndex,
+      ),
+    );
   }
 
   void selectSkillsetIndex(int index) => emit(state.copyWith(selectedSkillsetIndex: index));

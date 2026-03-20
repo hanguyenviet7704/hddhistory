@@ -1,11 +1,11 @@
 part of '../../monetization.dart';
 
 @lazySingleton
-class RestoreUsecase implements UseCaseWithoutParams<IapVerifyEntity> {
+class RestoreUsecase implements BaseUseCase<Unit, IapVerifyEntity> {
   final IMonetizationRepository _iapRepository;
 
   RestoreUsecase(this._iapRepository);
 
   @override
-  TaskEither<AppException, IapVerifyEntity> call()  => _iapRepository.restore();
+  TaskEither<AppException, IapVerifyEntity> call(Unit _) => _iapRepository.restore();
 }

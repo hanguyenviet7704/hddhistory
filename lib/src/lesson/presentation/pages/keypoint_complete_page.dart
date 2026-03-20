@@ -9,6 +9,7 @@ class KeypointCompletePage extends StatefulWidget {
 
 class _KeypointCompletePageState extends State<KeypointCompletePage> {
   bool _hasShownFeedbackPopup = false;
+  bool _isHandlingPrimaryCta = false;
 
   @override
   void initState() {
@@ -21,12 +22,79 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
     });
   }
 
+  Future<void> _handlePrimaryCta(CourseLessonState lessonState) async {
+    if (_isHandlingPrimaryCta) return;
+    setState(() => _isHandlingPrimaryCta = true);
+
+    try {
+      final trackingData = KeypointTrackingData.fromContext();
+      if (trackingData != null) {
+        AppService.instance.appTrackingService.trackKeypointFinishComplete(trackingData);
+      }
+
+      await _handleLearningStreakGate();
+      if (!mounted) return;
+      _navigateAfterCompletion(lessonState);
+    } finally {
+      if (mounted) {
+        setState(() => _isHandlingPrimaryCta = false);
+      }
+    }
+  }
+
+  Future<void> _handleLearningStreakGate() async {
+    final userCubit = AppDI.injector.get<UserCubit>();
+    final userState = userCubit.state;
+    final learningStreakCubit = AppDI.injector.get<LearningStreakCubit>();
+    final nowUtc = DateTime.now().toUtc();
+    final gateUtcDay = DateTime.utc(nowUtc.year, nowUtc.month, nowUtc.day);
+
+    if (learningStreakCubit.isSameStreakCountedUtcDay(gateUtcDay)) return;
+
+    final streakResult = await learningStreakCubit.loadUserLearningStreak(
+      triggerSource: LearningStreakTriggerSource.completionCta,
+      requestedUserId: userState.user.id,
+      timeout: const Duration(seconds: 2),
+    );
+
+    if (!mounted) return;
+    if (!streakResult.isRemoteSuccessWithPositiveStreak) return;
+    if (LearningStreakModalGuard.hasBlockingModal(context)) return;
+
+    final committed = await LearningStreakSuccessOverlay.show(
+      context,
+      streak: streakResult.streak,
+    );
+    if (!mounted) return;
+
+    if (committed) {
+      learningStreakCubit.setLastStreakCountedDate(gateUtcDay);
+    }
+  }
+
+  void _navigateAfterCompletion(CourseLessonState lessonState) {
+    if (lessonState.wasLessonCompletedBefore) {
+      CourseRoadmapRoute().go(context);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.courseRoadmap);
+      });
+      return;
+    }
+    BadgeProgressRoute().go(context);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    final currentLesson = context.select((CourseLessonCubit cubit) => cubit.state.selectedLesson);
+    final lessonState = context.select((CourseLessonCubit cubit) => cubit.state);
+    final currentTitle = lessonState.currentTitle;
+    final currentLessonForNext = lessonState.currentLessonForNext;
     final nextLesson = context.select(
-      (CourseRoadmapCubit cubit) => cubit.state.roadmap.nextLessonAfter(currentLesson),
+      (CourseRoadmapCubit cubit) => cubit.state.roadmap.nextLessonAfter(currentLessonForNext),
     );
+    final nextTitle = nextLesson.displayTitleForNextLesson;
 
     return BlocListener<FeedbackCubit, FeedbackState>(
       listenWhen: (previous, current) => previous.status != current.status && current.status == FeedbackStatus.success,
@@ -71,23 +139,17 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
                     children: [
                       Expanded(
                         child: Center(
-                          child: CompletionHeaderCard(title: currentLesson.title.text),
+                          child: CompletionHeaderCard(title: currentTitle),
                         ),
                       ),
-                      if (nextLesson.id.isNotEmpty && nextLesson.title.text.isNotEmpty)
-                        NextLessonCard(title: nextLesson.title.text),
+                      if (nextLesson.id.isNotEmpty && nextTitle.isNotEmpty) NextLessonCard(title: nextTitle),
                     ],
                   ),
                 ),
               ),
               LessonCompletionPrimaryButton(
-                label: context.text.exercise.exerciseCompleteKeypointSkipButton,
-                onPressed: () {
-                  BadgeProgressRoute().go(context);
-                  Future.delayed(const Duration(milliseconds: 100), () {
-                    AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.badgeProgress);
-                  });
-                },
+                label: context.l10n.exercise.exerciseCompleteKeypointSkipButton,
+                onPressed: () => _handlePrimaryCta(lessonState),
                 margin: EdgeInsets.only(bottom: 16.h, top: 16.h),
               ),
             ],

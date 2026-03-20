@@ -34,7 +34,7 @@ class UserSubscriptionHeader extends StatelessWidget {
             ),
           ),
           AppText(
-            t.monetization.subscriptionTitle,
+            l10n.monetization.subscriptionTitle,
             style: AppStyle.text16.copyWith(
               fontWeight: FontWeight.w600,
               color: AppCustomColor.textTertiary,

@@ -59,11 +59,26 @@ mixin TrackingKey {
   static const String obdMotivation3Click = 'obd_motivation3_click';
   static const String obdCompleteScrView = 'obd_complete_scr_view';
   static const String obdCompleteClick = 'obd_complete_click';
+  static const String obdNotificationGateView = 'obd_notification_gate_view';
+  static const String obdNotificationNotifyMeClick = 'obd_notification_notify_me_click';
+  static const String obdNotificationMaybeLaterClick = 'obd_notification_maybe_later_click';
+  static const String obBranchingP1View = 'ob_branching_p1_view';
+  static const String obBranchingP1Continue = 'ob_branching_p1_continue';
+  static const String obBranchingContentView = 'ob_branching_content_view';
+  static const String obBranchingOptionSelect = 'ob_branching_option_select';
+  static const String obBranchingP6View = 'ob_branching_p6_view';
+  static const String obBranchingP7View = 'ob_branching_p7_view';
+  static const String obBranchingTryNowClick = 'ob_branching_try_now_click';
+  static const String obBranchingChooseMyselfClick = 'ob_branching_choose_myself_click';
+  static const String obBranchingFallback = 'ob_branching_fallback';
 
   //* Home events
   static const String homeScrView = 'home_scr_view';
   static const String homeTabSwitch = 'home_tab_switch';
   static const String homeSkillClick = 'home_skill_click';
+  static const String homeStreakChipClick = 'home_streak_chip_click';
+  static const String homeStreakPopupView = 'home_streak_popup_view';
+  static const String homeStreakPopupClose = 'home_streak_popup_close';
 
   //* Course selection events
   static const String courseSelectAllCourseView = 'course_select_all_course_view';
@@ -71,6 +86,7 @@ mixin TrackingKey {
   static const String courseSelectCategorySlide = 'course_select_category_slide';
   static const String courseSelectCategoryClick = 'course_select_category_click';
   static const String courseSelectFirstCourseClick = 'course_select_1stcourse_click';
+  static const String courseSelectCourseClick = 'course_select_course_click';
   static const String courseSelectExit = 'course_select_exit';
   static const String courseSelectAllCourseScroll = 'course_select_all_course_scroll';
 
@@ -80,15 +96,14 @@ mixin TrackingKey {
   static const String popupLearningIntroSwipe = 'popup_learning_intro_swipe';
   static const String roadmapScrView = 'roadmap_scr_view';
   static const String roadmapItemClick = 'roadmap_item_click';
+  static const String popupItemImp = 'popup_item_imp';
+  static const String popupItemClick = 'popup_item_click';
+  static const String roadmapItemScroll = 'roadmap_item_scroll';
+  static const String roadmapQuickLearningClick = 'roadmap_quick_learning_click';
   static const String howItWorkScrView = 'how_it_work_scr_view';
-  static const String howItWorkDoneClick = 'how_it_work_done_click';
-  static const String howItWorkExitTap = 'how_it_work_exit_tap';
-  static const String howItWorkClick = 'how_it_work_click';
-  static const String lessonKeypointScrView = 'lesson_keypoint_scr_view';
-  static const String lessonKeypointExit = 'lesson_keypoint_exit';
-  static const String lessonKeypointClick = 'lesson_keypoint_click';
 
   //* Keypoint events
+  static const String keypointTheoryScroll = 'keypoint_theory_scroll';
   static const String keypointTheoryScrView = 'keypoint_theory_scr_view';
   static const String keypointTheoryContinueClick = 'keypoint_theory_continue_click';
   static const String keypointExerciseScrView = 'keypoint_exercise_scr_view';
@@ -108,12 +123,16 @@ mixin TrackingKey {
   static const String keypointExerciseContinue = 'keypoint_exercise_continue';
   static const String keypointExerciseExplainClose = 'keypoint_exercise_explain_close';
   static const String keypointFinishScrView = 'keypoint_finish_scr_view';
+  static const String keypointBadgeUpdateScrView = 'keypoint_badge_update_scr_view';
+  static const String keypointFinishComplete = 'keypoint_finish_complete';
   static const String lessonFinishScrView = 'lesson_finish_scr_view';
   static const String keypointExitClick = 'keypoint_exit_click';
   static const String keypointExitPopupView = 'keypoint_exit_popup_view';
   static const String keypointExitPopupClick = 'keypoint_exit_popup_click';
   static const String keypointPopupNavView = 'keypoint_popup_nav_view';
   static const String keypointPopupNavContinue = 'keypoint_popup_nav_continue';
+  static const String completionStreakSuccessView = 'completion_streak_success_view';
+  static const String completionStreakSuccessCommitClick = 'completion_streak_success_commit_click';
 
   //* Roleplay events
   static const String roleplayInfoScrView = 'roleplay_info_scr_view';
@@ -184,6 +203,8 @@ mixin TrackingKey {
   static const String settingRestorePurcClick = 'setting_restore_purc_click';
   static const String settingLogoutClick = 'setting_logout_click';
   static const String settingPremiumClick = 'setting_premium_click';
+  static const String settingNotificationToggleOn = 'setting_notification_toggle_on';
+  static const String settingNotificationToggleOff = 'setting_notification_toggle_off';
   static const String premiumScrView = 'premium_scr_view';
   static const String premiumScroll = 'premium_scroll';
   static const String premiumInforSwipe = 'premium_infor_swipe';

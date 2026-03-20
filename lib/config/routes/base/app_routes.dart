@@ -21,10 +21,12 @@ mixin RoutePath {
 
   //* Onboard
   static const String onboard = '/onboard';
+  static const String onboardBranching = '/onboard-branching';
   static const String dataCollect = '/data-collect';
   static const String dataCollectMotivationStep = '/data-collect-motivation-step/:step';
   static const String dataCollectFeedback = '/data-collect-feedback';
   static const String dataCollectSummary = '/data-collect-summary';
+  static const String notificationRequest = '/notification-request';
 
   //* Auth
   static const String login = '/login';
@@ -37,6 +39,7 @@ mixin RoutePath {
 
   //* Home
   static const String home = '/';
+  static const String homeLearningStreak = 'learning-streak';
 
   //* Course
   static const String course = '/course';
@@ -47,6 +50,7 @@ mixin RoutePath {
 
   //? Course - Lesson
   static const String lesson = 'lesson';
+  static const String noCorrectAnswerDocument = 'no-correct-answer-document/:groupId';
   static const String reviewTime = 'review-time';
   static const String keypointComplete = 'keypoint-complete';
   static const String badgeProgress = 'badge-progress';
@@ -91,10 +95,12 @@ mixin RouteNamed {
 
   //* Onboard
   static const String onboard = 'Onboard Page';
+  static const String onboardBranching = 'Onboard Branching Page';
   static const String dataCollect = 'Data Collect Page';
   static const String dataCollectMotivationStep = 'Data Collect Motivation Step Page';
   static const String dataCollectFeedback = 'Data Collect Feedback Page';
   static const String dataCollectSummary = 'Data Collect Summary Page';
+  static const String notificationRequest = 'Notification Request Page';
 
   //* Auth
   static const String login = 'Login Page';
@@ -107,6 +113,7 @@ mixin RouteNamed {
 
   //* Home - Road Map
   static const String home = 'Home';
+  static const String homeLearningStreak = 'Home Learning Streak';
 
   //* Course
   static const String course = 'Course';
@@ -118,6 +125,7 @@ mixin RouteNamed {
 
   //? Course - Lesson
   static const String lesson = 'Lesson';
+  static const String noCorrectAnswerDocument = 'No Correct Answer Document';
   static const String reviewTime = 'Review Time';
   static const String keypointComplete = 'Keypoint Complete';
   static const String badgeProgress = 'Badge Progress';

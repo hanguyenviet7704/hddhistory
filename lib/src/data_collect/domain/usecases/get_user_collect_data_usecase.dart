@@ -1,7 +1,7 @@
 part of '../../data_collect.dart';
 
 @lazySingleton
-class GetUserCollectDataUseCase implements UseCaseWithParams<String, UserCollectDataEntity> {
+class GetUserCollectDataUseCase implements BaseUseCase<String, UserCollectDataEntity> {
   final IDataCollectRepository _repository;
 
   GetUserCollectDataUseCase(this._repository);
