@@ -82,7 +82,7 @@ class AppService {
     // Initialize Firebase first
     await HydrateBlocService.instance.initialize();
     await Firebase.initializeApp(options: F.firebaseOptions);
-    await NotificationService.initialize(
+    NotificationService.initialize(
       NotificationCoreConfig(
         onTokenChanged: (state) {
           AppGlobalValue.firebaseToken = state.token;
@@ -94,9 +94,9 @@ class AppService {
     appTrackingService.initialize();
 
     // Initialize app event services early - they now handle tracking permission internally
-    await appEventService.initialize();
+    appEventService.initialize();
 
-    await remoteConfigService.initialize();
+    remoteConfigService.initialize();
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();
     // DeepLinkService.init();
