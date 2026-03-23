@@ -36,7 +36,8 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
     );
   }
 
-  void loadUserIapSubscriptions() async {
+  Future<void> loadUserIapSubscriptions() async {
+    if (state.user.id.isEmpty) return;
     await runUseCase<IapSubscriptionEntity>(
       usecase: () => _getUserIapSubscriptionsUseCase(state.user.id),
       onSuccess: (items) {
@@ -55,7 +56,6 @@ class ProfileCubit extends HydratedCubit<ProfileState> with CubitUseCaseHandlerM
   }
 
   void updateUser(UserEntity entity) async {
-
     if (entity.id.isEmpty) return;
     if (entity.name == state.user.name) return;
 
