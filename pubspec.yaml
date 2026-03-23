@@ -107,7 +107,7 @@ dependencies:
 
   # App Services 
   # App Storage Services
-  hydrated_bloc: ^10.1.1
+  hydrated_bloc: ^11.0.0
   flutter_secure_storage: ^10.0.0
   path_provider: ^2.1.5
   
@@ -250,7 +250,7 @@ dev_dependencies:
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
   retrofit_generator: ^10.2.3
-  build_runner: ^2.12.2
+  build_runner: ^2.13.1
   flutter_gen_runner: ^5.13.0
   json_serializable: ^6.13.0
   injectable_generator: ^2.12.1
