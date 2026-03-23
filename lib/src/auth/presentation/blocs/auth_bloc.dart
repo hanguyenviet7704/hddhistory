@@ -43,6 +43,21 @@ bool shouldOpenFirstTimeUserPaywall({
 }
 
 @visibleForTesting
+bool shouldBypassFirstTimeUserPaywallForPremium({
+  required bool forceChooseCourseAfterLogin,
+  required bool showPaywallAfterAuth,
+  bool hasPendingFirstTimePaywallAfterAuth = false,
+  bool isPremium = false,
+}) {
+  return isPremium &&
+      shouldOpenFirstTimeUserPaywall(
+        forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+        showPaywallAfterAuth: showPaywallAfterAuth,
+        hasPendingFirstTimePaywallAfterAuth: hasPendingFirstTimePaywallAfterAuth,
+      );
+}
+
+@visibleForTesting
 RegisterGuestContinueAction resolveRegisterGuestContinueAction({
   required bool hasBootstrappedGuestSession,
 }) {
@@ -145,11 +160,29 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     bool showPaywallAfterAuth = false,
     bool resetToFirstCourseCategory = false,
   }) async {
-    if (shouldOpenFirstTimeUserPaywall(
+    final hasPendingFirstTimePaywallAfterAuth = _userCubit.state.hasPendingFirstTimePaywallAfterAuth;
+    final shouldResolveFirstTimePaywall = shouldOpenFirstTimeUserPaywall(
       forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
       showPaywallAfterAuth: showPaywallAfterAuth,
-      hasPendingFirstTimePaywallAfterAuth: _userCubit.state.hasPendingFirstTimePaywallAfterAuth,
-    )) {
+      hasPendingFirstTimePaywallAfterAuth: hasPendingFirstTimePaywallAfterAuth,
+    );
+
+    if (shouldResolveFirstTimePaywall) {
+      if (!_profileCubit.state.user.isPremium) {
+        await _profileCubit.loadUserIapSubscriptions();
+      }
+
+      if (shouldBypassFirstTimeUserPaywallForPremium(
+        forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+        showPaywallAfterAuth: showPaywallAfterAuth,
+        hasPendingFirstTimePaywallAfterAuth: hasPendingFirstTimePaywallAfterAuth,
+        isPremium: _profileCubit.state.user.isPremium,
+      )) {
+        _userCubit.consumeFirstTimePaywallAfterAuthIntent();
+        await _goToFirstTimeUserCourse();
+        return;
+      }
+
       _userCubit.consumeFirstTimePaywallAfterAuthIntent();
       _iapCubit.setPaywallEntryPoint(PaywallEntryPoint.firstTimeUser);
       const PaywallRoute(firstTimeUserFlow: true).go(AppConfig.instance.context!);
@@ -177,6 +210,12 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
         HomeRoute().go(AppConfig.instance.context!);
         _pageCubit.setCurrentIndex(0);
     }
+  }
+
+  Future<void> _goToFirstTimeUserCourse() async {
+    await _homeCubit.initializeData(isInit: true);
+    _homeCubit.resetSelection(skillsetIndex: 0);
+    CourseRoute(selectedTabIndex: 0).go(AppConfig.instance.context!);
   }
 
   void _onResetAuth() {

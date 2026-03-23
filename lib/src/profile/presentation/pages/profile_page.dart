@@ -75,7 +75,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     BlocSelector<ProfileCubit, ProfileState, UserEntity>(
                       selector: (state) => state.user,
                       builder: (context, user) {
-                        if (user.iapSubscriptions.isNotEmpty) return SizedBox.shrink();
+                        if (user.isPremium) return SizedBox.shrink();
 
                         return SettingPreminumCard(
                           onUpgrade: () {

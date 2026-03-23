@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-19
+**Last Updated:** 2026-03-23
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -131,6 +131,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - Silent register bootstrap never opens paywall by itself. The paywall branch is only evaluated after an explicit Guest, Google, or Apple auth success.
 - Guest continue now reuses the bootstrapped anonymous session when available and only falls back to a fresh anonymous login if bootstrap failed.
 - Google and Apple continue to replace the guest session through the existing auth-success path, and any guest course handoff now routes with `CourseRoute(selectedTabIndex: 0)` while resetting home selection to the first category to avoid stale post-logout state.
+- If that first-time post-auth paywall intent is active, auth now refreshes `ProfileCubit.loadUserIapSubscriptions()` before deciding the handoff. When the refreshed user already carries active `iapSubscriptions` (`UserEntity.isPremium == true`), auth consumes the pending paywall intent and routes straight to `CourseRoute(selectedTabIndex: 0)` instead of mounting `PaywallRoute`.
 - Every paywall entry keeps the top-bar close slot reserved but hides the close affordance for five seconds before revealing it. `PaywallRoute(firstTimeUserFlow: true)` still marks the first-time onboarding paywall session for destination handling only: closing the paywall or dismissing purchase success routes to `CourseRoute(selectedTabIndex: 0)` after home data reset, while standard paywall close/purchase-success flows still route back and purchase failure or cancel leaves the user on paywall.
 
 ### Notification preference runtime flow

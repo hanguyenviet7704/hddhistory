@@ -41,4 +41,59 @@ void main() {
       expect(shouldOpen, isTrue);
     });
   });
+
+  group('shouldBypassFirstTimeUserPaywallForPremium', () {
+    test('returns true when premium user hits onboarding paywall after auth', () {
+      final shouldBypass = shouldBypassFirstTimeUserPaywallForPremium(
+        forceChooseCourseAfterLogin: false,
+        showPaywallAfterAuth: true,
+        isPremium: true,
+      );
+
+      expect(shouldBypass, isTrue);
+    });
+
+    test('returns true when pending first-time paywall intent meets premium user', () {
+      final shouldBypass = shouldBypassFirstTimeUserPaywallForPremium(
+        forceChooseCourseAfterLogin: false,
+        showPaywallAfterAuth: false,
+        hasPendingFirstTimePaywallAfterAuth: true,
+        isPremium: true,
+      );
+
+      expect(shouldBypass, isTrue);
+    });
+
+    test('returns false when user is not premium', () {
+      final shouldBypass = shouldBypassFirstTimeUserPaywallForPremium(
+        forceChooseCourseAfterLogin: false,
+        showPaywallAfterAuth: true,
+        isPremium: false,
+      );
+
+      expect(shouldBypass, isFalse);
+    });
+
+    test('returns false when premium user has no first-time paywall intent', () {
+      final shouldBypass = shouldBypassFirstTimeUserPaywallForPremium(
+        forceChooseCourseAfterLogin: false,
+        showPaywallAfterAuth: false,
+        hasPendingFirstTimePaywallAfterAuth: false,
+        isPremium: true,
+      );
+
+      expect(shouldBypass, isFalse);
+    });
+
+    test('returns false when course-selection override suppresses paywall flow', () {
+      final shouldBypass = shouldBypassFirstTimeUserPaywallForPremium(
+        forceChooseCourseAfterLogin: true,
+        showPaywallAfterAuth: true,
+        hasPendingFirstTimePaywallAfterAuth: true,
+        isPremium: true,
+      );
+
+      expect(shouldBypass, isFalse);
+    });
+  });
 }
