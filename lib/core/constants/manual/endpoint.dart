@@ -89,6 +89,12 @@ mixin AppEndpoint {
   static const String coursesUserProgressBadgeProgress = '/api/v1/courses-user-progress/badge-progress/{courseId}';
   static const String coursesUserProgressStreak = '/api/v1/courses-user-progress/streak';
 
+  //* Courses Output Practice API
+  static const String coursesOutputPracticeConversations = '/api/v1/courses-output-practice-conversations';
+  static const String coursesOutputPracticeSectionConversations = '/api/v1/courses-output-practice-conversations/section/{sectionId}';
+  static const String coursesOutputPracticeMessages = '/api/v1/courses-output-practice-messages';
+  static const String coursesOutputPracticeMessagesSend = '/api/v1/courses-output-practice-messages/send';
+  
   //* Skillsets API
   static const String skillsets = '/api/v1/skillsets';
   static const String skillsetsById = '/api/v1/skillsets/{id}';
@@ -107,3 +113,4 @@ mixin AppEndpoint {
   static const String scoreRecord = '/score-record';
   static const String feedbackRoleplay = '/feedback-roleplay';
 }
+
