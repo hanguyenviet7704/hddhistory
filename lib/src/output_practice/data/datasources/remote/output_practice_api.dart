@@ -6,24 +6,17 @@ abstract class OutputPracticeApi {
   @factoryMethod
   factory OutputPracticeApi(@Named(DIKey.appDio) Dio dio) = _OutputPracticeApi;
 
-  @GET('/output_practices')
-  Future<BaseResponse<BasePageBreak<OutputPracticeConversationModel>>> getAllOutputPracticeConversations(
+  @GET(AppEndpoint.coursesOutputPracticeMessages)
+  Future<BaseResponse<BasePageBreak<OutputPracticeMessageModel>>> getAllOutputPracticeMessages(
     @Queries() PageBreakRequest request,
   );
 
-  @GET('${'/output_practices'}/{id}')
-  Future<BaseResponse<OutputPracticeConversationModel>> getOutputPracticeConversation(@Path('id') String id);
+  @GET(AppEndpoint.coursesOutputPracticeSectionConversations)
+  Future<BaseResponse<OutputPracticeConversationModel>> getOutputPracticeConversation(@Path('sectionId') String sectionId);
 
-  @POST('/output_practices')
+  @POST(AppEndpoint.coursesOutputPracticeMessages)
   Future<BaseResponse<OutputPracticeConversationModel>> createOutputPracticeConversation(@Body() Map<String, dynamic> body);
 
-  @PUT('${'/output_practices'}/{id}')
-  Future<BaseResponse<OutputPracticeConversationModel>> updateOutputPracticeConversation(
-    @Path('id') String id,
-    @Body() Map<String, dynamic> body,
-  );
-
-  @DELETE('${'/output_practices'}/{id}')
-  Future<BaseResponse<void>> deleteOutputPracticeConversation(@Path('id') String id);
+  @POST(AppEndpoint.coursesOutputPracticeMessagesSend)
+  Future<BaseResponseList<OutputPracticeMessageModel>> sendOutputPracticeMessage(@Body() Map<String, dynamic> body);
 }
-

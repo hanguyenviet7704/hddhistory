@@ -1,35 +1,31 @@
-
-
 part of '../../output_practice.dart';
 
 @lazySingleton
 class OutputPracticeCubit extends Cubit<OutputPracticeState>
     with CubitUseCaseHandlerMixin<OutputPracticeState> {
-  final GetAllOutputPracticeConversationsUseCase _getAllUseCase;
-  final GetOutputPracticeConversationUseCase _getUseCase;
-  final CreateOutputPracticeConversationUseCase _createUseCase;
-  final UpdateOutputPracticeConversationUseCase _updateUseCase;
-  final DeleteOutputPracticeConversationUseCase _deleteUseCase;
-  
+  final GetAllOutputPracticeMessagesUseCase _getAllMessagesUseCase;
+  final GetOutputPracticeConversationUseCase _getConversationUseCase;
+  final CreateOutputPracticeConversationUseCase _createConversationUseCase;
+  final SendOutputPracticeMessageUseCase _sendMessageUseCase;
 
   OutputPracticeCubit(
-    this._getAllUseCase,
-    this._getUseCase,
-    this._createUseCase,
-    this._updateUseCase,
-    this._deleteUseCase,
-    
+    this._getAllMessagesUseCase,
+    this._getConversationUseCase,
+    this._createConversationUseCase,
+    this._sendMessageUseCase,
   ) : super(OutputPracticeState.initial());
 
-  void loadAllOutputPracticeConversations({bool isInit = false}) async {
+  void loadAllOutputPracticeMessages({bool isInit = false}) async {
     if (!isInit && state.status == OutputPracticeStatus.loading) return;
-    if (!isInit && state.pageData.isLastPage) return;
+    if (!isInit && state.messagesPageData.isLastPage) return;
 
-    final pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.pageData.nextPage);
+    final pageRequest = isInit
+        ? const PageBreakRequest()
+        : PageBreakRequest(page: state.messagesPageData.nextPage);
 
-    await runUseCasePageBreak<OutputPracticeConversationEntity>(
-      usecase: () => _getAllUseCase(pageRequest),
-      currentPageData: state.pageData,
+    await runUseCasePageBreak<OutputPracticeMessageEntity>(
+      usecase: () => _getAllMessagesUseCase(pageRequest),
+      currentPageData: state.messagesPageData,
       isInit: isInit,
       buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
       onFailure: (error) {
@@ -41,15 +37,15 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState>
       onSuccess: (pageData) {
         emit(state.copyWith(
           status: OutputPracticeStatus.success,
-          pageData: pageData,
+          messagesPageData: pageData,
         ));
       },
     );
   }
 
-  void loadOutputPracticeConversation(String id) async {
+  void loadOutputPracticeConversation(String sectionId) async {
     await runUseCase<OutputPracticeConversationEntity>(
-      usecase: () => _getUseCase(id),
+      usecase: () => _getConversationUseCase(sectionId),
       buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(
@@ -60,15 +56,15 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState>
       onSuccess: (item) {
         emit(state.copyWith(
           status: OutputPracticeStatus.success,
-          selectedItem: item,
+          conversation: item,
         ));
       },
     );
   }
 
-  void createOutputPracticeConversation(OutputPracticeConversationEntity entity) async {
+  void createOutputPracticeConversation(Map<String, dynamic> body) async {
     await runUseCase<OutputPracticeConversationEntity>(
-      usecase: () => _createUseCase(entity),
+      usecase: () => _createConversationUseCase(body),
       buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(
@@ -76,20 +72,18 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState>
           errorMessage: error,
         ));
       },
-      onSuccess: (newItem) {
-        final updatedItems = [...state.pageData.items, newItem];
-        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+      onSuccess: (newConversation) {
         emit(state.copyWith(
           status: OutputPracticeStatus.success,
-          pageData: updatedPageData,
-          selectedItem: newItem,
+          conversation: newConversation,
         ));
       },
     );
   }
-  void updateOutputPracticeConversation(OutputPracticeConversationEntity entity) async {
-    await runUseCase<OutputPracticeConversationEntity>(
-      usecase: () => _updateUseCase(entity),
+
+  void sendOutputPracticeMessage(Map<String, dynamic> body) async {
+    await runUseCase<List<OutputPracticeMessageEntity>>(
+      usecase: () => _sendMessageUseCase(body),
       buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(
@@ -97,39 +91,14 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState>
           errorMessage: error,
         ));
       },
-      onSuccess: (updatedItem) {
-        final updatedItems =
-            state.pageData.items.map((item) => item.id == updatedItem.id ? updatedItem : item).toList();
-        final updatedPageData = state.pageData.copyWith(items: updatedItems);
+      onSuccess: (newMessages) {
+        final updatedItems = [...state.messagesPageData.items, ...newMessages];
+        final updatedPageData = state.messagesPageData.copyWith(items: updatedItems);
         emit(state.copyWith(
           status: OutputPracticeStatus.success,
-          pageData: updatedPageData,
-          selectedItem: updatedItem,
+          messagesPageData: updatedPageData,
         ));
       },
     );
   }
-  void deleteOutputPracticeConversation(String id) async {
-    await runUseCase<Unit>(
-      usecase: () => _deleteUseCase(id),
-      buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
-      onFailure: (error) {
-        emit(state.copyWith(
-          status: OutputPracticeStatus.failure,
-          errorMessage: error,
-        ));
-      },
-      onSuccess: (_) {
-        final updatedItems = state.pageData.items.where((item) => item.id != id).toList();
-        final updatedPageData = state.pageData.copyWith(items: updatedItems);
-        emit(state.copyWith(
-          status: OutputPracticeStatus.success,
-          pageData: updatedPageData,
-        ));
-      },
-    );
-  }
-  
 }
-
-

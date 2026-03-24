@@ -14,3 +14,13 @@ abstract class OutputPracticeConversationModel with _$OutputPracticeConversation
       _$OutputPracticeConversationModelFromJson(json);
 }
 
+extension OutputPracticeConversationModelExtension on OutputPracticeConversationModel {
+  OutputPracticeConversationEntity toEntity() => OutputPracticeConversationEntity(
+        userId: userId,
+        sectionId: sectionId,
+        threadId: threadId,
+        lastSeq: lastSeq,
+        reply: reply?.toEntity(),
+      );
+}
+

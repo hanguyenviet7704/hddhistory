@@ -11,3 +11,11 @@ abstract class OutputPracticeAiReplyOptionModel with _$OutputPracticeAiReplyOpti
   factory OutputPracticeAiReplyOptionModel.fromJson(Map<String, dynamic> json) =>
       _$OutputPracticeAiReplyOptionModelFromJson(json);
 }
+
+extension OutputPracticeAiReplyOptionModelExtension on OutputPracticeAiReplyOptionModel {
+  OutputPracticeAiReplyOptionEntity toEntity() => OutputPracticeAiReplyOptionEntity(
+        value: value,
+        label: label,
+        description: description,
+      );
+}

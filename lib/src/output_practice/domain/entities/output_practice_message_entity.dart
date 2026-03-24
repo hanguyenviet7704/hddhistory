@@ -1,0 +1,15 @@
+part of '../../output_practice.dart';
+
+@freezed
+abstract class OutputPracticeMessageEntity with _$OutputPracticeMessageEntity {
+  const factory OutputPracticeMessageEntity({
+    @Default('') String conversationId,
+    @Default(0) int seq,
+    @Default('') String content,
+    @Default(OutputPracticeMessageType.text) OutputPracticeMessageType type,
+    @Default(OutputPracticeMessageRole.user) OutputPracticeMessageRole role,
+  }) = _OutputPracticeMessageEntity;
+
+  factory OutputPracticeMessageEntity.fromJson(Map<String, dynamic> json) =>
+      _$OutputPracticeMessageEntityFromJson(json);
+}

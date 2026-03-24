@@ -25,13 +25,15 @@ part 'data/repositories/output_practice_repository.dart';
 
 
 //* Domain Layer - Entities, Repositories, Use Cases
+part 'domain/entities/output_practice_ai_reply_option_entity.dart';
+part 'domain/entities/output_practice_ai_reply_entity.dart';
 part 'domain/entities/output_practice_conversation_entity.dart';
+part 'domain/entities/output_practice_message_entity.dart';
 part 'domain/repositories/i_output_practice_repository.dart';
+part 'domain/usecases/get_all_output_practice_messages_usecase.dart';
 part 'domain/usecases/get_output_practice_conversation_usecase.dart';
-part 'domain/usecases/get_all_output_practice_conversations_usecase.dart';
 part 'domain/usecases/create_output_practice_conversation_usecase.dart';
-part 'domain/usecases/update_output_practice_conversation_usecase.dart';
-part 'domain/usecases/delete_output_practice_conversation_usecase.dart';
+part 'domain/usecases/send_output_practice_message_usecase.dart';
 
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
@@ -46,4 +48,3 @@ part 'presentation/pages/output_practice_page.dart';
 //* Parts for generated files
 part 'output_practice.freezed.dart';
 part 'output_practice.g.dart';
-

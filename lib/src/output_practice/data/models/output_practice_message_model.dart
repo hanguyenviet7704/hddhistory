@@ -39,3 +39,13 @@ enum OutputPracticeInputType {
   @JsonValue('summary_decision')
   summaryDecision,
 }
+
+extension OutputPracticeMessageModelExtension on OutputPracticeMessageModel {
+  OutputPracticeMessageEntity toEntity() => OutputPracticeMessageEntity(
+        conversationId: conversationId,
+        seq: seq,
+        content: content,
+        type: type,
+        role: role,
+      );
+}
