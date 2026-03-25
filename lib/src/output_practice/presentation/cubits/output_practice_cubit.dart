@@ -2,14 +2,14 @@ part of '../../output_practice.dart';
 
 @lazySingleton
 class OutputPracticeCubit extends Cubit<OutputPracticeState> with CubitUseCaseHandlerMixin<OutputPracticeState> {
-  final GetAllOutputPracticeMessagesUseCase _getAllMessagesUseCase;
   final GetOutputPracticeConversationUseCase _getConversationUseCase;
   final CreateOutputPracticeConversationUseCase _createConversationUseCase;
+  final GetAllOutputPracticeMessagesUseCase _getAllMessagesUseCase;
   final SendOutputPracticeMessageUseCase _sendMessageUseCase;
 
   OutputPracticeCubit(
-    this._getAllMessagesUseCase,
     this._getConversationUseCase,
+    this._getAllMessagesUseCase,
     this._createConversationUseCase,
     this._sendMessageUseCase,
   ) : super(OutputPracticeState.initial());

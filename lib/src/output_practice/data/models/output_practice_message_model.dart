@@ -31,15 +31,6 @@ enum OutputPracticeMessageRole {
   system,
 }
 
-enum OutputPracticeInputType {
-  @JsonValue('message')
-  message,
-  @JsonValue('select_option')
-  selectOption,
-  @JsonValue('summary_decision')
-  summaryDecision,
-}
-
 extension OutputPracticeMessageModelExtension on OutputPracticeMessageModel {
   OutputPracticeMessageEntity toEntity() => OutputPracticeMessageEntity(
         conversationId: conversationId,

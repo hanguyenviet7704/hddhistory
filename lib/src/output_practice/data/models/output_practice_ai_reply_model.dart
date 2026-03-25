@@ -3,8 +3,9 @@ part of '../../output_practice.dart';
 @freezed
 abstract class OutputPracticeAiReplyModel with _$OutputPracticeAiReplyModel {
   const factory OutputPracticeAiReplyModel({
-    String? type,
-    String? content,
+    @Default('') String id,
+    @JsonKey(unknownEnumValue: OutputPracticeInputType.unknown) @Default(OutputPracticeInputType.unknown) OutputPracticeInputType type,
+    @Default('') String content,
     @Default([]) List<OutputPracticeAiReplyOptionModel> options,
   }) = _OutputPracticeAiReplyModel;
 
@@ -14,8 +15,20 @@ abstract class OutputPracticeAiReplyModel with _$OutputPracticeAiReplyModel {
 
 extension OutputPracticeAiReplyModelExtension on OutputPracticeAiReplyModel {
   OutputPracticeAiReplyEntity toEntity() => OutputPracticeAiReplyEntity(
+        id: id,
         type: type,
         content: content,
         options: options.map((o) => o.toEntity()).toList(),
       );
+}
+
+enum OutputPracticeInputType {
+  @JsonValue('message')
+  message,
+  @JsonValue('select_option')
+  selectOption,
+  @JsonValue('summary_decision')
+  summaryDecision,
+  @JsonValue('unknown')
+  unknown,
 }
