@@ -8,6 +8,7 @@ abstract class OutputPracticeConversationEntity with _$OutputPracticeConversatio
     @Default('') String sectionId,
     @Default('') String threadId,
     @Default(0) int lastSeq,
+    @Default(false) bool summaryDecisionPending,
     @Default(OutputPracticeAiReplyEntity()) OutputPracticeAiReplyEntity reply,
   }) = _OutputPracticeConversationEntity;
 
