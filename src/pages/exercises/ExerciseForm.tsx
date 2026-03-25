@@ -1072,14 +1072,6 @@ export default function ExerciseForm({
                                                 />
                                               </div>
                                             )}
-                                            {doc.data.thumbnail && (
-                                              <div className="ml-1">
-                                                <TextWithTooltip
-                                                  text={doc.data.thumbnail}
-                                                  maxLength={50}
-                                                />
-                                              </div>
-                                            )}
                                           </>
                                         )}
                                       </div>
@@ -1677,31 +1669,17 @@ export default function ExerciseForm({
 
       if (doc.type === DocumentType.VIDEO) {
         return (
-          <div className="flex flex-col gap-3">
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={mediaUrl}
-                onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
-                label="Video URL"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "exercises",
-                }}
-              />
-            </div>
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={doc.data.thumbnail || ""}
-                onUrlChange={(newUrl) =>
-                  handleDataChange(index, "thumbnail", newUrl)
-                }
-                label="Video Thumbnail"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "exercises",
-                }}
-              />
-            </div>
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Video URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "exercises",
+              }}
+              accept="video/*"
+            />
           </div>
         );
       }
@@ -1820,38 +1798,19 @@ export default function ExerciseForm({
 
       if (doc.type === DocumentType.VIDEO) {
         return (
-          <div className="flex flex-col gap-3">
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={mediaUrl}
-                onUrlChange={(newUrl) =>
-                  handleGroupDataChange(groupIndex, docIndex, "url", newUrl)
-                }
-                label="Video URL"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "exercises",
-                }}
-              />
-            </div>
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={doc.data.thumbnail || ""}
-                onUrlChange={(newUrl) =>
-                  handleGroupDataChange(
-                    groupIndex,
-                    docIndex,
-                    "thumbnail",
-                    newUrl,
-                  )
-                }
-                label="Video Thumbnail"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "exercises",
-                }}
-              />
-            </div>
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) =>
+                handleGroupDataChange(groupIndex, docIndex, "url", newUrl)
+              }
+              label="Video URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "exercises",
+              }}
+              accept="video/*"
+            />
           </div>
         );
       }
