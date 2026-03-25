@@ -4,6 +4,7 @@ import { cloudflareService } from "../../services/cloudflareR2Service";
 
 const ANIMATION_EXT_REGEX = /\.(json|lottie)(\?|#|$)/i;
 const IMAGE_EXT_REGEX = /\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i;
+const VIDEO_EXT_REGEX = /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i;
 
 const normalizeAnimationData = (raw: any) => {
   if (!raw) return null;
@@ -75,7 +76,11 @@ const buildCloudflareDownloadUrl = (value: string): string => {
     }
   }
 
-  if (!IMAGE_EXT_REGEX.test(value) && !ANIMATION_EXT_REGEX.test(value)) {
+  if (
+    !IMAGE_EXT_REGEX.test(value) &&
+    !ANIMATION_EXT_REGEX.test(value) &&
+    !VIDEO_EXT_REGEX.test(value)
+  ) {
     return value;
   }
 
@@ -113,6 +118,7 @@ const CloudflareAssetPreview: React.FC<CloudflareAssetPreviewProps> = ({
     [rawSrc]
   );
   const isAnimation = ANIMATION_EXT_REGEX.test(rawSrc);
+  const isVideo = VIDEO_EXT_REGEX.test(rawSrc);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const animationRef = useRef<AnimationItem | null>(null);
   const [hasError, setHasError] = useState(false);
@@ -193,6 +199,20 @@ const CloudflareAssetPreview: React.FC<CloudflareAssetPreviewProps> = ({
   if (!rawSrc) return null;
 
   if (!isAnimation) {
+    if (isVideo) {
+      return (
+        <video
+          src={displaySrc}
+          className={className}
+          style={style}
+          muted
+          loop
+          playsInline
+          autoPlay
+        />
+      );
+    }
+
     return (
       <img src={displaySrc} alt={alt} className={className} style={style} />
     );

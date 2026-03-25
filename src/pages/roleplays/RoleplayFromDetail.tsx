@@ -2739,31 +2739,17 @@ export default function RoleplayFromDetail({
 
       if (doc.type === DocumentType.VIDEO) {
         return (
-          <div className="flex flex-col gap-3">
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={mediaUrl}
-                onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
-                label="Video URL"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "roleplays",
-                }}
-              />
-            </div>
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={doc.data.thumbnail || ""}
-                onUrlChange={(newUrl) =>
-                  handleDataChange(index, "thumbnail", newUrl)
-                }
-                label="Video Thumbnail"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "roleplays",
-                }}
-              />
-            </div>
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Video URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "roleplays",
+              }}
+              accept="video/*"
+            />
           </div>
         );
       }

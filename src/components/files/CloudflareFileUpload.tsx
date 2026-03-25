@@ -9,6 +9,11 @@ import lottie, { AnimationItem } from "lottie-web";
 import { UploadFileToCloudflare } from "../../types/interface/files/cloudflare.interface";
 import { cloudflareService } from "../../services/cloudflareR2Service";
 
+const AUDIO_EXT_REGEX = /\.(mp3|wav|m4a|ogg)(\?|#|$)/i;
+const IMAGE_EXT_REGEX = /\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i;
+const ANIMATION_EXT_REGEX = /\.(json|lottie)(\?|#|$)/i;
+const VIDEO_EXT_REGEX = /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i;
+
 interface Props {
   initialUrl?: string;
   onUrlChange: (url: string) => void;
@@ -121,19 +126,23 @@ export default function CloudflareFileUpload({
 
   const isAudio =
     fileType.startsWith("audio") ||
-    previewUrl.endsWith(".mp3") ||
-    previewUrl.endsWith(".wav");
+    AUDIO_EXT_REGEX.test(previewUrl);
 
   const isImage =
     fileType.startsWith("image") ||
-    /\.(png|jpg|jpeg|gif|webp|svg)$/i.test(previewUrl);
+    IMAGE_EXT_REGEX.test(previewUrl);
 
   const isAnimation =
     fileType.includes("json") ||
     fileType.includes("lottie") ||
     accept.includes("json") ||
     accept.includes("lottie") ||
-    /\.(json|lottie)$/i.test(previewUrl);
+    ANIMATION_EXT_REGEX.test(previewUrl);
+
+  const isVideo =
+    fileType.startsWith("video") ||
+    accept.includes("video") ||
+    VIDEO_EXT_REGEX.test(previewUrl);
 
   useEffect(() => {
     if (!isAnimation || !previewUrl || !animationContainerRef.current) {
@@ -236,6 +245,11 @@ export default function CloudflareFileUpload({
                 <source src={previewUrl} />
                 Trình duyệt của bạn không hỗ trợ phát audio.
               </audio>
+            ) : isVideo ? (
+              <video controls className="w-full h-full rounded-lg bg-black">
+                <source src={previewUrl} />
+                Trình duyệt của bạn không hỗ trợ phát video.
+              </video>
             ) : isAnimation ? (
               <div className="relative w-full h-full bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
                 <div

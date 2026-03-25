@@ -645,14 +645,6 @@ export default function TheoryForm({
                                               />
                                             </div>
                                           )}
-                                          {doc.data.thumbnail && (
-                                            <div className="ml-1">
-                                              <TextWithTooltip
-                                                text={doc.data.thumbnail}
-                                                maxLength={50}
-                                              />
-                                            </div>
-                                          )}
                                         </>
                                       )}
                                     </div>
@@ -809,31 +801,17 @@ export default function TheoryForm({
 
       if (doc.type === DocumentType.VIDEO) {
         return (
-          <div className="flex flex-col gap-3">
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={mediaUrl}
-                onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
-                label="Video URL"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "theories",
-                }}
-              />
-            </div>
-            <div className="w-52">
-              <CloudflareFileUpload
-                initialUrl={doc.data.thumbnail || ""}
-                onUrlChange={(newUrl) =>
-                  handleDataChange(index, "thumbnail", newUrl)
-                }
-                label="Video Thumbnail"
-                uploadPayload={{
-                  prefix: "",
-                  folder: "theories",
-                }}
-              />
-            </div>
+          <div className="w-52">
+            <CloudflareFileUpload
+              initialUrl={mediaUrl}
+              onUrlChange={(newUrl) => handleDataChange(index, "url", newUrl)}
+              label="Video URL"
+              uploadPayload={{
+                prefix: "",
+                folder: "theories",
+              }}
+              accept="video/*"
+            />
           </div>
         );
       }
