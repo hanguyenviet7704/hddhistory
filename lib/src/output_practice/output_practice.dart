@@ -16,8 +16,6 @@ part 'data/models/output_practice_ai_reply_option_model.dart';
 part 'data/models/output_practice_ai_reply_model.dart';
 part 'data/models/output_practice_conversation_model.dart';
 part 'data/models/output_practice_message_model.dart';
-part 'data/models/output_practice_ai_start_response_model.dart';
-part 'data/models/output_practice_ai_stream_event_model.dart';
 part 'data/datasources/remote/output_practice_api.dart';
 part 'data/datasources/remote/output_practice_socket_data_source.dart';
 part 'data/datasources/remote/output_practice_socket_event.dart';
@@ -27,6 +25,7 @@ part 'data/repositories/output_practice_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/output_practice_ai_reply_option_entity.dart';
 part 'domain/entities/output_practice_ai_reply_entity.dart';
+part 'domain/entities/output_practice_ai_stream_event_entity.dart';
 part 'domain/entities/output_practice_conversation_entity.dart';
 part 'domain/entities/output_practice_message_entity.dart';
 part 'domain/repositories/i_output_practice_repository.dart';
