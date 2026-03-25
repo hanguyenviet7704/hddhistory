@@ -24,5 +24,4 @@ part 'app_di_config.dart';
 part 'cache_di.dart';
 part 'network_di.dart';
 part 'route_observer_di.dart';
-part 'supabase_di.dart';
 part 'tracking_di.dart';

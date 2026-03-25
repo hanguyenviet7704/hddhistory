@@ -8,7 +8,7 @@ class GraphQLService {
   final int receiveTimeout;
 
   GraphQLService({
-    @Named(DIKey.graphqlBaseUrl) required this.graphqlBaseUrl,
+    @Named('graphqlBaseUrl') required this.graphqlBaseUrl,
     @Named(DIKey.apiKey) required this.apiKey,
     @Named(DIKey.connectTimeout) this.connectTimeout = 30000,
     @Named(DIKey.receiveTimeout) this.receiveTimeout = 30000,
