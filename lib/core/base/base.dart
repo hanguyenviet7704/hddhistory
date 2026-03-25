@@ -32,5 +32,4 @@ part 'request/page_break_request.dart';
 part 'responses/base_multi_language.dart';
 part 'responses/base_page_break.dart';
 part 'responses/base_response.dart';
-part 'responses/base_socket_response.dart';
 part 'use_case/use_case.dart';

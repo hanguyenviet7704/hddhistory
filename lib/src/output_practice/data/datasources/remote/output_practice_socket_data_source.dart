@@ -5,8 +5,8 @@ class OutputPracticeSocketDataSource {
   OutputPracticeSocketDataSource(@Named(DIKey.socketBaseUrl) this._socketBaseUrl);
 
   final String _socketBaseUrl;
-  final Map<SocketServerEvent, StreamController<BaseSocketResponse<Map<String, dynamic>>>> _eventControllers = {
-    for (final event in SocketServerEvent.values) event: StreamController<BaseSocketResponse<Map<String, dynamic>>>.broadcast(),
+  final Map<SocketServerEvent, StreamController<Map<String, dynamic>>> _eventControllers = {
+    for (final event in SocketServerEvent.values) event: StreamController<Map<String, dynamic>>.broadcast(),
   };
 
   io.Socket? _socket;
@@ -14,18 +14,13 @@ class OutputPracticeSocketDataSource {
   bool get isConnected => _socket?.connected ?? false;
   io.Socket? get socket => _socket;
 
-  Stream<BaseSocketResponse<Map<String, dynamic>>> onRawEvent(SocketServerEvent event) => _eventControllers[event]!.stream;
+  Stream<Map<String, dynamic>> onRawEvent(SocketServerEvent event) => _eventControllers[event]!.stream;
 
-  Stream<BaseSocketResponse<Map<String, dynamic>>> onJoinedRoom() => onRawEvent(SocketServerEvent.joinedRoom);
+  Stream<Map<String, dynamic>> onJoinedRoom() => onRawEvent(SocketServerEvent.joinedRoom);
 
-  Stream<BaseSocketResponse<Map<String, dynamic>>> onJoinRoomError() => onRawEvent(SocketServerEvent.joinRoomError);
+  Stream<Map<String, dynamic>> onJoinRoomError() => onRawEvent(SocketServerEvent.joinRoomError);
 
-  Stream<BaseSocketResponse<OutputPracticeAiStreamEvent>> onOutputPracticeEvent() {
-    return _mapTypedEvent(
-      event: SocketServerEvent.outputPracticeEvent,
-      converter: _toStreamEvent,
-    );
-  }
+  Stream<OutputPracticeAiStreamEvent> onOutputPracticeEvent() => onRawEvent(SocketServerEvent.outputPracticeEvent).map(_toStreamEvent);
 
   void connect({
     Map<String, dynamic>? query,
@@ -94,19 +89,6 @@ class OutputPracticeSocketDataSource {
     }
   }
 
-  Stream<BaseSocketResponse<T>> _mapTypedEvent<T>({
-    required SocketServerEvent event,
-    required T Function(Map<String, dynamic> payload) converter,
-  }) {
-    return onRawEvent(event).map(
-      (response) => BaseSocketResponse<T>(
-        event: response.event,
-        socket: response.socket,
-        data: converter(response.data ?? const {}),
-      ),
-    );
-  }
-
   void _registerSocketListeners(io.Socket socket) {
     socket.onConnect((_) => LogDev.info('[OutputPracticeSocket] connected id=${socket.id}'));
     socket.onDisconnect((reason) => LogDev.info('[OutputPracticeSocket] disconnected reason=$reason'));
@@ -115,30 +97,9 @@ class OutputPracticeSocketDataSource {
 
     for (final event in SocketServerEvent.values) {
       socket.on(event.value, (payload) {
-        _eventControllers[event]!.add(_toBaseSocketResponse(event, payload));
+        _eventControllers[event]!.add(_normalizePayload(payload));
       });
     }
-  }
-
-  BaseSocketResponse<Map<String, dynamic>> _toBaseSocketResponse(SocketServerEvent event, dynamic payload) {
-    final normalizedPayload = _normalizePayload(payload);
-
-    try {
-      if (normalizedPayload.containsKey('event') || normalizedPayload.containsKey('socket') || normalizedPayload.containsKey('data')) {
-        return BaseSocketResponse<Map<String, dynamic>>.fromJson(
-          normalizedPayload,
-          (json) => _normalizePayload(json),
-        );
-      }
-    } catch (_) {
-      // Fall back to the normalized payload when the server payload is not wrapped.
-    }
-
-    return BaseSocketResponse<Map<String, dynamic>>(
-      event: event.value,
-      socket: _socket?.id ?? '',
-      data: normalizedPayload,
-    );
   }
 
   OutputPracticeAiStreamEvent _toStreamEvent(Map<String, dynamic> payload) {
