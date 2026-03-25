@@ -1,10 +1,10 @@
 part of '../../../course.dart';
 
-class RoadmapRoleplayCard extends StatelessWidget {
+class RoadmapLessonCard extends StatelessWidget {
   final LessonEntity lesson;
   final VoidCallback? onTap;
 
-  const RoadmapRoleplayCard({
+  const RoadmapLessonCard({
     super.key,
     required this.lesson,
     this.onTap,

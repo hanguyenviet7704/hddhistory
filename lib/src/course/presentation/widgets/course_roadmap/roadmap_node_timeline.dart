@@ -45,6 +45,14 @@ class RoadmapNodeActionHelper {
     RoleplayIntroRoute().go(context);
   }
 
+  static void _startOutputPractice(BuildContext context, LessonEntity lesson) {
+    // AppDI.injector.get<OutputPracticeCubit>()
+    //   ..reset()
+    //   ..setCurrentLesson(lesson)
+    //   ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
+    // OutputPracticeRoute().go(context);
+  }
+
   static CourseLevel _resolveCourseLevel(RoadmapEntity roadmap, LessonEntity lesson, CourseLevel fallback) {
     for (final level in roadmap.levels) {
       if (level.roadmapLessonsList.any((item) => item.isSameLesson(lesson))) {
@@ -97,7 +105,10 @@ class RoadmapNodeActionHelper {
           courseLevel: _resolveCourseLevel(state.roadmap, lesson, state.currentCourseLevel),
         );
         return;
-      case LessonType.output || LessonType.unknown:
+      case LessonType.output:
+        _startOutputPractice(context, lesson);
+        return;
+      case LessonType.unknown:
         return;
     }
   }
