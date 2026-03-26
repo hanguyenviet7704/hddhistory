@@ -9,6 +9,7 @@ abstract class OutputPracticeConversationEntity with _$OutputPracticeConversatio
     @Default('') String threadId,
     @Default(0) int lastSeq,
     @Default(false) bool summaryDecisionPending,
+    @Default(false) bool conversationEnded,
     @Default(OutputPracticeAiReplyEntity()) OutputPracticeAiReplyEntity reply,
   }) = _OutputPracticeConversationEntity;
 

@@ -9,6 +9,7 @@ abstract class OutputPracticeConversationModel with _$OutputPracticeConversation
     @Default('') String threadId,
     @Default(0) int lastSeq,
     @Default(false) bool summaryDecisionPending,
+    @Default(false) bool conversationEnded,
     @Default(OutputPracticeAiReplyModel()) OutputPracticeAiReplyModel reply,
   }) = _OutputPracticeConversationModel;
 
@@ -24,6 +25,7 @@ extension OutputPracticeConversationModelExtension on OutputPracticeConversation
         threadId: threadId,
         lastSeq: lastSeq,
         summaryDecisionPending: summaryDecisionPending,
+        conversationEnded: conversationEnded,
         reply: reply.toEntity(),
       );
 }
