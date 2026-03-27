@@ -16,6 +16,7 @@ abstract class LessonModel with _$LessonModel {
     @Default(TagModel()) TagModel icon,
     @Default(TagModel()) TagModel lightIcon,
     @JsonKey(unknownEnumValue: ProcessEnum.unknown) @Default(ProcessEnum.notStarted) ProcessEnum progess,
+    @Default('') String animation,
     @Default(0) int index,
   }) = _LessonModel;
 
@@ -89,6 +90,7 @@ extension LessonModelExtension on LessonModel {
     estimateCompleTime: estimateCompleTime,
     icon: icon.toEntity(),
     lightIcon: lightIcon.toEntity(),
+    animation: animation,
     index: index,
     progess: progess,
   );
