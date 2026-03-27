@@ -8,13 +8,23 @@ abstract class OutputPracticeConversationModel with _$OutputPracticeConversation
     @Default('') String sectionId,
     @Default('') String threadId,
     @Default(0) int lastSeq,
-    @Default(false) bool summaryDecisionPending,
-    @Default(false) bool conversationEnded,
+    @JsonKey(unknownEnumValue: OutputPracticeConversationStatus.unknown) @Default(OutputPracticeConversationStatus.unknown) OutputPracticeConversationStatus status,
     @Default(OutputPracticeAiReplyModel()) OutputPracticeAiReplyModel reply,
   }) = _OutputPracticeConversationModel;
 
   factory OutputPracticeConversationModel.fromJson(Map<String, dynamic> json) =>
       _$OutputPracticeConversationModelFromJson(json);
+}
+
+enum OutputPracticeConversationStatus {
+  @JsonValue('active')
+  active,
+  @JsonValue('summary_decision_pending')
+  summaryDecisionPending,
+  @JsonValue('finished')
+  finished,
+  @JsonValue('unknown')
+  unknown,
 }
 
 extension OutputPracticeConversationModelExtension on OutputPracticeConversationModel {
@@ -24,8 +34,7 @@ extension OutputPracticeConversationModelExtension on OutputPracticeConversation
         sectionId: sectionId,
         threadId: threadId,
         lastSeq: lastSeq,
-        summaryDecisionPending: summaryDecisionPending,
-        conversationEnded: conversationEnded,
+        status: status,
         reply: reply.toEntity(),
       );
 }
