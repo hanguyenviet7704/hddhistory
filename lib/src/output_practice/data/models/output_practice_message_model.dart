@@ -6,20 +6,11 @@ abstract class OutputPracticeMessageModel with _$OutputPracticeMessageModel {
     @Default('') String conversationId,
     @Default(0) int seq,
     @Default('') String content,
-    @Default(OutputPracticeMessageType.text) OutputPracticeMessageType type,
+    @JsonKey(unknownEnumValue: OutputPracticeMessageType.unknown) @Default(OutputPracticeMessageType.unknown) OutputPracticeMessageType type,
     @Default(OutputPracticeMessageRole.user) OutputPracticeMessageRole role,
   }) = _OutputPracticeMessageModel;
 
   factory OutputPracticeMessageModel.fromJson(Map<String, dynamic> json) => _$OutputPracticeMessageModelFromJson(json);
-}
-
-enum OutputPracticeMessageType {
-  @JsonValue('text')
-  text,
-  @JsonValue('image')
-  image,
-  @JsonValue('file')
-  file,
 }
 
 enum OutputPracticeMessageRole {

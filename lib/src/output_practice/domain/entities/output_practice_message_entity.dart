@@ -6,7 +6,7 @@ abstract class OutputPracticeMessageEntity with _$OutputPracticeMessageEntity {
     @Default('') String conversationId,
     @Default(0) int seq,
     @Default('') String content,
-    @Default(OutputPracticeMessageType.text) OutputPracticeMessageType type,
+    @JsonKey(unknownEnumValue: OutputPracticeMessageType.unknown) @Default(OutputPracticeMessageType.unknown) OutputPracticeMessageType type,
     @Default(OutputPracticeMessageRole.user) OutputPracticeMessageRole role,
   }) = _OutputPracticeMessageEntity;
 
