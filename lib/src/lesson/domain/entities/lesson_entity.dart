@@ -16,7 +16,7 @@ abstract class LessonEntity with _$LessonEntity {
     @Default(TagEntity()) TagEntity icon,
     @Default(TagEntity()) TagEntity lightIcon,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
-    @Default('') String animation,
+    @Default(ConversationAvatarEntity()) ConversationAvatarEntity animation,
     @Default(0) int index,
   }) = _LessonEntity;
 
