@@ -46,11 +46,58 @@ class RoadmapNodeActionHelper {
   }
 
   static void _startOutputPractice(BuildContext context, LessonEntity lesson) {
-    // AppDI.injector.get<OutputPracticeCubit>()
-    //   ..reset()
-    //   ..setCurrentLesson(lesson)
-    //   ..loadLearningItem(lesson.learningItemId, estimateCompleTime: lesson.estimateCompleTime);
-    // OutputPracticeRoute().go(context);
+    final roadmap = context.read<CourseRoadmapCubit>().state.roadmap;
+    final sectionId = resolveOutputPracticeSectionId(roadmap, lesson);
+    if (sectionId.isEmpty) return;
+
+    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackOutputPracticePopupView(
+        trackingData,
+        sectionId: sectionId,
+      );
+    }
+
+    OutputPracticeIntroSheet.show(
+      context,
+      lesson: lesson,
+      onDismissed: () {
+        if (trackingData == null) return;
+        AppService.instance.appTrackingService.trackOutputPracticePopupClose(
+          trackingData,
+          sectionId: sectionId,
+        );
+      },
+      onStart: () {
+        if (trackingData != null) {
+          AppService.instance.appTrackingService.trackOutputPracticeStartClick(
+            trackingData,
+            sectionId: sectionId,
+          );
+        }
+
+        AppDI.injector.get<OutputPracticeCubit>()
+          ..reset()
+          ..preloadEntry(
+            lesson: lesson,
+            sectionId: sectionId,
+          );
+
+        OutputPracticeRoute(sectionId: sectionId).push(context);
+      },
+    );
+  }
+
+  @visibleForTesting
+  static String resolveOutputPracticeSectionId(RoadmapEntity roadmap, LessonEntity lesson) {
+    for (final level in roadmap.levels) {
+      for (final node in level.nodes) {
+        if (node.output.id == lesson.id || node.outputId == lesson.id) {
+          return node.id;
+        }
+      }
+    }
+    return '';
   }
 
   static CourseLevel _resolveCourseLevel(RoadmapEntity roadmap, LessonEntity lesson, CourseLevel fallback) {

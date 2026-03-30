@@ -1,117 +1,397 @@
 part of '../../output_practice.dart';
 
 @lazySingleton
-class OutputPracticeCubit extends Cubit<OutputPracticeState> with CubitUseCaseHandlerMixin<OutputPracticeState> {
-  final GetOutputPracticeConversationUseCase _getConversationUseCase;
-  final CreateOutputPracticeConversationUseCase _createConversationUseCase;
-  final GetAllOutputPracticeMessagesUseCase _getAllMessagesUseCase;
-  final SendOutputPracticeMessageUseCase _sendMessageUseCase;
-
+class OutputPracticeCubit extends Cubit<OutputPracticeState> {
   OutputPracticeCubit(
     this._getConversationUseCase,
     this._getAllMessagesUseCase,
     this._createConversationUseCase,
     this._sendMessageUseCase,
+    this._getCourseLessonUseCase,
   ) : super(OutputPracticeState.initial());
 
-  void loadAllOutputPracticeMessages({bool isInit = false}) async {
-    if (!isInit && state.status == OutputPracticeStatus.loading) return;
-    if (!isInit && state.messagesPageData.isLastPage) return;
+  final GetOutputPracticeConversationUseCase _getConversationUseCase;
+  final GetAllOutputPracticeMessagesUseCase _getAllMessagesUseCase;
+  final CreateOutputPracticeConversationUseCase _createConversationUseCase;
+  final SendOutputPracticeMessageUseCase _sendMessageUseCase;
+  final GetCourseLessonUseCase _getCourseLessonUseCase;
+  int _sessionToken = 0;
 
-    final pageRequest = isInit ? const PageBreakRequest() : PageBreakRequest(page: state.messagesPageData.nextPage);
+  void reset() {
+    _sessionToken += 1;
+    emit(OutputPracticeState.initial());
+  }
 
-    await runUseCasePageBreak<OutputPracticeMessageEntity>(
-      usecase: () => _getAllMessagesUseCase(pageRequest),
-      currentPageData: state.messagesPageData,
-      isInit: isInit,
-      buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
-      onFailure: (error) {
+  void preloadEntry({
+    required LessonEntity lesson,
+    required String sectionId,
+  }) {
+    _sessionToken += 1;
+    emit(
+      OutputPracticeState.initial().copyWith(
+        currentLesson: lesson,
+        currentSectionId: sectionId,
+      ),
+    );
+  }
+
+  void updateInputText(String value) => emit(state.copyWith(inputText: value));
+
+  void updateScrollState({required bool isNearBottom}) {
+    emit(
+      state.copyWith(
+        isNearBottom: isNearBottom,
+        showJumpToLatest: !isNearBottom && state.showJumpToLatest,
+      ),
+    );
+  }
+
+  void markScreenViewTracked() {
+    if (state.screenViewTracked) return;
+    emit(state.copyWith(screenViewTracked: true));
+  }
+
+  OutputPracticeActionChipVm? matchTextToAction(String text) {
+    return _matchActionChip(text, state.activeActionChips);
+  }
+
+  Future<void> initialize(String sectionId) async {
+    final sessionToken = ++_sessionToken;
+    if (sectionId.isEmpty) {
+      emit(
+        state.copyWith(
+          uiMode: OutputPracticeUiMode.unavailable,
+        ),
+      );
+      return;
+    }
+
+    final preloadedLesson = state.currentSectionId == sectionId ? state.currentLesson : const LessonEntity();
+    emit(
+      OutputPracticeState.initial().copyWith(
+        uiMode: OutputPracticeUiMode.loading,
+        currentSectionId: sectionId,
+        currentLesson: preloadedLesson,
+      ),
+    );
+
+    if (preloadedLesson.id.isNotEmpty) {
+      final lessonResult = await _getCourseLessonUseCase(preloadedLesson.id).run();
+      if (!_isSessionActive(sessionToken, sectionId: sectionId)) return;
+      lessonResult.fold((_) {}, (lesson) => emit(state.copyWith(detailedLesson: lesson)));
+    }
+
+    var createdConversation = false;
+    final conversationResult = await _getConversationUseCase(sectionId).run();
+    if (!_isSessionActive(sessionToken, sectionId: sectionId)) return;
+    final resolvedConversation = await conversationResult.fold(
+      (exception) async {
+        if (!_isSessionActive(sessionToken, sectionId: sectionId)) return null;
+        if (exception is! NotFoundException) {
+          emit(
+            state.copyWith(
+              uiMode: OutputPracticeUiMode.unavailable,
+              unavailableMessage: exception.displayMessage,
+            ),
+          );
+          return null;
+        }
+
+        createdConversation = true;
+        return _createConversation(sectionId, sessionToken: sessionToken);
+      },
+      (conversation) async {
+        if (conversation.hasConversation) return conversation;
+        createdConversation = true;
+        return _createConversation(sectionId, sessionToken: sessionToken);
+      },
+    );
+
+    if (!_isSessionActive(sessionToken, sectionId: sectionId)) return;
+    if (resolvedConversation == null || !resolvedConversation.hasConversation) return;
+
+    emit(
+      state.copyWith(
+        uiMode: OutputPracticeUiMode.loading,
+        entryState: createdConversation ? OutputPracticeEntryState.created : OutputPracticeEntryState.existing,
+        conversation: resolvedConversation,
+        currentConversationId: resolvedConversation.id,
+        activeActionChips: _buildActionChips(resolvedConversation, liveSummaryTurn: false),
+      ),
+    );
+
+    await _loadHistory(forcePage: 1, sessionToken: sessionToken);
+  }
+
+  Future<void> retryHistory() => _loadHistory(forcePage: 1);
+
+  Future<void> loadOlderHistory() {
+    if (!state.canLoadMoreHistory) return Future.value();
+    return _loadHistory(forcePage: state.currentHistoryPage + 1);
+  }
+
+  void markRoomJoined(String roomId) {
+    if (roomId.isEmpty || roomId != state.currentConversationId) return;
+    emit(state.copyWith(joinedRoomId: roomId, roomErrorMessage: null));
+  }
+
+  void markRoomJoinFailed(String roomId, String? message) {
+    if (roomId.isEmpty || roomId != state.currentConversationId) return;
+    emit(state.copyWith(joinedRoomId: '', roomErrorMessage: message));
+  }
+
+  void handleSocketEvent(OutputPracticeAiStreamEvent event) {
+    final eventConversationId = event.conversationId ?? '';
+    if (eventConversationId.isNotEmpty && eventConversationId != state.currentConversationId) return;
+    switch (event) {
+      case _OutputPracticeAiStreamEventStream(:final content):
+        final draftId = state.pendingAssistantLocalId.isNotEmpty ? state.pendingAssistantLocalId : 'assistant_draft';
+        final timeline = [...state.timelineItems];
+        final draft = _appendOrUpdateAssistantDraft(timeline, draftId, content);
+        final index = timeline.indexWhere((item) => item.id == draftId);
+        if (index == -1) {
+          timeline.add(draft);
+        } else {
+          timeline[index] = draft;
+        }
         emit(
           state.copyWith(
-            status: OutputPracticeStatus.failure,
-            errorMessage: error,
+            sendStatus: OutputPracticeSendStatus.streaming,
+            pendingAssistantLocalId: draftId,
+            timelineItems: timeline,
+            showJumpToLatest: !state.isNearBottom,
+          ),
+        );
+      case _OutputPracticeAiStreamEventMetadataUpdate(:final isSummaryTurn):
+        final liveSummaryTurn = isSummaryTurn ?? false;
+        emit(
+          state.copyWith(
+            liveSummaryTurn: liveSummaryTurn,
+            activeActionChips: _buildActionChips(state.conversation, liveSummaryTurn: liveSummaryTurn),
+          ),
+        );
+      case _OutputPracticeAiStreamEventEnd():
+        if (state.pendingAssistantLocalId.isEmpty) return;
+        final timeline = state.timelineItems.map((item) {
+          if (item.id != state.pendingAssistantLocalId) return item;
+          return item.copyWith(isStreaming: false);
+        }).toList();
+        emit(state.copyWith(timelineItems: timeline));
+      case _OutputPracticeAiStreamEventError():
+        _handleSendFailure('The practice response was interrupted.');
+      case _OutputPracticeAiStreamEventUnknown():
+        return;
+    }
+  }
+
+  Future<void> sendCurrentInput() async {
+    if (!state.isInputEnabled) return;
+
+    final text = state.inputText.trim();
+    if (text.isEmpty) return;
+    final matchedChip = matchTextToAction(text);
+    if (matchedChip != null) {
+      await sendActionChip(matchedChip, committedText: matchedChip.label);
+      return;
+    }
+
+    await _sendAction(
+      committedText: text,
+      body: {
+        'conversationId': state.currentConversationId,
+        'type': 'message',
+        'message': text,
+      },
+      isFreeText: true,
+    );
+  }
+
+  Future<void> sendActionChip(OutputPracticeActionChipVm chip, {String? committedText}) {
+    if (!state.isInputEnabled) return Future.value();
+    final type = chip.kind == OutputPracticeActionKind.summaryDecision ? 'summary_decision' : 'select_option';
+    return _sendAction(
+      committedText: committedText ?? chip.label,
+      body: {
+        'conversationId': state.currentConversationId,
+        'type': type,
+        'value': chip.value,
+      },
+      isFreeText: false,
+    );
+  }
+
+  Future<void> retryFailedMessage() async {
+    final text = state.pendingMessageText;
+    if (text == null || text.isEmpty) return;
+    updateInputText(text);
+    await sendCurrentInput();
+  }
+
+  Future<OutputPracticeConversationEntity?> _createConversation(
+    String sectionId, {
+    required int sessionToken,
+  }) async {
+    final result = await _createConversationUseCase({
+      'sectionId': sectionId,
+      'language': AppDI.injector.get<LocaleCubit>().state.languageAISupport,
+    }).run();
+    if (!_isSessionActive(sessionToken, sectionId: sectionId)) return null;
+
+    return result.fold((exception) {
+      emit(
+        state.copyWith(
+          uiMode: OutputPracticeUiMode.unavailable,
+          unavailableMessage: exception.displayMessage,
+        ),
+      );
+      return null;
+    }, (conversation) => conversation);
+  }
+
+  Future<void> _loadHistory({int? forcePage, int? sessionToken}) async {
+    final activeConversationId = state.currentConversationId;
+    final activeSectionId = state.currentSectionId;
+    final currentSessionToken = sessionToken ?? _sessionToken;
+    if (activeConversationId.isEmpty) return;
+    emit(state.copyWith(historyStatus: OutputPracticeHistoryStatus.loading, historyErrorMessage: null));
+
+    final result = await _getAllMessagesUseCase(
+      OutputPracticeMessagesRequestEntity(
+        conversationId: activeConversationId,
+        page: forcePage ?? 1,
+      ),
+    ).run();
+    if (!_isSessionActive(
+      currentSessionToken,
+      sectionId: activeSectionId,
+      conversationId: activeConversationId,
+    )) {
+      return;
+    }
+
+    result.fold(
+      (exception) {
+        emit(
+          state.copyWith(
+            uiMode: OutputPracticeUiMode.ready,
+            historyStatus: OutputPracticeHistoryStatus.failure,
+            historyErrorMessage: exception.displayMessage,
           ),
         );
       },
-      onSuccess: (pageData) {
+      (pageData) {
         emit(
           state.copyWith(
-            status: OutputPracticeStatus.success,
-            messagesPageData: pageData,
+            uiMode: OutputPracticeUiMode.ready,
+            historyStatus: OutputPracticeHistoryStatus.success,
+            timelineItems: forcePage != null && forcePage > 1 ? _prependTimelineItems(state.timelineItems, pageData.items) : _timelineFromMessages(pageData.items),
+            currentHistoryPage: pageData.currentPage,
+            totalHistoryPages: pageData.totalPages,
+            activeActionChips: _buildActionChips(state.conversation, liveSummaryTurn: state.liveSummaryTurn),
+            showJumpToLatest: false,
           ),
         );
       },
     );
   }
 
-  void loadOutputPracticeConversation(String sectionId) async {
-    await runUseCase<OutputPracticeConversationEntity>(
-      usecase: () => _getConversationUseCase(sectionId),
-      buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
-      onFailure: (error) {
-        emit(
-          state.copyWith(
-            status: OutputPracticeStatus.failure,
-            errorMessage: error,
+  Future<void> _sendAction({
+    required String committedText,
+    required Map<String, dynamic> body,
+    required bool isFreeText,
+  }) async {
+    final sessionToken = _sessionToken;
+    final activeConversationId = state.currentConversationId;
+    final activeSectionId = state.currentSectionId;
+    final pendingMessageLocalId = 'pending_${DateTime.now().microsecondsSinceEpoch}';
+    emit(
+      state.copyWith(
+        timelineItems: [
+          ...state.timelineItems,
+          OutputPracticeTimelineItem.user(
+            id: pendingMessageLocalId,
+            content: committedText,
+            deliveryStatus: OutputPracticeDeliveryStatus.sending,
           ),
-        );
-      },
-      onSuccess: (item) {
+        ],
+        hiddenActionChips: [...state.activeActionChips],
+        activeActionChips: const [],
+        inputText: '',
+        pendingWasFreeText: isFreeText,
+        pendingMessageText: committedText,
+        pendingMessageLocalId: pendingMessageLocalId,
+        pendingAssistantLocalId: 'assistant_$pendingMessageLocalId',
+        sendStatus: OutputPracticeSendStatus.waitingSocket,
+        showJumpToLatest: !state.isNearBottom,
+      ),
+    );
+
+    final result = await _sendMessageUseCase(body).run();
+    if (!_isSessionActive(
+      sessionToken,
+      sectionId: activeSectionId,
+      conversationId: activeConversationId,
+    )) {
+      return;
+    }
+    await result.match(
+      (exception) async => _handleSendFailure(exception.displayMessage),
+      (canonicalMessages) async {
+        final refreshedConversation = (await _getConversationUseCase(state.currentSectionId).run()).getOrElse((_) => state.conversation);
+        if (!_isSessionActive(
+          sessionToken,
+          sectionId: activeSectionId,
+          conversationId: activeConversationId,
+        )) {
+          return;
+        }
         emit(
           state.copyWith(
-            status: OutputPracticeStatus.success,
-            conversation: item,
+            conversation: refreshedConversation,
+            liveSummaryTurn: false,
+            timelineItems: _replacePendingTurnWithCanonical(state, canonicalMessages),
+            activeActionChips: _buildActionChips(refreshedConversation, liveSummaryTurn: false),
+            hiddenActionChips: const [],
+            pendingMessageText: null,
+            pendingWasFreeText: false,
+            pendingMessageLocalId: '',
+            pendingAssistantLocalId: '',
+            sendStatus: OutputPracticeSendStatus.idle,
           ),
         );
       },
     );
   }
 
-  void createOutputPracticeConversation(Map<String, dynamic> body) async {
-    await runUseCase<OutputPracticeConversationEntity>(
-      usecase: () => _createConversationUseCase(body),
-      buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
-      onFailure: (error) {
-        emit(
-          state.copyWith(
-            status: OutputPracticeStatus.failure,
-            errorMessage: error,
-          ),
-        );
-      },
-      onSuccess: (newConversation) {
-        emit(
-          state.copyWith(
-            status: OutputPracticeStatus.success,
-            conversation: newConversation,
-          ),
-        );
-      },
-    );
+  bool _isSessionActive(
+    int sessionToken, {
+    String? sectionId,
+    String? conversationId,
+  }) {
+    if (sessionToken != _sessionToken) return false;
+    if (sectionId != null && sectionId.isNotEmpty && state.currentSectionId != sectionId) return false;
+    if (conversationId != null && conversationId.isNotEmpty && state.currentConversationId != conversationId) return false;
+    return true;
   }
 
-  void sendOutputPracticeMessage(Map<String, dynamic> body) async {
-    await runUseCase<List<OutputPracticeMessageEntity>>(
-      usecase: () => _sendMessageUseCase(body),
-      buildLoadingState: () => state.copyWith(status: OutputPracticeStatus.loading),
-      onFailure: (error) {
-        emit(
-          state.copyWith(
-            status: OutputPracticeStatus.failure,
-            errorMessage: error,
-          ),
-        );
-      },
-      onSuccess: (newMessages) {
-        final updatedItems = [...state.messagesPageData.items, ...newMessages];
-        final updatedPageData = state.messagesPageData.copyWith(items: updatedItems);
-        emit(
-          state.copyWith(
-            status: OutputPracticeStatus.success,
-            messagesPageData: updatedPageData,
-          ),
-        );
-      },
+  void _handleSendFailure(String message) {
+    emit(
+      state.copyWith(
+        timelineItems: state.pendingWasFreeText
+            ? state.timelineItems
+                  .map((item) => item.id == state.pendingMessageLocalId ? item.copyWith(deliveryStatus: OutputPracticeDeliveryStatus.failed) : item)
+                  .where((item) => item.id != state.pendingAssistantLocalId)
+                  .toList()
+            : state.timelineItems.where((item) => item.id != state.pendingMessageLocalId && item.id != state.pendingAssistantLocalId).toList(),
+        sendStatus: OutputPracticeSendStatus.idle,
+        activeActionChips: [...state.hiddenActionChips],
+        hiddenActionChips: const [],
+        roomErrorMessage: message,
+        pendingMessageLocalId: '',
+        pendingAssistantLocalId: '',
+        pendingMessageText: state.pendingWasFreeText ? state.pendingMessageText : null,
+        pendingWasFreeText: false,
+      ),
     );
   }
 }

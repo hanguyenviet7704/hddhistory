@@ -14,7 +14,7 @@ abstract class OutputPracticeApi {
 
   @GET(AppEndpoint.coursesOutputPracticeMessages)
   Future<BaseResponse<BasePageBreak<OutputPracticeMessageModel>>> getAllOutputPracticeMessages(
-    @Queries() PageBreakRequest request,
+    @Queries() OutputPracticeMessagesRequestEntity request,
   );
 
   @POST(AppEndpoint.coursesOutputPracticeMessagesSend)

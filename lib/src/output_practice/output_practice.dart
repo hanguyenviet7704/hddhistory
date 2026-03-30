@@ -4,6 +4,8 @@ library;
 import 'package:meup/meup.dart';
 
 //* Package imports
+import 'dart:ui';
+
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
@@ -28,20 +30,37 @@ part 'domain/entities/output_practice_ai_reply_entity.dart';
 part 'domain/entities/output_practice_ai_stream_event_entity.dart';
 part 'domain/entities/output_practice_conversation_entity.dart';
 part 'domain/entities/output_practice_message_entity.dart';
+part 'domain/entities/output_practice_messages_request_entity.dart';
 part 'domain/repositories/i_output_practice_repository.dart';
+part 'domain/repositories/i_output_practice_socket_repository.dart';
 part 'domain/usecases/get_all_output_practice_messages_usecase.dart';
 part 'domain/usecases/get_output_practice_conversation_usecase.dart';
 part 'domain/usecases/create_output_practice_conversation_usecase.dart';
 part 'domain/usecases/send_output_practice_message_usecase.dart';
+part 'data/repositories/output_practice_socket_repository.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/output_practice_state.dart';
 part 'presentation/cubits/output_practice_cubit.dart';
+part 'presentation/cubits/output_practice_runtime_helper.dart';
+part 'presentation/cubits/output_practice_socket_state.dart';
+part 'presentation/cubits/output_practice_socket_cubit.dart';
+part 'presentation/models/output_practice_action_chip_vm.dart';
+part 'presentation/models/output_practice_timeline_item.dart';
 
 //* Presentation Layer - Pages
 part 'presentation/pages/output_practice_page.dart';
 
 //* Presentation Layer - Widgets
+part 'presentation/widgets/output_practice_intro_sheet.dart';
+part 'presentation/widgets/output_practice_page_shell.dart';
+part 'presentation/widgets/output_practice_header.dart';
+part 'presentation/widgets/output_practice_timeline_list.dart';
+part 'presentation/widgets/output_practice_assistant_bubble.dart';
+part 'presentation/widgets/output_practice_user_bubble.dart';
+part 'presentation/widgets/output_practice_action_chip_stack.dart';
+part 'presentation/widgets/output_practice_thinking_row.dart';
+part 'presentation/widgets/output_practice_composer.dart';
 
 //* Parts for generated files
 part 'output_practice.freezed.dart';

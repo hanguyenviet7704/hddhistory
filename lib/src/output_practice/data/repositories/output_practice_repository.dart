@@ -9,16 +9,22 @@ class OutputPracticeRepository with RestfulRequestHandlerMixin implements IOutpu
 
   @override
   TaskEither<AppException, BasePageBreak<OutputPracticeMessageEntity>> getAllOutputPracticeMessages(
-    PageBreakRequest request,
+    OutputPracticeMessagesRequestEntity request,
   ) {
     return callApiPageBreak<OutputPracticeMessageModel, OutputPracticeMessageEntity>(
       apiCall: () => _api.getAllOutputPracticeMessages(request),
       transform: (model) => model.toEntity(),
       onSuccess: (pageData) async {
-        await _localDataSource.cacheMessages(pageData.items);
+        final cachedMessages = await _localDataSource.getCachedMessages(request.conversationId);
+        final mergedMessages = <String, OutputPracticeMessageModel>{
+          for (final message in cachedMessages) '${message.seq}_${message.role.name}': message,
+          for (final message in pageData.items) '${message.seq}_${message.role.name}': OutputPracticeMessageModel.fromJson(message.toJson()),
+        }.values.toList()..sort((left, right) => left.seq.compareTo(right.seq));
+        await _localDataSource.cacheMessages(request.conversationId, mergedMessages);
       },
       onError: () async {
-        final cachedModels = await _localDataSource.getCachedMessages();
+        if (request.page > 1) return null;
+        final cachedModels = await _localDataSource.getCachedMessages(request.conversationId);
         if (cachedModels.isNotEmpty) {
           return BasePageBreak<OutputPracticeMessageEntity>(
             currentPage: 1,
@@ -37,7 +43,11 @@ class OutputPracticeRepository with RestfulRequestHandlerMixin implements IOutpu
     return callApiWithTransform<OutputPracticeConversationModel, OutputPracticeConversationEntity>(
       apiCall: () => _api.getOutputPracticeConversation(sectionId),
       transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheConversation(data ?? const OutputPracticeConversationModel()),
+      onSuccess: (data) async {
+        final conversation = data;
+        if (conversation == null) return;
+        await _localDataSource.cacheConversation(sectionId, conversation);
+      },
       onError: () async {
         final cachedModel = await _localDataSource.getCachedConversation(sectionId);
         return cachedModel?.toEntity();
@@ -50,10 +60,15 @@ class OutputPracticeRepository with RestfulRequestHandlerMixin implements IOutpu
   TaskEither<AppException, OutputPracticeConversationEntity> createOutputPracticeConversation(
     Map<String, dynamic> body,
   ) {
+    final sectionId = body['sectionId']?.toString() ?? '';
     return callApiWithTransform<OutputPracticeConversationModel, OutputPracticeConversationEntity>(
       apiCall: () => _api.createOutputPracticeConversation(body),
       transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheConversation(data ?? const OutputPracticeConversationModel()),
+      onSuccess: (data) async {
+        final conversation = data;
+        if (conversation == null || sectionId.isEmpty) return;
+        await _localDataSource.cacheConversation(sectionId, conversation);
+      },
       defaultValue: OutputPracticeConversationEntity(),
     );
   }

@@ -84,6 +84,20 @@ final class AppTrackingService extends ITrackingService {
     };
   }
 
+  Map<String, dynamic> _outputPracticeParams(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    String? conversationId,
+    String? language,
+  }) {
+    return {
+      ..._courseLessonParams(trackingData),
+      'section_id': sectionId,
+      if (conversationId != null && conversationId.isNotEmpty) 'conversation_id': conversationId,
+      if (language != null && language.isNotEmpty) 'language': language,
+    };
+  }
+
   Map<String, dynamic> _premiumParams() {
     try {
       final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
@@ -718,6 +732,122 @@ final class AppTrackingService extends ITrackingService {
         ..._courseLessonParams(trackingData),
         'source': source,
       },
+    );
+  }
+
+  @override
+  Future<void> trackOutputPracticePopupView(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.outputPracticePopupView,
+      parameters: _outputPracticeParams(trackingData, sectionId: sectionId),
+    );
+  }
+
+  @override
+  Future<void> trackOutputPracticePopupClose(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.outputPracticePopupClose,
+      parameters: _outputPracticeParams(trackingData, sectionId: sectionId),
+    );
+  }
+
+  @override
+  Future<void> trackOutputPracticeStartClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.outputPracticeStartClick,
+      parameters: _outputPracticeParams(trackingData, sectionId: sectionId),
+    );
+  }
+
+  @override
+  Future<void> trackOutputPracticeScrView(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+    required String language,
+    required String entryState,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.outputPracticeScrView,
+      parameters: {
+        ..._outputPracticeParams(
+          trackingData,
+          sectionId: sectionId,
+          conversationId: conversationId,
+          language: language,
+        ),
+        'entry_state': entryState,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackOutputPracticeOptionClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+    required String optionLabel,
+    required int optionValue,
+    required String inputSource,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.outputPracticeOptionClick,
+      parameters: {
+        ..._outputPracticeParams(
+          trackingData,
+          sectionId: sectionId,
+          conversationId: conversationId,
+        ),
+        'option_label': optionLabel,
+        'option_value': optionValue,
+        'input_source': inputSource,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackOutputPracticeSendClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+    required int messageLength,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.outputPracticeSendClick,
+      parameters: {
+        ..._outputPracticeParams(
+          trackingData,
+          sectionId: sectionId,
+          conversationId: conversationId,
+        ),
+        'message_type': 'text',
+        'message_length': messageLength,
+      },
+    );
+  }
+
+  @override
+  Future<void> trackOutputPracticeExitClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.outputPracticeExitClick,
+      parameters: _outputPracticeParams(
+        trackingData,
+        sectionId: sectionId,
+        conversationId: conversationId,
+      ),
     );
   }
 

@@ -1,16 +1,17 @@
 part of '../../../output_practice.dart';
 
 abstract class OutputPracticeLocalDataSource {
-  Future<List<OutputPracticeMessageModel>> getCachedMessages();
-  Future<void> cacheMessages(List<OutputPracticeMessageModel> models);
+  Future<List<OutputPracticeMessageModel>> getCachedMessages(String conversationId);
+  Future<void> cacheMessages(String conversationId, List<OutputPracticeMessageModel> models);
   Future<OutputPracticeConversationModel?> getCachedConversation(String sectionId);
-  Future<void> cacheConversation(OutputPracticeConversationModel model);
-  Future<void> clearCache();
+  Future<void> cacheConversation(String sectionId, OutputPracticeConversationModel model);
+  Future<void> clearConversation(String sectionId);
+  Future<void> clearMessages(String conversationId);
 }
 
 @LazySingleton(as: OutputPracticeLocalDataSource)
 class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource {
-  static const String _messagesListKey = 'output_practice_messages_cache';
+  static const String _messagesKeyPrefix = 'output_practice_messages_cache';
   static const String _conversationKeyPrefix = 'output_practice_conversation_cache';
 
   final ILocalStoreService _localStoreService;
@@ -18,9 +19,9 @@ class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource
   OutputPracticeLocalDataSourceImpl(this._localStoreService);
 
   @override
-  Future<List<OutputPracticeMessageModel>> getCachedMessages() async {
+  Future<List<OutputPracticeMessageModel>> getCachedMessages(String conversationId) async {
     try {
-      final data = await _localStoreService.getMap(key: _messagesListKey);
+      final data = await _localStoreService.getMap(key: _messagesKey(conversationId));
       if (data.isEmpty) return [];
       final List<dynamic> jsonList = data['items'] ?? [];
       return jsonList
@@ -32,11 +33,11 @@ class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource
   }
 
   @override
-  Future<void> cacheMessages(List<OutputPracticeMessageModel> models) async {
+  Future<void> cacheMessages(String conversationId, List<OutputPracticeMessageModel> models) async {
     try {
       final jsonList = models.map((model) => model.toJson()).toList();
       await _localStoreService.setMap(
-        key: _messagesListKey,
+        key: _messagesKey(conversationId),
         value: {'items': jsonList},
       );
     } catch (e) {
@@ -47,7 +48,7 @@ class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource
   @override
   Future<OutputPracticeConversationModel?> getCachedConversation(String sectionId) async {
     try {
-      final cacheKey = '${_conversationKeyPrefix}_$sectionId';
+      final cacheKey = _conversationKey(sectionId);
       final data = await _localStoreService.getMap(key: cacheKey);
       if (data.isEmpty) return null;
       return OutputPracticeConversationModel.fromJson(data);
@@ -57,9 +58,9 @@ class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource
   }
 
   @override
-  Future<void> cacheConversation(OutputPracticeConversationModel model) async {
+  Future<void> cacheConversation(String sectionId, OutputPracticeConversationModel model) async {
     try {
-      final cacheKey = '${_conversationKeyPrefix}_${model.sectionId}';
+      final cacheKey = _conversationKey(sectionId);
       await _localStoreService.setMap(
         key: cacheKey,
         value: model.toJson(),
@@ -70,11 +71,24 @@ class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource
   }
 
   @override
-  Future<void> clearCache() async {
+  Future<void> clearConversation(String sectionId) async {
     try {
-      await _localStoreService.remove(key: _messagesListKey);
+      await _localStoreService.remove(key: _conversationKey(sectionId));
     } catch (e) {
       // Handle error silently
     }
   }
+
+  @override
+  Future<void> clearMessages(String conversationId) async {
+    try {
+      await _localStoreService.remove(key: _messagesKey(conversationId));
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+
+  String _messagesKey(String conversationId) => '${_messagesKeyPrefix}_$conversationId';
+
+  String _conversationKey(String sectionId) => '${_conversationKeyPrefix}_$sectionId';
 }

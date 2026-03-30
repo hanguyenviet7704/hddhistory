@@ -16,4 +16,10 @@ abstract class OutputPracticeMessageEntity with _$OutputPracticeMessageEntity {
 
 extension OutputPracticeMessagesEntityExtension on List<OutputPracticeMessageEntity> {
   List<OutputPracticeMessageEntity> get userMessages => where((message) => message.role == OutputPracticeMessageRole.user).toList();
+
+  List<OutputPracticeMessageEntity> get sortedBySeqAsc {
+    final messages = [...this];
+    messages.sort((left, right) => left.seq.compareTo(right.seq));
+    return messages;
+  }
 }

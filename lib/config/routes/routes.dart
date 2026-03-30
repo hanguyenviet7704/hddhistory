@@ -25,6 +25,7 @@ part 'data/routes_onboard_data.dart';
 part 'data/routes_shell.dart';
 part 'data/routes_shell_course_data.dart';
 part 'data/routes_shell_course_lesson_data.dart';
+part 'data/routes_shell_course_output_practice_data.dart';
 part 'data/routes_shell_course_roleplay_data.dart';
 part 'data/routes_shell_home_data.dart';
 part 'data/routes_shell_setting_data.dart';

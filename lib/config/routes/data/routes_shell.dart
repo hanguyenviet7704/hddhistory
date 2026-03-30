@@ -42,6 +42,10 @@ part of '../routes.dart';
                 TypedGoRoute<RoleplayFeedbackRoute>(path: RoutePath.roleplayFeedback, name: RouteNamed.roleplayFeedback),
               ],
             ),
+            TypedGoRoute<OutputPracticeRoute>(
+              path: RoutePath.outputPractice,
+              name: RouteNamed.outputPractice,
+            ),
           ],
         ),
       ],

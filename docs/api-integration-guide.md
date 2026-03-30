@@ -1,6 +1,6 @@
 # API Integration Guide
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-03-30  
 **Related:** `docs/system-architecture.md`, `lib/core/base/`, `lib/src/*/data/datasources/remote/`
 
 ## 1. Integration Stack
@@ -140,6 +140,23 @@ Future<BaseResponse<UploadModel>> uploadFile(
 - `productId`
 - `packageName`
 - `storeTransactionId`
+
+### 6.5 Output practice conversation and message requests
+`OutputPracticeApi` defines these feature-scoped REST endpoints:
+- `getOutputPracticeConversation(sectionId)` -> `GET AppEndpoint.coursesOutputPracticeSectionConversations`
+- `createOutputPracticeConversation(body)` -> `POST AppEndpoint.coursesOutputPracticeConversations`
+- `getAllOutputPracticeMessages(request)` -> `GET AppEndpoint.coursesOutputPracticeMessages`
+- `sendOutputPracticeMessage(body)` -> `POST AppEndpoint.coursesOutputPracticeMessagesSend`
+
+Request payloads:
+- `OutputPracticeMessagesRequestEntity` query fields: `conversationId`, `page`, `take`, `orderBy`, `order`
+- Create conversation body: `sectionId`, `language`
+- Send message body: `conversationId`, `type`, and either `message` for free text or `value` for action-chip sends
+
+Runtime behavior:
+- Conversation fetch is section-scoped.
+- Message history is conversation-scoped and paginated.
+- A missing conversation is treated as create-on-demand rather than a hard failure.
 
 ## 7. Repository Integration Pattern
 Use repositories to isolate transport details from domain/presentation:
