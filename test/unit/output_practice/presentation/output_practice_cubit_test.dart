@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:meup/meup.dart';
@@ -171,6 +173,166 @@ void main() {
       expect(cubit.state.timelineItems.every((item) => item.deliveryStatus == OutputPracticeDeliveryStatus.confirmed), isTrue);
       expect(cubit.state.pendingMessageText, isNull);
     });
+
+    test('filters previously selected options from history when reopening a conversation', () async {
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(
+          options: const [
+            OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
+            OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+          ],
+        ),
+        messages: const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 1, content: 'Try again', role: OutputPracticeMessageRole.user),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 2, content: 'Sure, let us retry.', role: OutputPracticeMessageRole.assistant),
+        ],
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+
+      expect(cubit.state.activeActionChips.map((chip) => chip.label), ['New branch']);
+    });
+
+    test('keeps action chips hidden until history loading completes', () async {
+      final historyCompleter = Completer<void>();
+      final repo = _FakeOutputPracticeRepository(
+        getConversationHandler: (_) => TaskEither.right(
+          _conversation(
+            options: const [
+              OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
+            ],
+          ),
+        ),
+        getMessagesHandler: (request) => TaskEither(() async {
+          await historyCompleter.future;
+          return right(
+            BasePageBreak(
+              currentPage: request.page,
+              totalPages: 1,
+              items: const [],
+            ),
+          );
+        }),
+        createConversationHandler: (_) => TaskEither.right(_conversation()),
+        sendMessageHandler: (_) => TaskEither.right(const []),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      final initializeFuture = cubit.initialize('section-1');
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.historyStatus, OutputPracticeHistoryStatus.loading);
+      expect(cubit.state.activeActionChips, isEmpty);
+
+      historyCompleter.complete();
+      await initializeFuture;
+
+      expect(cubit.state.historyStatus, OutputPracticeHistoryStatus.success);
+      expect(cubit.state.activeActionChips.map((chip) => chip.label), ['Try again']);
+    });
+
+    test('keeps selected chips hidden until the socket turn refreshes conversation state', () async {
+      var conversationReadCount = 0;
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(),
+        messages: const [],
+        getConversationHandler: (_) {
+          conversationReadCount += 1;
+          return TaskEither.right(
+            switch (conversationReadCount) {
+              1 || 2 => _conversation(),
+              _ => _conversation(
+                lastSeq: 4,
+                options: const [
+                  OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+                ],
+              ),
+            },
+          );
+        },
+        sendMessageResult: TaskEither.right(const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 3, content: 'Try again', role: OutputPracticeMessageRole.user),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Sure, let us retry.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      await cubit.sendActionChip(cubit.state.activeActionChips.single, committedText: 'Try again');
+
+      expect(cubit.state.activeActionChips, isEmpty);
+
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(cubit.state.activeActionChips.map((chip) => chip.label), ['New branch']);
+    });
+
+    test('does not restore stale chips when the socket end refresh still returns the old conversation', () async {
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(),
+        messages: const [],
+        getConversationHandler: (_) => TaskEither.right(_conversation()),
+        sendMessageResult: TaskEither.right(const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 3, content: 'Try again', role: OutputPracticeMessageRole.user),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Sure, let us retry.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      await cubit.sendActionChip(cubit.state.activeActionChips.single, committedText: 'Try again');
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(cubit.state.activeActionChips, isEmpty);
+    });
+
+    test('keeps consumed options hidden even when an advanced conversation returns the same option set', () async {
+      var conversationReadCount = 0;
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(
+          options: const [
+            OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
+            OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+          ],
+        ),
+        messages: const [],
+        getConversationHandler: (_) {
+          conversationReadCount += 1;
+          return TaskEither.right(
+            _conversation(
+              lastSeq: conversationReadCount >= 3 ? 4 : 0,
+              options: const [
+                OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
+                OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+              ],
+            ),
+          );
+        },
+        sendMessageResult: TaskEither.right(const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 3, content: 'Try again', role: OutputPracticeMessageRole.user),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Sure, let us retry.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      await cubit.sendActionChip(cubit.state.activeActionChips.firstWhere((chip) => chip.label == 'Try again'), committedText: 'Try again');
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(cubit.state.activeActionChips.map((chip) => chip.label), ['New branch']);
+    });
   });
 }
 
@@ -189,10 +351,11 @@ _FakeOutputPracticeRepository _buildOutputPracticeRepository({
   required OutputPracticeConversationEntity conversation,
   required List<OutputPracticeMessageEntity> messages,
   TaskEither<AppException, List<OutputPracticeMessageEntity>>? sendMessageResult,
+  TaskEither<AppException, OutputPracticeConversationEntity> Function(String sectionId)? getConversationHandler,
   void Function(Map<String, dynamic> body)? onSend,
 }) {
   return _FakeOutputPracticeRepository(
-    getConversationHandler: (_) => TaskEither.right(conversation),
+    getConversationHandler: getConversationHandler ?? (_) => TaskEither.right(conversation),
     getMessagesHandler: (request) => TaskEither.right(
       BasePageBreak(
         currentPage: request.page,
@@ -216,14 +379,17 @@ LessonEntity _lesson() => const LessonEntity(
 
 OutputPracticeConversationEntity _conversation({
   OutputPracticeConversationStatus status = OutputPracticeConversationStatus.active,
+  int lastSeq = 0,
+  List<OutputPracticeAiReplyOptionEntity> options = const [
+    OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
+  ],
 }) => OutputPracticeConversationEntity(
   id: 'conversation-1',
   sectionId: 'section-1',
+  lastSeq: lastSeq,
   status: status,
-  reply: const OutputPracticeAiReplyEntity(
-    options: [
-      OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
-    ],
+  reply: OutputPracticeAiReplyEntity(
+    options: options,
   ),
 );
 

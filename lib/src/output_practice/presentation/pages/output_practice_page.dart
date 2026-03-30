@@ -15,13 +15,17 @@ class OutputPracticePage extends StatefulWidget {
 class _OutputPracticePageState extends State<OutputPracticePage> {
   final TextEditingController _controller = TextEditingController();
   final ScrollController _scrollController = ScrollController();
+  late final OutputPracticeCubit _outputPracticeCubit;
+  late final OutputPracticeSocketCubit _outputPracticeSocketCubit;
 
   @override
   void initState() {
     super.initState();
+    _outputPracticeCubit = context.read<OutputPracticeCubit>();
+    _outputPracticeSocketCubit = context.read<OutputPracticeSocketCubit>();
     _scrollController.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<OutputPracticeCubit>().initialize(widget.sectionId);
+      _outputPracticeCubit.initialize(widget.sectionId);
     });
   }
 
@@ -31,7 +35,7 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
       ..removeListener(_handleScroll)
       ..dispose();
     _controller.dispose();
-    context.read<OutputPracticeSocketCubit>().disconnect();
+    _outputPracticeSocketCubit.disconnect();
     super.dispose();
   }
 

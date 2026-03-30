@@ -69,6 +69,8 @@ class OutputPracticeUserBubble extends StatelessWidget {
             ),
             child: AppText(
               content,
+              maxLines: 100,
+              softWrap: true,
               style: AppStyle.text14.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.w500,

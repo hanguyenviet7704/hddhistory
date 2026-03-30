@@ -62,6 +62,8 @@ class OutputPracticeAssistantBubble extends StatelessWidget {
             ),
             child: AppText(
               content,
+              maxLines: 100,
+              softWrap: true,
               style: AppStyle.text14.copyWith(
                 color: AppCustomColor.textPrimary,
                 height: 1.75,

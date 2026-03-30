@@ -44,6 +44,20 @@ class OutputPracticeTimelineList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final chipStack = activeActionChips.isEmpty
+        ? const SizedBox(
+            key: ValueKey('output_practice_action_chips_empty'),
+          )
+        : OutputPracticeActionChipStack(
+            key: ValueKey(
+              'output_practice_action_chips_${activeActionChips.map((chip) => chip.id).join('_')}',
+            ),
+            helperLabel: helperLabel,
+            chips: activeActionChips,
+            onChipTap: onChipTap,
+            resolveLabel: resolveChipLabel,
+          );
+
     return ListView(
       controller: controller,
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
@@ -90,13 +104,25 @@ class OutputPracticeTimelineList extends StatelessWidget {
           ),
           16.verticalSpace,
         ],
-        if (activeActionChips.isNotEmpty)
-          OutputPracticeActionChipStack(
-            helperLabel: helperLabel,
-            chips: activeActionChips,
-            onChipTap: onChipTap,
-            resolveLabel: resolveChipLabel,
-          ),
+        AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) {
+            final offsetAnimation = Tween<Offset>(
+              begin: const Offset(0, 0.08),
+              end: Offset.zero,
+            ).animate(animation);
+            return FadeTransition(
+              opacity: animation,
+              child: SlideTransition(
+                position: offsetAnimation,
+                child: child,
+              ),
+            );
+          },
+          child: chipStack,
+        ),
       ],
     );
   }

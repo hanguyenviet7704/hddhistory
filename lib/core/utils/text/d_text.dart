@@ -20,6 +20,7 @@ class AppText extends StatelessWidget {
   final double width;
   final bool enableFitScaleDown;
   final ExpandedType expandedType;
+  final bool? softWrap;
 
   // HTML-specific properties
   final bool forceHtmlRendering;
@@ -45,6 +46,7 @@ class AppText extends StatelessWidget {
     this.forceHtmlRendering = false,
     this.htmlPadding = EdgeInsets.zero,
     this.enableHtmlLinks = true,
+    this.softWrap,
   }) : assert(maxLines > 0, 'maxLines must be greater than 0'),
        assert(expandFlex >= 0, 'expandFlex must be greater than or equal to 0'),
        assert(width >= 0, 'width must be greater than or equal to 0'),
@@ -90,7 +92,7 @@ class AppText extends StatelessWidget {
       textAlign: textAlign,
       maxLines: maxLines,
       overflow: overflow,
-      softWrap: maxLines != 1,
+      softWrap: softWrap ?? maxLines != 1,
       textScaler: TextScaler.linear(textScaleFactor),
       style: style ?? AppStyle.text14,
       textWidthBasis: textWidthBasis,

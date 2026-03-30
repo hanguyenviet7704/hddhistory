@@ -116,7 +116,11 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         entryState: createdConversation ? OutputPracticeEntryState.created : OutputPracticeEntryState.existing,
         conversation: resolvedConversation,
         currentConversationId: resolvedConversation.id,
-        activeActionChips: _buildActionChips(resolvedConversation, liveSummaryTurn: false),
+        activeActionChips: _resolveActionChips(
+          resolvedConversation,
+          liveSummaryTurn: false,
+          timelineItems: state.timelineItems,
+        ),
       ),
     );
 
@@ -140,7 +144,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     emit(state.copyWith(joinedRoomId: '', roomErrorMessage: message));
   }
 
-  void handleSocketEvent(OutputPracticeAiStreamEvent event) {
+  Future<void> handleSocketEvent(OutputPracticeAiStreamEvent event) async {
     final eventConversationId = event.conversationId ?? '';
     if (eventConversationId.isNotEmpty && eventConversationId != state.currentConversationId) return;
     switch (event) {
@@ -167,16 +171,22 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         emit(
           state.copyWith(
             liveSummaryTurn: liveSummaryTurn,
-            activeActionChips: _buildActionChips(state.conversation, liveSummaryTurn: liveSummaryTurn),
+            activeActionChips: _resolveActionChips(
+              state.conversation,
+              liveSummaryTurn: liveSummaryTurn,
+              timelineItems: state.timelineItems,
+            ),
           ),
         );
       case _OutputPracticeAiStreamEventEnd():
-        if (state.pendingAssistantLocalId.isEmpty) return;
-        final timeline = state.timelineItems.map((item) {
-          if (item.id != state.pendingAssistantLocalId) return item;
-          return item.copyWith(isStreaming: false);
-        }).toList();
-        emit(state.copyWith(timelineItems: timeline));
+        if (state.pendingAssistantLocalId.isNotEmpty) {
+          final timeline = state.timelineItems.map((item) {
+            if (item.id != state.pendingAssistantLocalId) return item;
+            return item.copyWith(isStreaming: false);
+          }).toList();
+          emit(state.copyWith(timelineItems: timeline));
+        }
+        await _refreshConversationAfterSocketTurn(conversationId: eventConversationId);
       case _OutputPracticeAiStreamEventError():
         _handleSendFailure('The practice response was interrupted.');
       case _OutputPracticeAiStreamEventUnknown():
@@ -280,14 +290,20 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         );
       },
       (pageData) {
+        final timelineItems = forcePage != null && forcePage > 1 ? _prependTimelineItems(state.timelineItems, pageData.items) : _timelineFromMessages(pageData.items);
         emit(
           state.copyWith(
             uiMode: OutputPracticeUiMode.ready,
             historyStatus: OutputPracticeHistoryStatus.success,
-            timelineItems: forcePage != null && forcePage > 1 ? _prependTimelineItems(state.timelineItems, pageData.items) : _timelineFromMessages(pageData.items),
+            timelineItems: timelineItems,
             currentHistoryPage: pageData.currentPage,
             totalHistoryPages: pageData.totalPages,
-            activeActionChips: _buildActionChips(state.conversation, liveSummaryTurn: state.liveSummaryTurn),
+            activeActionChips: _resolveActionChips(
+              state.conversation,
+              liveSummaryTurn: state.liveSummaryTurn,
+              timelineItems: timelineItems,
+              historyStatus: OutputPracticeHistoryStatus.success,
+            ),
             showJumpToLatest: false,
           ),
         );
@@ -337,6 +353,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     await result.match(
       (exception) async => _handleSendFailure(exception.displayMessage),
       (canonicalMessages) async {
+        final previousConversation = state.conversation;
         final refreshedConversation = (await _getConversationUseCase(state.currentSectionId).run()).getOrElse((_) => state.conversation);
         if (!_isSessionActive(
           sessionToken,
@@ -345,13 +362,21 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         )) {
           return;
         }
+        final hasConversationAdvanced = _hasConversationActionStateAdvanced(previousConversation, refreshedConversation);
+        final timelineItems = _replacePendingTurnWithCanonical(state, canonicalMessages);
         emit(
           state.copyWith(
             conversation: refreshedConversation,
             liveSummaryTurn: false,
-            timelineItems: _replacePendingTurnWithCanonical(state, canonicalMessages),
-            activeActionChips: _buildActionChips(refreshedConversation, liveSummaryTurn: false),
-            hiddenActionChips: const [],
+            timelineItems: timelineItems,
+            activeActionChips: hasConversationAdvanced
+                ? _resolveActionChips(
+                    refreshedConversation,
+                    liveSummaryTurn: false,
+                    timelineItems: timelineItems,
+                  )
+                : const [],
+            hiddenActionChips: hasConversationAdvanced ? const [] : [...state.hiddenActionChips],
             pendingMessageText: null,
             pendingWasFreeText: false,
             pendingMessageLocalId: '',
@@ -372,6 +397,62 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     if (sectionId != null && sectionId.isNotEmpty && state.currentSectionId != sectionId) return false;
     if (conversationId != null && conversationId.isNotEmpty && state.currentConversationId != conversationId) return false;
     return true;
+  }
+
+  List<OutputPracticeActionChipVm> _resolveActionChips(
+    OutputPracticeConversationEntity conversation, {
+    required bool liveSummaryTurn,
+    required List<OutputPracticeTimelineItem> timelineItems,
+    OutputPracticeHistoryStatus? historyStatus,
+  }) {
+    if ((historyStatus ?? state.historyStatus) != OutputPracticeHistoryStatus.success) {
+      return const [];
+    }
+    return _buildVisibleActionChips(
+      conversation,
+      liveSummaryTurn: liveSummaryTurn,
+      timelineItems: timelineItems,
+    );
+  }
+
+  Future<void> _refreshConversationAfterSocketTurn({
+    required String conversationId,
+  }) async {
+    final sessionToken = _sessionToken;
+    final activeSectionId = state.currentSectionId;
+    final activeConversationId = conversationId.isNotEmpty ? conversationId : state.currentConversationId;
+    if (activeSectionId.isEmpty || activeConversationId.isEmpty) return;
+
+    final result = await _getConversationUseCase(activeSectionId).run();
+    if (!_isSessionActive(
+      sessionToken,
+      sectionId: activeSectionId,
+      conversationId: activeConversationId,
+    )) {
+      return;
+    }
+
+    final previousConversation = state.conversation;
+    result.fold(
+      (_) {},
+      (refreshedConversation) {
+        if (!_hasConversationActionStateAdvanced(previousConversation, refreshedConversation)) {
+          return;
+        }
+        emit(
+          state.copyWith(
+            conversation: refreshedConversation,
+            liveSummaryTurn: false,
+            activeActionChips: _resolveActionChips(
+              refreshedConversation,
+              liveSummaryTurn: false,
+              timelineItems: state.timelineItems,
+            ),
+            hiddenActionChips: const [],
+          ),
+        );
+      },
+    );
   }
 
   void _handleSendFailure(String message) {

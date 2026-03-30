@@ -17,7 +17,7 @@ class OutputPracticeHeader extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
       child: SizedBox(
-        height: 40.h,
+        height: 48.h,
         child: Stack(
           alignment: Alignment.center,
           children: [
@@ -34,6 +34,7 @@ class OutputPracticeHeader extends StatelessWidget {
               ),
             ),
             Column(
+              mainAxisSize: MainAxisSize.min,
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 AppText(

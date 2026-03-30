@@ -32,6 +32,50 @@ List<OutputPracticeActionChipVm> _buildActionChips(
   return conversation.reply.options.map(OutputPracticeActionChipVm.option).toList();
 }
 
+List<OutputPracticeActionChipVm> _buildVisibleActionChips(
+  OutputPracticeConversationEntity conversation, {
+  required bool liveSummaryTurn,
+  required List<OutputPracticeTimelineItem> timelineItems,
+}) {
+  final chips = _buildActionChips(conversation, liveSummaryTurn: liveSummaryTurn);
+  if (chips.isEmpty) return chips;
+
+  final consumedOptionLabels = timelineItems
+      .where((item) => item.isUser && item.deliveryStatus != OutputPracticeDeliveryStatus.failed)
+      .map((item) => _normalizeOutputPracticeInput(item.content))
+      .where((label) => label.isNotEmpty)
+      .toSet();
+  if (consumedOptionLabels.isEmpty) return chips;
+
+  return chips.where((chip) {
+    if (chip.kind != OutputPracticeActionKind.option) return true;
+    return !consumedOptionLabels.contains(_normalizeOutputPracticeInput(chip.label));
+  }).toList();
+}
+
+bool _hasConversationActionStateAdvanced(
+  OutputPracticeConversationEntity previous,
+  OutputPracticeConversationEntity next,
+) {
+  if (previous.id != next.id) return true;
+  if (previous.status != next.status) return true;
+  if (previous.lastSeq != next.lastSeq) return true;
+
+  final previousOptions = previous.reply.options;
+  final nextOptions = next.reply.options;
+  if (previousOptions.length != nextOptions.length) return true;
+
+  for (var index = 0; index < previousOptions.length; index++) {
+    final previousOption = previousOptions[index];
+    final nextOption = nextOptions[index];
+    if (previousOption.value != nextOption.value) return true;
+    if (previousOption.label != nextOption.label) return true;
+    if (previousOption.description != nextOption.description) return true;
+  }
+
+  return false;
+}
+
 List<OutputPracticeTimelineItem> _timelineFromMessages(List<OutputPracticeMessageEntity> messages) {
   return messages.sortedBySeqAsc.where((message) => message.role == OutputPracticeMessageRole.user || message.role == OutputPracticeMessageRole.assistant).map((message) {
     final id = _timelineIdForMessage(message);
