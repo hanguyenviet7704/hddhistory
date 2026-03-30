@@ -1,4 +1,4 @@
-part of '../../output_practice.dart';
+part of '../../../output_practice.dart';
 
 enum OutputPracticeUiMode { initial, loading, ready, unavailable }
 
@@ -30,6 +30,7 @@ abstract class OutputPracticeState with _$OutputPracticeState {
     String? roomErrorMessage,
     String? pendingMessageText,
     @Default(false) bool pendingWasFreeText,
+    @Default(false) bool awaitingSelectOptionTurnCompletion,
     @Default('') String pendingMessageLocalId,
     @Default('') String pendingAssistantLocalId,
     @Default(false) bool liveSummaryTurn,
@@ -67,17 +68,10 @@ extension OutputPracticeStateX on OutputPracticeState {
   bool get isInputEnabled {
     final historyReady = historyStatus == OutputPracticeHistoryStatus.success;
     final roomReady = joinedRoomId.isNotEmpty;
-    return uiMode == OutputPracticeUiMode.ready &&
-        historyReady &&
-        roomReady &&
-        sendStatus == OutputPracticeSendStatus.idle &&
-        !conversation.isFinished;
+    return uiMode == OutputPracticeUiMode.ready && historyReady && roomReady && sendStatus == OutputPracticeSendStatus.idle && !conversation.isFinished;
   }
 
   bool get canRetryHistory => currentConversationId.isNotEmpty;
 
-  bool get canLoadMoreHistory =>
-      historyStatus == OutputPracticeHistoryStatus.success &&
-      currentHistoryPage < totalHistoryPages &&
-      currentConversationId.isNotEmpty;
+  bool get canLoadMoreHistory => historyStatus == OutputPracticeHistoryStatus.success && currentHistoryPage < totalHistoryPages && currentConversationId.isNotEmpty;
 }

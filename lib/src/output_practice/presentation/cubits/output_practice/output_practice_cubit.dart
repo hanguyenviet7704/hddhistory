@@ -1,4 +1,4 @@
-part of '../../output_practice.dart';
+part of '../../../output_practice.dart';
 
 @lazySingleton
 class OutputPracticeCubit extends Cubit<OutputPracticeState> {
@@ -213,12 +213,14 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         'message': text,
       },
       isFreeText: true,
+      awaitingSelectOptionTurnCompletion: false,
     );
   }
 
   Future<void> sendActionChip(OutputPracticeActionChipVm chip, {String? committedText}) {
     if (!state.isInputEnabled) return Future.value();
-    final type = chip.kind == OutputPracticeActionKind.summaryDecision ? 'summary_decision' : 'select_option';
+    final isSelectOption = chip.kind == OutputPracticeActionKind.option;
+    final type = isSelectOption ? 'select_option' : 'summary_decision';
     return _sendAction(
       committedText: committedText ?? chip.label,
       body: {
@@ -227,6 +229,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         'value': chip.value,
       },
       isFreeText: false,
+      awaitingSelectOptionTurnCompletion: isSelectOption,
     );
   }
 
@@ -315,6 +318,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     required String committedText,
     required Map<String, dynamic> body,
     required bool isFreeText,
+    required bool awaitingSelectOptionTurnCompletion,
   }) async {
     final sessionToken = _sessionToken;
     final activeConversationId = state.currentConversationId;
@@ -335,6 +339,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         inputText: '',
         pendingWasFreeText: isFreeText,
         pendingMessageText: committedText,
+        awaitingSelectOptionTurnCompletion: awaitingSelectOptionTurnCompletion,
         pendingMessageLocalId: pendingMessageLocalId,
         pendingAssistantLocalId: 'assistant_$pendingMessageLocalId',
         sendStatus: OutputPracticeSendStatus.waitingSocket,
@@ -369,16 +374,19 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
             conversation: refreshedConversation,
             liveSummaryTurn: false,
             timelineItems: timelineItems,
-            activeActionChips: hasConversationAdvanced
+            activeActionChips: awaitingSelectOptionTurnCompletion
+                ? const []
+                : hasConversationAdvanced
                 ? _resolveActionChips(
                     refreshedConversation,
                     liveSummaryTurn: false,
                     timelineItems: timelineItems,
                   )
                 : const [],
-            hiddenActionChips: hasConversationAdvanced ? const [] : [...state.hiddenActionChips],
+            hiddenActionChips: awaitingSelectOptionTurnCompletion || hasConversationAdvanced ? const [] : [...state.hiddenActionChips],
             pendingMessageText: null,
             pendingWasFreeText: false,
+            awaitingSelectOptionTurnCompletion: awaitingSelectOptionTurnCompletion,
             pendingMessageLocalId: '',
             pendingAssistantLocalId: '',
             sendStatus: OutputPracticeSendStatus.idle,
@@ -404,8 +412,12 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     required bool liveSummaryTurn,
     required List<OutputPracticeTimelineItem> timelineItems,
     OutputPracticeHistoryStatus? historyStatus,
+    bool? awaitingSelectOptionTurnCompletion,
   }) {
     if ((historyStatus ?? state.historyStatus) != OutputPracticeHistoryStatus.success) {
+      return const [];
+    }
+    if ((awaitingSelectOptionTurnCompletion ?? state.awaitingSelectOptionTurnCompletion) && !liveSummaryTurn) {
       return const [];
     }
     return _buildVisibleActionChips(
@@ -437,6 +449,14 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
       (_) {},
       (refreshedConversation) {
         if (!_hasConversationActionStateAdvanced(previousConversation, refreshedConversation)) {
+          if (state.awaitingSelectOptionTurnCompletion) {
+            emit(
+              state.copyWith(
+                awaitingSelectOptionTurnCompletion: false,
+                hiddenActionChips: const [],
+              ),
+            );
+          }
           return;
         }
         emit(
@@ -447,8 +467,10 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
               refreshedConversation,
               liveSummaryTurn: false,
               timelineItems: state.timelineItems,
+              awaitingSelectOptionTurnCompletion: false,
             ),
             hiddenActionChips: const [],
+            awaitingSelectOptionTurnCompletion: false,
           ),
         );
       },
@@ -468,6 +490,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         activeActionChips: [...state.hiddenActionChips],
         hiddenActionChips: const [],
         roomErrorMessage: message,
+        awaitingSelectOptionTurnCompletion: false,
         pendingMessageLocalId: '',
         pendingAssistantLocalId: '',
         pendingMessageText: state.pendingWasFreeText ? state.pendingMessageText : null,

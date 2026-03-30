@@ -12,14 +12,15 @@ abstract class OutputPracticeConversationEntity with _$OutputPracticeConversatio
     @Default(OutputPracticeAiReplyEntity()) OutputPracticeAiReplyEntity reply,
   }) = _OutputPracticeConversationEntity;
 
-factory OutputPracticeConversationEntity.fromJson(Map<String, dynamic> json) =>
-      _$OutputPracticeConversationEntityFromJson(json);
+  factory OutputPracticeConversationEntity.fromJson(Map<String, dynamic> json) => _$OutputPracticeConversationEntityFromJson(json);
 }
 
 extension OutputPracticeConversationEntityX on OutputPracticeConversationEntity {
   bool get hasConversation => id.isNotEmpty;
 
   bool get isActive => status == OutputPracticeConversationStatus.active;
+
+  bool get isSelectOptionPending => status == OutputPracticeConversationStatus.selectOptionPending;
 
   bool get isSummaryDecisionPending => status == OutputPracticeConversationStatus.summaryDecisionPending;
 

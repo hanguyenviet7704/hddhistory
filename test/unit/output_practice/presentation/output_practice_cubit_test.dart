@@ -172,6 +172,19 @@ void main() {
       expect(cubit.state.pendingMessageText, isNull);
     });
 
+    test('does not show select-option chips when conversation status is active', () async {
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(status: OutputPracticeConversationStatus.active),
+        messages: const [],
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+
+      expect(cubit.state.activeActionChips, isEmpty);
+    });
+
     test('filters previously selected options from history when reopening a conversation', () async {
       final repo = _buildOutputPracticeRepository(
         conversation: _conversation(
@@ -269,6 +282,62 @@ void main() {
       await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
 
       expect(cubit.state.activeActionChips.map((chip) => chip.label), ['New branch']);
+    });
+
+    test('does not re-show remaining options before the select-option turn ends', () async {
+      var conversationReadCount = 0;
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(
+          options: const [
+            OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
+            OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+          ],
+        ),
+        messages: const [],
+        getConversationHandler: (_) {
+          conversationReadCount += 1;
+          return TaskEither.right(
+            switch (conversationReadCount) {
+              1 => _conversation(
+                options: const [
+                  OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),
+                  OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+                ],
+              ),
+              2 => _conversation(
+                lastSeq: 4,
+                options: const [
+                  OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+                ],
+              ),
+              _ => _conversation(
+                status: OutputPracticeConversationStatus.active,
+                lastSeq: 5,
+                options: const [
+                  OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+                ],
+              ),
+            },
+          );
+        },
+        sendMessageResult: TaskEither.right(const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 3, content: 'Try again', role: OutputPracticeMessageRole.user),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Sure, let us retry.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      await cubit.sendActionChip(cubit.state.activeActionChips.firstWhere((chip) => chip.label == 'Try again'), committedText: 'Try again');
+
+      expect(cubit.state.activeActionChips, isEmpty);
+
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(cubit.state.activeActionChips, isEmpty);
     });
 
     test('does not restore stale chips when the socket end refresh still returns the old conversation', () async {
@@ -376,7 +445,7 @@ LessonEntity _lesson() => const LessonEntity(
 );
 
 OutputPracticeConversationEntity _conversation({
-  OutputPracticeConversationStatus status = OutputPracticeConversationStatus.active,
+  OutputPracticeConversationStatus status = OutputPracticeConversationStatus.selectOptionPending,
   int lastSeq = 0,
   List<OutputPracticeAiReplyOptionEntity> options = const [
     OutputPracticeAiReplyOptionEntity(value: 7, label: 'Try again'),

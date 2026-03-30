@@ -1,4 +1,4 @@
-part of '../../output_practice.dart';
+part of '../../../output_practice.dart';
 
 @lazySingleton
 class OutputPracticeSocketCubit extends Cubit<OutputPracticeSocketState> {

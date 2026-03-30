@@ -29,6 +29,7 @@ List<OutputPracticeActionChipVm> _buildActionChips(
       OutputPracticeActionChipVm.summary(OutputPracticeSummaryAction.endPractice),
     ];
   }
+  if (!conversation.isSelectOptionPending) return const [];
   return conversation.reply.options.map(OutputPracticeActionChipVm.option).toList();
 }
 

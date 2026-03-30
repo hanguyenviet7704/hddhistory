@@ -19,6 +19,8 @@ abstract class OutputPracticeConversationModel with _$OutputPracticeConversation
 enum OutputPracticeConversationStatus {
   @JsonValue('active')
   active,
+  @JsonValue('select_option_pending')
+  selectOptionPending,
   @JsonValue('summary_decision_pending')
   summaryDecisionPending,
   @JsonValue('finished')

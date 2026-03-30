@@ -40,11 +40,11 @@ part 'domain/usecases/send_output_practice_message_usecase.dart';
 part 'data/repositories/output_practice_socket_repository.dart';
 
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
-part 'presentation/cubits/output_practice_state.dart';
-part 'presentation/cubits/output_practice_cubit.dart';
-part 'presentation/cubits/output_practice_runtime_helper.dart';
-part 'presentation/cubits/output_practice_socket_state.dart';
-part 'presentation/cubits/output_practice_socket_cubit.dart';
+part 'presentation/cubits/output_practice/output_practice_state.dart';
+part 'presentation/cubits/output_practice/output_practice_cubit.dart';
+part 'presentation/helper/output_practice_runtime_helper.dart';
+part 'presentation/cubits/output_practice_socket/output_practice_socket_state.dart';
+part 'presentation/cubits/output_practice_socket/output_practice_socket_cubit.dart';
 part 'presentation/models/output_practice_action_chip_vm.dart';
 part 'presentation/models/output_practice_timeline_item.dart';
 
