@@ -17,20 +17,38 @@ class OutputPracticeIntroSheet extends StatelessWidget {
     VoidCallback? onDismissed,
   }) async {
     var didStart = false;
-    await showModalBottomSheet<void>(
+    await showGeneralDialog<void>(
       context: context,
-      isScrollControlled: true,
       useRootNavigator: true,
-      backgroundColor: Colors.transparent,
-      barrierColor: const Color(0x99364152),
-      builder: (sheetContext) => OutputPracticeIntroSheet(
+      barrierDismissible: false,
+      barrierLabel: 'output-practice-intro-sheet',
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 220),
+      pageBuilder: (dialogContext, _, _) => OutputPracticeIntroSheet(
         lesson: lesson,
         onStart: () {
           didStart = true;
-          sheetContext.pop();
+          dialogContext.pop();
           onStart();
         },
       ),
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curvedAnimation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.06),
+              end: Offset.zero,
+            ).animate(curvedAnimation),
+            child: child,
+          ),
+        );
+      },
     );
     if (!didStart) {
       onDismissed?.call();
@@ -40,73 +58,109 @@ class OutputPracticeIntroSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final copy = context.l10n.outputPractice;
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewPaddingOf(context).bottom),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            Container(
-              width: 50.w,
-              height: 5.h,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30.r),
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    return Material(
+      color: Colors.transparent,
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: () => context.pop(),
+              child: ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                  child: const ColoredBox(
+                    color: Color(0x99364152),
+                  ),
+                ),
               ),
             ),
-            6.verticalSpace,
-            Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-              ),
-              padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
+          ),
+          Align(
+            alignment: Alignment.bottomCenter,
+            child: GestureDetector(
+              onTap: () {},
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  AppText(
-                    lesson.title.text,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.textBold24.copyWith(color: AppCustomColor.textPrimary),
-                  ),
-                  4.verticalSpace,
-                  AppText(
-                    copy.practiceLabel.toUpperCase(),
-                    textAlign: TextAlign.center,
-                    style: AppStyle.text12.copyWith(
-                      fontSize: 11.sp,
-                      fontWeight: FontWeight.w500,
-                      color: AppCustomColor.textTertiary,
-                      height: 1.75,
+                  Container(
+                    width: 50.w,
+                    height: 5.h,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30.r),
                     ),
                   ),
-                  12.verticalSpace,
-                  AppText(
-                    lesson.description.text,
-                    style: AppStyle.text14.copyWith(
-                      color: AppCustomColor.textSecondary,
-                      height: 1.75,
+                  6.verticalSpace,
+                  Container(
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
                     ),
-                  ),
-                  40.verticalSpace,
-                  AppButton.primary(
-                    onPressed: onStart,
-                    fullWidthBtn: true,
-                    height: 54.h,
-                    borderRadius: BorderRadius.circular(1000.r),
-                    child: AppText(
-                      copy.startPracticeButton,
-                      style: AppStyle.textBold16.copyWith(color: Colors.white),
-                      textAlign: TextAlign.center,
+                    padding: EdgeInsets.fromLTRB(
+                      20.w,
+                      20.h,
+                      20.w,
+                      (bottomInset > 0 ? bottomInset : 0) + 20.h,
+                    ),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
+                        AppText(
+                          lesson.title.text,
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          style: AppStyle.textBold24.copyWith(
+                            color: AppCustomColor.textPrimary,
+                            height: 1.5,
+                          ),
+                        ),
+                        4.verticalSpace,
+                        AppText(
+                          copy.practiceLabel.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: AppStyle.text12.copyWith(
+                            fontSize: 11.sp,
+                            fontWeight: FontWeight.w700,
+                            color: AppCustomColor.textTertiary,
+                            height: 1.75,
+                          ),
+                        ),
+                        12.verticalSpace,
+                        AppText(
+                          lesson.description.text,
+                          maxLines: 100,
+                          style: AppStyle.text14.copyWith(
+                            color: AppCustomColor.textSecondary,
+                            height: 1.75,
+                          ),
+                        ),
+                        40.verticalSpace,
+                        AppButton.primary(
+                          onPressed: onStart,
+                          fullWidthBtn: true,
+                          height: 54.h,
+                          borderRadius: BorderRadius.circular(1000.r),
+                          child: Text(
+                            copy.startPracticeButton,
+                            textAlign: TextAlign.center,
+                            style: AppStyle.textBold16.copyWith(
+                              color: Colors.white,
+                              height: 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

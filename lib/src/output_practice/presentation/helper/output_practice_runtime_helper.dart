@@ -40,6 +40,9 @@ List<OutputPracticeActionChipVm> _buildVisibleActionChips(
 }) {
   final chips = _buildActionChips(conversation, liveSummaryTurn: liveSummaryTurn);
   if (chips.isEmpty) return chips;
+  if (_isAwaitingAssistantTurnForActionChips(timelineItems)) {
+    return const [];
+  }
 
   final consumedOptionLabels = timelineItems
       .where((item) => item.isUser && item.deliveryStatus != OutputPracticeDeliveryStatus.failed)
@@ -52,6 +55,15 @@ List<OutputPracticeActionChipVm> _buildVisibleActionChips(
     if (chip.kind != OutputPracticeActionKind.option) return true;
     return !consumedOptionLabels.contains(_normalizeOutputPracticeInput(chip.label));
   }).toList();
+}
+
+bool _isAwaitingAssistantTurnForActionChips(List<OutputPracticeTimelineItem> timelineItems) {
+  for (var index = timelineItems.length - 1; index >= 0; index--) {
+    final item = timelineItems[index];
+    if (item.deliveryStatus == OutputPracticeDeliveryStatus.failed) continue;
+    return item.isUser;
+  }
+  return false;
 }
 
 bool _hasConversationActionStateAdvanced(

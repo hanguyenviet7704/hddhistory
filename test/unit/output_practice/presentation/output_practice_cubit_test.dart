@@ -78,6 +78,22 @@ void main() {
       expect(cubit.state.isInputEnabled, isTrue);
     });
 
+    test('hides summary chips when reopening during a pending summary turn', () async {
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(status: OutputPracticeConversationStatus.summaryDecisionPending),
+        messages: const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 1, content: 'Would you like to continue?', role: OutputPracticeMessageRole.assistant),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 2, content: 'End practice', role: OutputPracticeMessageRole.user),
+        ],
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+
+      expect(cubit.state.activeActionChips, isEmpty);
+    });
+
     test('marks failed free-text sends in-place and restores chips', () async {
       final repo = _buildOutputPracticeRepository(
         conversation: _conversation(),
@@ -332,6 +348,48 @@ void main() {
       cubit.markRoomJoined('conversation-1');
 
       await cubit.sendActionChip(cubit.state.activeActionChips.firstWhere((chip) => chip.label == 'Try again'), committedText: 'Try again');
+
+      expect(cubit.state.activeActionChips, isEmpty);
+
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(cubit.state.activeActionChips, isEmpty);
+    });
+
+    test('does not re-show summary chips before the summary-decision turn ends', () async {
+      var conversationReadCount = 0;
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(status: OutputPracticeConversationStatus.summaryDecisionPending),
+        messages: const [],
+        getConversationHandler: (_) {
+          conversationReadCount += 1;
+          return TaskEither.right(
+            switch (conversationReadCount) {
+              1 => _conversation(status: OutputPracticeConversationStatus.summaryDecisionPending),
+              2 => _conversation(
+                status: OutputPracticeConversationStatus.summaryDecisionPending,
+                lastSeq: 4,
+              ),
+              _ => _conversation(
+                status: OutputPracticeConversationStatus.finished,
+                lastSeq: 5,
+              ),
+            },
+          );
+        },
+        sendMessageResult: TaskEither.right(const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 3, content: 'End practice', role: OutputPracticeMessageRole.user),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Thanks for practicing.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      final endPracticeChip = cubit.state.activeActionChips.firstWhere((chip) => chip.summaryAction == OutputPracticeSummaryAction.endPractice);
+      await cubit.sendActionChip(endPracticeChip, committedText: 'End practice');
 
       expect(cubit.state.activeActionChips, isEmpty);
 

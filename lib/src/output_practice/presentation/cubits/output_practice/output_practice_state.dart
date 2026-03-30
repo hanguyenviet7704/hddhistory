@@ -30,7 +30,7 @@ abstract class OutputPracticeState with _$OutputPracticeState {
     String? roomErrorMessage,
     String? pendingMessageText,
     @Default(false) bool pendingWasFreeText,
-    @Default(false) bool awaitingSelectOptionTurnCompletion,
+    @Default(false) bool awaitingActionTurnCompletion,
     @Default('') String pendingMessageLocalId,
     @Default('') String pendingAssistantLocalId,
     @Default(false) bool liveSummaryTurn,
