@@ -31,24 +31,26 @@ class OutputPracticePageShell extends StatelessWidget {
         ),
         child: SafeArea(
           bottom: false,
-          child: Column(
-            children: [
-              header,
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-                    child: Container(
-                      width: double.infinity,
-                      color: Colors.white.withValues(alpha: 0.08),
-                      child: child,
+          child: Unfocused(
+            child: Column(
+              children: [
+                header,
+                Expanded(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.vertical(top: Radius.circular(20.r)),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.white.withValues(alpha: 0.08),
+                        child: child,
+                      ),
                     ),
                   ),
                 ),
-              ),
-              composer,
-            ],
+                composer,
+              ],
+            ),
           ),
         ),
       ),
