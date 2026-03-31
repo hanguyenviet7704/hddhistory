@@ -36,23 +36,36 @@ extension LessonEntityListExtension on List<LessonEntity> {
   List<LessonEntity> applySequentialUnlock({bool enableAutoUnlock = true}) {
     if (!enableAutoUnlock) return toList();
     final lessons = toList();
-    final hasExistingInProgress = lessons.any((lesson) => lesson.roadmapProgress == ProcessEnum.inProgress);
-    if (hasExistingInProgress) return lessons;
-    bool previousAllDone = true;
-    return lessons.map((lesson) {
+    bool previousBlockingCompleted = true;
+    bool hasActiveBlockingLesson = false;
+
+    for (int i = 0; i < lessons.length; i++) {
+      final lesson = lessons[i];
       final progress = lesson.roadmapProgress;
-      if (progress == ProcessEnum.done) return lesson;
+
+      if (!lesson.type.blocksRoadmap) {
+        if (progress == ProcessEnum.done || progress == ProcessEnum.inProgress) continue;
+        if (previousBlockingCompleted && !hasActiveBlockingLesson) {
+          lessons[i] = lesson.copyWithRoadmapProgress(ProcessEnum.done);
+        }
+        continue;
+      }
+
+      if (progress == ProcessEnum.done) continue;
       if (progress == ProcessEnum.inProgress) {
-        previousAllDone = false;
-        return lesson;
+        previousBlockingCompleted = false;
+        hasActiveBlockingLesson = true;
+        continue;
       }
-      if (previousAllDone) {
-        previousAllDone = false;
-        return lesson.markInProgressForRoadmap();
+
+      if (previousBlockingCompleted && !hasActiveBlockingLesson) {
+        lessons[i] = lesson.copyWithRoadmapProgress(ProcessEnum.inProgress);
+        hasActiveBlockingLesson = true;
       }
-      previousAllDone = false;
-      return lesson;
-    }).toList();
+      previousBlockingCompleted = false;
+    }
+
+    return lessons;
   }
 }
 
@@ -97,18 +110,19 @@ extension LessonEntityExtension on LessonEntity {
     return firstKeypoint.progess;
   }
 
-  LessonEntity markInProgressForRoadmap() {
+  LessonEntity copyWithRoadmapProgress(ProcessEnum progress) {
     if (keypoints.isEmpty) {
-      return copyWith(progess: ProcessEnum.inProgress);
+      return copyWith(progess: progress);
     }
 
-    final keypoint = keypoints.first;
-    if (keypoint.progess != ProcessEnum.notStarted) return this;
-    return copyWith(
-      keypoints: [
-        keypoint.copyWith(progess: ProcessEnum.inProgress),
-      ],
-    );
+    final updatedKeypoints = [...keypoints];
+    updatedKeypoints[0] = updatedKeypoints[0].copyWith(progess: progress);
+    return copyWith(keypoints: updatedKeypoints);
+  }
+
+  LessonEntity markInProgressForRoadmap() {
+    if (roadmapProgress != ProcessEnum.notStarted) return this;
+    return copyWithRoadmapProgress(ProcessEnum.inProgress);
   }
 
   String get roadmapIconUrl {

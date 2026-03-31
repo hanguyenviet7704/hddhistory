@@ -55,13 +55,9 @@ extension RoadmapEntityExtension on RoadmapEntity {
     for (var levelIndex = 0; levelIndex < levels.length; levelIndex++) {
       final level = levels[levelIndex];
       final enableSequentialUnlock = levelIndex < levelFlags.length ? levelFlags[levelIndex] : false;
-      final nodeFlags = enableSequentialUnlock ? level.sequentialUnlockFlags : List<bool>.filled(level.nodes.length, false);
-      for (var nodeIndex = 0; nodeIndex < level.nodes.length; nodeIndex++) {
-        final node = level.nodes[nodeIndex];
-        final enableNodeUnlock = nodeIndex < nodeFlags.length ? nodeFlags[nodeIndex] : false;
-        final items = node.lessonsList.applySequentialUnlock(enableAutoUnlock: enableNodeUnlock);
-        displayLessons.addAll(items);
-      }
+      displayLessons.addAll(
+        level.resolvedRoadmapLessons(enableSequentialUnlock: enableSequentialUnlock),
+      );
     }
     return displayLessons;
   }

@@ -53,6 +53,8 @@ enum LessonType {
       unknown => 'unknown',
     };
   }
+
+  bool get blocksRoadmap => this != LessonType.output;
 }
 
 enum ProcessEnum {
