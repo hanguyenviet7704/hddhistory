@@ -24,10 +24,12 @@ class DeviceInfoService implements IDeviceInfoService {
   void initialize() async {
     LogDev.info('DeviceInfoService initialized');
     await getAllDeviceInfo();
+    if (!Platform.isIOS) return;
+
     final deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
     LogDev.one('deviceId: $deviceId');
-    if(!Platform.isIOS) return;
-    if(deviceId.isNotEmpty) return;
+    if (deviceId.isNotEmpty) return;
+
     final fakeDeviceId = const Uuid().v8();
     await _localStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: fakeDeviceId);
   }

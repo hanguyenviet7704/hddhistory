@@ -2,6 +2,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:meup/meup.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   AppService.instance.init(() => runApp(const AppProviders(child: DMainApp())));
 }
 
