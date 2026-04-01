@@ -1,8 +1,7 @@
 part of '../../output_practice.dart';
 
 @lazySingleton
-class GetAllOutputPracticeMessagesUseCase
-    implements BaseUseCase<OutputPracticeMessagesRequestEntity, BasePageBreak<OutputPracticeMessageEntity>> {
+class GetAllOutputPracticeMessagesUseCase implements BaseUseCase<OutputPracticeMessagesRequestEntity, BasePageBreak<OutputPracticeMessageEntity>> {
   final IOutputPracticeRepository _repository;
 
   GetAllOutputPracticeMessagesUseCase(this._repository);

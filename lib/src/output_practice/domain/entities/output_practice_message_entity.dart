@@ -10,8 +10,7 @@ abstract class OutputPracticeMessageEntity with _$OutputPracticeMessageEntity {
     @Default(OutputPracticeMessageRole.user) OutputPracticeMessageRole role,
   }) = _OutputPracticeMessageEntity;
 
-  factory OutputPracticeMessageEntity.fromJson(Map<String, dynamic> json) =>
-      _$OutputPracticeMessageEntityFromJson(json);
+  factory OutputPracticeMessageEntity.fromJson(Map<String, dynamic> json) => _$OutputPracticeMessageEntityFromJson(json);
 }
 
 extension OutputPracticeMessagesEntityExtension on List<OutputPracticeMessageEntity> {

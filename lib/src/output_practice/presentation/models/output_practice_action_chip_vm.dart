@@ -3,10 +3,9 @@ part of '../../output_practice.dart';
 enum OutputPracticeActionKind { option, summaryDecision }
 
 enum OutputPracticeSummaryAction {
-  continueDeeper(1),
-  newChallenge(2),
-  differentScenario(3),
-  endPractice(4);
+  endPractice(1),
+  startANewConversation(2)
+  ;
 
   const OutputPracticeSummaryAction(this.value);
 

@@ -10,6 +10,8 @@ class OutputPracticeTimelineItem {
     required this.author,
     required this.content,
     this.deliveryStatus = OutputPracticeDeliveryStatus.confirmed,
+    this.messageType = OutputPracticeMessageType.unknown,
+    this.serverSeq,
     this.isStreaming = false,
   });
 
@@ -17,6 +19,8 @@ class OutputPracticeTimelineItem {
   final OutputPracticeTimelineAuthor author;
   final String content;
   final OutputPracticeDeliveryStatus deliveryStatus;
+  final OutputPracticeMessageType messageType;
+  final int? serverSeq;
   final bool isStreaming;
 
   bool get isUser => author == OutputPracticeTimelineAuthor.user;
@@ -28,6 +32,8 @@ class OutputPracticeTimelineItem {
     OutputPracticeTimelineAuthor? author,
     String? content,
     OutputPracticeDeliveryStatus? deliveryStatus,
+    OutputPracticeMessageType? messageType,
+    int? serverSeq,
     bool? isStreaming,
   }) {
     return OutputPracticeTimelineItem(
@@ -35,6 +41,8 @@ class OutputPracticeTimelineItem {
       author: author ?? this.author,
       content: content ?? this.content,
       deliveryStatus: deliveryStatus ?? this.deliveryStatus,
+      messageType: messageType ?? this.messageType,
+      serverSeq: serverSeq ?? this.serverSeq,
       isStreaming: isStreaming ?? this.isStreaming,
     );
   }
@@ -42,12 +50,16 @@ class OutputPracticeTimelineItem {
   factory OutputPracticeTimelineItem.assistant({
     required String id,
     required String content,
+    OutputPracticeMessageType messageType = OutputPracticeMessageType.message,
+    int? serverSeq,
     bool isStreaming = false,
   }) {
     return OutputPracticeTimelineItem(
       id: id,
       author: OutputPracticeTimelineAuthor.assistant,
       content: content,
+      messageType: messageType,
+      serverSeq: serverSeq,
       isStreaming: isStreaming,
     );
   }
@@ -56,12 +68,16 @@ class OutputPracticeTimelineItem {
     required String id,
     required String content,
     OutputPracticeDeliveryStatus deliveryStatus = OutputPracticeDeliveryStatus.confirmed,
+    OutputPracticeMessageType messageType = OutputPracticeMessageType.message,
+    int? serverSeq,
   }) {
     return OutputPracticeTimelineItem(
       id: id,
       author: OutputPracticeTimelineAuthor.user,
       content: content,
       deliveryStatus: deliveryStatus,
+      messageType: messageType,
+      serverSeq: serverSeq,
     );
   }
 }

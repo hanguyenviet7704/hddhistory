@@ -12,8 +12,7 @@ abstract class OutputPracticeConversationModel with _$OutputPracticeConversation
     @Default(OutputPracticeAiReplyModel()) OutputPracticeAiReplyModel reply,
   }) = _OutputPracticeConversationModel;
 
-  factory OutputPracticeConversationModel.fromJson(Map<String, dynamic> json) =>
-      _$OutputPracticeConversationModelFromJson(json);
+  factory OutputPracticeConversationModel.fromJson(Map<String, dynamic> json) => _$OutputPracticeConversationModelFromJson(json);
 }
 
 enum OutputPracticeConversationStatus {
@@ -33,13 +32,12 @@ enum OutputPracticeConversationStatus {
 
 extension OutputPracticeConversationModelExtension on OutputPracticeConversationModel {
   OutputPracticeConversationEntity toEntity() => OutputPracticeConversationEntity(
-        id: id,
-        userId: userId,
-        sectionId: sectionId,
-        threadId: threadId,
-        lastSeq: lastSeq,
-        status: status,
-        reply: reply.toEntity(),
-      );
+    id: id,
+    userId: userId,
+    sectionId: sectionId,
+    threadId: threadId,
+    lastSeq: lastSeq,
+    status: status,
+    reply: reply.toEntity(),
+  );
 }
-

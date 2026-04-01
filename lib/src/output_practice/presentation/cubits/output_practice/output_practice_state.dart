@@ -48,6 +48,8 @@ abstract class OutputPracticeState with _$OutputPracticeState {
 extension OutputPracticeStateX on OutputPracticeState {
   LessonEntity get displayLesson => detailedLesson.id.isNotEmpty ? detailedLesson : currentLesson;
 
+  OutputPracticeConversationStatus get effectiveConversationStatus => conversation.effectiveStatus(liveSummaryTurn: liveSummaryTurn);
+
   String get assistantNameOrFallback => displayLesson.animation.name;
 
   String get assistantAvatarUrl => displayLesson.animation.url;
@@ -60,7 +62,7 @@ extension OutputPracticeStateX on OutputPracticeState {
 
   bool get isFinished => conversation.isFinished;
 
-  bool get isSummaryMode => !isFinished && (conversation.isSummaryDecisionPending || liveSummaryTurn);
+  bool get isSummaryMode => effectiveConversationStatus == OutputPracticeConversationStatus.summaryDecisionPending;
 
   bool get isWaitingForSocket => sendStatus == OutputPracticeSendStatus.waitingSocket;
 
@@ -69,7 +71,30 @@ extension OutputPracticeStateX on OutputPracticeState {
   bool get isInputEnabled {
     final historyReady = historyStatus == OutputPracticeHistoryStatus.success;
     final roomReady = joinedRoomId.isNotEmpty;
-    return uiMode == OutputPracticeUiMode.ready && historyReady && roomReady && sendStatus == OutputPracticeSendStatus.idle && !conversation.isFinished;
+    return uiMode == OutputPracticeUiMode.ready &&
+        historyReady &&
+        roomReady &&
+        sendStatus == OutputPracticeSendStatus.idle &&
+        effectiveConversationStatus == OutputPracticeConversationStatus.active;
+  }
+
+  bool get canSubmitActionChip {
+    final historyReady = historyStatus == OutputPracticeHistoryStatus.success;
+    final roomReady = joinedRoomId.isNotEmpty;
+    if (uiMode != OutputPracticeUiMode.ready || !historyReady || !roomReady) {
+      return false;
+    }
+    if (sendStatus != OutputPracticeSendStatus.idle || activeActionChips.isEmpty) {
+      return false;
+    }
+
+    return switch (effectiveConversationStatus) {
+      OutputPracticeConversationStatus.selectOptionPending ||
+      OutputPracticeConversationStatus.summaryDecisionPending ||
+      OutputPracticeConversationStatus.finished ||
+      OutputPracticeConversationStatus.conversationLimitInMonth => true,
+      _ => false,
+    };
   }
 
   bool get canRetryHistory => currentConversationId.isNotEmpty;

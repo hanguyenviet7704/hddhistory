@@ -24,10 +24,10 @@ enum OutputPracticeMessageRole {
 
 extension OutputPracticeMessageModelExtension on OutputPracticeMessageModel {
   OutputPracticeMessageEntity toEntity() => OutputPracticeMessageEntity(
-        conversationId: conversationId,
-        seq: seq,
-        content: content,
-        type: type,
-        role: role,
-      );
+    conversationId: conversationId,
+    seq: seq,
+    content: content,
+    type: type,
+    role: role,
+  );
 }

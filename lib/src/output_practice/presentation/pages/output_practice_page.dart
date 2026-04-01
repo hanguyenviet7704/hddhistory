@@ -107,10 +107,8 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
   String _resolveChipLabel(OutputPracticeActionChipVm chip) {
     final copy = context.l10n.outputPractice;
     return switch (chip.summaryAction) {
-      OutputPracticeSummaryAction.continueDeeper => copy.summaryContinueDeeper,
-      OutputPracticeSummaryAction.newChallenge => copy.summaryNewChallenge,
-      OutputPracticeSummaryAction.differentScenario => copy.summaryDifferentScenario,
       OutputPracticeSummaryAction.endPractice => copy.summaryEndPractice,
+      OutputPracticeSummaryAction.startANewConversation => copy.summaryStartANewConversation,
       null => chip.label,
     };
   }
@@ -133,8 +131,7 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (didPop, result) {
-        if (didPop) return;
-        _handleClose(context.read<OutputPracticeCubit>().state);
+        return;
       },
       child: MultiBlocListener(
         listeners: [
@@ -237,6 +234,17 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
                       roomErrorText: state.roomErrorMessage != null ? copy.roomRetryTitle : null,
                       roomRetryLabel: copy.roomRetryButton,
                       onRetryRoom: () => context.read<OutputPracticeSocketCubit>().reconnect(),
+                      showJumpToLatest: state.showJumpToLatest,
+                      jumpToLatestLabel: copy.jumpToLatestButton,
+                      onJumpToLatest: () {
+                        if (!_scrollController.hasClients) return;
+                        _scrollController.animateTo(
+                          _scrollController.position.maxScrollExtent,
+                          duration: const Duration(milliseconds: 220),
+                          curve: Curves.easeOutCubic,
+                        );
+                        context.read<OutputPracticeCubit>().updateScrollState(isNearBottom: true);
+                      },
                       onRetryFailedMessage: () => context.read<OutputPracticeCubit>().retryFailedMessage(),
                       onChipTap: (chip) {
                         final trackingData = _trackingData(state);

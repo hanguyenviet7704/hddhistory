@@ -37,6 +37,10 @@ class OutputPracticeSocketCubit extends Cubit<OutputPracticeSocketState> {
 
   void connectAndJoin(String roomId, {bool allowRetry = true}) {
     if (roomId.isEmpty) return;
+    final previousRoomId = state.activeRoomId;
+    if (previousRoomId.isNotEmpty && previousRoomId != roomId) {
+      _repository.leaveRoom(previousRoomId);
+    }
 
     _cancelJoinTimeout();
     emit(

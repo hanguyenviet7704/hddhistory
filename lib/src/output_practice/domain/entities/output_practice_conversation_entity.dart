@@ -24,5 +24,16 @@ extension OutputPracticeConversationEntityX on OutputPracticeConversationEntity 
 
   bool get isSummaryDecisionPending => status == OutputPracticeConversationStatus.summaryDecisionPending;
 
+  bool get isConversationLimitInMonth => status == OutputPracticeConversationStatus.conversationLimitInMonth;
+
   bool get isFinished => status == OutputPracticeConversationStatus.finished;
+
+  OutputPracticeConversationStatus effectiveStatus({required bool liveSummaryTurn}) {
+    if (isFinished) return OutputPracticeConversationStatus.finished;
+    if (isConversationLimitInMonth) {
+      return OutputPracticeConversationStatus.conversationLimitInMonth;
+    }
+    if (liveSummaryTurn) return OutputPracticeConversationStatus.summaryDecisionPending;
+    return status;
+  }
 }

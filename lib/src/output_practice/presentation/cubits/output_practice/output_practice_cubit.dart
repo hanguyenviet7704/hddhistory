@@ -4,6 +4,7 @@ part of '../../../output_practice.dart';
 class OutputPracticeCubit extends Cubit<OutputPracticeState> {
   OutputPracticeCubit(
     this._getConversationUseCase,
+    this._getConversationUsageUseCase,
     this._getAllMessagesUseCase,
     this._createConversationUseCase,
     this._sendMessageUseCase,
@@ -11,6 +12,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
   ) : super(OutputPracticeState.initial());
 
   final GetOutputPracticeConversationUseCase _getConversationUseCase;
+  final GetOutputPracticeConversationUsageUseCase _getConversationUsageUseCase;
   final GetAllOutputPracticeMessagesUseCase _getAllMessagesUseCase;
   final CreateOutputPracticeConversationUseCase _createConversationUseCase;
   final SendOutputPracticeMessageUseCase _sendMessageUseCase;
@@ -136,12 +138,29 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
 
   void markRoomJoined(String roomId) {
     if (roomId.isEmpty || roomId != state.currentConversationId) return;
-    emit(state.copyWith(joinedRoomId: roomId, roomErrorMessage: null));
+    emit(
+      state.copyWith(
+        joinedRoomId: roomId,
+        roomErrorMessage: null,
+        activeActionChips: _resolveActionChips(
+          state.conversation,
+          liveSummaryTurn: state.liveSummaryTurn,
+          timelineItems: state.timelineItems,
+          hasJoinedRoom: true,
+        ),
+      ),
+    );
   }
 
   void markRoomJoinFailed(String roomId, String? message) {
     if (roomId.isEmpty || roomId != state.currentConversationId) return;
-    emit(state.copyWith(joinedRoomId: '', roomErrorMessage: message));
+    emit(
+      state.copyWith(
+        joinedRoomId: '',
+        roomErrorMessage: message,
+        activeActionChips: const [],
+      ),
+    );
   }
 
   Future<void> handleSocketEvent(OutputPracticeAiStreamEvent event) async {
@@ -214,11 +233,15 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
       },
       isFreeText: true,
       awaitingActionTurnCompletion: false,
+      pendingMessageType: OutputPracticeMessageType.message,
     );
   }
 
   Future<void> sendActionChip(OutputPracticeActionChipVm chip, {String? committedText}) {
-    if (!state.isInputEnabled) return Future.value();
+    if (!state.canSubmitActionChip) return Future.value();
+    if (chip.summaryAction == OutputPracticeSummaryAction.startANewConversation) {
+      return startNewConversation();
+    }
     final isSelectOption = chip.kind == OutputPracticeActionKind.option;
     final type = isSelectOption ? 'select_option' : 'summary_decision';
     return _sendAction(
@@ -230,7 +253,73 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
       },
       isFreeText: false,
       awaitingActionTurnCompletion: true,
+      pendingMessageType: isSelectOption ? OutputPracticeMessageType.selectOption : OutputPracticeMessageType.summaryDecision,
     );
+  }
+
+  Future<void> startNewConversation() async {
+    if (!state.canSubmitActionChip) return;
+
+    final previousState = state;
+    final sessionToken = _sessionToken;
+    final activeSectionId = state.currentSectionId;
+    if (activeSectionId.isEmpty) return;
+
+    emit(
+      state.copyWith(
+        uiMode: OutputPracticeUiMode.loading,
+        historyStatus: OutputPracticeHistoryStatus.loading,
+        timelineItems: const [],
+        activeActionChips: const [],
+        hiddenActionChips: const [],
+        historyErrorMessage: null,
+        roomErrorMessage: null,
+        liveSummaryTurn: false,
+        pendingMessageText: null,
+        pendingWasFreeText: false,
+        awaitingActionTurnCompletion: false,
+        pendingMessageLocalId: '',
+        pendingAssistantLocalId: '',
+        sendStatus: OutputPracticeSendStatus.idle,
+        currentHistoryPage: 1,
+        totalHistoryPages: 1,
+        showJumpToLatest: false,
+      ),
+    );
+
+    final createResult = await _createConversationUseCase({
+      'sectionId': activeSectionId,
+      'language': AppDI.injector.get<LocaleCubit>().state.languageAISupport,
+    }).run();
+    if (!_isSessionActive(sessionToken, sectionId: activeSectionId)) return;
+
+    final createdConversation = createResult.fold(
+      (exception) {
+        emit(previousState.copyWith(roomErrorMessage: exception.displayMessage));
+        return null;
+      },
+      (conversation) => conversation,
+    );
+    if (createdConversation == null || !_isSessionActive(sessionToken, sectionId: activeSectionId)) {
+      return;
+    }
+
+    final refreshedConversation = (await _getConversationUseCase(activeSectionId).run()).getOrElse((_) => createdConversation);
+    if (!_isSessionActive(sessionToken, sectionId: activeSectionId)) return;
+
+    final nextConversationId = refreshedConversation.id;
+    emit(
+      state.copyWith(
+        entryState: OutputPracticeEntryState.created,
+        conversation: refreshedConversation,
+        currentConversationId: nextConversationId,
+        joinedRoomId: nextConversationId == previousState.currentConversationId ? previousState.joinedRoomId : '',
+        activeActionChips: const [],
+      ),
+    );
+
+    await _refreshUsage(sectionId: activeSectionId, sessionToken: sessionToken);
+    await _loadHistory(forcePage: 1, sessionToken: sessionToken);
   }
 
   Future<void> retryFailedMessage() async {
@@ -319,6 +408,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     required Map<String, dynamic> body,
     required bool isFreeText,
     required bool awaitingActionTurnCompletion,
+    required OutputPracticeMessageType pendingMessageType,
   }) async {
     final sessionToken = _sessionToken;
     final activeConversationId = state.currentConversationId;
@@ -332,6 +422,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
             id: pendingMessageLocalId,
             content: committedText,
             deliveryStatus: OutputPracticeDeliveryStatus.sending,
+            messageType: pendingMessageType,
           ),
         ],
         hiddenActionChips: [...state.activeActionChips],
@@ -360,6 +451,13 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
       (canonicalMessages) async {
         final previousConversation = state.conversation;
         final refreshedConversation = (await _getConversationUseCase(state.currentSectionId).run()).getOrElse((_) => state.conversation);
+        final refreshedUsage = isFreeText
+            ? state.conversationUsage
+            : await _refreshUsage(
+                sectionId: activeSectionId,
+                sessionToken: sessionToken,
+                shouldEmit: false,
+              );
         if (!_isSessionActive(
           sessionToken,
           sectionId: activeSectionId,
@@ -372,6 +470,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         emit(
           state.copyWith(
             conversation: refreshedConversation,
+            conversationUsage: refreshedUsage,
             liveSummaryTurn: false,
             timelineItems: timelineItems,
             activeActionChips: awaitingActionTurnCompletion
@@ -413,8 +512,12 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     required List<OutputPracticeTimelineItem> timelineItems,
     OutputPracticeHistoryStatus? historyStatus,
     bool? awaitingActionTurnCompletion,
+    bool? hasJoinedRoom,
   }) {
     if ((historyStatus ?? state.historyStatus) != OutputPracticeHistoryStatus.success) {
+      return const [];
+    }
+    if (!(hasJoinedRoom ?? state.joinedRoomId.isNotEmpty)) {
       return const [];
     }
     if ((awaitingActionTurnCompletion ?? state.awaitingActionTurnCompletion) && !liveSummaryTurn) {
@@ -473,6 +576,27 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
             awaitingActionTurnCompletion: false,
           ),
         );
+      },
+    );
+  }
+
+  Future<OutputPracticeConversationUsageEntity> _refreshUsage({
+    required String sectionId,
+    required int sessionToken,
+    bool shouldEmit = true,
+  }) async {
+    final result = await _getConversationUsageUseCase(sectionId).run();
+    if (!_isSessionActive(sessionToken, sectionId: sectionId)) {
+      return state.conversationUsage;
+    }
+
+    return result.fold(
+      (_) => state.conversationUsage,
+      (usage) {
+        if (shouldEmit) {
+          emit(state.copyWith(conversationUsage: usage));
+        }
+        return usage;
       },
     );
   }

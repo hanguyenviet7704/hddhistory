@@ -7,13 +7,12 @@ abstract class OutputPracticeConversationUsageModel with _$OutputPracticeConvers
     @Default(0) int monthlyLimit,
   }) = _OutputPracticeConversationUsageModel;
 
-  factory OutputPracticeConversationUsageModel.fromJson(Map<String, dynamic> json) =>
-      _$OutputPracticeConversationUsageModelFromJson(json);
+  factory OutputPracticeConversationUsageModel.fromJson(Map<String, dynamic> json) => _$OutputPracticeConversationUsageModelFromJson(json);
 }
 
 extension OutputPracticeConversationUsageModelExtension on OutputPracticeConversationUsageModel {
   OutputPracticeConversationUsageEntity toEntity() => OutputPracticeConversationUsageEntity(
-        remainingInThisMonth: remainingInThisMonth,
-        monthlyLimit: monthlyLimit,
-      );
+    remainingInThisMonth: remainingInThisMonth,
+    monthlyLimit: monthlyLimit,
+  );
 }

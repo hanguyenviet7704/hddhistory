@@ -11,4 +11,3 @@ class GetOutputPracticeConversationUseCase implements BaseUseCase<String, Output
     return _repository.getOutputPracticeConversation(params);
   }
 }
-

@@ -24,6 +24,11 @@ class _FakeOutputPracticeApi implements OutputPracticeApi {
   }
 
   @override
+  Future<BaseResponse<OutputPracticeConversationUsageModel>> getOutputPracticeConversationUsage(String sectionId) {
+    throw UnimplementedError();
+  }
+
+  @override
   Future<BaseResponseList<OutputPracticeMessageModel>> sendOutputPracticeMessage(Map<String, dynamic> body) {
     throw UnimplementedError();
   }
@@ -31,6 +36,7 @@ class _FakeOutputPracticeApi implements OutputPracticeApi {
 
 class _FakeOutputPracticeLocalDataSource implements OutputPracticeLocalDataSource {
   final Map<String, List<OutputPracticeMessageModel>> messagesByConversationId = <String, List<OutputPracticeMessageModel>>{};
+  final Map<String, OutputPracticeConversationUsageModel> usageBySectionId = <String, OutputPracticeConversationUsageModel>{};
 
   @override
   Future<List<OutputPracticeMessageModel>> getCachedMessages(String conversationId) async => messagesByConversationId[conversationId] ?? const [];
@@ -45,6 +51,14 @@ class _FakeOutputPracticeLocalDataSource implements OutputPracticeLocalDataSourc
 
   @override
   Future<void> cacheConversation(String sectionId, OutputPracticeConversationModel model) async {}
+
+  @override
+  Future<OutputPracticeConversationUsageModel?> getCachedConversationUsage(String sectionId) async => usageBySectionId[sectionId];
+
+  @override
+  Future<void> cacheConversationUsage(String sectionId, OutputPracticeConversationUsageModel model) async {
+    usageBySectionId[sectionId] = model;
+  }
 
   @override
   Future<void> clearConversation(String sectionId) async {}

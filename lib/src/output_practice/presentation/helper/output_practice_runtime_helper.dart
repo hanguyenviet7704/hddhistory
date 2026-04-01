@@ -1,5 +1,6 @@
 part of '../../output_practice.dart';
 
+// Behavioral conflicts in the raw docs are resolved in favor of flow.md.
 OutputPracticeActionChipVm? _matchActionChip(String input, List<OutputPracticeActionChipVm> chips) {
   final normalizedInput = _normalizeOutputPracticeInput(input);
   if (normalizedInput.isEmpty) return null;
@@ -20,17 +21,18 @@ List<OutputPracticeActionChipVm> _buildActionChips(
   OutputPracticeConversationEntity conversation, {
   required bool liveSummaryTurn,
 }) {
-  if (conversation.isFinished) return const [];
-  if (conversation.isSummaryDecisionPending || liveSummaryTurn) {
-    return [
-      OutputPracticeActionChipVm.summary(OutputPracticeSummaryAction.continueDeeper),
-      OutputPracticeActionChipVm.summary(OutputPracticeSummaryAction.newChallenge),
-      OutputPracticeActionChipVm.summary(OutputPracticeSummaryAction.differentScenario),
+  final status = conversation.effectiveStatus(liveSummaryTurn: liveSummaryTurn);
+  return switch (status) {
+    OutputPracticeConversationStatus.summaryDecisionPending => [
       OutputPracticeActionChipVm.summary(OutputPracticeSummaryAction.endPractice),
-    ];
-  }
-  if (!conversation.isSelectOptionPending) return const [];
-  return conversation.reply.options.map(OutputPracticeActionChipVm.option).toList();
+      OutputPracticeActionChipVm.summary(OutputPracticeSummaryAction.startANewConversation),
+    ],
+    OutputPracticeConversationStatus.finished || OutputPracticeConversationStatus.conversationLimitInMonth => [
+      OutputPracticeActionChipVm.summary(OutputPracticeSummaryAction.startANewConversation),
+    ],
+    OutputPracticeConversationStatus.selectOptionPending => conversation.reply.options.map(OutputPracticeActionChipVm.option).toList(),
+    _ => const [],
+  };
 }
 
 List<OutputPracticeActionChipVm> _buildVisibleActionChips(
@@ -40,28 +42,35 @@ List<OutputPracticeActionChipVm> _buildVisibleActionChips(
 }) {
   final chips = _buildActionChips(conversation, liveSummaryTurn: liveSummaryTurn);
   if (chips.isEmpty) return chips;
-  if (_isAwaitingAssistantTurnForActionChips(timelineItems)) {
+  final status = conversation.effectiveStatus(liveSummaryTurn: liveSummaryTurn);
+  if (status == OutputPracticeConversationStatus.finished || status == OutputPracticeConversationStatus.conversationLimitInMonth) {
+    return chips;
+  }
+  if (_hasConsumedCurrentTurnAction(timelineItems, chips)) {
     return const [];
   }
-
-  final consumedOptionLabels = timelineItems
-      .where((item) => item.isUser && item.deliveryStatus != OutputPracticeDeliveryStatus.failed)
-      .map((item) => _normalizeOutputPracticeInput(item.content))
-      .where((label) => label.isNotEmpty)
-      .toSet();
-  if (consumedOptionLabels.isEmpty) return chips;
-
-  return chips.where((chip) {
-    if (chip.kind != OutputPracticeActionKind.option) return true;
-    return !consumedOptionLabels.contains(_normalizeOutputPracticeInput(chip.label));
-  }).toList();
+  return chips;
 }
 
-bool _isAwaitingAssistantTurnForActionChips(List<OutputPracticeTimelineItem> timelineItems) {
+bool _hasConsumedCurrentTurnAction(
+  List<OutputPracticeTimelineItem> timelineItems,
+  List<OutputPracticeActionChipVm> chips,
+) {
   for (var index = timelineItems.length - 1; index >= 0; index--) {
     final item = timelineItems[index];
     if (item.deliveryStatus == OutputPracticeDeliveryStatus.failed) continue;
-    return item.isUser;
+    if (!item.isUser) return false;
+
+    if (item.messageType == OutputPracticeMessageType.selectOption) {
+      return chips.any((chip) => chip.kind == OutputPracticeActionKind.option);
+    }
+    if (item.messageType == OutputPracticeMessageType.summaryDecision) {
+      return chips.any((chip) => chip.kind == OutputPracticeActionKind.summaryDecision);
+    }
+    if (item.messageType == OutputPracticeMessageType.unknown) {
+      return _matchActionChip(item.content, chips) != null;
+    }
+    return false;
   }
   return false;
 }
@@ -93,9 +102,19 @@ List<OutputPracticeTimelineItem> _timelineFromMessages(List<OutputPracticeMessag
   return messages.sortedBySeqAsc.where((message) => message.role == OutputPracticeMessageRole.user || message.role == OutputPracticeMessageRole.assistant).map((message) {
     final id = _timelineIdForMessage(message);
     if (message.role == OutputPracticeMessageRole.assistant) {
-      return OutputPracticeTimelineItem.assistant(id: id, content: message.content);
+      return OutputPracticeTimelineItem.assistant(
+        id: id,
+        content: message.content,
+        messageType: message.type,
+        serverSeq: message.seq,
+      );
     }
-    return OutputPracticeTimelineItem.user(id: id, content: message.content);
+    return OutputPracticeTimelineItem.user(
+      id: id,
+      content: message.content,
+      messageType: message.type,
+      serverSeq: message.seq,
+    );
   }).toList();
 }
 

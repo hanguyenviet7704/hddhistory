@@ -18,6 +18,9 @@ class OutputPracticeTimelineList extends StatelessWidget {
     required this.roomErrorText,
     required this.roomRetryLabel,
     required this.onRetryRoom,
+    required this.showJumpToLatest,
+    required this.jumpToLatestLabel,
+    required this.onJumpToLatest,
     required this.onRetryFailedMessage,
     required this.onChipTap,
     required this.resolveChipLabel,
@@ -38,6 +41,9 @@ class OutputPracticeTimelineList extends StatelessWidget {
   final String? roomErrorText;
   final String roomRetryLabel;
   final VoidCallback onRetryRoom;
+  final bool showJumpToLatest;
+  final String jumpToLatestLabel;
+  final VoidCallback onJumpToLatest;
   final VoidCallback onRetryFailedMessage;
   final ValueChanged<OutputPracticeActionChipVm> onChipTap;
   final String Function(OutputPracticeActionChipVm chip) resolveChipLabel;
@@ -58,71 +64,115 @@ class OutputPracticeTimelineList extends StatelessWidget {
             resolveLabel: resolveChipLabel,
           );
 
-    return ListView(
-      controller: controller,
-      padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+    return Stack(
       children: [
-        if (historyErrorText != null) ...[
-          _OutputPracticeRetryBanner(
-            text: historyErrorText!,
-            actionLabel: historyRetryLabel,
-            onTap: onRetryHistory,
-          ),
-          16.verticalSpace,
-        ],
-        if (roomErrorText != null) ...[
-          _OutputPracticeRetryBanner(
-            text: roomErrorText!,
-            actionLabel: roomRetryLabel,
-            onTap: onRetryRoom,
-          ),
-          16.verticalSpace,
-        ],
-        ...items.map((item) {
-          final child = item.isAssistant
-              ? OutputPracticeAssistantBubble(
-                  name: assistantName,
-                  avatarUrl: assistantAvatarUrl,
-                  content: item.content,
-                )
-              : OutputPracticeUserBubble(
-                  content: item.content,
-                  userLabel: userName,
-                  deliveryStatus: item.deliveryStatus,
-                  onRetry: item.deliveryStatus == OutputPracticeDeliveryStatus.failed ? onRetryFailedMessage : null,
-                );
-          return Padding(
-            padding: EdgeInsets.only(bottom: 16.h),
-            child: child,
-          );
-        }),
-        if (showThinking) ...[
-          OutputPracticeThinkingRow(
-            name: assistantName,
-            avatarUrl: assistantAvatarUrl,
-            label: thinkingLabel,
-          ),
-          16.verticalSpace,
-        ],
-        AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
-          transitionBuilder: (child, animation) {
-            final offsetAnimation = Tween<Offset>(
-              begin: const Offset(0, 0.08),
-              end: Offset.zero,
-            ).animate(animation);
-            return FadeTransition(
-              opacity: animation,
-              child: SlideTransition(
-                position: offsetAnimation,
-                child: child,
+        ListView(
+          controller: controller,
+          padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 16.h),
+          children: [
+            if (historyErrorText != null) ...[
+              _OutputPracticeRetryBanner(
+                text: historyErrorText!,
+                actionLabel: historyRetryLabel,
+                onTap: onRetryHistory,
               ),
-            );
-          },
-          child: chipStack,
+              16.verticalSpace,
+            ],
+            if (roomErrorText != null) ...[
+              _OutputPracticeRetryBanner(
+                text: roomErrorText!,
+                actionLabel: roomRetryLabel,
+                onTap: onRetryRoom,
+              ),
+              16.verticalSpace,
+            ],
+            ...items.map((item) {
+              final child = item.isAssistant
+                  ? OutputPracticeAssistantBubble(
+                      name: assistantName,
+                      avatarUrl: assistantAvatarUrl,
+                      content: item.content,
+                    )
+                  : OutputPracticeUserBubble(
+                      content: item.content,
+                      userLabel: userName,
+                      deliveryStatus: item.deliveryStatus,
+                      onRetry: item.deliveryStatus == OutputPracticeDeliveryStatus.failed ? onRetryFailedMessage : null,
+                    );
+              return Padding(
+                padding: EdgeInsets.only(bottom: 16.h),
+                child: child,
+              );
+            }),
+            if (showThinking) ...[
+              OutputPracticeThinkingRow(
+                name: assistantName,
+                avatarUrl: assistantAvatarUrl,
+                label: thinkingLabel,
+              ),
+              16.verticalSpace,
+            ],
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 220),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              transitionBuilder: (child, animation) {
+                final offsetAnimation = Tween<Offset>(
+                  begin: const Offset(0, 0.08),
+                  end: Offset.zero,
+                ).animate(animation);
+                return FadeTransition(
+                  opacity: animation,
+                  child: SlideTransition(
+                    position: offsetAnimation,
+                    child: child,
+                  ),
+                );
+              },
+              child: chipStack,
+            ),
+          ],
         ),
+        if (showJumpToLatest)
+          Positioned(
+            right: 20.w,
+            bottom: 16.h,
+            child: GestureDetector(
+              onTap: onJumpToLatest,
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.92),
+                  borderRadius: BorderRadius.circular(999.r),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.08),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.arrow_downward_rounded,
+                      size: 16.w,
+                      color: const Color(0xFF554FF0),
+                    ),
+                    6.horizontalSpace,
+                    AppText(
+                      jumpToLatestLabel,
+                      style: AppStyle.text12.copyWith(
+                        color: const Color(0xFF554FF0),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }

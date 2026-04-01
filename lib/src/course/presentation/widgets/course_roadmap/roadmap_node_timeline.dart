@@ -49,33 +49,16 @@ class RoadmapNodeActionHelper {
     final roadmap = context.read<CourseRoadmapCubit>().state.roadmap;
     final sectionId = resolveOutputPracticeSectionId(roadmap, lesson);
     if (sectionId.isEmpty) return;
-
     final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackOutputPracticePopupView(
-        trackingData,
-        sectionId: sectionId,
-      );
-    }
+    final isPremium = context.read<ProfileCubit>().state.user.isPremium;
 
     OutputPracticeIntroSheet.show(
       context,
       lesson: lesson,
-      onDismissed: () {
-        if (trackingData == null) return;
-        AppService.instance.appTrackingService.trackOutputPracticePopupClose(
-          trackingData,
-          sectionId: sectionId,
-        );
-      },
+      sectionId: sectionId,
+      isPremium: isPremium,
+      trackingData: trackingData,
       onStart: () {
-        if (trackingData != null) {
-          AppService.instance.appTrackingService.trackOutputPracticeStartClick(
-            trackingData,
-            sectionId: sectionId,
-          );
-        }
-
         AppDI.injector.get<OutputPracticeCubit>()
           ..reset()
           ..preloadEntry(

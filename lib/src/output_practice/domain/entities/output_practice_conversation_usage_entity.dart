@@ -7,8 +7,7 @@ abstract class OutputPracticeConversationUsageEntity with _$OutputPracticeConver
     @Default(0) int monthlyLimit,
   }) = _OutputPracticeConversationUsageEntity;
 
-  factory OutputPracticeConversationUsageEntity.fromJson(Map<String, dynamic> json) =>
-      _$OutputPracticeConversationUsageEntityFromJson(json);
+  factory OutputPracticeConversationUsageEntity.fromJson(Map<String, dynamic> json) => _$OutputPracticeConversationUsageEntityFromJson(json);
 }
 
 extension OutputPracticeConversationUsageEntityX on OutputPracticeConversationUsageEntity {

@@ -1,20 +1,28 @@
 part of '../../output_practice.dart';
 
-class OutputPracticeIntroSheet extends StatelessWidget {
+class OutputPracticeIntroSheet extends StatefulWidget {
   const OutputPracticeIntroSheet({
     super.key,
     required this.lesson,
+    required this.sectionId,
+    required this.isPremium,
+    required this.trackingData,
     required this.onStart,
   });
 
   final LessonEntity lesson;
+  final String sectionId;
+  final bool isPremium;
+  final CourseLessonTrackingData? trackingData;
   final VoidCallback onStart;
 
   static Future<void> show(
     BuildContext context, {
     required LessonEntity lesson,
+    required String sectionId,
+    required bool isPremium,
+    required CourseLessonTrackingData? trackingData,
     required VoidCallback onStart,
-    VoidCallback? onDismissed,
   }) async {
     var didStart = false;
     await showGeneralDialog<void>(
@@ -26,8 +34,17 @@ class OutputPracticeIntroSheet extends StatelessWidget {
       transitionDuration: const Duration(milliseconds: 220),
       pageBuilder: (dialogContext, _, _) => OutputPracticeIntroSheet(
         lesson: lesson,
+        sectionId: sectionId,
+        isPremium: isPremium,
+        trackingData: trackingData,
         onStart: () {
           didStart = true;
+          if (trackingData != null && AppDI.injector.isRegistered<ITrackingService>()) {
+            AppService.instance.appTrackingService.trackOutputPracticeStartClick(
+              trackingData,
+              sectionId: sectionId,
+            );
+          }
           dialogContext.pop();
           onStart();
         },
@@ -50,15 +67,98 @@ class OutputPracticeIntroSheet extends StatelessWidget {
         );
       },
     );
-    if (!didStart) {
-      onDismissed?.call();
+    if (!didStart && trackingData != null && AppDI.injector.isRegistered<ITrackingService>()) {
+      AppService.instance.appTrackingService.trackOutputPracticePopupClose(
+        trackingData,
+        sectionId: sectionId,
+      );
     }
+  }
+
+  @override
+  State<OutputPracticeIntroSheet> createState() => _OutputPracticeIntroSheetState();
+}
+
+class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
+  OutputPracticeConversationUsageEntity? _usage;
+  bool _isLoadingUsage = true;
+  bool _hasUsageError = false;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _trackPopupView();
+      _loadUsage();
+    });
+  }
+
+  bool get _isUnlimitedAccess {
+    if (!widget.isPremium) return false;
+    if (!AppDI.injector.isRegistered<IRemoteConfigService>()) return false;
+    return AppService.instance.remoteConfigService.courseConfig.enablePremiumUnlimitedPractice;
+  }
+
+  Future<void> _loadUsage() async {
+    if (!AppDI.injector.isRegistered<GetOutputPracticeConversationUsageUseCase>()) {
+      if (!mounted) return;
+      setState(() {
+        _isLoadingUsage = false;
+        _hasUsageError = true;
+      });
+      return;
+    }
+
+    final result = await AppDI.injector.get<GetOutputPracticeConversationUsageUseCase>()(widget.sectionId).run();
+    if (!mounted) return;
+
+    result.fold(
+      (_) {
+        setState(() {
+          _isLoadingUsage = false;
+          _hasUsageError = true;
+        });
+      },
+      (usage) {
+        setState(() {
+          _usage = usage;
+          _isLoadingUsage = false;
+          _hasUsageError = false;
+        });
+      },
+    );
+  }
+
+  void _trackPopupView() {
+    if (widget.trackingData == null || !AppDI.injector.isRegistered<ITrackingService>()) {
+      return;
+    }
+    AppService.instance.appTrackingService.trackOutputPracticePopupView(
+      widget.trackingData!,
+      sectionId: widget.sectionId,
+    );
+  }
+
+  String? _usageCopy(BuildContext context) {
+    final copy = context.l10n.outputPractice;
+    if (_isLoadingUsage) return copy.introUsageChecking;
+    if (_hasUsageError) return null;
+    if (_isUnlimitedAccess) return copy.introUsageUnlimited;
+
+    final usage = _usage;
+    if (usage == null) return null;
+    if (usage.hasReachedLimit) return copy.introUsageReachedLimit;
+    return copy.introUsageRemaining(
+      remaining: usage.remainingInThisMonth,
+      monthlyLimit: usage.monthlyLimit,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     final copy = context.l10n.outputPractice;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+    final usageCopy = _usageCopy(context);
     return Material(
       color: Colors.transparent,
       child: Stack(
@@ -110,7 +210,7 @@ class OutputPracticeIntroSheet extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         AppText(
-                          lesson.title.text,
+                          widget.lesson.title.text,
                           textAlign: TextAlign.center,
                           maxLines: 2,
                           style: AppStyle.textBold24.copyWith(
@@ -131,16 +231,33 @@ class OutputPracticeIntroSheet extends StatelessWidget {
                         ),
                         12.verticalSpace,
                         AppText(
-                          lesson.description.text,
+                          widget.lesson.description.text,
                           maxLines: 100,
                           style: AppStyle.text14.copyWith(
                             color: AppCustomColor.textSecondary,
                             height: 1.75,
                           ),
                         ),
-                        40.verticalSpace,
+                        if (usageCopy != null) ...[
+                          16.verticalSpace,
+                          Container(
+                            padding: EdgeInsets.all(12.w),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF6F4FF),
+                              borderRadius: BorderRadius.circular(12.r),
+                            ),
+                            child: AppText(
+                              usageCopy,
+                              style: AppStyle.text14.copyWith(
+                                color: AppCustomColor.textSecondary,
+                                height: 1.75,
+                              ),
+                            ),
+                          ),
+                        ],
+                        24.verticalSpace,
                         AppButton.primary(
-                          onPressed: onStart,
+                          onPressed: _isLoadingUsage ? null : widget.onStart,
                           fullWidthBtn: true,
                           height: 54.h,
                           borderRadius: BorderRadius.circular(1000.r),

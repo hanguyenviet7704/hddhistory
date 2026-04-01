@@ -8,6 +8,5 @@ abstract class OutputPracticeAiReplyOptionEntity with _$OutputPracticeAiReplyOpt
     @Default('') String description,
   }) = _OutputPracticeAiReplyOptionEntity;
 
-  factory OutputPracticeAiReplyOptionEntity.fromJson(Map<String, dynamic> json) =>
-      _$OutputPracticeAiReplyOptionEntityFromJson(json);
+  factory OutputPracticeAiReplyOptionEntity.fromJson(Map<String, dynamic> json) => _$OutputPracticeAiReplyOptionEntityFromJson(json);
 }
