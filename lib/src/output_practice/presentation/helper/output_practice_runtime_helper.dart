@@ -52,6 +52,23 @@ List<OutputPracticeActionChipVm> _buildVisibleActionChips(
   return chips;
 }
 
+bool _shouldKeepWaitingForActionCompletion(
+  OutputPracticeConversationEntity conversation, {
+  required bool liveSummaryTurn,
+  required List<OutputPracticeTimelineItem> timelineItems,
+}) {
+  final status = conversation.effectiveStatus(liveSummaryTurn: liveSummaryTurn);
+  if (status != OutputPracticeConversationStatus.selectOptionPending && status != OutputPracticeConversationStatus.summaryDecisionPending) {
+    return false;
+  }
+
+  return _buildVisibleActionChips(
+    conversation,
+    liveSummaryTurn: liveSummaryTurn,
+    timelineItems: timelineItems,
+  ).isEmpty;
+}
+
 bool _hasConsumedCurrentTurnAction(
   List<OutputPracticeTimelineItem> timelineItems,
   List<OutputPracticeActionChipVm> chips,
@@ -59,10 +76,11 @@ bool _hasConsumedCurrentTurnAction(
   for (var index = timelineItems.length - 1; index >= 0; index--) {
     final item = timelineItems[index];
     if (item.deliveryStatus == OutputPracticeDeliveryStatus.failed) continue;
-    if (!item.isUser) return false;
+    if (!item.isUser) continue;
 
     if (item.messageType == OutputPracticeMessageType.selectOption) {
-      return chips.any((chip) => chip.kind == OutputPracticeActionKind.option);
+      final normalizedContent = _normalizeOutputPracticeInput(item.content);
+      return chips.any((chip) => chip.kind == OutputPracticeActionKind.option && _normalizeOutputPracticeInput(chip.label) == normalizedContent);
     }
     if (item.messageType == OutputPracticeMessageType.summaryDecision) {
       return chips.any((chip) => chip.kind == OutputPracticeActionKind.summaryDecision);

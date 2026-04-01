@@ -103,7 +103,8 @@ void main() {
     usageCompleter.complete(right(const OutputPracticeConversationUsageEntity(remainingInThisMonth: 2, monthlyLimit: 5)));
     await tester.pumpAndSettle();
 
-    expect(find.text('You have 2/5 conversations left this month.'), findsOneWidget);
+    expect(find.text('2 practice left this month', findRichText: true), findsOneWidget);
+    expect(find.textContaining('/5', findRichText: true), findsNothing);
 
     await tester.tap(find.text('Start practice'));
     await tester.pump();

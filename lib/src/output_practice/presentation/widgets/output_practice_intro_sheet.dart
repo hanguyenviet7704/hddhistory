@@ -139,18 +139,51 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
     );
   }
 
-  String? _usageCopy(BuildContext context) {
+  InlineSpan? _usageSpan(BuildContext context) {
     final copy = context.l10n.outputPractice;
-    if (_isLoadingUsage) return copy.introUsageChecking;
+    final usageTextStyle = AppStyle.text14.copyWith(
+      color: const Color(0xFF4B44CA),
+      height: 1.75,
+    );
+
+    if (_isLoadingUsage) {
+      return TextSpan(
+        text: copy.introUsageChecking,
+        style: usageTextStyle,
+      );
+    }
     if (_hasUsageError) return null;
-    if (_isUnlimitedAccess) return copy.introUsageUnlimited;
+    if (_isUnlimitedAccess) {
+      return TextSpan(
+        text: copy.introUsageUnlimited,
+        style: usageTextStyle.copyWith(fontWeight: FontWeight.w700),
+      );
+    }
 
     final usage = _usage;
     if (usage == null) return null;
-    if (usage.hasReachedLimit) return copy.introUsageReachedLimit;
-    return copy.introUsageRemaining(
-      remaining: usage.remainingInThisMonth,
-      monthlyLimit: usage.monthlyLimit,
+    if (usage.hasReachedLimit) {
+      return TextSpan(
+        text: copy.introUsageReachedLimit,
+        style: usageTextStyle.copyWith(fontWeight: FontWeight.w700),
+      );
+    }
+
+    return TextSpan(
+      children: [
+        TextSpan(
+          text: copy.introUsageRemainingPrefix,
+          style: usageTextStyle,
+        ),
+        TextSpan(
+          text: copy.introUsageRemaining(remaining: usage.remainingInThisMonth),
+          style: usageTextStyle.copyWith(fontWeight: FontWeight.w700),
+        ),
+        TextSpan(
+          text: copy.introUsageRemainingSuffix,
+          style: usageTextStyle,
+        ),
+      ],
     );
   }
 
@@ -158,7 +191,7 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
   Widget build(BuildContext context) {
     final copy = context.l10n.outputPractice;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
-    final usageCopy = _usageCopy(context);
+    final usageSpan = _usageSpan(context);
     return Material(
       color: Colors.transparent,
       child: Stack(
@@ -238,21 +271,11 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
                             height: 1.75,
                           ),
                         ),
-                        if (usageCopy != null) ...[
+                        if (usageSpan != null) ...[
                           16.verticalSpace,
-                          Container(
-                            padding: EdgeInsets.all(12.w),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFFF6F4FF),
-                              borderRadius: BorderRadius.circular(12.r),
-                            ),
-                            child: AppText(
-                              usageCopy,
-                              style: AppStyle.text14.copyWith(
-                                color: AppCustomColor.textSecondary,
-                                height: 1.75,
-                              ),
-                            ),
+                          Text.rich(
+                            usageSpan,
+                            textAlign: TextAlign.center,
                           ),
                         ],
                         24.verticalSpace,

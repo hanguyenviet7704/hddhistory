@@ -1,22 +1,23 @@
 {
   "googleSheets": {
     "active": {
-      "sheetId": "1h4IG705T9sdpKz-oXGbqMrlUfvsPDsuESpZqH0fN-aY",
+      "sheetId": "1TupT2BzYt2V5q3lZTwFWiBY9vBlwRjkVgfm2UCXUrGg",
       "sheetGids": [
-        "1082743703",
-        "1605119473",
-        "1167029718",
-        "1325032808",
-        "1917911303",
-        "324747030",
-        "1736042682",
-        "1490146799",
-        "1179123203",
-        "1257181392",
-        "2086165409",
-        "1381626910",
-        "1775221007",
-        "238144991"
+        "94509290",
+        "79831451",
+        "298942834",
+        "1777987967",
+        "1113834645",
+        "1137646197",
+        "232484332",
+        "2101049868",
+        "1475474387",
+        "375862869",
+        "238940323",
+        "508952409",
+        "1574246572",
+        "788845920",
+        "28582107"
       ],
       "tabs": [
         {
@@ -27,72 +28,77 @@
         {
           "module": "allcourse",
           "title": "allcourse",
-          "gid": "1082743703"
+          "gid": "94509290"
         },
         {
           "module": "auth",
           "title": "auth",
-          "gid": "1605119473"
+          "gid": "79831451"
         },
         {
           "module": "common",
           "title": "common",
-          "gid": "1167029718"
+          "gid": "298942834"
         },
         {
           "module": "courseroadmap",
           "title": "courseroadmap",
-          "gid": "1325032808"
+          "gid": "1777987967"
         },
         {
           "module": "exercise",
           "title": "exercise",
-          "gid": "1917911303"
-        },
-        {
-          "module": "home",
-          "title": "home",
-          "gid": "324747030"
-        },
-        {
-          "module": "keypoint",
-          "title": "keypoint",
-          "gid": "1736042682"
-        },
-        {
-          "module": "lesson",
-          "title": "lesson",
-          "gid": "1490146799"
-        },
-        {
-          "module": "onboarding",
-          "title": "onboarding",
-          "gid": "1179123203"
-        },
-        {
-          "module": "roleplay",
-          "title": "roleplay",
-          "gid": "1257181392"
-        },
-        {
-          "module": "setting",
-          "title": "setting",
-          "gid": "2086165409"
-        },
-        {
-          "module": "monetization",
-          "title": "monetization",
-          "gid": "1381626910"
+          "gid": "1113834645"
         },
         {
           "module": "feedback",
           "title": "feedback",
-          "gid": "1775221007"
+          "gid": "1137646197"
+        },
+        {
+          "module": "home",
+          "title": "home",
+          "gid": "232484332"
+        },
+        {
+          "module": "keypoint",
+          "title": "keypoint",
+          "gid": "2101049868"
         },
         {
           "module": "learning_streak",
           "title": "learning_streak",
-          "gid": "238144991"
+          "gid": "1475474387"
+        },
+        {
+          "module": "lesson",
+          "title": "lesson",
+          "gid": "375862869"
+        },
+        {
+          "module": "monetization",
+          "title": "monetization",
+          "gid": "238940323"
+        },
+        {
+          "module": "onboarding",
+          "title": "onboarding",
+          "gid": "508952409"
+        },
+        {
+          "module": "roleplay",
+          "title": "roleplay",
+          "gid": "1574246572"
+        },
+        {
+          "module": "setting",
+          "title": "setting",
+          "gid": "788845920"
+        },
+        {
+          "module": "output_practice",
+          "title": "output_practice",
+          "gid": "28582107"
         }
       ],
       "columns": {

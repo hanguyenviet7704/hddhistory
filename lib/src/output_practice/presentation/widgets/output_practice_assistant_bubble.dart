@@ -21,9 +21,6 @@ class OutputPracticeAssistantBubble extends StatelessWidget {
         children: [
           Container(
             padding: EdgeInsets.fromLTRB(3.w, 3.w, 12.w, 3.w),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(50.r),
-            ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -42,7 +39,7 @@ class OutputPracticeAssistantBubble extends StatelessWidget {
           ),
           8.verticalSpace,
           Container(
-            constraints: BoxConstraints(maxWidth: 0.8.sw),
+            constraints: BoxConstraints(maxWidth: 0.83.sw),
             padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 8.h),
             decoration: BoxDecoration(
               color: Colors.white,

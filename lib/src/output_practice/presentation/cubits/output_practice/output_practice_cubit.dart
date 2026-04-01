@@ -2,6 +2,9 @@ part of '../../../output_practice.dart';
 
 @lazySingleton
 class OutputPracticeCubit extends Cubit<OutputPracticeState> {
+  static const int _socketEndRefreshMaxAttempts = 4;
+  static const Duration _socketEndRefreshRetryDelay = Duration(milliseconds: 200);
+
   OutputPracticeCubit(
     this._getConversationUseCase,
     this._getConversationUsageUseCase,
@@ -126,7 +129,12 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
       ),
     );
 
+    final usageRefresh = _refreshUsage(
+      sectionId: sectionId,
+      sessionToken: sessionToken,
+    );
     await _loadHistory(forcePage: 1, sessionToken: sessionToken);
+    await usageRefresh;
   }
 
   Future<void> retryHistory() => _loadHistory(forcePage: 1);
@@ -467,13 +475,21 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         }
         final hasConversationAdvanced = _hasConversationActionStateAdvanced(previousConversation, refreshedConversation);
         final timelineItems = _replacePendingTurnWithCanonical(state, canonicalMessages);
+        final actionTurnAlreadyResolved = awaitingActionTurnCompletion && !state.awaitingActionTurnCompletion;
         emit(
           state.copyWith(
             conversation: refreshedConversation,
             conversationUsage: refreshedUsage,
             liveSummaryTurn: false,
             timelineItems: timelineItems,
-            activeActionChips: awaitingActionTurnCompletion
+            activeActionChips: actionTurnAlreadyResolved
+                ? _resolveActionChips(
+                    refreshedConversation,
+                    liveSummaryTurn: false,
+                    timelineItems: timelineItems,
+                    awaitingActionTurnCompletion: false,
+                  )
+                : awaitingActionTurnCompletion
                 ? const []
                 : hasConversationAdvanced
                 ? _resolveActionChips(
@@ -482,10 +498,10 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
                     timelineItems: timelineItems,
                   )
                 : const [],
-            hiddenActionChips: awaitingActionTurnCompletion || hasConversationAdvanced ? const [] : [...state.hiddenActionChips],
+            hiddenActionChips: actionTurnAlreadyResolved || awaitingActionTurnCompletion || hasConversationAdvanced ? const [] : [...state.hiddenActionChips],
             pendingMessageText: null,
             pendingWasFreeText: false,
-            awaitingActionTurnCompletion: awaitingActionTurnCompletion,
+            awaitingActionTurnCompletion: actionTurnAlreadyResolved ? false : awaitingActionTurnCompletion,
             pendingMessageLocalId: '',
             pendingAssistantLocalId: '',
             sendStatus: OutputPracticeSendStatus.idle,
@@ -538,46 +554,55 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
     final activeConversationId = conversationId.isNotEmpty ? conversationId : state.currentConversationId;
     if (activeSectionId.isEmpty || activeConversationId.isEmpty) return;
 
-    final result = await _getConversationUseCase(activeSectionId).run();
-    if (!_isSessionActive(
-      sessionToken,
-      sectionId: activeSectionId,
-      conversationId: activeConversationId,
-    )) {
-      return;
-    }
-
     final previousConversation = state.conversation;
-    result.fold(
-      (_) {},
-      (refreshedConversation) {
-        if (!_hasConversationActionStateAdvanced(previousConversation, refreshedConversation)) {
-          if (state.awaitingActionTurnCompletion) {
-            emit(
-              state.copyWith(
-                awaitingActionTurnCompletion: false,
-                hiddenActionChips: const [],
-              ),
-            );
-          }
-          return;
-        }
-        emit(
-          state.copyWith(
-            conversation: refreshedConversation,
+    final wasAwaitingActionTurnCompletion = state.awaitingActionTurnCompletion;
+    final maxAttempts = wasAwaitingActionTurnCompletion ? _socketEndRefreshMaxAttempts : 1;
+
+    for (var attempt = 0; attempt < maxAttempts; attempt++) {
+      final result = await _getConversationUseCase(activeSectionId).run();
+      if (!_isSessionActive(
+        sessionToken,
+        sectionId: activeSectionId,
+        conversationId: activeConversationId,
+      )) {
+        return;
+      }
+
+      final refreshedConversation = result.getOrElse((_) => state.conversation);
+      final hasConversationAdvanced = _hasConversationActionStateAdvanced(previousConversation, refreshedConversation);
+      final shouldKeepWaiting =
+          wasAwaitingActionTurnCompletion &&
+          _shouldKeepWaitingForActionCompletion(
+            refreshedConversation,
             liveSummaryTurn: false,
-            activeActionChips: _resolveActionChips(
-              refreshedConversation,
-              liveSummaryTurn: false,
-              timelineItems: state.timelineItems,
-              awaitingActionTurnCompletion: false,
-            ),
-            hiddenActionChips: const [],
+            timelineItems: state.timelineItems,
+          );
+
+      if (!hasConversationAdvanced && !wasAwaitingActionTurnCompletion) {
+        return;
+      }
+
+      if (shouldKeepWaiting && attempt + 1 < maxAttempts) {
+        await Future<void>.delayed(_socketEndRefreshRetryDelay);
+        continue;
+      }
+
+      emit(
+        state.copyWith(
+          conversation: refreshedConversation,
+          liveSummaryTurn: false,
+          activeActionChips: _resolveActionChips(
+            refreshedConversation,
+            liveSummaryTurn: false,
+            timelineItems: state.timelineItems,
             awaitingActionTurnCompletion: false,
           ),
-        );
-      },
-    );
+          hiddenActionChips: const [],
+          awaitingActionTurnCompletion: false,
+        ),
+      );
+      return;
+    }
   }
 
   Future<OutputPracticeConversationUsageEntity> _refreshUsage({

@@ -4,12 +4,12 @@ class OutputPracticeHeader extends StatelessWidget {
   const OutputPracticeHeader({
     super.key,
     required this.title,
-    required this.label,
+    required this.eyebrowText,
     required this.onClose,
   });
 
   final String title;
-  final String label;
+  final String eyebrowText;
   final VoidCallback onClose;
 
   @override
@@ -21,13 +21,16 @@ class OutputPracticeHeader extends StatelessWidget {
         children: [
           Align(
             alignment: Alignment.centerLeft,
-            child: IconButton(
-              onPressed: onClose,
-              splashRadius: 18.r,
-              icon: Icon(
-                Icons.close_rounded,
-                color: const Color(0x80362F82),
-                size: 24.w,
+            child: GestureDetector(
+              behavior: HitTestBehavior.opaque,
+              onTap: onClose,
+              child: SizedBox.square(
+                dimension: 24.w,
+                child: Icon(
+                  Icons.close,
+                  color: const Color(0x80362F82),
+                  size: 24.w,
+                ),
               ),
             ),
           ),
@@ -36,7 +39,7 @@ class OutputPracticeHeader extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               AppText(
-                label.toUpperCase(),
+                eyebrowText.toUpperCase(),
                 style: AppStyle.text12.copyWith(
                   fontSize: 10.sp,
                   fontWeight: FontWeight.w700,

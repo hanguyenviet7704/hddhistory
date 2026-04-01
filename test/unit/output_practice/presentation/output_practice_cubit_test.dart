@@ -212,7 +212,7 @@ void main() {
       expect(cubit.state.activeActionChips, isEmpty);
     });
 
-    test('keeps current option chips visible when the last confirmed message is assistant', () async {
+    test('keeps consumed option chips hidden when the assistant reply is already in history', () async {
       final repo = _buildOutputPracticeRepository(
         conversation: _conversation(
           options: const [
@@ -231,7 +231,7 @@ void main() {
       await cubit.initialize('section-1');
       cubit.markRoomJoined('conversation-1');
 
-      expect(cubit.state.activeActionChips.map((chip) => chip.label), ['Try again', 'New branch']);
+      expect(cubit.state.activeActionChips, isEmpty);
     });
 
     test('keeps action chips hidden until history loading completes', () async {
@@ -288,6 +288,45 @@ void main() {
           return TaskEither.right(
             switch (conversationReadCount) {
               1 || 2 => _conversation(),
+              _ => _conversation(
+                lastSeq: 4,
+                options: const [
+                  OutputPracticeAiReplyOptionEntity(value: 11, label: 'New branch'),
+                ],
+              ),
+            },
+          );
+        },
+        sendMessageResult: TaskEither.right(const [
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 3, content: 'Try again', role: OutputPracticeMessageRole.user),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Sure, let us retry.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      await cubit.sendActionChip(cubit.state.activeActionChips.single, committedText: 'Try again');
+
+      expect(cubit.state.activeActionChips, isEmpty);
+
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(cubit.state.activeActionChips.map((chip) => chip.label), ['New branch']);
+    });
+
+    test('reveals already-refreshed option chips once the socket turn ends', () async {
+      var conversationReadCount = 0;
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(),
+        messages: const [],
+        getConversationHandler: (_) {
+          conversationReadCount += 1;
+          return TaskEither.right(
+            switch (conversationReadCount) {
+              1 => _conversation(),
               _ => _conversation(
                 lastSeq: 4,
                 options: const [
@@ -423,6 +462,115 @@ void main() {
       ]);
     });
 
+    test('retries the socket-end refresh until the summary turn resolves', () async {
+      var conversationReadCount = 0;
+      final repo = _buildOutputPracticeRepository(
+        conversation: _conversation(status: OutputPracticeConversationStatus.summaryDecisionPending),
+        messages: const [],
+        getConversationHandler: (_) {
+          conversationReadCount += 1;
+          return TaskEither.right(
+            switch (conversationReadCount) {
+              1 => _conversation(status: OutputPracticeConversationStatus.summaryDecisionPending),
+              2 || 3 => _conversation(
+                status: OutputPracticeConversationStatus.summaryDecisionPending,
+                lastSeq: 4,
+              ),
+              _ => _conversation(
+                status: OutputPracticeConversationStatus.finished,
+                lastSeq: 5,
+              ),
+            },
+          );
+        },
+        sendMessageResult: TaskEither.right(const [
+          OutputPracticeMessageEntity(
+            conversationId: 'conversation-1',
+            seq: 3,
+            content: 'End practice',
+            type: OutputPracticeMessageType.summaryDecision,
+            role: OutputPracticeMessageRole.user,
+          ),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Thanks for practicing.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      final endPracticeChip = cubit.state.activeActionChips.firstWhere((chip) => chip.summaryAction == OutputPracticeSummaryAction.endPractice);
+      await cubit.sendActionChip(endPracticeChip, committedText: 'End practice');
+
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(conversationReadCount, 4);
+      expect(cubit.state.activeActionChips.map((chip) => chip.summaryAction), [
+        OutputPracticeSummaryAction.startANewConversation,
+      ]);
+    });
+
+    test('keeps start-a-new-conversation visible when send success arrives after socket end', () async {
+      var conversationReadCount = 0;
+      final sendCompleter = Completer<Either<AppException, List<OutputPracticeMessageEntity>>>();
+      final repo = _FakeOutputPracticeRepository(
+        getConversationHandler: (_) => TaskEither.right(
+          switch (++conversationReadCount) {
+            1 => _conversation(status: OutputPracticeConversationStatus.summaryDecisionPending),
+            _ => _conversation(
+              status: OutputPracticeConversationStatus.finished,
+              lastSeq: 5,
+            ),
+          },
+        ),
+        getUsageHandler: (_) => TaskEither.right(const OutputPracticeConversationUsageEntity()),
+        getMessagesHandler: (request) => TaskEither.right(
+          BasePageBreak(
+            currentPage: request.page,
+            totalPages: 1,
+            items: const [],
+          ),
+        ),
+        createConversationHandler: (_) => TaskEither.right(_conversation()),
+        sendMessageHandler: (_) => TaskEither(() async => await sendCompleter.future),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      final endPracticeChip = cubit.state.activeActionChips.firstWhere((chip) => chip.summaryAction == OutputPracticeSummaryAction.endPractice);
+      final sendFuture = cubit.sendActionChip(endPracticeChip, committedText: 'End practice');
+      await Future<void>.delayed(Duration.zero);
+
+      await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
+
+      expect(cubit.state.activeActionChips.map((chip) => chip.summaryAction), [
+        OutputPracticeSummaryAction.startANewConversation,
+      ]);
+
+      sendCompleter.complete(
+        right(const [
+          OutputPracticeMessageEntity(
+            conversationId: 'conversation-1',
+            seq: 3,
+            content: 'End practice',
+            type: OutputPracticeMessageType.summaryDecision,
+            role: OutputPracticeMessageRole.user,
+          ),
+          OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 4, content: 'Thanks for practicing.', role: OutputPracticeMessageRole.assistant),
+        ]),
+      );
+      await sendFuture;
+
+      expect(cubit.state.activeActionChips.map((chip) => chip.summaryAction), [
+        OutputPracticeSummaryAction.startANewConversation,
+      ]);
+      expect(cubit.state.awaitingActionTurnCompletion, isFalse);
+    });
+
     test('does not restore stale chips when the socket end refresh still returns the old conversation', () async {
       final repo = _buildOutputPracticeRepository(
         conversation: _conversation(),
@@ -481,7 +629,7 @@ void main() {
       await cubit.sendActionChip(cubit.state.activeActionChips.firstWhere((chip) => chip.label == 'Try again'), committedText: 'Try again');
       await cubit.handleSocketEvent(const OutputPracticeAiStreamEvent.end(conversationId: 'conversation-1'));
 
-      expect(cubit.state.activeActionChips.map((chip) => chip.label), ['Try again', 'New branch']);
+      expect(cubit.state.activeActionChips, isEmpty);
     });
 
     test('exposes start-a-new-conversation as the only action for limited conversations', () async {
@@ -567,7 +715,7 @@ void main() {
       expect(sentBodies, isEmpty);
       expect(cubit.state.currentConversationId, 'conversation-2');
       expect(cubit.state.conversationUsage.remainingInThisMonth, 2);
-      expect(usageReadCount, 1);
+      expect(usageReadCount, 2);
       expect(cubit.state.timelineItems.map((item) => item.content), ['Fresh start']);
     });
   });

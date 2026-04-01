@@ -104,6 +104,20 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
     cubit.sendCurrentInput();
   }
 
+  String _resolveHeaderEyebrow(
+    OutputPracticeState state,
+    dynamic copy,
+  ) {
+    final usage = state.conversationUsage;
+    if (usage.monthlyLimit > 0) {
+      return copy.headerUsageRemaining(
+        remaining: usage.remainingInThisMonth,
+        monthlyLimit: usage.monthlyLimit,
+      );
+    }
+    return copy.practiceLabel;
+  }
+
   String _resolveChipLabel(OutputPracticeActionChipVm chip) {
     final copy = context.l10n.outputPractice;
     return switch (chip.summaryAction) {
@@ -197,7 +211,7 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
             return OutputPracticePageShell(
               header: OutputPracticeHeader(
                 title: pageTitle,
-                label: copy.practiceLabel,
+                eyebrowText: _resolveHeaderEyebrow(state, copy),
                 onClose: () => _handleClose(state),
               ),
               composer: OutputPracticeComposer(
