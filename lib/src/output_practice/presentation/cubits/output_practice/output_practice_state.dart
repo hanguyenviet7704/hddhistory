@@ -15,6 +15,7 @@ abstract class OutputPracticeState with _$OutputPracticeState {
     @Default(OutputPracticeHistoryStatus.initial) OutputPracticeHistoryStatus historyStatus,
     @Default(OutputPracticeSendStatus.idle) OutputPracticeSendStatus sendStatus,
     @Default(OutputPracticeEntryState.unknown) OutputPracticeEntryState entryState,
+    @Default(OutputPracticeConversationUsageEntity()) OutputPracticeConversationUsageEntity conversationUsage,
     @Default(LessonEntity()) LessonEntity currentLesson,
     @Default(LessonEntity()) LessonEntity detailedLesson,
     @Default(OutputPracticeConversationEntity()) OutputPracticeConversationEntity conversation,

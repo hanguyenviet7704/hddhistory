@@ -92,6 +92,7 @@ mixin AppEndpoint {
   //* Courses Output Practice API
   static const String coursesOutputPracticeConversations = '/api/v1/courses-output-practice-conversations';
   static const String coursesOutputPracticeSectionConversations = '/api/v1/courses-output-practice-conversations/section/{sectionId}';
+  static const String coursesOutputPracticeSectionConversationsUsage = '/api/v1/courses-output-practice-conversations/section/{sectionId}/usage';
   static const String coursesOutputPracticeMessages = '/api/v1/courses-output-practice-messages';
   static const String coursesOutputPracticeMessagesSend = '/api/v1/courses-output-practice-messages/send';
   

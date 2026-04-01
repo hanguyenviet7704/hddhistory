@@ -5,6 +5,8 @@ abstract class OutputPracticeLocalDataSource {
   Future<void> cacheMessages(String conversationId, List<OutputPracticeMessageModel> models);
   Future<OutputPracticeConversationModel?> getCachedConversation(String sectionId);
   Future<void> cacheConversation(String sectionId, OutputPracticeConversationModel model);
+  Future<OutputPracticeConversationUsageModel?> getCachedConversationUsage(String sectionId);
+  Future<void> cacheConversationUsage(String sectionId, OutputPracticeConversationUsageModel model);
   Future<void> clearConversation(String sectionId);
   Future<void> clearMessages(String conversationId);
 }
@@ -13,6 +15,7 @@ abstract class OutputPracticeLocalDataSource {
 class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource {
   static const String _messagesKeyPrefix = 'output_practice_messages_cache';
   static const String _conversationKeyPrefix = 'output_practice_conversation_cache';
+  static const String _usageKeyPrefix = 'output_practice_usage_cache';
 
   final ILocalStoreService _localStoreService;
 
@@ -71,6 +74,29 @@ class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource
   }
 
   @override
+  Future<OutputPracticeConversationUsageModel?> getCachedConversationUsage(String sectionId) async {
+    try {
+      final data = await _localStoreService.getMap(key: _usageKey(sectionId));
+      if (data.isEmpty) return null;
+      return OutputPracticeConversationUsageModel.fromJson(data);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  @override
+  Future<void> cacheConversationUsage(String sectionId, OutputPracticeConversationUsageModel model) async {
+    try {
+      await _localStoreService.setMap(
+        key: _usageKey(sectionId),
+        value: model.toJson(),
+      );
+    } catch (e) {
+      // Handle error silently
+    }
+  }
+
+  @override
   Future<void> clearConversation(String sectionId) async {
     try {
       await _localStoreService.remove(key: _conversationKey(sectionId));
@@ -91,4 +117,6 @@ class OutputPracticeLocalDataSourceImpl implements OutputPracticeLocalDataSource
   String _messagesKey(String conversationId) => '${_messagesKeyPrefix}_$conversationId';
 
   String _conversationKey(String sectionId) => '${_conversationKeyPrefix}_$sectionId';
+
+  String _usageKey(String sectionId) => '${_usageKeyPrefix}_$sectionId';
 }

@@ -1,12 +1,15 @@
 # Setup New Feature
 
 ## Usage
+
 Provide one of:
+
 - Ticket/requirement description
 - API/GraphQL endpoint documentation
 - Reference to similar existing feature
 
 ## Agent Questions (Ask First)
+
 1. **Feature name** (e.g., "user_notifications", "payment_history")
 2. **Data source**: REST API | GraphQL | Local | None (UI-only)
 3. **Needs state management**: Yes (BLoC/Cubit) | No
@@ -15,10 +18,12 @@ Provide one of:
 ## Auto-Execute After Questions
 
 ### 1. Find Similar Patterns
+
 - Search codebase for similar features
 - Identify pattern to follow (REST vs GraphQL vs Local)
 
 ### 2. Create Domain Layer
+
 ```
 lib/src/domain/
 ├── entities/[feature]/
@@ -31,12 +36,14 @@ lib/src/domain/
 ```
 
 **Auto-generate:**
+
 - Entity with Freezed & JSON serialization
 - Repository interface with Either<AppException, T> returns
 - Use cases with params classes
 - Add parts to `entities.dart` and `usecases.dart`
 
 ### 3. Create Data Layer
+
 ```
 lib/src/data/
 ├── models/[feature]/
@@ -49,6 +56,7 @@ lib/src/data/
 ```
 
 **Auto-generate:**
+
 - Model with Freezed & JSON serialization
 - Extension `toEntity()` for model → entity conversion
 - Repository implementation with proper mixins
@@ -56,6 +64,7 @@ lib/src/data/
 - Add parts to `models.dart` and `repositories.dart`
 
 ### 4. Create Presentation Layer (Only if user says Yes)
+
 ```
 lib/src/presentation/
 ├── cubits/[feature]/
@@ -66,17 +75,20 @@ lib/src/presentation/
 ```
 
 **Auto-generate:**
+
 - Cubit with HydratedCubit
 - State with Freezed (initial, loading, success, error)
 - Register in DI
 
 ### 5. Run Build & Verify
+
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 flutter analyze
 ```
 
 ### 6. Create Test Structure
+
 ```
 test/unit/
 ├── domain/usecases/[feature]/
@@ -87,6 +99,7 @@ test/unit/
 **Auto-generate test scaffolds**
 
 ## Output
+
 ```
 ✅ Feature '[feature_name]' created
 
@@ -119,6 +132,7 @@ Next Steps:
 ## Technical Templates (Auto-Applied)
 
 ### Entity
+
 ```dart
 part of '../entities.dart';
 
@@ -135,6 +149,7 @@ class [Feature]Entity with _$[Feature]Entity {
 ```
 
 ### Repository Interface
+
 ```dart
 abstract interface class I[Feature]Repository {
   Future<Either<AppException, [Feature]Entity>> get[Feature](String id);
@@ -143,6 +158,7 @@ abstract interface class I[Feature]Repository {
 ```
 
 ### Model with Extension
+
 ```dart
 part of '../models.dart';
 
@@ -166,6 +182,7 @@ extension [Feature]ModelExtension on [Feature]Model {
 ```
 
 ### Repository Implementation (GraphQL)
+
 ```dart
 @LazySingleton(as: I[Feature]Repository)
 class [Feature]Repository with GraphQLRequestHandlerMixin implements I[Feature]Repository {
@@ -183,11 +200,12 @@ class [Feature]Repository with GraphQLRequestHandlerMixin implements I[Feature]R
 ```
 
 ### Use Case
+
 ```dart
 part of '../usecases.dart';
 
 @lazySingleton
-class Get[Feature]UseCase extends UseCaseWithParams<[Feature]Entity, Get[Feature]Params> {
+class Get[Feature]UseCase extends BaseUseCase<[Feature]Entity, Get[Feature]Params> {
   final I[Feature]Repository _repository;
   Get[Feature]UseCase(this._repository);
 
@@ -203,6 +221,7 @@ class Get[Feature]Params with _$Get[Feature]Params {
 ```
 
 ### Cubit (if requested)
+
 ```dart
 part of '../cubits.dart';
 

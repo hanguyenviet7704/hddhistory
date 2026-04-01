@@ -25,6 +25,8 @@ enum OutputPracticeConversationStatus {
   summaryDecisionPending,
   @JsonValue('finished')
   finished,
+  @JsonValue('conversation_limit_in_month')
+  conversationLimitInMonth,
   @JsonValue('unknown')
   unknown,
 }

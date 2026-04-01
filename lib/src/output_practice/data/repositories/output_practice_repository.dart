@@ -57,6 +57,23 @@ class OutputPracticeRepository with RestfulRequestHandlerMixin implements IOutpu
   }
 
   @override
+  TaskEither<AppException, OutputPracticeConversationUsageEntity> getOutputPracticeConversationUsage(String sectionId) {
+    return callApiWithTransform<OutputPracticeConversationUsageModel, OutputPracticeConversationUsageEntity>(
+      apiCall: () => _api.getOutputPracticeConversationUsage(sectionId),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async {
+        if (data == null) return;
+        await _localDataSource.cacheConversationUsage(sectionId, data);
+      },
+      onError: () async {
+        final cached = await _localDataSource.getCachedConversationUsage(sectionId);
+        return cached?.toEntity();
+      },
+      defaultValue: const OutputPracticeConversationUsageEntity(),
+    );
+  }
+
+  @override
   TaskEither<AppException, OutputPracticeConversationEntity> createOutputPracticeConversation(
     Map<String, dynamic> body,
   ) {
