@@ -13,19 +13,21 @@
 ## Key Insights
 - Current form splits document handling into textual branch and media branch.
 - `EXPLANATION` needs both translation content and nested translation options, so it needs a dedicated render path.
+- Each explanation option now also carries `icon: string | null`, so the option editor must support upload state in addition to text fields.
 - Existing `cleanDocumentItems` only considers text/media completeness; it must be extended to explanation-specific validity.
 
 ## Requirements
 - Add `EXPLANATION` to the document type selector.
 - When type is `EXPLANATION`, render:
   - `content` textarea backed by current language in `ITranslation`
-  - repeatable option blocks with `value` and `explanation`
+  - repeatable option blocks with `icon`, `value`, and `explanation`
   - add/remove option controls
 - On type switch:
   - switching to `EXPLANATION` resets data to default explanation-safe shape
   - switching away clears `options` by resetting to the target type default shape
 - Save behavior:
   - keep explanation docs when `content` has value, even if `options` is empty
+  - preserve `option.icon` when uploaded
   - remove explanation options whose `value` and `explanation` are both empty after clean
   - omit empty `url` and `thumbnail`
 - Preview behavior:
@@ -37,6 +39,7 @@
   - create default document data
   - create empty explanation option
   - clean explanation options
+  - update explanation option icon
   - count valid options for preview
 - Keep existing modal flow and payload conversion flow unchanged.
 - Extend `cleanDocumentItems` rather than adding separate submit pipeline.
@@ -50,6 +53,7 @@
 1. Replace default document data factory with a name and shape suitable for both media and explanation documents.
 2. Add explanation option helpers:
    - create option with stable numeric `id`
+   - update option `icon`
    - update option `value`
    - update option `explanation`
    - remove option by index
@@ -64,6 +68,7 @@
 - [x] Add `EXPLANATION` option to selector
 - [x] Add explanation content textarea
 - [x] Add add/edit/remove option controls
+- [x] Add per-option icon upload
 - [x] Clean explanation options before submit
 - [x] Render explanation preview in document list
 

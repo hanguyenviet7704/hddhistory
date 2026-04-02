@@ -64,6 +64,8 @@ const cleanExplanationOptions = (options?: IExplanationOption[]) => {
     .map((option, index) => {
       const cleanedValue = cleanTranslation(option.value);
       const cleanedExplanation = cleanTranslation(option.explanation);
+      const cleanedIcon =
+        typeof option.icon === "string" ? option.icon.trim() : null;
       const hasValue = !!cleanedValue && Object.keys(cleanedValue).length > 0;
       const hasExplanation =
         !!cleanedExplanation && Object.keys(cleanedExplanation).length > 0;
@@ -74,6 +76,7 @@ const cleanExplanationOptions = (options?: IExplanationOption[]) => {
 
       return {
         id: option.id || index + 1,
+        icon: cleanedIcon,
         value: cleanedValue || {},
         explanation: cleanedExplanation || {},
       };
@@ -151,6 +154,7 @@ const createEmptyExplanationOption = (
   id: number,
 ): IExplanationOption => ({
   id,
+  icon: "",
   value: { [currentLang]: "" },
   explanation: { [currentLang]: "" },
 });
@@ -858,6 +862,40 @@ export default function TheoryForm({
       });
     };
 
+    const updateExplanationOptionIcon = (
+      docIndex: number,
+      optionIndex: number,
+      icon: string | null,
+    ) => {
+      setFormData((prev) => {
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
+        const currentDoc = newDocuments[docIndex];
+        const currentOptions = currentDoc.data.options || [];
+        const nextOptions = [...currentOptions];
+        const targetOption = nextOptions[optionIndex];
+
+        if (!targetOption) {
+          return prev;
+        }
+
+        nextOptions[optionIndex] = {
+          ...targetOption,
+          icon,
+        };
+
+        newDocuments[docIndex] = {
+          ...currentDoc,
+          data: {
+            ...currentDoc.data,
+            options: nextOptions,
+          },
+        };
+
+        return { ...prev, document: newDocuments };
+      });
+    };
+
     const addExplanationOption = (docIndex: number) => {
       setFormData((prev) => {
         const currentDocs = prev.document || [];
@@ -1008,6 +1046,24 @@ export default function TheoryForm({
                       className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                       placeholder={`Enter title ${optionIndex + 1}`}
                     />
+                    <div className="w-52">
+                      <CloudflareFileUpload
+                        initialUrl={option.icon || ""}
+                        onUrlChange={(newUrl) =>
+                          updateExplanationOptionIcon(
+                            index,
+                            optionIndex,
+                            newUrl,
+                          )
+                        }
+                        label={`Icon ${optionIndex + 1}`}
+                        uploadPayload={{
+                          prefix: "",
+                          folder: "theories",
+                        }}
+                        accept="image/*"
+                      />
+                    </div>
                     <textarea
                       value={getCurrentTranslationValue(
                         option.explanation,

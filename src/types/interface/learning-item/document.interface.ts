@@ -3,6 +3,7 @@ import { ITranslation } from "../../../utils/translate";
 
 export interface IExplanationOption {
   id: number;
+  icon: string | null;
   value: ITranslation;
   explanation: ITranslation;
 }

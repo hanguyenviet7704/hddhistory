@@ -4,6 +4,7 @@
 - Bổ sung loại document `EXPLANATION` trong [TheoryForm.tsx](/Users/macbook/Documents/eUp Group/admin-ai-tutor/src/pages/theories/TheoryForm.tsx) để content team nhập theory explanation trực tiếp trên form.
 - Đồng bộ frontend với thay đổi type `IMediaDocument -> IDocumentData`.
 - Đảm bảo payload theory gửi lên backend chứa đúng `content` và `options` cho document type mới.
+- Mỗi `IExplanationOption` hỗ trợ thêm `icon: string | null` để upload icon riêng cho từng option.
 
 ## 2) Bối cảnh hiện tại
 - Enum `DocumentType` đã có `EXPLANATION = "explanation"` trong [course.enum.ts](/Users/macbook/Documents/eUp Group/admin-ai-tutor/src/utils/enum/course.enum.ts).
@@ -20,6 +21,7 @@
   - Khi chọn `EXPLANATION`, form cho nhập:
     - `content: ITranslation`
     - `options?: IExplanationOption[]`
+    - `options[].icon: string | null`
   - Chuẩn hóa các chỗ còn dùng `IMediaDocument` sang `IDocumentData`.
   - Cập nhật logic clean/submit/preview để support `EXPLANATION`.
 - Out of scope:
@@ -34,12 +36,14 @@
   - nhập theo ngôn ngữ đang chọn giống các field translation hiện có.
 - FR-03: Khi type là `EXPLANATION`, hiển thị danh sách `options` dạng lặp:
   - mỗi option có `id`,
+  - `icon: string | null`,
   - `value: ITranslation`,
   - `explanation: ITranslation`.
 - FR-04: Editor cho phép:
   - thêm option mới,
   - sửa option hiện có,
   - xóa option.
+  - upload icon riêng cho từng option qua `CloudflareFileUpload`.
 - FR-05: Khi save theory document:
   - `content` được clean như các field translation khác,
   - `options` được giữ lại nếu có dữ liệu hợp lệ,
@@ -58,6 +62,7 @@
   - `data.content` là field chính, dùng `ITranslation`.
   - `data.options` là optional.
   - mỗi `option.id` cần ổn định trong phạm vi document để phục vụ render/update.
+  - mỗi `option.icon` là string URL hoặc `null`, cho phép rỗng.
 - Với `DocumentType.EXPLANATION`, `url` và `thumbnail` không dùng; cần tránh gửi rác nếu không có giá trị.
 - Với các type text/media khác, hành vi hiện tại được giữ nguyên.
 - `cleanDocumentItems` cần coi `EXPLANATION` là document hợp lệ khi:
@@ -70,6 +75,7 @@
   - explanation options.
 - `content` dùng textarea.
 - Mỗi option nên hiển thị thành một block/card nhỏ để editor dễ đọc:
+  - field `icon`,
   - field `value`,
   - field `explanation`,
   - nút remove.
@@ -78,8 +84,8 @@
 - Khi đổi từ `EXPLANATION` sang type khác, `options` không tiếp tục bám theo payload type mới.
 
 ## 7) Tiêu chí chấp nhận
-- AC-01: User tạo theory document mới với type `EXPLANATION`, nhập `content`, thêm `options`, save thành công.
-- AC-02: User edit theory document `EXPLANATION` hiện có, dữ liệu `content/options` được load lại đúng và update được.
+- AC-01: User tạo theory document mới với type `EXPLANATION`, nhập `content`, thêm `options` và upload `icon`, save thành công.
+- AC-02: User edit theory document `EXPLANATION` hiện có, dữ liệu `content/options/icon` được load lại đúng và update được.
 - AC-03: Save theory không làm mất dữ liệu của các document type cũ.
 - AC-04: Payload frontend gửi lên không còn phụ thuộc tên `IMediaDocument`.
 - AC-05: Repo compile pass sau khi rename `IMediaDocument -> IDocumentData` ở các chỗ đang import type cũ.
