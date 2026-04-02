@@ -199,7 +199,7 @@ dependencies:
   flutter_isolate: ^2.1.0
 
   # App Connectivity Services
-  connectivity_plus: ^7.0.0
+  connectivity_plus: ^7.1.0
 
   # App Color Picker
   flutter_colorpicker: ^1.1.0

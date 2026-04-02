@@ -6,6 +6,7 @@ abstract class DocumentDataModel with _$DocumentDataModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage content,
     @Default(BaseMultiLanguage()) BaseMultiLanguage url,
     @Default('') String thumbnail,
+    @Default([]) List<ExplanationOptionModel> options,
   }) = _DocumentDataModel;
 
   factory DocumentDataModel.fromJson(Map<String, dynamic> json) => _$DocumentDataModelFromJson(json);
@@ -16,5 +17,6 @@ extension DocumentDataModelExtension on DocumentDataModel {
     content: content,
     url: url,
     thumbnail: thumbnail,
+    options: options.map((o) => o.toEntity()).toList(),
   );
 }

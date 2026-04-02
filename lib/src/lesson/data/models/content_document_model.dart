@@ -24,6 +24,8 @@ enum ContentDocumentType {
   image,
   @JsonValue('audio')
   audio,
+  @JsonValue('explanation')
+  explanation,
   @JsonValue('unknown')
   unknown,
 }
