@@ -1,10 +1,12 @@
 part of '../../../../lesson.dart';
 
 class DocumentExplanationWidget extends StatefulWidget {
+  final String title;
   final List<ExplanationOptionEntity> options;
 
   const DocumentExplanationWidget({
     super.key,
+    this.title = '',
     required this.options,
   });
 
@@ -26,7 +28,9 @@ class _DocumentExplanationWidgetState extends State<DocumentExplanationWidget> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.options.isEmpty) return const SizedBox.shrink();
+    final hasTitle = widget.title.isNotEmpty;
+
+    if (!hasTitle && widget.options.isEmpty) return const SizedBox.shrink();
 
     final idCounts = <int, int>{};
     for (final option in widget.options) {
@@ -34,21 +38,37 @@ class _DocumentExplanationWidgetState extends State<DocumentExplanationWidget> {
     }
 
     return Column(
-      children: List.generate(widget.options.length, (index) {
-        final option = widget.options[index];
-        final optionKey = _resolveOptionKey(index, option, idCounts);
-        final isSelected = selectedOptionKey == optionKey;
-
-        return Padding(
-          padding: EdgeInsets.only(bottom: index == widget.options.length - 1 ? 0 : 12.h),
-          child: _DocumentExplanationOptionCard(
-            key: ValueKey('document-explanation-card-$index'),
-            option: option,
-            isSelected: isSelected,
-            onTap: () => _toggleOption(optionKey),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (hasTitle) ...[
+          AppText(
+            widget.title,
+            key: const ValueKey('document-explanation-title'),
+            maxLines: 5,
+            style: AppStyle.text20.copyWith(
+              color: AppCustomColor.textPrimary,
+              fontWeight: FontWeight.w600,
+              height: 1.5,
+            ),
           ),
-        );
-      }),
+          if (widget.options.isNotEmpty) 16.verticalSpace,
+        ],
+        ...List.generate(widget.options.length, (index) {
+          final option = widget.options[index];
+          final optionKey = _resolveOptionKey(index, option, idCounts);
+          final isSelected = selectedOptionKey == optionKey;
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: index == widget.options.length - 1 ? 0 : 12.h),
+            child: _DocumentExplanationOptionCard(
+              key: ValueKey('document-explanation-card-$index'),
+              option: option,
+              isSelected: isSelected,
+              onTap: () => _toggleOption(optionKey),
+            ),
+          );
+        }),
+      ],
     );
   }
 

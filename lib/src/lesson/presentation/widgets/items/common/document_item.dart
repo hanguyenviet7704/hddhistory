@@ -17,6 +17,7 @@ class DocumentItem extends StatelessWidget {
       ContentDocumentType.video => DocumentVideoWidget(url: data.url.text, thumbnail: data.thumbnail),
       ContentDocumentType.explanation => DocumentExplanationWidget(
         key: ObjectKey(document),
+        title: data.content.text,
         options: data.options,
       ),
       ContentDocumentType.unknown => const SizedBox.shrink(),

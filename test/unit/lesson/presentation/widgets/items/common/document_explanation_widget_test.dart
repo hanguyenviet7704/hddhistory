@@ -63,7 +63,10 @@ void main() {
         builder: (context, child) => TranslationProvider(
           child: const MaterialApp(
             home: Scaffold(
-              body: DocumentExplanationWidget(options: _options),
+              body: DocumentExplanationWidget(
+                title: 'Explanation title',
+                options: _options,
+              ),
             ),
           ),
         ),
@@ -72,6 +75,8 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const ValueKey('document-explanation-title')), findsOneWidget);
+    expect(find.text('Explanation title'), findsOneWidget);
     expect(find.text('Explanation A'), findsNothing);
     expect(find.text('Explanation B'), findsNothing);
 
@@ -93,6 +98,29 @@ void main() {
 
     expect(find.text('Explanation A'), findsNothing);
     expect(find.text('Explanation B'), findsOneWidget);
+  });
+
+  testWidgets('does not render title when title is empty', (tester) async {
+    LocaleSettings.setLocaleSync(AppLocale.en);
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(375, 812),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) => TranslationProvider(
+          child: const MaterialApp(
+            home: Scaffold(
+              body: DocumentExplanationWidget(options: _options),
+            ),
+          ),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const ValueKey('document-explanation-title')), findsNothing);
   });
 
   testWidgets('resets local selection when options are replaced with a different document', (tester) async {

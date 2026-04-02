@@ -44,6 +44,7 @@ const _noCorrectQuestionWithExplanationDocument = QuestionEntity(
           ContentDocumentEntity(
             type: ContentDocumentType.explanation,
             data: DocumentDataEntity(
+              content: BaseMultiLanguage(en: 'Explanation title'),
               options: [
                 ExplanationOptionEntity(
                   value: BaseMultiLanguage(en: 'Explanation option'),
@@ -124,6 +125,7 @@ void main() {
 
     await tester.pumpAndSettle();
 
+    expect(find.text('Explanation title'), findsOneWidget);
     expect(find.text('Explanation option'), findsOneWidget);
     expect(find.text('Explanation detail'), findsNothing);
 
