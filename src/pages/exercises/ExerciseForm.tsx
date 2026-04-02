@@ -46,7 +46,7 @@ import {
 import { IExerciseRecord } from "../../types/interface/learning-item/excercises/record.interface";
 import {
   IDocument,
-  IMediaDocument,
+  IDocumentData,
 } from "../../types/interface/learning-item/document.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
@@ -188,7 +188,7 @@ const getDocumentContentLabel = (type: DocumentType) => {
   }
 };
 
-const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+const createEmptyDocumentData = (currentLang: LangCode): IDocumentData => ({
   content: { [currentLang]: "" },
   url: { [currentLang]: "" },
   thumbnail: "",
@@ -197,7 +197,7 @@ const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
 const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
   id: 1,
   type: DocumentType.TEXT,
-  data: createEmptyMediaDocument(currentLang),
+  data: createEmptyDocumentData(currentLang),
 });
 
 const createDefaultDocumentsForQuestion = (
@@ -1556,7 +1556,7 @@ export default function ExerciseForm({
           [field]: value,
         };
         if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument(lang);
+          updatedDoc.data = createEmptyDocumentData(lang);
         }
         newDocuments[index] = updatedDoc;
         return { ...prev, document: newDocuments };
@@ -1565,7 +1565,7 @@ export default function ExerciseForm({
 
     const handleDataChange = (
       docIndex: number,
-      field: keyof IMediaDocument,
+      field: keyof IDocumentData,
       value: string | ITranslation,
     ) => {
       setLocalFormData((prev: any) => {
@@ -1852,7 +1852,7 @@ export default function ExerciseForm({
           {
             id: newId,
             type: DocumentType.TEXT,
-            data: createEmptyMediaDocument(lang),
+            data: createEmptyDocumentData(lang),
           },
         ],
       }));
@@ -2310,7 +2310,7 @@ export default function ExerciseForm({
           {
             id: newId,
             type: DocumentType.TEXT,
-            data: createEmptyMediaDocument(lang),
+            data: createEmptyDocumentData(lang),
           },
         ];
         groups[groupIndex] = { ...group, documents: nextDocuments };
@@ -2349,7 +2349,7 @@ export default function ExerciseForm({
           [field]: value,
         };
         if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument(lang);
+          updatedDoc.data = createEmptyDocumentData(lang);
         }
         documents[docIndex] = updatedDoc;
         groups[groupIndex] = { ...group, documents };
@@ -2360,7 +2360,7 @@ export default function ExerciseForm({
     const handleGroupDataChange = (
       groupIndex: number,
       docIndex: number,
-      field: keyof IMediaDocument,
+      field: keyof IDocumentData,
       value: string | ITranslation,
     ) => {
       setLocalFormData((prev: any) => {
