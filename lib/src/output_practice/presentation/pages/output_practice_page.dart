@@ -236,6 +236,7 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
                       controller: _scrollController,
                       items: state.timelineItems,
                       activeActionChips: state.activeActionChips,
+                      conversationTransitionStatus: state.conversationTransitionStatus,
                       assistantName: state.assistantNameOrFallback.isNotEmpty ? state.assistantNameOrFallback : copy.assistantName,
                       assistantAvatarUrl: state.assistantAvatarUrl,
                       userName: copy.userNameLabel,
@@ -250,6 +251,7 @@ class _OutputPracticePageState extends State<OutputPracticePage> {
                       onRetryRoom: () => context.read<OutputPracticeSocketCubit>().reconnect(),
                       showJumpToLatest: state.showJumpToLatest,
                       jumpToLatestLabel: copy.jumpToLatestButton,
+                      conversationTransitionLabel: copy.startingNewConversationLabel,
                       onJumpToLatest: () {
                         if (!_scrollController.hasClients) return;
                         _scrollController.animateTo(

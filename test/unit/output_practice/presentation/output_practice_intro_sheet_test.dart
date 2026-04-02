@@ -94,7 +94,8 @@ void main() {
 
     await tester.pump();
 
-    expect(find.text('Checking your monthly practice availability...'), findsOneWidget);
+    expect(find.byKey(const ValueKey('output_practice_intro_usage_loading')), findsOneWidget);
+    expect(find.text('Checking your monthly practice availability...'), findsNothing);
 
     await tester.tap(find.text('Start practice'), warnIfMissed: false);
     await tester.pump();
@@ -103,6 +104,7 @@ void main() {
     usageCompleter.complete(right(const OutputPracticeConversationUsageEntity(remainingInThisMonth: 2, monthlyLimit: 5)));
     await tester.pumpAndSettle();
 
+    expect(find.byKey(const ValueKey('output_practice_intro_usage_ready')), findsOneWidget);
     expect(find.text('2 practice left this month', findRichText: true), findsOneWidget);
     expect(find.textContaining('/5', findRichText: true), findsNothing);
 

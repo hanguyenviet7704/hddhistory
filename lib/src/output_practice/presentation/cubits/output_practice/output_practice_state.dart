@@ -8,6 +8,8 @@ enum OutputPracticeSendStatus { idle, waitingSocket, streaming }
 
 enum OutputPracticeEntryState { unknown, existing, created }
 
+enum OutputPracticeConversationTransitionStatus { idle, startingNewConversation }
+
 @freezed
 abstract class OutputPracticeState with _$OutputPracticeState {
   const factory OutputPracticeState({
@@ -15,6 +17,7 @@ abstract class OutputPracticeState with _$OutputPracticeState {
     @Default(OutputPracticeHistoryStatus.initial) OutputPracticeHistoryStatus historyStatus,
     @Default(OutputPracticeSendStatus.idle) OutputPracticeSendStatus sendStatus,
     @Default(OutputPracticeEntryState.unknown) OutputPracticeEntryState entryState,
+    @Default(OutputPracticeConversationTransitionStatus.idle) OutputPracticeConversationTransitionStatus conversationTransitionStatus,
     @Default(OutputPracticeConversationUsageEntity()) OutputPracticeConversationUsageEntity conversationUsage,
     @Default(LessonEntity()) LessonEntity currentLesson,
     @Default(LessonEntity()) LessonEntity detailedLesson,
@@ -72,6 +75,7 @@ extension OutputPracticeStateX on OutputPracticeState {
     final historyReady = historyStatus == OutputPracticeHistoryStatus.success;
     final roomReady = joinedRoomId.isNotEmpty;
     return uiMode == OutputPracticeUiMode.ready &&
+        conversationTransitionStatus == OutputPracticeConversationTransitionStatus.idle &&
         historyReady &&
         roomReady &&
         sendStatus == OutputPracticeSendStatus.idle &&
@@ -81,7 +85,7 @@ extension OutputPracticeStateX on OutputPracticeState {
   bool get canSubmitActionChip {
     final historyReady = historyStatus == OutputPracticeHistoryStatus.success;
     final roomReady = joinedRoomId.isNotEmpty;
-    if (uiMode != OutputPracticeUiMode.ready || !historyReady || !roomReady) {
+    if (uiMode != OutputPracticeUiMode.ready || conversationTransitionStatus != OutputPracticeConversationTransitionStatus.idle || !historyReady || !roomReady) {
       return false;
     }
     if (sendStatus != OutputPracticeSendStatus.idle || activeActionChips.isEmpty) {

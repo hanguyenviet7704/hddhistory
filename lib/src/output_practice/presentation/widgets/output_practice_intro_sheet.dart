@@ -80,6 +80,7 @@ class OutputPracticeIntroSheet extends StatefulWidget {
 }
 
 class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
+  static const _usageTransitionDuration = Duration(milliseconds: 180);
   OutputPracticeConversationUsageEntity? _usage;
   bool _isLoadingUsage = true;
   bool _hasUsageError = false;
@@ -146,12 +147,7 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
       height: 1.75,
     );
 
-    if (_isLoadingUsage) {
-      return TextSpan(
-        text: copy.introUsageChecking,
-        style: usageTextStyle,
-      );
-    }
+    if (_isLoadingUsage) return null;
     if (_hasUsageError) return null;
     if (_isUnlimitedAccess) {
       return TextSpan(
@@ -172,18 +168,72 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
     return TextSpan(
       children: [
         TextSpan(
-          text: copy.introUsageRemainingPrefix,
-          style: usageTextStyle,
-        ),
-        TextSpan(
           text: copy.introUsageRemaining(remaining: usage.remainingInThisMonth),
           style: usageTextStyle.copyWith(fontWeight: FontWeight.w700),
         ),
-        TextSpan(
-          text: copy.introUsageRemainingSuffix,
-          style: usageTextStyle,
-        ),
+        if (copy.introUsageRemainingSuffix.isNotEmpty)
+          TextSpan(
+            text: ' ${copy.introUsageRemainingSuffix}',
+            style: usageTextStyle,
+          ),
       ],
+    );
+  }
+
+  Widget _buildUsageSlot(BuildContext context, InlineSpan? usageSpan) {
+    final usageSlotHeight = 24.h;
+
+    return AnimatedSwitcher(
+      duration: _usageTransitionDuration,
+      switchInCurve: Curves.easeOutCubic,
+      switchOutCurve: Curves.easeInCubic,
+      layoutBuilder: (currentChild, previousChildren) {
+        return SizedBox(
+          height: usageSlotHeight,
+          child: Stack(
+            alignment: Alignment.center,
+            children: [
+              ...previousChildren,
+              ?currentChild,
+            ],
+          ),
+        );
+      },
+      transitionBuilder: (child, animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0, 0.08),
+              end: Offset.zero,
+            ).animate(animation),
+            child: child,
+          ),
+        );
+      },
+      child: _isLoadingUsage
+          ? Center(
+              key: const ValueKey('output_practice_intro_usage_loading'),
+              child: Container(
+                width: 156.w,
+                height: 10.h,
+                decoration: BoxDecoration(
+                  color: const Color(0x1F4B44CA),
+                  borderRadius: BorderRadius.circular(999.r),
+                ),
+              ),
+            )
+          : usageSpan == null
+          ? const SizedBox(
+              key: ValueKey('output_practice_intro_usage_empty'),
+            )
+          : Center(
+              child: Text.rich(
+                key: const ValueKey('output_practice_intro_usage_ready'),
+                usageSpan,
+                textAlign: TextAlign.center,
+              ),
+            ),
     );
   }
 
@@ -192,6 +242,7 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
     final copy = context.l10n.outputPractice;
     final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final usageSpan = _usageSpan(context);
+    final shouldShowUsageSlot = _isLoadingUsage || usageSpan != null;
     return Material(
       color: Colors.transparent,
       child: Stack(
@@ -271,12 +322,9 @@ class _OutputPracticeIntroSheetState extends State<OutputPracticeIntroSheet> {
                             height: 1.75,
                           ),
                         ),
-                        if (usageSpan != null) ...[
+                        if (shouldShowUsageSlot) ...[
                           16.verticalSpace,
-                          Text.rich(
-                            usageSpan,
-                            textAlign: TextAlign.center,
-                          ),
+                          _buildUsageSlot(context, usageSpan),
                         ],
                         24.verticalSpace,
                         AppButton.primary(

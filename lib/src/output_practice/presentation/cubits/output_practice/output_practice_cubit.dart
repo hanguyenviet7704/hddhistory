@@ -275,9 +275,7 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
 
     emit(
       state.copyWith(
-        uiMode: OutputPracticeUiMode.loading,
-        historyStatus: OutputPracticeHistoryStatus.loading,
-        timelineItems: const [],
+        conversationTransitionStatus: OutputPracticeConversationTransitionStatus.startingNewConversation,
         activeActionChips: const [],
         hiddenActionChips: const [],
         historyErrorMessage: null,
@@ -289,8 +287,6 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
         pendingMessageLocalId: '',
         pendingAssistantLocalId: '',
         sendStatus: OutputPracticeSendStatus.idle,
-        currentHistoryPage: 1,
-        totalHistoryPages: 1,
         showJumpToLatest: false,
       ),
     );
@@ -303,7 +299,12 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
 
     final createdConversation = createResult.fold(
       (exception) {
-        emit(previousState.copyWith(roomErrorMessage: exception.displayMessage));
+        emit(
+          previousState.copyWith(
+            roomErrorMessage: exception.displayMessage,
+            conversationTransitionStatus: OutputPracticeConversationTransitionStatus.idle,
+          ),
+        );
         return null;
       },
       (conversation) => conversation,
@@ -326,8 +327,18 @@ class OutputPracticeCubit extends Cubit<OutputPracticeState> {
       ),
     );
 
-    await _refreshUsage(sectionId: activeSectionId, sessionToken: sessionToken);
+    final usageRefresh = _refreshUsage(
+      sectionId: activeSectionId,
+      sessionToken: sessionToken,
+    );
     await _loadHistory(forcePage: 1, sessionToken: sessionToken);
+    if (!_isSessionActive(sessionToken, sectionId: activeSectionId)) return;
+    emit(
+      state.copyWith(
+        conversationTransitionStatus: OutputPracticeConversationTransitionStatus.idle,
+      ),
+    );
+    await usageRefresh;
   }
 
   Future<void> retryFailedMessage() async {

@@ -718,6 +718,78 @@ void main() {
       expect(usageReadCount, 2);
       expect(cubit.state.timelineItems.map((item) => item.content), ['Fresh start']);
     });
+
+    test('startANewConversation keeps the current timeline visible while the next thread is bootstrapping', () async {
+      final historyCompleter = Completer<Either<AppException, BasePageBreak<OutputPracticeMessageEntity>>>();
+      var getConversationCount = 0;
+      var messageLoadCount = 0;
+      final repo = _FakeOutputPracticeRepository(
+        getConversationHandler: (_) => TaskEither.right(
+          switch (++getConversationCount) {
+            1 => _conversation(status: OutputPracticeConversationStatus.conversationLimitInMonth),
+            _ => _conversation(
+              status: OutputPracticeConversationStatus.conversationLimitInMonth,
+            ),
+          },
+        ),
+        getUsageHandler: (_) => TaskEither.right(const OutputPracticeConversationUsageEntity(remainingInThisMonth: 0, monthlyLimit: 3)),
+        getMessagesHandler: (request) {
+          messageLoadCount += 1;
+          if (messageLoadCount == 1) {
+            return TaskEither.right(
+              BasePageBreak(
+                currentPage: request.page,
+                totalPages: 1,
+                items: _historyMessages,
+              ),
+            );
+          }
+          return TaskEither(() async => await historyCompleter.future);
+        },
+        createConversationHandler: (_) => TaskEither.right(
+          _conversation(
+            status: OutputPracticeConversationStatus.conversationLimitInMonth,
+          ),
+        ),
+        sendMessageHandler: (_) => TaskEither.right(const []),
+      );
+      final cubit = _buildCubit(repo: repo);
+      addTearDown(cubit.close);
+
+      await cubit.initialize('section-1');
+      cubit.markRoomJoined('conversation-1');
+
+      final previousTimeline = List<OutputPracticeTimelineItem>.from(cubit.state.timelineItems);
+      final startFuture = cubit.sendActionChip(
+        cubit.state.activeActionChips.singleWhere((chip) => chip.summaryAction == OutputPracticeSummaryAction.startANewConversation),
+        committedText: 'Start a new conversation',
+      );
+
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.conversationTransitionStatus, OutputPracticeConversationTransitionStatus.startingNewConversation);
+      expect(cubit.state.timelineItems, previousTimeline);
+      expect(cubit.state.activeActionChips, isEmpty);
+      expect(cubit.state.canSubmitActionChip, isFalse);
+
+      historyCompleter.complete(
+        right(
+          BasePageBreak(
+            currentPage: 1,
+            totalPages: 1,
+            items: const [
+              OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 1, content: 'Hi coach', role: OutputPracticeMessageRole.user),
+              OutputPracticeMessageEntity(conversationId: 'conversation-1', seq: 2, content: 'Let us begin', role: OutputPracticeMessageRole.assistant),
+            ],
+          ),
+        ),
+      );
+
+      await startFuture;
+
+      expect(cubit.state.conversationTransitionStatus, OutputPracticeConversationTransitionStatus.idle);
+      expect(cubit.state.timelineItems.map((item) => item.content), ['Hi coach', 'Let us begin']);
+    });
   });
 }
 
