@@ -2,21 +2,13 @@ part of 'di.dart';
 
 @module
 abstract class NetworkModule {
-  @Named(DIKey.baseUrl)
-  @lazySingleton
-  String get baseUrl => EnvConstant.baseUrl;
-
-  @Named(DIKey.baseUrlStorage)
-  @lazySingleton
-  String get baseUrlStorage => EnvConstant.baseUrlStorage;
-
   @Named(DIKey.apiBaseUrl)
   @lazySingleton
   String get apiBaseUrl => EnvConstant.apiBaseUrl;
 
-  @Named(DIKey.graphqlBaseUrl)
+  @Named(DIKey.socketBaseUrl)
   @lazySingleton
-  String get graphqlBaseUrl => EnvConstant.graphqlBaseUrl;
+  String get socketBaseUrl => EnvConstant.socketBaseUrl;
 
   @Named(DIKey.aiServiceBaseUrl)
   @lazySingleton

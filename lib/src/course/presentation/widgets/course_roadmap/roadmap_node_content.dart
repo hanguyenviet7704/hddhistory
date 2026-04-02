@@ -11,15 +11,15 @@ class RoadmapNodeContent extends StatelessWidget {
   });
 
   void _handleTap(BuildContext context) => RoadmapNodeActionHelper.startLessonAction(
-        context,
-        lesson,
-        isLocked: isLocked,
-      );
-  
+    context,
+    lesson,
+    isLocked: isLocked,
+  );
+
   @override
   Widget build(BuildContext context) {
-    if (lesson.type == LessonType.roleplay) {
-      return RoadmapRoleplayCard(
+    if (lesson.type == LessonType.roleplay || lesson.type == LessonType.output) {
+      return RoadmapLessonCard(
         lesson: lesson,
         onTap: () => _handleTap(context),
       );

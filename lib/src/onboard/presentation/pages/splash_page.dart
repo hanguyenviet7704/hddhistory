@@ -75,18 +75,28 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   Future<void> _initScreen(_) async {
-    if (!mounted) return;
-    final isInitialLink = await context.read<DeeplinkCubit>().initialLink();
-    if (!mounted || isInitialLink) return;
-    await Future<void>.delayed(const Duration(milliseconds: 1500));
-    if (!mounted) return;
+    try {
+      if (!mounted) return;
+      final deeplinkCubit = context.read<DeeplinkCubit>();
+      final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
+      if (!mounted || hasHandledPendingLink) return;
 
-    if (AppGlobalValue.accessToken.isEmpty) {
-      await _handleUnauthenticatedEntry();
-      return;
+      final hasHandledInitialLink = await deeplinkCubit.initialLink();
+      if (!mounted || hasHandledInitialLink) return;
+      await Future<void>.delayed(const Duration(milliseconds: 1500));
+      if (!mounted) return;
+
+      if (AppGlobalValue.accessToken.isEmpty) {
+        await _handleUnauthenticatedEntry();
+        return;
+      }
+
+      _routeAuthenticatedEntry();
+    } catch (error, stackTrace) {
+      LogDev.error('Error initializing splash route: $error\r\n$stackTrace');
+      if (!mounted) return;
+      await _routeFallbackAfterInitError();
     }
-
-    _routeAuthenticatedEntry();
   }
 
   Future<void> _handleUnauthenticatedEntry() async {
@@ -126,6 +136,26 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
     HomeRoute().go(context);
+  }
+
+  Future<void> _routeFallbackAfterInitError() async {
+    if (AppGlobalValue.accessToken.isNotEmpty) {
+      HomeRoute().go(context);
+      return;
+    }
+
+    final userCubit = context.read<UserCubit>();
+    if (!userCubit.state.isUserPassOnboarding) {
+      _goToRegister(
+        showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
+          hasRecognizedDevice: false,
+          hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
+        ),
+      );
+      return;
+    }
+
+    _goOnboardingEntryByFlowConfig();
   }
 
   void _goOnboardingEntryByFlowConfig() {

@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-23
+**Last Updated:** 2026-03-30
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -65,7 +65,7 @@ Widget/Page
 - Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
-Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `profile`, `progress`, `roleplay`, `setting`.
+Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -117,7 +117,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - Router implementation: `go_router` with generated route data.
 - Root configuration under `lib/config/routes/base/`.
 - Feature route data under `lib/config/routes/data/`.
-- Shell-based navigation and nested home/course/lesson/roleplay flows are handled in route config files.
+- Shell-based navigation and nested home/course/lesson/roleplay/output-practice flows are handled in route config files.
 
 ### Splash and auth-entry runtime flow
 - `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
@@ -146,6 +146,15 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.
 - `LessonRoute` composes lesson execution providers (`LessonCubit`, exercise/theory/speaking variants, `ProgressCubit`, `FeedbackCubit`, `PageCubit`).
 - Completion routes (`KeypointCompleteRoute`, `BadgeProgressRoute`) merge lesson progress back into roadmap/home state.
+
+### Output practice runtime flow
+- `RoadmapNodeActionHelper` resolves an output lesson to a course-shell `sectionId`, opens `OutputPracticeIntroSheet`, and tracks popup view/close/start events through `AppTrackingService`.
+- `OutputPracticeRoute` is typed as `output-practice/:sectionId`; it injects `OutputPracticeCubit`, `OutputPracticeSocketCubit`, `HomeCubit`, and `CourseRoadmapCubit` before building `OutputPracticePage`.
+- `OutputPracticeCubit.initialize(sectionId)` fetches an existing conversation first, creates one when the backend returns `NotFoundException` or an empty response, and then loads page 1 of scoped history for that conversation id.
+- History pagination stays scoped to the current conversation id, older pages are prepended, and the page exposes retry actions for history fetch failures, room-join failures, and failed message resend.
+- `OutputPracticeSocketCubit` connects to the socket server, joins the room, retries one initial join after timeout, and exposes `reconnect()` plus `disconnect()` for page lifecycle cleanup.
+- Message sending uses optimistic pending timeline rows, reconciles canonical messages after REST send succeeds, and preserves a retryable failure state when send or socket delivery fails.
+- Dedicated tracking events cover popup view/close/start, screen view, option click, send click, and exit click.
 
 ### Roleplay runtime flow
 - `RoleplayIntroRoute` and `RoleplayRoute` provide roleplay orchestration via `RoleplayCubit` (+ feedback where needed).

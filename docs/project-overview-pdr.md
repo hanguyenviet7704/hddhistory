@@ -1,11 +1,11 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-03-05  
+**Last Updated:** 2026-03-30  
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, roleplay practice, daily streak continuity, and progress visibility.
+Meup is a language-learning app focused on structured lessons, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
 The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
@@ -17,15 +17,16 @@ The product combines course content, interactive exercise formats, AI-assisted s
 ### Core user journeys
 1. Onboarding and account setup.
 2. Course discovery and lesson entry.
-3. Exercise completion and feedback review.
-4. Roleplay practice and performance feedback.
-5. Progress and profile review.
-6. Subscription purchase and management.
-7. Scenario-branching onboarding handoff and recommendation-based course entry.
-8. Daily streak check/commit from home and lesson-completion moments.
+3. Output-practice intro sheet and conversation launch from course output lessons.
+4. Exercise completion and feedback review.
+5. Roleplay practice and performance feedback.
+6. Progress and profile review.
+7. Subscription purchase and management.
+8. Scenario-branching onboarding handoff and recommendation-based course entry.
+9. Daily streak check/commit from home and lesson-completion moments.
 
 ## 3. Current Module Scope (Code-Verified)
-`lib/src` currently contains 16 feature modules:
+`lib/src` currently contains 17 feature modules:
 
 | Module | Primary responsibility |
 | --- | --- |
@@ -41,6 +42,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `monetization` | Paywall, products, purchase verification |
 | `onboard` | Intro/onboarding screens |
 | `onboard_branching` | Branching onboarding scenario module |
+| `output_practice` | Course-shell output practice conversation flow, intro sheet, socket room, and retryable history |
 | `profile` | User profile and upload flows |
 | `progress` | User progress, course and achievement progress |
 | `roleplay` | Roleplay flow and AI feedback integration |
@@ -59,37 +61,43 @@ Notes:
 2. Course and lesson delivery
 - Retrieve paginated course and lesson data.
 - Support learning item sequencing and item detail retrieval.
-- Allow navigation between lesson-related pages using typed routes.
+- Allow navigation between lesson-related pages using typed routes, including the course-shell output-practice route.
 
-3. Exercise and speaking experience
+3. Output-practice conversation flow
+- Open output lessons through an intro sheet, then navigate into the typed `output-practice/:sectionId` route.
+- Fetch an existing conversation first, create one when needed, and load history scoped to the current conversation id.
+- Join or rejoin the socket room, reconcile optimistic sends with canonical messages, and expose retry actions for history, room join, and failed message resend.
+- Emit dedicated tracking events for popup view, popup close, start click, screen view, option click, send click, and exit click.
+
+4. Exercise and speaking experience
 - Render multiple exercise types via typed payloads.
 - Support speaking/voice feedback endpoints.
 - Persist progress updates for lesson/keypoint/exercise outcomes.
 
-4. Roleplay learning flow
+5. Roleplay learning flow
 - Run roleplay sequence and capture roleplay feedback.
 - Surface roleplay feedback breakdown in UI.
 
-5. Progress tracking
+6. Progress tracking
 - Retrieve user progress and paginated “my courses” data.
 - Show achievement/course-level progress status.
 - Show streak progress from home and completion-triggered success overlays.
 
-6. Profile and settings
+7. Profile and settings
 - Retrieve/update user profile.
 - Upload files through cloudflare upload endpoint.
 - Manage locale and theme preferences.
 
-7. Monetization
+8. Monetization
 - Load purchasable packages.
 - Verify purchases with backend.
 - Retrieve active subscription status.
 
-8. Localization
+9. Localization
 - Pull and push localization via script wrappers.
 - Regenerate localization code after localization sync.
 
-9. Branching onboarding orchestration
+10. Branching onboarding orchestration
 - Allow remote-config flow switching between normal and branching onboarding.
 - Preserve deep-link precedence over onboarding.
 - Enforce deterministic fallback from malformed branching scenario data to normal onboarding.
@@ -149,6 +157,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-03-30 | Added output-practice course-shell flow (typed route, intro sheet, scoped history, socket retry/reconcile, tracking) and synced module scope to 17 modules. |
 | 2026-03-05 | Added learning streak module scope and requirements (home streak popup + completion-triggered streak success gate). |
 | 2026-03-02 | Added branching onboarding orchestration requirements (flow switch, fallback safety, no-register gate in transition). |
 | 2026-02-27 | Removed branch/ticket-specific labels; synced module scope to 15 modules; synced SDK/iOS constraints; refreshed pagination and build contract references. |

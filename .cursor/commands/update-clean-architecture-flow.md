@@ -11,11 +11,13 @@ update-clean-architecture-flow @remote
 ```
 
 Or specify a specific module:
+
 ```
 update-clean-architecture-flow lib/src/[module_name]/data/datasources/remote
 ```
 
 Examples:
+
 ```
 update-clean-architecture-flow @remote
 update-clean-architecture-flow lib/src/course/data/datasources/remote
@@ -53,10 +55,12 @@ When this command is invoked, follow these steps:
 For each response type used in the API:
 
 **Check if models exist** in `lib/src/[module_name]/data/models/`:
+
 - If model exists in another module (e.g., `LessonModel` in lesson module), reuse it
 - If model doesn't exist, create it following the pattern below
 
 **Model Structure**:
+
 ```dart
 @freezed
 abstract class [Name]Model with _$[Name]Model {
@@ -79,6 +83,7 @@ enum [Name]PublishStatus {
 ```
 
 **Entity Structure** (mirrors model in domain layer):
+
 ```dart
 @freezed
 abstract class [Name]Entity with _$[Name]Entity {
@@ -95,6 +100,7 @@ abstract class [Name]Entity with _$[Name]Entity {
 ```
 
 **Model Extension**:
+
 ```dart
 extension [Name]ModelExtension on [Name]Model {
   [Name]Entity toEntity() => [Name]Entity(
@@ -252,7 +258,8 @@ class [ApiName]Repository with RestfulRequestHandlerMixin implements I[ApiName]R
 
 For each repository method, create a corresponding use case:
 
-**Files**: 
+**Files**:
+
 - `lib/src/[module_name]/domain/usecases/get_all_[entities]_usecase.dart`
 - `lib/src/[module_name]/domain/usecases/get_[entity]_usecase.dart`
 
@@ -260,7 +267,7 @@ For each repository method, create a corresponding use case:
 part of '../../[module_name].dart';
 
 @lazySingleton
-class GetAll[Entities]UseCase implements UseCaseWithParams<PageBreakRequest, BasePageBreak<[Entity]>> {
+class GetAll[Entities]UseCase implements BaseUseCase<PageBreakRequest, BasePageBreak<[Entity]>> {
   final I[ApiName]Repository _repository;
 
   GetAll[Entities]UseCase(this._repository);
@@ -276,7 +283,7 @@ class GetAll[Entities]UseCase implements UseCaseWithParams<PageBreakRequest, Bas
 part of '../../[module_name].dart';
 
 @lazySingleton
-class Get[Entity]UseCase implements UseCaseWithParams<String, [Entity]> {
+class Get[Entity]UseCase implements BaseUseCase<String, [Entity]> {
   final I[ApiName]Repository _repository;
 
   Get[Entity]UseCase(this._repository);
@@ -333,8 +340,8 @@ class [ApiName]Cubit extends Cubit<[ApiName]State> with CubitUseCaseHandlerMixin
     if (!isInit && state.status == [ApiName]Status.loading) return;
     if (!isInit && state.pageData.isLastPage) return;
 
-    PageBreakRequest pageRequest = isInit 
-      ? const PageBreakRequest() 
+    PageBreakRequest pageRequest = isInit
+      ? const PageBreakRequest()
       : PageBreakRequest(page: state.pageData.nextPage);
 
     await runUseCasePageBreak<[Entity]>(
@@ -430,6 +437,7 @@ flutter analyze
 ```
 
 Common fixes needed:
+
 - Enum naming conflicts (use specific names like `[Name]PublishStatus` instead of `[Name]Status`)
 - Missing imports in module file
 - Incorrect part paths
@@ -446,6 +454,7 @@ Common fixes needed:
 ### Naming Conventions
 
 **Avoid Enum Conflicts**:
+
 ```dart
 // ❌ BAD - Conflicts with state status enum
 enum CourseStatus { initial, loading, success, failure }
@@ -455,6 +464,7 @@ enum CoursePublishStatus { published, draft, inactive }
 ```
 
 **Consistent Naming Patterns**:
+
 - API: `[Name]Api` (e.g., `CourseApi`, `CourseLessonApi`)
 - Repository: `[ApiName]Repository` (e.g., `CourseRepository`, `CourseLessonRepository`)
 - Interface: `I[ApiName]Repository` (e.g., `ICourseRepository`, `ICourseLessonRepository`)
@@ -477,6 +487,7 @@ Always provide default values for non-nullable fields in Freezed models and enti
 ### Model Reuse Across Modules
 
 When an API uses models from another module (e.g., `CourseLessonApi` uses `LessonModel`):
+
 - Import the model from its original module
 - Don't duplicate the model
 - The repository in the current module can still use it
@@ -529,6 +540,7 @@ DateTime? updatedAt,
 Maintain consistent error handling patterns in repositories:
 
 **For single item GET requests** (with offline fallback):
+
 ```dart
 return callApiWithTransform<[Model], [Entity]>(
   apiCall: () => _api.get[Entity](id),
@@ -543,6 +555,7 @@ return callApiWithTransform<[Model], [Entity]>(
 ```
 
 **For paginated GET requests** (with offline fallback):
+
 ```dart
 return callApiPageBreak<[Model], [Entity]>(
   apiCall: () => _api.getAll[Entities](request),
@@ -568,6 +581,7 @@ return callApiPageBreak<[Model], [Entity]>(
 ### Offline Support
 
 Always implement local caching for read operations:
+
 - Cache successful API responses
 - Return cached data when API fails
 - Clear cache when appropriate (logout, data invalidation)
@@ -579,6 +593,7 @@ Always implement local caching for read operations:
 **Problem**: Enum naming conflict between state status and domain status.
 
 **Solution**: Rename domain status enums to be more specific:
+
 ```dart
 // Change CourseStatus to CoursePublishStatus
 enum CoursePublishStatus { published, draft, inactive }
@@ -591,6 +606,7 @@ enum CoursePublishStatus { published, draft, inactive }
 ### Issue: "The argument type 'List<Model>' can't be assigned to the parameter type 'List<Entity>'"
 
 **Solution**: Use `.map()` to convert each item in the list:
+
 ```dart
 items.map((model) => model.toEntity()).toList()
 ```
@@ -604,6 +620,7 @@ items.map((model) => model.toEntity()).toList()
 ### Issue: "The redirected constructor has incompatible parameters"
 
 **Solution**: Run the build runner to regenerate the Freezed files:
+
 ```bash
 dart run build_runner build --delete-conflicting-outputs
 ```
@@ -613,6 +630,7 @@ dart run build_runner build --delete-conflicting-outputs
 **Problem**: API file has both CRUD and specialized endpoints mixed together.
 
 **Solution**: Split into multiple API files, each with a focused purpose:
+
 - `CourseApi` for basic course operations
 - `CourseLessonApi` for lesson-specific operations
 - Each gets its own repository and cubit
@@ -692,10 +710,12 @@ dart run build_runner build --delete-conflicting-outputs
 ### Scenario: Course Module with 2 APIs
 
 **API Files**:
+
 1. `CourseApi` - Basic course operations (getAllCourses, getCourse, getRoadmap)
 2. `CourseLessonApi` - Lesson operations (getAllLessons, getLesson)
 
 **Implementation**:
+
 ```
 Course Module
 ├── CourseApi → CourseRepository → CourseCubit
@@ -708,6 +728,7 @@ Course Module
 ```
 
 **Result**:
+
 - 2 API files = 2 complete flows
 - Shared models between modules (LessonModel reused)
 - No CRUD operations (read-only APIs)
@@ -716,6 +737,7 @@ Course Module
 ## Conclusion
 
 Following this guide ensures that:
+
 1. **API definitions drive implementation** - No unnecessary code
 2. **Clean separation of concerns** - Each API has its own flow
 3. **Offline-first approach** - Always cache and fallback

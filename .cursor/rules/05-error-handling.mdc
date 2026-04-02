@@ -166,7 +166,7 @@ class UserRepository implements IUserRepository {
 
 ```dart
 @lazySingleton
-class GetUserUseCase extends UseCaseWithParams<User, GetUserParams> {
+class GetUserUseCase extends BaseUseCase<User, GetUserParams> {
   final IUserRepository repository;
 
   GetUserUseCase(this.repository);

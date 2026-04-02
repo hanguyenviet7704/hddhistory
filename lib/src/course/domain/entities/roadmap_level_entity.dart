@@ -21,8 +21,22 @@ extension RoadmapLevelEntityExtension on RoadmapLevelEntity {
     ...nodes.expand((node) => node.lessonsList),
   ];
 
+  List<LessonEntity> resolvedRoadmapLessons({bool enableSequentialUnlock = true}) {
+    final nodeFlags = enableSequentialUnlock ? sequentialUnlockFlags : List<bool>.filled(nodes.length, false);
+    final resolvedLessons = <LessonEntity>[];
+
+    for (int i = 0; i < nodes.length; i++) {
+      final enableNodeUnlock = i < nodeFlags.length ? nodeFlags[i] : false;
+      resolvedLessons.addAll(
+        nodes[i].lessonsList.applySequentialUnlock(enableAutoUnlock: enableNodeUnlock),
+      );
+    }
+
+    return resolvedLessons;
+  }
+
   int get totalLessons => nodes.expand((node) => node.lessonsList).length;
-  int get completedLessons => nodes.expand((node) => node.lessonsList).where((r) => r.roadmapProgress == ProcessEnum.done).length;
+  int get completedLessons => resolvedRoadmapLessons().where((lesson) => lesson.roadmapProgress == ProcessEnum.done).length;
   double get progress {
     if (totalLessons == 0) return 0;
     if (completedLessons >= totalLessons) return 1;
@@ -31,20 +45,21 @@ extension RoadmapLevelEntityExtension on RoadmapLevelEntity {
 
   bool get isCompleted => completedLessons >= totalLessons;
 
-  bool get hasRoadmapProgress =>
-      roadmapLessonsList.any((lesson) => lesson.roadmapProgress != ProcessEnum.notStarted);
+  bool get hasRoadmapProgress => roadmapLessonsList.any((lesson) => lesson.roadmapProgress != ProcessEnum.notStarted);
 
-  bool get isRoadmapCompleted =>
-      roadmapLessonsList.isNotEmpty &&
-      roadmapLessonsList.every((lesson) => lesson.roadmapProgress == ProcessEnum.done);
+  bool get isRoadmapCompleted {
+    final blockingLessons = roadmapLessonsList.where((lesson) => lesson.type.blocksRoadmap).toList();
+    if (blockingLessons.isEmpty) return roadmapLessonsList.isNotEmpty;
+    return blockingLessons.every((lesson) => lesson.roadmapProgress == ProcessEnum.done);
+  }
 
   List<bool> get sequentialUnlockFlags {
     bool previousNodesCompleted = true;
     return nodes.map((node) {
       final items = node.lessonsList;
-      final nodeHasProgress = items.any((lesson) => lesson.roadmapProgress != ProcessEnum.notStarted);
-      final nodeItemsCompleted = items.isNotEmpty &&
-          items.every((lesson) => lesson.roadmapProgress == ProcessEnum.done);
+      final blockingItems = items.where((lesson) => lesson.type.blocksRoadmap).toList();
+      final nodeHasProgress = blockingItems.any((lesson) => lesson.roadmapProgress != ProcessEnum.notStarted);
+      final nodeItemsCompleted = blockingItems.isEmpty || blockingItems.every((lesson) => lesson.roadmapProgress == ProcessEnum.done);
       final enableSequentialUnlock = nodeHasProgress || previousNodesCompleted;
       previousNodesCompleted = previousNodesCompleted && nodeItemsCompleted;
       return enableSequentialUnlock;

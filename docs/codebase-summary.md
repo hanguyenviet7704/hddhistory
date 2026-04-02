@@ -1,28 +1,28 @@
 # Codebase Summary
 
-**Last Updated:** 2026-03-16
-**Source Inputs:** `repomix-output.xml` (refreshed 2026-03-16) + direct repository verification
+**Last Updated:** 2026-03-30
+**Source Inputs:** `repomix-output.xml` (refreshed 2026-03-30) + direct repository verification
 
 ## 1. Snapshot Metrics
 ### Repomix package metrics
-- Total packed files: **1,154**
-- Total tokens: **990,724**
-- Total chars: **4,197,465**
+- Total packed files: **1,252**
+- Total tokens: **1,049,555**
+- Total chars: **4,513,381**
 - Security-sensitive files under `.info/key/`: **8** (excluded from normal documentation scope)
 - Binary-excluded files: **3**
 
 ### Dart metrics (live repository)
-- Dart files in `lib/`: **901**
-- Dart LOC in `lib/`: **143,082**
-- Dart files in `test/`: **40**
-- Dart LOC in `test/`: **3,615**
+- Dart files in `lib/`: **946**
+- Dart LOC in `lib/`: **152,377**
+- Dart files in `test/`: **57**
+- Dart LOC in `test/`: **7,319**
 
 ### Major app layers
 | Path | Dart files | Dart LOC |
 | --- | ---: | ---: |
-| `lib/config` | 98 | 18,398 |
-| `lib/core` | 105 | 13,700 |
-| `lib/src` | 692 | 110,855 |
+| `lib/config` | 99 | 19,443 |
+| `lib/core` | 104 | 13,415 |
+| `lib/src` | 737 | 119,371 |
 
 ## 2. Repository Structure (High-Level)
 ```text
@@ -41,7 +41,7 @@ meup/
 ```
 
 ## 3. Feature Module Inventory (`lib/src`)
-`lib/src` currently has **16** modules:
+`lib/src` currently has **17** modules:
 
 | Module | Dart files | Dart LOC | Notes |
 | --- | ---: | ---: | --- |
@@ -57,6 +57,7 @@ meup/
 | `monetization` | 38 | 5,650 | Products, purchase, verification |
 | `onboard` | 37 | 5,553 | Intro/onboarding flow |
 | `onboard_branching` | 44 | 9,832 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
+| `output_practice` | 42 | 6,552 | Course-shell output practice conversation flow, intro sheet, socket room, and retryable chat history |
 | `profile` | 35 | 4,879 | User profile and upload |
 | `progress` | 34 | 8,261 | Progress and achievement progress |
 | `roleplay` | 70 | 11,362 | Roleplay + AI feedback |
@@ -71,6 +72,7 @@ meup/
 - Notification boot now runs as a dedicated config-level core in `lib/config/services/notification/`, with app startup awaiting `NotificationService.initialize(NotificationCoreConfig)` after Firebase.
 - Notification folder modularization stays grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`, but the files are now owned by the shared `library + part` architecture in `lib/config/services/services.dart`.
 - This reintroduces notification helper types into the exported services namespace as an intentional tradeoff, while Firebase/Awesome transport-specific package types still remain implementation-only.
+- Course output practice now lives under `lib/src/output_practice/` and is launched from course roadmap output lessons through a typed `output-practice/:sectionId` route, with intro sheet handoff, conversation fetch/create fallback, scoped history pagination, socket join/reconnect handling, optimistic send/reconcile, retry affordances, and dedicated analytics events.
 
 ## 5. API and Pagination Contract Summary
 - API endpoint constants live in `lib/core/constants/manual/endpoint.dart`.
@@ -94,10 +96,11 @@ meup/
 - CI bootstrap script: `.gitlab/scripts/bootstrap-secrets.sh` writes runtime files and exports `build/ci/runtime.env`.
 
 ## 8. Drift Watch Items
-1. Keep module count references at 16 unless `lib/src/*` changes.
+1. Keep module count references at 17 unless `lib/src/*` changes.
 2. Keep folder/module spelling as implemented (`achievenment`).
 3. Keep use-case helper naming aligned with `runUseCase*` APIs.
 4. Keep deployment docs aligned with platform script differences (`--ci` and `SKIP_SYMBOL_UPLOAD` parity gaps on Windows).
+5. Keep output practice route, intro sheet, and tracking event names aligned with the implementation and route config.
 
 ## 9. Quick Verification Commands
 ```bash

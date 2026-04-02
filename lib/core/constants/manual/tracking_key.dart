@@ -101,6 +101,13 @@ mixin TrackingKey {
   static const String roadmapItemScroll = 'roadmap_item_scroll';
   static const String roadmapQuickLearningClick = 'roadmap_quick_learning_click';
   static const String howItWorkScrView = 'how_it_work_scr_view';
+  static const String outputPracticePopupView = 'output_practice_popup_view';
+  static const String outputPracticePopupClose = 'output_practice_popup_close';
+  static const String outputPracticeStartClick = 'output_practice_start_click';
+  static const String outputPracticeScrView = 'output_practice_scr_view';
+  static const String outputPracticeOptionClick = 'output_practice_option_click';
+  static const String outputPracticeSendClick = 'output_practice_send_click';
+  static const String outputPracticeExitClick = 'output_practice_exit_click';
 
   //* Keypoint events
   static const String keypointTheoryScroll = 'keypoint_theory_scroll';

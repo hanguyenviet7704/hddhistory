@@ -52,6 +52,7 @@ class AppService {
 
     runZonedGuarded(
       () async {
+        WidgetsFlutterBinding.ensureInitialized();
         _configEnvironment();
         _configUIResponsible();
         _configLoading();

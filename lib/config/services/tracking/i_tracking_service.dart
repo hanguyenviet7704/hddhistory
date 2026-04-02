@@ -113,6 +113,44 @@ abstract interface class ITrackingService {
     CourseLessonTrackingData trackingData, {
     required String source,
   });
+  Future<void> trackOutputPracticePopupView(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+  });
+  Future<void> trackOutputPracticePopupClose(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+  });
+  Future<void> trackOutputPracticeStartClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+  });
+  Future<void> trackOutputPracticeScrView(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+    required String language,
+    required String entryState,
+  });
+  Future<void> trackOutputPracticeOptionClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+    required String optionLabel,
+    required int optionValue,
+    required String inputSource,
+  });
+  Future<void> trackOutputPracticeSendClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+    required int messageLength,
+  });
+  Future<void> trackOutputPracticeExitClick(
+    CourseLessonTrackingData trackingData, {
+    required String sectionId,
+    required String conversationId,
+  });
 
   //* Keypoint events
   Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData);
