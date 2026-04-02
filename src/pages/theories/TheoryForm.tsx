@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   ILearningItem,
   LearningItemPayload,
@@ -33,7 +33,8 @@ import {
 import { DocumentType } from "../../utils/enum/course.enum";
 import {
   IDocument,
-  IMediaDocument,
+  IDocumentData,
+  IExplanationOption,
 } from "../../types/interface/learning-item/document.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
@@ -56,12 +57,39 @@ const TEXTUAL_DOCUMENT_TYPES: DocumentType[] = [
 const isTextualDocumentType = (type: DocumentType) =>
   TEXTUAL_DOCUMENT_TYPES.includes(type);
 
+const cleanExplanationOptions = (options?: IExplanationOption[]) => {
+  if (!Array.isArray(options)) return undefined;
+
+  const cleanedOptions = options
+    .map((option, index) => {
+      const cleanedValue = cleanTranslation(option.value);
+      const cleanedExplanation = cleanTranslation(option.explanation);
+      const hasValue = !!cleanedValue && Object.keys(cleanedValue).length > 0;
+      const hasExplanation =
+        !!cleanedExplanation && Object.keys(cleanedExplanation).length > 0;
+
+      if (!hasValue && !hasExplanation) {
+        return null;
+      }
+
+      return {
+        id: option.id || index + 1,
+        value: cleanedValue || {},
+        explanation: cleanedExplanation || {},
+      };
+    })
+    .filter(Boolean) as IExplanationOption[];
+
+  return cleanedOptions.length > 0 ? cleanedOptions : undefined;
+};
+
 const cleanDocumentItems = (documents: IDocument[]) => {
   return documents
     .map((doc) => {
       const cleanedContent = cleanTranslation(doc.data?.content);
       const cleanedUrl = cleanTranslation(doc.data?.url);
       const cleanedData: any = { ...doc.data };
+      const cleanedOptions = cleanExplanationOptions(doc.data?.options);
       if (cleanedContent && Object.keys(cleanedContent).length > 0) {
         cleanedData.content = cleanedContent;
       } else {
@@ -75,11 +103,20 @@ const cleanDocumentItems = (documents: IDocument[]) => {
       if (!cleanedData.thumbnail) {
         delete cleanedData.thumbnail;
       }
+      if (cleanedOptions) {
+        cleanedData.options = cleanedOptions;
+      } else {
+        delete cleanedData.options;
+      }
 
       const hasValue =
         (isTextualDocumentType(doc.type) &&
           !!cleanedData.content &&
           Object.keys(cleanedData.content).length > 0) ||
+        (doc.type === DocumentType.EXPLANATION &&
+          ((!!cleanedData.content &&
+            Object.keys(cleanedData.content).length > 0) ||
+            (!!cleanedData.options && cleanedData.options.length > 0))) ||
         ((doc.type === DocumentType.IMAGE ||
           doc.type === DocumentType.AUDIO ||
           doc.type === DocumentType.ANIMATION) &&
@@ -103,21 +140,60 @@ const getDocumentContentLabel = (type: DocumentType) => {
   }
 };
 
-const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+const createEmptyDocumentData = (currentLang: LangCode): IDocumentData => ({
   content: { [currentLang]: "" },
   url: { [currentLang]: "" },
   thumbnail: "",
 });
 
+const createEmptyExplanationOption = (
+  currentLang: LangCode,
+  id: number,
+): IExplanationOption => ({
+  id,
+  value: { [currentLang]: "" },
+  explanation: { [currentLang]: "" },
+});
+
+const getInitialDocumentDataByType = (
+  type: DocumentType,
+  currentLang: LangCode,
+): IDocumentData => {
+  const baseData = createEmptyDocumentData(currentLang);
+
+  if (type === DocumentType.EXPLANATION) {
+    return {
+      ...baseData,
+      options: [createEmptyExplanationOption(currentLang, 1)],
+    };
+  }
+
+  return baseData;
+};
+
+const getValidExplanationOptionCount = (options?: IExplanationOption[]) => {
+  if (!Array.isArray(options)) return 0;
+
+  return options.filter((option) => {
+    const value = cleanTranslation(option.value);
+    const explanation = cleanTranslation(option.explanation);
+
+    return (
+      (!!value && Object.keys(value).length > 0) ||
+      (!!explanation && Object.keys(explanation).length > 0)
+    );
+  }).length;
+};
+
 const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
   id: 1,
   type: DocumentType.TEXT,
-  data: createEmptyMediaDocument(currentLang),
+  data: getInitialDocumentDataByType(DocumentType.TEXT, currentLang),
 });
 
 const ensureDocumentList = (
   documents: IDocument[] | undefined,
-  currentLang: LangCode
+  currentLang: LangCode,
 ) =>
   documents && documents.length > 0
     ? documents
@@ -172,7 +248,7 @@ export default function TheoryForm({
 }: TheoryFormProps) {
   const navigate = useNavigate();
   const lang = useSelector(
-    (state: RootState) => state.lang.code
+    (state: RootState) => state.lang.code,
   ) as keyof ITranslation as LangCode;
   const isEditMode = !!theory;
   const { showSuccess, showError } = useNotification();
@@ -180,7 +256,7 @@ export default function TheoryForm({
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [keypointQuery, setKeypointQuery] = useState("");
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
-    null
+    null,
   );
   const [nextDocId, setNextDocId] = useState(1);
 
@@ -199,7 +275,7 @@ export default function TheoryForm({
         subQuestions: [],
         documents: [],
         index: 0,
-      } as ILearningItem)
+      } as ILearningItem),
   );
 
   useEffect(() => {
@@ -223,6 +299,7 @@ export default function TheoryForm({
   }, [lang, theory, currentTheory._id]);
 
   const [saving, setSaving] = useState(false);
+  const latestLangRef = useRef(lang);
   const [modalOpen, setModalOpen] = useState<{
     section: "documents" | null;
     theoryDocument?: ITheoryDocument;
@@ -233,6 +310,10 @@ export default function TheoryForm({
     itemTitle: string;
   } | null>(null);
   const [confirmDeleteTheory, setConfirmDeleteTheory] = useState(false);
+
+  useEffect(() => {
+    latestLangRef.current = lang;
+  }, [lang]);
 
   useEffect(() => {
     let active = true;
@@ -273,7 +354,7 @@ export default function TheoryForm({
 
   // Hàm helper chuyển đổi từ ITheoryDocument[] sang TheoryDocumentPayload[]
   const convertDocumentsToPayload = (
-    documents: ITheoryDocument[]
+    documents: ITheoryDocument[],
   ): TheoryDocumentPayload[] => {
     return (
       documents
@@ -320,12 +401,12 @@ export default function TheoryForm({
         onSave?.(savedTheory);
       }
       showSuccess(
-        isEditMode ? "Saved theory successfully" : "Create theory successfully"
+        isEditMode ? "Saved theory successfully" : "Create theory successfully",
       );
     } catch (err) {
       console.error("handleSaveTheory", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save theory"
+        (err as any).response?.data?.message || "Failed to save theory",
       );
     } finally {
       setSaving(false);
@@ -351,7 +432,7 @@ export default function TheoryForm({
 
   const handleOpenModal = (
     section: "documents",
-    theoryDocument?: ITheoryDocument
+    theoryDocument?: ITheoryDocument,
   ) => {
     setModalOpen({ section, theoryDocument });
   };
@@ -364,7 +445,7 @@ export default function TheoryForm({
       if (modalOpen.theoryDocument) {
         const existing = currentTheory.documents || [];
         const updatedList = existing.map((doc) =>
-          doc.id === documentData.id ? documentData : doc
+          doc.id === documentData.id ? documentData : doc,
         );
         updatedTheory = { ...currentTheory, documents: updatedList };
       } else {
@@ -399,7 +480,7 @@ export default function TheoryForm({
     } catch (err) {
       console.error("handleSaveDocumentAndTheory", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save document"
+        (err as any).response?.data?.message || "Failed to save document",
       );
     } finally {
       setSaving(false);
@@ -409,7 +490,7 @@ export default function TheoryForm({
   const requestDeleteItem = (
     section: "documents",
     itemId: number,
-    itemTitle = "document"
+    itemTitle = "document",
   ) => {
     setConfirmDeleteDocument({ section, itemId, itemTitle });
   };
@@ -430,7 +511,7 @@ export default function TheoryForm({
     })();
     setNextDocId(
       (updatedTheory?.documents?.reduce((max, d) => Math.max(max, d.id), 0) ||
-        0) + 1
+        0) + 1,
     );
     setCurrentTheory(updatedTheory);
     try {
@@ -543,7 +624,7 @@ export default function TheoryForm({
                                   requestDeleteItem(
                                     "documents",
                                     theoryDoc.id,
-                                    `Document ${theoryDoc.id}`
+                                    `Document ${theoryDoc.id}`,
                                   )
                                 }
                                 className="text-red-500 hover:text-red-700 p-1 rounded"
@@ -566,7 +647,7 @@ export default function TheoryForm({
                                       alt={
                                         getTranslationValue(
                                           theoryDoc.tag.title,
-                                          lang
+                                          lang,
                                         ) || "Tag url"
                                       }
                                       className="w-5 h-5 object-contain flex-shrink-0"
@@ -575,7 +656,7 @@ export default function TheoryForm({
                                   <span>
                                     {getTranslationValue(
                                       theoryDoc.tag.title,
-                                      lang
+                                      lang,
                                     )}
                                   </span>
                                 </div>
@@ -587,55 +668,45 @@ export default function TheoryForm({
                                   <span className="font-medium text-gray-700">
                                     Content:
                                   </span>
-                                  {theoryDoc.document.map((doc, index) => (
-                                    <div
-                                      key={index}
-                                      className="ml-2 mt-1 text-xs"
-                                    >
-                                      <span className="font-semibold text-green-600">
-                                        {doc.type.toUpperCase()}:
-                                      </span>
-                                      {isTextualDocumentType(doc.type) &&
-                                        doc.data.content && (
-                                          <div className="ml-1">
-                                            <TextWithTooltip
-                                              text={doc.data.content}
-                                              maxLength={50}
-                                              lang={lang}
-                                            />
-                                          </div>
-                                        )}
-                                      {doc.type === DocumentType.IMAGE &&
-                                        getTranslationValue(
-                                          doc.data.url,
-                                          lang
-                                        ) && (
-                                          <div className="ml-1">
-                                            <TextWithTooltip
-                                              text={doc.data.url}
-                                              maxLength={50}
-                                              lang={lang}
-                                            />
-                                          </div>
-                                        )}
-                                      {doc.type === DocumentType.AUDIO &&
-                                        getTranslationValue(
-                                          doc.data.url,
-                                          lang
-                                        ) && (
-                                          <div className="ml-1">
-                                            <TextWithTooltip
-                                              text={doc.data.url}
-                                              maxLength={50}
-                                              lang={lang}
-                                            />
-                                          </div>
-                                        )}
-                                      {doc.type === DocumentType.VIDEO && (
-                                        <>
-                                          {getTranslationValue(
+                                  {theoryDoc.document.map((doc, index) => {
+                                    const explanationOptionCount =
+                                      doc.type === DocumentType.EXPLANATION
+                                        ? getValidExplanationOptionCount(
+                                            doc.data.options,
+                                          )
+                                        : 0;
+
+                                    return (
+                                      <div
+                                        key={index}
+                                        className="ml-2 mt-1 text-xs"
+                                      >
+                                        <span className="font-semibold text-green-600">
+                                          {doc.type.toUpperCase()}:
+                                        </span>
+                                        {(isTextualDocumentType(doc.type) ||
+                                          doc.type ===
+                                            DocumentType.EXPLANATION) &&
+                                          doc.data.content && (
+                                            <div className="ml-1">
+                                              <TextWithTooltip
+                                                text={doc.data.content}
+                                                maxLength={50}
+                                                lang={lang}
+                                              />
+                                            </div>
+                                          )}
+                                        {doc.type ===
+                                          DocumentType.EXPLANATION &&
+                                          explanationOptionCount > 0 && (
+                                            <div className="ml-1 text-gray-500">
+                                              {explanationOptionCount} options
+                                            </div>
+                                          )}
+                                        {doc.type === DocumentType.IMAGE &&
+                                          getTranslationValue(
                                             doc.data.url,
-                                            lang
+                                            lang,
                                           ) && (
                                             <div className="ml-1">
                                               <TextWithTooltip
@@ -645,10 +716,38 @@ export default function TheoryForm({
                                               />
                                             </div>
                                           )}
-                                        </>
-                                      )}
-                                    </div>
-                                  ))}
+                                        {doc.type === DocumentType.AUDIO &&
+                                          getTranslationValue(
+                                            doc.data.url,
+                                            lang,
+                                          ) && (
+                                            <div className="ml-1">
+                                              <TextWithTooltip
+                                                text={doc.data.url}
+                                                maxLength={50}
+                                                lang={lang}
+                                              />
+                                            </div>
+                                          )}
+                                        {doc.type === DocumentType.VIDEO && (
+                                          <>
+                                            {getTranslationValue(
+                                              doc.data.url,
+                                              lang,
+                                            ) && (
+                                              <div className="ml-1">
+                                                <TextWithTooltip
+                                                  text={doc.data.url}
+                                                  maxLength={50}
+                                                  lang={lang}
+                                                />
+                                              </div>
+                                            )}
+                                          </>
+                                        )}
+                                      </div>
+                                    );
+                                  })}
                                 </div>
                               )}
                           </div>
@@ -672,20 +771,6 @@ export default function TheoryForm({
       </div>
     );
   };
-
-  type DirectDocField = "type";
-  type DataField = keyof IMediaDocument;
-  type AllDocFields = DirectDocField | DataField;
-
-  // Định nghĩa interface cho props
-  interface DocumentContentEditorProps {
-    doc: IDocument;
-    index: number;
-    onChange: (itemIndex: number, field: AllDocFields, value: string) => void;
-    onRemove: (index: number) => void;
-    availableTypes: DocumentType[];
-    lang: LangCode;
-  }
 
   // Document form component
   const DocumentForm = ({
@@ -720,10 +805,103 @@ export default function TheoryForm({
       if (theoryDocument) {
         setFormData({
           ...theoryDocument,
-          document: ensureDocumentList(theoryDocument.document, lang),
+          document: ensureDocumentList(
+            theoryDocument.document,
+            latestLangRef.current,
+          ),
         });
       }
     }, [theoryDocument]);
+
+    const getNextExplanationOptionId = (options?: IExplanationOption[]) =>
+      (options || []).reduce(
+        (max, option) => Math.max(max, option.id || 0),
+        0,
+      ) + 1;
+
+    const updateExplanationOption = (
+      docIndex: number,
+      optionIndex: number,
+      field: "value" | "explanation",
+      value: string,
+    ) => {
+      setFormData((prev) => {
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
+        const currentDoc = newDocuments[docIndex];
+        const currentOptions = currentDoc.data.options || [];
+        const nextOptions = [...currentOptions];
+        const targetOption = nextOptions[optionIndex];
+
+        if (!targetOption) {
+          return prev;
+        }
+
+        nextOptions[optionIndex] = {
+          ...targetOption,
+          [field]: updateTranslationValue(
+            targetOption[field] || {},
+            lang,
+            value,
+          ),
+        };
+
+        newDocuments[docIndex] = {
+          ...currentDoc,
+          data: {
+            ...currentDoc.data,
+            options: nextOptions,
+          },
+        };
+
+        return { ...prev, document: newDocuments };
+      });
+    };
+
+    const addExplanationOption = (docIndex: number) => {
+      setFormData((prev) => {
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
+        const currentDoc = newDocuments[docIndex];
+        const currentOptions = currentDoc.data.options || [];
+
+        newDocuments[docIndex] = {
+          ...currentDoc,
+          data: {
+            ...currentDoc.data,
+            options: [
+              ...currentOptions,
+              createEmptyExplanationOption(
+                lang,
+                getNextExplanationOptionId(currentOptions),
+              ),
+            ],
+          },
+        };
+
+        return { ...prev, document: newDocuments };
+      });
+    };
+
+    const removeExplanationOption = (docIndex: number, optionIndex: number) => {
+      setFormData((prev) => {
+        const currentDocs = prev.document || [];
+        const newDocuments = [...currentDocs];
+        const currentDoc = newDocuments[docIndex];
+
+        newDocuments[docIndex] = {
+          ...currentDoc,
+          data: {
+            ...currentDoc.data,
+            options: (currentDoc.data.options || []).filter(
+              (_, index) => index !== optionIndex,
+            ),
+          },
+        };
+
+        return { ...prev, document: newDocuments };
+      });
+    };
 
     const renderDocumentFields = (doc: IDocument, index: number) => {
       if (isTextualDocumentType(doc.type)) {
@@ -760,6 +938,103 @@ export default function TheoryForm({
                 placeholder={placeholder}
               />
             )}
+          </div>
+        );
+      }
+
+      if (doc.type === DocumentType.EXPLANATION) {
+        return (
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Content
+              </label>
+              <textarea
+                value={getCurrentTranslationValue(doc.data.content, lang)}
+                onChange={(e) =>
+                  handleDataChange(index, "content", e.target.value)
+                }
+                rows={3}
+                className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                placeholder="Enter content"
+              />
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Options
+                </label>
+                <button
+                  type="button"
+                  onClick={() => addExplanationOption(index)}
+                  className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                >
+                  Add Option
+                </button>
+              </div>
+
+              <div className="space-y-3">
+                {(doc.data.options || []).map((option, optionIndex) => (
+                  <div
+                    key={option.id}
+                    className="border rounded-lg bg-white p-3 space-y-3"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-700">
+                        Option {optionIndex + 1}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          removeExplanationOption(index, optionIndex)
+                        }
+                        className="text-red-500 hover:text-red-700"
+                      >
+                        <TrashIcon className="h-4 w-4" />
+                      </button>
+                    </div>
+                    <input
+                      type="text"
+                      value={getCurrentTranslationValue(option.value, lang)}
+                      onChange={(e) =>
+                        updateExplanationOption(
+                          index,
+                          optionIndex,
+                          "value",
+                          e.target.value,
+                        )
+                      }
+                      className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      placeholder={`Enter title ${optionIndex + 1}`}
+                    />
+                    <textarea
+                      value={getCurrentTranslationValue(
+                        option.explanation,
+                        lang,
+                      )}
+                      onChange={(e) =>
+                        updateExplanationOption(
+                          index,
+                          optionIndex,
+                          "explanation",
+                          e.target.value,
+                        )
+                      }
+                      rows={2}
+                      className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      placeholder={`Enter explanation ${optionIndex + 1}`}
+                    />
+                  </div>
+                ))}
+                {(doc.data.options || []).length === 0 && (
+                  <div className="rounded-lg border border-dashed border-gray-300 bg-gray-50 p-3 text-sm text-gray-500">
+                    No options added. You can save with content only, or add an
+                    option if needed.
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         );
       }
@@ -839,14 +1114,14 @@ export default function TheoryForm({
     const handleDocumentChange = (
       index: number,
       field: keyof IDocument,
-      value: any
+      value: any,
     ) => {
       setFormData((prev) => {
         const currentDocs = prev.document || [];
         const newDocuments = [...currentDocs];
         const updatedDoc = { ...newDocuments[index], [field]: value };
         if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument(lang);
+          updatedDoc.data = getInitialDocumentDataByType(value, lang);
         }
         newDocuments[index] = updatedDoc;
         return { ...prev, document: newDocuments };
@@ -854,8 +1129,8 @@ export default function TheoryForm({
     };
     const handleDataChange = (
       docIndex: number,
-      field: keyof IMediaDocument,
-      value: string | ITranslation
+      field: keyof IDocumentData,
+      value: string | ITranslation | IExplanationOption[],
     ) => {
       setFormData((prev) => {
         const currentDocs = prev.document || [];
@@ -873,7 +1148,7 @@ export default function TheoryForm({
               ? updateTranslationValue(
                   (targetFieldValue as ITranslation) || {},
                   lang,
-                  value
+                  value,
                 )
               : value,
           },
@@ -884,7 +1159,7 @@ export default function TheoryForm({
     const addNewInnerDocument = () => {
       const currentMaxId = (formData.document || []).reduce(
         (max, doc) => Math.max(max, doc.id),
-        0
+        0,
       );
       const newId = currentMaxId + 1;
       setFormData((prev) => ({
@@ -894,7 +1169,7 @@ export default function TheoryForm({
           {
             id: newId,
             type: DocumentType.TEXT,
-            data: createEmptyMediaDocument(lang),
+            data: getInitialDocumentDataByType(DocumentType.TEXT, lang),
           },
         ],
       }));
@@ -955,7 +1230,7 @@ export default function TheoryForm({
                       handleDocumentChange(
                         index,
                         "type",
-                        e.target.value as DocumentType
+                        e.target.value as DocumentType,
                       )
                     }
                     className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -967,6 +1242,9 @@ export default function TheoryForm({
                     <option value={DocumentType.VIDEO}>Video</option>
                     <option value={DocumentType.AUDIO}>Audio</option>
                     <option value={DocumentType.ANIMATION}>Animation</option>
+                    <option value={DocumentType.EXPLANATION}>
+                      Explanation
+                    </option>
                   </select>
                 </div>
                 {renderDocumentFields(doc, index)}
@@ -1078,7 +1356,7 @@ export default function TheoryForm({
                   value={currentTheory.keypointId || null}
                   onChange={(val: string | null) => {
                     setCurrentTheory((prev) =>
-                      prev ? { ...prev, keypointId: val ?? "" } : prev
+                      prev ? { ...prev, keypointId: val ?? "" } : prev,
                     );
                     setKeypointQuery("");
                   }}
@@ -1102,7 +1380,7 @@ export default function TheoryForm({
                         .filter((k) =>
                           k.title?.[lang]
                             ?.toLowerCase()
-                            .includes(keypointQuery.toLowerCase())
+                            .includes(keypointQuery.toLowerCase()),
                         )
                         .map((c) => (
                           <Combobox.Option
@@ -1142,7 +1420,7 @@ export default function TheoryForm({
                         type="button"
                         onClick={() => {
                           const newTags = (currentTheory.tag || []).filter(
-                            (_, i) => i !== index
+                            (_, i) => i !== index,
                           );
                           setCurrentTheory({ ...currentTheory, tag: newTags });
                         }}

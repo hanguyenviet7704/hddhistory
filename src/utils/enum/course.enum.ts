@@ -6,6 +6,7 @@ export enum DocumentType {
   IMAGE = "image",
   AUDIO = "audio",
   ANIMATION = "animation",
+  EXPLANATION = "explanation",
 }
 
 export enum KeypointLevel {

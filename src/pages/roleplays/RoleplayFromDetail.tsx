@@ -52,7 +52,7 @@ import {
 } from "../../types/interface/learning-item/excercises/record.interface";
 import {
   IDocument,
-  IMediaDocument,
+  IDocumentData,
 } from "../../types/interface/learning-item/document.interface";
 import { useNotification } from "../../utils/hooks/useNotification";
 import { ITag } from "../../types/interface/tag.interface";
@@ -142,7 +142,7 @@ const getDocumentContentLabel = (type: DocumentType) => {
   }
 };
 
-const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
+const createEmptyDocumentData = (currentLang: LangCode): IDocumentData => ({
   content: { [currentLang]: "" },
   url: { [currentLang]: "" },
   thumbnail: "",
@@ -151,7 +151,7 @@ const createEmptyMediaDocument = (currentLang: LangCode): IMediaDocument => ({
 const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
   id: 1,
   type: DocumentType.TEXT,
-  data: createEmptyMediaDocument(currentLang),
+  data: createEmptyDocumentData(currentLang),
 });
 
 const createDefaultDocumentsForExercise = (
@@ -2614,7 +2614,7 @@ export default function RoleplayFromDetail({
           [field]: value,
         };
         if (field === "type") {
-          updatedDoc.data = createEmptyMediaDocument(lang);
+          updatedDoc.data = createEmptyDocumentData(lang);
         }
         newDocuments[index] = updatedDoc;
         return {
@@ -2629,7 +2629,7 @@ export default function RoleplayFromDetail({
 
     const handleDataChange = (
       docIndex: number,
-      field: keyof IMediaDocument,
+      field: keyof IDocumentData,
       value: string | ITranslation
     ) => {
       setLocalFormData((prev: any) => {
@@ -2804,7 +2804,7 @@ export default function RoleplayFromDetail({
               {
                 id: newId,
                 type: DocumentType.TEXT,
-                data: createEmptyMediaDocument(lang),
+                data: createEmptyDocumentData(lang),
               },
             ],
           },
