@@ -4,6 +4,7 @@ part of '../../lesson.dart';
 abstract class ExplanationOptionModel with _$ExplanationOptionModel {
   const factory ExplanationOptionModel({
     @Default(0) int id,
+    @Default('') String icon,
     @Default(BaseMultiLanguage()) BaseMultiLanguage value,
     @Default(BaseMultiLanguage()) BaseMultiLanguage explanation,
   }) = _ExplanationOptionModel;
@@ -15,6 +16,7 @@ abstract class ExplanationOptionModel with _$ExplanationOptionModel {
 extension ExplanationOptionModelExtension on ExplanationOptionModel {
   ExplanationOptionEntity toEntity() => ExplanationOptionEntity(
     id: id,
+    icon: icon,
     value: value,
     explanation: explanation,
   );

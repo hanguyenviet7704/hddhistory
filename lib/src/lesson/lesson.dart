@@ -125,6 +125,7 @@ part 'presentation/widgets/items/common/bubble_border.dart';
 part 'presentation/widgets/items/common/close_popup_lesson.dart';
 part 'presentation/widgets/items/common/completion_header_card.dart';
 part 'presentation/widgets/items/common/document_content_widget.dart';
+part 'presentation/widgets/items/common/document_explanation_widget.dart';
 part 'presentation/widgets/items/common/document_item.dart';
 part 'presentation/widgets/items/common/document_media_widget.dart';
 part 'presentation/widgets/items/common/document_video_widget.dart';

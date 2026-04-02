@@ -15,7 +15,10 @@ class DocumentItem extends StatelessWidget {
       ContentDocumentType.title || ContentDocumentType.text || ContentDocumentType.caption => DocumentContentWidget(content: data.content.text, type: document.type),
       ContentDocumentType.image || ContentDocumentType.audio => DocumentMediaWidget(url: data.url.text, type: document.type),
       ContentDocumentType.video => DocumentVideoWidget(url: data.url.text, thumbnail: data.thumbnail),
-      ContentDocumentType.explanation => const SizedBox.shrink(), // TODO: Implement explanation widget
+      ContentDocumentType.explanation => DocumentExplanationWidget(
+        key: ObjectKey(document),
+        options: data.options,
+      ),
       ContentDocumentType.unknown => const SizedBox.shrink(),
     };
   }
