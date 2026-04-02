@@ -1,7 +1,7 @@
 # MEUP-718 Plan
 
 ## Overview
-- Task: add `DocumentType.EXPLANATION` support in theory documents and finish `IMediaDocument -> IDocumentData` rename.
+- Task: add `DocumentType.EXPLANATION` support in theory documents, including per-option `icon` upload, and finish `IMediaDocument -> IDocumentData` rename.
 - Priority: High
 - Status: Completed
 - Plan dir: `plans/20260401-1706-meup-718-theory-explanation-document-type`
@@ -20,6 +20,7 @@
 ## Key Decisions
 - `EXPLANATION` uses dedicated UI branch, not shared textual branch.
 - `content` alone is sufficient for valid `EXPLANATION`; `options` remain optional.
+- Each explanation option can upload its own `icon` via `CloudflareFileUpload`.
 - Preview shows explanation content summary plus valid option count, not full option list.
 - Rename `IMediaDocument` to `IDocumentData` everywhere still referenced in frontend.
 
