@@ -4,7 +4,7 @@ part of '../../video_lesson.dart';
 abstract class LessonVideoEntity with _$LessonVideoEntity {
   const factory LessonVideoEntity({
     @Default('') String url,
-    String? thumbnail,
+    @Default('') String thumbnail,
   }) = _LessonVideoEntity;
 
   factory LessonVideoEntity.fromJson(Map<String, dynamic> json) => _$LessonVideoEntityFromJson(json);
