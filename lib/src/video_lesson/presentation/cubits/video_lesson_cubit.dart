@@ -3,7 +3,6 @@ part of '../../video_lesson.dart';
 @lazySingleton
 class VideoLessonCubit extends Cubit<VideoLessonState> with CubitUseCaseHandlerMixin<VideoLessonState> {
   final GetAllUserVideoLessonNotesUseCase _getAllUseCase;
-  final GetUserVideoLessonNoteUseCase _getUseCase;
   final GetVideoLearningItemUseCase _getLearningItemUseCase;
   final CreateUserVideoLessonNoteUseCase _createUseCase;
   final UpdateUserVideoLessonNoteUseCase _updateUseCase;
@@ -11,7 +10,6 @@ class VideoLessonCubit extends Cubit<VideoLessonState> with CubitUseCaseHandlerM
 
   VideoLessonCubit(
     this._getAllUseCase,
-    this._getUseCase,
     this._getLearningItemUseCase,
     this._createUseCase,
     this._updateUseCase,
@@ -31,15 +29,6 @@ class VideoLessonCubit extends Cubit<VideoLessonState> with CubitUseCaseHandlerM
       buildLoadingState: () => state.copyWith(status: VideoLessonStatus.loading),
       onFailure: (error) => emit(state.copyWith(status: VideoLessonStatus.failure, errorMessage: error)),
       onSuccess: (pageData) => emit(state.copyWith(status: VideoLessonStatus.success, pageData: pageData)),
-    );
-  }
-
-  void loadUserVideoLessonNote(String id) async {
-    await runUseCase<UserVideoLessonNoteEntity>(
-      usecase: () => _getUseCase(id),
-      buildLoadingState: () => state.copyWith(status: VideoLessonStatus.loading),
-      onFailure: (error) => emit(state.copyWith(status: VideoLessonStatus.failure, errorMessage: error)),
-      onSuccess: (note) => emit(state.copyWith(status: VideoLessonStatus.success, selectedNote: note)),
     );
   }
 
@@ -80,7 +69,6 @@ class VideoLessonCubit extends Cubit<VideoLessonState> with CubitUseCaseHandlerM
           state.copyWith(
             status: VideoLessonStatus.success,
             pageData: state.pageData.copyWith(items: updatedItems),
-            selectedNote: updatedItem,
           ),
         );
       },

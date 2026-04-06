@@ -34,20 +34,6 @@ class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLes
   }
 
   @override
-  TaskEither<AppException, UserVideoLessonNoteEntity> getUserVideoLessonNote(String id) {
-    return callApiWithTransform<UserVideoLessonNoteModel, UserVideoLessonNoteEntity>(
-      apiCall: () => _api.getUserVideoLessonNote(id),
-      transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheUserVideoLessonNote(data ?? UserVideoLessonNoteModel()),
-      onError: () async {
-        final cachedModel = await _localDataSource.getCachedUserVideoLessonNote(id);
-        return cachedModel?.toEntity();
-      },
-      defaultValue: UserVideoLessonNoteEntity(),
-    );
-  }
-
-  @override
   TaskEither<AppException, LearningItemEntity> getLearningItem(String id) {
     return callApiWithTransform<LearningItemModel, LearningItemEntity>(
       apiCall: () => _api.getLearningItem(id),
