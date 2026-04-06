@@ -5,6 +5,7 @@ abstract class LessonVideoEntity with _$LessonVideoEntity {
   const factory LessonVideoEntity({
     @Default('') String url,
     @Default('') String thumbnail,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage summary,
   }) = _LessonVideoEntity;
 
   factory LessonVideoEntity.fromJson(Map<String, dynamic> json) => _$LessonVideoEntityFromJson(json);

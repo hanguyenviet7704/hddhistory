@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.3+3 # ios
+version: 1.1.3+4 # ios
 # version: 1.1.4+24 # android
 
 environment:
@@ -42,7 +42,7 @@ dependencies:
   flutter_svg: ^2.2.4
   font_awesome_flutter: ^11.0.0 # App icons
   cached_network_image: ^3.4.1
-  flutter_widget_from_html_core: ^0.17.0
+  flutter_widget_from_html_core: ^0.17.2
   html: ^0.15.6
   flutter_easyloading: ^3.0.5
   modal_bottom_sheet: ^3.0.0
@@ -119,7 +119,7 @@ dependencies:
 
   # App Navigation Services
   url_launcher: ^6.3.2
-  go_router: ^17.1.0
+  go_router: ^17.2.0
 
   # App Dependencies Injection Services
   get_it: ^9.2.1
@@ -162,16 +162,16 @@ dependencies:
   freezed_annotation: ^3.1.0
 
   # App File Services
-  file_picker: ^10.3.10
+  file_picker: ^11.0.1
   image_picker: ^1.2.1
-  device_info_plus: ^12.3.0
-  package_info_plus: ^9.0.0
+  device_info_plus: ^12.4.0
+  package_info_plus: ^9.0.1
   # cloud_firestore: ^6.0.0
   collection: ^1.19.1
 #  get_thumbnail_video: ^0.7.3
 
   # App Share Services
-  share_plus: ^12.0.1
+  share_plus: ^12.0.2
 
   # App Video Services
 #  video_compress: ^3.1.4
@@ -260,7 +260,7 @@ dev_dependencies:
   # graphql_codegen: ^3.0.1
   slang: ^4.14.0
   slang_build_runner: ^4.14.0
-  mockito: ^5.6.3
+  mockito: ^5.6.4
 
   # App Change Info
 

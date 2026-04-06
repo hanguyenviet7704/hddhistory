@@ -18,7 +18,7 @@ class RoadmapNodeContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (lesson.type == LessonType.roleplay || lesson.type == LessonType.output) {
+    if (lesson.type == LessonType.roleplay || lesson.type == LessonType.output || lesson.type == LessonType.video) {
       return RoadmapLessonCard(
         lesson: lesson,
         onTap: () => _handleTap(context),

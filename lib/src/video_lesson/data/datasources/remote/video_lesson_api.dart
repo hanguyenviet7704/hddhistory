@@ -6,24 +6,27 @@ abstract class VideoLessonApi {
   @factoryMethod
   factory VideoLessonApi(@Named(DIKey.appDio) Dio dio) = _VideoLessonApi;
 
-  @GET('/video_lessons')
+  @GET(AppEndpoint.coursesUserVideoLessonsActivity)
   Future<BaseResponse<BasePageBreak<UserVideoLessonNoteModel>>> getAllUserVideoLessonNotes(
     @Queries() PageBreakRequest request,
   );
 
-  @GET('${'/video_lessons'}/{id}')
+  @GET(AppEndpoint.coursesUserVideoLessonsActivityById)
   Future<BaseResponse<UserVideoLessonNoteModel>> getUserVideoLessonNote(@Path('id') String id);
 
-  @POST('/video_lessons')
+   @GET(AppEndpoint.coursesLearningItemsById)
+  Future<BaseResponse<LearningItemModel>> getLearningItem(@Path('id') String id);
+
+  @POST(AppEndpoint.coursesUserVideoLessonsActivity)
   Future<BaseResponse<UserVideoLessonNoteModel>> createUserVideoLessonNote(@Body() Map<String, dynamic> body);
 
-  @PUT('${'/video_lessons'}/{id}')
+  @PUT(AppEndpoint.coursesUserVideoLessonsActivityById)
   Future<BaseResponse<UserVideoLessonNoteModel>> updateUserVideoLessonNote(
     @Path('id') String id,
     @Body() Map<String, dynamic> body,
   );
 
-  @DELETE('${'/video_lessons'}/{id}')
+  @DELETE(AppEndpoint.coursesUserVideoLessonsActivityById)
   Future<BaseResponse<void>> deleteUserVideoLessonNote(@Path('id') String id);
 }
 

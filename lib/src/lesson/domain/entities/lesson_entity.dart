@@ -9,7 +9,6 @@ abstract class LessonEntity with _$LessonEntity {
     @Default(LessonType.lesson) LessonType type,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
-    @Default(BaseMultiLanguage()) BaseMultiLanguage summary,
     @Default('') String image,
     @Default(LessonVideoEntity()) LessonVideoEntity video,
     @Default(LessonPublishStatus.draft) LessonPublishStatus status,

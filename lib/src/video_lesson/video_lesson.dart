@@ -26,6 +26,8 @@ part 'domain/entities/video_question_entity.dart';
 part 'domain/entities/lesson_video_entity.dart';
 part 'domain/repositories/i_video_lesson_repository.dart';
 part 'domain/usecases/get_all_user_video_lesson_notes_usecase.dart';
+part 'domain/usecases/get_user_video_lesson_note_usecase.dart';
+part 'domain/usecases/get_learning_item_usecase.dart';
 part 'domain/usecases/create_user_video_lesson_note_usecase.dart';
 part 'domain/usecases/update_user_video_lesson_note_usecase.dart';
 part 'domain/usecases/delete_user_video_lesson_note_usecase.dart';

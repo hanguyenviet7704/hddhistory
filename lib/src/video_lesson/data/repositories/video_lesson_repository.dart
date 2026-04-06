@@ -4,7 +4,6 @@ part of '../../video_lesson.dart';
 class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLessonRepository {
   final VideoLessonApi _api;
   final VideoLessonLocalDataSource _localDataSource;
-  
 
   VideoLessonRepository(
     this._api,
@@ -35,11 +34,34 @@ class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLes
   }
 
   @override
+  TaskEither<AppException, UserVideoLessonNoteEntity> getUserVideoLessonNote(String id) {
+    return callApiWithTransform<UserVideoLessonNoteModel, UserVideoLessonNoteEntity>(
+      apiCall: () => _api.getUserVideoLessonNote(id),
+      transform: (model) => model.toEntity(),
+      onSuccess: (data) async => await _localDataSource.cacheUserVideoLessonNote(data ?? UserVideoLessonNoteModel()),
+      onError: () async {
+        final cachedModel = await _localDataSource.getCachedUserVideoLessonNote(id);
+        return cachedModel?.toEntity();
+      },
+      defaultValue: UserVideoLessonNoteEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, LearningItemEntity> getLearningItem(String id) {
+    return callApiWithTransform<LearningItemModel, LearningItemEntity>(
+      apiCall: () => _api.getLearningItem(id),
+      transform: (model) => model.toEntity(),
+      defaultValue: LearningItemEntity(),
+    );
+  }
+
+  @override
   TaskEither<AppException, UserVideoLessonNoteEntity> createUserVideoLessonNote(
     UserVideoLessonNoteEntity entity,
   ) {
     return callApiWithTransform<UserVideoLessonNoteModel, UserVideoLessonNoteEntity>(
-      apiCall: () => _api.createUserVideoLessonNote(_entityToJson(entity)),
+      apiCall: () => _api.createUserVideoLessonNote(_noteEntityToJson(entity)),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserVideoLessonNote(data ?? UserVideoLessonNoteModel()),
       defaultValue: UserVideoLessonNoteEntity(),
@@ -51,7 +73,7 @@ class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLes
     UserVideoLessonNoteEntity entity,
   ) {
     return callApiWithTransform<UserVideoLessonNoteModel, UserVideoLessonNoteEntity>(
-      apiCall: () => _api.updateUserVideoLessonNote(entity.id, _entityToJson(entity)),
+      apiCall: () => _api.updateUserVideoLessonNote(entity.id, _noteEntityToJson(entity)),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheUserVideoLessonNote(data ?? UserVideoLessonNoteModel()),
       defaultValue: UserVideoLessonNoteEntity(),
@@ -65,27 +87,16 @@ class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLes
       onSuccess: () async => await _localDataSource.deleteCachedUserVideoLessonNote(id),
     );
   }
-  
 
-  // ==================== HELPER METHODS ====================
-
-  /// Converts UserVideoLessonNoteEntity to JSON Map for API requests
-  /// Provides flexibility to customize the request body structure without affecting domain models
-  /// Reusable helper to avoid duplication in create/update methods
-  Map<String, dynamic> _entityToJson(UserVideoLessonNoteEntity entity) {
+  Map<String, dynamic> _noteEntityToJson(UserVideoLessonNoteEntity entity) {
     return {
-      'id': entity.id,
-      // 'name': entity.name,
-      // TODO: Add more fields as needed
+      'userId': entity.userId,
+      'courseId': entity.courseId,
+      'nodeId': entity.nodeId,
+      'lessonId': entity.lessonId,
+      'content': entity.content,
+      if (entity.atSecond != null) 'atSecond': entity.atSecond,
     };
-  }
-  
-
-  TaskEither<AppException, T> _missingDataSourceTask<T>(String operation) {
-    
-    return TaskEither.left(
-      AppException.unexpected('$operation is not implemented. Please provide a remote or local data source.'),
-    );
   }
 }
 
