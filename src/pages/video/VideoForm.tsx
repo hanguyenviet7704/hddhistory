@@ -63,7 +63,10 @@ const createEmptyVideoLesson = (lang: LangCode): ILesson =>
     description: { [lang]: "" },
     summary: { [lang]: "" },
     image: "",
-    videoUrl: "",
+    video: {
+      url: "",
+      thumbnail: "",
+    },
     keypoints: [],
     estimateCompleTime: { [lang]: "" },
     status: LessonStatus.DRAFT,
@@ -250,6 +253,8 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
         estimateCompleTimeLabel,
       ),
     );
+    const videoUrl = currentVideoLesson.video?.url?.trim() || "";
+    const videoThumbnail = currentVideoLesson.video?.thumbnail?.trim() || "";
 
     const lessonPayload: LessonPayload = {
       courseId: currentVideoLesson.courseId,
@@ -259,9 +264,13 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
       description: description || { [lang]: "" },
       ...(summary && { summary: summary as any }),
       image: currentVideoLesson.image || "",
-      ...(currentVideoLesson.videoUrl?.trim() && {
-        videoUrl: currentVideoLesson.videoUrl.trim(),
+      ...(videoUrl && {
+        video: {
+          url: videoUrl,
+          ...(videoThumbnail && { thumbnail: videoThumbnail }),
+        },
       }),
+      ...(!videoUrl && videoThumbnail && { thumbnailUrl: videoThumbnail }),
       status: currentVideoLesson.status,
       keypoints: [],
       ...(estimateCompleTime && { estimateCompleTime }),
@@ -494,10 +503,10 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
           <div className="flex flex-col md:flex-row">
             <div className="flex-1 bg-gray-50 p-6">
               <div className="space-y-3">
-                {currentVideoLesson.videoUrl ? (
+                {currentVideoLesson.video?.url ? (
                   <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
                     <CloudflareAssetPreview
-                      src={currentVideoLesson.videoUrl}
+                      src={currentVideoLesson.video.url}
                       className="h-64 w-full object-cover"
                     />
                   </div>
@@ -508,13 +517,40 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                     Video file
                   </label>
                   <CloudflareFileUpload
-                    initialUrl={currentVideoLesson.videoUrl || ""}
+                    initialUrl={currentVideoLesson.video?.url || ""}
                     onUrlChange={(videoUrl) =>
-                      setCurrentVideoLesson((prev) => ({ ...prev, videoUrl }))
+                      setCurrentVideoLesson((prev) => ({
+                        ...prev,
+                        video: {
+                          ...prev.video,
+                          url: videoUrl,
+                        },
+                      }))
                     }
                     label="Upload Video"
                     uploadPayload={{ prefix: "", folder: "videos" }}
                     accept="video/*"
+                  />
+                </div>
+
+                <div className="w-52 h-auto max-w-md">
+                  <label className="mb-2 block text-sm font-medium text-gray-700">
+                    Thumbnail
+                  </label>
+                  <CloudflareFileUpload
+                    initialUrl={currentVideoLesson.video?.thumbnail || ""}
+                    onUrlChange={(thumbnail) =>
+                      setCurrentVideoLesson((prev) => ({
+                        ...prev,
+                        video: {
+                          url: prev.video?.url || "",
+                          thumbnail,
+                        },
+                      }))
+                    }
+                    label="Upload Thumbnail"
+                    uploadPayload={{ prefix: "", folder: "videos" }}
+                    accept="image/*"
                   />
                 </div>
               </div>

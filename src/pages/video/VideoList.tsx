@@ -218,9 +218,15 @@ export default function VideoList() {
                     onClick={() => navigate(`/video/${video._id}`)}
                   >
                     <div className="relative h-56 overflow-hidden bg-gray-100">
-                      {video.videoUrl ? (
+                      {video.video?.url ? (
                         <CloudflareAssetPreview
-                          src={video.videoUrl}
+                          src={video.video.url}
+                          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                      ) : video.video?.thumbnail ? (
+                        <img
+                          src={video.video.thumbnail}
+                          alt={getTranslationValue(video.title, lang)}
                           className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
                         />
                       ) : video.image ? (
