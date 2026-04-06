@@ -493,33 +493,17 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
         <div className="overflow-hidden rounded-xl bg-white shadow-xl">
           <div className="flex flex-col md:flex-row">
             <div className="flex-1 bg-gray-50 p-6">
-              <div className="w-full">
-                {currentVideoLesson.image ? (
-                  <img
-                    src={currentVideoLesson.image}
-                    alt={getTranslationValue(currentVideoLesson.title, lang)}
-                    className="max-h-[320px] w-full rounded-xl border border-gray-200 object-cover shadow-lg"
-                  />
-                ) : (
-                  <div className="flex h-[320px] w-full items-center justify-center rounded-xl border border-dashed border-gray-300 bg-gray-100 text-gray-400">
-                    No image
+              <div className="space-y-3">
+                {currentVideoLesson.videoUrl ? (
+                  <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
+                    <CloudflareAssetPreview
+                      src={currentVideoLesson.videoUrl}
+                      className="h-64 w-full object-cover"
+                    />
                   </div>
-                )}
-              </div>
+                ) : null}
 
-              <div className="mt-6 w-56">
-                <CloudflareFileUpload
-                  initialUrl={currentVideoLesson.image || ""}
-                  onUrlChange={(image) =>
-                    setCurrentVideoLesson((prev) => ({ ...prev, image }))
-                  }
-                  label="Upload Image"
-                  uploadPayload={{ prefix: "", folder: "videos" }}
-                />
-              </div>
-
-              <div className="mt-8 space-y-3">
-                <div>
+                <div className="w-52 h-auto max-w-md">
                   <label className="mb-2 block text-sm font-medium text-gray-700">
                     Video file
                   </label>
@@ -533,15 +517,6 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                     accept="video/*"
                   />
                 </div>
-
-                {currentVideoLesson.videoUrl ? (
-                  <div className="overflow-hidden rounded-xl border border-gray-200 bg-black">
-                    <CloudflareAssetPreview
-                      src={currentVideoLesson.videoUrl}
-                      className="h-64 w-full object-cover"
-                    />
-                  </div>
-                ) : null}
               </div>
             </div>
 
@@ -625,21 +600,6 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                     }
                     className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     placeholder="Short description..."
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-gray-700">
-                    Summary HTML
-                  </label>
-                  <HtmlContentEditor
-                    value={getTranslationValue(currentVideoLesson.summary, lang) || ""}
-                    onChange={(html) =>
-                      setCurrentVideoLesson((prev) => ({
-                        ...prev,
-                        summary: updateTranslationValue(prev.summary, lang, html),
-                      }))
-                    }
                   />
                 </div>
 
@@ -793,6 +753,25 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
               </div>
             </div>
           </div>
+        </div>
+
+        <div className="rounded-xl bg-white p-6 shadow-xl">
+          <div className="mb-4">
+            <h2 className="text-xl font-semibold text-gray-800">Summary</h2>
+            <p className="text-sm text-gray-500">
+              Add the HTML summary content for this video.
+            </p>
+          </div>
+
+          <HtmlContentEditor
+            value={getTranslationValue(currentVideoLesson.summary, lang) || ""}
+            onChange={(html) =>
+              setCurrentVideoLesson((prev) => ({
+                ...prev,
+                summary: updateTranslationValue(prev.summary, lang, html),
+              }))
+            }
+          />
         </div>
 
         <VideoQuestionEditor
