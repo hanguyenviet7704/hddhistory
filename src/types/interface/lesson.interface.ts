@@ -12,7 +12,9 @@ export interface ILesson {
   type: LessonType;
   title: ITranslation;
   description: ITranslation;
+  summary?: ITranslation;
   image: string;
+  video?: ILessonVideo;
   status: LessonStatus;
   keypoints: IKeypoint[];
   estimateCompleTime: ITranslation;
@@ -24,13 +26,20 @@ export interface ILesson {
   index: number;
 }
 
+export interface ILessonVideo {
+  url: string;
+  thumbnail?: string;
+}
+
 export interface LessonPayload {
   courseId: string;
   learningItemId?: string;
   type: LessonType;
   title: ITranslation;
   description?: ITranslation;
+  summary?: ITranslation;
   image: string;
+  video?: ILessonVideo;
   status: LessonStatus;
   keypoints: string[];
   estimateCompleTime?: ITranslation;

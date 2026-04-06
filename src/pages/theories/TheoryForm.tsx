@@ -388,7 +388,7 @@ export default function TheoryForm({
       const cleanedTitle = cleanTranslation(currentTheory.title) || {};
       const payload: LearningItemPayload = {
         keypointId: currentTheory.keypointId,
-        title: cleanedTitle as any,
+        title: cleanedTitle,
         type: LearningItemType.THEORY,
         image: currentTheory.image,
         tag: currentTheory.tag || [],
@@ -463,7 +463,7 @@ export default function TheoryForm({
       setCurrentTheory(updatedTheory);
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: cleanedTitle as any,
+        title: cleanedTitle,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],
@@ -523,7 +523,7 @@ export default function TheoryForm({
       const cleanedTitle = cleanTranslation(updatedTheory.title) || {};
       const payload: LearningItemPayload = {
         keypointId: updatedTheory.keypointId,
-        title: cleanedTitle as any,
+        title: cleanedTitle,
         type: LearningItemType.THEORY,
         image: updatedTheory.image,
         tag: updatedTheory.tag || [],

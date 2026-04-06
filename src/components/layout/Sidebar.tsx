@@ -13,6 +13,7 @@ import {
   PuzzlePieceIcon,
   CreditCardIcon,
   ChartBarIcon,
+  PlayCircleIcon,
 } from "@heroicons/react/24/outline";
 import { NavLink, useLocation } from "react-router-dom";
 
@@ -26,6 +27,7 @@ const menuItems = [
   { name: "Course", icon: BookOpenIcon, path: "/course" },
   { name: "Roleplay", icon: ArrowRightOnRectangleIcon, path: "/roleplay" },
   { name: "Lesson", icon: ClipboardDocumentListIcon, path: "/lesson" },
+  { name: "Video", icon: PlayCircleIcon, path: "/video" },
   { name: "Output", icon: CheckBadgeIcon, path: "/output" },
   { name: "Keypoint", icon: StarIcon, path: "/keypoint" },
   { name: "Theory", icon: DocumentTextIcon, path: "/theory" },
@@ -167,17 +169,17 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
       </nav>
 
       {/* Settings Button - Larger and more colorful */}
-      <div className="absolute bottom-0 left-0 right-0 px-5 py-4 bg-white z-20 border-t border-gray-100">
+      <div className="absolute bottom-0 left-0 right-0 z-20 border-t border-gray-300 bg-white px-4 py-1.5">
         <NavLink
           to="/settings"
           className={`
             flex items-center justify-start
-            px-5 py-3 my-1 rounded-xl
+            px-4 py-1.5 my-0.5 rounded-xl
             transition-all duration-300 ease-in-out
-            text-gray-800
+            text-gray-800 hover:bg-gray-200 hover:text-gray-950
           `}
         >
-          <Cog6ToothIcon className="h-8 w-8" />
+          <Cog6ToothIcon className="h-6 w-6" />
           <span className="ml-2">Setting</span>
         </NavLink>
       </div>

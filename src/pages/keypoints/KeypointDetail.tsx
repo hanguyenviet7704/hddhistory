@@ -35,7 +35,6 @@ import { getTranslationValue } from "../../utils/translation";
 import KeypointModal from "../../components/keypoints/KeypointModal";
 
 // Custom SortableItem for grid layout
-// rebuild dev
 const SortableItem = ({
   id,
   children,
