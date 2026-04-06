@@ -26,6 +26,10 @@ import {
   ITheoryDocument,
   TheoryDocumentPayload,
 } from "./theories/theory.interface";
+import {
+  IVideoQuestion,
+  VideoQuestionPayload,
+} from "./videos/video-question.interface";
 
 export interface ILearningItemBrief {
   _id: string;
@@ -57,6 +61,7 @@ export interface ILearningItem {
   type: LearningItemType;
   questions: ExerciseInput[];
   subQuestions: ExerciseInput[];
+  videoQuestions?: IVideoQuestion[];
   isSub: boolean;
   documents: ITheoryDocument[];
   roleplay?: IRoleplay;
@@ -65,13 +70,14 @@ export interface ILearningItem {
 
 export interface LearningItemPayload {
   keypointId: string;
-  title: string;
-  description?: string;
+  title: ITranslation;
+  description?: ITranslation;
   image: string;
   tag: string[];
   type: LearningItemType;
   questions?: ExerciseInputPayload[];
   subQuestions?: ExerciseInputPayload[];
+  videoQuestions?: VideoQuestionPayload[];
   isSub: boolean;
   documents?: TheoryDocumentPayload[];
   roleplay?: IRoleplayPayload;

@@ -7,4 +7,5 @@ export enum LessonType {
   LESSON = "lesson",
   ROLEPLAY = "roleplay",
   OUTPUT = "output",
+  VIDEO = "video",
 }

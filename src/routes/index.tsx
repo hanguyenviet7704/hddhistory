@@ -31,6 +31,9 @@ import SettingsPage from "../pages/setting/Setting";
 import SkillsetList from "../pages/skillsets/skillsetList";
 import PaymentDashboard from "../pages/payments/PaymentDashboard";
 import StatisticsPage from "../pages/statistics/Statistics";
+import VideoList from "../pages/video/VideoList";
+import VideoCreate from "../pages/video/VideoCreate";
+import VideoDetail from "../pages/video/VideoDetail";
 
 export default function AppRouter() {
   return (
@@ -54,6 +57,10 @@ export default function AppRouter() {
               <Route path="lesson" element={<LessonList />} />
               <Route path="lesson/create" element={<LessonCreate />} />
               <Route path="lesson/:lessonId" element={<LessonDetail />} />
+
+              <Route path="video" element={<VideoList />} />
+              <Route path="video/create" element={<VideoCreate />} />
+              <Route path="video/:videoId" element={<VideoDetail />} />
 
               <Route path="output" element={<OutputList />} />
               <Route path="output/create" element={<OutputCreate />} />

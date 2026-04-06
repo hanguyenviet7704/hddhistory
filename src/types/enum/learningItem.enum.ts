@@ -10,6 +10,7 @@ export enum LearningItemType {
   THEORY = "theory",
   EXERCISE = "exercise",
   ROLEPLAY = "roleplay",
+  VIDEO = "video",
 }
 
 export enum FormDragDropType {

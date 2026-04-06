@@ -12,55 +12,25 @@ import {
 } from "../../types/interface/course.interface";
 import { ILessonBrief } from "../../types/interface/lesson.interface";
 import { LessonType } from "../../types/enum/lesson.enum";
-import { CourseLevel, VideoPositionInNode } from "../../types/enum/course.enum";
+import { CourseLevel } from "../../types/enum/course.enum";
 import {
   getTranslationValue,
   getCurrentTranslationValue,
   updateTranslationValue,
   cleanTranslation,
 } from "../../utils/translation";
-import CloudflareFileUpload from "../../components/files/CloudflareFileUpload";
 
 // Services
 import { courseService } from "../../services/courseService";
 import { lessonService } from "../../services/lessonService";
 import { cloudflareService } from "../../services/cloudflareR2Service";
 
-// ---------- Helpers ----------
-const levelBadgeClass = (level: CourseLevel) => {
-  switch (level) {
-    case CourseLevel.LEVEL1:
-      return "bg-blue-100 text-blue-800";
-    case CourseLevel.LEVEL2:
-      return "bg-purple-100 text-purple-800";
-    default:
-      return "bg-gray-100 text-gray-800";
-  }
-};
-
-type FieldKey = "roleplay" | "lessons" | "output";
-
-const VIDEO_POSITION_OPTIONS: Array<{
-  value: VideoPositionInNode;
-  label: string;
-}> = [
-  {
-    value: VideoPositionInNode.BEFORE_ROLEPLAY,
-    label: "Trước bài đầu vào",
-  },
-  {
-    value: VideoPositionInNode.AFTER_ROLEPLAY_BEFORE_LESSONS,
-    label: "Sau bài đầu vào, trước danh sách bài học",
-  },
-  {
-    value: VideoPositionInNode.AFTER_LESSONS_BEFORE_OUTPUT,
-    label: "Sau danh sách bài học, trước bài kết thúc",
-  },
-  {
-    value: VideoPositionInNode.AFTER_OUTPUT,
-    label: "Sau bài kết thúc",
-  },
-];
+type FieldKey =
+  | "openingVideo"
+  | "roleplay"
+  | "lessons"
+  | "output"
+  | "closingVideo";
 
 // Reusable icon-only button
 const IconButton: React.FC<
@@ -133,15 +103,19 @@ const RoadmapPage: React.FC = () => {
   const [loadingLessons, setLoadingLessons] = useState(false);
 
   // Cached lesson lists by type
+  const [openingVideos, setOpeningVideos] = useState<ILessonBrief[]>([]);
   const [entranceLessons, setEntranceLessons] = useState<ILessonBrief[]>([]);
   const [outputLessons, setOutputLessons] = useState<ILessonBrief[]>([]);
   const [lessonLessons, setLessonLessons] = useState<ILessonBrief[]>([]);
+  const [closingVideos, setClosingVideos] = useState<ILessonBrief[]>([]);
   const [lessonCacheLoaded, setLessonCacheLoaded] = useState<
     Record<FieldKey, boolean>
   >({
+    openingVideo: false,
     roleplay: false,
     lessons: false,
     output: false,
+    closingVideo: false,
   });
 
   // Delete confirms
@@ -188,13 +162,17 @@ const RoadmapPage: React.FC = () => {
   }, [fetchRoadmap]);
 
   useEffect(() => {
+    setOpeningVideos([]);
     setEntranceLessons([]);
     setOutputLessons([]);
     setLessonLessons([]);
+    setClosingVideos([]);
     setLessonCacheLoaded({
+      openingVideo: false,
       roleplay: false,
       lessons: false,
       output: false,
+      closingVideo: false,
     });
   }, [courseId]);
 
@@ -211,6 +189,23 @@ const RoadmapPage: React.FC = () => {
         const items: ILessonBrief[] = res.data?.items || [];
         if (!normalizedSearch) {
           switch (type) {
+            case LessonType.VIDEO:
+              setOpeningVideos((prev) =>
+                prev.length === 0 && items.length === 0 ? prev : items,
+              );
+              setClosingVideos((prev) =>
+                prev.length === 0 && items.length === 0 ? prev : items,
+              );
+              setLessonCacheLoaded((prev) =>
+                prev.openingVideo && prev.closingVideo
+                  ? prev
+                  : {
+                      ...prev,
+                      openingVideo: true,
+                      closingVideo: true,
+                    },
+              );
+              break;
             case LessonType.ROLEPLAY:
               setEntranceLessons((prev) =>
                 prev.length === 0 && items.length === 0 ? prev : items,
@@ -254,7 +249,9 @@ const RoadmapPage: React.FC = () => {
     if (!editingField) return;
     const normalizedSearch = searchTerm.trim();
     const type =
-      editingField === "roleplay"
+      editingField === "openingVideo" || editingField === "closingVideo"
+        ? LessonType.VIDEO
+        : editingField === "roleplay"
         ? LessonType.ROLEPLAY
         : editingField === "output"
           ? LessonType.OUTPUT
@@ -270,13 +267,21 @@ const RoadmapPage: React.FC = () => {
 
       if (!normalizedSearch) {
         const cached =
-          editingField === "roleplay"
+          editingField === "openingVideo"
+            ? openingVideos
+            : editingField === "closingVideo"
+              ? closingVideos
+              : editingField === "roleplay"
             ? entranceLessons
             : editingField === "output"
               ? outputLessons
               : lessonLessons;
         const isCachedLoaded =
-          editingField === "roleplay"
+          editingField === "openingVideo"
+            ? lessonCacheLoaded.openingVideo
+            : editingField === "closingVideo"
+              ? lessonCacheLoaded.closingVideo
+              : editingField === "roleplay"
             ? lessonCacheLoaded.roleplay
             : editingField === "output"
               ? lessonCacheLoaded.output
@@ -299,6 +304,8 @@ const RoadmapPage: React.FC = () => {
   }, [
     editingField,
     searchTerm,
+    openingVideos,
+    closingVideos,
     entranceLessons,
     outputLessons,
     lessonLessons,
@@ -449,6 +456,8 @@ const RoadmapPage: React.FC = () => {
     if (!lessonCacheLoaded.roleplay)
       await fetchLessonsByType(LessonType.ROLEPLAY);
     if (!lessonCacheLoaded.output) await fetchLessonsByType(LessonType.OUTPUT);
+    if (!lessonCacheLoaded.openingVideo)
+      await fetchLessonsByType(LessonType.VIDEO);
     setIsCreatingNode({ on: true, levelIndex });
   };
 
@@ -507,7 +516,11 @@ const RoadmapPage: React.FC = () => {
     field: FieldKey,
   ) => {
     let lessonList: ILessonBrief[] = [];
-    if (field === "roleplay") {
+    if (field === "openingVideo" || field === "closingVideo") {
+      lessonList = lessonCacheLoaded.openingVideo
+        ? openingVideos
+        : await fetchLessonsByType(LessonType.VIDEO);
+    } else if (field === "roleplay") {
       lessonList = lessonCacheLoaded.roleplay
         ? entranceLessons
         : await fetchLessonsByType(LessonType.ROLEPLAY);
@@ -533,6 +546,10 @@ const RoadmapPage: React.FC = () => {
       currentValues:
         field === "lessons"
           ? [...(node.lessonIds || [])]
+          : field === "openingVideo"
+            ? node.openingVideoId || ""
+            : field === "closingVideo"
+              ? node.closingVideoId || ""
           : field === "roleplay"
             ? node.roleplayId
             : node.outputId,
@@ -610,13 +627,22 @@ const RoadmapPage: React.FC = () => {
       const selectedId = typeof currentValues === "string" ? currentValues : "";
       const selected = selectedId
         ? lessonList.find((l) => l._id === selectedId) ||
+          (field === "openingVideo" || field === "closingVideo"
+            ? openingVideos.find((l) => l._id === selectedId)
+            : null) ||
           (field === "roleplay"
             ? entranceLessons.find((l) => l._id === selectedId)
             : outputLessons.find((l) => l._id === selectedId)) ||
           null
         : null;
 
-      if (field === "roleplay") {
+      if (field === "openingVideo") {
+        currentNode.openingVideoId = selectedId;
+        currentNode.openingVideo = selected;
+      } else if (field === "closingVideo") {
+        currentNode.closingVideoId = selectedId;
+        currentNode.closingVideo = selected;
+      } else if (field === "roleplay") {
         currentNode.roleplayId = selectedId;
         currentNode.roleplay = selected;
       } else if (field === "output") {
@@ -719,9 +745,11 @@ const RoadmapPage: React.FC = () => {
             : [];
           const nodePayload: any = {
             id: n.id ?? "",
+            openingVideoId: n.openingVideoId ?? "",
             roleplayId: n.roleplayId ?? "",
             lessonIds: normalizedLessonIds,
             outputId: n.outputId ?? "",
+            closingVideoId: n.closingVideoId ?? "",
           };
 
           // Only include title if it has values
@@ -730,12 +758,6 @@ const RoadmapPage: React.FC = () => {
           }
           if (cleanedDescription) {
             nodePayload.description = cleanedDescription;
-          }
-          if (n.video?.url?.trim()) {
-            nodePayload.video = {
-              url: n.video.url.trim(),
-              position: n.video.position || VideoPositionInNode.BEFORE_ROLEPLAY,
-            };
           }
 
           return nodePayload;
@@ -766,6 +788,9 @@ const RoadmapPage: React.FC = () => {
       case LessonType.OUTPUT:
         navigate(`/output/${lesson._id}`);
         return;
+      case LessonType.VIDEO:
+        navigate(`/video/${lesson._id}`);
+        return;
       default:
         navigate(`/lesson/${lesson._id}`);
     }
@@ -787,6 +812,10 @@ const RoadmapPage: React.FC = () => {
       case LessonType.OUTPUT:
         icon = "🧠";
         color = "bg-green-100 text-green-800";
+        break;
+      case LessonType.VIDEO:
+        icon = "🎬";
+        color = "bg-rose-100 text-rose-800";
         break;
       default:
         icon = "📖";
@@ -822,7 +851,11 @@ const RoadmapPage: React.FC = () => {
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
         <div className="bg-white rounded-lg p-6 w-full max-w-2xl">
           <h3 className="text-xl font-bold mb-4">
-            {field === "roleplay"
+            {field === "openingVideo"
+              ? "Chọn Opening Video"
+              : field === "closingVideo"
+                ? "Chọn Closing Video"
+              : field === "roleplay"
               ? "Chọn Bài Đầu Vào"
               : field === "output"
                 ? "Chọn Bài Kết Thúc"
@@ -1108,15 +1141,24 @@ const RoadmapPage: React.FC = () => {
                           (lesson) => lesson._id === node.roleplayId,
                         ) ||
                         null;
+                      const nodeOpeningVideo =
+                        node.openingVideo ||
+                        openingVideos.find(
+                          (lesson) => lesson._id === node.openingVideoId,
+                        ) ||
+                        null;
                       const nodeOutput =
                         node.output ||
                         outputLessons.find(
                           (lesson) => lesson._id === node.outputId,
                         ) ||
                         null;
-                      const nodeVideoPosition =
-                        node.video?.position ||
-                        VideoPositionInNode.BEFORE_ROLEPLAY;
+                      const nodeClosingVideo =
+                        node.closingVideo ||
+                        closingVideos.find(
+                          (lesson) => lesson._id === node.closingVideoId,
+                        ) ||
+                        null;
                       return (
                         <div
                           key={`node-${node.id || `${levelIndex}-${nodeIndex}`}`}
@@ -1285,6 +1327,29 @@ const RoadmapPage: React.FC = () => {
                                     }
                                   />
                                 </div>
+                                <div className="border-l-4 border-rose-500 pl-4">
+                                  <div className="flex justify-between items-center mb-2">
+                                    <h4 className="font-medium text-gray-700">
+                                      Opening Video
+                                    </h4>
+                                    <button
+                                      className="text-blue-600 text-sm"
+                                      onClick={() =>
+                                        handleEditClick(
+                                          levelIndex,
+                                          nodeIndex,
+                                          "openingVideo",
+                                        )
+                                      }
+                                    >
+                                      Chỉnh sửa
+                                    </button>
+                                  </div>
+                                  {renderLessonBadge(nodeOpeningVideo, {
+                                    clickable: true,
+                                  })}
+                                </div>
+
                                 <div className="border-l-4 border-blue-500 pl-4">
                                   <div className="flex justify-between items-center mb-2">
                                     <h4 className="font-medium text-gray-700">
@@ -1377,144 +1442,26 @@ const RoadmapPage: React.FC = () => {
                                 </div>
 
                                 <div className="border-l-4 border-red-500 pl-4">
-                                  <div className="flex items-center justify-between mb-2 gap-3">
+                                  <div className="flex justify-between items-center mb-2">
                                     <h4 className="font-medium text-gray-700">
-                                      Video trong node
+                                      Closing Video
                                     </h4>
-                                    {node.video ? (
-                                      <button
-                                        className="text-red-600 text-sm"
-                                        onClick={() =>
-                                          applyNodeUpdate(
-                                            levelIndex,
-                                            nodeIndex,
-                                            (current) => ({
-                                              ...current,
-                                              video: undefined,
-                                            }),
-                                          )
-                                        }
-                                      >
-                                        Xóa video
-                                      </button>
-                                    ) : (
-                                      <button
-                                        className="text-blue-600 text-sm"
-                                        onClick={() =>
-                                          applyNodeUpdate(
-                                            levelIndex,
-                                            nodeIndex,
-                                            (current) => ({
-                                              ...current,
-                                              video: {
-                                                url: "",
-                                                position:
-                                                  current.video?.position ||
-                                                  VideoPositionInNode.BEFORE_ROLEPLAY,
-                                              },
-                                            }),
-                                          )
-                                        }
-                                      >
-                                        Thêm video
-                                      </button>
-                                    )}
+                                    <button
+                                      className="text-blue-600 text-sm"
+                                      onClick={() =>
+                                        handleEditClick(
+                                          levelIndex,
+                                          nodeIndex,
+                                          "closingVideo",
+                                        )
+                                      }
+                                    >
+                                      Chỉnh sửa
+                                    </button>
                                   </div>
-
-                                  {node.video ? (
-                                    <div className="space-y-3">
-                                      <div className="w-56">
-                                        <CloudflareFileUpload
-                                          initialUrl={node.video.url || ""}
-                                          onUrlChange={(newUrl) =>
-                                            applyNodeUpdate(
-                                              levelIndex,
-                                              nodeIndex,
-                                              (current) => {
-                                                const nextUrl =
-                                                  newUrl?.trim() || "";
-                                                if (!nextUrl) {
-                                                  return {
-                                                    ...current,
-                                                    video: undefined,
-                                                  };
-                                                }
-                                                return {
-                                                  ...current,
-                                                  video: {
-                                                    url: nextUrl,
-                                                    position:
-                                                      current.video?.position ||
-                                                      VideoPositionInNode.BEFORE_ROLEPLAY,
-                                                  },
-                                                };
-                                              },
-                                            )
-                                          }
-                                          label="Video URL"
-                                          uploadPayload={{
-                                            prefix: "",
-                                            folder: "roadmap-nodes",
-                                          }}
-                                          accept="video/*"
-                                        />
-                                      </div>
-
-                                      <div>
-                                        <label className="block text-sm text-gray-700 mb-1">
-                                          Vị trí video
-                                        </label>
-                                        <select
-                                          className="w-full px-3 py-2 border rounded-lg text-sm"
-                                          value={nodeVideoPosition}
-                                          onChange={(e) =>
-                                            applyNodeUpdate(
-                                              levelIndex,
-                                              nodeIndex,
-                                              (current) => ({
-                                                ...current,
-                                                video: {
-                                                  url: current.video?.url || "",
-                                                  position:
-                                                    e.target
-                                                      .value as VideoPositionInNode,
-                                                },
-                                              }),
-                                            )
-                                          }
-                                        >
-                                          {VIDEO_POSITION_OPTIONS.map(
-                                            (positionOption) => (
-                                              <option
-                                                key={positionOption.value}
-                                                value={positionOption.value}
-                                              >
-                                                {positionOption.label}
-                                              </option>
-                                            ),
-                                          )}
-                                        </select>
-                                      </div>
-                                      <div className="flex justify-end">
-                                        <button
-                                          className="px-3 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                                          onClick={() => void handleSaveRoadmap()}
-                                          disabled={
-                                            savingRoadmap ||
-                                            !node.video?.url?.trim()
-                                          }
-                                        >
-                                          {savingRoadmap
-                                            ? "Đang lưu..."
-                                            : "Lưu video"}
-                                        </button>
-                                      </div>
-                                    </div>
-                                  ) : (
-                                    <p className="text-gray-500 italic text-sm">
-                                      Chưa có video cho node này
-                                    </p>
-                                  )}
+                                  {renderLessonBadge(nodeClosingVideo, {
+                                    clickable: true,
+                                  })}
                                 </div>
                               </div>
                             </div>

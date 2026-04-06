@@ -1,16 +1,7 @@
 import { ITranslation } from "../../utils/translate";
-import {
-  CourseLevel,
-  CourseStatus,
-  VideoPositionInNode,
-} from "../enum/course.enum";
+import { CourseLevel, CourseStatus } from "../enum/course.enum";
 import { BaseQuery } from "./common.interface";
 import { ILessonBrief } from "./lesson.interface";
-
-export interface INodeVideo {
-  url: string;
-  position: VideoPositionInNode;
-}
 
 export interface IPrice {
   currency: string;
@@ -68,13 +59,16 @@ export interface IRoadmapNode {
   id: string;
   title: ITranslation;
   description?: ITranslation;
-  video?: INodeVideo;
+  openingVideoId?: string;
   roleplayId: string;
   lessonIds: string[];
   outputId: string;
+  closingVideoId?: string;
+  openingVideo?: ILessonBrief | null;
   roleplay?: ILessonBrief | null;
   lessons?: ILessonBrief[] | null;
   output?: ILessonBrief | null;
+  closingVideo?: ILessonBrief | null;
 }
 
 export interface IRoadmapLevel {
@@ -95,10 +89,11 @@ export interface RoadmapNodePayload {
   id: string;
   title: ITranslation;
   description?: ITranslation;
-  video?: INodeVideo;
+  openingVideoId?: string;
   roleplayId: string;
   lessonIds: string[];
   outputId: string;
+  closingVideoId?: string;
 }
 
 export interface RoadmapLevelPayload {

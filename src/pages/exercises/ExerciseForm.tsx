@@ -519,7 +519,7 @@ export default function ExerciseForm({
       setSaving(true);
       const payload: LearningItemPayload = {
         keypointId: currentExercise.keypointId,
-        title: (cleanTranslation(currentExercise.title) || "") as string,
+        title: cleanTranslation(currentExercise.title) || {},
         type: LearningItemType.EXERCISE,
         image: currentExercise.image,
         tag: currentExercise.tag || [],
@@ -799,7 +799,7 @@ export default function ExerciseForm({
 
       const payload: LearningItemPayload = {
         keypointId: updatedExercise.keypointId,
-        title: (cleanTranslation(updatedExercise.title) || "") as string,
+        title: cleanTranslation(updatedExercise.title) || {},
         type: LearningItemType.EXERCISE,
         image: updatedExercise.image,
         tag: updatedExercise.tag || [],
@@ -864,7 +864,7 @@ export default function ExerciseForm({
 
       const payload: LearningItemPayload = {
         keypointId: updatedExercise.keypointId,
-        title: (cleanTranslation(updatedExercise.title) || "") as string,
+        title: cleanTranslation(updatedExercise.title) || {},
         type: LearningItemType.EXERCISE,
         image: updatedExercise.image,
         tag: updatedExercise.tag || [],

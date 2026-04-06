@@ -1,6 +1,11 @@
 import React from "react";
 import { LearningItemPayload } from "../../types/interface/learning-item/learning-item.interface";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
+import { LangCode } from "../../types/enum/common.enum";
+import {
+  getCurrentTranslationValue,
+  updateTranslationValue,
+} from "../../utils/translation";
 
 interface LearningItemFormProps {
   item: LearningItemPayload;
@@ -60,8 +65,13 @@ const LearningItemForm: React.FC<LearningItemFormProps> = ({
           </label>
           <input
             type="text"
-            value={item.title}
-            onChange={(e) => handleInputChange("title", e.target.value)}
+            value={getCurrentTranslationValue(item.title, LangCode.EN)}
+            onChange={(e) =>
+              handleInputChange(
+                "title",
+                updateTranslationValue(item.title, LangCode.EN, e.target.value),
+              )
+            }
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
           />
         </div>
