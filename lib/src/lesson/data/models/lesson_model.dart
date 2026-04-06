@@ -9,10 +9,14 @@ abstract class LessonModel with _$LessonModel {
     @JsonKey(unknownEnumValue: LessonType.unknown) @Default(LessonType.lesson) LessonType type,
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    BaseMultiLanguage? summary,
     @Default('') String image,
+    LessonVideoModel? video,
     @JsonKey(unknownEnumValue: LessonPublishStatus.unknown) @Default(LessonPublishStatus.draft) LessonPublishStatus status,
     @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
+    int? estimateCompleTimeNumber,
+    @Default('') String aiConfig,
     @Default(TagModel()) TagModel icon,
     @Default(TagModel()) TagModel lightIcon,
     @JsonKey(unknownEnumValue: ProcessEnum.unknown) @Default(ProcessEnum.notStarted) ProcessEnum progess,
@@ -41,6 +45,8 @@ enum LessonType {
   lesson,
   @JsonValue('output')
   output,
+  @JsonValue('video')
+  video,
   @JsonValue('unknown')
   unknown
   ;
@@ -50,6 +56,7 @@ enum LessonType {
       roleplay => 'roleplay',
       lesson => 'lesson',
       output => 'output',
+      video => 'video',
       unknown => 'unknown',
     };
   }
@@ -86,10 +93,14 @@ extension LessonModelExtension on LessonModel {
     type: type,
     title: title,
     description: description,
+    summary: summary,
     image: image,
+    video: video?.toEntity(),
     status: status,
     keypoints: keypoints.map((model) => model.toEntity()).toList(),
     estimateCompleTime: estimateCompleTime,
+    estimateCompleTimeNumber: estimateCompleTimeNumber,
+    aiConfig: aiConfig,
     icon: icon.toEntity(),
     lightIcon: lightIcon.toEntity(),
     animation: animation.toEntity(),

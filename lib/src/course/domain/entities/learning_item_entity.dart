@@ -14,6 +14,7 @@ abstract class LearningItemEntity with _$LearningItemEntity {
     @Default(LearningItemType.theory) LearningItemType type,
     @Default([]) List<QuestionEntity> mainQuestions,
     @Default([]) List<QuestionEntity> subQuestions,
+    @Default([]) List<VideoQuestionEntity> videoQuestions,
     @Default([]) List<DocumentEntity> documents,
     @Default(RoleplayEntity()) RoleplayEntity roleplay,
     @Default([]) List<String> tag,

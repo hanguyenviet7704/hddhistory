@@ -161,7 +161,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
     String lessonId = '';
 
     switch (lessonType) {
-      case LessonType.lesson:
+      case LessonType.lesson || LessonType.video:
         lessonId = courseLessonState.selectedLesson.id;
         break;
       case LessonType.roleplay:
@@ -170,7 +170,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       case LessonType.output:
         lessonId = '';
         break;
-      case LessonType.unknown:
+      case LessonType.unknown || LessonType.video:
         lessonId = '';
         break;
     }

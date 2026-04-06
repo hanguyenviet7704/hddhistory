@@ -138,6 +138,9 @@ class RoadmapNodeActionHelper {
       case LessonType.output:
         _startOutputPractice(context, lesson);
         return;
+      case LessonType.video:
+        // _startVideoLesson(context, lesson);
+        return;
       case LessonType.unknown:
         return;
     }
