@@ -61,11 +61,11 @@ const createEmptyVideoLesson = (lang: LangCode): ILesson =>
     type: LessonType.VIDEO,
     title: { [lang]: "" },
     description: { [lang]: "" },
-    summary: { [lang]: "" },
     image: "",
     video: {
       url: "",
       thumbnail: "",
+      summary: { [lang]: "" },
     },
     keypoints: [],
     estimateCompleTime: { [lang]: "" },
@@ -233,9 +233,9 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
     );
     const summary = sanitizeTranslation(
       updateTranslationValue(
-        currentVideoLesson.summary,
+        currentVideoLesson.video?.summary || {},
         lang,
-        getTranslationValue(currentVideoLesson.summary, lang) || "",
+        getTranslationValue(currentVideoLesson.video?.summary, lang) || "",
       ),
     );
     const {
@@ -255,6 +255,8 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
     );
     const videoUrl = currentVideoLesson.video?.url?.trim() || "";
     const videoThumbnail = currentVideoLesson.video?.thumbnail?.trim() || "";
+    const shouldIncludeVideo =
+      !!(videoUrl || videoThumbnail || summary);
 
     const lessonPayload: LessonPayload = {
       courseId: currentVideoLesson.courseId,
@@ -262,12 +264,12 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
       type: LessonType.VIDEO,
       title: title || { [lang]: "" },
       description: description || { [lang]: "" },
-      ...(summary && { summary: summary as any }),
       image: currentVideoLesson.image || "",
-      ...(videoUrl && {
+      ...(shouldIncludeVideo && {
         video: {
           url: videoUrl,
           ...(videoThumbnail && { thumbnail: videoThumbnail }),
+          ...(summary && { summary: summary as any }),
         },
       }),
       status: currentVideoLesson.status,
@@ -544,6 +546,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                         video: {
                           url: prev.video?.url || "",
                           thumbnail,
+                          summary: prev.video?.summary,
                         },
                       }))
                     }
@@ -562,7 +565,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                     {isEditMode ? "Edit Video" : "Create New Video"}
                   </h1>
                   <p className="mt-1 text-sm text-gray-500">
-                    Manage video lesson details, summary, and in-video exercises.
+                    Manage video lesson details, video summary, and in-video exercises.
                   </p>
                 </div>
                 <div className="flex gap-2">
@@ -799,11 +802,19 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
           </div>
 
           <HtmlContentEditor
-            value={getTranslationValue(currentVideoLesson.summary, lang) || ""}
+            value={getTranslationValue(currentVideoLesson.video?.summary, lang) || ""}
             onChange={(html) =>
               setCurrentVideoLesson((prev) => ({
                 ...prev,
-                summary: updateTranslationValue(prev.summary, lang, html),
+                video: {
+                  url: prev.video?.url || "",
+                  thumbnail: prev.video?.thumbnail,
+                  summary: updateTranslationValue(
+                    prev.video?.summary || {},
+                    lang,
+                    html,
+                  ),
+                },
               }))
             }
           />

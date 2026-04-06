@@ -1,6 +1,10 @@
 import { ITranslation } from "../../utils/translate";
 import { BaseQuery } from "./common.interface";
 
+export interface IKeypointAudio {
+  url?: ITranslation;
+  text?: ITranslation;
+}
 export interface IKeypoint {
   _id: string;
   title: ITranslation;
@@ -9,6 +13,7 @@ export interface IKeypoint {
   image: string;
   estimateCompleTime?: ITranslation;
   estimateCompleTimeNumber?: number;
+  audio?: IKeypointAudio;
 }
 
 export interface KeypointPayload {
@@ -18,6 +23,7 @@ export interface KeypointPayload {
   image: string;
   estimateCompleTime?: ITranslation;
   estimateCompleTimeNumber?: number;
+  audio?: IKeypointAudio;
 }
 
 export interface IKeypointBrief {

@@ -12,7 +12,6 @@ export interface ILesson {
   type: LessonType;
   title: ITranslation;
   description: ITranslation;
-  summary?: ITranslation;
   image: string;
   video?: ILessonVideo;
   status: LessonStatus;
@@ -29,6 +28,7 @@ export interface ILesson {
 export interface ILessonVideo {
   url: string;
   thumbnail?: string;
+  summary?: ITranslation;
 }
 
 export interface LessonPayload {
@@ -37,7 +37,6 @@ export interface LessonPayload {
   type: LessonType;
   title: ITranslation;
   description?: ITranslation;
-  summary?: ITranslation;
   image: string;
   video?: ILessonVideo;
   status: LessonStatus;

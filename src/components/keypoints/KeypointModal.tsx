@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import {
   IKeypoint,
+  IKeypointAudio,
   KeypointPayload,
 } from "../../types/interface/keypoint.interface";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
@@ -36,6 +37,7 @@ const KeypointModal: React.FC<Props> = ({
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
   const [estimateCompleTime, setEstimateCompleTime] = useState<ITranslation>({});
+  const [audio, setAudio] = useState<IKeypointAudio>({});
   const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
   const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =
     useState<EstimateCompleteTimeUnit>("minute");
@@ -56,6 +58,7 @@ const KeypointModal: React.FC<Props> = ({
       setTitle(keypoint.title ?? {});
       setDescription(keypoint.description ?? {});
       setEstimateCompleTime(keypoint.estimateCompleTime ?? {});
+      setAudio(keypoint.audio ?? {});
       setImage(keypoint.image ?? "");
       setTag(keypoint.tag || []);
 
@@ -70,6 +73,7 @@ const KeypointModal: React.FC<Props> = ({
       setTitle({});
       setDescription({});
       setEstimateCompleTime({});
+      setAudio({});
       setEstimateCompleTimeInput("");
       setEstimateCompleTimeUnit("minute");
       setImage("");
@@ -93,6 +97,12 @@ const KeypointModal: React.FC<Props> = ({
     const cleanedDescription = cleanTranslation(
       updateTranslationValue(description, lang, description[lang] || "")
     );
+    const cleanedAudioUrl = cleanTranslation(
+      updateTranslationValue(audio.url, lang, (audio.url?.[lang] || "").trim())
+    );
+    const cleanedAudioText = cleanTranslation(
+      updateTranslationValue(audio.text, lang, audio.text?.[lang] || "")
+    );
     const {
       label: estimateCompleTimeLabel,
       estimateCompleTimeNumber,
@@ -115,6 +125,12 @@ const KeypointModal: React.FC<Props> = ({
       ...(cleanedDescription && { description: cleanedDescription }),
       ...(cleanedEstimateCompleTime && {
         estimateCompleTime: cleanedEstimateCompleTime,
+      }),
+      ...((cleanedAudioUrl || cleanedAudioText) && {
+        audio: {
+          ...(cleanedAudioUrl && { url: cleanedAudioUrl }),
+          ...(cleanedAudioText && { text: cleanedAudioText }),
+        },
       }),
       ...(Number.isFinite(estimateCompleTimeNumber) && {
         estimateCompleTimeNumber,
@@ -141,7 +157,7 @@ const KeypointModal: React.FC<Props> = ({
 
   return (
     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-      <div className="bg-white rounded-xl shadow-xl w-full max-w-lg p-6">
+      <div className="bg-white rounded-xl shadow-xl w-full max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
         <h2 className="text-xl font-semibold mb-4">
           {keypoint ? "Edit Keypoint" : "Create Keypoint"}
         </h2>
@@ -223,6 +239,48 @@ const KeypointModal: React.FC<Props> = ({
                 folder: "keypoints",
               }}
             />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Audio</label>
+            <CloudflareFileUpload
+              initialUrl={audio.url?.[lang] || ""}
+              onUrlChange={(newUrl) =>
+                setAudio((prev) => ({
+                  ...prev,
+                  url: updateTranslationValue(prev.url, lang, newUrl),
+                }))
+              }
+              label=""
+              accept="audio/*"
+              uploadPayload={{
+                prefix: "",
+                folder: "keypoints/audio",
+              }}
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium mb-1">Audio text</label>
+            <textarea
+              className="w-full border rounded-lg px-3 py-2"
+              placeholder="Enter transcript or audio text"
+              value={audio.text?.[lang] || ""}
+              onChange={(e) =>
+                setAudio((prev) => ({
+                  ...prev,
+                  text: updateTranslationValue(
+                    prev.text,
+                    lang,
+                    e.target.value
+                  ),
+                }))
+              }
+              rows={8}
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              Có thể nhập transcript dài trực tiếp trong modal này.
+            </p>
           </div>
 
           {/* Actions */}
