@@ -30,6 +30,19 @@ interface VideoQuestionEditorProps {
   saving?: boolean;
 }
 
+const formatSecondsLabel = (value: number) => {
+  const safeValue = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+  const hours = Math.floor(safeValue / 3600);
+  const minutes = Math.floor((safeValue % 3600) / 60);
+  const seconds = safeValue % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+};
+
 const TextWithTooltip = ({
   text = "",
   maxLength = 100,
@@ -235,7 +248,7 @@ export default function VideoQuestionEditor({
                       <span className="mr-2 flex-shrink-0 font-medium text-blue-400">
                         At second:
                       </span>
-                      <span>{question.atSecond ?? 0}</span>
+                      <span>{formatSecondsLabel(question.atSecond ?? 0)}</span>
                     </div>
 
                     {(question.exercise as any)?.document?.length > 0 && (

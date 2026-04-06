@@ -41,6 +41,61 @@ interface VideoQuestionFormDialogProps {
   saving?: boolean;
 }
 
+const QUICK_TIME_OPTIONS = [
+  "0:10",
+  "0:15",
+  "0:30",
+  "0:45",
+  "1:00",
+  "1:30",
+  "2:00",
+  "3:00",
+  "5:00",
+];
+
+const formatSecondsForInput = (value: number) => {
+  const safeValue = Number.isFinite(value) ? Math.max(0, Math.floor(value)) : 0;
+  const hours = Math.floor(safeValue / 3600);
+  const minutes = Math.floor((safeValue % 3600) / 60);
+  const seconds = safeValue % 60;
+
+  if (hours > 0) {
+    return `${hours}:${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
+  }
+
+  return `${minutes}:${String(seconds).padStart(2, "0")}`;
+};
+
+const parseAtSecondInput = (value: string) => {
+  const normalized = value.trim();
+  if (!normalized) return 0;
+
+  if (/^\d+$/.test(normalized)) {
+    return Number(normalized);
+  }
+
+  const parts = normalized
+    .split(":")
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  if (!parts.length || parts.some((part) => !/^\d+$/.test(part))) {
+    return 0;
+  }
+
+  if (parts.length === 2) {
+    const [minutes, seconds] = parts.map(Number);
+    return minutes * 60 + seconds;
+  }
+
+  if (parts.length === 3) {
+    const [hours, minutes, seconds] = parts.map(Number);
+    return hours * 3600 + minutes * 60 + seconds;
+  }
+
+  return 0;
+};
+
 export default function VideoQuestionFormDialog({
   lang,
   questionType,
@@ -51,7 +106,9 @@ export default function VideoQuestionFormDialog({
   saving = false,
 }: VideoQuestionFormDialogProps) {
   const [localFormData, setLocalFormData] = useState<any>(formData);
-  const [atSecondInput, setAtSecondInput] = useState(String(initialAtSecond || 0));
+  const [atSecondInput, setAtSecondInput] = useState(
+    formatSecondsForInput(initialAtSecond || 0),
+  );
   const [nextOptionId, setNextOptionId] = useState(1);
   const [nextAnswerId, setNextAnswerId] = useState(1);
 
@@ -71,7 +128,7 @@ export default function VideoQuestionFormDialog({
   }, [formData]);
 
   useEffect(() => {
-    setAtSecondInput(String(initialAtSecond || 0));
+    setAtSecondInput(formatSecondsForInput(initialAtSecond || 0));
   }, [initialAtSecond]);
 
   const documentGroupIds = useMemo(
@@ -530,7 +587,7 @@ export default function VideoQuestionFormDialog({
     }
 
     await onSave({
-      atSecond: Number(atSecondInput || 0),
+      atSecond: parseAtSecondInput(atSecondInput),
       exercise: nextPayload,
     });
   };
@@ -563,14 +620,20 @@ export default function VideoQuestionFormDialog({
             </label>
             <input
               type="text"
-              inputMode="numeric"
+              list="video-question-time-options"
               value={atSecondInput}
-              onChange={(event) =>
-                setAtSecondInput(event.target.value.replace(/[^\d]/g, ""))
-              }
+              onChange={(event) => setAtSecondInput(event.target.value)}
               className="w-full rounded-lg border p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              placeholder="0"
+              placeholder="0:30 or 90"
             />
+            <datalist id="video-question-time-options">
+              {QUICK_TIME_OPTIONS.map((option) => (
+                <option key={option} value={option} />
+              ))}
+            </datalist>
+            <p className="mt-1 text-xs text-gray-500">
+              Select a suggestion or type seconds, `mm:ss`, or `hh:mm:ss`.
+            </p>
           </div>
 
           <div className="rounded-lg border bg-gray-50 p-4">

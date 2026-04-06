@@ -40,7 +40,6 @@ export interface LessonPayload {
   summary?: ITranslation;
   image: string;
   video?: ILessonVideo;
-  thumbnailUrl?: string;
   status: LessonStatus;
   keypoints: string[];
   estimateCompleTime?: ITranslation;

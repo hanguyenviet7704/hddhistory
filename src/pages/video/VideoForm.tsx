@@ -270,7 +270,6 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
           ...(videoThumbnail && { thumbnail: videoThumbnail }),
         },
       }),
-      ...(!videoUrl && videoThumbnail && { thumbnailUrl: videoThumbnail }),
       status: currentVideoLesson.status,
       keypoints: [],
       ...(estimateCompleTime && { estimateCompleTime }),
