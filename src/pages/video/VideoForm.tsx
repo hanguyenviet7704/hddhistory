@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Combobox } from "@headlessui/react";
+import { XMarkIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import DOMPurify from "dompurify";
@@ -7,6 +8,7 @@ import { AnimatePresence } from "framer-motion";
 import { RootState } from "../../store";
 import { ICourse } from "../../types/interface/course.interface";
 import { ILesson, LessonPayload } from "../../types/interface/lesson.interface";
+import { ITag } from "../../types/interface/tag.interface";
 import {
   ILearningItem,
   LearningItemPayload,
@@ -18,6 +20,7 @@ import { LearningItemType } from "../../types/enum/learningItem.enum";
 import { courseService } from "../../services/courseService";
 import { lessonService } from "../../services/lessonService";
 import { learningItemService } from "../../services/learningItemService";
+import { tagService } from "../../services/tagService";
 import { useNotification } from "../../utils/hooks/useNotification";
 import {
   cleanTranslation,
@@ -111,6 +114,13 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [courseQuery, setCourseQuery] = useState("");
   const [selectedCourse, setSelectedCourse] = useState<ICourse | null>(null);
+  const [icons, setIcons] = useState<ITag[]>([]);
+  const [iconQuery, setIconQuery] = useState("");
+  const [isIconSearchActive, setIsIconSearchActive] = useState(false);
+  const [lightIcons, setLightIcons] = useState<ITag[]>([]);
+  const [lightIconQuery, setLightIconQuery] = useState("");
+  const [isLightIconSearchActive, setIsLightIconSearchActive] =
+    useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmDeleteVideo, setConfirmDeleteVideo] = useState(false);
   const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
@@ -156,6 +166,42 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
       active = false;
     };
   }, [courseQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchIcons = async () => {
+      try {
+        const response = await tagService.getList({
+          search: iconQuery,
+        });
+        if (active) setIcons(response.data.items ?? []);
+      } catch (error) {
+        console.error("fetchIcons", error);
+      }
+    };
+    fetchIcons();
+    return () => {
+      active = false;
+    };
+  }, [iconQuery]);
+
+  useEffect(() => {
+    let active = true;
+    const fetchLightIcons = async () => {
+      try {
+        const response = await tagService.getList({
+          search: lightIconQuery,
+        });
+        if (active) setLightIcons(response.data.items ?? []);
+      } catch (error) {
+        console.error("fetchLightIcons", error);
+      }
+    };
+    fetchLightIcons();
+    return () => {
+      active = false;
+    };
+  }, [lightIconQuery]);
 
   useEffect(() => {
     if (!currentVideoLesson.courseId) {
@@ -213,6 +259,38 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
     setCurrentVideoItem((prev) => ({
       ...prev,
       videoQuestions,
+    }));
+  };
+
+  const handleClearIcon = () => {
+    setCurrentVideoLesson((prev) => ({
+      ...prev,
+      icon: null,
+    }));
+    setIconQuery("");
+    setIsIconSearchActive(false);
+  };
+
+  const handleClearLightIcon = () => {
+    setCurrentVideoLesson((prev) => ({
+      ...prev,
+      lightIcon: null,
+    }));
+    setLightIconQuery("");
+    setIsLightIconSearchActive(false);
+  };
+
+  const handleSelectIcon = (icon: ITag) => {
+    setCurrentVideoLesson((prev) => ({
+      ...prev,
+      icon: icon as any,
+    }));
+  };
+
+  const handleSelectLightIcon = (icon: ITag) => {
+    setCurrentVideoLesson((prev) => ({
+      ...prev,
+      lightIcon: icon as any,
     }));
   };
 
@@ -786,6 +864,180 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                       className="w-full rounded-lg border p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 sm:col-span-2"
                       placeholder="Enter number..."
                     />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Icon
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      value={
+                        isIconSearchActive
+                          ? iconQuery
+                          : getTranslationValue(
+                              (currentVideoLesson.icon as any)?.title,
+                              lang,
+                            ) || ""
+                      }
+                      onChange={(event) => setIconQuery(event.target.value)}
+                      onFocus={() => {
+                        setIsIconSearchActive(true);
+                        setIconQuery(
+                          getTranslationValue(
+                            (currentVideoLesson.icon as any)?.title,
+                            lang,
+                          ) || "",
+                        );
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setIsIconSearchActive(false);
+                          setIconQuery("");
+                        }, 150);
+                      }}
+                      className="w-full rounded-lg border p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      placeholder="Search icon..."
+                    />
+
+                    {currentVideoLesson.icon && !isIconSearchActive ? (
+                      <button
+                        type="button"
+                        onClick={handleClearIcon}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                      >
+                        <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    ) : null}
+
+                    {isIconSearchActive && iconQuery ? (
+                      <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                        {icons
+                          .filter((icon) =>
+                            icon.title?.[lang]
+                              ?.toLowerCase()
+                              .includes(iconQuery.toLowerCase()),
+                          )
+                          .map((icon) => (
+                            <div
+                              key={icon._id}
+                              className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-gray-50"
+                              onClick={() => {
+                                handleSelectIcon(icon);
+                                setIsIconSearchActive(false);
+                                setIconQuery("");
+                              }}
+                            >
+                              {icon.url ? (
+                                <img
+                                  src={icon.url}
+                                  alt={icon.title?.[lang]}
+                                  className="h-6 w-6 rounded object-cover"
+                                />
+                              ) : (
+                                <div
+                                  className="flex h-6 w-6 items-center justify-center rounded"
+                                  style={{
+                                    backgroundColor: icon.color || "#f3f4f6",
+                                  }}
+                                />
+                              )}
+                              <div className="flex-1 font-medium text-gray-800">
+                                {icon.title?.[lang]}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : null}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-gray-700">
+                    Light Icon
+                  </label>
+
+                  <div className="relative">
+                    <input
+                      value={
+                        isLightIconSearchActive
+                          ? lightIconQuery
+                          : getTranslationValue(
+                              (currentVideoLesson.lightIcon as any)?.title,
+                              lang,
+                            ) || ""
+                      }
+                      onChange={(event) => setLightIconQuery(event.target.value)}
+                      onFocus={() => {
+                        setIsLightIconSearchActive(true);
+                        setLightIconQuery(
+                          getTranslationValue(
+                            (currentVideoLesson.lightIcon as any)?.title,
+                            lang,
+                          ) || "",
+                        );
+                      }}
+                      onBlur={() => {
+                        setTimeout(() => {
+                          setIsLightIconSearchActive(false);
+                          setLightIconQuery("");
+                        }, 150);
+                      }}
+                      className="w-full rounded-lg border p-3 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                      placeholder="Search light icon..."
+                    />
+
+                    {currentVideoLesson.lightIcon && !isLightIconSearchActive ? (
+                      <button
+                        type="button"
+                        onClick={handleClearLightIcon}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600"
+                      >
+                        <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+                      </button>
+                    ) : null}
+
+                    {isLightIconSearchActive && lightIconQuery ? (
+                      <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                        {lightIcons
+                          .filter((icon) =>
+                            icon.title?.[lang]
+                              ?.toLowerCase()
+                              .includes(lightIconQuery.toLowerCase()),
+                          )
+                          .map((icon) => (
+                            <div
+                              key={icon._id}
+                              className="flex cursor-pointer items-center gap-3 p-3 transition-colors hover:bg-gray-50"
+                              onClick={() => {
+                                handleSelectLightIcon(icon);
+                                setIsLightIconSearchActive(false);
+                                setLightIconQuery("");
+                              }}
+                            >
+                              {icon.url ? (
+                                <img
+                                  src={icon.url}
+                                  alt={icon.title?.[lang]}
+                                  className="h-6 w-6 rounded object-cover"
+                                />
+                              ) : (
+                                <div
+                                  className="flex h-6 w-6 items-center justify-center rounded"
+                                  style={{
+                                    backgroundColor: icon.color || "#f3f4f6",
+                                  }}
+                                />
+                              )}
+                              <div className="flex-1 font-medium text-gray-800">
+                                {icon.title?.[lang]}
+                              </div>
+                            </div>
+                          ))}
+                      </div>
+                    ) : null}
                   </div>
                 </div>
               </div>
