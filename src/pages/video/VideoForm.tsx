@@ -578,7 +578,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
       <div className="mx-auto max-w-7xl space-y-6">
-        <div className="overflow-hidden rounded-xl bg-white shadow-xl">
+        <div className="rounded-xl bg-white shadow-xl">
           <div className="flex flex-col md:flex-row">
             <div className="flex-1 bg-gray-50 p-6">
               <div className="space-y-3">
@@ -636,7 +636,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
               </div>
             </div>
 
-            <div className="flex-[1.4] p-6">
+            <div className="relative flex-[1.4] overflow-visible p-6">
               <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
                   <h1 className="text-2xl font-bold text-gray-800 md:text-3xl">
@@ -913,7 +913,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                     ) : null}
 
                     {isIconSearchActive && iconQuery ? (
-                      <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                      <div className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                         {icons
                           .filter((icon) =>
                             icon.title?.[lang]
@@ -1000,7 +1000,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
                     ) : null}
 
                     {isLightIconSearchActive && lightIconQuery ? (
-                      <div className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
+                      <div className="absolute z-30 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                         {lightIcons
                           .filter((icon) =>
                             icon.title?.[lang]
