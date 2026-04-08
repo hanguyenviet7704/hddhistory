@@ -2,6 +2,9 @@ part of '../../video_lesson.dart';
 
 @lazySingleton
 class VideoLessonCubit extends Cubit<VideoLessonState> {
+  static const _defaultInitializationTimeout = Duration(seconds: 12);
+  static const _initializationTimeoutMessage = 'Video lesson is taking too long to load. Please try again.';
+
   VideoLessonCubit(
     this._getCourseLessonUseCase,
     this._getLearningItemUseCase,
@@ -11,8 +14,10 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
     this._deleteUserVideoLessonNoteUseCase,
     this._updateUserProgressLessonUseCase,
     this._userCubit,
-    this._courseRoadmapCubit,
-  ) : super(VideoLessonState.initial());
+    this._courseRoadmapCubit, {
+    Duration initializationTimeout = _defaultInitializationTimeout,
+  }) : _initializationTimeout = initializationTimeout,
+       super(VideoLessonState.initial());
 
   final GetCourseLessonUseCase _getCourseLessonUseCase;
   final GetVideoLearningItemUseCase _getLearningItemUseCase;
@@ -23,6 +28,7 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
   final UpdateUserProgressLessonUseCase _updateUserProgressLessonUseCase;
   final UserCubit _userCubit;
   final CourseRoadmapCubit _courseRoadmapCubit;
+  final Duration _initializationTimeout;
 
   void reset() => emit(VideoLessonState.initial());
 
@@ -40,40 +46,45 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
       ),
     );
 
-    final lessonResult = await _getCourseLessonUseCase(lessonId).run();
-    await lessonResult.fold(
-      (error) async {
-        emit(
-          state.copyWith(
-            loadStatus: VideoLessonLoadStatus.failure,
-            errorMessage: error.displayMessage,
-          ),
-        );
-      },
-      (lesson) async {
-        final learningItemResult = await _getLearningItemUseCase(lesson.learningItemId).run();
-        learningItemResult.fold(
-          (error) {
-            emit(
-              state.copyWith(
-                loadStatus: VideoLessonLoadStatus.failure,
-                lesson: lesson,
-                errorMessage: error.displayMessage,
-              ),
-            );
-          },
-          (learningItem) {
-            emit(
-              state.copyWith(
-                loadStatus: lesson.video.url.trim().isEmpty ? VideoLessonLoadStatus.unavailable : VideoLessonLoadStatus.success,
-                lesson: lesson,
-                learningItem: learningItem,
-              ),
-            );
-          },
-        );
-      },
-    );
+    try {
+      final lessonResult = await _runInitializationTask(_getCourseLessonUseCase(lessonId));
+      final lesson = lessonResult.fold<LessonEntity?>(
+        (error) {
+          _emitInitializationFailure(error: error);
+          return null;
+        },
+        (lesson) => lesson,
+      );
+      if (lesson == null) return;
+
+      final learningItemResult = await _runInitializationTask(
+        _getLearningItemUseCase(lesson.learningItemId),
+      );
+      learningItemResult.fold(
+        (error) => _emitInitializationFailure(error: error, lesson: lesson),
+        (learningItem) {
+          emit(
+            state.copyWith(
+              loadStatus: lesson.video.url.trim().isEmpty ? VideoLessonLoadStatus.unavailable : VideoLessonLoadStatus.success,
+              lesson: lesson,
+              learningItem: learningItem,
+            ),
+          );
+        },
+      );
+    } catch (error, stackTrace) {
+      AppService.instance.appTrackingService.trackError(
+        error,
+        errorType: 'VideoLessonCubit.initialize',
+        stackTrace: stackTrace,
+      );
+      emit(
+        state.copyWith(
+          loadStatus: VideoLessonLoadStatus.failure,
+          errorMessage: _initializationTimeoutMessage,
+        ),
+      );
+    }
   }
 
   void updatePlaybackProgress({
@@ -750,5 +761,29 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
       return {state.currentSelectedAnswerIndex};
     }
     return indices;
+  }
+
+  Future<Either<AppException, T>> _runInitializationTask<T>(
+    TaskEither<AppException, T> task,
+  ) {
+    return task.run().timeout(
+      _initializationTimeout,
+      onTimeout: () => left(
+        const AppException.pending(_initializationTimeoutMessage),
+      ),
+    );
+  }
+
+  void _emitInitializationFailure({
+    required AppException error,
+    LessonEntity? lesson,
+  }) {
+    emit(
+      state.copyWith(
+        loadStatus: VideoLessonLoadStatus.failure,
+        lesson: lesson ?? state.lesson,
+        errorMessage: error is PendingException ? _initializationTimeoutMessage : error.displayMessage,
+      ),
+    );
   }
 }

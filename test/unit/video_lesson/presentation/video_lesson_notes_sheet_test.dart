@@ -15,6 +15,9 @@ void main() {
   });
 
   testWidgets('opens note editor callback when tapping a note card', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(375, 812));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     var openedNoteId = '';
     final note = const UserVideoLessonNoteEntity(
       id: 'note-1',
@@ -40,6 +43,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     await tester.tap(find.byKey(ValueKey('video-lesson-note-card-${note.id}')));
     await tester.pumpAndSettle();
@@ -48,6 +52,9 @@ void main() {
   });
 
   testWidgets('dismisses notes sheet when dragging the header down', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(375, 812));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     var didClose = false;
 
     await tester.pumpWidget(
@@ -73,6 +80,7 @@ void main() {
         ),
       ),
     );
+    await tester.pumpAndSettle();
 
     await tester.drag(find.byKey(const ValueKey('video-lesson-notes-sheet-header-drag-region')), const Offset(0, 120));
     await tester.pumpAndSettle();

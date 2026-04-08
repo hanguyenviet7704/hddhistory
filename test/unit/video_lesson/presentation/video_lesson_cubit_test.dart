@@ -401,12 +401,42 @@ void main() {
       expect(harness.courseRepository.roadmapLoadCount, 1);
       expect(harness.courseRepository.lastRoadmapCourseId, 'course-1');
     });
+
+    test('falls back to failure when initialization request times out', () async {
+      final harness = _buildHarness(
+        initializationTimeout: const Duration(milliseconds: 10),
+        lessonHandler: (_) => TaskEither.tryCatch(
+          () => Completer<LessonEntity>().future,
+          (error, stackTrace) => AppException.unexpected(error.toString()),
+        ),
+      );
+      addTearDown(() async {
+        await harness.cubit.close();
+        await harness.userCubit.close();
+        await harness.roadmapCubit.close();
+      });
+
+      await harness.cubit.initialize(
+        courseId: 'course-1',
+        nodeId: 'node-1',
+        lessonId: 'lesson-1',
+      );
+
+      expect(harness.cubit.state.loadStatus, VideoLessonLoadStatus.failure);
+      expect(
+        harness.cubit.state.errorMessage,
+        'Video lesson is taking too long to load. Please try again.',
+      );
+    });
   });
 }
 
 _VideoLessonHarness _buildHarness({
   LessonEntity? lesson,
   LearningItemEntity? learningItem,
+  Duration initializationTimeout = const Duration(seconds: 12),
+  TaskEither<AppException, LessonEntity> Function(String lessonId)? lessonHandler,
+  TaskEither<AppException, LearningItemEntity> Function(String learningItemId)? learningItemHandler,
 }) {
   final courseRepository = _FakeCourseRepository();
   final progressRepository = _FakeProgressRepository();
@@ -417,11 +447,13 @@ _VideoLessonHarness _buildHarness({
   );
 
   final videoRepository = _FakeVideoLessonRepository(
-    getLearningItemHandler: (_) => TaskEither.right(learningItem ?? _learningItem()),
+    getLearningItemHandler: learningItemHandler ?? (_) => TaskEither.right(learningItem ?? _learningItem()),
   );
   final cubit = VideoLessonCubit(
     GetCourseLessonUseCase(
-      _FakeCourseLessonRepository((_) => TaskEither.right(lesson ?? _lesson())),
+      _FakeCourseLessonRepository(
+        lessonHandler ?? (_) => TaskEither.right(lesson ?? _lesson()),
+      ),
     ),
     GetVideoLearningItemUseCase(videoRepository),
     GetAllUserVideoLessonNotesUseCase(videoRepository),
@@ -431,6 +463,7 @@ _VideoLessonHarness _buildHarness({
     UpdateUserProgressLessonUseCase(progressRepository),
     userCubit,
     roadmapCubit,
+    initializationTimeout: initializationTimeout,
   );
 
   return _VideoLessonHarness(

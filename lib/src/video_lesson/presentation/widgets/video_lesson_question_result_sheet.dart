@@ -42,21 +42,26 @@ class VideoLessonQuestionResultSheet extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  result.isSupported
-                      ? (result.isCorrect
-                            ? AppAsset.icons.app.icTick.image(
-                                width: 28.r,
-                                height: 28.r,
-                              )
-                            : AppAsset.icons.app.icClose.image(
-                                width: 28.r,
-                                height: 28.r,
-                              ))
-                      : Icon(
-                          Icons.info_outline_rounded,
-                          size: 24.r,
-                          color: const Color(0xFF175CD3),
-                        ),
+                  _VideoLessonAnimatedEntrance(
+                    beginScale: 0.72,
+                    duration: _videoLessonMediumAnimationDuration,
+                    curve: _videoLessonSpringCurve,
+                    child: result.isSupported
+                        ? (result.isCorrect
+                              ? AppAsset.icons.app.icTick.image(
+                                  width: 28.r,
+                                  height: 28.r,
+                                )
+                              : AppAsset.icons.app.icClose.image(
+                                  width: 28.r,
+                                  height: 28.r,
+                                ))
+                        : Icon(
+                            Icons.info_outline_rounded,
+                            size: 24.r,
+                            color: const Color(0xFF175CD3),
+                          ),
+                  ),
                   10.horizontalSpace,
                   AppText(
                     _resultTitle(context, result),
@@ -80,13 +85,18 @@ class VideoLessonQuestionResultSheet extends StatelessWidget {
               ...state.currentQuestionOptions.asMap().entries.map(
                 (entry) => Padding(
                   padding: EdgeInsets.only(bottom: 12.h),
-                  child: _VideoLessonQuestionResultOptionCard(
-                    label: entry.value.labelText,
-                    state: _resolveAnswerState(
-                      index: entry.key,
-                      option: entry.value,
-                      question: question,
-                      result: result,
+                  child: _VideoLessonAnimatedEntrance(
+                    beginOffset: Offset(0, 14.h),
+                    beginScale: 0.98,
+                    delay: Duration(milliseconds: 80 + (entry.key * 35)),
+                    child: _VideoLessonQuestionResultOptionCard(
+                      label: entry.value.labelText,
+                      state: _resolveAnswerState(
+                        index: entry.key,
+                        option: entry.value,
+                        question: question,
+                        result: result,
+                      ),
                     ),
                   ),
                 ),
@@ -205,9 +215,14 @@ class _VideoLessonQuestionResultOptionCard extends StatelessWidget {
           ),
           if (style.iconAsset != null) ...[
             10.horizontalSpace,
-            style.iconAsset!.image(
-              width: 24.r,
-              height: 24.r,
+            _VideoLessonAnimatedEntrance(
+              beginScale: 0.72,
+              duration: _videoLessonMediumAnimationDuration,
+              curve: _videoLessonSpringCurve,
+              child: style.iconAsset!.image(
+                width: 24.r,
+                height: 24.r,
+              ),
             ),
           ],
         ],

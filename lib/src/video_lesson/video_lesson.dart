@@ -4,7 +4,7 @@ library;
 import 'package:meup/meup.dart';
 
 //* Package imports
-import 'dart:ui' show ImageFilter;
+import 'dart:ui' show ImageFilter, lerpDouble;
 
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
@@ -54,9 +54,12 @@ part 'presentation/widgets/video_lesson_blocking_overlay_layout.dart';
 part 'presentation/widgets/video_lesson_draggable_bottom_sheet_frame.dart';
 part 'presentation/widgets/video_lesson_end_sheet.dart';
 part 'presentation/widgets/video_lesson_intro_sheet.dart';
+part 'presentation/widgets/video_lesson_motion.dart';
+part 'presentation/widgets/video_lesson_note_card.dart';
 part 'presentation/widgets/video_lesson_notes_sheet.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_editor.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_editor_toolbar.dart';
+part 'presentation/widgets/video_lesson_notes_sheet_header.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_list.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_note_preview.dart';
 part 'presentation/widgets/video_lesson_player_controls.dart';

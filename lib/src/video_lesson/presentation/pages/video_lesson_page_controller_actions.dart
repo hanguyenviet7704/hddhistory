@@ -1,6 +1,8 @@
 part of '../../video_lesson.dart';
 
 extension _VideoLessonPageControllerActions on _VideoLessonPageState {
+  static const _controllerInitializationTimeout = Duration(seconds: 12);
+
   Future<void> _initializeController(String url) async {
     if (url.isEmpty || _controllerUrl == url) return;
     _disposeController();
@@ -13,7 +15,7 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
     controller.addListener(_handleControllerTick);
 
     try {
-      await controller.initialize();
+      await controller.initialize().timeout(_controllerInitializationTimeout);
       await controller.setLooping(false);
     } catch (_) {
       controller.removeListener(_handleControllerTick);

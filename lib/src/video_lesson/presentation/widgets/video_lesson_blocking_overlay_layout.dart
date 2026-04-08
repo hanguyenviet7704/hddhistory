@@ -13,6 +13,23 @@ class _VideoLessonBlockingOverlayLayout extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final animatedCard = _VideoLessonAnimatedEntrance(
+      beginOffset: Offset(0, 26.h),
+      beginScale: 0.94,
+      duration: _videoLessonMediumAnimationDuration,
+      curve: _videoLessonSpringCurve,
+      child: card,
+    );
+    final animatedCta = cta == null
+        ? null
+        : _VideoLessonAnimatedEntrance(
+            beginOffset: Offset(0, 18.h),
+            beginScale: 0.98,
+            delay: const Duration(milliseconds: 70),
+            duration: _videoLessonMediumAnimationDuration,
+            child: cta!,
+          );
+
     if (pinCtaToBottom) {
       return SafeArea(
         child: Padding(
@@ -28,14 +45,14 @@ class _VideoLessonBlockingOverlayLayout extends StatelessWidget {
                 child: Center(
                   child: ConstrainedBox(
                     constraints: BoxConstraints(maxWidth: 390.w),
-                    child: card,
+                    child: animatedCard,
                   ),
                 ),
               ),
-              if (cta != null)
+              if (animatedCta != null)
                 ConstrainedBox(
                   constraints: BoxConstraints(maxWidth: 390.w),
-                  child: cta!,
+                  child: animatedCta,
                 ),
             ],
           ),
@@ -57,14 +74,14 @@ class _VideoLessonBlockingOverlayLayout extends StatelessWidget {
             Flexible(
               child: ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: 390.w),
-                child: card,
+                child: animatedCard,
               ),
             ),
-            if (cta != null) ...[
+            if (animatedCta != null) ...[
               28.verticalSpace,
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: 390.w),
-                child: cta!,
+                child: animatedCta,
               ),
             ],
           ],

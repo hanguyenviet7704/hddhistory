@@ -35,20 +35,20 @@ class VideoLessonPlayerControls extends StatelessWidget {
 
     return IgnorePointer(
       ignoring: !showControls,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 180),
-        opacity: showControls ? 1 : 0,
-        child: Stack(
-          fit: StackFit.expand,
-          children: [
-            SafeArea(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          SafeArea(
+            child: Padding(
+              padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+              child: _VideoLessonAnimatedVisibility(
+                visible: showControls,
+                hiddenOffset: const Offset(0, -0.14),
                 child: Align(
                   alignment: Alignment.topLeft,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
+                  child: _VideoLessonPressableScale(
                     onTap: onClose,
+                    behavior: HitTestBehavior.opaque,
                     child: SizedBox(
                       width: 32.r,
                       height: 32.r,
@@ -65,11 +65,15 @@ class VideoLessonPlayerControls extends StatelessWidget {
                 ),
               ),
             ),
-            if (!state.isEndVisible)
-              Positioned(
-                right: 16.w,
-                top: 0,
-                bottom: 92.h,
+          ),
+          if (!state.isEndVisible)
+            Positioned(
+              right: 16.w,
+              top: 0,
+              bottom: 92.h,
+              child: _VideoLessonAnimatedVisibility(
+                visible: showControls,
+                hiddenOffset: const Offset(0.16, 0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
@@ -93,11 +97,15 @@ class VideoLessonPlayerControls extends StatelessWidget {
                   ],
                 ),
               ),
-            if (!state.isEndVisible)
-              Center(
-                child: GestureDetector(
-                  behavior: HitTestBehavior.opaque,
+            ),
+          if (!state.isEndVisible)
+            Center(
+              child: _VideoLessonAnimatedVisibility(
+                visible: showControls,
+                hiddenOffset: const Offset(0, 0.08),
+                child: _VideoLessonPressableScale(
                   onTap: onPlayPause,
+                  behavior: HitTestBehavior.opaque,
                   child: Container(
                     width: 72.r,
                     height: 72.r,
@@ -106,18 +114,35 @@ class VideoLessonPlayerControls extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.02),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                      size: 42.r,
-                      color: Colors.white,
+                    child: AnimatedSwitcher(
+                      duration: _videoLessonFastAnimationDuration,
+                      switchInCurve: _videoLessonEntranceCurve,
+                      switchOutCurve: _videoLessonExitCurve,
+                      transitionBuilder: (child, animation) => FadeTransition(
+                        opacity: animation,
+                        child: ScaleTransition(
+                          scale: Tween<double>(begin: 0.86, end: 1).animate(animation),
+                          child: child,
+                        ),
+                      ),
+                      child: Icon(
+                        state.isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                        key: ValueKey('video-lesson-playback-icon-${state.isPlaying}'),
+                        size: 42.r,
+                        color: Colors.white,
+                      ),
                     ),
                   ),
                 ),
               ),
-            Positioned(
-              left: 16.w,
-              right: 16.w,
-              bottom: 12.h + MediaQuery.viewPaddingOf(context).bottom,
+            ),
+          Positioned(
+            left: 16.w,
+            right: 16.w,
+            bottom: 12.h + MediaQuery.viewPaddingOf(context).bottom,
+            child: _VideoLessonAnimatedVisibility(
+              visible: showControls,
+              hiddenOffset: const Offset(0, 0.18),
               child: _VideoLessonProgressCluster(
                 state: state,
                 canSeek: canSeek,
@@ -126,8 +151,8 @@ class VideoLessonPlayerControls extends StatelessWidget {
                 onSeekEnd: onSeekEnd,
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -148,7 +173,7 @@ class _VideoLessonUtilityButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return Opacity(
       opacity: enabled ? 0.92 : 0.38,
-      child: GestureDetector(
+      child: _VideoLessonPressableScale(
         behavior: HitTestBehavior.opaque,
         onTap: enabled ? onTap : null,
         child: SizedBox.square(

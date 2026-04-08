@@ -67,10 +67,15 @@ class VideoLessonQuestionSheet extends StatelessWidget {
                 ...state.currentQuestionOptions.asMap().entries.map(
                   (entry) => Padding(
                     padding: EdgeInsets.only(bottom: 12.h),
-                    child: _VideoLessonQuestionOptionCard(
-                      label: entry.value.labelText,
-                      selected: state.currentQuestionIsMultipleChoice ? state.currentSelectedAnswerIndices.contains(entry.key) : state.currentSelectedAnswerIndex == entry.key,
-                      onTap: () => onAnswerTap(entry.key),
+                    child: _VideoLessonAnimatedEntrance(
+                      beginOffset: Offset(0, 14.h),
+                      beginScale: 0.98,
+                      delay: Duration(milliseconds: 70 + (entry.key * 40)),
+                      child: _VideoLessonQuestionOptionCard(
+                        label: entry.value.labelText,
+                        selected: state.currentQuestionIsMultipleChoice ? state.currentSelectedAnswerIndices.contains(entry.key) : state.currentSelectedAnswerIndex == entry.key,
+                        onTap: () => onAnswerTap(entry.key),
+                      ),
                     ),
                   ),
                 )
@@ -124,10 +129,12 @@ class _VideoLessonQuestionOptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      behavior: HitTestBehavior.opaque,
+    return _VideoLessonPressableScale(
       onTap: onTap,
-      child: Container(
+      behavior: HitTestBehavior.opaque,
+      child: AnimatedContainer(
+        duration: _videoLessonFastAnimationDuration,
+        curve: _videoLessonEntranceCurve,
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 18.w, vertical: 15.h),
         decoration: BoxDecoration(
