@@ -3,7 +3,6 @@ part of '../../video_lesson.dart';
 class _VideoLessonNoteListView extends StatelessWidget {
   const _VideoLessonNoteListView({
     required this.state,
-    required this.onClose,
     required this.onRetry,
     required this.onLoadMore,
     required this.onAddNote,
@@ -12,7 +11,6 @@ class _VideoLessonNoteListView extends StatelessWidget {
   });
 
   final VideoLessonState state;
-  final VoidCallback onClose;
   final VoidCallback onRetry;
   final VoidCallback onLoadMore;
   final VoidCallback onAddNote;
@@ -23,44 +21,6 @@ class _VideoLessonNoteListView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 12.h),
-          child: Row(
-            children: [
-              Expanded(
-                child: Row(
-                  children: [
-                    AppText(
-                      context.l10n.videoLesson.notesTitle,
-                      style: AppStyle.textBold18.copyWith(
-                        color: AppCustomColor.textPrimary,
-                        height: 1.4,
-                      ),
-                    ),
-                    if (state.notes.isNotEmpty) ...[
-                      8.horizontalSpace,
-                      AppText(
-                        state.notes.length.toString(),
-                        style: AppStyle.textBold18.copyWith(
-                          color: AppCustomColor.textTertiary,
-                          height: 1.4,
-                        ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: onClose,
-                icon: Icon(
-                  Icons.close_rounded,
-                  size: 24.r,
-                  color: AppCustomColor.textTertiary,
-                ),
-              ),
-            ],
-          ),
-        ),
         Expanded(
           child: Builder(
             builder: (context) {

@@ -21,7 +21,11 @@ class _VideoLessonFormattedNotePreview extends StatelessWidget {
       );
     }
 
-    final previewLines = lines.take(6).toList();
+    final isTruncated = lines.length > 5;
+    final previewLines = lines.take(5).toList();
+    if (isTruncated && previewLines.isNotEmpty) {
+      previewLines[previewLines.length - 1] = _appendEllipsisToPreviewLine(previewLines.last);
+    }
     final previewChildren = <Widget>[];
     var orderedIndex = 0;
     var previousListType = '';
@@ -44,11 +48,14 @@ class _VideoLessonFormattedNotePreview extends StatelessWidget {
     }
 
     return ConstrainedBox(
-      constraints: BoxConstraints(maxHeight: 148.h),
+      constraints: BoxConstraints(maxHeight: 136.h),
       child: ClipRect(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: previewChildren,
+        child: SingleChildScrollView(
+          physics: const NeverScrollableScrollPhysics(),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: previewChildren,
+          ),
         ),
       ),
     );
@@ -97,10 +104,10 @@ class _VideoLessonFormattedNotePreviewLine extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Padding(
-            padding: EdgeInsets.only(top: 9.h, right: 8.w),
+            padding: EdgeInsets.only(top: 10.h, right: 8.w),
             child: Container(
-              width: 4.r,
-              height: 4.r,
+              width: 5.r,
+              height: 5.r,
               decoration: const BoxDecoration(
                 color: AppCustomColor.textPrimary,
                 shape: BoxShape.circle,
@@ -117,7 +124,7 @@ class _VideoLessonFormattedNotePreviewLine extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           SizedBox(
-            width: 18.w,
+            width: 20.w,
             child: AppText(
               '$orderedIndex.',
               style: AppStyle.text16.copyWith(
@@ -134,6 +141,35 @@ class _VideoLessonFormattedNotePreviewLine extends StatelessWidget {
 
     return content;
   }
+}
+
+_VideoLessonNotePreviewLine _appendEllipsisToPreviewLine(_VideoLessonNotePreviewLine line) {
+  if (line.segments.isEmpty) {
+    return _VideoLessonNotePreviewLine(
+      segments: const [
+        _VideoLessonNotePreviewSegment(
+          text: '…',
+          bold: false,
+          italic: false,
+        ),
+      ],
+      listType: line.listType,
+    );
+  }
+
+  final segments = List<_VideoLessonNotePreviewSegment>.from(line.segments);
+  final lastSegment = segments.removeLast();
+  segments.add(
+    _VideoLessonNotePreviewSegment(
+      text: '${lastSegment.text.trimRight()}…',
+      bold: lastSegment.bold,
+      italic: lastSegment.italic,
+    ),
+  );
+  return _VideoLessonNotePreviewLine(
+    segments: segments,
+    listType: line.listType,
+  );
 }
 
 class _VideoLessonNotePreviewLine {

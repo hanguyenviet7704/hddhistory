@@ -46,6 +46,39 @@ void main() {
 
     expect(openedNoteId, note.id);
   });
+
+  testWidgets('dismisses notes sheet when dragging the header down', (tester) async {
+    var didClose = false;
+
+    await tester.pumpWidget(
+      _buildTestShell(
+        child: VideoLessonNotesSheet(
+          state: VideoLessonState.initial().copyWith(
+            notes: const [
+              UserVideoLessonNoteEntity(
+                id: 'note-1',
+                content: 'drag me',
+              ),
+            ],
+          ),
+          onClose: () => didClose = true,
+          onBack: () {},
+          onAddNote: () {},
+          onSave: () {},
+          onRetry: () {},
+          onLoadMore: () {},
+          onDraftChanged: (_) {},
+          onEditNote: (_) {},
+          onDeleteNote: (_) {},
+        ),
+      ),
+    );
+
+    await tester.drag(find.byKey(const ValueKey('video-lesson-notes-sheet-header-drag-region')), const Offset(0, 120));
+    await tester.pumpAndSettle();
+
+    expect(didClose, isTrue);
+  });
 }
 
 Widget _buildTestShell({required Widget child}) {

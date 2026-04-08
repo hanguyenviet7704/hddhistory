@@ -51,6 +51,7 @@ part 'presentation/pages/video_lesson_page_views.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/video_lesson_blocking_overlay_layout.dart';
+part 'presentation/widgets/video_lesson_draggable_bottom_sheet_frame.dart';
 part 'presentation/widgets/video_lesson_end_sheet.dart';
 part 'presentation/widgets/video_lesson_intro_sheet.dart';
 part 'presentation/widgets/video_lesson_notes_sheet.dart';

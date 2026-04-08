@@ -10,16 +10,12 @@ extension _VideoLessonPageOverlayActions on _VideoLessonPageState {
       return;
     }
 
-    final controller = _controller;
-    final wasPlaying = controller?.value.isPlaying ?? false;
-    if (wasPlaying) {
-      await controller?.pause();
-    }
+    final wasPlaying = await _pauseVideoForUtilityAction();
     final opened = _cubit.openNotes(wasPlayingBeforeOverlay: wasPlaying);
     if (opened) {
       _cancelControlsAutoHide();
     } else if (wasPlaying) {
-      await controller?.play();
+      await _resumeVideoAfterUtilityAction();
     }
   }
 
@@ -44,16 +40,12 @@ extension _VideoLessonPageOverlayActions on _VideoLessonPageState {
       return;
     }
 
-    final controller = _controller;
-    final wasPlaying = controller?.value.isPlaying ?? false;
-    if (wasPlaying) {
-      await controller?.pause();
-    }
+    final wasPlaying = await _pauseVideoForUtilityAction();
     final opened = _cubit.openSummary(wasPlayingBeforeOverlay: wasPlaying);
     if (opened) {
       _cancelControlsAutoHide();
     } else if (wasPlaying) {
-      await controller?.play();
+      await _resumeVideoAfterUtilityAction();
     }
   }
 
@@ -79,6 +71,9 @@ extension _VideoLessonPageOverlayActions on _VideoLessonPageState {
   }
 
   Future<void> _handleShare(VideoLessonState state) async {
+    await _pauseVideoForUtilityAction();
+    if (!mounted) return;
+
     final trackingData = _trackingData(state);
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackVideoLessonShareClick(
@@ -118,6 +113,23 @@ extension _VideoLessonPageOverlayActions on _VideoLessonPageState {
         sharePositionOrigin: sharePositionOrigin,
       ),
     );
+  }
+
+  Future<bool> _pauseVideoForUtilityAction() async {
+    final controller = _controller;
+    final wasPlaying = controller?.value.isPlaying ?? false;
+    if (!wasPlaying) return false;
+
+    _cancelControlsAutoHide();
+    await controller?.pause();
+    _cubit.setPlaybackState(isPlaying: false, controlsVisible: true);
+    return true;
+  }
+
+  Future<void> _resumeVideoAfterUtilityAction() async {
+    await _controller?.play();
+    _cubit.setPlaybackState(isPlaying: true, controlsVisible: false);
+    _scheduleControlsAutoHide();
   }
 
   Future<void> _handleExit(VideoLessonState state) async {

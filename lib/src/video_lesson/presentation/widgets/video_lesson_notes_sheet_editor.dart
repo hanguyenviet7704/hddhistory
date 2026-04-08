@@ -6,8 +6,6 @@ class _VideoLessonNoteEditorView extends StatelessWidget {
     required this.controller,
     required this.focusNode,
     required this.scrollController,
-    required this.onClose,
-    required this.onBack,
     required this.onSave,
   });
 
@@ -15,8 +13,6 @@ class _VideoLessonNoteEditorView extends StatelessWidget {
   final quill.QuillController controller;
   final FocusNode focusNode;
   final ScrollController scrollController;
-  final VoidCallback onClose;
-  final VoidCallback onBack;
   final VoidCallback onSave;
 
   @override
@@ -26,33 +22,9 @@ class _VideoLessonNoteEditorView extends StatelessWidget {
 
     return Column(
       children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(12.w, 14.h, 12.w, 8.h),
-          child: Row(
-            children: [
-              IconButton(
-                onPressed: onBack,
-                icon: Icon(
-                  Icons.arrow_back_ios_new_rounded,
-                  size: 20.r,
-                  color: AppCustomColor.textSecondary,
-                ),
-              ),
-              const Spacer(),
-              IconButton(
-                onPressed: onClose,
-                icon: Icon(
-                  Icons.close_rounded,
-                  size: 24.r,
-                  color: AppCustomColor.textTertiary,
-                ),
-              ),
-            ],
-          ),
-        ),
         Expanded(
           child: Padding(
-            padding: EdgeInsets.fromLTRB(22.w, 8.h, 22.w, 8.h),
+            padding: EdgeInsets.fromLTRB(22.w, 4.h, 22.w, 8.h),
             child: DefaultTextStyle(
               style: AppStyle.text16.copyWith(
                 color: AppCustomColor.textPrimary,

@@ -28,7 +28,7 @@ class VideoLessonPlayerControls extends StatelessWidget {
   Widget build(BuildContext context) {
     final showBaseControls = state.activeOverlay == VideoLessonOverlay.none || state.isEndVisible;
     final showControls = showBaseControls && (!state.isPlaying || state.controlsVisible || state.isEndVisible);
-    final canUseShare = !state.isPlaying && state.activeOverlay == VideoLessonOverlay.none;
+    final canUseShare = state.activeOverlay == VideoLessonOverlay.none && !state.isEndVisible;
     final canUseNotes = canUseShare && !state.hasPendingSkippedQuestions;
     final canUseSummary = canUseShare && !state.hasPendingSkippedQuestions;
     final canSeek = state.activeOverlay == VideoLessonOverlay.none;
