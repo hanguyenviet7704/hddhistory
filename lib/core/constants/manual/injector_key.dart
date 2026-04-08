@@ -14,7 +14,7 @@ mixin DIKey {
   static const String thirdPartyInterceptor = 'thirdPartyInterceptor';
   static const String authInterceptor = 'authInterceptor';
   static const String appGraphqlInterceptor = 'appGraphqlInterceptor';
-  
+
   //* Network Services
   static const String appDio = 'appDio';
   static const String thirdPartyDio = 'thirdPartyDio';

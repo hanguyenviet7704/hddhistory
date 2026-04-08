@@ -63,6 +63,7 @@ mixin RoutePath {
   static const String roleplayFeedback = 'roleplay-feedback';
   static const String roleplayComplete = 'roleplay-complete';
   static const String outputPractice = 'output-practice/:sectionId';
+  static const String videoLesson = 'video-lesson/:courseId/:nodeId/:lessonId';
 
   //* Setting - Profile
   static const String profile = '/profile';
@@ -139,6 +140,7 @@ mixin RouteNamed {
   static const String roleplayFeedback = 'Roleplay Feedback';
   static const String roleplayComplete = 'Roleplay Complete';
   static const String outputPractice = 'Output Practice';
+  static const String videoLesson = 'Video Lesson';
 
   //? Feedback
   static const String feedbackCompleteLessonPopup = 'Feedback Complete Lesson Popup';

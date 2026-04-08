@@ -28,7 +28,6 @@ class EnvConstant {
   static const String receiveTimeout = String.fromEnvironment(EnvKey.receiveTimeout);
   static const String appEnv = String.fromEnvironment(EnvKey.appEnv);
 
-
   static bool get isDevelopment => appEnv == EnvMode.dev;
   static bool get isStaging => appEnv == EnvMode.stg;
   static bool get isProduction => appEnv == EnvMode.prod;

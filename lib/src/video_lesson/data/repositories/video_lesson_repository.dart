@@ -12,14 +12,15 @@ class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLes
 
   @override
   TaskEither<AppException, BasePageBreak<UserVideoLessonNoteEntity>> getAllUserVideoLessonNotes(
-    PageBreakRequest request,
+    PageBreakRequest<VideoLessonNoteFilterEntity> request,
   ) {
+    final filter = request.filter ?? const VideoLessonNoteFilterEntity();
     return callApiPageBreak<UserVideoLessonNoteModel, UserVideoLessonNoteEntity>(
       apiCall: () => _api.getAllUserVideoLessonNotes(request),
       transform: (model) => model.toEntity(),
-      onSuccess: (pageData) async => await _localDataSource.cacheUserVideoLessonNotes(pageData.items),
+      onSuccess: (pageData) async => await _localDataSource.cacheUserVideoLessonNotes(filter, pageData.items),
       onError: () async {
-        final cachedModels = await _localDataSource.getCachedUserVideoLessonNotes();
+        final cachedModels = await _localDataSource.getCachedUserVideoLessonNotes(filter);
         if (cachedModels.isNotEmpty) {
           return BasePageBreak<UserVideoLessonNoteEntity>(
             currentPage: 1,
@@ -67,10 +68,20 @@ class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLes
   }
 
   @override
-  TaskEither<AppException, Unit> deleteUserVideoLessonNote(String id) {
+  TaskEither<AppException, Unit> deleteUserVideoLessonNote(UserVideoLessonNoteEntity entity) {
     return executeApiAction(
-      apiCall: () => _api.deleteUserVideoLessonNote(id),
-      onSuccess: () async => await _localDataSource.deleteCachedUserVideoLessonNote(id),
+      apiCall: () => _api.deleteUserVideoLessonNote(entity.id),
+      onSuccess: () async => await _localDataSource.deleteCachedUserVideoLessonNote(
+        UserVideoLessonNoteModel(
+          id: entity.id,
+          userId: entity.userId,
+          courseId: entity.courseId,
+          nodeId: entity.nodeId,
+          lessonId: entity.lessonId,
+          content: entity.content,
+          atSecond: entity.atSecond,
+        ),
+      ),
     );
   }
 
@@ -85,4 +96,3 @@ class VideoLessonRepository with RestfulRequestHandlerMixin implements IVideoLes
     };
   }
 }
-

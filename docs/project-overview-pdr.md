@@ -1,11 +1,11 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-03-30  
+**Last Updated:** 2026-04-08  
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
+Meup is a language-learning app focused on structured lessons, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
 The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
@@ -18,15 +18,16 @@ The product combines course content, interactive exercise formats, AI-assisted s
 1. Onboarding and account setup.
 2. Course discovery and lesson entry.
 3. Output-practice intro sheet and conversation launch from course output lessons.
-4. Exercise completion and feedback review.
-5. Roleplay practice and performance feedback.
-6. Progress and profile review.
-7. Subscription purchase and management.
-8. Scenario-branching onboarding handoff and recommendation-based course entry.
-9. Daily streak check/commit from home and lesson-completion moments.
+4. Video-lesson intro sheet, mounted player shell, and completion handoff from roadmap lessons.
+5. Exercise completion and feedback review.
+6. Roleplay practice and performance feedback.
+7. Progress and profile review.
+8. Subscription purchase and management.
+9. Scenario-branching onboarding handoff and recommendation-based course entry.
+10. Daily streak check/commit from home and lesson-completion moments.
 
 ## 3. Current Module Scope (Code-Verified)
-`lib/src` currently contains 17 feature modules:
+`lib/src` currently contains 18 feature modules:
 
 | Module | Primary responsibility |
 | --- | --- |
@@ -47,10 +48,11 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `progress` | User progress, course and achievement progress |
 | `roleplay` | Roleplay flow and AI feedback integration |
 | `setting` | Language/theme/settings screens |
+| `video_lesson` | Course-shell video lesson intro sheet, mounted player shell, notes/summary/share overlays, timed-question flow, end/completion, and tracking |
 
 Notes:
 - Naming intentionally follows code paths, including `achievenment`.
-- `feedback`, `learning_streak`, and `onboard_branching` are part of the current module map.
+- `feedback`, `learning_streak`, `onboard_branching`, and `video_lesson` are part of the current module map.
 
 ## 4. Functional Requirements
 1. Authentication and session handling
@@ -61,7 +63,7 @@ Notes:
 2. Course and lesson delivery
 - Retrieve paginated course and lesson data.
 - Support learning item sequencing and item detail retrieval.
-- Allow navigation between lesson-related pages using typed routes, including the course-shell output-practice route.
+- Allow navigation between lesson-related pages using typed routes, including the course-shell output-practice route and the video-lesson route.
 
 3. Output-practice conversation flow
 - Open output lessons through an intro sheet, then navigate into the typed `output-practice/:sectionId` route.
@@ -69,35 +71,44 @@ Notes:
 - Join or rejoin the socket room, reconcile optimistic sends with canonical messages, and expose retry actions for history, room join, and failed message resend.
 - Emit dedicated tracking events for popup view, popup close, start click, screen view, option click, send click, and exit click.
 
-4. Exercise and speaking experience
+4. Video-lesson course-shell flow
+- Resolve roadmap `openingVideo` / `closingVideo` lessons to a unique `nodeId`.
+- Show a tracked intro sheet before playback starts.
+- Keep the player shell mounted through play/pause, seek, notes, summary, question, result, exit, and end/completion states.
+- Support scoped notes CRUD with session-local draft restore while the route stays open.
+- Support summary and share actions from the paused player shell.
+- Support crossed-time timed questions with backward re-arm, forward queue drain, unsupported fallback, and local result state.
+- Persist completion through progress update and refresh roadmap state after success.
+
+5. Exercise and speaking experience
 - Render multiple exercise types via typed payloads.
 - Support speaking/voice feedback endpoints.
 - Persist progress updates for lesson/keypoint/exercise outcomes.
 
-5. Roleplay learning flow
+6. Roleplay learning flow
 - Run roleplay sequence and capture roleplay feedback.
 - Surface roleplay feedback breakdown in UI.
 
-6. Progress tracking
+7. Progress tracking
 - Retrieve user progress and paginated “my courses” data.
 - Show achievement/course-level progress status.
 - Show streak progress from home and completion-triggered success overlays.
 
-7. Profile and settings
+8. Profile and settings
 - Retrieve/update user profile.
 - Upload files through cloudflare upload endpoint.
 - Manage locale and theme preferences.
 
-8. Monetization
+9. Monetization
 - Load purchasable packages.
 - Verify purchases with backend.
 - Retrieve active subscription status.
 
-9. Localization
+10. Localization
 - Pull and push localization via script wrappers.
 - Regenerate localization code after localization sync.
 
-10. Branching onboarding orchestration
+11. Branching onboarding orchestration
 - Allow remote-config flow switching between normal and branching onboarding.
 - Preserve deep-link precedence over onboarding.
 - Enforce deterministic fallback from malformed branching scenario data to normal onboarding.
@@ -122,6 +133,7 @@ Notes:
 
 5. Observability
 - Preserve app-level error tracking and analytics service integrations.
+- Keep the shipped video-lesson slice scoped to entry, playback shell, and completion; do not imply notes/summary/share/timed-question are complete until their slices land.
 
 ## 6. Technical Constraints (Code-Verified)
 - Dart SDK: `>=3.11.0 <4.0.0` (`pubspec.yaml`).
@@ -157,6 +169,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-04-08 | Added first-slice video-lesson course-shell requirements (roadmap entry, intro sheet, player shell, completion handoff, and tracking) and synced module scope to 18 modules. |
 | 2026-03-30 | Added output-practice course-shell flow (typed route, intro sheet, scoped history, socket retry/reconcile, tracking) and synced module scope to 17 modules. |
 | 2026-03-05 | Added learning streak module scope and requirements (home streak popup + completion-triggered streak success gate). |
 | 2026-03-02 | Added branching onboarding orchestration requirements (flow switch, fallback safety, no-register gate in transition). |

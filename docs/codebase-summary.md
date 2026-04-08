@@ -1,28 +1,27 @@
 # Codebase Summary
 
-**Last Updated:** 2026-03-30
-**Source Inputs:** `repomix-output.xml` (refreshed 2026-03-30) + direct repository verification
+**Last Updated:** 2026-04-08
+**Source Inputs:** `repomix-output.xml` (refreshed 2026-04-08) + direct repository verification
 
 ## 1. Snapshot Metrics
 ### Repomix package metrics
-- Total packed files: **1,252**
-- Total tokens: **1,049,555**
-- Total chars: **4,513,381**
-- Security-sensitive files under `.info/key/`: **8** (excluded from normal documentation scope)
-- Binary-excluded files: **3**
+- Total packed files: **1,291**
+- Total tokens: **1,086,342**
+- Total chars: **4,691,465**
+- Security-sensitive files excluded from output: **3 suspicious** and **3 binary**
 
 ### Dart metrics (live repository)
-- Dart files in `lib/`: **946**
-- Dart LOC in `lib/`: **152,377**
-- Dart files in `test/`: **57**
-- Dart LOC in `test/`: **7,319**
+- Dart files in `lib/`: **978**
+- Dart LOC in `lib/`: **158,925**
+- Dart files in `test/`: **66**
+- Dart LOC in `test/`: **8,972**
 
 ### Major app layers
 | Path | Dart files | Dart LOC |
 | --- | ---: | ---: |
-| `lib/config` | 99 | 19,443 |
-| `lib/core` | 104 | 13,415 |
-| `lib/src` | 737 | 119,371 |
+| `lib/config` | 100 | 19,831 |
+| `lib/core` | 104 | 13,333 |
+| `lib/src` | 768 | 125,619 |
 
 ## 2. Repository Structure (High-Level)
 ```text
@@ -41,27 +40,28 @@ meup/
 ```
 
 ## 3. Feature Module Inventory (`lib/src`)
-`lib/src` currently has **17** modules:
+`lib/src` currently has **18** modules:
 
 | Module | Dart files | Dart LOC | Notes |
 | --- | ---: | ---: | --- |
 | `achievenment` | 15 | 2,268 | Spelling matches codebase path |
-| `auth` | 48 | 5,675 | Auth/session lifecycle |
-| `common` | 21 | 2,508 | Shared state/pages/widgets |
-| `course` | 76 | 11,299 | Course, roadmap, course lessons |
-| `data_collect` | 45 | 4,178 | Intake/onboarding data collection |
-| `feedback` | 29 | 4,683 | User feedback flow |
-| `home` | 18 | 2,083 | Dashboard/skillset entry + streak chip trigger |
-| `learning_streak` | 20 | 2,435 | Home streak popup + completion streak success flow |
-| `lesson` | 146 | 27,696 | Largest module: learning/exercise runtime |
-| `monetization` | 38 | 5,650 | Products, purchase, verification |
-| `onboard` | 37 | 5,553 | Intro/onboarding flow |
-| `onboard_branching` | 44 | 9,832 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
-| `output_practice` | 42 | 6,552 | Course-shell output practice conversation flow, intro sheet, socket room, and retryable chat history |
-| `profile` | 35 | 4,879 | User profile and upload |
+| `auth` | 48 | 6,158 | Auth/session lifecycle |
+| `common` | 21 | 2,576 | Shared state/pages/widgets |
+| `course` | 76 | 11,583 | Course, roadmap, course lessons |
+| `data_collect` | 45 | 4,393 | Intake/onboarding data collection |
+| `feedback` | 29 | 4,684 | User feedback flow |
+| `home` | 18 | 2,098 | Dashboard/skillset entry + streak chip trigger |
+| `learning_streak` | 20 | 2,495 | Home streak popup + completion streak success flow |
+| `lesson` | 149 | 28,867 | Largest module: learning/exercise runtime |
+| `monetization` | 38 | 5,989 | Products, purchase, verification |
+| `onboard` | 38 | 5,779 | Intro/onboarding flow |
+| `onboard_branching` | 44 | 9,836 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
+| `output_practice` | 45 | 8,055 | Course-shell output practice conversation flow, intro sheet, socket room, and retryable chat history |
+| `profile` | 35 | 4,880 | User profile and upload |
 | `progress` | 34 | 8,261 | Progress and achievement progress |
-| `roleplay` | 70 | 11,362 | Roleplay + AI feedback |
-| `setting` | 14 | 1,498 | Theme/language/settings |
+| `roleplay` | 70 | 11,357 | Roleplay + AI feedback |
+| `setting` | 17 | 2,202 | Theme/language/settings |
+| `video_lesson` | 25 | 4,120 | Course-shell video lesson intro sheet, mounted player shell, notes/summary/share overlays, timed-question flow, end/completion, and tracking |
 
 ## 4. Architecture and Runtime Contracts
 - Architecture style: feature-based Clean Architecture (`presentation`, `domain`, `data`).
@@ -73,6 +73,7 @@ meup/
 - Notification folder modularization stays grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`, but the files are now owned by the shared `library + part` architecture in `lib/config/services/services.dart`.
 - This reintroduces notification helper types into the exported services namespace as an intentional tradeoff, while Firebase/Awesome transport-specific package types still remain implementation-only.
 - Course output practice now lives under `lib/src/output_practice/` and is launched from course roadmap output lessons through a typed `output-practice/:sectionId` route, with intro sheet handoff, conversation fetch/create fallback, scoped history pagination, socket join/reconnect handling, optimistic send/reconcile, retry affordances, and dedicated analytics events.
+- Video lesson now lives under `lib/src/video_lesson/` and is launched from roadmap `openingVideo` / `closingVideo` lessons through a typed `video-lesson/:courseId/:nodeId/:lessonId` route. `RoadmapNodeActionHelper` resolves a unique roadmap node id, opens a tracked intro sheet, keeps a mounted player shell around `VideoPlayerController`, scopes notes cache by `courseId + nodeId + lessonId`, supports summary/share overlays plus timed-question/result overlays, and pushes completion back into roadmap state after the progress update.
 
 ## 5. API and Pagination Contract Summary
 - API endpoint constants live in `lib/core/constants/manual/endpoint.dart`.
@@ -96,11 +97,12 @@ meup/
 - CI bootstrap script: `.gitlab/scripts/bootstrap-secrets.sh` writes runtime files and exports `build/ci/runtime.env`.
 
 ## 8. Drift Watch Items
-1. Keep module count references at 17 unless `lib/src/*` changes.
+1. Keep module count references at 18 unless `lib/src/*` changes.
 2. Keep folder/module spelling as implemented (`achievenment`).
 3. Keep use-case helper naming aligned with `runUseCase*` APIs.
 4. Keep deployment docs aligned with platform script differences (`--ci` and `SKIP_SYMBOL_UPLOAD` parity gaps on Windows).
 5. Keep output practice route, intro sheet, and tracking event names aligned with the implementation and route config.
+6. Keep video lesson route, overlays, timed-question contracts, and tracking event names aligned with the implementation and route config.
 
 ## 9. Quick Verification Commands
 ```bash
@@ -113,4 +115,7 @@ rg -n "platform :ios|IPHONEOS_DEPLOYMENT_TARGET" ios/Podfile ios/Runner.xcodepro
 
 # Use-case mixin API names
 rg -n "runUseCase|executeUseCase" lib/core/base/bloc lib/src -g"*.dart"
+
+# Video lesson route and node resolution
+rg -n "videoLesson|resolveVideoLessonNodeId" lib test -g"*.dart"
 ```

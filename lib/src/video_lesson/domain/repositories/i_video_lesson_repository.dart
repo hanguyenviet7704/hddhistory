@@ -2,11 +2,10 @@ part of '../../video_lesson.dart';
 
 abstract class IVideoLessonRepository {
   TaskEither<AppException, BasePageBreak<UserVideoLessonNoteEntity>> getAllUserVideoLessonNotes(
-    PageBreakRequest request,
+    PageBreakRequest<VideoLessonNoteFilterEntity> request,
   );
   TaskEither<AppException, LearningItemEntity> getLearningItem(String id);
   TaskEither<AppException, UserVideoLessonNoteEntity> createUserVideoLessonNote(UserVideoLessonNoteEntity entity);
   TaskEither<AppException, UserVideoLessonNoteEntity> updateUserVideoLessonNote(UserVideoLessonNoteEntity entity);
-  TaskEither<AppException, Unit> deleteUserVideoLessonNote(String id);
+  TaskEither<AppException, Unit> deleteUserVideoLessonNote(UserVideoLessonNoteEntity entity);
 }
-

@@ -14,4 +14,3 @@ abstract class UserVideoLessonNoteEntity with _$UserVideoLessonNoteEntity {
 
   factory UserVideoLessonNoteEntity.fromJson(Map<String, dynamic> json) => _$UserVideoLessonNoteEntityFromJson(json);
 }
-

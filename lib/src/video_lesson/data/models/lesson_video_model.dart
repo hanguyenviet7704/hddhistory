@@ -13,8 +13,8 @@ abstract class LessonVideoModel with _$LessonVideoModel {
 
 extension LessonVideoModelExtension on LessonVideoModel {
   LessonVideoEntity toEntity() => LessonVideoEntity(
-        url: url,
-        thumbnail: thumbnail,
-        summary: summary,
-      );
+    url: url,
+    thumbnail: thumbnail,
+    summary: summary,
+  );
 }

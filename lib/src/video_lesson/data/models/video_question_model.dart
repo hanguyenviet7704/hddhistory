@@ -12,7 +12,7 @@ abstract class VideoQuestionModel with _$VideoQuestionModel {
 
 extension VideoQuestionModelExtension on VideoQuestionModel {
   VideoQuestionEntity toEntity() => VideoQuestionEntity(
-        atSecond: atSecond,
-        exercise: exercise.toEntity(),
-      );
+    atSecond: atSecond,
+    exercise: exercise.toEntity(),
+  );
 }

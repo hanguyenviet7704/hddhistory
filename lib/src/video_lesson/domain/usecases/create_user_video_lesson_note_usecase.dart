@@ -11,4 +11,3 @@ class CreateUserVideoLessonNoteUseCase implements BaseUseCase<UserVideoLessonNot
     return _repository.createUserVideoLessonNote(params);
   }
 }
-

@@ -8,13 +8,13 @@ abstract class VideoLessonApi {
 
   @GET(AppEndpoint.coursesUserVideoLessonsActivity)
   Future<BaseResponse<BasePageBreak<UserVideoLessonNoteModel>>> getAllUserVideoLessonNotes(
-    @Queries() PageBreakRequest request,
+    @Queries() PageBreakRequest<VideoLessonNoteFilterEntity> request,
   );
 
   @GET(AppEndpoint.coursesUserVideoLessonsActivityById)
   Future<BaseResponse<UserVideoLessonNoteModel>> getUserVideoLessonNote(@Path('id') String id);
 
-   @GET(AppEndpoint.coursesLearningItemsById)
+  @GET(AppEndpoint.coursesLearningItemsById)
   Future<BaseResponse<LearningItemModel>> getLearningItem(@Path('id') String id);
 
   @POST(AppEndpoint.coursesUserVideoLessonsActivity)
@@ -29,4 +29,3 @@ abstract class VideoLessonApi {
   @DELETE(AppEndpoint.coursesUserVideoLessonsActivityById)
   Future<BaseResponse<void>> deleteUserVideoLessonNote(@Path('id') String id);
 }
-

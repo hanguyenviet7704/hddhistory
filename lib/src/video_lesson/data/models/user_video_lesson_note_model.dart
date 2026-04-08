@@ -17,13 +17,12 @@ abstract class UserVideoLessonNoteModel with _$UserVideoLessonNoteModel {
 
 extension UserVideoLessonNoteModelExtension on UserVideoLessonNoteModel {
   UserVideoLessonNoteEntity toEntity() => UserVideoLessonNoteEntity(
-        id: id,
-        userId: userId,
-        courseId: courseId,
-        nodeId: nodeId,
-        lessonId: lessonId,
-        content: content,
-        atSecond: atSecond,
-      );
+    id: id,
+    userId: userId,
+    courseId: courseId,
+    nodeId: nodeId,
+    lessonId: lessonId,
+    content: content,
+    atSecond: atSecond,
+  );
 }
-
