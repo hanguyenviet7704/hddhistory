@@ -24,21 +24,21 @@ class VideoLessonSummarySheet extends StatelessWidget {
         height: 406.h,
         decoration: BoxDecoration(
           color: AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+          borderRadius: BorderRadius.vertical(top: Radius.circular(24.r)),
         ),
         child: Column(
           children: [
-            6.verticalSpace,
             Container(
-              width: 50.w,
-              height: 5.h,
+              margin: EdgeInsets.only(top: 10.h),
+              width: 44.w,
+              height: 4.h,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppCustomColor.borderDefault,
                 borderRadius: BorderRadius.circular(30.r),
               ),
             ),
             Padding(
-              padding: EdgeInsets.fromLTRB(16.w, 20.h, 16.w, 16.h),
+              padding: EdgeInsets.fromLTRB(20.w, 22.h, 20.w, 16.h),
               child: Row(
                 children: [
                   Expanded(
@@ -70,7 +70,7 @@ class VideoLessonSummarySheet extends StatelessWidget {
                   return false;
                 },
                 child: SingleChildScrollView(
-                  padding: EdgeInsets.fromLTRB(16.w, 0, 16.w, 24.h),
+                  padding: EdgeInsets.fromLTRB(20.w, 0, 20.w, 24.h),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -79,11 +79,16 @@ class VideoLessonSummarySheet extends StatelessWidget {
                         child: AppText(
                           overview,
                           maxLines: 100,
-                          style: AppStyle.text14.copyWith(
+                          style: AppStyle.text16.copyWith(
                             color: AppCustomColor.textSecondary,
-                            height: 1.75,
+                            height: 1.55,
                           ),
                         ),
+                      ),
+                      20.verticalSpace,
+                      const Divider(
+                        height: 1,
+                        color: AppCustomColor.borderDefault,
                       ),
                       20.verticalSpace,
                       _VideoLessonSummarySection(
@@ -92,17 +97,17 @@ class VideoLessonSummarySheet extends StatelessWidget {
                           children: keyPoints
                               .map(
                                 (item) => Padding(
-                                  padding: EdgeInsets.only(bottom: 10.h),
+                                  padding: EdgeInsets.only(bottom: 12.h),
                                   child: Row(
                                     crossAxisAlignment: CrossAxisAlignment.start,
                                     children: [
                                       Padding(
-                                        padding: EdgeInsets.only(top: 8.h),
+                                        padding: EdgeInsets.only(top: 9.h),
                                         child: Container(
                                           width: 6.r,
                                           height: 6.r,
                                           decoration: const BoxDecoration(
-                                            color: Color(0xFF4B44CA),
+                                            color: AppCustomColor.streakActive,
                                             shape: BoxShape.circle,
                                           ),
                                         ),
@@ -112,9 +117,9 @@ class VideoLessonSummarySheet extends StatelessWidget {
                                         child: AppText(
                                           item,
                                           maxLines: 10,
-                                          style: AppStyle.text14.copyWith(
+                                          style: AppStyle.text16.copyWith(
                                             color: AppCustomColor.textSecondary,
-                                            height: 1.75,
+                                            height: 1.55,
                                           ),
                                         ),
                                       ),
@@ -155,7 +160,7 @@ class _VideoLessonSummarySection extends StatelessWidget {
         AppText(
           title,
           style: AppStyle.textBold16.copyWith(
-            color: AppCustomColor.textPrimary,
+            color: AppCustomColor.streakActive,
             height: 1.5,
           ),
         ),
@@ -168,14 +173,14 @@ class _VideoLessonSummarySection extends StatelessWidget {
 
 String _summaryOverview(String rawSummary) {
   final trimmed = rawSummary.trim();
-  if (trimmed.isEmpty) return '-';
+  if (!_isMeaningfulSummaryText(trimmed)) return '-';
   final paragraphs = trimmed.split(RegExp(r'\n{2,}')).where((item) => item.trim().isNotEmpty).toList();
   return paragraphs.isEmpty ? trimmed : paragraphs.first.trim();
 }
 
 List<String> _summaryKeyPoints(String rawSummary) {
   final trimmed = rawSummary.trim();
-  if (trimmed.isEmpty) return const ['-'];
+  if (!_isMeaningfulSummaryText(trimmed)) return const ['-'];
 
   final explicitBullets = trimmed.split('\n').map((line) => line.replaceFirst(RegExp(r'^[\-\*\u2022]\s*'), '').trim()).where((line) => line.isNotEmpty).toList();
 
@@ -184,4 +189,10 @@ List<String> _summaryKeyPoints(String rawSummary) {
   final sentences = trimmed.split(RegExp(r'(?<=[.!?])\s+')).map((item) => item.trim()).where((item) => item.isNotEmpty).toList();
 
   return (sentences.isEmpty ? [trimmed] : sentences).take(5).toList();
+}
+
+bool _isMeaningfulSummaryText(String value) {
+  final normalized = value.trim().toLowerCase();
+  if (normalized.isEmpty) return false;
+  return normalized != 'en' && normalized != 'vi' && normalized != 'zh';
 }

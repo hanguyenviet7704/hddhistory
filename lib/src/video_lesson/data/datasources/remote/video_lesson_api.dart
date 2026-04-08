@@ -20,7 +20,7 @@ abstract class VideoLessonApi {
   @POST(AppEndpoint.coursesUserVideoLessonsActivity)
   Future<BaseResponse<UserVideoLessonNoteModel>> createUserVideoLessonNote(@Body() Map<String, dynamic> body);
 
-  @PUT(AppEndpoint.coursesUserVideoLessonsActivityById)
+  @PATCH(AppEndpoint.coursesUserVideoLessonsActivityById)
   Future<BaseResponse<UserVideoLessonNoteModel>> updateUserVideoLessonNote(
     @Path('id') String id,
     @Body() Map<String, dynamic> body,
