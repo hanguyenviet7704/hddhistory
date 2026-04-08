@@ -33,6 +33,8 @@ class _VideoLessonPageState extends State<VideoLessonPage> {
 
   VideoLessonCubit get _cubit => context.read<VideoLessonCubit>();
 
+  void _refreshUi() => setState(() {});
+
   @override
   void initState() {
     super.initState();

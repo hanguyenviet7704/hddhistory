@@ -20,6 +20,7 @@ class VideoLessonQuestionResultSheet extends StatelessWidget {
     final questionText = question.questionText == 'No question text' ? question.speechBubble.text : question.questionText;
 
     return _VideoLessonBlockingOverlayLayout(
+      pinCtaToBottom: true,
       card: Container(
         width: double.infinity,
         constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.62),
@@ -41,23 +42,21 @@ class VideoLessonQuestionResultSheet extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Container(
-                    width: 28.r,
-                    height: 28.r,
-                    decoration: BoxDecoration(
-                      color: _resultColor(result),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Icon(
-                      result.isSupported
-                          ? result.isCorrect
-                                ? Icons.check_rounded
-                                : Icons.close_rounded
-                          : Icons.info_outline_rounded,
-                      size: 16.r,
-                      color: Colors.white,
-                    ),
-                  ),
+                  result.isSupported
+                      ? (result.isCorrect
+                            ? AppAsset.icons.app.icTick.image(
+                                width: 28.r,
+                                height: 28.r,
+                              )
+                            : AppAsset.icons.app.icClose.image(
+                                width: 28.r,
+                                height: 28.r,
+                              ))
+                      : Icon(
+                          Icons.info_outline_rounded,
+                          size: 24.r,
+                          color: const Color(0xFF175CD3),
+                        ),
                   10.horizontalSpace,
                   AppText(
                     _resultTitle(context, result),
@@ -107,10 +106,9 @@ class VideoLessonQuestionResultSheet extends StatelessWidget {
                     children: [
                       Row(
                         children: [
-                          Icon(
-                            Icons.lightbulb_outline_rounded,
-                            size: 20.r,
-                            color: const Color(0xFF175CD3),
+                          AppAsset.icons.app.icTag.image(
+                            width: 20.r,
+                            height: 20.r,
                           ),
                           8.horizontalSpace,
                           AppText(
@@ -170,23 +168,17 @@ class _VideoLessonQuestionResultOptionCard extends StatelessWidget {
       _VideoLessonResultAnswerState.correct || _VideoLessonResultAnswerState.correctMissed => (
         background: AppCustomColor.backgroundSuccess,
         border: AppCustomColor.successGreen,
-        icon: Icons.check_rounded,
-        iconColor: Colors.white,
-        iconBackground: AppCustomColor.successGreen,
+        iconAsset: AppAsset.icons.app.icTick,
       ),
       _VideoLessonResultAnswerState.incorrect => (
         background: const Color(0xFFFFF1F3),
         border: const Color(0xFFF04438),
-        icon: Icons.close_rounded,
-        iconColor: Colors.white,
-        iconBackground: const Color(0xFFF04438),
+        iconAsset: AppAsset.icons.app.icClose,
       ),
       _ => (
         background: Colors.white,
         border: const Color(0xFFE3E8EF),
-        icon: null,
-        iconColor: Colors.transparent,
-        iconBackground: Colors.transparent,
+        iconAsset: null,
       ),
     };
 
@@ -211,20 +203,11 @@ class _VideoLessonQuestionResultOptionCard extends StatelessWidget {
               ),
             ),
           ),
-          if (style.icon != null) ...[
+          if (style.iconAsset != null) ...[
             10.horizontalSpace,
-            Container(
+            style.iconAsset!.image(
               width: 24.r,
               height: 24.r,
-              decoration: BoxDecoration(
-                color: style.iconBackground,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
-              child: Icon(
-                style.icon,
-                size: 14.r,
-                color: style.iconColor,
-              ),
             ),
           ],
         ],

@@ -1,4 +1,4 @@
-import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:meup/meup.dart';
 
 void main() {
@@ -22,7 +22,7 @@ class DMainApp extends StatelessWidget {
       themeMode: context.select((ThemeModeCubit themeMode) => themeMode.state.themeModeData),
       locale: context.select((LocaleCubit locale) => locale.state.localeData),
       supportedLocales: AppLocaleUtils.supportedLocales,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      localizationsDelegates: quill.FlutterQuillLocalizations.localizationsDelegates,
       builder: EasyLoading.init(),
     );
   }

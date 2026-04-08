@@ -8,6 +8,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
+import 'package:flutter_quill/flutter_quill.dart' as quill;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
@@ -23,6 +24,7 @@ part 'data/repositories/video_lesson_repository.dart';
 
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/user_video_lesson_note_entity.dart';
+part 'domain/entities/user_video_lesson_note_entity_quill_extension.dart';
 part 'domain/entities/video_question_entity.dart';
 part 'domain/entities/lesson_video_entity.dart';
 part 'domain/entities/video_lesson_note_filter_entity.dart';
@@ -52,6 +54,7 @@ part 'presentation/widgets/video_lesson_end_sheet.dart';
 part 'presentation/widgets/video_lesson_intro_sheet.dart';
 part 'presentation/widgets/video_lesson_notes_sheet.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_editor.dart';
+part 'presentation/widgets/video_lesson_notes_sheet_editor_toolbar.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_list.dart';
 part 'presentation/widgets/video_lesson_player_controls.dart';
 part 'presentation/widgets/video_lesson_player_surface.dart';

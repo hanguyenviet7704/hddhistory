@@ -1,0 +1,65 @@
+import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_quill/flutter_quill.dart' as quill;
+import 'package:meup/meup.dart';
+
+import '../../../support/test_di.dart';
+
+void main() {
+  setUp(() async {
+    await setupLocaleCubitForTests();
+    LocaleSettings.setLocaleSync(AppLocale.en);
+  });
+
+  tearDown(() async {
+    await resetInjectorForTests();
+  });
+
+  testWidgets('opens note editor callback when tapping a note card', (tester) async {
+    var openedNoteId = '';
+    final note = const UserVideoLessonNoteEntity(
+      id: 'note-1',
+      content: 'Tap this note',
+      atSecond: 12,
+    );
+
+    await tester.pumpWidget(
+      _buildTestShell(
+        child: VideoLessonNotesSheet(
+          state: VideoLessonState.initial().copyWith(
+            notes: [note],
+          ),
+          onClose: () {},
+          onBack: () {},
+          onAddNote: () {},
+          onSave: () {},
+          onRetry: () {},
+          onLoadMore: () {},
+          onDraftChanged: (_) {},
+          onEditNote: (selected) => openedNoteId = selected.id,
+          onDeleteNote: (_) {},
+        ),
+      ),
+    );
+
+    await tester.tap(find.text('Tap this note'));
+    await tester.pumpAndSettle();
+
+    expect(openedNoteId, note.id);
+  });
+}
+
+Widget _buildTestShell({required Widget child}) {
+  return ScreenUtilInit(
+    designSize: const Size(375, 812),
+    minTextAdapt: true,
+    splitScreenMode: true,
+    builder: (context, widget) => TranslationProvider(
+      child: MaterialApp(
+        localizationsDelegates: quill.FlutterQuillLocalizations.localizationsDelegates,
+        supportedLocales: AppLocaleUtils.supportedLocales,
+        home: Scaffold(body: child),
+      ),
+    ),
+    child: child,
+  );
+}

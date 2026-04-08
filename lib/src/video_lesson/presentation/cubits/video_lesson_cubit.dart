@@ -251,6 +251,7 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
       state.copyWith(
         notesMode: VideoLessonNotesMode.editor,
         editingNote: null,
+        noteDraft: '',
         noteSaveStatus: VideoLessonCrudStatus.idle,
         noteDeleteStatus: VideoLessonCrudStatus.idle,
         notesActionErrorMessage: null,
@@ -283,6 +284,7 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
   }
 
   void updateNoteDraft(String value) {
+    if (state.noteDraft == value) return;
     emit(state.copyWith(noteDraft: value));
   }
 
@@ -291,8 +293,8 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
   }
 
   Future<void> saveNote() async {
-    final draft = state.noteDraft.trim();
-    if (draft.isEmpty || state.noteSaveStatus == VideoLessonCrudStatus.loading) return;
+    final draft = videoLessonCanonicalizeNoteContent(state.noteDraft);
+    if (videoLessonNoteContentIsBlank(draft) || state.noteSaveStatus == VideoLessonCrudStatus.loading) return;
 
     emit(
       state.copyWith(

@@ -21,6 +21,7 @@ class VideoLessonQuestionSheet extends StatelessWidget {
     final questionText = question.questionText == 'No question text' ? question.speechBubble.text : question.questionText;
 
     return _VideoLessonBlockingOverlayLayout(
+      pinCtaToBottom: true,
       card: Container(
         width: double.infinity,
         constraints: BoxConstraints(maxHeight: MediaQuery.sizeOf(context).height * 0.56),

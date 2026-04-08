@@ -173,6 +173,7 @@ class _VideoLessonNoteListView extends StatelessWidget {
                   final note = state.notes[index];
                   return _VideoLessonNoteCard(
                     note: note,
+                    onOpen: () => onEditNote(note),
                     onEdit: () => onEditNote(note),
                     onDelete: () => onDeleteNote(note),
                   );
@@ -224,80 +225,88 @@ class _VideoLessonNoteListView extends StatelessWidget {
 class _VideoLessonNoteCard extends StatelessWidget {
   const _VideoLessonNoteCard({
     required this.note,
+    required this.onOpen,
     required this.onEdit,
     required this.onDelete,
   });
 
   final UserVideoLessonNoteEntity note;
+  final VoidCallback onOpen;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 16.h),
-      decoration: BoxDecoration(
-        color: AppCustomColor.backgroundGray,
-        border: Border.all(color: AppCustomColor.borderDefault),
-        borderRadius: BorderRadius.circular(12.r),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              AppText(
-                _formatNoteTime(note.atSecond),
-                style: AppStyle.text14.copyWith(
-                  color: AppCustomColor.textTertiary,
-                  height: 1.5,
-                ),
-              ),
-              const Spacer(),
-              PopupMenuButton<String>(
-                padding: EdgeInsets.zero,
-                constraints: BoxConstraints(minWidth: 132.w),
-                icon: Icon(
-                  Icons.more_horiz_rounded,
-                  size: 20.r,
-                  color: AppCustomColor.textTertiary,
-                ),
-                onSelected: (value) {
-                  if (value == 'edit') {
-                    onEdit();
-                    return;
-                  }
-                  onDelete();
-                },
-                itemBuilder: (context) => [
-                  PopupMenuItem<String>(
-                    value: 'edit',
-                    child: AppText(
-                      context.l10n.videoLesson.editNoteButton,
-                      style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary),
-                    ),
+    return GestureDetector(
+      behavior: HitTestBehavior.opaque,
+      onTap: onOpen,
+      child: Container(
+        padding: EdgeInsets.fromLTRB(14.w, 14.h, 14.w, 16.h),
+        decoration: BoxDecoration(
+          color: AppCustomColor.backgroundGray,
+          border: Border.all(color: AppCustomColor.borderDefault),
+          borderRadius: BorderRadius.circular(12.r),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                AppText(
+                  _formatNoteTime(note.atSecond),
+                  style: AppStyle.text14.copyWith(
+                    color: AppCustomColor.textTertiary,
+                    height: 1.5,
                   ),
-                  PopupMenuItem<String>(
-                    value: 'delete',
-                    child: AppText(
-                      context.l10n.videoLesson.deleteNoteButton,
-                      style: AppStyle.text14.copyWith(color: AppCustomColor.errorRed),
+                ),
+                if (kDebugMode) ...[
+                  const Spacer(),
+                  PopupMenuButton<String>(
+                    padding: EdgeInsets.zero,
+                    constraints: BoxConstraints(minWidth: 132.w),
+                    icon: Icon(
+                      Icons.more_horiz_rounded,
+                      size: 20.r,
+                      color: AppCustomColor.textTertiary,
                     ),
+                    onSelected: (value) {
+                      if (value == 'edit') {
+                        onEdit();
+                        return;
+                      }
+                      onDelete();
+                    },
+                    itemBuilder: (context) => [
+                      PopupMenuItem<String>(
+                        value: 'edit',
+                        child: AppText(
+                          context.l10n.videoLesson.editNoteButton,
+                          style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary),
+                        ),
+                      ),
+                      PopupMenuItem<String>(
+                        value: 'delete',
+                        child: AppText(
+                          context.l10n.videoLesson.deleteNoteButton,
+                          style: AppStyle.text14.copyWith(color: AppCustomColor.errorRed),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
-              ),
-            ],
-          ),
-          10.verticalSpace,
-          AppText(
-            note.content,
-            maxLines: 6,
-            style: AppStyle.text16.copyWith(
-              color: AppCustomColor.textPrimary,
-              height: 1.55,
+              ],
             ),
-          ),
-        ],
+            10.verticalSpace,
+            AppText(
+              note.plainTextPreview,
+              maxLines: 6,
+              style: AppStyle.text16.copyWith(
+                color: AppCustomColor.textPrimary,
+                height: 1.55,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

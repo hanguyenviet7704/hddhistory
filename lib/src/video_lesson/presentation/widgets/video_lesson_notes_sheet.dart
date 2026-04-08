@@ -31,29 +31,70 @@ class VideoLessonNotesSheet extends StatefulWidget {
 }
 
 class _VideoLessonNotesSheetState extends State<VideoLessonNotesSheet> {
-  late final TextEditingController _controller;
+  quill.QuillController? _controller;
+  late final FocusNode _focusNode;
+  late final ScrollController _scrollController;
+  String _lastSerializedDraft = '';
 
   @override
   void initState() {
     super.initState();
-    _controller = TextEditingController(text: widget.state.noteDraft);
+    _focusNode = FocusNode();
+    _scrollController = ScrollController();
+    _replaceController(widget.state.noteDraft);
   }
 
   @override
   void didUpdateWidget(covariant VideoLessonNotesSheet oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.state.noteDraft == widget.state.noteDraft) return;
-    if (_controller.text == widget.state.noteDraft) return;
-    _controller.value = TextEditingValue(
-      text: widget.state.noteDraft,
-      selection: TextSelection.collapsed(offset: widget.state.noteDraft.length),
-    );
+    if (oldWidget.state.noteDraft != widget.state.noteDraft) {
+      final nextDraft = videoLessonCanonicalizeNoteContent(widget.state.noteDraft);
+      if (_lastSerializedDraft != nextDraft) {
+        _replaceController(widget.state.noteDraft);
+      }
+    }
+
+    final enteredEditor = oldWidget.state.notesMode != VideoLessonNotesMode.editor && widget.state.notesMode == VideoLessonNotesMode.editor;
+    if (!enteredEditor) return;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _focusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
+    _controller
+      ?..removeListener(_handleControllerChanged)
+      ..dispose();
+    _focusNode.dispose();
+    _scrollController.dispose();
     super.dispose();
+  }
+
+  quill.QuillController get _noteController => _controller!;
+
+  void _replaceController(String rawDraft) {
+    final nextDocument = videoLessonNoteDocumentFromContent(rawDraft);
+    final nextController = quill.QuillController(
+      document: nextDocument,
+      selection: TextSelection.collapsed(offset: max(0, nextDocument.length - 1)),
+    );
+    nextController.addListener(_handleControllerChanged);
+    _controller
+      ?..removeListener(_handleControllerChanged)
+      ..dispose();
+    _controller = nextController;
+    _lastSerializedDraft = videoLessonEncodeNoteDocument(nextDocument);
+  }
+
+  void _handleControllerChanged() {
+    final controller = _controller;
+    if (controller == null) return;
+    final nextDraft = videoLessonEncodeNoteDocument(controller.document);
+    if (_lastSerializedDraft == nextDraft) return;
+    _lastSerializedDraft = nextDraft;
+    widget.onDraftChanged(nextDraft);
   }
 
   @override
@@ -84,11 +125,12 @@ class _VideoLessonNotesSheetState extends State<VideoLessonNotesSheet> {
               child: widget.state.notesMode == VideoLessonNotesMode.editor
                   ? _VideoLessonNoteEditorView(
                       state: widget.state,
-                      controller: _controller,
+                      controller: _noteController,
+                      focusNode: _focusNode,
+                      scrollController: _scrollController,
                       onClose: widget.onClose,
                       onBack: widget.onBack,
                       onSave: widget.onSave,
-                      onDraftChanged: widget.onDraftChanged,
                     )
                   : _VideoLessonNoteListView(
                       state: widget.state,

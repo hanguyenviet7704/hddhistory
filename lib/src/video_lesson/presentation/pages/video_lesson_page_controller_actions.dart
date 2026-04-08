@@ -6,7 +6,7 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
     _disposeController();
     _controllerUrl = url;
     _isInitializingController = true;
-    setState(() {});
+    _refreshUi();
 
     final controller = VideoPlayerController.networkUrl(Uri.parse(url));
     controller.addListener(_handleControllerTick);
@@ -35,7 +35,7 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
       position: controller.value.position,
       duration: controller.value.duration,
     );
-    setState(() {});
+    _refreshUi();
   }
 
   void _disposeController() {
