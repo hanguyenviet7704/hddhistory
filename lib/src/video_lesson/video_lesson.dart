@@ -46,6 +46,7 @@ part 'presentation/pages/video_lesson_page_controller_actions.dart';
 part 'presentation/pages/video_lesson_page_completion_utils.dart';
 part 'presentation/pages/video_lesson_page_interaction_actions.dart';
 part 'presentation/pages/video_lesson_page_overlay_actions.dart';
+part 'presentation/pages/video_lesson_page_player_view_state.dart';
 part 'presentation/pages/video_lesson_page_views.dart';
 
 //* Presentation Layer - Widgets
@@ -56,6 +57,7 @@ part 'presentation/widgets/video_lesson_notes_sheet.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_editor.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_editor_toolbar.dart';
 part 'presentation/widgets/video_lesson_notes_sheet_list.dart';
+part 'presentation/widgets/video_lesson_notes_sheet_note_preview.dart';
 part 'presentation/widgets/video_lesson_player_controls.dart';
 part 'presentation/widgets/video_lesson_player_surface.dart';
 part 'presentation/widgets/video_lesson_question_result_sheet.dart';

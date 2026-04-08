@@ -23,9 +23,7 @@ class _VideoLessonPageState extends State<VideoLessonPage> {
       'Android: https://play.google.com/store/apps/details?id=com.eup.meup\n'
       'IOS: https://apps.apple.com/us/app/meup-up-your-skills/id6755175330';
 
-  VideoPlayerController? _controller;
-  String _controllerUrl = '';
-  bool _isInitializingController = false;
+  late final ValueNotifier<_VideoLessonPagePlayerViewState> _playerViewStateNotifier;
   bool _hasTrackedExit = false;
   bool _isSeeking = false;
   bool _resumePlaybackAfterSeek = false;
@@ -33,11 +31,32 @@ class _VideoLessonPageState extends State<VideoLessonPage> {
 
   VideoLessonCubit get _cubit => context.read<VideoLessonCubit>();
 
-  void _refreshUi() => setState(() {});
+  _VideoLessonPagePlayerViewState get _playerViewState => _playerViewStateNotifier.value;
+
+  VideoPlayerController? get _controller => _playerViewState.controller;
+
+  String get _controllerUrl => _playerViewState.controllerUrl;
+
+  void _updatePlayerViewState({
+    VideoPlayerController? controller,
+    String? controllerUrl,
+    bool? isInitializingController,
+    bool clearController = false,
+  }) {
+    final nextState = _playerViewState.copyWith(
+      controller: controller,
+      controllerUrl: controllerUrl,
+      isInitializingController: isInitializingController,
+      clearController: clearController,
+    );
+    if (_playerViewState == nextState) return;
+    _playerViewStateNotifier.value = nextState;
+  }
 
   @override
   void initState() {
     super.initState();
+    _playerViewStateNotifier = ValueNotifier(const _VideoLessonPagePlayerViewState());
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _cubit.initialize(
         courseId: widget.courseId,
@@ -51,6 +70,7 @@ class _VideoLessonPageState extends State<VideoLessonPage> {
   void dispose() {
     _controlsAutoHideTimer?.cancel();
     _disposeController();
+    _playerViewStateNotifier.dispose();
     super.dispose();
   }
 
@@ -179,54 +199,57 @@ class _VideoLessonPageState extends State<VideoLessonPage> {
                       onExit: () => _handleExit(state),
                     );
                   case VideoLessonLoadStatus.success:
-                    return _VideoLessonReadyView(
-                      controller: _controller,
-                      isInitializingController: _isInitializingController,
-                      state: state,
-                      onClose: () => _handleExit(state),
-                      onPlayPause: () => _handlePlayPause(state),
-                      onSurfaceTap: _handleSurfaceTap,
-                      onNotesTap: () => _handleOpenNotes(state),
-                      onSummaryTap: () => _handleOpenSummary(state),
-                      onShareTap: () => _handleShare(state),
-                      onSeekStart: _handleSeekStart,
-                      onSeekChanged: _handleSeekChanged,
-                      onSeekEnd: _handleSeekEnd,
-                      onCloseNotes: _handleCloseNotes,
-                      onCloseSummary: () => _handleCloseSummary(trackClose: true),
-                      onSummaryScroll: () {
-                        final currentState = _cubit.state;
-                        if (currentState.summaryScrollTracked) return;
-                        final trackingData = _trackingData(currentState);
-                        if (trackingData != null) {
-                          AppService.instance.appTrackingService.trackVideoLessonSummaryScroll(
-                            trackingData,
-                            nodeId: currentState.nodeId,
-                          );
-                        }
-                        _cubit.markSummaryScrollTracked();
-                      },
-                      onRetryNotes: () => _cubit.loadNotes(),
-                      onLoadMoreNotes: _cubit.loadMoreNotes,
-                      onAddNote: _handleOpenCreateNote,
-                      onBackFromNoteEditor: _cubit.backToNotesList,
-                      onSaveNote: _handleSaveNote,
-                      onDraftChanged: _cubit.updateNoteDraft,
-                      onEditNote: _handleOpenEditNote,
-                      onDeleteNote: _handleDeleteNote,
-                      onQuestionAnswerTap: _cubit.selectCurrentQuestionAnswer,
-                      onSubmitQuestion: _handleSubmitQuestion,
-                      onContinueAfterQuestion: _handleContinueAfterQuestion,
-                      onComplete: () {
-                        final trackingData = _trackingData(state);
-                        if (trackingData != null) {
-                          AppService.instance.appTrackingService.trackVideoLessonMarkCompleteClick(
-                            trackingData,
-                            nodeId: state.nodeId,
-                          );
-                        }
-                        _cubit.completeLesson();
-                      },
+                    return ValueListenableBuilder<_VideoLessonPagePlayerViewState>(
+                      valueListenable: _playerViewStateNotifier,
+                      builder: (context, playerViewState, _) => _VideoLessonReadyView(
+                        controller: playerViewState.controller,
+                        isInitializingController: playerViewState.isInitializingController,
+                        state: state,
+                        onClose: () => _handleExit(state),
+                        onPlayPause: () => _handlePlayPause(state),
+                        onSurfaceTap: _handleSurfaceTap,
+                        onNotesTap: () => _handleOpenNotes(state),
+                        onSummaryTap: () => _handleOpenSummary(state),
+                        onShareTap: () => _handleShare(state),
+                        onSeekStart: _handleSeekStart,
+                        onSeekChanged: _handleSeekChanged,
+                        onSeekEnd: _handleSeekEnd,
+                        onCloseNotes: _handleCloseNotes,
+                        onCloseSummary: () => _handleCloseSummary(trackClose: true),
+                        onSummaryScroll: () {
+                          final currentState = _cubit.state;
+                          if (currentState.summaryScrollTracked) return;
+                          final trackingData = _trackingData(currentState);
+                          if (trackingData != null) {
+                            AppService.instance.appTrackingService.trackVideoLessonSummaryScroll(
+                              trackingData,
+                              nodeId: currentState.nodeId,
+                            );
+                          }
+                          _cubit.markSummaryScrollTracked();
+                        },
+                        onRetryNotes: () => _cubit.loadNotes(),
+                        onLoadMoreNotes: _cubit.loadMoreNotes,
+                        onAddNote: _handleOpenCreateNote,
+                        onBackFromNoteEditor: _cubit.backToNotesList,
+                        onSaveNote: _handleSaveNote,
+                        onDraftChanged: _cubit.updateNoteDraft,
+                        onEditNote: _handleOpenEditNote,
+                        onDeleteNote: _handleDeleteNote,
+                        onQuestionAnswerTap: _cubit.selectCurrentQuestionAnswer,
+                        onSubmitQuestion: _handleSubmitQuestion,
+                        onContinueAfterQuestion: _handleContinueAfterQuestion,
+                        onComplete: () {
+                          final trackingData = _trackingData(state);
+                          if (trackingData != null) {
+                            AppService.instance.appTrackingService.trackVideoLessonMarkCompleteClick(
+                              trackingData,
+                              nodeId: state.nodeId,
+                            );
+                          }
+                          _cubit.completeLesson();
+                        },
+                      ),
                     );
                 }
               },

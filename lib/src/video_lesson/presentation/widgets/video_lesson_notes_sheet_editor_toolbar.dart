@@ -1,5 +1,9 @@
 part of '../../video_lesson.dart';
 
+const _videoLessonTextSymbolIconAsset = 'assets/svg/app/ic_text_symbol.svg';
+const _videoLessonBulletIconAsset = 'assets/svg/app/ic_bullet.svg';
+const _videoLessonBulletNumberIconAsset = 'assets/svg/app/ic_bullet_number.svg';
+
 class _VideoLessonNoteEditorToolbar extends StatelessWidget {
   const _VideoLessonNoteEditorToolbar({
     required this.controller,
@@ -42,7 +46,7 @@ class _VideoLessonNoteEditorToolbar extends StatelessWidget {
               ),
               12.horizontalSpace,
               _VideoLessonToolbarChip(
-                label: 'Text',
+                iconAsset: _videoLessonTextSymbolIconAsset,
                 selected: activeListType == null,
                 onTap: () => _clearNoteListAttribute(
                   controller: controller,
@@ -51,7 +55,7 @@ class _VideoLessonNoteEditorToolbar extends StatelessWidget {
               ),
               8.horizontalSpace,
               _VideoLessonToolbarChip(
-                label: 'Bullets',
+                iconAsset: _videoLessonBulletIconAsset,
                 selected: activeListType == quill.Attribute.ul.value,
                 onTap: () => _toggleNoteListAttribute(
                   controller: controller,
@@ -61,7 +65,7 @@ class _VideoLessonNoteEditorToolbar extends StatelessWidget {
               ),
               8.horizontalSpace,
               _VideoLessonToolbarChip(
-                label: 'Numbers',
+                iconAsset: _videoLessonBulletNumberIconAsset,
                 selected: activeListType == quill.Attribute.ol.value,
                 onTap: () => _toggleNoteListAttribute(
                   controller: controller,
@@ -112,12 +116,12 @@ class _VideoLessonToolbarIcon extends StatelessWidget {
 
 class _VideoLessonToolbarChip extends StatelessWidget {
   const _VideoLessonToolbarChip({
-    required this.label,
+    required this.iconAsset,
     required this.selected,
     required this.onTap,
   });
 
-  final String label;
+  final String iconAsset;
   final bool selected;
   final VoidCallback onTap;
 
@@ -129,8 +133,8 @@ class _VideoLessonToolbarChip extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(10.r),
         child: Ink(
+          width: 44.w,
           height: 36.h,
-          padding: EdgeInsets.symmetric(horizontal: 14.w),
           decoration: BoxDecoration(
             color: selected ? AppCustomColor.backgroundBrandSoft : Colors.transparent,
             border: Border.all(
@@ -139,12 +143,13 @@ class _VideoLessonToolbarChip extends StatelessWidget {
             borderRadius: BorderRadius.circular(10.r),
           ),
           child: Center(
-            child: AppText(
-              label,
-              style: AppStyle.text14.copyWith(
-                color: selected ? AppCustomColor.streakActive : AppCustomColor.textSecondary,
-                fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
-                height: 1.5,
+            child: SvgPicture.asset(
+              iconAsset,
+              width: 18.r,
+              height: 18.r,
+              colorFilter: ColorFilter.mode(
+                selected ? AppCustomColor.streakActive : AppCustomColor.textSecondary,
+                BlendMode.srcIn,
               ),
             ),
           ),

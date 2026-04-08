@@ -41,7 +41,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.text('Tap this note'));
+    await tester.tap(find.byKey(ValueKey('video-lesson-note-card-${note.id}')));
     await tester.pumpAndSettle();
 
     expect(openedNoteId, note.id);

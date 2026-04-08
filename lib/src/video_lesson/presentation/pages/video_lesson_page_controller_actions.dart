@@ -4,9 +4,10 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
   Future<void> _initializeController(String url) async {
     if (url.isEmpty || _controllerUrl == url) return;
     _disposeController();
-    _controllerUrl = url;
-    _isInitializingController = true;
-    _refreshUi();
+    _updatePlayerViewState(
+      controllerUrl: url,
+      isInitializingController: true,
+    );
 
     final controller = VideoPlayerController.networkUrl(Uri.parse(url));
     controller.addListener(_handleControllerTick);
@@ -18,8 +19,10 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
       controller.removeListener(_handleControllerTick);
       await controller.dispose();
       if (!mounted) return;
-      _controllerUrl = '';
-      _isInitializingController = false;
+      _updatePlayerViewState(
+        controllerUrl: '',
+        isInitializingController: false,
+      );
       _cubit.setLoadFailure(context.l10n.videoLesson.unavailableMessage);
       return;
     }
@@ -29,22 +32,27 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
       return;
     }
 
-    _controller = controller;
-    _isInitializingController = false;
+    _updatePlayerViewState(
+      controller: controller,
+      controllerUrl: url,
+      isInitializingController: false,
+    );
     _cubit.updatePlaybackProgress(
       position: controller.value.position,
       duration: controller.value.duration,
     );
-    _refreshUi();
   }
 
   void _disposeController() {
     final controller = _controller;
-    _controllerUrl = '';
+    _updatePlayerViewState(
+      controllerUrl: '',
+      isInitializingController: false,
+      clearController: true,
+    );
     if (controller == null) return;
     controller.removeListener(_handleControllerTick);
     controller.dispose();
-    _controller = null;
   }
 
   void _handleControllerTick() {

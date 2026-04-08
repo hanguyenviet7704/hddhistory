@@ -238,6 +238,7 @@ class _VideoLessonNoteCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
+      key: ValueKey('video-lesson-note-card-${note.id}'),
       behavior: HitTestBehavior.opaque,
       onTap: onOpen,
       child: Container(
@@ -297,13 +298,8 @@ class _VideoLessonNoteCard extends StatelessWidget {
               ],
             ),
             10.verticalSpace,
-            AppText(
-              note.plainTextPreview,
-              maxLines: 6,
-              style: AppStyle.text16.copyWith(
-                color: AppCustomColor.textPrimary,
-                height: 1.55,
-              ),
+            IgnorePointer(
+              child: _VideoLessonFormattedNotePreview(note: note),
             ),
           ],
         ),
