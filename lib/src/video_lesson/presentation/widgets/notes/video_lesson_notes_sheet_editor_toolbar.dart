@@ -1,4 +1,4 @@
-part of '../../video_lesson.dart';
+part of '../../../video_lesson.dart';
 
 const _videoLessonTextSymbolIconAsset = 'assets/svg/app/ic_text_symbol.svg';
 const _videoLessonBulletIconAsset = 'assets/svg/app/ic_bullet.svg';

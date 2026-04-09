@@ -1,4 +1,4 @@
-part of '../../video_lesson.dart';
+part of '../../../video_lesson.dart';
 
 const _videoLessonFastAnimationDuration = Duration(milliseconds: 180);
 const _videoLessonMediumAnimationDuration = Duration(milliseconds: 240);

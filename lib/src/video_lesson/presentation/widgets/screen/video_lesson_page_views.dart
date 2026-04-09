@@ -1,4 +1,4 @@
-part of '../../video_lesson.dart';
+part of '../../../video_lesson.dart';
 
 class _VideoLessonReadyView extends StatelessWidget {
   const _VideoLessonReadyView({
@@ -61,8 +61,6 @@ class _VideoLessonReadyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final showOverlayScrim = state.isNotesVisible || state.isSummaryVisible || state.isQuestionVisible || state.isQuestionResultVisible || state.isEndVisible;
-
     return GestureDetector(
       behavior: HitTestBehavior.opaque,
       onTap: state.activeOverlay == VideoLessonOverlay.none ? onSurfaceTap : null,
@@ -108,74 +106,24 @@ class _VideoLessonReadyView extends StatelessWidget {
             onSeekChanged: onSeekChanged,
             onSeekEnd: onSeekEnd,
           ),
-          if (showOverlayScrim)
-            Positioned.fill(
-              child: IgnorePointer(
-                ignoring: state.isEndVisible,
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: state.isNotesVisible || state.isSummaryVisible ? 4 : 17,
-                    sigmaY: state.isNotesVisible || state.isSummaryVisible ? 4 : 17,
-                  ),
-                  child: Container(
-                    color: Colors.black.withValues(alpha: state.isNotesVisible || state.isSummaryVisible ? 0.38 : 0.6),
-                  ),
-                ),
-              ),
-            ),
-          if (state.isNotesVisible)
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onCloseNotes,
-                child: const SizedBox.expand(),
-              ),
-            ),
-          if (state.isSummaryVisible)
-            Positioned.fill(
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onTap: onCloseSummary,
-                child: const SizedBox.expand(),
-              ),
-            ),
-          if (state.isNotesVisible)
-            VideoLessonNotesSheet(
-              state: state,
-              onClose: onCloseNotes,
-              onBack: onBackFromNoteEditor,
-              onAddNote: onAddNote,
-              onSave: onSaveNote,
-              onRetry: onRetryNotes,
-              onLoadMore: onLoadMoreNotes,
-              onDraftChanged: onDraftChanged,
-              onEditNote: onEditNote,
-              onDeleteNote: onDeleteNote,
-            ),
-          if (state.isSummaryVisible)
-            VideoLessonSummarySheet(
-              summary: state.lesson.video.summary.text,
-              onClose: onCloseSummary,
-              onScroll: onSummaryScroll,
-            ),
-          if (state.isQuestionVisible)
-            VideoLessonQuestionSheet(
-              state: state,
-              onAnswerTap: onQuestionAnswerTap,
-              onSubmit: onSubmitQuestion,
-            ),
-          if (state.isQuestionResultVisible)
-            VideoLessonQuestionResultSheet(
-              state: state,
-              onContinue: onContinueAfterQuestion,
-            ),
-          if (state.isEndVisible)
-            VideoLessonEndSheet(
-              lesson: state.lesson,
-              isSubmitting: state.completionStatus == VideoLessonCompletionStatus.loading,
-              errorMessage: state.completionErrorMessage,
-              onSubmit: onComplete,
-            ),
+          _VideoLessonOverlayStack(
+            state: state,
+            onCloseNotes: onCloseNotes,
+            onCloseSummary: onCloseSummary,
+            onSummaryScroll: onSummaryScroll,
+            onRetryNotes: onRetryNotes,
+            onLoadMoreNotes: onLoadMoreNotes,
+            onAddNote: onAddNote,
+            onBackFromNoteEditor: onBackFromNoteEditor,
+            onSaveNote: onSaveNote,
+            onDraftChanged: onDraftChanged,
+            onEditNote: onEditNote,
+            onDeleteNote: onDeleteNote,
+            onQuestionAnswerTap: onQuestionAnswerTap,
+            onSubmitQuestion: onSubmitQuestion,
+            onContinueAfterQuestion: onContinueAfterQuestion,
+            onComplete: onComplete,
+          ),
         ],
       ),
     );

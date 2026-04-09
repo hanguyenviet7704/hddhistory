@@ -39,34 +39,42 @@ part 'domain/usecases/delete_user_video_lesson_note_usecase.dart';
 part 'presentation/cubits/video_lesson_runtime_models.dart';
 part 'presentation/cubits/video_lesson_state.dart';
 part 'presentation/cubits/video_lesson_cubit.dart';
+part 'presentation/video_lesson_player_warmup_cache.dart';
 
 //* Presentation Layer - Pages
 part 'presentation/pages/video_lesson_page.dart';
+part 'presentation/pages/video_lesson_page_builders.dart';
 part 'presentation/pages/video_lesson_page_controller_actions.dart';
 part 'presentation/pages/video_lesson_page_completion_utils.dart';
 part 'presentation/pages/video_lesson_page_interaction_actions.dart';
 part 'presentation/pages/video_lesson_page_overlay_actions.dart';
 part 'presentation/pages/video_lesson_page_player_view_state.dart';
-part 'presentation/pages/video_lesson_page_views.dart';
 
 //* Presentation Layer - Widgets
-part 'presentation/widgets/video_lesson_blocking_overlay_layout.dart';
-part 'presentation/widgets/video_lesson_draggable_bottom_sheet_frame.dart';
-part 'presentation/widgets/video_lesson_end_sheet.dart';
-part 'presentation/widgets/video_lesson_intro_sheet.dart';
-part 'presentation/widgets/video_lesson_motion.dart';
-part 'presentation/widgets/video_lesson_note_card.dart';
-part 'presentation/widgets/video_lesson_notes_sheet.dart';
-part 'presentation/widgets/video_lesson_notes_sheet_editor.dart';
-part 'presentation/widgets/video_lesson_notes_sheet_editor_toolbar.dart';
-part 'presentation/widgets/video_lesson_notes_sheet_header.dart';
-part 'presentation/widgets/video_lesson_notes_sheet_list.dart';
-part 'presentation/widgets/video_lesson_notes_sheet_note_preview.dart';
-part 'presentation/widgets/video_lesson_player_controls.dart';
-part 'presentation/widgets/video_lesson_player_surface.dart';
-part 'presentation/widgets/video_lesson_question_result_sheet.dart';
-part 'presentation/widgets/video_lesson_question_sheet.dart';
-part 'presentation/widgets/video_lesson_summary_sheet.dart';
+part 'presentation/widgets/common/video_lesson_blocking_overlay_layout.dart';
+part 'presentation/widgets/common/video_lesson_draggable_bottom_sheet_frame.dart';
+part 'presentation/widgets/common/video_lesson_motion.dart';
+part 'presentation/widgets/completion/video_lesson_end_sheet.dart';
+part 'presentation/widgets/intro/video_lesson_intro_sheet_dialog.dart';
+part 'presentation/widgets/intro/video_lesson_intro_sheet.dart';
+part 'presentation/widgets/notes/video_lesson_note_card.dart';
+part 'presentation/widgets/notes/video_lesson_note_preview_parser.dart';
+part 'presentation/widgets/notes/video_lesson_notes_sheet.dart';
+part 'presentation/widgets/notes/video_lesson_notes_sheet_editor.dart';
+part 'presentation/widgets/notes/video_lesson_notes_sheet_editor_toolbar.dart';
+part 'presentation/widgets/notes/video_lesson_notes_sheet_header.dart';
+part 'presentation/widgets/notes/video_lesson_notes_sheet_list.dart';
+part 'presentation/widgets/notes/video_lesson_notes_sheet_note_preview.dart';
+part 'presentation/widgets/player/video_lesson_player_controls.dart';
+part 'presentation/widgets/player/video_lesson_player_controls_sections.dart';
+part 'presentation/widgets/player/video_lesson_player_progress_cluster.dart';
+part 'presentation/widgets/player/video_lesson_player_surface.dart';
+part 'presentation/widgets/question/video_lesson_question_result_sheet.dart';
+part 'presentation/widgets/question/video_lesson_question_result_sheet_sections.dart';
+part 'presentation/widgets/question/video_lesson_question_sheet.dart';
+part 'presentation/widgets/screen/video_lesson_page_overlay_stack.dart';
+part 'presentation/widgets/screen/video_lesson_page_views.dart';
+part 'presentation/widgets/summary/video_lesson_summary_sheet.dart';
 
 //* Parts for generated files
 part 'video_lesson.freezed.dart';

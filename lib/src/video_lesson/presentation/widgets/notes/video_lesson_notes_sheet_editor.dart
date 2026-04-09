@@ -1,4 +1,4 @@
-part of '../../video_lesson.dart';
+part of '../../../video_lesson.dart';
 
 class _VideoLessonNoteEditorView extends StatelessWidget {
   const _VideoLessonNoteEditorView({
