@@ -116,6 +116,7 @@ mixin TrackingKey {
   static const String videoLessonPlayClick = 'video_lesson_play_click';
   static const String videoLessonPauseClick = 'video_lesson_pause_click';
   static const String videoLessonSeek = 'video_lesson_seek';
+  static const String videoLessonPlayerInit = 'video_lesson_player_init';
   static const String videoLessonNotesView = 'video_lesson_notes_view';
   static const String videoLessonAddNoteClick = 'video_lesson_add_note_click';
   static const String videoLessonNoteSaveClick = 'video_lesson_note_save_click';

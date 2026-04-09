@@ -8,6 +8,7 @@ Future<void> _showVideoLessonIntroSheet(
   required VoidCallback onStart,
 }) async {
   var didStart = false;
+  final videoUrl = lesson.video.url.trim();
 
   if (trackingData != null && AppDI.injector.isRegistered<ITrackingService>()) {
     AppService.instance.appTrackingService.trackVideoLessonPopupView(
@@ -15,6 +16,7 @@ Future<void> _showVideoLessonIntroSheet(
       nodeId: nodeId,
     );
   }
+  _videoLessonPlayerWarmupCache.prepare(videoUrl);
 
   await showGeneralDialog<void>(
     context: context,
@@ -60,10 +62,13 @@ Future<void> _showVideoLessonIntroSheet(
     },
   );
 
-  if (!didStart && trackingData != null && AppDI.injector.isRegistered<ITrackingService>()) {
-    AppService.instance.appTrackingService.trackVideoLessonPopupClose(
-      trackingData,
-      nodeId: nodeId,
-    );
+  if (!didStart) {
+    await _videoLessonPlayerWarmupCache.clear(videoUrl);
+    if (trackingData != null && AppDI.injector.isRegistered<ITrackingService>()) {
+      AppService.instance.appTrackingService.trackVideoLessonPopupClose(
+        trackingData,
+        nodeId: nodeId,
+      );
+    }
   }
 }

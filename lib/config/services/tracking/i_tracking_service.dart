@@ -184,6 +184,14 @@ abstract interface class ITrackingService {
     required String nodeId,
     required int seekFromSecond,
     required int seekToSecond,
+    int? seekLatencyMs,
+  });
+  Future<void> trackVideoLessonPlayerInit(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String initStatus,
+    required String warmupState,
+    int? timeToFirstFrameMs,
   });
   Future<void> trackVideoLessonNotesView(
     CourseLessonTrackingData trackingData, {

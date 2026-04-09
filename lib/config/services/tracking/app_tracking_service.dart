@@ -107,7 +107,11 @@ final class AppTrackingService extends ITrackingService {
     String? noteMode,
     int? seekFromSecond,
     int? seekToSecond,
+    int? seekLatencyMs,
+    int? timeToFirstFrameMs,
     bool? isCorrect,
+    String? initStatus,
+    String? warmupState,
   }) {
     return {
       ..._courseLessonParams(trackingData),
@@ -119,7 +123,11 @@ final class AppTrackingService extends ITrackingService {
       ..._optionalStringParam('note_mode', noteMode),
       ..._optionalParam('seek_from_second', seekFromSecond),
       ..._optionalParam('seek_to_second', seekToSecond),
+      ..._optionalParam('seek_latency_ms', seekLatencyMs),
+      ..._optionalParam('time_to_first_frame_ms', timeToFirstFrameMs),
       ..._optionalParam('is_correct', isCorrect),
+      ..._optionalStringParam('init_status', initStatus),
+      ..._optionalStringParam('warmup_state', warmupState),
     };
   }
 
@@ -969,6 +977,7 @@ final class AppTrackingService extends ITrackingService {
     required String nodeId,
     required int seekFromSecond,
     required int seekToSecond,
+    int? seekLatencyMs,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.videoLessonSeek,
@@ -977,6 +986,27 @@ final class AppTrackingService extends ITrackingService {
         nodeId: nodeId,
         seekFromSecond: seekFromSecond,
         seekToSecond: seekToSecond,
+        seekLatencyMs: seekLatencyMs,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonPlayerInit(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String initStatus,
+    required String warmupState,
+    int? timeToFirstFrameMs,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonPlayerInit,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        initStatus: initStatus,
+        warmupState: warmupState,
+        timeToFirstFrameMs: timeToFirstFrameMs,
       ),
     );
   }

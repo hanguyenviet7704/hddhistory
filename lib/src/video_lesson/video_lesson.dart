@@ -39,7 +39,7 @@ part 'domain/usecases/delete_user_video_lesson_note_usecase.dart';
 part 'presentation/cubits/video_lesson_runtime_models.dart';
 part 'presentation/cubits/video_lesson_state.dart';
 part 'presentation/cubits/video_lesson_cubit.dart';
-part 'presentation/video_lesson_player_warmup_cache.dart';
+part 'presentation/widgets/video_lesson_player_warmup_cache.dart';
 
 //* Presentation Layer - Pages
 part 'presentation/pages/video_lesson_page.dart';

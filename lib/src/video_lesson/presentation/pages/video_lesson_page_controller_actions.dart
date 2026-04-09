@@ -5,11 +5,44 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
 
   Future<void> _initializeController(String url) async {
     if (url.isEmpty || _controllerUrl == url) return;
+    final initStopwatch = Stopwatch()..start();
+    var warmupState = _VideoLessonWarmupState.miss;
+
     _disposeController();
     _updatePlayerViewState(
       controllerUrl: url,
       isInitializingController: true,
     );
+
+    final warmupResolution = await _videoLessonPlayerWarmupCache.take(url);
+    warmupState = warmupResolution.state;
+    final prewarmedController = warmupResolution.controller;
+
+    if (prewarmedController != null) {
+      prewarmedController.addListener(_handleControllerTick);
+      if (!mounted) {
+        await prewarmedController.dispose();
+        return;
+      }
+
+      _updatePlayerViewState(
+        controller: prewarmedController,
+        controllerUrl: url,
+        isInitializingController: false,
+      );
+      _cubit.updatePlaybackProgress(
+        position: prewarmedController.value.position,
+        duration: prewarmedController.value.duration,
+      );
+      _trackPlayerInitialization(
+        state: _cubit.state,
+        initStatus: 'success',
+        warmupState: warmupState,
+        timeToFirstFrameMs: initStopwatch.elapsedMilliseconds,
+      );
+      await _maybeAutoplayInitialLoad(prewarmedController);
+      return;
+    }
 
     final controller = VideoPlayerController.networkUrl(Uri.parse(url));
     controller.addListener(_handleControllerTick);
@@ -17,13 +50,18 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
     try {
       await controller.initialize().timeout(_controllerInitializationTimeout);
       await controller.setLooping(false);
-    } catch (_) {
+    } catch (error) {
       controller.removeListener(_handleControllerTick);
       await controller.dispose();
       if (!mounted) return;
       _updatePlayerViewState(
         controllerUrl: '',
         isInitializingController: false,
+      );
+      _trackPlayerInitialization(
+        state: _cubit.state,
+        initStatus: error is TimeoutException ? 'timeout' : 'failure',
+        warmupState: warmupState,
       );
       _cubit.setLoadFailure(context.l10n.videoLesson.unavailableMessage);
       return;
@@ -43,6 +81,13 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
       position: controller.value.position,
       duration: controller.value.duration,
     );
+    _trackPlayerInitialization(
+      state: _cubit.state,
+      initStatus: 'success',
+      warmupState: warmupState,
+      timeToFirstFrameMs: initStopwatch.elapsedMilliseconds,
+    );
+    await _maybeAutoplayInitialLoad(controller);
   }
 
   void _disposeController() {
@@ -79,15 +124,17 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
       _cancelControlsAutoHide();
     }
 
-    if (value.isPlaying != _cubit.state.isPlaying) {
+    final playbackStateChanged = value.isPlaying != _cubit.state.isPlaying;
+    if (playbackStateChanged) {
       _cubit.setPlaybackState(
         isPlaying: value.isPlaying,
         controlsVisible: value.isPlaying ? _cubit.state.controlsVisible : true,
       );
-    }
-
-    if (value.isPlaying) {
-      _scheduleControlsAutoHide();
+      if (value.isPlaying) {
+        _scheduleControlsAutoHide();
+      } else {
+        _cancelControlsAutoHide();
+      }
     }
 
     final reachedEnd = value.isCompleted || (value.duration > Duration.zero && value.position >= value.duration);
@@ -186,6 +233,7 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
     final controller = _controller;
     if (controller == null || !controller.value.isInitialized) return;
 
+    final seekStopwatch = Stopwatch()..start();
     final currentState = _cubit.state;
     final fromSecond = controller.value.position.inSeconds;
     final toSecond = value.round().clamp(0, controller.value.duration.inSeconds);
@@ -208,6 +256,7 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
         nodeId: currentState.nodeId,
         seekFromSecond: fromSecond,
         seekToSecond: toSecond,
+        seekLatencyMs: seekStopwatch.elapsedMilliseconds,
       );
     }
 
@@ -241,4 +290,84 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
 
     _resumePlaybackAfterSeek = false;
   }
+
+  Future<void> _maybeAutoplayInitialLoad(
+    VideoPlayerController controller,
+  ) async {
+    final state = _cubit.state;
+    final autoplayAction = videoLessonResolveInitialAutoplayAction(
+      hasTriggeredInitialAutoplay: _hasTriggeredInitialAutoplay,
+      state: state,
+    );
+    if (autoplayAction == VideoLessonInitialAutoplayAction.none) return;
+
+    _hasTriggeredInitialAutoplay = true;
+    if (autoplayAction == VideoLessonInitialAutoplayAction.openZeroSecondQuestion) {
+      _cubit.maybeTriggerZeroSecondQuestion();
+      _cancelControlsAutoHide();
+      return;
+    }
+
+    await controller.play();
+    _cubit.setPlaybackState(isPlaying: true, controlsVisible: false);
+    _scheduleControlsAutoHide();
+  }
+
+  void _trackPlayerInitialization({
+    required VideoLessonState state,
+    required String initStatus,
+    required _VideoLessonWarmupState warmupState,
+    int? timeToFirstFrameMs,
+  }) {
+    final trackingData = _trackingData(state);
+    if (trackingData == null) return;
+
+    AppService.instance.appTrackingService.trackVideoLessonPlayerInit(
+      trackingData,
+      nodeId: state.nodeId,
+      initStatus: initStatus,
+      warmupState: _warmupStateName(warmupState),
+      timeToFirstFrameMs: timeToFirstFrameMs,
+    );
+  }
+
+  String _warmupStateName(_VideoLessonWarmupState state) {
+    switch (state) {
+      case _VideoLessonWarmupState.miss:
+        return 'miss';
+      case _VideoLessonWarmupState.hitReady:
+        return 'hit_ready';
+      case _VideoLessonWarmupState.hitPending:
+        return 'hit_pending';
+      case _VideoLessonWarmupState.failed:
+        return 'failed';
+    }
+  }
+}
+
+enum VideoLessonInitialAutoplayAction {
+  none,
+  play,
+  openZeroSecondQuestion,
+}
+
+VideoLessonInitialAutoplayAction videoLessonResolveInitialAutoplayAction({
+  required bool hasTriggeredInitialAutoplay,
+  required VideoLessonState state,
+}) {
+  if (hasTriggeredInitialAutoplay || !state.isReady) {
+    return VideoLessonInitialAutoplayAction.none;
+  }
+  if (state.isEndVisible || state.hasBlockingOverlay) {
+    return VideoLessonInitialAutoplayAction.none;
+  }
+
+  final hasZeroSecondQuestion = state.learningItem.videoQuestions.any(
+    (question) => question.atSecond == 0,
+  );
+  if (hasZeroSecondQuestion) {
+    return VideoLessonInitialAutoplayAction.openZeroSecondQuestion;
+  }
+
+  return VideoLessonInitialAutoplayAction.play;
 }

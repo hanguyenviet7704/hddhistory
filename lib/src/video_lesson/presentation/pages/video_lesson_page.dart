@@ -25,6 +25,7 @@ class _VideoLessonPageState extends State<VideoLessonPage> {
 
   late final ValueNotifier<_VideoLessonPagePlayerViewState> _playerViewStateNotifier;
   bool _hasTrackedExit = false;
+  bool _hasTriggeredInitialAutoplay = false;
   bool _isSeeking = false;
   bool _resumePlaybackAfterSeek = false;
   Timer? _controlsAutoHideTimer;

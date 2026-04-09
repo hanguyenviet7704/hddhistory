@@ -1,4 +1,4 @@
-part of '../video_lesson.dart';
+part of '../../video_lesson.dart';
 
 const _videoLessonPlayerWarmupTimeout = Duration(seconds: 12);
 
@@ -49,6 +49,7 @@ final class _VideoLessonPlayerWarmupCache {
       controller: controller,
     );
     entry.initializeFuture = _initializeEntry(entry);
+    unawaited(entry.initializeFuture.catchError((Object _) {}));
     _entry = entry;
   }
 
@@ -62,9 +63,7 @@ final class _VideoLessonPlayerWarmupCache {
     }
 
     _entry = null;
-    final warmupState = entry.isReady
-        ? _VideoLessonWarmupState.hitReady
-        : _VideoLessonWarmupState.hitPending;
+    final warmupState = entry.isReady ? _VideoLessonWarmupState.hitReady : _VideoLessonWarmupState.hitPending;
 
     try {
       await entry.initializeFuture;
@@ -89,11 +88,16 @@ final class _VideoLessonPlayerWarmupCache {
   }
 
   Future<void> _initializeEntry(_VideoLessonWarmupEntry entry) async {
-    await entry.controller
-        .initialize()
-        .timeout(_videoLessonPlayerWarmupTimeout);
-    await entry.controller.setLooping(false);
-    entry.isReady = true;
+    try {
+      await entry.controller.initialize().timeout(_videoLessonPlayerWarmupTimeout);
+      await entry.controller.setLooping(false);
+      entry.isReady = true;
+    } catch (_) {
+      if (identical(_entry, entry)) {
+        _entry = null;
+      }
+      rethrow;
+    }
   }
 
   Future<void> _disposeControllerSafely(
