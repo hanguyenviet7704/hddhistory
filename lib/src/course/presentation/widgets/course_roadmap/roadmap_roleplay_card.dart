@@ -36,7 +36,7 @@ class RoadmapLessonCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 DCachedImage(
-                  url: lesson.image,
+                  url: lesson.roadmapDisplayImage,
                   width: double.infinity,
                   height: 120.h,
                   fit: BoxFit.cover,

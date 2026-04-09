@@ -141,4 +141,10 @@ extension LessonEntityExtension on LessonEntity {
     }
     return title.text;
   }
+
+  String get roadmapDisplayImage {
+    if (image.isNotEmpty) return image;
+    if (video.thumbnail.isNotEmpty) return video.thumbnail;
+    return '';
+  }
 }
