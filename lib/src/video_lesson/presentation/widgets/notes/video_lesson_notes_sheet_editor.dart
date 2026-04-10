@@ -35,12 +35,18 @@ class _VideoLessonNoteEditorView extends StatelessWidget {
                 focusNode: focusNode,
                 scrollController: scrollController,
                 config: quill.QuillEditorConfig(
-                  autoFocus: true,
+                  autoFocus: false,
                   expands: true,
                   padding: EdgeInsets.zero,
                   placeholder: context.l10n.videoLesson.noteEditorHint,
                   textInputAction: TextInputAction.newline,
                   scrollable: true,
+                  onTapOutside: (_, editorFocusNode) {
+                    if (editorFocusNode.hasFocus) {
+                      editorFocusNode.unfocus();
+                    }
+                    FocusManager.instance.primaryFocus?.unfocus();
+                  },
                 ),
               ),
             ),

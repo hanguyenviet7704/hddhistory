@@ -109,6 +109,29 @@ void main() {
     expect(find.text('Notes'), findsOneWidget);
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('dismisses keyboard when tapping the header in edit mode', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(375, 812));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      _buildTestShell(
+        child: const _NotesSheetEditorHarness(),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byType(quill.QuillEditor));
+    await tester.pump();
+
+    expect(tester.testTextInput.isVisible, isTrue);
+
+    await tester.tap(find.byKey(const ValueKey('video-lesson-notes-sheet-header-drag-region')));
+    await tester.pumpAndSettle();
+
+    expect(tester.testTextInput.isVisible, isFalse);
+    expect(find.byType(quill.QuillEditor), findsOneWidget);
+  });
 }
 
 Widget _buildTestShell({required Widget child}) {
@@ -173,6 +196,40 @@ class _NotesSheetSaveTransitionHarnessState extends State<_NotesSheetSaveTransit
           );
         });
       },
+      onRetry: () {},
+      onLoadMore: () {},
+      onDraftChanged: (value) {
+        setState(() {
+          _state = _state.copyWith(noteDraft: value);
+        });
+      },
+      onEditNote: (_) {},
+      onDeleteNote: (_) {},
+    );
+  }
+}
+
+class _NotesSheetEditorHarness extends StatefulWidget {
+  const _NotesSheetEditorHarness();
+
+  @override
+  State<_NotesSheetEditorHarness> createState() => _NotesSheetEditorHarnessState();
+}
+
+class _NotesSheetEditorHarnessState extends State<_NotesSheetEditorHarness> {
+  VideoLessonState _state = VideoLessonState.initial().copyWith(
+    notesMode: VideoLessonNotesMode.editor,
+    noteDraft: 'Hello note',
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    return VideoLessonNotesSheet(
+      state: _state,
+      onClose: () {},
+      onBack: () {},
+      onAddNote: () {},
+      onSave: () {},
       onRetry: () {},
       onLoadMore: () {},
       onDraftChanged: (value) {
