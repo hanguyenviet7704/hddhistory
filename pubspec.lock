@@ -437,10 +437,10 @@ packages:
     dependency: "direct main"
     description:
       name: facebook_app_events
-      sha256: "0e183947c222e153ab70b9d93c08da18800c73019b9455f86bf2a0bfff30d51e"
+      sha256: bb37629d270feae4c7a83d6a85201878d7ed5fd2280ce0f8cb06ff78435fa91c
       url: "https://pub.dev"
     source: hosted
-    version: "0.26.0"
+    version: "0.26.2"
   fake_async:
     dependency: transitive
     description:
@@ -469,10 +469,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "84fd4edc420fd356b4c72b733ba3b54b4b20240b9e495e3852fe015181c9ede6"
+      sha256: f13a03000d942e476bc1ff0a736d2e9de711d2f89a95cd4c1d88f861c3348387
       url: "https://pub.dev"
     source: hosted
-    version: "11.0.1"
+    version: "11.0.2"
   file_selector_linux:
     dependency: transitive
     description:
@@ -2001,10 +2001,10 @@ packages:
     dependency: "direct dev"
     description:
       name: retrofit_generator
-      sha256: "2381d86c7291b55bf1d3b30d12054a74c417ba97321afbd73cb25be0e6fa401f"
+      sha256: "302be1d2640e7c69685d44f6ec08f2f9a114944d547f0e6750993a7148d9470e"
       url: "https://pub.dev"
     source: hosted
-    version: "10.2.3"
+    version: "10.2.4"
   rxdart:
     dependency: transitive
     description:
