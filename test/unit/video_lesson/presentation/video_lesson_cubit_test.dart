@@ -463,8 +463,8 @@ _VideoLessonHarness _buildHarness({
     UpdateUserProgressLessonUseCase(progressRepository),
     userCubit,
     roadmapCubit,
-    initializationTimeout: initializationTimeout,
   );
+  cubit.overrideInitializationTimeout(initializationTimeout);
 
   return _VideoLessonHarness(
     cubit: cubit,

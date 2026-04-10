@@ -7,6 +7,7 @@ abstract interface class IMediaService {
   Future<Uint8List?> captureWidgetWithRepaintBoundary(GlobalKey globalKey, {double? pixelRatio});
   Future<void> captureAndSaveWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio});
   Future<void> shareWidget(ScreenshotController controller, {Duration delay = const Duration(milliseconds: 10), double? pixelRatio, String fileName = 'share_image.png'});
+  Future<void> shareImageFile(File imageFile, {String? shareText, Rect? sharePositionOrigin});
   Future<void> shareImageBytes(Uint8List imageBytes, {String? shareText, String fileName = 'shared_image.png', Rect? sharePositionOrigin});
   Future<void> captureAndShareWithScreenshot(
     ScreenshotController controller, {
@@ -148,11 +149,27 @@ class MediaService implements IMediaService {
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsBytes(imageBytes);
 
-      // Share the file
+      await shareImageFile(
+        file,
+        shareText: 'Share QR Code',
+      );
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> shareImageFile(
+    File imageFile, {
+    String? shareText,
+    Rect? sharePositionOrigin,
+  }) async {
+    try {
       await SharePlus.instance.share(
         ShareParams(
-          text: 'Share QR Code',
-          files: [XFile(file.path)],
+          text: shareText ?? 'Check out this amazing artwork!',
+          files: [XFile(imageFile.path)],
+          sharePositionOrigin: sharePositionOrigin,
         ),
       );
     } catch (e) {
@@ -174,13 +191,10 @@ class MediaService implements IMediaService {
       final file = File('${tempDir.path}/$fileName');
       await file.writeAsBytes(imageBytes);
 
-      // Share the file with iOS-specific parameters
-      await SharePlus.instance.share(
-        ShareParams(
-          text: shareText ?? 'Check out this amazing artwork!',
-          files: [XFile(file.path)],
-          sharePositionOrigin: sharePositionOrigin,
-        ),
+      await shareImageFile(
+        file,
+        shareText: shareText,
+        sharePositionOrigin: sharePositionOrigin,
       );
     } catch (e) {
       rethrow;

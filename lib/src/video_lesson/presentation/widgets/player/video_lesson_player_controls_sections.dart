@@ -57,22 +57,30 @@ class _VideoLessonUtilityActionsColumn extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.end,
       children: [
         _VideoLessonUtilityButton(
-          icon: Icons.menu_book_rounded,
+          buttonKey: const Key('video-lesson-summary-button'),
+          assetPath: AppAsset.svg.app.icOpenbook,
+          iconWidth: 24.5,
+          iconHeight: 28,
           enabled: canUseSummary,
           onTap: onSummaryTap,
         ),
         SizedBox(height: 32.h),
         _VideoLessonUtilityButton(
-          icon: Icons.sticky_note_2_outlined,
+          buttonKey: const Key('video-lesson-notes-button'),
+          assetPath: AppAsset.svg.app.icNote,
+          iconWidth: 27,
+          iconHeight: 24,
           enabled: canUseNotes,
           onTap: onNotesTap,
         ),
         SizedBox(height: 32.h),
         _VideoLessonUtilityButton(
-          icon: Icons.share_outlined,
+          buttonKey: const Key('video-lesson-share-button'),
+          assetPath: AppAsset.svg.app.icShare,
+          iconWidth: 32,
+          iconHeight: 32,
           enabled: canUseShare,
           onTap: onShareTap,
         ),
@@ -128,12 +136,18 @@ class _VideoLessonPlaybackButton extends StatelessWidget {
 
 class _VideoLessonUtilityButton extends StatelessWidget {
   const _VideoLessonUtilityButton({
-    required this.icon,
+    required this.buttonKey,
+    required this.assetPath,
+    required this.iconWidth,
+    required this.iconHeight,
     required this.enabled,
     required this.onTap,
   });
 
-  final IconData icon;
+  final Key buttonKey;
+  final String assetPath;
+  final double iconWidth;
+  final double iconHeight;
   final bool enabled;
   final VoidCallback onTap;
 
@@ -145,11 +159,18 @@ class _VideoLessonUtilityButton extends StatelessWidget {
         behavior: HitTestBehavior.opaque,
         onTap: enabled ? onTap : null,
         child: SizedBox.square(
+          key: buttonKey,
           dimension: 32.r,
-          child: Icon(
-            icon,
-            color: Colors.white,
-            size: 28.r,
+          child: Center(
+            child: SvgPicture.asset(
+              assetPath,
+              width: iconWidth.w,
+              height: iconHeight.h,
+              colorFilter: const ColorFilter.mode(
+                Colors.white,
+                BlendMode.srcIn,
+              ),
+            ),
           ),
         ),
       ),

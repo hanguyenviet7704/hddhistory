@@ -47,14 +47,22 @@ class _VideoLessonNotesSheetState extends State<VideoLessonNotesSheet> {
   @override
   void didUpdateWidget(covariant VideoLessonNotesSheet oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.state.noteDraft != widget.state.noteDraft) {
+    final wasEditor = oldWidget.state.notesMode == VideoLessonNotesMode.editor;
+    final isEditor = widget.state.notesMode == VideoLessonNotesMode.editor;
+    final draftChanged = oldWidget.state.noteDraft != widget.state.noteDraft;
+
+    if (wasEditor && !isEditor) {
+      _unfocusEditor();
+    }
+
+    if (isEditor && (!wasEditor || draftChanged)) {
       final nextDraft = videoLessonCanonicalizeNoteContent(widget.state.noteDraft);
       if (_lastSerializedDraft != nextDraft) {
         _replaceController(widget.state.noteDraft);
       }
     }
 
-    final enteredEditor = oldWidget.state.notesMode != VideoLessonNotesMode.editor && widget.state.notesMode == VideoLessonNotesMode.editor;
+    final enteredEditor = !wasEditor && isEditor;
     if (!enteredEditor) return;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
@@ -64,6 +72,7 @@ class _VideoLessonNotesSheetState extends State<VideoLessonNotesSheet> {
 
   @override
   void dispose() {
+    _unfocusEditor();
     _controller
       ?..removeListener(_handleControllerChanged)
       ..dispose();
@@ -89,12 +98,35 @@ class _VideoLessonNotesSheetState extends State<VideoLessonNotesSheet> {
   }
 
   void _handleControllerChanged() {
+    if (widget.state.notesMode != VideoLessonNotesMode.editor) return;
     final controller = _controller;
     if (controller == null) return;
     final nextDraft = videoLessonEncodeNoteDocument(controller.document);
     if (_lastSerializedDraft == nextDraft) return;
     _lastSerializedDraft = nextDraft;
     widget.onDraftChanged(nextDraft);
+  }
+
+  void _unfocusEditor() {
+    if (_focusNode.hasFocus) {
+      _focusNode.unfocus();
+    }
+    FocusManager.instance.primaryFocus?.unfocus();
+  }
+
+  void _handleBack() {
+    _unfocusEditor();
+    widget.onBack();
+  }
+
+  void _handleClose() {
+    _unfocusEditor();
+    widget.onClose();
+  }
+
+  void _handleSave() {
+    _unfocusEditor();
+    widget.onSave();
   }
 
   @override
@@ -114,8 +146,8 @@ class _VideoLessonNotesSheetState extends State<VideoLessonNotesSheet> {
         child: _VideoLessonNotesSheetHeader(
           key: ValueKey('video-lesson-notes-sheet-header-${widget.state.notesMode.name}'),
           state: widget.state,
-          onClose: widget.onClose,
-          onBack: widget.onBack,
+          onClose: _handleClose,
+          onBack: _handleBack,
         ),
       ),
       child: AnimatedSwitcher(
@@ -139,7 +171,7 @@ class _VideoLessonNotesSheetState extends State<VideoLessonNotesSheet> {
                   controller: _noteController,
                   focusNode: _focusNode,
                   scrollController: _scrollController,
-                  onSave: widget.onSave,
+                  onSave: _handleSave,
                 ),
               )
             : KeyedSubtree(

@@ -45,9 +45,8 @@ class VideoLessonPlayerControls extends StatelessWidget {
           ),
           if (!state.isEndVisible)
             Positioned(
-              right: 16.w,
-              top: 0,
-              bottom: 92.h,
+              right: 17.w,
+              top: MediaQuery.viewPaddingOf(context).top + 439.h,
               child: _VideoLessonAnimatedVisibility(
                 visible: showControls,
                 hiddenOffset: const Offset(0.16, 0),

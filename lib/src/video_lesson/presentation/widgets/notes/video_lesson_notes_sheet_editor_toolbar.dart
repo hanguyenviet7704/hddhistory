@@ -1,9 +1,5 @@
 part of '../../../video_lesson.dart';
 
-const _videoLessonTextSymbolIconAsset = 'assets/svg/app/ic_text_symbol.svg';
-const _videoLessonBulletIconAsset = 'assets/svg/app/ic_bullet.svg';
-const _videoLessonBulletNumberIconAsset = 'assets/svg/app/ic_bullet_number.svg';
-
 class _VideoLessonNoteEditorToolbar extends StatelessWidget {
   const _VideoLessonNoteEditorToolbar({
     required this.controller,
@@ -46,7 +42,7 @@ class _VideoLessonNoteEditorToolbar extends StatelessWidget {
               ),
               12.horizontalSpace,
               _VideoLessonToolbarChip(
-                iconAsset: _videoLessonTextSymbolIconAsset,
+                iconAsset: AppAsset.svg.app.icTextSymbol,
                 selected: activeListType == null,
                 onTap: () => _clearNoteListAttribute(
                   controller: controller,
@@ -55,7 +51,7 @@ class _VideoLessonNoteEditorToolbar extends StatelessWidget {
               ),
               8.horizontalSpace,
               _VideoLessonToolbarChip(
-                iconAsset: _videoLessonBulletIconAsset,
+                iconAsset: AppAsset.svg.app.icBullet,
                 selected: activeListType == quill.Attribute.ul.value,
                 onTap: () => _toggleNoteListAttribute(
                   controller: controller,
@@ -65,7 +61,7 @@ class _VideoLessonNoteEditorToolbar extends StatelessWidget {
               ),
               8.horizontalSpace,
               _VideoLessonToolbarChip(
-                iconAsset: _videoLessonBulletNumberIconAsset,
+                iconAsset: AppAsset.svg.app.icBulletNumber,
                 selected: activeListType == quill.Attribute.ol.value,
                 onTap: () => _toggleNoteListAttribute(
                   controller: controller,

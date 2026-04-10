@@ -21,6 +21,13 @@ extension _VideoLessonPageBuilders on _VideoLessonPageState {
         listener: (context, state) => _initializeController(state.lesson.video.url),
       ),
       BlocListener<VideoLessonCubit, VideoLessonState>(
+        listenWhen: (previous, current) => videoLessonShouldPreloadShareThumbnail(
+          previous: previous,
+          current: current,
+        ),
+        listener: (context, state) => _preloadShareThumbnail(state.lesson.video.thumbnail),
+      ),
+      BlocListener<VideoLessonCubit, VideoLessonState>(
         listener: (context, state) {
           final trackingData = _trackingData(state);
           if (trackingData != null && state.isReady && !state.screenViewTracked) {
@@ -167,6 +174,18 @@ extension _VideoLessonPageBuilders on _VideoLessonPageState {
       );
     }
     _cubit.markSummaryScrollTracked();
+  }
+
+  void _preloadShareThumbnail(String rawUrl) {
+    final thumbnailUrl = videoLessonNormalizedShareThumbnailUrl(rawUrl);
+    if (thumbnailUrl.isEmpty) return;
+    unawaited(
+      AppDI.injector
+          .get<ICacheService>(
+            instanceName: DIKey.cacheService,
+          )
+          .preloadImages([thumbnailUrl]),
+    );
   }
 
   void _handleComplete(VideoLessonState state) {

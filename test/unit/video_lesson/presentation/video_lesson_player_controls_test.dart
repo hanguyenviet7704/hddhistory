@@ -32,7 +32,7 @@ void main() {
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.sticky_note_2_outlined));
+    await tester.tap(find.byKey(const Key('video-lesson-notes-button')));
     await tester.pumpAndSettle();
 
     expect(notesTapped, isTrue);

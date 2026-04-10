@@ -14,10 +14,8 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
     this._deleteUserVideoLessonNoteUseCase,
     this._updateUserProgressLessonUseCase,
     this._userCubit,
-    this._courseRoadmapCubit, {
-    Duration initializationTimeout = _defaultInitializationTimeout,
-  }) : _initializationTimeout = initializationTimeout,
-       super(VideoLessonState.initial());
+    this._courseRoadmapCubit,
+  ) : super(VideoLessonState.initial());
 
   final GetCourseLessonUseCase _getCourseLessonUseCase;
   final GetVideoLearningItemUseCase _getLearningItemUseCase;
@@ -28,7 +26,12 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
   final UpdateUserProgressLessonUseCase _updateUserProgressLessonUseCase;
   final UserCubit _userCubit;
   final CourseRoadmapCubit _courseRoadmapCubit;
-  final Duration _initializationTimeout;
+  Duration _initializationTimeout = _defaultInitializationTimeout;
+
+  @visibleForTesting
+  void overrideInitializationTimeout(Duration timeout) {
+    _initializationTimeout = timeout;
+  }
 
   void reset() => emit(VideoLessonState.initial());
 

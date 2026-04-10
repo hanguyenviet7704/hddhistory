@@ -82,26 +82,30 @@ extension _VideoLessonPageOverlayActions on _VideoLessonPageState {
       );
     }
 
+    final cacheService = AppDI.injector.get<ICacheService>(
+      instanceName: DIKey.cacheService,
+    );
     final mediaService = AppDI.injector.get<IMediaService>();
     final sharePositionOrigin = mediaService.getSharePositionOrigin(context);
-    final thumbnailUrl = state.lesson.video.thumbnail.trim();
+    final thumbnailUrl = videoLessonNormalizedShareThumbnailUrl(
+      state.lesson.video.thumbnail,
+    );
 
     if (thumbnailUrl.isNotEmpty) {
       try {
-        final response = await Dio().get<List<int>>(
+        final cachedThumbnailFile = await cacheService.getCachedImageIfAvailable(
           thumbnailUrl,
-          options: Options(responseType: ResponseType.bytes),
         );
-        final bytes = Uint8List.fromList(response.data ?? const []);
-        if (bytes.isNotEmpty) {
-          await mediaService.shareImageBytes(
-            bytes,
+        if (cachedThumbnailFile != null) {
+          await mediaService.shareImageFile(
+            cachedThumbnailFile,
             shareText: _VideoLessonPageState._shareText,
-            fileName: 'video_lesson_${state.lessonId}.png',
             sharePositionOrigin: sharePositionOrigin,
           );
           return;
         }
+
+        unawaited(cacheService.preloadImages([thumbnailUrl]));
       } catch (_) {
         // Fallback to text-only share.
       }

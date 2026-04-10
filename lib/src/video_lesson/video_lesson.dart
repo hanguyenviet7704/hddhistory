@@ -49,6 +49,7 @@ part 'presentation/pages/video_lesson_page_completion_utils.dart';
 part 'presentation/pages/video_lesson_page_interaction_actions.dart';
 part 'presentation/pages/video_lesson_page_overlay_actions.dart';
 part 'presentation/pages/video_lesson_page_player_view_state.dart';
+part 'presentation/pages/video_lesson_page_share_utils.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/common/video_lesson_blocking_overlay_layout.dart';

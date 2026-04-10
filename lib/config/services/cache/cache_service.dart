@@ -11,6 +11,7 @@ abstract interface class ICacheService {
   Future<void> preloadFiles(List<String> fileUrls);
   Future<void> clearAllCache();
   Future<String> getCacheStatus();
+  Future<File?> getCachedImageIfAvailable(String imageUrl);
   Future<File> getCachedImage(String imageUrl);
   Stream<FileResponse> getCachedImageStream(String imageUrl, {bool withProgress = false});
   Future<File> getCachedVideo(String videoUrl);
@@ -114,6 +115,12 @@ class CacheService implements ICacheService {
   }
 
   /// Get cached image file - returns immediately if cached
+  Future<File?> getCachedImageIfAvailable(String imageUrl) async {
+    final fileInfo = await imageCacheManager.getFileFromCache(imageUrl);
+    return fileInfo?.file;
+  }
+
+  /// Get cached image file - downloads only when cache misses
   Future<File> getCachedImage(String imageUrl) async {
     return await imageCacheManager.getSingleFile(imageUrl);
   }
