@@ -137,7 +137,7 @@ dependencies:
   # App Ads Services
   # google_mobile_ads: ^3.0.0
   # unity_ads_plugin: ^0.3.7
-  facebook_app_events: ^0.26.2
+  facebook_app_events: ^0.27.0
 
   # App Map Services
 #  google_maps_flutter: ^2.12.1
@@ -199,7 +199,7 @@ dependencies:
   flutter_isolate: ^2.1.0
 
   # App Connectivity Services
-  connectivity_plus: ^7.1.0
+  connectivity_plus: ^7.1.1
 
   # App Color Picker
   flutter_colorpicker: ^1.1.0
@@ -250,7 +250,7 @@ dev_dependencies:
   # flutter pub run build_runner build --delete-conflicting-outputs
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
-  retrofit_generator: ^10.2.4
+  retrofit_generator: ^10.2.5
   build_runner: ^2.13.1
   flutter_gen_runner: ^5.13.0
   json_serializable: ^6.13.1

@@ -285,10 +285,10 @@ packages:
     dependency: "direct main"
     description:
       name: connectivity_plus
-      sha256: b8fe52979ff12432ecf8f0abf6ff70410b1bb734be1c9e4f2f86807ad7166c79
+      sha256: "62ffa266d9a23b79fb3fcbc206afc00bb979417ba57b1324c546b5aab95ba057"
       url: "https://pub.dev"
     source: hosted
-    version: "7.1.0"
+    version: "7.1.1"
   connectivity_plus_platform_interface:
     dependency: transitive
     description:
@@ -437,10 +437,10 @@ packages:
     dependency: "direct main"
     description:
       name: facebook_app_events
-      sha256: bb37629d270feae4c7a83d6a85201878d7ed5fd2280ce0f8cb06ff78435fa91c
+      sha256: "947212dcc67fce66828bb00c6fb759f4dae60cf7b9872c3da6bc663469e92438"
       url: "https://pub.dev"
     source: hosted
-    version: "0.26.2"
+    version: "0.27.0"
   fake_async:
     dependency: transitive
     description:
@@ -2001,10 +2001,10 @@ packages:
     dependency: "direct dev"
     description:
       name: retrofit_generator
-      sha256: "302be1d2640e7c69685d44f6ec08f2f9a114944d547f0e6750993a7148d9470e"
+      sha256: b6beaca9c62acfa24e2185c238d627fd265b0d4a5b117d0fbc27223bb724cbea
       url: "https://pub.dev"
     source: hosted
-    version: "10.2.4"
+    version: "10.2.5"
   rxdart:
     dependency: transitive
     description:
