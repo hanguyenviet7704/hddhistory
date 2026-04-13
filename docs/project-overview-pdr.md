@@ -1,11 +1,11 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-04-08  
+**Last Updated:** 2026-04-13
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
+Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
 The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
@@ -16,7 +16,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 
 ### Core user journeys
 1. Onboarding and account setup.
-2. Course discovery and lesson entry.
+2. Course discovery and roadmap lesson entry.
 3. Output-practice intro sheet and conversation launch from course output lessons.
 4. Video-lesson intro sheet, mounted player shell, and completion handoff from roadmap lessons.
 5. Exercise completion and feedback review.
@@ -63,7 +63,8 @@ Notes:
 2. Course and lesson delivery
 - Retrieve paginated course and lesson data.
 - Support learning item sequencing and item detail retrieval.
-- Allow navigation between lesson-related pages using typed routes, including the course-shell output-practice route and the video-lesson route.
+- Allow navigation between lesson-related pages using typed routes, including the course-shell output-practice route, the video-lesson route, and the single lesson route with read/listen entry mode.
+- Resolve roadmap lesson popup CTAs between read-only and read/listen states before navigation based on usable keypoint audio availability.
 
 3. Output-practice conversation flow
 - Open output lessons through an intro sheet, then navigate into the typed `output-practice/:sectionId` route.
@@ -169,6 +170,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-04-13 | Added dual-mode lesson requirements for roadmap popup branching, single-route read/listen entry, route-session audio playback, shared completion handoff, and no-audio fallback behavior. |
 | 2026-04-08 | Added first-slice video-lesson course-shell requirements (roadmap entry, intro sheet, player shell, completion handoff, and tracking) and synced module scope to 18 modules. |
 | 2026-03-30 | Added output-practice course-shell flow (typed route, intro sheet, scoped history, socket retry/reconcile, tracking) and synced module scope to 17 modules. |
 | 2026-03-05 | Added learning streak module scope and requirements (home streak popup + completion-triggered streak success gate). |

@@ -64,6 +64,24 @@ final class AppTrackingService extends ITrackingService {
     };
   }
 
+  Map<String, dynamic> _keypointAudioParams(
+    KeypointTrackingData trackingData, {
+    String? mode,
+    String? entryPoint,
+    double? speed,
+    int? seekFromSecond,
+    int? seekToSecond,
+  }) {
+    return {
+      ..._keypointParams(trackingData),
+      ..._optionalStringParam('mode', mode),
+      ..._optionalStringParam('entry_point', entryPoint),
+      ..._optionalParam('speed', speed),
+      ..._optionalParam('seek_from_second', seekFromSecond),
+      ..._optionalParam('seek_to_second', seekToSecond),
+    };
+  }
+
   Map<String, dynamic> _roleplayParams(RoleplayTrackingData trackingData) {
     final roleplayId = trackingData.learningItem.id.isNotEmpty ? trackingData.learningItem.id : trackingData.lesson.learningItemId;
     final roleplayName = trackingData.learningItem.title.en.isNotEmpty ? trackingData.learningItem.title.en : trackingData.lesson.trackingName;
@@ -1235,6 +1253,147 @@ final class AppTrackingService extends ITrackingService {
     _appTrackingService.trackEvent(
       TrackingKey.videoLessonMarkCompleteClick,
       parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  //* Keypoint audio events
+  @override
+  Future<void> trackKeypointAudioPopupView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioPopupView,
+      parameters: _keypointAudioParams(trackingData, entryPoint: 'roadmap_popup'),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioPopupReadClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioPopupReadClick,
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: LessonEntryMode.read.routeValue,
+        entryPoint: 'roadmap_popup',
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioPopupListenClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioPopupListenClick,
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: LessonEntryMode.audio.routeValue,
+        entryPoint: 'roadmap_popup',
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioScreenView(
+    KeypointTrackingData trackingData, {
+    required String mode,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioScreenView,
+      parameters: _keypointAudioParams(trackingData, mode: mode),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioModeSwitch(
+    KeypointTrackingData trackingData, {
+    required String mode,
+    required String entryPoint,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioModeSwitch,
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: mode,
+        entryPoint: entryPoint,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioPlayClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioPlayClick,
+      parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioPauseClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioPauseClick,
+      parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioSeekBackClick(
+    KeypointTrackingData trackingData, {
+    required int seekFromSecond,
+    required int seekToSecond,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioSeekBackClick,
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: LessonEntryMode.audio.routeValue,
+        seekFromSecond: seekFromSecond,
+        seekToSecond: seekToSecond,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioSeekForwardClick(
+    KeypointTrackingData trackingData, {
+    required int seekFromSecond,
+    required int seekToSecond,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioSeekForwardClick,
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: LessonEntryMode.audio.routeValue,
+        seekFromSecond: seekFromSecond,
+        seekToSecond: seekToSecond,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioSpeedOpen(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioSpeedOpen,
+      parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioSpeedSelect(
+    KeypointTrackingData trackingData, {
+    required double speed,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioSpeedSelect,
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: LessonEntryMode.audio.routeValue,
+        speed: speed,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioCompleteView(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioCompleteView,
+      parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
     );
   }
 

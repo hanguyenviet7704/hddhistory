@@ -273,6 +273,38 @@ abstract interface class ITrackingService {
     required String nodeId,
   });
 
+  //* Keypoint audio events
+  Future<void> trackKeypointAudioPopupView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioPopupReadClick(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioPopupListenClick(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioScreenView(
+    KeypointTrackingData trackingData, {
+    required String mode,
+  });
+  Future<void> trackKeypointAudioModeSwitch(
+    KeypointTrackingData trackingData, {
+    required String mode,
+    required String entryPoint,
+  });
+  Future<void> trackKeypointAudioPlayClick(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioPauseClick(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioSeekBackClick(
+    KeypointTrackingData trackingData, {
+    required int seekFromSecond,
+    required int seekToSecond,
+  });
+  Future<void> trackKeypointAudioSeekForwardClick(
+    KeypointTrackingData trackingData, {
+    required int seekFromSecond,
+    required int seekToSecond,
+  });
+  Future<void> trackKeypointAudioSpeedOpen(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioSpeedSelect(
+    KeypointTrackingData trackingData, {
+    required double speed,
+  });
+  Future<void> trackKeypointAudioCompleteView(KeypointTrackingData trackingData);
+
   //* Keypoint events
   Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData);
   Future<void> trackKeypointTheoryScrView(KeypointTrackingData trackingData);

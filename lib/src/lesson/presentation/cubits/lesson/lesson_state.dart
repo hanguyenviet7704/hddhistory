@@ -9,6 +9,7 @@ abstract class LessonState with _$LessonState {
     @Default(BasePageBreak<LearningItemEntity>()) BasePageBreak<LearningItemEntity> pageData,
     @Default(0) int currentLearningItemIndex,
     @Default(0) int currentLessonIndex,
+    @Default(LessonCompletionOrigin.none) LessonCompletionOrigin completionOrigin,
     @Default([]) List<QuestionEntity> subQuestions,
     @Default(false) bool isShowResultOverlay,
     @Default(false) bool hasPendingAdvance,

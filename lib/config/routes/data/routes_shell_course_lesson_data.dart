@@ -23,6 +23,7 @@ Widget _buildLessonFlowPage(Widget child) {
   return MultiBlocProvider(
     providers: [
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<LessonAudioCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
       BlocProvider.value(value: AppDI.injector.get<TheoryCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),
@@ -40,13 +41,21 @@ Widget _buildLessonFlowPage(Widget child) {
 }
 
 class LessonRoute extends BaseTransitionRouteData with $LessonRoute {
-  const LessonRoute();
+  final String initialMode;
+
+  const LessonRoute({
+    this.initialMode = 'read',
+  });
 
   @override
   RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
 
   @override
-  Widget buildPageWidget(BuildContext context, GoRouterState state) => _buildLessonFlowPage(const LessonPage());
+  Widget buildPageWidget(BuildContext context, GoRouterState state) => _buildLessonFlowPage(
+    LessonPage(
+      initialMode: LessonEntryMode.fromRouteValue(initialMode),
+    ),
+  );
 }
 
 class NoCorrectAnswerDocumentRoute extends BaseTransitionRouteData with $NoCorrectAnswerDocumentRoute {

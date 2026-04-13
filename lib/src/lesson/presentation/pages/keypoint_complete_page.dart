@@ -18,6 +18,9 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
       final trackingData = KeypointTrackingData.fromContext();
       if (trackingData == null) return;
       AppService.instance.appTrackingService.trackKeypointFinishScrView(trackingData);
+      if (context.read<LessonCubit>().state.completionOrigin == LessonCompletionOrigin.audio) {
+        AppService.instance.appTrackingService.trackKeypointAudioCompleteView(trackingData);
+      }
       context.read<FeedbackCubit>().loadUserFeedbacks();
     });
   }

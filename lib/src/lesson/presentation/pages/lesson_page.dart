@@ -1,7 +1,12 @@
 part of '../../lesson.dart';
 
 class LessonPage extends StatefulWidget {
-  const LessonPage({super.key});
+  const LessonPage({
+    super.key,
+    required this.initialMode,
+  });
+
+  final LessonEntryMode initialMode;
 
   @override
   State<LessonPage> createState() => _LessonPageState();
@@ -13,10 +18,13 @@ class _LessonPageState extends State<LessonPage> {
   late final LessonBodyFactory _bodyFactory;
   late final LessonTimelineBuilder _timelineBuilder;
   late final LessonTrackingDelegate _trackingDelegate;
+  late LessonEntryMode _selectedMode;
+  bool _hasTrackedAudioShellView = false;
 
   @override
   void initState() {
     super.initState();
+    _selectedMode = widget.initialMode;
     _controller = LessonPageController(
       onBottomButtonVisibilityChanged: (isVisible) => context.read<LessonCubit>().setBottomButtonVisible(isVisible),
       onClearSuppressNextAutoScroll: () => context.read<LessonCubit>().clearSuppressNextAutoScroll(),
@@ -30,22 +38,42 @@ class _LessonPageState extends State<LessonPage> {
     );
     _timelineBuilder = const LessonTimelineBuilder();
     _trackingDelegate = const LessonTrackingDelegate();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       _showLessonNavigationPopupIfNeeded();
+      await _syncAudioKeypoint(context.read<CourseLessonCubit>().state.resolvedCurrentKeypoint);
     });
   }
 
   @override
   void dispose() {
+    context.read<LessonAudioCubit>().resetSession();
     _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final currentKeypoint = context.select((CourseLessonCubit cubit) => cubit.state.resolvedCurrentKeypoint);
+
     return MultiBlocListener(
       listeners: [
+        BlocListener<CourseLessonCubit, CourseLessonState>(
+          listenWhen: (previous, current) => previous.resolvedCurrentKeypoint != current.resolvedCurrentKeypoint,
+          listener: (context, state) async {
+            await _syncAudioKeypoint(state.resolvedCurrentKeypoint);
+          },
+        ),
+        BlocListener<LessonAudioCubit, LessonAudioState>(
+          listenWhen: (previous, current) => previous.hasCompletedPlayback != current.hasCompletedPlayback && current.hasCompletedPlayback,
+          listener: (context, state) {
+            context.read<LessonCubit>().completeCurrentKeypoint(
+              origin: LessonCompletionOrigin.audio,
+              bypassReviewQueue: true,
+            );
+          },
+        ),
         BlocListener<TheoryCubit, TheoryState>(
           listenWhen: (previous, current) {
             return previous.currentDocumentIndex != current.currentDocumentIndex ||
@@ -73,23 +101,119 @@ class _LessonPageState extends State<LessonPage> {
         },
         builder: (context, state) {
           final activeBody = _buildActiveBody(context, state);
-          final lessonBody = _timelineBuilder.buildLessonListView(
+          final readSurface = LessonReadSurface(
             state: state,
             activeBody: activeBody,
             controller: _controller,
+            timelineBuilder: _timelineBuilder,
             buildReviewBody: _bodyFactory.buildReviewBody,
             onTrackCurrentLearningItemScroll: _trackCurrentLearningItemScroll,
           );
           final bottomButton = _bodyFactory.buildBottomButton(context, activeBody);
 
-          return LessonLayout(
-            body: lessonBody,
-            bottom: bottomButton,
+          if (!currentKeypoint.hasUsableAudio) {
+            return LessonLayout(
+              body: readSurface,
+              bottom: bottomButton,
+              isLoading: state.status == LessonStatus.loading,
+            );
+          }
+
+          final selectedMode = _selectedMode;
+          return LessonDualModeLayout(
+            selectedMode: selectedMode,
+            onModeSelected: _handleModeSelected,
+            onClose: () => LessonExitFlow.open(
+              context,
+              onBeforePopup: () => context.read<LessonAudioCubit>().pauseForOverlay(),
+            ),
+            readBody: readSurface,
+            audioBody: LessonAudioSurface(
+              onOpenSpeedSheet: _openSpeedSheet,
+            ),
+            bottom: selectedMode.isRead ? bottomButton : null,
             isLoading: state.status == LessonStatus.loading,
           );
         },
       ),
     );
+  }
+
+  Future<void> _syncAudioKeypoint(KeypointEntity keypoint) async {
+    final lessonAudioCubit = context.read<LessonAudioCubit>();
+    await lessonAudioCubit.configure(keypoint);
+
+    if (!keypoint.hasUsableAudio) {
+      if (_selectedMode.isAudio && mounted) {
+        setState(() => _selectedMode = LessonEntryMode.read);
+      }
+      return;
+    }
+
+    _trackAudioShellViewIfNeeded();
+    if (_selectedMode.isAudio) {
+      await lessonAudioCubit.enterAudioMode();
+    }
+  }
+
+  void _trackAudioShellViewIfNeeded() {
+    if (_hasTrackedAudioShellView) return;
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData == null) return;
+
+    _hasTrackedAudioShellView = true;
+    AppService.instance.appTrackingService.trackKeypointAudioScreenView(
+      trackingData,
+      mode: _selectedMode.routeValue,
+    );
+  }
+
+  Future<void> _handleModeSelected(LessonEntryMode nextMode) async {
+    if (_selectedMode == nextMode) return;
+
+    final trackingData = KeypointTrackingData.fromContext();
+    if (nextMode.isRead) {
+      await context.read<LessonAudioCubit>().pauseForModeSwitch();
+    }
+
+    if (!mounted) return;
+    setState(() => _selectedMode = nextMode);
+
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointAudioModeSwitch(
+        trackingData,
+        mode: nextMode.routeValue,
+        entryPoint: 'in_route_switch',
+      );
+    }
+
+    if (nextMode.isAudio) {
+      await context.read<LessonAudioCubit>().enterAudioMode();
+    }
+  }
+
+  Future<void> _openSpeedSheet() async {
+    final audioCubit = context.read<LessonAudioCubit>();
+    final shouldResume = await audioCubit.pauseForSpeedSheet();
+
+    if (!mounted) return;
+
+    await showLessonAudioSpeedSheet(
+      context,
+      initialSpeed: audioCubit.state.speed,
+      onSpeedChanged: (speed) {
+        final trackingData = KeypointTrackingData.fromContext();
+        if (trackingData != null) {
+          AppService.instance.appTrackingService.trackKeypointAudioSpeedSelect(
+            trackingData,
+            speed: speed,
+          );
+        }
+        audioCubit.setSpeed(speed);
+      },
+    );
+
+    await audioCubit.restoreAfterSpeedSheet(resumePlayback: shouldResume);
   }
 
   void _handleAnswerChecked(bool isCorrect) {
@@ -113,12 +237,11 @@ class _LessonPageState extends State<LessonPage> {
 
     switch (state.currentLearningItem.type) {
       case LearningItemType.exercise || LearningItemType.roleplay:
-        final QuestionEntity question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
+        final question = context.select((ExerciseCubit bloc) => bloc.state.currentQuestion);
         return _bodyFactory.buildExerciseBody(question);
       case LearningItemType.theory:
         return TheoryLessonBody(onAnswerChecked: _handleAnswerChecked);
       case LearningItemType.video:
-        return const SizedBox.shrink();
       case LearningItemType.unknown:
         return const SizedBox.shrink();
     }
