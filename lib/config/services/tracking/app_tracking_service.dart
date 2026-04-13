@@ -98,6 +98,49 @@ final class AppTrackingService extends ITrackingService {
     };
   }
 
+  Map<String, dynamic> _videoLessonParams(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    int? atSecond,
+    String? questionId,
+    String? noteId,
+    String? noteMode,
+    int? seekFromSecond,
+    int? seekToSecond,
+    int? seekLatencyMs,
+    int? timeToFirstFrameMs,
+    bool? isCorrect,
+    String? initStatus,
+    String? warmupState,
+  }) {
+    return {
+      ..._courseLessonParams(trackingData),
+      'node_id': nodeId,
+      'lesson_type': LessonType.video.trackingName,
+      ..._optionalParam('at_second', atSecond),
+      ..._optionalStringParam('question_id', questionId),
+      ..._optionalStringParam('note_id', noteId),
+      ..._optionalStringParam('note_mode', noteMode),
+      ..._optionalParam('seek_from_second', seekFromSecond),
+      ..._optionalParam('seek_to_second', seekToSecond),
+      ..._optionalParam('seek_latency_ms', seekLatencyMs),
+      ..._optionalParam('time_to_first_frame_ms', timeToFirstFrameMs),
+      ..._optionalParam('is_correct', isCorrect),
+      ..._optionalStringParam('init_status', initStatus),
+      ..._optionalStringParam('warmup_state', warmupState),
+    };
+  }
+
+  Map<String, dynamic> _optionalParam(String key, Object? value) {
+    if (value == null) return const {};
+    return {key: value};
+  }
+
+  Map<String, dynamic> _optionalStringParam(String key, String? value) {
+    if (value == null || value.isEmpty) return const {};
+    return {key: value};
+  }
+
   Map<String, dynamic> _premiumParams() {
     try {
       final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
@@ -848,6 +891,350 @@ final class AppTrackingService extends ITrackingService {
         sectionId: sectionId,
         conversationId: conversationId,
       ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonPopupView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonPopupView,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonPopupClose(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonPopupClose,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonStartClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonStartClick,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonScrView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonScrView,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonExitClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonExitClick,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonPlayClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonPlayClick,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonPauseClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonPauseClick,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonSeek(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required int seekFromSecond,
+    required int seekToSecond,
+    int? seekLatencyMs,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonSeek,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        seekFromSecond: seekFromSecond,
+        seekToSecond: seekToSecond,
+        seekLatencyMs: seekLatencyMs,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonPlayerInit(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String initStatus,
+    required String warmupState,
+    int? timeToFirstFrameMs,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonPlayerInit,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        initStatus: initStatus,
+        warmupState: warmupState,
+        timeToFirstFrameMs: timeToFirstFrameMs,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonNotesView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonNotesView,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonAddNoteClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteMode,
+    required int atSecond,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonAddNoteClick,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        noteMode: noteMode,
+        atSecond: atSecond,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonNoteSaveClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteMode,
+    String? noteId,
+    required int atSecond,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonNoteSaveClick,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        noteMode: noteMode,
+        noteId: noteId,
+        atSecond: atSecond,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonNoteEditClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteId,
+    required String noteMode,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonNoteEditClick,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        noteId: noteId,
+        noteMode: noteMode,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonNoteDeleteClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonNoteDeleteClick,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        noteId: noteId,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonSummaryView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonSummaryView,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonSummaryScroll(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonSummaryScroll,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonSummaryClose(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonSummaryClose,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonShareClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonShareClick,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonQuizView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonQuizView,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        questionId: questionId,
+        atSecond: atSecond,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonQuizCheck(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+    required bool isCorrect,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonQuizCheck,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        questionId: questionId,
+        atSecond: atSecond,
+        isCorrect: isCorrect,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonQuizResultView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+    required bool isCorrect,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonQuizResultView,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        questionId: questionId,
+        atSecond: atSecond,
+        isCorrect: isCorrect,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonQuizContinue(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+    required bool isCorrect,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonQuizContinue,
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        questionId: questionId,
+        atSecond: atSecond,
+        isCorrect: isCorrect,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonCompleteView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonCompleteView,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+    );
+  }
+
+  @override
+  Future<void> trackVideoLessonMarkCompleteClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.videoLessonMarkCompleteClick,
+      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
     );
   }
 

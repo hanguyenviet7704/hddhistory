@@ -151,6 +151,127 @@ abstract interface class ITrackingService {
     required String sectionId,
     required String conversationId,
   });
+  Future<void> trackVideoLessonPopupView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonPopupClose(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonStartClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonScrView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonExitClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonPlayClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonPauseClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonSeek(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required int seekFromSecond,
+    required int seekToSecond,
+    int? seekLatencyMs,
+  });
+  Future<void> trackVideoLessonPlayerInit(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String initStatus,
+    required String warmupState,
+    int? timeToFirstFrameMs,
+  });
+  Future<void> trackVideoLessonNotesView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonAddNoteClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteMode,
+    required int atSecond,
+  });
+  Future<void> trackVideoLessonNoteSaveClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteMode,
+    String? noteId,
+    required int atSecond,
+  });
+  Future<void> trackVideoLessonNoteEditClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteId,
+    required String noteMode,
+  });
+  Future<void> trackVideoLessonNoteDeleteClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String noteId,
+  });
+  Future<void> trackVideoLessonSummaryView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonSummaryScroll(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonSummaryClose(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonShareClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonQuizView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+  });
+  Future<void> trackVideoLessonQuizCheck(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+    required bool isCorrect,
+  });
+  Future<void> trackVideoLessonQuizResultView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+    required bool isCorrect,
+  });
+  Future<void> trackVideoLessonQuizContinue(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+    required String questionId,
+    required int atSecond,
+    required bool isCorrect,
+  });
+  Future<void> trackVideoLessonCompleteView(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
+  Future<void> trackVideoLessonMarkCompleteClick(
+    CourseLessonTrackingData trackingData, {
+    required String nodeId,
+  });
 
   //* Keypoint events
   Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData);

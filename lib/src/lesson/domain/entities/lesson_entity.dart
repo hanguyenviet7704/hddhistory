@@ -10,9 +10,12 @@ abstract class LessonEntity with _$LessonEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default(LessonVideoEntity()) LessonVideoEntity video,
     @Default(LessonPublishStatus.draft) LessonPublishStatus status,
     @Default([]) List<KeypointEntity> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
+    @Default(0) int estimateCompleTimeNumber,
+    @Default('') String aiConfig,
     @Default(TagEntity()) TagEntity icon,
     @Default(TagEntity()) TagEntity lightIcon,
     @Default(ProcessEnum.notStarted) ProcessEnum progess,
@@ -137,5 +140,11 @@ extension LessonEntityExtension on LessonEntity {
       if (keypointTitle.isNotEmpty) return keypointTitle;
     }
     return title.text;
+  }
+
+  String get roadmapDisplayImage {
+    if (image.isNotEmpty) return image;
+    if (video.thumbnail.isNotEmpty) return video.thumbnail;
+    return '';
   }
 }

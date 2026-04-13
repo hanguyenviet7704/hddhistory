@@ -33,6 +33,8 @@ extension LessonStateExtension on LessonState {
         return currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).tag;
       case LearningItemType.exercise || LearningItemType.roleplay:
         return currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).tag;
+      case LearningItemType.video:
+        return TagEntity();
       case LearningItemType.unknown:
         return TagEntity();
     }
@@ -42,6 +44,7 @@ extension LessonStateExtension on LessonState {
     return switch (currentLearningItem.type) {
       LearningItemType.theory => QuestionEntity(),
       LearningItemType.exercise || LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()),
+      LearningItemType.video => QuestionEntity(),
       LearningItemType.unknown => QuestionEntity(),
     };
   }
@@ -51,6 +54,7 @@ extension LessonStateExtension on LessonState {
       LearningItemType.theory => currentLearningItem.documents.elementAtOrDefault(currentLessonIndex, defaultValue: DocumentEntity()).speechBubble.text,
       LearningItemType.exercise ||
       LearningItemType.roleplay => currentLearningItem.questions.elementAtOrDefault(currentLessonIndex, defaultValue: QuestionEntity()).speechBubble.text,
+      LearningItemType.video => '',
       LearningItemType.unknown => '',
     };
   }
@@ -67,6 +71,8 @@ extension LessonStateExtension on LessonState {
           return sum + item.documents.length;
         case LearningItemType.exercise || LearningItemType.roleplay:
           return sum + item.questions.length;
+        case LearningItemType.video:
+          return sum;
         case LearningItemType.unknown:
           return sum;
       }
@@ -81,6 +87,8 @@ extension LessonStateExtension on LessonState {
           return sum + item.documents.length;
         case LearningItemType.exercise || LearningItemType.roleplay:
           return sum + item.questions.length;
+        case LearningItemType.video:
+          return sum;
         case LearningItemType.unknown:
           return sum;
       }

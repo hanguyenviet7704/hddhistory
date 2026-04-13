@@ -73,7 +73,7 @@ class LessonTimelineBuilder {
       final isCurrentItem = itemIndex == state.currentLearningItemIndex;
 
       switch (learningItem.type) {
-        case LearningItemType.theory:
+        case LearningItemType.theory || LearningItemType.video:
           final documents = learningItem.documents;
           if (documents.isEmpty) continue;
 
@@ -102,7 +102,7 @@ class LessonTimelineBuilder {
 
             items.add(buildReviewBody(questions[questionIndex]));
           }
-        case LearningItemType.unknown:
+        case LearningItemType.unknown || LearningItemType.video:
           continue;
       }
     }

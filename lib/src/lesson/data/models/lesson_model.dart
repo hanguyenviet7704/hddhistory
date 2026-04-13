@@ -10,9 +10,12 @@ abstract class LessonModel with _$LessonModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
+    @Default(LessonVideoModel()) LessonVideoModel video,
     @JsonKey(unknownEnumValue: LessonPublishStatus.unknown) @Default(LessonPublishStatus.draft) LessonPublishStatus status,
     @Default([]) List<KeypointModel> keypoints,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
+    @Default(0) int estimateCompleTimeNumber,
+    @Default('') String aiConfig,
     @Default(TagModel()) TagModel icon,
     @Default(TagModel()) TagModel lightIcon,
     @JsonKey(unknownEnumValue: ProcessEnum.unknown) @Default(ProcessEnum.notStarted) ProcessEnum progess,
@@ -41,6 +44,8 @@ enum LessonType {
   lesson,
   @JsonValue('output')
   output,
+  @JsonValue('video')
+  video,
   @JsonValue('unknown')
   unknown
   ;
@@ -50,6 +55,7 @@ enum LessonType {
       roleplay => 'roleplay',
       lesson => 'lesson',
       output => 'output',
+      video => 'video',
       unknown => 'unknown',
     };
   }
@@ -87,9 +93,12 @@ extension LessonModelExtension on LessonModel {
     title: title,
     description: description,
     image: image,
+    video: video.toEntity(),
     status: status,
     keypoints: keypoints.map((model) => model.toEntity()).toList(),
     estimateCompleTime: estimateCompleTime,
+    estimateCompleTimeNumber: estimateCompleTimeNumber,
+    aiConfig: aiConfig,
     icon: icon.toEntity(),
     lightIcon: lightIcon.toEntity(),
     animation: animation.toEntity(),

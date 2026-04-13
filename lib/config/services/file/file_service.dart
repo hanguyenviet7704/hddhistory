@@ -98,7 +98,7 @@ class FileService {
       return null;
     }
     try {
-      final result = await FilePicker.platform.pickFiles();
+      final result = await FilePicker.pickFiles();
       return result?.files.single.path != null ? File(result!.files.single.path!) : null;
     } catch (e) {
       _handleError('Failed to pick file: $e');
@@ -112,7 +112,7 @@ class FileService {
       return [];
     }
     try {
-      final result = await FilePicker.platform.pickFiles(allowMultiple: true);
+      final result = await FilePicker.pickFiles(allowMultiple: true);
       return result?.paths.whereType<String>().map(File.new).toList() ?? [];
     } catch (e) {
       _handleError('Failed to pick files: $e');

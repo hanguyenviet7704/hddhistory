@@ -83,6 +83,74 @@ class RoadmapNodeActionHelper {
     return '';
   }
 
+  @visibleForTesting
+  static String resolveVideoLessonNodeId(RoadmapEntity roadmap, LessonEntity lesson) {
+    final matchedNodeIds = <String>{};
+
+    for (final level in roadmap.levels) {
+      for (final node in level.nodes) {
+        final matchesOpeningVideo = node.openingVideo.id == lesson.id || node.openingVideoId == lesson.id;
+        final matchesClosingVideo = node.closingVideo.id == lesson.id || node.closingVideoId == lesson.id;
+        if (matchesOpeningVideo || matchesClosingVideo) {
+          matchedNodeIds.add(node.id);
+        }
+      }
+    }
+
+    if (matchedNodeIds.length != 1) return '';
+    return matchedNodeIds.first;
+  }
+
+  @visibleForTesting
+  static String resolveVideoLessonCourseId(RoadmapEntity roadmap, LessonEntity lesson) {
+    if (lesson.courseId.isNotEmpty) return lesson.courseId;
+    return roadmap.courseId;
+  }
+
+  static void _startVideoLesson(BuildContext context, LessonEntity lesson) {
+    final roadmap = context.read<CourseRoadmapCubit>().state.roadmap;
+    final nodeId = resolveVideoLessonNodeId(roadmap, lesson);
+    final courseId = resolveVideoLessonCourseId(roadmap, lesson);
+    if (nodeId.isEmpty || courseId.isEmpty) {
+      DMessage.showMessage(
+        message: context.l10n.videoLesson.unavailableMessage,
+        type: MessageType.info,
+      );
+      return;
+    }
+
+    final normalizedLesson = lesson.courseId == courseId ? lesson : lesson.copyWith(courseId: courseId);
+    final trackingData = CourseLessonTrackingData.fromLesson(context, normalizedLesson);
+    VideoLessonIntroSheet.show(
+      context,
+      lesson: normalizedLesson,
+      nodeId: nodeId,
+      trackingData: trackingData,
+      onStart: () {
+        if (normalizedLesson.roadmapProgress == ProcessEnum.notStarted) {
+          final userId = AppDI.injector.get<UserCubit>().state.user.id;
+          AppDI.injector.get<ProgressCubit>().updateUserProgressLesson(
+            UpdateUserProgressLessonParams(
+              lessonId: normalizedLesson.id,
+              body: {
+                'userId': userId,
+                'courseId': courseId,
+                'averageScore': 0,
+                'passed': false,
+              },
+            ),
+          );
+        }
+
+        VideoLessonRoute(
+          courseId: courseId,
+          nodeId: nodeId,
+          lessonId: normalizedLesson.id,
+        ).push(context);
+      },
+    );
+  }
+
   static CourseLevel _resolveCourseLevel(RoadmapEntity roadmap, LessonEntity lesson, CourseLevel fallback) {
     for (final level in roadmap.levels) {
       if (level.roadmapLessonsList.any((item) => item.isSameLesson(lesson))) {
@@ -137,6 +205,9 @@ class RoadmapNodeActionHelper {
         return;
       case LessonType.output:
         _startOutputPractice(context, lesson);
+        return;
+      case LessonType.video:
+        _startVideoLesson(context, lesson);
         return;
       case LessonType.unknown:
         return;

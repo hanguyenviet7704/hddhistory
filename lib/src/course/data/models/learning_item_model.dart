@@ -14,6 +14,7 @@ abstract class LearningItemModel with _$LearningItemModel {
     @JsonKey(unknownEnumValue: LearningItemType.unknown) @Default(LearningItemType.theory) LearningItemType type,
     @Default([]) List<QuestionModel> questions,
     @Default([]) List<QuestionModel> subQuestions,
+    @Default([]) List<VideoQuestionModel> videoQuestions,
     @Default([]) List<DocumentModel> documents,
     @Default(RoleplayModel()) RoleplayModel roleplay,
     @Default([]) List<String> tag,
@@ -33,6 +34,8 @@ enum LearningItemType {
   exercise,
   @JsonValue('roleplay')
   roleplay,
+  @JsonValue('video')
+  video,
   @JsonValue('unknown')
   unknown,
 }
@@ -50,6 +53,7 @@ extension LearningItemModelExtension on LearningItemModel {
     type: type,
     mainQuestions: questions.map((model) => model.toEntity()).toList(),
     subQuestions: subQuestions.map((model) => model.toEntity()).toList(),
+    videoQuestions: videoQuestions.map((model) => model.toEntity()).toList(),
     documents: documents.map((model) => model.toEntity()).toList(),
     roleplay: roleplay.toEntity(),
     tag: tag,

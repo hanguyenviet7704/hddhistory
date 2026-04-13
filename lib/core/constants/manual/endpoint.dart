@@ -44,7 +44,6 @@ mixin AppEndpoint {
   static const String verify = '/api/v1/payment/purchases/verify';
   static const String userIapSubscriptions = '/api/v1/payment/subscriptions/users/{userId}/active-premium';
 
-
   //* Onboardings API
   static const String onboardings = '/api/v1/onboardings';
   static const String onboardingsScenarios = '/api/v2/onboardings';
@@ -95,7 +94,11 @@ mixin AppEndpoint {
   static const String coursesOutputPracticeSectionConversationsUsage = '/api/v1/courses-output-practice-conversations/section/{sectionId}/usage';
   static const String coursesOutputPracticeMessages = '/api/v1/courses-output-practice-messages';
   static const String coursesOutputPracticeMessagesSend = '/api/v1/courses-output-practice-messages/send';
-  
+
+  //* Course User Video Lessons Activity API
+  static const String coursesUserVideoLessonsActivity = '/api/v1/courses-user-video-lesson-activity';
+  static const String coursesUserVideoLessonsActivityById = '/api/v1/courses-user-video-lesson-activity/{id}';
+
   //* Skillsets API
   static const String skillsets = '/api/v1/skillsets';
   static const String skillsetsById = '/api/v1/skillsets/{id}';
@@ -114,4 +117,3 @@ mixin AppEndpoint {
   static const String scoreRecord = '/score-record';
   static const String feedbackRoleplay = '/feedback-roleplay';
 }
-

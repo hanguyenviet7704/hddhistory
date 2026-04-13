@@ -12,5 +12,10 @@ abstract class ContentDocumentEntity with _$ContentDocumentEntity {
 }
 
 extension ContentDocumentEntityExtension on ContentDocumentEntity {
-  bool get dataAvailable => data.content.text.isNotEmpty || data.url.text.isNotEmpty || data.thumbnail.isNotEmpty;
+  bool get dataAvailable {
+    final hasBaseData = data.content.text.isNotEmpty || data.url.text.isNotEmpty || data.thumbnail.isNotEmpty;
+    final hasExplanationOptions = type == ContentDocumentType.explanation && data.options.isNotEmpty;
+
+    return hasBaseData || hasExplanationOptions;
+  }
 }

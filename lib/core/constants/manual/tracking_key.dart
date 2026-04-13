@@ -108,6 +108,30 @@ mixin TrackingKey {
   static const String outputPracticeOptionClick = 'output_practice_option_click';
   static const String outputPracticeSendClick = 'output_practice_send_click';
   static const String outputPracticeExitClick = 'output_practice_exit_click';
+  static const String videoLessonPopupView = 'video_lesson_popup_view';
+  static const String videoLessonPopupClose = 'video_lesson_popup_close';
+  static const String videoLessonStartClick = 'video_lesson_start_click';
+  static const String videoLessonScrView = 'video_lesson_scr_view';
+  static const String videoLessonExitClick = 'video_lesson_exit_click';
+  static const String videoLessonPlayClick = 'video_lesson_play_click';
+  static const String videoLessonPauseClick = 'video_lesson_pause_click';
+  static const String videoLessonSeek = 'video_lesson_seek';
+  static const String videoLessonPlayerInit = 'video_lesson_player_init';
+  static const String videoLessonNotesView = 'video_lesson_notes_view';
+  static const String videoLessonAddNoteClick = 'video_lesson_add_note_click';
+  static const String videoLessonNoteSaveClick = 'video_lesson_note_save_click';
+  static const String videoLessonNoteEditClick = 'video_lesson_note_edit_click';
+  static const String videoLessonNoteDeleteClick = 'video_lesson_note_delete_click';
+  static const String videoLessonSummaryView = 'video_lesson_summary_view';
+  static const String videoLessonSummaryScroll = 'video_lesson_summary_scroll';
+  static const String videoLessonSummaryClose = 'video_lesson_summary_close';
+  static const String videoLessonShareClick = 'video_lesson_share_click';
+  static const String videoLessonQuizView = 'video_lesson_quiz_view';
+  static const String videoLessonQuizCheck = 'video_lesson_quiz_check';
+  static const String videoLessonQuizResultView = 'video_lesson_quiz_result_view';
+  static const String videoLessonQuizContinue = 'video_lesson_quiz_continue';
+  static const String videoLessonCompleteView = 'video_lesson_complete_view';
+  static const String videoLessonMarkCompleteClick = 'video_lesson_mark_complete_click';
 
   //* Keypoint events
   static const String keypointTheoryScroll = 'keypoint_theory_scroll';

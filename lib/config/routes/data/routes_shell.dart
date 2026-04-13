@@ -46,6 +46,10 @@ part of '../routes.dart';
               path: RoutePath.outputPractice,
               name: RouteNamed.outputPractice,
             ),
+            TypedGoRoute<VideoLessonRoute>(
+              path: RoutePath.videoLesson,
+              name: RouteNamed.videoLesson,
+            ),
           ],
         ),
       ],

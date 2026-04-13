@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-03-30
+**Last Updated:** 2026-04-08
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -65,7 +65,7 @@ Widget/Page
 - Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
-Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`.
+Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -117,7 +117,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - Router implementation: `go_router` with generated route data.
 - Root configuration under `lib/config/routes/base/`.
 - Feature route data under `lib/config/routes/data/`.
-- Shell-based navigation and nested home/course/lesson/roleplay/output-practice flows are handled in route config files.
+- Shell-based navigation and nested home/course/lesson/roleplay/output-practice/video-lesson flows are handled in route config files.
 
 ### Splash and auth-entry runtime flow
 - `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
@@ -155,6 +155,14 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `OutputPracticeSocketCubit` connects to the socket server, joins the room, retries one initial join after timeout, and exposes `reconnect()` plus `disconnect()` for page lifecycle cleanup.
 - Message sending uses optimistic pending timeline rows, reconciles canonical messages after REST send succeeds, and preserves a retryable failure state when send or socket delivery fails.
 - Dedicated tracking events cover popup view/close/start, screen view, option click, send click, and exit click.
+
+### Video lesson runtime flow
+- `RoadmapNodeActionHelper` resolves roadmap `openingVideo` / `closingVideo` lessons to a unique owner `nodeId`, opens `VideoLessonIntroSheet`, and keeps ambiguous/missing matches on the roadmap with a non-blocking message.
+- `VideoLessonRoute` is typed as `video-lesson/:courseId/:nodeId/:lessonId`; it injects `VideoLessonCubit`, `HomeCubit`, and `CourseRoadmapCubit` before building `VideoLessonPage`.
+- `VideoLessonCubit.initialize(courseId, nodeId, lessonId)` loads the lesson and video learning item, while `VideoLessonPage` owns the mounted `VideoPlayerController` shell and routes controller ticks back into playback/completion state.
+- The runtime keeps one mounted player shell across play/pause, seek, notes, summary, question, result, and end states; notes use scoped cache keys (`courseId + nodeId + lessonId`) with session-local draft persistence and CRUD refresh.
+- Timed questions use crossed-time detection, zero-second first-play gating, forward-seek queue drain, backward re-arm, local choice-family result state, unsupported fallback handling, and end-after-queue progression.
+- Tracking now covers popup, screen, play, pause, seek, notes, summary, share, quiz, result, exit, complete view, and mark-complete actions.
 
 ### Roleplay runtime flow
 - `RoleplayIntroRoute` and `RoleplayRoute` provide roleplay orchestration via `RoleplayCubit` (+ feedback where needed).
