@@ -1,6 +1,5 @@
 part of '../../../lesson.dart';
 
-@lazySingleton
 class LessonAudioCubit extends Cubit<LessonAudioState> {
   LessonAudioCubit() : super(LessonAudioState.initial());
 

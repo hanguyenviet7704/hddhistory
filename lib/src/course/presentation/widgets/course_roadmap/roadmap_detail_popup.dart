@@ -80,7 +80,6 @@ class RoadmapDetailPopup extends StatelessWidget {
     context.read<LessonCubit>()
       ..reset()
       ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
-    AppDI.injector.get<LessonAudioCubit>().resetSession();
     context.read<CourseLessonCubit>()
       ..setSelectedLesson(lesson)
       ..setCurrentKeypointId(keypoint.id)

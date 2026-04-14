@@ -65,6 +65,17 @@ class _BadgeProgressPageState extends State<BadgeProgressPage> {
     if (_hasExited) return;
     _hasExited = true;
     if (!mounted) return;
+
+    final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
+    final homeState = AppDI.injector.get<HomeCubit>().state;
+    final roadmapState = context.read<CourseRoadmapCubit>().state;
+    final courseId = resolveLessonFlowCourseId(
+      lessonCourseId: courseLessonState.selectedLesson.courseId,
+      roadmapCourseId: roadmapState.roadmap.courseId,
+      homeCourseId: homeState.currentCourse.id,
+    );
+    syncHomeSelectionForLessonFlowCourse(courseId);
+
     CourseRoadmapRoute().go(context);
   }
 

@@ -1,5 +1,30 @@
 part of '../../lesson.dart';
 
+String resolveLessonFlowCourseId({
+  String lessonCourseId = '',
+  String roadmapCourseId = '',
+  String homeCourseId = '',
+}) {
+  if (lessonCourseId.isNotEmpty) return lessonCourseId;
+  if (roadmapCourseId.isNotEmpty) return roadmapCourseId;
+  return homeCourseId;
+}
+
+void syncHomeSelectionForLessonFlowCourse(String courseId) {
+  if (courseId.isEmpty) return;
+
+  final homeCubit = AppDI.injector.get<HomeCubit>();
+  if (homeCubit.state.currentCourse.id == courseId) return;
+
+  final resolvedCourse = homeCubit.state.skillsets.resolveCourseByCourseId(
+    courseId,
+    fallback: homeCubit.state.currentCourse,
+  );
+  if (resolvedCourse.id != courseId) return;
+
+  homeCubit.selectCourseFromCourseId(courseId);
+}
+
 class LessonExitFlow {
   const LessonExitFlow._();
 
@@ -32,6 +57,15 @@ class LessonExitFlow {
     _markIncompleteFeedbackPrompt(context, entry);
 
     if (learningItem.type != LearningItemType.roleplay) {
+      final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
+      final roadmapState = AppDI.injector.get<CourseRoadmapCubit>().state;
+      final homeState = AppDI.injector.get<HomeCubit>().state;
+      final courseId = resolveLessonFlowCourseId(
+        lessonCourseId: courseLessonState.selectedLesson.courseId,
+        roadmapCourseId: roadmapState.roadmap.courseId,
+        homeCourseId: homeState.currentCourse.id,
+      );
+      syncHomeSelectionForLessonFlowCourse(courseId);
       CourseRoadmapRoute().go(context);
       context.read<FeedbackCubit>()
         ..setActiveEntry(FeedbackEntry.keypoint)

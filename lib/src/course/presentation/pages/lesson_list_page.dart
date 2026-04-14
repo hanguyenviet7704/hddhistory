@@ -141,7 +141,6 @@ class _LessonListPageState extends State<LessonListPage> {
                                   context.read<LessonCubit>()
                                     ..reset()
                                     ..loadAllLearningItems(keypointId: keypoint.id, isInit: true);
-                                  AppDI.injector.get<LessonAudioCubit>().resetSession();
                                   context.read<CourseLessonCubit>().setCurrentKeypointId(keypoint.id);
                                   const LessonRoute(initialMode: 'read').go(context);
                                 },

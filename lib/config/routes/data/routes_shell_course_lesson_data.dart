@@ -22,8 +22,9 @@ part of '../routes.dart';
 Widget _buildLessonFlowPage(Widget child) {
   return MultiBlocProvider(
     providers: [
+      BlocProvider.value(value: AppDI.injector.get<CourseLessonCubit>()),
       BlocProvider.value(value: AppDI.injector.get<LessonCubit>()),
-      BlocProvider.value(value: AppDI.injector.get<LessonAudioCubit>()),
+      BlocProvider(create: (_) => LessonAudioCubit()),
       BlocProvider.value(value: AppDI.injector.get<ExerciseCubit>()),
       BlocProvider.value(value: AppDI.injector.get<TheoryCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ChoiceCubit>()),

@@ -18,6 +18,8 @@ class _LessonPageState extends State<LessonPage> {
   late final LessonBodyFactory _bodyFactory;
   late final LessonTimelineBuilder _timelineBuilder;
   late final LessonTrackingDelegate _trackingDelegate;
+  late final LessonCubit _lessonCubit;
+  late final LessonAudioCubit _lessonAudioCubit;
   late LessonEntryMode _selectedMode;
   bool _hasTrackedAudioShellView = false;
 
@@ -25,9 +27,11 @@ class _LessonPageState extends State<LessonPage> {
   void initState() {
     super.initState();
     _selectedMode = widget.initialMode;
+    _lessonCubit = context.read<LessonCubit>();
+    _lessonAudioCubit = context.read<LessonAudioCubit>();
     _controller = LessonPageController(
-      onBottomButtonVisibilityChanged: (isVisible) => context.read<LessonCubit>().setBottomButtonVisible(isVisible),
-      onClearSuppressNextAutoScroll: () => context.read<LessonCubit>().clearSuppressNextAutoScroll(),
+      onBottomButtonVisibilityChanged: (isVisible) => _lessonCubit.setBottomButtonVisible(isVisible),
+      onClearSuppressNextAutoScroll: () => _lessonCubit.clearSuppressNextAutoScroll(),
       isMounted: () => mounted,
     );
     _reviewBodyBuilder = const LessonReviewBodyBuilder();
@@ -48,7 +52,6 @@ class _LessonPageState extends State<LessonPage> {
 
   @override
   void dispose() {
-    context.read<LessonAudioCubit>().resetSession();
     _controller.dispose();
     super.dispose();
   }
@@ -140,8 +143,7 @@ class _LessonPageState extends State<LessonPage> {
   }
 
   Future<void> _syncAudioKeypoint(KeypointEntity keypoint) async {
-    final lessonAudioCubit = context.read<LessonAudioCubit>();
-    await lessonAudioCubit.configure(keypoint);
+    await _lessonAudioCubit.configure(keypoint);
 
     if (!keypoint.hasUsableAudio) {
       if (_selectedMode.isAudio && mounted) {
@@ -152,7 +154,7 @@ class _LessonPageState extends State<LessonPage> {
 
     _trackAudioShellViewIfNeeded();
     if (_selectedMode.isAudio) {
-      await lessonAudioCubit.enterAudioMode();
+      await _lessonAudioCubit.enterAudioMode();
     }
   }
 
@@ -173,7 +175,7 @@ class _LessonPageState extends State<LessonPage> {
 
     final trackingData = KeypointTrackingData.fromContext();
     if (nextMode.isRead) {
-      await context.read<LessonAudioCubit>().pauseForModeSwitch();
+      await _lessonAudioCubit.pauseForModeSwitch();
     }
 
     if (!mounted) return;
@@ -188,19 +190,18 @@ class _LessonPageState extends State<LessonPage> {
     }
 
     if (nextMode.isAudio) {
-      await context.read<LessonAudioCubit>().enterAudioMode();
+      await _lessonAudioCubit.enterAudioMode();
     }
   }
 
   Future<void> _openSpeedSheet() async {
-    final audioCubit = context.read<LessonAudioCubit>();
-    final shouldResume = await audioCubit.pauseForSpeedSheet();
+    final shouldResume = await _lessonAudioCubit.pauseForSpeedSheet();
 
     if (!mounted) return;
 
     await showLessonAudioSpeedSheet(
       context,
-      initialSpeed: audioCubit.state.speed,
+      initialSpeed: _lessonAudioCubit.state.speed,
       onSpeedChanged: (speed) {
         final trackingData = KeypointTrackingData.fromContext();
         if (trackingData != null) {
@@ -209,11 +210,11 @@ class _LessonPageState extends State<LessonPage> {
             speed: speed,
           );
         }
-        audioCubit.setSpeed(speed);
+        _lessonAudioCubit.setSpeed(speed);
       },
     );
 
-    await audioCubit.restoreAfterSpeedSheet(resumePlayback: shouldResume);
+    await _lessonAudioCubit.restoreAfterSpeedSheet(resumePlayback: shouldResume);
   }
 
   void _handleAnswerChecked(bool isCorrect) {

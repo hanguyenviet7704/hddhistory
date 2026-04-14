@@ -76,6 +76,15 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
   }
 
   void _navigateAfterCompletion(CourseLessonState lessonState) {
+    final roadmapState = context.read<CourseRoadmapCubit>().state;
+    final homeState = context.read<HomeCubit>().state;
+    final courseId = resolveLessonFlowCourseId(
+      lessonCourseId: lessonState.selectedLesson.courseId,
+      roadmapCourseId: roadmapState.roadmap.courseId,
+      homeCourseId: homeState.currentCourse.id,
+    );
+    syncHomeSelectionForLessonFlowCourse(courseId);
+
     if (lessonState.wasLessonCompletedBefore) {
       CourseRoadmapRoute().go(context);
       Future.delayed(const Duration(milliseconds: 100), () {
