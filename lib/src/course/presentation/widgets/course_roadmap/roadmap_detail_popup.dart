@@ -1,14 +1,18 @@
 part of '../../../course.dart';
 
+const _roadmapDetailSheetSurfaceKey = ValueKey('roadmap-detail-sheet-surface');
+
 class RoadmapDetailPopup extends StatelessWidget {
   const RoadmapDetailPopup({
     super.key,
     required this.lesson,
     required this.courseLevel,
+    this.bottomInset = 0,
   });
 
   final LessonEntity lesson;
   final CourseLevel courseLevel;
+  final double bottomInset;
 
   KeypointEntity get keypoint => lesson.firstKeypoint;
 
@@ -19,6 +23,7 @@ class RoadmapDetailPopup extends StatelessWidget {
     required LessonEntity lesson,
     required CourseLevel courseLevel,
   }) async {
+    final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
     final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
     if (trackingData != null) {
       AppService.instance.appTrackingService.trackPopupItemImp(trackingData);
@@ -51,6 +56,7 @@ class RoadmapDetailPopup extends StatelessWidget {
         child: RoadmapDetailPopup(
           lesson: lesson,
           courseLevel: courseLevel,
+          bottomInset: bottomInset,
         ),
       ),
     );
@@ -96,129 +102,129 @@ class RoadmapDetailPopup extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.only(bottom: MediaQuery.viewPaddingOf(context).bottom),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 50.w,
-            height: 5.h,
-            decoration: BoxDecoration(
-              color: AppCustomColor.backgroundWhite,
-              borderRadius: BorderRadius.circular(30.r),
-            ),
+    final resolvedBottomInset = bottomInset > 0 ? bottomInset : MediaQuery.viewPaddingOf(context).bottom;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Container(
+          width: 50.w,
+          height: 5.h,
+          decoration: BoxDecoration(
+            color: AppCustomColor.backgroundWhite,
+            borderRadius: BorderRadius.circular(30.r),
           ),
-          SizedBox(height: 6.h),
-          Container(
-            decoration: BoxDecoration(
-              color: AppCustomColor.backgroundWhite,
-              borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-            ),
-            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 16.h),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                AppText(
-                  keypoint.title.text,
-                  style: AppStyle.textBold24.copyWith(
-                    color: AppCustomColor.textPrimary,
-                  ),
-                  maxLines: 3,
-                  textAlign: TextAlign.center,
+        ),
+        SizedBox(height: 6.h),
+        Container(
+          key: _roadmapDetailSheetSurfaceKey,
+          decoration: BoxDecoration(
+            color: AppCustomColor.backgroundWhite,
+            borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+          ),
+          padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, resolvedBottomInset + 16.h),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              AppText(
+                keypoint.title.text,
+                style: AppStyle.textBold24.copyWith(
+                  color: AppCustomColor.textPrimary,
                 ),
-                SizedBox(height: 4.h),
+                maxLines: 3,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 4.h),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  AppText(
+                    context.l10n.courseroadmap.keypointLabel.toUpperCase(),
+                    style: AppStyle.text12.copyWith(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppCustomColor.textTertiary,
+                      height: 1.75,
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  Container(
+                    width: 4.w,
+                    height: 4.w,
+                    decoration: const ShapeDecoration(
+                      color: AppCustomColor.textTertiary,
+                      shape: OvalBorder(),
+                    ),
+                  ),
+                  SizedBox(width: 12.w),
+                  SvgPicture.asset(
+                    AppAsset.svg.app.icClock,
+                    width: 16.w,
+                    height: 16.w,
+                    colorFilter: ColorFilter.mode(
+                      AppCustomColor.textTertiary,
+                      BlendMode.srcIn,
+                    ),
+                  ),
+                  SizedBox(width: 8.w),
+                  AppText(
+                    keypoint.estimateCompleTime.text.toUpperCase(),
+                    style: AppStyle.text12.copyWith(
+                      fontSize: 11.sp,
+                      fontWeight: FontWeight.w700,
+                      color: AppCustomColor.textTertiary,
+                      height: 1.75,
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 12.h),
+              AppText(
+                keypoint.description.text,
+                textAlign: TextAlign.center,
+                style: AppStyle.text14.copyWith(
+                  color: AppCustomColor.textSecondary,
+                  height: 1.75,
+                ),
+              ),
+              SizedBox(height: 40.h),
+              if (hasAudio)
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    AppText(
-                      context.l10n.courseroadmap.keypointLabel.toUpperCase(),
-                      style: AppStyle.text12.copyWith(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppCustomColor.textTertiary,
-                        height: 1.75,
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    Container(
-                      width: 4.w,
-                      height: 4.w,
-                      decoration: const ShapeDecoration(
-                        color: AppCustomColor.textTertiary,
-                        shape: OvalBorder(),
-                      ),
-                    ),
-                    SizedBox(width: 12.w),
-                    SvgPicture.asset(
-                      AppAsset.svg.app.icClock,
-                      width: 16.w,
-                      height: 16.w,
-                      colorFilter: ColorFilter.mode(
-                        AppCustomColor.textTertiary,
-                        BlendMode.srcIn,
+                    Expanded(
+                      child: _RoadmapDetailActionButton(
+                        label: context.l10n.lesson.audioReadLabel,
+                        iconAsset: AppAsset.svg.app.icMenu,
+                        backgroundColor: AppCustomColor.brandPrimary50,
+                        foregroundColor: const Color(0xFF4B44CA),
+                        onTap: () => _startLearning(context, LessonEntryMode.read),
                       ),
                     ),
                     SizedBox(width: 8.w),
-                    AppText(
-                      keypoint.estimateCompleTime.text.toUpperCase(),
-                      style: AppStyle.text12.copyWith(
-                        fontSize: 11.sp,
-                        fontWeight: FontWeight.w700,
-                        color: AppCustomColor.textTertiary,
-                        height: 1.75,
+                    Expanded(
+                      child: _RoadmapDetailActionButton(
+                        label: context.l10n.lesson.audioListenLabel,
+                        iconAsset: AppAsset.svg.app.icMusicNote,
+                        backgroundColor: const Color(0xFF554FF0),
+                        foregroundColor: Colors.white,
+                        onTap: () => _startLearning(context, LessonEntryMode.audio),
                       ),
                     ),
                   ],
+                )
+              else
+                _RoadmapDetailActionButton(
+                  label: context.l10n.lesson.audioReadLabel,
+                  iconAsset: AppAsset.svg.app.icMenu,
+                  backgroundColor: AppCustomColor.brandPrimary50,
+                  foregroundColor: const Color(0xFF4B44CA),
+                  onTap: () => _startLearning(context, LessonEntryMode.read),
                 ),
-                SizedBox(height: 12.h),
-                AppText(
-                  keypoint.description.text,
-                  textAlign: TextAlign.center,
-                  style: AppStyle.text14.copyWith(
-                    color: AppCustomColor.textSecondary,
-                    height: 1.75,
-                  ),
-                ),
-                SizedBox(height: 40.h),
-                if (hasAudio)
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _RoadmapDetailActionButton(
-                          label: context.l10n.lesson.audioReadLabel,
-                          iconAsset: AppAsset.svg.app.icMenu,
-                          backgroundColor: AppCustomColor.brandPrimary50,
-                          foregroundColor: const Color(0xFF4B44CA),
-                          onTap: () => _startLearning(context, LessonEntryMode.read),
-                        ),
-                      ),
-                      SizedBox(width: 8.w),
-                      Expanded(
-                        child: _RoadmapDetailActionButton(
-                          label: context.l10n.lesson.audioListenLabel,
-                          iconAsset: AppAsset.svg.app.icMusicNote,
-                          backgroundColor: const Color(0xFF554FF0),
-                          foregroundColor: Colors.white,
-                          onTap: () => _startLearning(context, LessonEntryMode.audio),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  _RoadmapDetailActionButton(
-                    label: context.l10n.lesson.audioReadLabel,
-                    iconAsset: AppAsset.svg.app.icMenu,
-                    backgroundColor: AppCustomColor.brandPrimary50,
-                    foregroundColor: const Color(0xFF4B44CA),
-                    onTap: () => _startLearning(context, LessonEntryMode.read),
-                  ),
-              ],
-            ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

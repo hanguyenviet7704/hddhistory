@@ -42,11 +42,45 @@ void main() {
       expect(find.text('Read'), findsOneWidget);
       expect(find.text('Listen'), findsNothing);
     });
+
+    testWidgets('keeps the action buttons close to the bottom edge without extra inset gap', (tester) async {
+      _setPhoneViewport(tester);
+      await LocaleSettings.setLocale(AppLocale.en);
+
+      await tester.pumpWidget(
+        _buildPopup(
+          lesson: _buildLesson(
+            audioUrl: const BaseMultiLanguage(en: 'https://audio.example/track.mp3'),
+          ),
+          mediaQueryData: const MediaQueryData(
+            size: Size(375, 812),
+            padding: EdgeInsets.only(bottom: 34),
+            viewPadding: EdgeInsets.only(bottom: 34),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      final listenButton = find
+          .ancestor(
+            of: find.text('Listen'),
+            matching: find.byType(GestureDetector),
+          )
+          .first;
+      final sheetSurface = find.byKey(const ValueKey('roadmap-detail-sheet-surface'));
+      final screenBottom = tester.getRect(find.byType(Scaffold)).bottom;
+      final surfaceBottom = tester.getRect(sheetSurface).bottom;
+      final buttonBottom = tester.getRect(listenButton).bottom;
+
+      expect(screenBottom - surfaceBottom, lessThanOrEqualTo(1));
+      expect(surfaceBottom - buttonBottom, greaterThanOrEqualTo(34));
+    });
   });
 }
 
 Widget _buildPopup({
   required LessonEntity lesson,
+  MediaQueryData mediaQueryData = const MediaQueryData(size: Size(375, 812)),
 }) {
   return ScreenUtilInit(
     designSize: const Size(375, 812),
@@ -54,7 +88,15 @@ Widget _buildPopup({
     splitScreenMode: true,
     builder: (context, child) => TranslationProvider(
       child: MaterialApp(
-        home: Scaffold(body: child),
+        home: MediaQuery(
+          data: mediaQueryData,
+          child: Scaffold(
+            body: Align(
+              alignment: Alignment.bottomCenter,
+              child: child,
+            ),
+          ),
+        ),
       ),
     ),
     child: RoadmapDetailPopup(
@@ -81,4 +123,11 @@ LessonEntity _buildLesson({
       ),
     ],
   );
+}
+
+void _setPhoneViewport(WidgetTester tester) {
+  tester.view.devicePixelRatio = 1.0;
+  tester.view.physicalSize = const Size(375, 812);
+  addTearDown(tester.view.resetDevicePixelRatio);
+  addTearDown(tester.view.resetPhysicalSize);
 }

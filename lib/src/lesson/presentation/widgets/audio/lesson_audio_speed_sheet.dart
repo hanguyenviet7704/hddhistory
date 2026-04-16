@@ -1,10 +1,14 @@
 part of '../../../lesson.dart';
 
+const _lessonAudioSpeedSheetSurfaceKey = ValueKey('lesson-audio-speed-sheet-surface');
+
 Future<void> showLessonAudioSpeedSheet(
   BuildContext context, {
   required double initialSpeed,
   required ValueChanged<double> onSpeedChanged,
 }) {
+  final bottomInset = MediaQuery.viewPaddingOf(context).bottom;
+
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -25,16 +29,17 @@ Future<void> showLessonAudioSpeedSheet(
 
       return StatefulBuilder(
         builder: (context, setState) {
-          return SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  decoration: BoxDecoration(
-                    color: AppCustomColor.backgroundWhite,
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
-                  ),
+          return Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                key: _lessonAudioSpeedSheetSurfaceKey,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.backgroundWhite,
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(16.r)),
+                ),
+                child: Padding(
+                  padding: EdgeInsets.only(bottom: bottomInset + 16.h),
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -74,7 +79,7 @@ Future<void> showLessonAudioSpeedSheet(
                         ),
                       ),
                       Padding(
-                        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 16.h),
+                        padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 0),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
@@ -139,15 +144,14 @@ Future<void> showLessonAudioSpeedSheet(
                                 );
                               }).toList(),
                             ),
-                            SizedBox(height: 32.h),
                           ],
                         ),
                       ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       );
