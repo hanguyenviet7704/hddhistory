@@ -2,8 +2,15 @@ part of '../../../../lesson.dart';
 
 class DocumentWidget extends StatelessWidget {
   final List<ContentDocumentEntity> documents;
+  final Map<int, String> selectedExplanationOptionKeys;
+  final void Function(int contentDocumentIndex, String? optionKey)? onExplanationSelectionChanged;
 
-  const DocumentWidget({super.key, required this.documents});
+  const DocumentWidget({
+    super.key,
+    required this.documents,
+    this.selectedExplanationOptionKeys = const {},
+    this.onExplanationSelectionChanged,
+  });
 
   double topSpacing(int index) {
     if (index == 0) return 0;
@@ -43,7 +50,11 @@ class DocumentWidget extends StatelessWidget {
           documents.length,
           (index) => Padding(
             padding: EdgeInsets.only(top: topSpacing(index)),
-            child: DocumentItem(document: documents[index]),
+            child: DocumentItem(
+              document: documents[index],
+              selectedExplanationOptionKey: selectedExplanationOptionKeys[index],
+              onExplanationSelectionChanged: onExplanationSelectionChanged == null ? null : (optionKey) => onExplanationSelectionChanged!(index, optionKey),
+            ),
           ),
         ),
       ),

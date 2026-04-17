@@ -11,7 +11,7 @@ class LessonAudioCubit extends Cubit<LessonAudioState> {
 
   Future<void> configure(KeypointEntity keypoint) async {
     final nextSourceUrl = keypoint.resolvedAudioUrl;
-    final nextTitle = keypoint.trackingNameOrText.isNotEmpty ? keypoint.trackingNameOrText : keypoint.title.text;
+    final nextTitle = keypoint.title.text;
 
     if (state.keypointId == keypoint.id && state.sourceUrl == nextSourceUrl && state.imageUrl == keypoint.image && state.title == nextTitle) {
       return;

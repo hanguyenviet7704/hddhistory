@@ -14,21 +14,27 @@ void main() {
   });
 
   group('LessonAudioCubit', () {
-    test('marks keypoints without resolved audio as unavailable', () async {
+    test('uses the active app locale for the configured audio title', () async {
+      await resetInjectorForTests();
+      await setupLocaleCubitForTests(locale: AppLocale.vi);
+
       final cubit = LessonAudioCubit();
       addTearDown(cubit.close);
 
       await cubit.configure(
         const KeypointEntity(
           id: 'keypoint-1',
-          title: BaseMultiLanguage(en: 'Greetings'),
+          title: BaseMultiLanguage(
+            en: 'Greetings',
+            vi: 'Xin chao',
+          ),
         ),
       );
 
       expect(cubit.state.status, LessonAudioLoadStatus.unavailable);
       expect(cubit.state.keypointId, 'keypoint-1');
       expect(cubit.state.sourceUrl, isEmpty);
-      expect(cubit.state.title, 'Greetings');
+      expect(cubit.state.title, 'Xin chao');
       expect(cubit.state.hasUsableSource, isFalse);
     });
 

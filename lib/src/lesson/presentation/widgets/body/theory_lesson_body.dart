@@ -26,7 +26,16 @@ class TheoryLessonBody extends LessonBodyWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               if (currentDocument.document.isNotEmpty) ...[
-                DocumentWidget(documents: currentDocument.document),
+                DocumentWidget(
+                  documents: currentDocument.document,
+                  selectedExplanationOptionKeys: state.selectedExplanationOptionKeys,
+                  onExplanationSelectionChanged: (contentDocumentIndex, optionKey) {
+                    context.read<TheoryCubit>().selectExplanationOption(
+                      contentDocumentIndex: contentDocumentIndex,
+                      optionKey: optionKey,
+                    );
+                  },
+                ),
                 12.verticalSpace,
               ],
             ],
@@ -41,15 +50,17 @@ class TheoryLessonBody extends LessonBodyWidget {
     return BlocBuilder<TheoryCubit, TheoryState>(
       builder: (context, state) {
         return ExerciseContinueButton(
-          onPressed: () {
-            final trackingData = KeypointTrackingData.fromContext();
-            if (trackingData != null) {
-              AppService.instance.appTrackingService.trackKeypointTheoryContinueClick(trackingData);
-            }
-            context.read<TheoryCubit>().nextDocument();
-          },
+          onPressed: state.canContinue
+              ? () {
+                  final trackingData = KeypointTrackingData.fromContext();
+                  if (trackingData != null) {
+                    AppService.instance.appTrackingService.trackKeypointTheoryContinueClick(trackingData);
+                  }
+                  context.read<TheoryCubit>().nextDocument();
+                }
+              : null,
           text: context.l10n.common.kContinue,
-          isEnabled: true,
+          isEnabled: state.canContinue,
         );
       },
     );
