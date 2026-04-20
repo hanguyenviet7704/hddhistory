@@ -25,6 +25,85 @@ interface Props {
   onSave: (data: KeypointPayload) => Promise<void> | void;
 }
 
+interface BuildKeypointPayloadParams {
+  title: ITranslation;
+  description: ITranslation;
+  estimateCompleTime: ITranslation;
+  estimateCompleTimeInput: string;
+  estimateCompleTimeUnit: EstimateCompleteTimeUnit;
+  audio: IKeypointAudio;
+  image: string;
+  tag: string[];
+  lang: LangCode;
+  keypoint: IKeypoint | null;
+}
+
+const hasKeypointAudioContent = (audio?: IKeypointAudio) =>
+  Boolean(cleanTranslation(audio?.url) || cleanTranslation(audio?.text));
+
+export const buildKeypointPayload = ({
+  title,
+  description,
+  estimateCompleTime,
+  estimateCompleTimeInput,
+  estimateCompleTimeUnit,
+  audio,
+  image,
+  tag,
+  lang,
+  keypoint,
+}: BuildKeypointPayloadParams): KeypointPayload => {
+  const titleValue = (title[lang] || "").trim();
+  const cleanedTitle = cleanTranslation(
+    updateTranslationValue(title, lang, titleValue)
+  );
+  const cleanedDescription = cleanTranslation(
+    updateTranslationValue(description, lang, description[lang] || "")
+  );
+  const cleanedAudioUrl = cleanTranslation(
+    updateTranslationValue(audio.url, lang, (audio.url?.[lang] || "").trim())
+  );
+  const cleanedAudioText = cleanTranslation(
+    updateTranslationValue(audio.text, lang, audio.text?.[lang] || "")
+  );
+  const {
+    label: estimateCompleTimeLabel,
+    estimateCompleTimeNumber,
+  } = buildEstimateCompleteTimeValue(
+    estimateCompleTimeInput,
+    estimateCompleTimeUnit,
+    lang
+  );
+  const cleanedEstimateCompleTime = cleanTranslation(
+    updateTranslationValue(estimateCompleTime, lang, estimateCompleTimeLabel)
+  );
+  const shouldClearAudio =
+    Boolean(keypoint?._id) &&
+    hasKeypointAudioContent(keypoint?.audio) &&
+    !cleanedAudioUrl &&
+    !cleanedAudioText;
+
+  return {
+    title: cleanedTitle || { [lang]: "" },
+    ...(cleanedDescription && { description: cleanedDescription }),
+    ...(cleanedEstimateCompleTime && {
+      estimateCompleTime: cleanedEstimateCompleTime,
+    }),
+    ...((cleanedAudioUrl || cleanedAudioText) && {
+      audio: {
+        ...(cleanedAudioUrl && { url: cleanedAudioUrl }),
+        ...(cleanedAudioText && { text: cleanedAudioText }),
+      },
+    }),
+    ...(shouldClearAudio && { audio: {} }),
+    ...(Number.isFinite(estimateCompleTimeNumber) && {
+      estimateCompleTimeNumber,
+    }),
+    image,
+    tag,
+  };
+};
+
 const KeypointModal: React.FC<Props> = ({
   open,
   onClose,
@@ -90,54 +169,18 @@ const KeypointModal: React.FC<Props> = ({
       return;
     }
 
-    // Update and clean translations
-    const cleanedTitle = cleanTranslation(
-      updateTranslationValue(title, lang, titleValue)
-    );
-    const cleanedDescription = cleanTranslation(
-      updateTranslationValue(description, lang, description[lang] || "")
-    );
-    const cleanedAudioUrl = cleanTranslation(
-      updateTranslationValue(audio.url, lang, (audio.url?.[lang] || "").trim())
-    );
-    const cleanedAudioText = cleanTranslation(
-      updateTranslationValue(audio.text, lang, audio.text?.[lang] || "")
-    );
-    const {
-      label: estimateCompleTimeLabel,
-      estimateCompleTimeNumber,
-    } = buildEstimateCompleteTimeValue(
+    const payload = buildKeypointPayload({
+      title,
+      description,
+      estimateCompleTime,
       estimateCompleTimeInput,
       estimateCompleTimeUnit,
-      lang
-    );
-    const cleanedEstimateCompleTime = cleanTranslation(
-      updateTranslationValue(
-        estimateCompleTime,
-        lang,
-        estimateCompleTimeLabel
-      )
-    );
-
-    // Create KeypointPayload with cleaned translations
-    const payload: KeypointPayload = {
-      title: cleanedTitle || { [lang]: "" }, // Always include title
-      ...(cleanedDescription && { description: cleanedDescription }),
-      ...(cleanedEstimateCompleTime && {
-        estimateCompleTime: cleanedEstimateCompleTime,
-      }),
-      ...((cleanedAudioUrl || cleanedAudioText) && {
-        audio: {
-          ...(cleanedAudioUrl && { url: cleanedAudioUrl }),
-          ...(cleanedAudioText && { text: cleanedAudioText }),
-        },
-      }),
-      ...(Number.isFinite(estimateCompleTimeNumber) && {
-        estimateCompleTimeNumber,
-      }),
+      audio,
       image,
       tag,
-    };
+      lang,
+      keypoint,
+    });
 
     try {
       setIsSubmitting(true);

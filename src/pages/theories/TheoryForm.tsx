@@ -999,17 +999,10 @@ export default function TheoryForm({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2">
                 <label className="block text-sm font-medium text-gray-700">
                   Options
                 </label>
-                <button
-                  type="button"
-                  onClick={() => addExplanationOption(index)}
-                  className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
-                >
-                  Add Option
-                </button>
               </div>
 
               <div className="space-y-3">
@@ -1089,6 +1082,15 @@ export default function TheoryForm({
                     option if needed.
                   </div>
                 )}
+                <div className="flex justify-end pt-1">
+                  <button
+                    type="button"
+                    onClick={() => addExplanationOption(index)}
+                    className="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md text-sm hover:bg-blue-700"
+                  >
+                    Add Option
+                  </button>
+                </div>
               </div>
             </div>
           </div>
