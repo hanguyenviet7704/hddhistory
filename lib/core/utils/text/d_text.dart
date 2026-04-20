@@ -34,7 +34,7 @@ class AppText extends StatelessWidget {
     this.textAlign = TextAlign.start,
     this.overflow = TextOverflow.ellipsis,
     this.textScaleFactor = 1,
-    this.maxLines = 1,
+    this.maxLines = 10,
     this.textWidthBasis = TextWidthBasis.parent,
     this.enableTooltip = false,
     this.onTap,
