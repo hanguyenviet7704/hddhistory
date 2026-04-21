@@ -2,8 +2,15 @@ part of '../../../../lesson.dart';
 
 class DocumentItem extends StatelessWidget {
   final ContentDocumentEntity document;
+  final String? selectedExplanationOptionKey;
+  final ValueChanged<String?>? onExplanationSelectionChanged;
 
-  const DocumentItem({super.key, required this.document});
+  const DocumentItem({
+    super.key,
+    required this.document,
+    this.selectedExplanationOptionKey,
+    this.onExplanationSelectionChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +26,8 @@ class DocumentItem extends StatelessWidget {
         key: ObjectKey(document),
         title: data.content.text,
         options: data.options,
+        selectedOptionKey: selectedExplanationOptionKey,
+        onSelectionChanged: onExplanationSelectionChanged,
       ),
       ContentDocumentType.unknown => const SizedBox.shrink(),
     };

@@ -28,7 +28,7 @@ class CourseRoadmapHeaderCard extends StatelessWidget {
                       color: AppCustomColor.textPrimary,
                     ),
                     textAlign: TextAlign.center,
-                    maxLines: 1,
+                    maxLines: 2,
                     overflow: TextOverflow.fade,
                   ),
                   8.verticalSpace,

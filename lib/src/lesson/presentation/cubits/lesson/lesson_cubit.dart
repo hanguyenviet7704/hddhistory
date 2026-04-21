@@ -58,25 +58,33 @@ class LessonCubit extends Cubit<LessonState> with CubitUseCaseHandlerMixin<Lesso
 
   void nextLearningItem() {
     if (state.currentLearningItemIndex >= state.pageData.items.length - 1) {
-      if (state.subQuestions.isNotEmpty) {
-        ReviewTimeRoute().go(AppConfig.instance.context!);
-        Future.delayed(const Duration(milliseconds: 100), () {
-          AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.reviewTime);
-        });
-        return;
-      }
-
-      _updateUserProgressKeypoint();
-      KeypointCompleteRoute().go(AppConfig.instance.context!);
-      Future.delayed(const Duration(milliseconds: 100), () {
-        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);
-      });
+      completeCurrentKeypoint();
       return;
     }
 
     emit(state.copyWith(currentLearningItemIndex: state.currentLearningItemIndex + 1));
     setCurrentLearningItem(state.currentLearningItem);
     preloadNextLearningItem();
+  }
+
+  void completeCurrentKeypoint({
+    LessonCompletionOrigin origin = LessonCompletionOrigin.read,
+    bool bypassReviewQueue = false,
+  }) {
+    if (!bypassReviewQueue && state.subQuestions.isNotEmpty) {
+      ReviewTimeRoute().go(AppConfig.instance.context!);
+      Future.delayed(const Duration(milliseconds: 100), () {
+        AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.reviewTime);
+      });
+      return;
+    }
+
+    _updateUserProgressKeypoint();
+    emit(state.copyWith(completionOrigin: origin));
+    KeypointCompleteRoute().go(AppConfig.instance.context!);
+    Future.delayed(const Duration(milliseconds: 100), () {
+      AppDI.injector.get<PageCubit>().setCurrentRouteName(RouteNamed.keypointComplete);
+    });
   }
 
   void _updateUserProgressKeypoint() {

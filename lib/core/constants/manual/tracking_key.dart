@@ -133,6 +133,20 @@ mixin TrackingKey {
   static const String videoLessonCompleteView = 'video_lesson_complete_view';
   static const String videoLessonMarkCompleteClick = 'video_lesson_mark_complete_click';
 
+  //* Keypoint audio events
+  static const String keypointAudioPopupView = 'keypoint_audio_popup_view';
+  static const String keypointAudioPopupReadClick = 'keypoint_audio_popup_read_click';
+  static const String keypointAudioPopupListenClick = 'keypoint_audio_popup_listen_click';
+  static const String keypointAudioScreenView = 'keypoint_audio_screen_view';
+  static const String keypointAudioModeSwitch = 'keypoint_audio_mode_switch';
+  static const String keypointAudioPlayClick = 'keypoint_audio_play_click';
+  static const String keypointAudioPauseClick = 'keypoint_audio_pause_click';
+  static const String keypointAudioSeekBackClick = 'keypoint_audio_seek_back_click';
+  static const String keypointAudioSeekForwardClick = 'keypoint_audio_seek_forward_click';
+  static const String keypointAudioSpeedOpen = 'keypoint_audio_speed_open';
+  static const String keypointAudioSpeedSelect = 'keypoint_audio_speed_select';
+  static const String keypointAudioCompleteView = 'keypoint_audio_complete_view';
+
   //* Keypoint events
   static const String keypointTheoryScroll = 'keypoint_theory_scroll';
   static const String keypointTheoryScrView = 'keypoint_theory_scr_view';

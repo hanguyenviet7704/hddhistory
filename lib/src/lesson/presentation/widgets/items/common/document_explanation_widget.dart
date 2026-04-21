@@ -3,11 +3,15 @@ part of '../../../../lesson.dart';
 class DocumentExplanationWidget extends StatefulWidget {
   final String title;
   final List<ExplanationOptionEntity> options;
+  final String? selectedOptionKey;
+  final ValueChanged<String?>? onSelectionChanged;
 
   const DocumentExplanationWidget({
     super.key,
     this.title = '',
     required this.options,
+    this.selectedOptionKey,
+    this.onSelectionChanged,
   });
 
   @override
@@ -17,11 +21,21 @@ class DocumentExplanationWidget extends StatefulWidget {
 class _DocumentExplanationWidgetState extends State<DocumentExplanationWidget> {
   String? selectedOptionKey;
 
+  bool get _isControlled => widget.onSelectionChanged != null;
+
+  String? get _resolvedSelectedOptionKey => _isControlled ? widget.selectedOptionKey : selectedOptionKey;
+
+  @override
+  void initState() {
+    super.initState();
+    selectedOptionKey = widget.selectedOptionKey;
+  }
+
   @override
   void didUpdateWidget(covariant DocumentExplanationWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    if (!listEquals(oldWidget.options, widget.options)) {
+    if (!listEquals(oldWidget.options, widget.options) && !_isControlled) {
       selectedOptionKey = null;
     }
   }
@@ -56,7 +70,7 @@ class _DocumentExplanationWidgetState extends State<DocumentExplanationWidget> {
         ...List.generate(widget.options.length, (index) {
           final option = widget.options[index];
           final optionKey = _resolveOptionKey(index, option, idCounts);
-          final isSelected = selectedOptionKey == optionKey;
+          final isSelected = _resolvedSelectedOptionKey == optionKey;
 
           return Padding(
             padding: EdgeInsets.only(bottom: index == widget.options.length - 1 ? 0 : 12.h),
@@ -82,8 +96,15 @@ class _DocumentExplanationWidgetState extends State<DocumentExplanationWidget> {
   }
 
   void _toggleOption(String optionKey) {
+    final nextSelectedOptionKey = _resolvedSelectedOptionKey == optionKey ? null : optionKey;
+
+    if (_isControlled) {
+      widget.onSelectionChanged?.call(nextSelectedOptionKey);
+      return;
+    }
+
     setState(() {
-      selectedOptionKey = selectedOptionKey == optionKey ? null : optionKey;
+      selectedOptionKey = nextSelectedOptionKey;
     });
   }
 }

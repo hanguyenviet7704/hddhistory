@@ -25,6 +25,7 @@ part 'data/datasources/local/course_local_data_source.dart';
 part 'data/datasources/remote/course_api.dart';
 part 'data/datasources/remote/course_lesson_api.dart';
 part 'data/models/course_model.dart';
+part 'data/models/keypoint_audio_model.dart';
 part 'data/models/keypoint_model.dart';
 part 'data/models/learning_item_model.dart';
 part 'data/models/roadmap_level_model.dart';
@@ -34,6 +35,7 @@ part 'data/repositories/course_lesson_repository.dart';
 part 'data/repositories/course_repository.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/course_entity.dart';
+part 'domain/entities/keypoint_audio_entity.dart';
 part 'domain/entities/keypoint_entity.dart';
 part 'domain/entities/learning_item_entity.dart';
 part 'domain/entities/roadmap_entity.dart';

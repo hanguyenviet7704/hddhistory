@@ -27,7 +27,6 @@ part 'bloc/cubit_usecase_handler.dart';
 part 'error/app_exception.dart';
 part 'network/graphql_request.dart';
 part 'network/restful_request.dart';
-part 'request/page_break_request_v2.dart';
 part 'request/page_break_request.dart';
 part 'responses/base_multi_language.dart';
 part 'responses/base_page_break.dart';

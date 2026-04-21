@@ -144,7 +144,10 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 
 ### Lesson runtime flow
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.
-- `LessonRoute` composes lesson execution providers (`LessonCubit`, exercise/theory/speaking variants, `ProgressCubit`, `FeedbackCubit`, `PageCubit`).
+- `RoadmapDetailPopup` resolves usable keypoint audio before rendering its CTA contract and routes through the same lesson path with `LessonRoute(initialMode: read|audio)`.
+- `LessonRoute` composes lesson execution providers (`LessonCubit`, `LessonAudioCubit`, exercise/theory/speaking variants, `ProgressCubit`, `FeedbackCubit`, `PageCubit`).
+- `LessonPage` now acts as the lesson shell/orchestrator: audio-enabled keypoints render the dual-mode shell and no-audio keypoints stay on the read-only shell path.
+- `LessonAudioCubit` owns route-session audio playback state, speed, seek bounds, inline failure recovery, and audio-complete handoff into the shared keypoint completion seam.
 - Completion routes (`KeypointCompleteRoute`, `BadgeProgressRoute`) merge lesson progress back into roadmap/home state.
 
 ### Output practice runtime flow

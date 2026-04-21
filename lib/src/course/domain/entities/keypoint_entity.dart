@@ -7,6 +7,7 @@ abstract class KeypointEntity with _$KeypointEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage title,
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default(BaseMultiLanguage()) BaseMultiLanguage estimateCompleTime,
+    KeypointAudioEntity? audio,
     @Default('') String image,
     @Default(0) int index,
     @Default(StrengthLevel.weakPoint) StrengthLevel strengthLevelData,
@@ -24,6 +25,10 @@ abstract class KeypointEntity with _$KeypointEntity {
 }
 
 extension KeypointEntityExtension on KeypointEntity {
+  String get resolvedAudioUrl => audio?.url?.text.trim() ?? '';
+
+  bool get hasUsableAudio => resolvedAudioUrl.isNotEmpty;
+
   ProcessEnum get progressFromAverageScore {
     if (averageScore >= 0) return ProcessEnum.done;
     return progess;

@@ -77,3 +77,11 @@ extension PageBreakRequestExtension<T extends JsonRequestConvertible> on PageBre
     return json;
   }
 }
+
+enum PageBreakOrder {
+  asc('asc'),
+  desc('desc');
+
+  final String name;
+  const PageBreakOrder(this.name);
+}

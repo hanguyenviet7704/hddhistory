@@ -13,6 +13,24 @@ class KeypointTrackingData {
     required this.keypoint,
   });
 
+  static KeypointTrackingData? fromLesson(
+    BuildContext context, {
+    required LessonEntity lesson,
+    required KeypointEntity keypoint,
+  }) {
+    if (lesson.id.isEmpty || keypoint.id.isEmpty) return null;
+
+    final courseTracking = CourseTrackingData.fromCourseId(context, lesson.courseId);
+    if (courseTracking == null) return null;
+
+    return KeypointTrackingData(
+      skillset: courseTracking.skillset,
+      course: courseTracking.course,
+      lesson: lesson,
+      keypoint: keypoint,
+    );
+  }
+
   static KeypointTrackingData? fromContext([BuildContext? _]) {
     final courseLessonState = AppDI.injector.get<CourseLessonCubit>().state;
     final lesson = courseLessonState.selectedLesson;

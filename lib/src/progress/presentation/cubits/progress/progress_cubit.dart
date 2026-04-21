@@ -155,9 +155,17 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
 
   void updateUserProgressKeypoint(LessonType lessonType, UpdateUserProgressKeypointParams params, {String lessonReview = ''}) async {
     final String userId = _userCubit.state.user.id;
-    final String courseId = _homeCubit.state.currentCourse.id;
     final CourseLessonState courseLessonState = _courseLessonCubit.state;
     final LessonEntity lessonEntity = _roleplayCubit.state.currentLesson;
+    final String courseId = resolveLessonFlowCourseId(
+      lessonCourseId: switch (lessonType) {
+        LessonType.lesson || LessonType.video => courseLessonState.selectedLesson.courseId,
+        LessonType.roleplay => lessonEntity.courseId,
+        _ => '',
+      },
+      roadmapCourseId: _courseRoadmapCubit.state.roadmap.courseId,
+      homeCourseId: _homeCubit.state.currentCourse.id,
+    );
     String lessonId = '';
 
     switch (lessonType) {
