@@ -115,6 +115,7 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final currentQuestion = state.question;
+    final instructionText = _resolveSingleChoiceInstruction(context, currentQuestion);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -124,7 +125,7 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
           12.verticalSpace,
         ],
         AppText(
-          context.l10n.exercise.exerciseSingleChoiceInstruction,
+          instructionText,
           margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
           maxLines: 10,
           style: AppStyle.text12.copyWith(
@@ -149,6 +150,13 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
       ],
     );
   }
+}
+
+String _resolveSingleChoiceInstruction(BuildContext context, QuestionEntity question) {
+  return switch (question.typedPayload) {
+    QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => context.l10n.exercise.exerciseSingleChoiceNoCorrectAnswerInstruction,
+    _ => context.l10n.exercise.exerciseSingleChoiceInstruction,
+  };
 }
 
 Widget _buildSingleChoiceBottomButton(BuildContext context) {

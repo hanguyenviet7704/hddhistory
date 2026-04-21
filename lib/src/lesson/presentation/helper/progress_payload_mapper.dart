@@ -62,6 +62,7 @@ UpdateUserProgressExerciseOption? progressSingleOptionNoCorrect(OptionEntity opt
   if (value == null) return null;
   return UpdateUserProgressExerciseOption(
     value: value,
+    isCorrect: false,
   );
 }
 

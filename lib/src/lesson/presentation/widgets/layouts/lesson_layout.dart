@@ -16,18 +16,18 @@ class LessonLayout extends StatelessWidget {
     return Scaffold(
       body: SafePage(
         child: Unfocused(
-          child: Stack(
+          child: Column(
             children: [
-              Positioned.fill(
-                child: Column(
+              BlocSelector<LessonCubit, LessonState, double>(
+                selector: (state) => state.progress,
+                builder: (context, progress) {
+                  return LessonProgressBar();
+                },
+              ),
+              Expanded(
+                child: Stack(
                   children: [
-                    BlocSelector<LessonCubit, LessonState, double>(
-                      selector: (state) => state.progress,
-                      builder: (context, progress) {
-                        return LessonProgressBar();
-                      },
-                    ),
-                    Expanded(
+                    Positioned.fill(
                       child: Column(
                         children: [
                           12.verticalSpace,
@@ -37,31 +37,31 @@ class LessonLayout extends StatelessWidget {
                         ],
                       ),
                     ),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      child: BlocSelector<LessonCubit, LessonState, bool>(
+                        selector: (state) => state.isBottomButtonVisible,
+                        builder: (context, isVisible) {
+                          if (bottom == null) return const SizedBox.shrink();
+                          return _AnimatedLessonBottomBar(
+                            isVisible: isVisible,
+                            child: bottom!,
+                          );
+                        },
+                      ),
+                    ),
+                    Positioned.fill(
+                      child: IgnorePointer(
+                        ignoring: !isLoading,
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 200),
+                          child: isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
+                        ),
+                      ),
+                    ),
                   ],
-                ),
-              ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: BlocSelector<LessonCubit, LessonState, bool>(
-                  selector: (state) => state.isBottomButtonVisible,
-                  builder: (context, isVisible) {
-                    if (bottom == null) return const SizedBox.shrink();
-                    return _AnimatedLessonBottomBar(
-                      isVisible: isVisible,
-                      child: bottom!,
-                    );
-                  },
-                ),
-              ),
-              Positioned.fill(
-                child: IgnorePointer(
-                  ignoring: !isLoading,
-                  child: AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
-                  ),
                 ),
               ),
             ],
