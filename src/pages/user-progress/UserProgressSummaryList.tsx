@@ -15,6 +15,7 @@ import { GradeResultType } from "../../types/enum/user-progress.enum";
 import { userProgressService } from "../../services/userProgressService";
 import { userFeedbackService } from "../../services/userFeedbackService";
 import {
+  ICompletedLevel,
   ICourseProgressSummary,
   IStopAtDetail,
 } from "../../types/interface/user-progress.interface";
@@ -113,6 +114,67 @@ const renderStars = (value?: number) => {
   if (value === undefined || value === null) return "-";
   const safe = Math.max(0, Math.min(5, Math.round(value)));
   return "★".repeat(safe) + "☆".repeat(5 - safe);
+};
+
+const CompletedLevelsCell = ({ levels }: { levels?: ICompletedLevel[] }) => {
+  const completedLevels = Array.isArray(levels) ? levels : [];
+  if (completedLevels.length === 0) {
+    return <span className="text-gray-400">-</span>;
+  }
+
+  return (
+    <div className="flex min-w-[280px] flex-col gap-2">
+      {completedLevels.map((completedLevel, index) => {
+        const request = completedLevel.additionalContentRequest;
+        return (
+          <div
+            key={`${completedLevel.level}-${index}`}
+            className="rounded-lg border border-gray-100 bg-gray-50 p-2"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-xs font-semibold uppercase text-emerald-700">
+                {completedLevel.level}
+              </span>
+              {request ? (
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase ${
+                    request.requested
+                      ? "bg-blue-100 text-blue-700"
+                      : "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {request.requested ? "Requested" : "Not requested"}
+                </span>
+              ) : (
+                <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold uppercase text-gray-500">
+                  No request
+                </span>
+              )}
+            </div>
+            <div className="mt-2 text-xs text-gray-600">
+              {request ? (
+                <div className="space-y-1">
+                  {request.requestText ? (
+                    <div
+                      className="max-w-[300px] truncate text-gray-700"
+                      title={request.requestText}
+                    >
+                      {request.requestText}
+                    </div>
+                  ) : null}
+                  <div className="text-gray-500">
+                    Submitted: {formatDate(request.submittedAt)}
+                  </div>
+                </div>
+              ) : (
+                <span className="text-gray-400">-</span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
 };
 
 const renderFeedbackDetail = (
@@ -499,6 +561,9 @@ export default function UserProgressSummaryList() {
                     <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Stop at
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                      Completed levels
+                    </th>
                     <th className="px-6 py-3 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
                       Action
                     </th>
@@ -572,6 +637,11 @@ export default function UserProgressSummaryList() {
                                 : stopAtLabel}
                             </span>
                           </div>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-600 align-top">
+                          <CompletedLevelsCell
+                            levels={item.completedLevels}
+                          />
                         </td>
                         <td className="px-6 py-4 text-right text-sm">
                           <div className="inline-flex items-center gap-3">
