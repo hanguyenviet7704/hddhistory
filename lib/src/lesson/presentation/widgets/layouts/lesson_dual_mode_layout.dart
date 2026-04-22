@@ -1,6 +1,6 @@
 part of '../../../lesson.dart';
 
-class LessonDualModeLayout extends StatelessWidget {
+class LessonDualModeLayout extends StatefulWidget {
   const LessonDualModeLayout({
     super.key,
     required this.selectedMode,
@@ -21,9 +21,40 @@ class LessonDualModeLayout extends StatelessWidget {
   final bool isLoading;
 
   @override
-  Widget build(BuildContext context) {
-    final activeBody = selectedMode.isAudio ? audioBody : readBody;
+  State<LessonDualModeLayout> createState() => _LessonDualModeLayoutState();
+}
 
+class _LessonDualModeLayoutState extends State<LessonDualModeLayout> with SingleTickerProviderStateMixin {
+  late final TabController _tabController;
+
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(
+      length: 2,
+      vsync: this,
+      initialIndex: _indexForMode(widget.selectedMode),
+    );
+  }
+
+  @override
+  void didUpdateWidget(covariant LessonDualModeLayout oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
+    final targetIndex = _indexForMode(widget.selectedMode);
+    if (_tabController.index != targetIndex) {
+      _tabController.animateTo(targetIndex);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafePage(
@@ -32,22 +63,23 @@ class LessonDualModeLayout extends StatelessWidget {
             children: [
               8.verticalSpace,
               _LessonDualModeHeader(
-                selectedMode: selectedMode,
-                onClose: onClose,
-                onModeSelected: onModeSelected,
-                canSwitchModes: !isLoading,
+                selectedMode: widget.selectedMode,
+                onClose: widget.onClose,
+                onModeSelected: widget.onModeSelected,
+                canSwitchModes: !widget.isLoading,
               ),
               20.verticalSpace,
               Expanded(
                 child: Stack(
                   children: [
                     Positioned.fill(
-                      child: AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 180),
-                        child: KeyedSubtree(
-                          key: ValueKey(selectedMode),
-                          child: activeBody,
-                        ),
+                      child: TabBarView(
+                        controller: _tabController,
+                        physics: const NeverScrollableScrollPhysics(),
+                        children: [
+                          _LessonModeTabPage(child: widget.readBody),
+                          _LessonModeTabPage(child: widget.audioBody),
+                        ],
                       ),
                     ),
                     Positioned(
@@ -57,22 +89,22 @@ class LessonDualModeLayout extends StatelessWidget {
                       child: BlocSelector<LessonCubit, LessonState, bool>(
                         selector: (state) => state.isBottomButtonVisible,
                         builder: (context, isVisible) {
-                          if (selectedMode.isAudio || bottom == null) {
+                          if (widget.selectedMode.isAudio || widget.bottom == null) {
                             return const SizedBox.shrink();
                           }
                           return _AnimatedLessonBottomBar(
                             isVisible: isVisible,
-                            child: bottom!,
+                            child: widget.bottom!,
                           );
                         },
                       ),
                     ),
                     Positioned.fill(
                       child: IgnorePointer(
-                        ignoring: !isLoading,
+                        ignoring: !widget.isLoading,
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 200),
-                          child: isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
+                          child: widget.isLoading ? const _LessonLoadingOverlay() : const SizedBox.shrink(),
                         ),
                       ),
                     ),
@@ -84,6 +116,28 @@ class LessonDualModeLayout extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+class _LessonModeTabPage extends StatefulWidget {
+  const _LessonModeTabPage({
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  State<_LessonModeTabPage> createState() => _LessonModeTabPageState();
+}
+
+class _LessonModeTabPageState extends State<_LessonModeTabPage> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }
 
@@ -235,3 +289,5 @@ class _LessonModeTab extends StatelessWidget {
     );
   }
 }
+
+int _indexForMode(LessonEntryMode mode) => mode.isAudio ? 1 : 0;
