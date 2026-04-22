@@ -165,6 +165,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `VideoLessonCubit.initialize(courseId, nodeId, lessonId)` loads the lesson and video learning item, while `VideoLessonPage` owns the mounted `VideoPlayerController` shell and routes controller ticks back into playback/completion state.
 - The runtime keeps one mounted player shell across play/pause, seek, notes, summary, question, result, and end states; notes use scoped cache keys (`courseId + nodeId + lessonId`) with session-local draft persistence and CRUD refresh.
 - Timed questions use crossed-time detection, zero-second first-play gating, forward-seek queue drain, backward re-arm, local choice-family result state, unsupported fallback handling, and end-after-queue progression.
+- Completion success first persists progress, then runs the shared learning streak gate before auto-exit; the gate fails open for timeout/failure/non-positive streak outcomes and waits for a current route before exiting when another modal is on top.
 - Tracking now covers popup, screen, play, pause, seek, notes, summary, share, quiz, result, exit, complete view, and mark-complete actions.
 
 ### Roleplay runtime flow
@@ -176,7 +177,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `HomeRoute` composes `LearningStreakCubit`, and nested `HomeLearningStreakRoute` maps to `LearningStreakPage`.
 - `HomePage` prefetches streak data with a short timeout and safe-default fallback before/while rendering the header streak chip.
 - `LearningStreakPage` is used as a bottom-sheet style popup flow and emits home streak popup view/close tracking events.
-- `KeypointCompletePage` and `RoleplayFeedbackPage` run a streak gate on primary CTA: load streak, show success overlay only on remote positive streak, then persist commit day via `UserCubit.lastStreakCountedDate` (UTC-day guard).
+- `KeypointCompletePage`, `RoleplayFeedbackPage`, and video lesson completion success run a streak gate: load streak, show success overlay only on remote positive streak, then persist commit day via `LearningStreakCubit.lastStreakCountedDate` (UTC-day guard).
 
 ### Onboarding branching runtime flow
 - Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.

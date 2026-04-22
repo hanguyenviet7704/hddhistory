@@ -94,7 +94,7 @@ extension _VideoLessonPageBuilders on _VideoLessonPageState {
           current: current,
         ),
         listener: (context, state) {
-          unawaited(_handleExit(state));
+          unawaited(_handleCompletionSuccessAfterProgress(state));
         },
       ),
     ];
@@ -186,16 +186,5 @@ extension _VideoLessonPageBuilders on _VideoLessonPageState {
           )
           .preloadImages([thumbnailUrl]),
     );
-  }
-
-  void _handleComplete(VideoLessonState state) {
-    final trackingData = _trackingData(state);
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackVideoLessonMarkCompleteClick(
-        trackingData,
-        nodeId: state.nodeId,
-      );
-    }
-    _cubit.completeLesson();
   }
 }

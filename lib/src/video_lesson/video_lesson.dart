@@ -44,6 +44,7 @@ part 'presentation/widgets/video_lesson_player_warmup_cache.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/video_lesson_page.dart';
 part 'presentation/pages/video_lesson_page_builders.dart';
+part 'presentation/pages/video_lesson_page_completion_actions.dart';
 part 'presentation/pages/video_lesson_page_controller_actions.dart';
 part 'presentation/pages/video_lesson_page_completion_utils.dart';
 part 'presentation/pages/video_lesson_page_interaction_actions.dart';
