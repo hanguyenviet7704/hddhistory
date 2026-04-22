@@ -1,4 +1,5 @@
 import { ITranslation } from "../../utils/translate";
+import { CourseLevel } from "../enum/course.enum";
 import { LessonType } from "../enum/lesson.enum";
 import {
   GradeResultType,
@@ -22,6 +23,19 @@ export interface IUserProgress {
   userId: string;
   courseId: string;
   lessonsResult: ILessonResult[];
+  completedLevels: ICompletedLevel[];
+}
+
+export interface ICompletedLevel {
+  level: CourseLevel;
+  completedAt: Date;
+  additionalContentRequest?: ICompletedLevelAdditionalContentRequest;
+}
+
+export interface ICompletedLevelAdditionalContentRequest {
+  requested: boolean;
+  requestText?: string;
+  submittedAt: Date;
 }
 
 export interface ILessonResult {
@@ -59,6 +73,7 @@ export interface ICourseProgressSummary {
   createdAt?: Date;
   lastTime?: Date;
   stopAt?: IStopAtDetail;
+  completedLevels: ICompletedLevel[];
 }
 
 export type ILessonResultDetail = Omit<ILessonResult, "keypointsResult"> & {
