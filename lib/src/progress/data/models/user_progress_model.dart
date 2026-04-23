@@ -7,6 +7,7 @@ abstract class UserProgressModel with _$UserProgressModel {
     @Default('') String userId,
     @Default('') String courseId,
     @Default([]) List<LessonResultModel> lessonsResult,
+    @Default([]) List<CompletedLevelModel> completedLevels,
   }) = _UserProgressModel;
 
   factory UserProgressModel.fromJson(Map<String, dynamic> json) => _$UserProgressModelFromJson(json);
@@ -29,5 +30,6 @@ extension UserProgressModelExtension on UserProgressModel {
     userId: userId,
     courseId: courseId,
     lessonsResult: lessonsResult.map((model) => model.toEntity()).toList(),
+    completedLevels: completedLevels.map((model) => model.toEntity()).toList(),
   );
 }

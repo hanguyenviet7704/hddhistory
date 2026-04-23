@@ -12,21 +12,27 @@ import 'package:retrofit/retrofit.dart';
 part 'data/datasources/local/achievenment_progress_local_data_source.dart';
 part 'data/datasources/local/progress_local_data_source.dart';
 part 'data/datasources/remote/achievenment_progress_api.dart';
+part 'data/datasources/remote/content_request_api.dart';
 part 'data/datasources/remote/user_progress_api.dart';
+part 'data/models/completed_level_model.dart';
 part 'data/models/exercise_result_model.dart';
 part 'data/models/keypoint_result_model.dart';
 part 'data/models/lesson_result_model.dart';
 //* Data Layer - Models, Datasources, Repositories
 part 'data/models/user_progress_model.dart';
 part 'data/repositories/achievenment_progress_repository.dart';
+part 'data/repositories/content_request_repository.dart';
 part 'data/repositories/progress_repository.dart';
+part 'domain/entities/completed_level_entity.dart';
 part 'domain/entities/exercise_result_entity.dart';
 part 'domain/entities/keypoint_result_entity.dart';
 part 'domain/entities/lesson_result_entity.dart';
 //* Domain Layer - Entities, Repositories, Use Cases
 part 'domain/entities/user_progress_entity.dart';
 part 'domain/repositories/i_achievenment_progress_repository.dart';
+part 'domain/repositories/i_content_request_repository.dart';
 part 'domain/repositories/i_progress_repository.dart';
+part 'domain/usecases/create_completed_level_additional_content_request_usecase.dart';
 part 'domain/usecases/get_all_achievenment_responses_usecase.dart';
 part 'domain/usecases/get_all_user_progresss_usecase.dart';
 part 'domain/usecases/get_course_level_progress_usecase.dart';
