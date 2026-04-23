@@ -6,6 +6,6 @@ abstract class ContentRequestApi {
   @factoryMethod
   factory ContentRequestApi(@Named(DIKey.appDio) Dio dio) = _ContentRequestApi;
 
-  @POST(AppEndpoint.coursesUserProgressCompletedLevelAdditionalContentRequest)
+  @PUT(AppEndpoint.coursesUserProgressCompletedLevelAdditionalContentRequest)
   Future<BaseResponse<UserProgressModel>> createCompletedLevelAdditionalContentRequest(@Body() Map<String, dynamic> body);
 }

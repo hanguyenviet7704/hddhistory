@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-23
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -158,6 +158,12 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `OutputPracticeSocketCubit` connects to the socket server, joins the room, retries one initial join after timeout, and exposes `reconnect()` plus `disconnect()` for page lifecycle cleanup.
 - Message sending uses optimistic pending timeline rows, reconciles canonical messages after REST send succeeds, and preserves a retryable failure state when send or socket delivery fails.
 - Dedicated tracking events cover popup view/close/start, screen view, option click, send click, and exit click.
+
+### Course roadmap completed-level request flow
+- `CourseRoadmapPage` now loads course-grade progress for the active roadmap course on entry and course switches.
+- `ProgressCubit.loadAllUserProgresss()` keeps course-grade requests scoped to the explicit course filter, does not leak the selected lesson id into `grade: course` fetches, and ignores stale out-of-order completions.
+- `RoadmapEntity.additionalContentRequestStateFor(...)` combines current roadmap completion with matching `UserProgressEntity.completedLevels`, so the request footer only appears for the latest completed current level and stays hidden until the matching course progress is loaded.
+- `CompletedLevelAdditionalContentRequestCard` and `CompletedLevelAdditionalContentRequestPopup` render the Figma-driven footer and popup states, while `ProgressCubit.submitCompletedLevelAdditionalContentRequest(...)` persists `No`, `Later`, and `Send request` through `PUT /api/v1/courses-user-progress/completed-level/additional-content-request`.
 
 ### Video lesson runtime flow
 - `RoadmapNodeActionHelper` resolves roadmap `openingVideo` / `closingVideo` lessons to a unique owner `nodeId`, opens `VideoLessonIntroSheet`, and keeps ambiguous/missing matches on the roadmap with a non-blocking message.

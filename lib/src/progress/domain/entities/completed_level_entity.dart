@@ -23,3 +23,7 @@ abstract class CompletedLevelEntity with _$CompletedLevelEntity {
 
   factory CompletedLevelEntity.fromJson(Map<String, dynamic> json) => _$CompletedLevelEntityFromJson(json);
 }
+
+extension CompletedLevelEntityRequestExtension on CompletedLevelEntity {
+  bool get hasSubmittedAdditionalContentRequest => additionalContentRequest != null;
+}

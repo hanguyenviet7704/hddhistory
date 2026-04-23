@@ -1,11 +1,11 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-04-22
+**Last Updated:** 2026-04-23
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
+Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, completed-level additional-content requests, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
 The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
@@ -95,6 +95,7 @@ Notes:
 - Retrieve user progress and paginated “my courses” data.
 - Show achievement/course-level progress status.
 - Show streak progress from home and completion-triggered success overlays.
+- Persist completed-level additional-content request answers from the roadmap footer and keep footer eligibility tied to current roadmap completion.
 
 8. Profile and settings
 - Retrieve/update user profile.
@@ -171,6 +172,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-04-23 | Added completed-level additional-content request requirements for roadmap footer eligibility, yes/no persistence, and centered request popup behavior. |
 | 2026-04-13 | Added dual-mode lesson requirements for roadmap popup branching, single-route read/listen entry, route-session audio playback, shared completion handoff, and no-audio fallback behavior. |
 | 2026-04-08 | Added first-slice video-lesson course-shell requirements (roadmap entry, intro sheet, player shell, completion handoff, and tracking) and synced module scope to 18 modules. |
 | 2026-03-30 | Added output-practice course-shell flow (typed route, intro sheet, scoped history, socket retry/reconcile, tracking) and synced module scope to 17 modules. |

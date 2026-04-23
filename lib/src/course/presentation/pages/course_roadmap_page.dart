@@ -10,6 +10,7 @@ class CourseRoadmapPage extends StatefulWidget {
 class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
   bool _hasTrackedForVisibility = false;
   String _lastTrackedCourseId = '';
+  String _lastLoadedProgressCourseId = '';
 
   void _trackRoadmapQuickLearningClick() {
     final roadmapState = context.read<CourseRoadmapCubit>().state;
@@ -42,12 +43,20 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
     _hasTrackedForVisibility = true;
   }
 
+  void _loadProgressForRoadmap(String courseId, {bool force = false}) {
+    if (courseId.isEmpty) return;
+    if (!force && _lastLoadedProgressCourseId == courseId) return;
+    _lastLoadedProgressCourseId = courseId;
+    unawaited(context.read<ProgressCubit>().loadAllUserProgresss(courseId: courseId, silent: true));
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (context.read<PageCubit>().state.currentRouteName == RouteNamed.courseRoadmap) {
         _trackRoadmapScrView();
+        _loadProgressForRoadmap(context.read<CourseRoadmapCubit>().state.roadmap.courseId);
       }
     });
   }
@@ -106,6 +115,7 @@ class _CourseRoadmapPageState extends State<CourseRoadmapPage> {
           listener: (context, state) {
             _hasTrackedForVisibility = false;
             _trackRoadmapScrView();
+            _loadProgressForRoadmap(state.roadmap.courseId);
           },
         ),
         BlocListener<FeedbackCubit, FeedbackState>(

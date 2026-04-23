@@ -46,6 +46,7 @@ part 'domain/usecases/update_user_progress_lesson_usecase.dart';
 part 'presentation/cubits/achievenment_progress/achievenment_progress_cubit.dart';
 //* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/achievenment_progress/achievenment_progress_state.dart';
+part 'presentation/cubits/progress/progress_cubit_completed_level_content_request_mixin.dart';
 part 'presentation/cubits/progress/progress_cubit.dart';
 part 'presentation/cubits/progress/progress_state.dart';
 //* Presentation Layer - Pages

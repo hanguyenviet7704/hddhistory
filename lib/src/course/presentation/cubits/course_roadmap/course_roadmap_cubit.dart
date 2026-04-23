@@ -37,7 +37,7 @@ class CourseRoadmapCubit extends HydratedCubit<CourseRoadmapState> with CubitUse
 
   LessonEntity? get cachedLessonAction => _cachedLessonAction;
 
-  void loadRoadmap({String courseId = ''}) async {
+  Future<void> loadRoadmap({String courseId = ''}) async {
     if (courseId.isEmpty) {
       courseId = state.roadmap.courseId;
     }

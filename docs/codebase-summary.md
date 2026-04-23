@@ -1,6 +1,6 @@
 # Codebase Summary
 
-**Last Updated:** 2026-04-22
+**Last Updated:** 2026-04-23
 **Source Inputs:** `repomix-output.xml` (refreshed 2026-04-08) + direct repository verification
 
 ## 1. Snapshot Metrics
@@ -47,7 +47,7 @@ meup/
 | `achievenment` | 15 | 2,268 | Spelling matches codebase path |
 | `auth` | 48 | 6,158 | Auth/session lifecycle |
 | `common` | 21 | 2,576 | Shared state/pages/widgets |
-| `course` | 76 | 11,583 | Course, roadmap, course lessons |
+| `course` | 76 | 11,583 | Course, roadmap, course lessons, and completed-level additional-content request UI |
 | `data_collect` | 45 | 4,393 | Intake/onboarding data collection |
 | `feedback` | 29 | 4,684 | User feedback flow |
 | `home` | 18 | 2,098 | Dashboard/skillset entry + streak chip trigger |
@@ -58,7 +58,7 @@ meup/
 | `onboard_branching` | 44 | 9,836 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
 | `output_practice` | 45 | 8,055 | Course-shell output practice conversation flow, intro sheet, socket room, and retryable chat history |
 | `profile` | 35 | 4,880 | User profile and upload |
-| `progress` | 34 | 8,261 | Progress and achievement progress |
+| `progress` | 34 | 8,261 | Progress, achievement progress, and completed-level additional-content request persistence |
 | `roleplay` | 70 | 11,357 | Roleplay + AI feedback |
 | `setting` | 17 | 2,202 | Theme/language/settings |
 | `video_lesson` | 57 | 9,555 | Course-shell video lesson intro sheet, mounted player shell, notes/summary/share overlays, timed-question flow, completion streak gate, and tracking |
@@ -73,6 +73,7 @@ meup/
 - Notification folder modularization stays grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`, but the files are now owned by the shared `library + part` architecture in `lib/config/services/services.dart`.
 - This reintroduces notification helper types into the exported services namespace as an intentional tradeoff, while Firebase/Awesome transport-specific package types still remain implementation-only.
 - Course output practice now lives under `lib/src/output_practice/` and is launched from course roadmap output lessons through a typed `output-practice/:sectionId` route, with intro sheet handoff, conversation fetch/create fallback, scoped history pagination, socket join/reconnect handling, optimistic send/reconcile, retry affordances, and dedicated analytics events.
+- Course roadmap now includes a completed-level additional-content request flow. Eligibility is derived from current roadmap completion plus matching `userCourseProgress.completedLevels`, and `ProgressCubit.loadAllUserProgresss()` now scopes course-grade refreshes so stale or lesson-filtered responses do not suppress the footer for the wrong course.
 - Lesson runtime now keeps one typed `lesson` route for both read and listen entry. `RoadmapDetailPopup` branches between read-only and read/listen CTA states before navigation, `LessonPage` swaps between the preserved read surface and the new audio surface, and `LessonAudioCubit` owns route-session playback, speed, seek, inline failure recovery, and audio-complete handoff without folding that state into `LessonCubit`.
 - Video lesson now lives under `lib/src/video_lesson/` and is launched from roadmap `openingVideo` / `closingVideo` lessons through a typed `video-lesson/:courseId/:nodeId/:lessonId` route. `RoadmapNodeActionHelper` resolves a unique roadmap node id, opens a tracked intro sheet, keeps a mounted player shell around `VideoPlayerController`, scopes notes cache by `courseId + nodeId + lessonId`, supports summary/share overlays plus timed-question/result overlays, pushes completion back into roadmap state after the progress update, and runs the shared streak gate before auto-exit.
 

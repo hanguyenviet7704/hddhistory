@@ -4,11 +4,19 @@ class CourseLevelContent extends StatelessWidget {
   final RoadmapLevelEntity roadmapLevel;
   final bool enableSequentialUnlock;
   final Set<String> lockedLessonKeys;
+  final CompletedLevelAdditionalContentRequestPromptStatus additionalContentRequestStatus;
+  final bool isSubmittingAdditionalContentRequest;
+  final Future<bool> Function()? onNoAdditionalContentRequest;
+  final VoidCallback? onYesAdditionalContentRequest;
   const CourseLevelContent({
     super.key,
     required this.roadmapLevel,
     this.enableSequentialUnlock = true,
     this.lockedLessonKeys = const {},
+    this.additionalContentRequestStatus = CompletedLevelAdditionalContentRequestPromptStatus.hidden,
+    this.isSubmittingAdditionalContentRequest = false,
+    this.onNoAdditionalContentRequest,
+    this.onYesAdditionalContentRequest,
   });
 
   List<bool> get _sequentialUnlockFlags {
@@ -29,6 +37,14 @@ class CourseLevelContent extends StatelessWidget {
             lockedLessonKeys: lockedLessonKeys,
           );
         }),
+        if (additionalContentRequestStatus.isVisible)
+          CompletedLevelAdditionalContentRequestCard(
+            level: roadmapLevel.level,
+            status: additionalContentRequestStatus,
+            isSubmitting: isSubmittingAdditionalContentRequest,
+            onNoSelected: onNoAdditionalContentRequest,
+            onYesSelected: onYesAdditionalContentRequest,
+          ),
 
         // CourseRoadmapTimeline(
         //   lessons: roadmapLevel.appProgressLessons(usingAppProgressLessons),

@@ -11,6 +11,7 @@ abstract class ProgressState with _$ProgressState {
     @Default(LessonResultEntity()) LessonResultEntity currentLessonResult,
     @Default(KeypointResultEntity()) KeypointResultEntity currentKeypointResult,
     @Default(ExerciseResultEntity()) ExerciseResultEntity currentExerciseResult,
+    @Default(false) bool isSubmittingCompletedLevelAdditionalContentRequest,
     String? errorMessage,
   }) = _ProgressState;
 

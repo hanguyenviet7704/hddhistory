@@ -128,6 +128,36 @@ extension RoadmapEntityExtension on RoadmapEntity {
     return -1;
   }
 
+  bool get isAllCurrentRoadmapContentCompleted {
+    if (levels.isEmpty) return false;
+    return levels.every((level) => level.isRoadmapCompleted);
+  }
+
+  RoadmapLevelEntity? get latestCompletedRoadmapLevel {
+    for (int i = levels.length - 1; i >= 0; i--) {
+      final level = levels[i];
+      if (level.isRoadmapCompleted) return level;
+    }
+    return null;
+  }
+
+  CompletedLevelAdditionalContentRequestPromptStatus additionalContentRequestStateFor({
+    required CourseLevel level,
+    required UserProgressEntity userProgress,
+  }) {
+    if (level == CourseLevel.unknown) return CompletedLevelAdditionalContentRequestPromptStatus.hidden;
+    if (!isAllCurrentRoadmapContentCompleted) return CompletedLevelAdditionalContentRequestPromptStatus.hidden;
+    if (latestCompletedRoadmapLevel?.level != level) return CompletedLevelAdditionalContentRequestPromptStatus.hidden;
+    if (courseId.isNotEmpty && userProgress.courseId != courseId) {
+      return CompletedLevelAdditionalContentRequestPromptStatus.hidden;
+    }
+
+    final completedLevel = userProgress.completedLevelFor(level);
+    final request = completedLevel?.additionalContentRequest;
+    if (request == null) return CompletedLevelAdditionalContentRequestPromptStatus.available;
+    return request.requested ? CompletedLevelAdditionalContentRequestPromptStatus.requested : CompletedLevelAdditionalContentRequestPromptStatus.hidden;
+  }
+
   bool usingAppProgressLessons(int levelIndex) {
     if (levelIndex == 0) return true;
     if (lastCompletedLevelIndex == -1) return false;
@@ -163,4 +193,14 @@ extension RoadmapEntityExtension on RoadmapEntity {
     if (paywallConfig.lessonLock >= lessonOffset + totalLessonsInLevel) return -1;
     return paywallConfig.lessonLock - lessonOffset;
   }
+}
+
+enum CompletedLevelAdditionalContentRequestPromptStatus {
+  hidden,
+  available,
+  requested
+  ;
+
+  bool get isVisible => this != hidden;
+  bool get isRequested => this == requested;
 }
