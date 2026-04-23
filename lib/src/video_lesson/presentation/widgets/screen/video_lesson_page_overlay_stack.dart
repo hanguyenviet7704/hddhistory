@@ -80,7 +80,7 @@ class _VideoLessonOverlayStack extends StatelessWidget {
         if (state.isEndVisible)
           VideoLessonEndSheet(
             lesson: state.lesson,
-            isSubmitting: state.completionStatus == VideoLessonCompletionStatus.loading,
+            isSubmitting: videoLessonShouldDisableCompletionSubmit(state.completionStatus),
             errorMessage: state.completionErrorMessage,
             onSubmit: onComplete,
           ),

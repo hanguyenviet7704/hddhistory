@@ -128,7 +128,10 @@ class _LessonPageState extends State<LessonPage> {
             onModeSelected: _handleModeSelected,
             onClose: () => LessonExitFlow.open(
               context,
-              onBeforePopup: () => context.read<LessonAudioCubit>().pauseForOverlay(),
+              onBeforePopup: () {
+                context.read<LessonAudioCubit>().pauseForOverlay();
+                return Future.value();
+              },
             ),
             readBody: readSurface,
             audioBody: LessonAudioSurface(

@@ -1,6 +1,6 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-04-13
+**Last Updated:** 2026-04-22
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
@@ -80,6 +80,7 @@ Notes:
 - Support summary and share actions from the paused player shell.
 - Support crossed-time timed questions with backward re-arm, forward queue drain, unsupported fallback, and local result state.
 - Persist completion through progress update and refresh roadmap state after success.
+- Run the shared completion streak gate after progress success and before auto-exit; fail open on streak timeout/failure/non-positive response.
 
 5. Exercise and speaking experience
 - Render multiple exercise types via typed payloads.

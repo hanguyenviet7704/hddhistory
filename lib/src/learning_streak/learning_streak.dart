@@ -27,6 +27,7 @@ part 'domain/usecases/get_user_learning_streak_usecase.dart';
 part 'presentation/cubits/learning_streak_state.dart';
 part 'presentation/cubits/learning_streak_cubit.dart';
 part 'presentation/cubits/learning_streak_request_result.dart';
+part 'presentation/helpers/learning_streak_completion_gate.dart';
 part 'presentation/helpers/learning_streak_modal_guard.dart';
 
 //* Presentation Layer - Pages

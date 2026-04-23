@@ -1,6 +1,6 @@
 # Codebase Summary
 
-**Last Updated:** 2026-04-08
+**Last Updated:** 2026-04-22
 **Source Inputs:** `repomix-output.xml` (refreshed 2026-04-08) + direct repository verification
 
 ## 1. Snapshot Metrics
@@ -51,7 +51,7 @@ meup/
 | `data_collect` | 45 | 4,393 | Intake/onboarding data collection |
 | `feedback` | 29 | 4,684 | User feedback flow |
 | `home` | 18 | 2,098 | Dashboard/skillset entry + streak chip trigger |
-| `learning_streak` | 20 | 2,495 | Home streak popup + completion streak success flow |
+| `learning_streak` | 21 | 2,581 | Home streak popup + shared completion streak success gate |
 | `lesson` | 149 | 28,867 | Largest module: learning/exercise runtime |
 | `monetization` | 38 | 5,989 | Products, purchase, verification |
 | `onboard` | 38 | 5,779 | Intro/onboarding flow |
@@ -61,7 +61,7 @@ meup/
 | `progress` | 34 | 8,261 | Progress and achievement progress |
 | `roleplay` | 70 | 11,357 | Roleplay + AI feedback |
 | `setting` | 17 | 2,202 | Theme/language/settings |
-| `video_lesson` | 25 | 4,120 | Course-shell video lesson intro sheet, mounted player shell, notes/summary/share overlays, timed-question flow, end/completion, and tracking |
+| `video_lesson` | 57 | 9,555 | Course-shell video lesson intro sheet, mounted player shell, notes/summary/share overlays, timed-question flow, completion streak gate, and tracking |
 
 ## 4. Architecture and Runtime Contracts
 - Architecture style: feature-based Clean Architecture (`presentation`, `domain`, `data`).
@@ -74,7 +74,7 @@ meup/
 - This reintroduces notification helper types into the exported services namespace as an intentional tradeoff, while Firebase/Awesome transport-specific package types still remain implementation-only.
 - Course output practice now lives under `lib/src/output_practice/` and is launched from course roadmap output lessons through a typed `output-practice/:sectionId` route, with intro sheet handoff, conversation fetch/create fallback, scoped history pagination, socket join/reconnect handling, optimistic send/reconcile, retry affordances, and dedicated analytics events.
 - Lesson runtime now keeps one typed `lesson` route for both read and listen entry. `RoadmapDetailPopup` branches between read-only and read/listen CTA states before navigation, `LessonPage` swaps between the preserved read surface and the new audio surface, and `LessonAudioCubit` owns route-session playback, speed, seek, inline failure recovery, and audio-complete handoff without folding that state into `LessonCubit`.
-- Video lesson now lives under `lib/src/video_lesson/` and is launched from roadmap `openingVideo` / `closingVideo` lessons through a typed `video-lesson/:courseId/:nodeId/:lessonId` route. `RoadmapNodeActionHelper` resolves a unique roadmap node id, opens a tracked intro sheet, keeps a mounted player shell around `VideoPlayerController`, scopes notes cache by `courseId + nodeId + lessonId`, supports summary/share overlays plus timed-question/result overlays, and pushes completion back into roadmap state after the progress update.
+- Video lesson now lives under `lib/src/video_lesson/` and is launched from roadmap `openingVideo` / `closingVideo` lessons through a typed `video-lesson/:courseId/:nodeId/:lessonId` route. `RoadmapNodeActionHelper` resolves a unique roadmap node id, opens a tracked intro sheet, keeps a mounted player shell around `VideoPlayerController`, scopes notes cache by `courseId + nodeId + lessonId`, supports summary/share overlays plus timed-question/result overlays, pushes completion back into roadmap state after the progress update, and runs the shared streak gate before auto-exit.
 
 ## 5. API and Pagination Contract Summary
 - API endpoint constants live in `lib/core/constants/manual/endpoint.dart`.

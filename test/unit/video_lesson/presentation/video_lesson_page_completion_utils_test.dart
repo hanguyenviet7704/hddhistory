@@ -54,4 +54,25 @@ void main() {
       );
     });
   });
+
+  group('videoLessonShouldDisableCompletionSubmit', () {
+    test('disables only while loading or waiting to exit after success', () {
+      expect(
+        videoLessonShouldDisableCompletionSubmit(VideoLessonCompletionStatus.idle),
+        isFalse,
+      );
+      expect(
+        videoLessonShouldDisableCompletionSubmit(VideoLessonCompletionStatus.failure),
+        isFalse,
+      );
+      expect(
+        videoLessonShouldDisableCompletionSubmit(VideoLessonCompletionStatus.loading),
+        isTrue,
+      );
+      expect(
+        videoLessonShouldDisableCompletionSubmit(VideoLessonCompletionStatus.success),
+        isTrue,
+      );
+    });
+  });
 }
