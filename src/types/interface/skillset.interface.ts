@@ -1,5 +1,8 @@
 import { ITranslation } from "../../utils/translate";
-import { SkillsetStatus } from "../enum/skillset.enum";
+import {
+  SkillsetOnboardingIntroduce,
+  SkillsetStatus,
+} from "../enum/skillset.enum";
 import { BaseQuery } from "./common.interface";
 import { ICourse } from "./course.interface";
 
@@ -9,6 +12,7 @@ export interface ISkillset {
   description: ITranslation;
   status: SkillsetStatus;
   image: string;
+  onboardingIntroduce?: SkillsetOnboardingIntroduce | null;
   courses?: ICourse[];
   index?: number;
 }
@@ -18,6 +22,7 @@ export interface SkillsetPayload {
   description?: ITranslation;
   status: SkillsetStatus;
   image: string;
+  onboardingIntroduce?: SkillsetOnboardingIntroduce | null;
   courses?: ICourse[];
   index?: number;
 }

@@ -26,8 +26,11 @@ import {
   SkillsetPayload,
 } from "../../types/interface/skillset.interface";
 import { skillsetService } from "../../services/skillsetService";
-import { SkillsetStatus } from "../../types/enum/skillset.enum";
-import { CourseLevel, CourseStatus } from "../../types/enum/course.enum";
+import {
+  SkillsetOnboardingIntroduce,
+  SkillsetStatus,
+} from "../../types/enum/skillset.enum";
+import { CourseStatus } from "../../types/enum/course.enum";
 import { PencilIcon, PlusIcon, TrashIcon } from "lucide-react";
 import SkillsetModal from "../../components/skillsets/SkillsetModal";
 import SkillsetConfirm from "../../components/skillsets/SkillsetConfirm";
@@ -36,6 +39,10 @@ import CloudflareAssetPreview from "../../components/files/CloudflareAssetPrevie
 import { useNavigate } from "react-router-dom";
 
 // --- Component chính ---
+const onboardingIntroduceLabels = new Set(
+  Object.values(SkillsetOnboardingIntroduce)
+);
+
 const SkillsetList: React.FC = () => {
   const navigate = useNavigate();
   const lang = useSelector((state: RootState) => state.lang.code);
@@ -484,6 +491,22 @@ const SkillsetList: React.FC = () => {
                                   lang
                                 )}
                               </Typography>
+                              {skillset.onboardingIntroduce &&
+                                onboardingIntroduceLabels.has(
+                                  skillset.onboardingIntroduce
+                                ) && (
+                                  <Typography
+                                    variant="body2"
+                                    sx={{
+                                      mb: 2,
+                                      fontStyle: "italic",
+                                      color: "text.secondary",
+                                      opacity: 0.72,
+                                    }}
+                                  >
+                                    {skillset.onboardingIntroduce}
+                                  </Typography>
+                                )}
 
                               {/* Status Badge ở góc dưới bên phải */}
                               <Box
