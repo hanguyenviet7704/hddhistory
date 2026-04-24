@@ -5,7 +5,10 @@ import {
   ISkillset,
   SkillsetPayload,
 } from "../../types/interface/skillset.interface";
-import { SkillsetStatus } from "../../types/enum/skillset.enum";
+import {
+  SkillsetOnboardingIntroduce,
+  SkillsetStatus,
+} from "../../types/enum/skillset.enum";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -30,12 +33,18 @@ export default function SkillsetModal({
   loading = false,
   error = null,
 }: Props) {
+  const onboardingIntroduceOptions = Object.values(
+    SkillsetOnboardingIntroduce
+  );
   const lang = useSelector((state: RootState) => state.lang.code);
 
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<SkillsetStatus>(SkillsetStatus.DRAFT);
+  const [onboardingIntroduce, setOnboardingIntroduce] = useState<
+    SkillsetOnboardingIntroduce | ""
+  >("");
   const [indexValue, setIndexValue] = useState("");
 
   useEffect(() => {
@@ -45,6 +54,7 @@ export default function SkillsetModal({
         setDescription(initial.description ?? {});
         setImage(initial.image ?? "");
         setStatus(initial.status ?? SkillsetStatus.DRAFT);
+        setOnboardingIntroduce(initial.onboardingIntroduce ?? "");
         setIndexValue(
           initial.index !== undefined && initial.index !== null
             ? String(initial.index)
@@ -55,6 +65,7 @@ export default function SkillsetModal({
         setDescription({});
         setImage("");
         setStatus(SkillsetStatus.DRAFT);
+        setOnboardingIntroduce("");
         setIndexValue("");
       }
     }
@@ -82,6 +93,7 @@ export default function SkillsetModal({
       ...(cleanedDescription && { description: cleanedDescription }),
       image,
       status,
+      onboardingIntroduce: onboardingIntroduce || null,
       ...(trimmedIndex !== "" &&
         !Number.isNaN(parsedIndex) && { index: parsedIndex }),
     };
@@ -167,6 +179,40 @@ export default function SkillsetModal({
                   <option value={SkillsetStatus.DRAFT}>Draft</option>
                   <option value={SkillsetStatus.PUBLISHED}>Published</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Onboarding Introduce
+                </label>
+                <div className="flex items-center gap-3">
+                  <select
+                    value={onboardingIntroduce}
+                    onChange={(e) =>
+                      setOnboardingIntroduce(
+                        e.target.value as SkillsetOnboardingIntroduce | ""
+                      )
+                    }
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                  >
+                    <option value="" disabled>
+                      Select onboarding introduce
+                    </option>
+                    {onboardingIntroduceOptions.map((option) => (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={() => setOnboardingIntroduce("")}
+                    disabled={!onboardingIntroduce}
+                    className="shrink-0 rounded-lg border border-gray-300 px-3 py-2 text-sm font-medium text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Clear
+                  </button>
+                </div>
               </div>
 
               {/* Index */}
