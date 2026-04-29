@@ -34,6 +34,7 @@ import {
   parseEstimateCompleteTimeInput,
 } from "../../utils/estimate-complete-time";
 import RoleplayFromDetail from "./RoleplayFromDetail";
+import { resolveDefaultLessonIcons } from "../../utils/default-lesson-icons";
 
 interface RoleplayFormProps {
   roleplayLesson?: ILesson;
@@ -48,6 +49,7 @@ export default function RoleplayForm({
   const isEditMode = !!roleplayLesson;
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
+  const hasResolvedDefaultIcons = useRef(false);
 
   const createEmptyRoleplay = (): ILearningItem =>
     ({
@@ -101,6 +103,36 @@ export default function RoleplayForm({
       });
     }
   }, [roleplayLesson]);
+
+  useEffect(() => {
+    if (isEditMode || hasResolvedDefaultIcons.current) return;
+
+    let active = true;
+
+    const fillDefaultIcons = async () => {
+      try {
+        const { icon, lightIcon } = await resolveDefaultLessonIcons(
+          LessonType.ROLEPLAY
+        );
+        if (!active) return;
+        hasResolvedDefaultIcons.current = true;
+
+        setCurrentRoleplayLesson((prev) => ({
+          ...prev,
+          icon: prev.icon || icon,
+          lightIcon: prev.lightIcon || lightIcon,
+        }));
+      } catch (err) {
+        console.error("fillDefaultRoleplayIcons", err);
+      }
+    };
+
+    fillDefaultIcons();
+
+    return () => {
+      active = false;
+    };
+  }, [isEditMode]);
 
   const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
   const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =
