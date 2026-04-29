@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Combobox } from "@headlessui/react";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { useNavigate } from "react-router-dom";
@@ -39,6 +39,7 @@ import {
   getEstimateCompleteTimeUnitLabel,
   parseEstimateCompleteTimeInput,
 } from "../../utils/estimate-complete-time";
+import { resolveDefaultLessonIcons } from "../../utils/default-lesson-icons";
 
 interface VideoFormProps {
   videoLesson?: ILesson;
@@ -102,6 +103,7 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
   const isEditMode = !!videoLesson;
+  const hasResolvedDefaultIcons = useRef(false);
 
   const [currentVideoLesson, setCurrentVideoLesson] = useState<ILesson>(
     videoLesson
@@ -131,6 +133,36 @@ export default function VideoForm({ videoLesson, onSave }: VideoFormProps) {
     if (!videoLesson) return;
     setCurrentVideoLesson({ ...videoLesson, type: LessonType.VIDEO });
   }, [videoLesson]);
+
+  useEffect(() => {
+    if (isEditMode || hasResolvedDefaultIcons.current) return;
+
+    let active = true;
+
+    const fillDefaultIcons = async () => {
+      try {
+        const { icon, lightIcon } = await resolveDefaultLessonIcons(
+          LessonType.VIDEO
+        );
+        if (!active) return;
+        hasResolvedDefaultIcons.current = true;
+
+        setCurrentVideoLesson((prev) => ({
+          ...prev,
+          icon: prev.icon || icon,
+          lightIcon: prev.lightIcon || lightIcon,
+        }));
+      } catch (error) {
+        console.error("fillDefaultVideoIcons", error);
+      }
+    };
+
+    fillDefaultIcons();
+
+    return () => {
+      active = false;
+    };
+  }, [isEditMode]);
 
   useEffect(() => {
     const parsed = parseEstimateCompleteTimeInput(

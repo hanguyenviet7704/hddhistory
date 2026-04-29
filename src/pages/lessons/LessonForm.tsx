@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { ILesson, LessonPayload } from "../../types/interface/lesson.interface";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { keypointService } from "../../services/keypointService";
@@ -38,6 +38,7 @@ import {
   getEstimateCompleteTimeUnitLabel,
   parseEstimateCompleteTimeInput,
 } from "../../utils/estimate-complete-time";
+import { resolveDefaultLessonIcons } from "../../utils/default-lesson-icons";
 
 interface LessonFormProps {
   lesson?: ILesson; // Nếu có -> edit mode, không có -> create mode
@@ -49,6 +50,7 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
   const isEditMode = !!lesson;
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
+  const hasResolvedDefaultIcons = useRef(false);
 
   // sync lesson prop -> local state (important when fetch async)
   const [currentLesson, setCurrentLesson] = useState<ILesson>(
@@ -74,6 +76,36 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
   useEffect(() => {
     if (lesson) setCurrentLesson(lesson);
   }, [lesson]);
+
+  useEffect(() => {
+    if (isEditMode || hasResolvedDefaultIcons.current) return;
+
+    let active = true;
+
+    const fillDefaultIcons = async () => {
+      try {
+        const { icon, lightIcon } = await resolveDefaultLessonIcons(
+          LessonType.LESSON
+        );
+        if (!active) return;
+        hasResolvedDefaultIcons.current = true;
+
+        setCurrentLesson((prev) => ({
+          ...prev,
+          icon: prev.icon || icon,
+          lightIcon: prev.lightIcon || lightIcon,
+        }));
+      } catch (err) {
+        console.error("fillDefaultLessonIcons", err);
+      }
+    };
+
+    fillDefaultIcons();
+
+    return () => {
+      active = false;
+    };
+  }, [isEditMode]);
 
   const [estimateCompleTimeInput, setEstimateCompleTimeInput] = useState("");
   const [estimateCompleTimeUnit, setEstimateCompleTimeUnit] =

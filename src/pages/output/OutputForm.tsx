@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { TrashIcon } from "@heroicons/react/24/outline";
 import { XMarkIcon } from "@heroicons/react/24/solid";
 import { useSelector } from "react-redux";
@@ -30,6 +30,7 @@ import {
   getEstimateCompleteTimeUnitLabel,
   parseEstimateCompleteTimeInput,
 } from "../../utils/estimate-complete-time";
+import { resolveDefaultLessonIcons } from "../../utils/default-lesson-icons";
 
 interface OutputFormProps {
   output?: ILesson;
@@ -76,6 +77,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
   const isEditMode = !!output;
   const navigate = useNavigate();
   const { showSuccess, showError } = useNotification();
+  const hasResolvedDefaultIcons = useRef(false);
 
   const [currentOutput, setCurrentOutput] = useState<ILesson>(
     output ?? createInitialOutput(lang),
@@ -109,6 +111,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
   useEffect(() => {
     if (!output) {
       setCurrentOutput(createInitialOutput(lang));
+      hasResolvedDefaultIcons.current = false;
       return;
     }
 
@@ -120,6 +123,36 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
       animation: output.animation || null,
     });
   }, [output, lang]);
+
+  useEffect(() => {
+    if (isEditMode || hasResolvedDefaultIcons.current) return;
+
+    let active = true;
+
+    const fillDefaultIcons = async () => {
+      try {
+        const { icon, lightIcon } = await resolveDefaultLessonIcons(
+          LessonType.OUTPUT
+        );
+        if (!active) return;
+        hasResolvedDefaultIcons.current = true;
+
+        setCurrentOutput((prev) => ({
+          ...prev,
+          icon: prev.icon || icon,
+          lightIcon: prev.lightIcon || lightIcon,
+        }));
+      } catch (err) {
+        console.error("fillDefaultOutputIcons", err);
+      }
+    };
+
+    fillDefaultIcons();
+
+    return () => {
+      active = false;
+    };
+  }, [isEditMode, lang]);
 
   useEffect(() => {
     const parsed = parseEstimateCompleteTimeInput(
