@@ -8,6 +8,7 @@ abstract class SkillsetEntity with _$SkillsetEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default([]) List<CourseEntity> courses,
+    SkillsetOnboardingIntroduce? onboardingIntroduce,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _SkillsetEntity;
@@ -16,59 +17,35 @@ abstract class SkillsetEntity with _$SkillsetEntity {
 }
 
 enum SkillsetOnboardingIntroduce {
-  myFeelingsFeelLoud(
-    BaseMultiLanguage(
-      en: 'My feelings feel loud — I can\'t read them',
-      vi: 'Cảm xúc của tôi rất ồn ào — tôi không thể đọc được chúng',
-      zh: '我的感受很嘈杂 — 我无法读懂它们',
-    ),
-    'assets/icons/app/ic_heart.png',
-  ),
-  myThoughtsCircle(
-    BaseMultiLanguage(
-      en: 'My thoughts circle but never land',
-      vi: 'Suy nghĩ của tôi cứ xoay vòng mà không đi đến đâu',
-      zh: '我的思绪不停打转，却从未落定',
-    ),
-    'assets/icons/app/ic_compass.png',
-  ),
-  imBusyAllDay(
-    BaseMultiLanguage(
-      en: 'I\'m busy all day, yet feel I did nothing',
-      vi: 'Tôi bận rộn cả ngày, nhưng lại cảm thấy chẳng làm được gì',
-      zh: '我忙碌了一整天，却感觉什么都没做',
-    ),
-    'assets/icons/app/ic_direct_hit.png',
-  ),
-  iTalkToMany(
-    BaseMultiLanguage(
-      en: 'I talk to many, connect with few',
-      vi: 'Tôi nói chuyện với nhiều người, nhưng kết nối được với rất ít',
-      zh: '我与很多人交谈，却与少数人产生共鸣',
-    ),
-    'assets/icons/app/ic_speech_ballon.png',
-  ),
-  whatILearnFades(
-    BaseMultiLanguage(
-      en: 'What I learn fades by next week',
-      vi: 'Những gì tôi học được sẽ phai mờ vào tuần sau',
-      zh: '我学到的东西到下周就忘了',
-    ),
-    'assets/icons/app/ic_book.png',
-  ),
-  nothingFeelsNew(
-    BaseMultiLanguage(
-      en: 'Nothing feels new — I miss that spark',
-      vi: 'Không có gì mới mẻ — tôi nhớ cảm giác hứng khởi đó',
-      zh: '没有什么让我感到新鲜 — 我怀念那种火花',
-    ),
-    'assets/icons/app/ic_world_map.png',
-  );
+  myFeelingsFeelLoud(_myFeelings, _heart),
+  myThoughtsCircle(_myThoughts, _compass),
+  imBusyAllDay(_busyAllDay, _directHit),
+  iTalkToMany(_talkToMany, _speechBallon),
+  whatILearnFades(_learnFades, _book),
+  nothingFeelsNew(_nothingNew, _worldMap);
 
-  const SkillsetOnboardingIntroduce(this.title, this.image);
+  const SkillsetOnboardingIntroduce(this._titleGetter, this._imageGetter);
 
-  final BaseMultiLanguage title;
-  final String image;
+  final String Function(Translations) _titleGetter;
+  final AssetGenImage Function() _imageGetter;
+
+  String get title => _titleGetter(l10n);
+  String get name => title;
+  AssetGenImage get image => _imageGetter();
+
+  static String _myFeelings(Translations t) => t.onboarding.onboardingIntroduceMyFeelings;
+  static String _myThoughts(Translations t) => t.onboarding.onboardingIntroduceMyThoughts;
+  static String _busyAllDay(Translations t) => t.onboarding.onboardingIntroduceBusyAllDay;
+  static String _talkToMany(Translations t) => t.onboarding.onboardingIntroduceTalkToMany;
+  static String _learnFades(Translations t) => t.onboarding.onboardingIntroduceLearnFades;
+  static String _nothingNew(Translations t) => t.onboarding.onboardingIntroduceNothingNew;
+
+  static AssetGenImage _heart() => AppAsset.icons.app.icHeart;
+  static AssetGenImage _compass() => AppAsset.icons.app.icCompass;
+  static AssetGenImage _directHit() => AppAsset.icons.app.icDirectHit;
+  static AssetGenImage _speechBallon() => AppAsset.icons.app.icSpeechBallon;
+  static AssetGenImage _book() => AppAsset.icons.app.icBook;
+  static AssetGenImage _worldMap() => AppAsset.icons.app.icWorldMap;
 }
 
 extension SkillsetEntityExtension on SkillsetEntity {
@@ -78,7 +55,6 @@ extension SkillsetEntityExtension on SkillsetEntity {
 }
 
 extension SkillsetListExtension on List<SkillsetEntity> {
-
   SkillsetEntity? skillsetFromIndex(int index) => elementAtOrNull(index);
 
   SkillsetEntity resolveSkillsetByCourseId(String courseId, {SkillsetEntity? fallback}) {
