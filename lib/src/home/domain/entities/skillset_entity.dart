@@ -17,46 +17,44 @@ abstract class SkillsetEntity with _$SkillsetEntity {
 }
 
 enum SkillsetOnboardingIntroduce {
-  myFeelingsFeelLoud(_myFeelings, _heart),
-  myThoughtsCircle(_myThoughts, _compass),
-  imBusyAllDay(_busyAllDay, _directHit),
-  iTalkToMany(_talkToMany, _speechBallon),
-  whatILearnFades(_learnFades, _book),
-  nothingFeelsNew(_nothingNew, _worldMap);
+  myFeelingsFeelLoud('MY_FEELINGS_FEEL_LOUD'),
+  myThoughtsCircle('MY_THOUGHTS_CIRCLE'),
+  imBusyAllDay('IM_BUSY_ALL_DAY'),
+  iTalkToMany('I_TALK_TO_MANY'),
+  whatILearnFades('WHAT_I_LEARN_FADES'),
+  nothingFeelsNew('NOTHING_FEELS_NEW'),
+  ;
 
-  const SkillsetOnboardingIntroduce(this._titleGetter, this._imageGetter);
+  const SkillsetOnboardingIntroduce(this.name);
 
-  final String Function(Translations) _titleGetter;
-  final String Function() _imageGetter;
+  final String name;
 
-  String get title => _titleGetter(l10n);
-  String get image => _imageGetter();
+  String get title => switch (this) {
+    myFeelingsFeelLoud => l10n.onboarding.onboardingIntroduceMyFeelings,
+    myThoughtsCircle => l10n.onboarding.onboardingIntroduceMyThoughts,
+    imBusyAllDay => l10n.onboarding.onboardingIntroduceBusyAllDay,
+    iTalkToMany => l10n.onboarding.onboardingIntroduceTalkToMany,
+    whatILearnFades => l10n.onboarding.onboardingIntroduceLearnFades,
+    nothingFeelsNew => l10n.onboarding.onboardingIntroduceNothingNew,
+  };
   
-  String get name {
-    return switch (this) {
-      myFeelingsFeelLoud => 'MY_FEELINGS_FEEL_LOUD',
-      myThoughtsCircle => 'MY_THOUGHTS_CIRCLE',
-      imBusyAllDay => 'IM_BUSY_ALL_DAY',
-      iTalkToMany => 'I_TALK_TO_MANY',
-      whatILearnFades => 'WHAT_I_LEARN_FADES',
-      nothingFeelsNew => 'NOTHING_FEELS_NEW',
-    };
-  }
-  
+  String get image => switch (this) {
+    myFeelingsFeelLoud => AppAsset.icons.app.icHeart.path,
+    myThoughtsCircle => AppAsset.icons.app.icCompass.path,
+    imBusyAllDay => AppAsset.icons.app.icDirectHit.path,
+    iTalkToMany => AppAsset.icons.app.icSpeechBallon.path,
+    whatILearnFades => AppAsset.icons.app.icBook.path,
+    nothingFeelsNew => AppAsset.icons.app.icWorldMap.path,
+  };
 
-  static String _myFeelings(Translations t) => t.onboarding.onboardingIntroduceMyFeelings;
-  static String _myThoughts(Translations t) => t.onboarding.onboardingIntroduceMyThoughts;
-  static String _busyAllDay(Translations t) => t.onboarding.onboardingIntroduceBusyAllDay;
-  static String _talkToMany(Translations t) => t.onboarding.onboardingIntroduceTalkToMany;
-  static String _learnFades(Translations t) => t.onboarding.onboardingIntroduceLearnFades;
-  static String _nothingNew(Translations t) => t.onboarding.onboardingIntroduceNothingNew;
-
-  static String _heart() => AppAsset.icons.app.icHeart.path;
-  static String _compass() => AppAsset.icons.app.icCompass.path;
-  static String _directHit() => AppAsset.icons.app.icDirectHit.path;
-  static String _speechBallon() => AppAsset.icons.app.icSpeechBallon.path;
-  static String _book() => AppAsset.icons.app.icBook.path;
-  static String _worldMap() => AppAsset.icons.app.icWorldMap.path;
+  String get imageDisable => switch (this) {
+    myFeelingsFeelLoud => AppAsset.icons.app.icHeartDisable.path,
+    myThoughtsCircle => AppAsset.icons.app.icCompassDisable.path,
+    imBusyAllDay => AppAsset.icons.app.icDirectHitDisable.path,
+    iTalkToMany => AppAsset.icons.app.icSpeechBallonDisable.path,
+    whatILearnFades => AppAsset.icons.app.icBookDisable.path,
+    nothingFeelsNew => AppAsset.icons.app.icWorldMapDisable.path,
+  };
 }
 
 extension SkillsetEntityExtension on SkillsetEntity {

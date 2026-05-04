@@ -43,7 +43,8 @@ class _FakeContentRequestRepository implements IContentRequestRepository {
 
 class _FakeHomeRepository implements IHomeRepository {
   @override
-  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(PageBreakRequest request) => TaskEither.right(const BasePageBreak<SkillsetEntity>());
+  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(PageBreakRequest<SkillsetFilterRequest> request) =>
+      TaskEither.right(const BasePageBreak<SkillsetEntity>());
   @override
   TaskEither<AppException, SkillsetEntity> getSkillset(String id) => TaskEither.right(const SkillsetEntity());
 }

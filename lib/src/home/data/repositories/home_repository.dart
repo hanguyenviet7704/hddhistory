@@ -23,7 +23,7 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
 
   @override
   TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(
-    PageBreakRequest request,
+    PageBreakRequest<SkillsetFilterRequest> request,
   ) {
     return callApiPageBreak<SkillsetModel, SkillsetEntity>(
       apiCall: () => _skillsetApi.getAllSkillsets(request),
