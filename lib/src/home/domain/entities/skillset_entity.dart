@@ -37,6 +37,15 @@ enum SkillsetOnboardingIntroduce {
     whatILearnFades => l10n.onboarding.onboardingIntroduceLearnFades,
     nothingFeelsNew => l10n.onboarding.onboardingIntroduceNothingNew,
   };
+
+  String get shortTitle => switch (this) {
+    myFeelingsFeelLoud => 'Feel',
+    myThoughtsCircle => 'Think',
+    imBusyAllDay => 'Work',
+    iTalkToMany => 'Connect',
+    whatILearnFades => 'Learn',
+    nothingFeelsNew => 'Explore',
+  };
   
   String get image => switch (this) {
     myFeelingsFeelLoud => AppAsset.icons.app.icHeart.path,

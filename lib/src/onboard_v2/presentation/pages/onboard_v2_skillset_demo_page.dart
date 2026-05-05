@@ -33,7 +33,7 @@ class OnboardV2SkillsetDemoPage extends StatelessWidget {
           ),
           12.verticalSpace,
           OnboardV2SkillsetDemoSubtitle(count: introduces.length),
-          20.verticalSpace,
+          28.verticalSpace,
           OnboardV2SkillsetMap(activeIntroduces: introduces),
         ],
       ),

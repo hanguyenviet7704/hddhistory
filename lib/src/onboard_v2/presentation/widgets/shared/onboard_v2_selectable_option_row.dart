@@ -17,19 +17,17 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final icon = iconPath?.trim();
+    final borderRadius = BorderRadius.circular(16.r);
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16.r),
+      borderRadius: borderRadius,
       child: Container(
         width: double.infinity,
         padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
         decoration: BoxDecoration(
           color: AppCustomColor.backgroundWhite,
-          borderRadius: BorderRadius.circular(16.r),
-          border: Border.all(
-            color: selected ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
-            width: 2,
-          ),
+          borderRadius: borderRadius,
+          border: selected ? GradientBoxBorder(gradient: OnboardV2GradientText.gradient, width: 2.w) : Border.all(color: AppCustomColor.borderSecondary, width: 2.w),
         ),
         child: Row(
           children: [
@@ -42,7 +40,7 @@ class OnboardV2SelectableOptionRow extends StatelessWidget {
                   color: AppCustomColor.backgroundGray,
                   borderRadius: BorderRadius.circular(8.r),
                 ),
-                child: SvgPicture.asset(icon),
+                child: DCachedImage(url: icon),
               ),
               12.horizontalSpace,
             ],

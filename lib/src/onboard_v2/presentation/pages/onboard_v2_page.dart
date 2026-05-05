@@ -37,19 +37,22 @@ class _OnboardV2PageState extends State<OnboardV2Page> {
         _animateToStep(state.currentPage);
       },
       builder: (context, state) {
-        return PageView(
-          key: const Key('onboard_v2_step_page_view'),
+        return _OnboardV2PageTransitionScope(
           controller: _pageController,
-          physics: const NeverScrollableScrollPhysics(),
-          children: const [
-            OnboardV2IntroPage(),
-            OnboardV2NamePage(),
-            OnboardV2AgePage(),
-            OnboardV2SkillsetChoicePage(),
-            OnboardV2SkillsetDemoPage(),
-            OnboardV2NotificationPage(),
-            OnboardV2RecommendationPage(),
-          ],
+          child: PageView(
+            key: const Key('onboard_v2_step_page_view'),
+            controller: _pageController,
+            physics: const NeverScrollableScrollPhysics(),
+            children: const [
+              OnboardV2IntroPage(),
+              OnboardV2NamePage(),
+              OnboardV2AgePage(),
+              OnboardV2SkillsetChoicePage(),
+              OnboardV2SkillsetDemoPage(),
+              OnboardV2NotificationPage(),
+              OnboardV2RecommendationPage(),
+            ],
+          ),
         );
       },
     );
@@ -83,5 +86,23 @@ class _OnboardV2PageState extends State<OnboardV2Page> {
     if (_lastTrackedPage == page) return;
     _lastTrackedPage = page;
     OnboardV2Tracking.trackPageView(page);
+  }
+}
+
+class _OnboardV2PageTransitionScope extends InheritedWidget {
+  const _OnboardV2PageTransitionScope({
+    required this.controller,
+    required super.child,
+  });
+
+  final PageController controller;
+
+  static _OnboardV2PageTransitionScope? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_OnboardV2PageTransitionScope>();
+  }
+
+  @override
+  bool updateShouldNotify(_OnboardV2PageTransitionScope oldWidget) {
+    return controller != oldWidget.controller;
   }
 }

@@ -24,7 +24,7 @@ class SkillsetFilterRequest implements JsonRequestConvertible {
   @override
   Map<String, dynamic> toJson() {
     return {
-      if (onboardingIntroduces.isNotEmpty) 'onboardingIntroduces': onboardingIntroduces.map((introduce) => introduce.name).join(','),
+      if (onboardingIntroduces.isNotEmpty) 'onboardingIntroduces': ListParam<String>(onboardingIntroduces.map((introduce) => introduce.name).toList(), ListFormat.multi),
       if (isAll != null) 'isAll': isAll,
     };
   }

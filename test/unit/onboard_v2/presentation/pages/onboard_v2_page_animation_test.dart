@@ -132,6 +132,39 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  testWidgets('progress header stays anchored while step pages swipe', (tester) async {
+    final cubit = _SeededOnboardV2Cubit();
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(_buildHarness(BlocProvider<OnboardV2Cubit>.value(value: cubit, child: const OnboardV2Page())));
+
+    cubit.continueFromIntro();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 380));
+
+    final p2HeaderFinder = find.byKey(const ValueKey('onboard_v2_progress_header_0'), skipOffstage: false);
+    expect(p2HeaderFinder, findsOneWidget);
+    final anchoredLeft = tester.getTopLeft(p2HeaderFinder).dx;
+
+    cubit.updateName('Ava');
+    cubit.continueFromName();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 170));
+
+    final p3HeaderFinder = find.byKey(const ValueKey('onboard_v2_progress_header_1'), skipOffstage: false);
+    expect(p3HeaderFinder, findsOneWidget);
+    final p2DuringLeft = tester.getTopLeft(p2HeaderFinder).dx;
+    final p3DuringLeft = tester.getTopLeft(p3HeaderFinder).dx;
+    final animatingPageView = tester.widget<PageView>(find.byKey(const Key('onboard_v2_step_page_view')));
+    expect((p2DuringLeft - anchoredLeft).abs(), lessThan(1));
+    expect((p3DuringLeft - anchoredLeft).abs(), lessThan(1));
+
+    expect(animatingPageView.controller?.page, greaterThan(1));
+    expect(animatingPageView.controller?.page, lessThan(2));
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }
 
 Widget _buildHarness(Widget child) {

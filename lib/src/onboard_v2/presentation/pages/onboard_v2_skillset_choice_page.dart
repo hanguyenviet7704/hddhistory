@@ -40,7 +40,7 @@ class OnboardV2SkillsetChoicePage extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: 12.h),
                 child: OnboardV2SelectableOptionRow(
                   label: _skillsetLabel(skillset),
-                  iconPath: introduce != null ? (selected ? introduce.image : introduce.imageDisable) : (skillset.image.isEmpty ? null : skillset.image),
+                  iconPath: introduce != null ? introduce.image : (skillset.image.isEmpty ? null : skillset.image),
                   selected: selected,
                   onTap: () => cubit.toggleSkillset(skillset),
                 ),

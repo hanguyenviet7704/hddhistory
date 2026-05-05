@@ -34,7 +34,7 @@ class OnboardV2SkillsetMap extends StatelessWidget {
                     top: entry.value.top.h,
                     width: entry.value.width.w,
                     child: OnboardV2SkillsetMapNode(
-                      label: entry.key.title.split(' ').first,
+                      label: entry.key.shortTitle,
                       iconPath: activeSet.contains(entry.key) ? entry.key.image : entry.key.imageDisable,
                       active: activeSet.contains(entry.key),
                     ),
