@@ -21,18 +21,19 @@ class _OnboardV2RecommendationPageState extends State<OnboardV2RecommendationPag
         backgroundColor: AppCustomColor.backgroundBrandSoft,
         cta: course == null || course.id.isEmpty
             ? _secondaryOnlyCta()
-            : OnboardV2BottomCta(
-                label: onboardingL10n.onboardingV2P7PrimaryCta,
-                isLoading: _isNavigating,
-                onPressed: () => unawaited(_goRecommendedCourse(course)),
-                secondaryLabel: onboardingL10n.onboardingV2P7SecondaryCta,
-                onSecondaryPressed: () => unawaited(_goCourse()),
+            : Padding(
+                padding: EdgeInsets.only(bottom: 16.h),
+                child: OnboardV2BottomCta(
+                  label: onboardingL10n.onboardingV2P7PrimaryCta,
+                  isLoading: _isNavigating,
+                  onPressed: () => unawaited(_goRecommendedCourse(course)),
+                ),
               ),
         child: Column(
           children: [
-            48.verticalSpace,
+            SizedBox(height: 96.w),
             if (state.recommendationStatus == OnboardV2RecommendationStatus.loading)
-              const Center(child: CircularProgressIndicator())
+              const SizedBox.shrink()
             else if (course != null && course.id.isNotEmpty)
               OnboardV2CourseRecommendationCard(course: course)
             else ...[

@@ -149,8 +149,6 @@ void main() {
 
     expect(find.text('Keep your'), findsOneWidget);
     expect(find.text('momentum'), findsOneWidget);
-    expect(find.text('14'), findsOneWidget);
-    expect(find.text('00'), findsOneWidget);
     expect(find.textContaining('Time to focus'), findsOneWidget);
     expect(find.byKey(const Key('onboard_v2_notification_phone_preview')), findsOneWidget);
     expect(find.byKey(const Key('onboard_v2_notification_card')), findsOneWidget);

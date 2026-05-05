@@ -55,6 +55,8 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   int _requestSerial = 0;
   bool _isSubmittingAge = false;
   bool _isLoadingRecommendation = false;
+  Future<void>? _recommendationLoadTask;
+  int _recommendationSerial = 0;
 
   Future<void> initialize() async {
     reset();
@@ -63,8 +65,10 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   void reset() {
     _requestSerial += 1;
+    _recommendationSerial += 1;
     _isSubmittingAge = false;
     _isLoadingRecommendation = false;
+    _recommendationLoadTask = null;
     emit(OnboardV2State.initial());
   }
 
@@ -292,7 +296,17 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       isSelecting ? TrackingKey.onboardV2SkillsetSelect : TrackingKey.onboardV2SkillsetUnselect,
       parameters: OnboardV2Tracking.skillsetParams(skillset, selectedCount: mappedSelection.skillsets.length),
     );
-    emit(state.copyWith(selectedSkillsets: mappedSelection.skillsets));
+    _recommendationSerial += 1;
+    _isLoadingRecommendation = false;
+    _recommendationLoadTask = null;
+    emit(
+      state.copyWith(
+        selectedSkillsets: mappedSelection.skillsets,
+        recommendationStatus: OnboardV2RecommendationStatus.initial,
+        recommendationErrorMessage: null,
+        recommendedCourse: null,
+      ),
+    );
   }
 
   void continueFromP4() {
@@ -307,26 +321,48 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   void continueFromP5() {
     OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick);
     emit(state.copyWith(currentPage: OnboardV2PageStep.p6Notification));
-  }
-
-  void continueFromP6({OnboardV2NotificationStatus? notificationStatus}) {
-    emit(
-      state.copyWith(
-        currentPage: OnboardV2PageStep.p7Recommendation,
-        notificationStatus: notificationStatus ?? state.notificationStatus,
-      ),
-    );
     unawaited(loadRecommendation());
   }
 
-  Future<void> loadRecommendation() async {
+  Future<void> continueFromP6({OnboardV2NotificationStatus? notificationStatus}) async {
+    final resolvedStatus = notificationStatus ?? state.notificationStatus;
+    emit(
+      state.copyWith(
+        notificationStatus: resolvedStatus,
+      ),
+    );
+    await loadRecommendation();
+    if (isClosed) return;
+
+    emit(
+      state.copyWith(
+        currentPage: OnboardV2PageStep.p7Recommendation,
+        notificationStatus: resolvedStatus,
+      ),
+    );
+  }
+
+  Future<void> loadRecommendation() {
+    if (state.recommendationStatus == OnboardV2RecommendationStatus.loaded || state.recommendationStatus == OnboardV2RecommendationStatus.fallback) {
+      return Future<void>.value();
+    }
+
+    final activeTask = _recommendationLoadTask;
+    if (activeTask != null) return activeTask;
+
+    final task = _loadRecommendation();
+    _recommendationLoadTask = task;
+    return task;
+  }
+
+  Future<void> _loadRecommendation() async {
     if (_isLoadingRecommendation) return;
 
     _isLoadingRecommendation = true;
     final serial = _requestSerial;
+    final recommendationSerial = _recommendationSerial;
     emit(
       state.copyWith(
-        currentPage: OnboardV2PageStep.p7Recommendation,
         recommendationStatus: OnboardV2RecommendationStatus.loading,
         recommendationErrorMessage: null,
         recommendedCourse: null,
@@ -345,7 +381,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
           filter: CourseFilterRequest.bySkillsets(selectedIds),
         ),
       ).run();
-      if (serial != _requestSerial) return;
+      if (serial != _requestSerial || recommendationSerial != _recommendationSerial) return;
 
       final courses = listResult.fold<List<CourseEntity>>(
         (failure) {
@@ -368,7 +404,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       }
 
       final detailResult = await _getCourseUseCase(selectedCourse.id).run();
-      if (serial != _requestSerial) return;
+      if (serial != _requestSerial || recommendationSerial != _recommendationSerial) return;
 
       detailResult.fold(
         (failure) => _emitRecommendationFallback(OnboardV2Tracking.exceptionReason(failure), stage: 'detail'),
@@ -390,11 +426,14 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
         },
       );
     } catch (error) {
-      if (serial == _requestSerial) {
+      if (serial == _requestSerial && recommendationSerial == _recommendationSerial) {
         _emitRecommendationFallback('unexpected', stage: 'unknown');
       }
     } finally {
-      _isLoadingRecommendation = false;
+      if (recommendationSerial == _recommendationSerial) {
+        _isLoadingRecommendation = false;
+        _recommendationLoadTask = null;
+      }
     }
   }
 

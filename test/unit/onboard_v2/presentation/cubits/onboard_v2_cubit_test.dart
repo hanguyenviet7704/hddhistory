@@ -84,14 +84,29 @@ class _FakeProfileRepository implements IProfileRepository {
 }
 
 class _FakeCourseRepository implements ICourseRepository {
+  _FakeCourseRepository({
+    this.courseDetail = const CourseEntity(),
+    this.listCompleter,
+  });
+
+  final CourseEntity courseDetail;
+  final Completer<BasePageBreak<CourseEntity>>? listCompleter;
+  int listCount = 0;
+
   @override
   TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(PageBreakRequest<CourseFilterRequest> request) {
+    listCount += 1;
+    final completer = listCompleter;
+    if (completer != null) {
+      return TaskEither(() async => right(await completer.future));
+    }
     return TaskEither.right(BasePageBreak<CourseEntity>());
   }
 
   @override
   TaskEither<AppException, CourseEntity> getCourse(String id) {
-    return TaskEither.left(const AppException.notFound('missing course'));
+    if (courseDetail.id.isEmpty) return TaskEither.left(const AppException.notFound('missing course'));
+    return TaskEither.right(courseDetail);
   }
 
   @override
@@ -194,9 +209,49 @@ void main() {
 
       await cubit.loadRecommendation();
 
-      expect(cubit.state.currentPage, OnboardV2PageStep.p7Recommendation);
+      expect(cubit.state.currentPage, OnboardV2PageStep.p1Intro);
       expect(cubit.state.recommendationStatus, OnboardV2RecommendationStatus.fallback);
       expect(cubit.state.recommendedCourse, isNull);
+
+      await cubit.close();
+    });
+
+    test('preloads recommendation on P6 and waits before opening P7', () async {
+      final listCompleter = Completer<BasePageBreak<CourseEntity>>();
+      final courseRepository = _FakeCourseRepository(
+        listCompleter: listCompleter,
+        courseDetail: const CourseEntity(
+          id: 'course_1',
+          title: BaseMultiLanguage(en: 'Focus Basics'),
+        ),
+      );
+      final cubit = _buildCubit(courseRepository: courseRepository);
+
+      cubit.toggleSkillset(const SkillsetEntity(id: 'skill_1'));
+      cubit.continueFromP4();
+      cubit.continueFromP5();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.currentPage, OnboardV2PageStep.p6Notification);
+      expect(cubit.state.recommendationStatus, OnboardV2RecommendationStatus.loading);
+      expect(courseRepository.listCount, 1);
+
+      final navigationFuture = cubit.continueFromP6(notificationStatus: OnboardV2NotificationStatus.maybeLater);
+      await Future<void>.delayed(Duration.zero);
+
+      expect(cubit.state.currentPage, OnboardV2PageStep.p6Notification);
+
+      listCompleter.complete(
+        BasePageBreak<CourseEntity>(
+          items: const [CourseEntity(id: 'course_1')],
+        ),
+      );
+      await navigationFuture;
+
+      expect(cubit.state.currentPage, OnboardV2PageStep.p7Recommendation);
+      expect(cubit.state.recommendationStatus, OnboardV2RecommendationStatus.loaded);
+      expect(cubit.state.recommendedCourse?.id, 'course_1');
+      expect(courseRepository.listCount, 1);
 
       await cubit.close();
     });

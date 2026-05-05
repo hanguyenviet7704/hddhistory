@@ -98,7 +98,7 @@ void main() {
     await resetInjectorForTests();
   });
 
-  testWidgets('loaded recommendation shows primary and secondary CTAs', (tester) async {
+  testWidgets('loaded recommendation shows primary CTA and Figma social proof', (tester) async {
     final cubit = _SeededOnboardV2Cubit()
       ..seed(
         const OnboardV2State(
@@ -116,8 +116,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byKey(const Key('onboard_v2_primary_cta')), findsOneWidget);
-    expect(find.byKey(const Key('onboard_v2_secondary_cta')), findsOneWidget);
+    expect(find.byKey(const Key('onboard_v2_secondary_cta')), findsNothing);
     expect(find.text('Decision Making Mastery'), findsOneWidget);
+    expect(find.textContaining('facing similar challenges', findRichText: true), findsOneWidget);
   });
 
   testWidgets('fallback recommendation hides primary CTA and keeps secondary CTA', (tester) async {

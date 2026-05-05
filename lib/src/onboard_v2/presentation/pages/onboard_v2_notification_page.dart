@@ -33,7 +33,7 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
     }
     final result = beforeState.canRequestPermission ? await notificationCubit.enableFromOnboardingGate() : beforeState;
     if (!mounted) return;
-    _complete(
+    await _complete(
       beforeState.canRequestPermission ? OnboardV2NotificationStatusMapper.fromRequestResult(result) : OnboardV2NotificationStatusMapper.fromCurrentState(beforeState),
     );
   }
@@ -44,16 +44,20 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
     OnboardV2Tracking.track(TrackingKey.onboardV2NotificationMaybeLaterClick);
     await context.read<NotificationCubit>().disableAppPreference();
     if (!mounted) return;
-    _complete(OnboardV2NotificationStatusMapper.maybeLater());
+    await _complete(OnboardV2NotificationStatusMapper.maybeLater());
   }
 
-  void _complete(OnboardV2NotificationStatus status) {
+  Future<void> _complete(OnboardV2NotificationStatus status) async {
     OnboardV2Tracking.track(
       TrackingKey.onboardV2NotificationResult,
       parameters: {'notification_status': OnboardV2Tracking.notificationStatus(status)},
     );
     context.read<UserCubit>().completeFirstTimeNotificationGate();
-    context.read<OnboardV2Cubit>().continueFromP6(notificationStatus: status);
+    await context.read<OnboardV2Cubit>().continueFromP6(notificationStatus: status);
+    if (!mounted) return;
+    if (context.read<OnboardV2Cubit>().state.currentPage == OnboardV2PageStep.p6Notification) {
+      setState(() => _isHandling = false);
+    }
   }
 
   @override

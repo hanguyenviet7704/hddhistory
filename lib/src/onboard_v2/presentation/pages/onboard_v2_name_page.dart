@@ -9,16 +9,23 @@ class OnboardV2NamePage extends StatefulWidget {
 
 class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
   late final TextEditingController _nameController;
+  late final FocusNode _nameFocusNode;
 
   @override
   void initState() {
     super.initState();
     _nameController = TextEditingController(text: context.read<OnboardV2Cubit>().state.name);
+    _nameFocusNode = FocusNode();
     _nameController.addListener(_syncNameToCubit);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _nameFocusNode.requestFocus();
+    });
   }
 
   @override
   void dispose() {
+    _nameFocusNode.dispose();
     _nameController
       ..removeListener(_syncNameToCubit)
       ..dispose();
@@ -42,7 +49,7 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
       header: OnboardV2ProgressHeader(activeSegments: 0, showBack: false, onBack: cubit.goBack),
       cta: OnboardV2BottomCta(
         label: onboardingL10n.onboardingV2ContinueCta,
-        onPressed: state.canContinueName ? cubit.continueFromName : null,
+        onPressed: state.canContinueName ? _continueFromName : null,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -59,31 +66,53 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
           12.verticalSpace,
           AppText(onboardingL10n.onboardingV2P2Subtitle, style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary)),
           32.verticalSpace,
-          TextField(
-            key: const Key('onboard_v2_name_input'),
-            controller: _nameController,
-            textInputAction: TextInputAction.done,
-            decoration: InputDecoration(
-              hintText: onboardingL10n.onboardingV2P2InputHint,
-              filled: true,
-              fillColor: AppCustomColor.backgroundGray,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16.r),
-                borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 2),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16.r),
-                borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(16.r),
-                borderSide: const BorderSide(color: AppCustomColor.brandPrimary, width: 2),
+          SizedBox(
+            height: 80.w,
+            child: TextField(
+              key: const Key('onboard_v2_name_input'),
+              controller: _nameController,
+              focusNode: _nameFocusNode,
+              autofocus: true,
+              keyboardType: TextInputType.name,
+              textCapitalization: TextCapitalization.words,
+              textInputAction: TextInputAction.done,
+              scrollPadding: EdgeInsets.only(bottom: 180.h),
+              style: AppStyle.text16.copyWith(color: AppCustomColor.textPrimary, height: 1.5),
+              onSubmitted: (_) => _continueFromName(),
+              decoration: InputDecoration(
+                hintText: onboardingL10n.onboardingV2P2InputHint,
+                hintStyle: AppStyle.text16.copyWith(color: AppCustomColor.textTertiary, height: 1.5),
+                contentPadding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.w),
+                filled: true,
+                fillColor: AppCustomColor.backgroundGray,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                  borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 2),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                  borderSide: const BorderSide(color: AppCustomColor.borderSecondary, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(16.r),
+                  borderSide: const BorderSide(color: AppCustomColor.brandPrimary, width: 2),
+                ),
               ),
             ),
           ),
         ],
       ),
     );
+  }
+
+  void _continueFromName() {
+    final cubit = context.read<OnboardV2Cubit>();
+    if (!cubit.state.canContinueName) return;
+
+    _nameFocusNode.unfocus();
+    FocusManager.instance.primaryFocus?.unfocus();
+    unawaited(SystemChannels.textInput.invokeMethod<void>('TextInput.hide'));
+    cubit.continueFromName();
   }
 
   void _syncControllerFromState(String name) {
