@@ -342,6 +342,36 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     );
   }
 
+  void markUserOnboardedInBackground() {
+    final user = _readUserState.user;
+    final userId = user.id.trim();
+    if (userId.isEmpty) {
+      LogDev.warning('[OnboardV2Cubit] Skip onboarded update: missing user id');
+      return;
+    }
+
+    final name = state.name.trim().isNotEmpty ? state.name.trim() : user.name.trim();
+    final payload = <String, dynamic>{
+      'id': userId,
+      if (name.isNotEmpty) 'name': name,
+      'isOnboarded': true,
+    };
+
+    unawaited(_markUserOnboarded(payload));
+  }
+
+  Future<void> _markUserOnboarded(Map<String, dynamic> payload) async {
+    try {
+      final result = await _updateUserUseCase(payload).run();
+      result.fold(
+        (failure) => LogDev.warning('[OnboardV2Cubit] onboarded update failed: ${failure.displayMessage}'),
+        (_) {},
+      );
+    } catch (error) {
+      LogDev.warning('[OnboardV2Cubit] onboarded update failed: $error');
+    }
+  }
+
   Future<void> loadRecommendation() {
     if (state.recommendationStatus == OnboardV2RecommendationStatus.loaded || state.recommendationStatus == OnboardV2RecommendationStatus.fallback) {
       return Future<void>.value();

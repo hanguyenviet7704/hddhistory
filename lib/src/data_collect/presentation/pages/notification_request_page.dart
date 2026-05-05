@@ -96,69 +96,63 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
     return BlocBuilder<NotificationCubit, NotificationState>(
       builder: (context, state) {
         final isLoading = state.isLoading && !_hasNavigated;
-        return Scaffold(
-          backgroundColor: Colors.white,
-          body: SafeArea(
-            child: Padding(
-              padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 20.h),
-              child: Column(
+        final onboardingL10n = context.l10n.onboarding;
+        return OnboardV2ScreenShell(
+          cta: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _NotificationGateButton(
+                key: const Key('notification_request_primary_cta'),
+                label: onboardingL10n.onboardingV2NotifyCta,
+                isLoading: isLoading,
+                onPressed: isLoading ? null : _handlePrimaryAction,
+              ),
+              10.verticalSpace,
+              TextButton(
+                key: const Key('notification_request_secondary_cta'),
+                onPressed: isLoading ? null : _handleSecondaryAction,
+                child: AppText(
+                  onboardingL10n.onboardingV2MaybeLaterCta,
+                  style: AppStyle.text14.copyWith(
+                    color: AppCustomColor.brandPrimary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              SizedBox(height: 32.w),
+              Image.asset(AppAsset.images.app.bellGold.path, width: 24.w, height: 24.w),
+              SizedBox(height: 8.w),
+              Wrap(
+                alignment: WrapAlignment.center,
+                runAlignment: WrapAlignment.center,
+                spacing: 6.w,
                 children: [
-                  const Spacer(),
-                  Container(
-                    width: 220.w,
-                    height: 220.w,
-                    padding: EdgeInsets.all(24.w),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF1F0FF),
-                      shape: BoxShape.circle,
-                    ),
-                    child: Image.asset(
-                      AppAsset.images.app.bell.path,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                  32.verticalSpace,
                   AppText(
-                    context.l10n.onboarding.onboardingNotificationRequestTitle,
+                    onboardingL10n.onboardingV2P6HeadingPrefix,
                     textAlign: TextAlign.center,
-                    maxLines: 2,
-                    style: AppStyle.textBold20.copyWith(
-                      color: const Color(0xFF110751),
-                      height: 1.35,
-                    ),
+                    maxLines: 1,
+                    style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w700, height: 1.4),
                   ),
-                  12.verticalSpace,
-                  AppText(
-                    context.l10n.onboarding.onboardingNotificationRequestBody,
-                    maxLines: 5,
+                  OnboardV2GradientText(
+                    onboardingL10n.onboardingV2P6HeadingHighlight,
                     textAlign: TextAlign.center,
-                    style: AppStyle.text16.copyWith(
-                      color: const Color(0xFF5E6282),
-                      height: 1.5,
-                    ),
-                  ),
-                  const Spacer(),
-                  _NotificationGateButton(
-                    key: const Key('notification_request_primary_cta'),
-                    label: context.l10n.onboarding.onboardingNotificationRequestPrimaryCta,
-                    isLoading: isLoading,
-                    onPressed: isLoading ? null : _handlePrimaryAction,
-                  ),
-                  12.verticalSpace,
-                  TextButton(
-                    key: const Key('notification_request_secondary_cta'),
-                    onPressed: isLoading ? null : _handleSecondaryAction,
-                    child: AppText(
-                      context.l10n.onboarding.onboardingNotificationRequestSecondaryCta,
-                      style: AppStyle.text16.copyWith(
-                        fontWeight: FontWeight.w600,
-                        color: const Color(0xFF5E6282),
-                      ),
-                    ),
+                    style: AppStyle.text28.copyWith(fontWeight: FontWeight.w700, height: 1.4),
                   ),
                 ],
               ),
-            ),
+              SizedBox(height: 4.w),
+              AppText(
+                onboardingL10n.onboardingV2P6Subtitle,
+                textAlign: TextAlign.center,
+                style: AppStyle.text16.copyWith(color: AppCustomColor.streakTextMuted, height: 1.5),
+              ),
+              SizedBox(height: 32.w),
+              const OnboardV2NotificationPreview(),
+            ],
           ),
         );
       },
@@ -186,8 +180,8 @@ class _NotificationGateButton extends StatelessWidget {
       child: ElevatedButton(
         onPressed: onPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF554FF0),
-          disabledBackgroundColor: const Color(0xFF554FF0),
+          backgroundColor: AppCustomColor.brandPrimary,
+          disabledBackgroundColor: AppCustomColor.buttonDisable,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(1000.r),
           ),
@@ -205,8 +199,8 @@ class _NotificationGateButton extends StatelessWidget {
             : AppText(
                 label,
                 style: AppStyle.text16.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                  color: onPressed == null ? AppCustomColor.textTertiary : AppCustomColor.textWhite,
                   height: 1.5,
                 ),
               ),

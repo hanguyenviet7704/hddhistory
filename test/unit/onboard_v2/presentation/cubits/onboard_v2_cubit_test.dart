@@ -77,7 +77,7 @@ class _FakeProfileRepository implements IProfileRepository {
 
   @override
   TaskEither<AppException, UserEntity> updateUser(Map<String, dynamic> params) {
-    lastParams = params;
+    lastParams = Map<String, dynamic>.from(params);
     updateCount += 1;
     return TaskEither.right(UserEntity(id: params['id'] as String? ?? ''));
   }
@@ -252,6 +252,45 @@ void main() {
       expect(cubit.state.recommendationStatus, OnboardV2RecommendationStatus.loaded);
       expect(cubit.state.recommendedCourse?.id, 'course_1');
       expect(courseRepository.listCount, 1);
+
+      await cubit.close();
+    });
+
+    test('marks user onboarded in background with existing name', () async {
+      final profileRepository = _FakeProfileRepository();
+      final cubit = _buildCubit(
+        profileRepository: profileRepository,
+        readUserState: () => const UserState(
+          auth: AuthEntity(
+            user: UserEntity(id: 'user_1', name: 'Saved Name'),
+          ),
+        ),
+      );
+
+      cubit.updateName('  Alice  ');
+      cubit.markUserOnboardedInBackground();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(profileRepository.updateCount, 1);
+      expect(profileRepository.lastParams, containsPair('id', 'user_1'));
+      expect(profileRepository.lastParams, containsPair('name', 'Alice'));
+      expect(profileRepository.lastParams, containsPair('isOnboarded', true));
+
+      await cubit.close();
+    });
+
+    test('skips background onboarded update when user id is missing', () async {
+      final profileRepository = _FakeProfileRepository();
+      final cubit = _buildCubit(
+        profileRepository: profileRepository,
+        readUserState: UserState.initial,
+      );
+
+      cubit.updateName('Alice');
+      cubit.markUserOnboardedInBackground();
+      await Future<void>.delayed(Duration.zero);
+
+      expect(profileRepository.updateCount, 0);
 
       await cubit.close();
     });

@@ -87,6 +87,15 @@ class _SeededOnboardV2Cubit extends OnboardV2Cubit {
   void seed(OnboardV2State state) => emit(state);
 }
 
+class _SpyOnboardV2Cubit extends _SeededOnboardV2Cubit {
+  int markOnboardedCount = 0;
+
+  @override
+  void markUserOnboardedInBackground() {
+    markOnboardedCount += 1;
+  }
+}
+
 void main() {
   setUp(() async {
     await setupLocaleCubitForTests();
@@ -137,6 +146,25 @@ void main() {
     expect(find.byKey(const Key('onboard_v2_primary_cta')), findsNothing);
     expect(find.byKey(const Key('onboard_v2_secondary_cta')), findsOneWidget);
     expect(find.text('Your course map is ready'), findsOneWidget);
+  });
+
+  testWidgets('P7 completion starts onboarded update in background', (tester) async {
+    final cubit = _SpyOnboardV2Cubit()
+      ..seed(
+        const OnboardV2State(
+          currentPage: OnboardV2PageStep.p7Recommendation,
+          recommendationStatus: OnboardV2RecommendationStatus.fallback,
+        ),
+      );
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(_buildPage(cubit));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('onboard_v2_secondary_cta')));
+    await tester.pumpAndSettle();
+
+    expect(cubit.markOnboardedCount, 1);
   });
 }
 

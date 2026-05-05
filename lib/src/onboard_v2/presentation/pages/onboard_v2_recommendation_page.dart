@@ -101,6 +101,7 @@ class _OnboardV2RecommendationPageState extends State<OnboardV2RecommendationPag
   void _dispatchRoute(CourseHandoffRouteIntent intent) {
     try {
       var destination = 'course';
+      context.read<OnboardV2Cubit>().markUserOnboardedInBackground();
       switch (intent) {
         case CourseHandoffRouteIntent.courseRoadmap:
           CourseRoadmapRoute().go(context);
