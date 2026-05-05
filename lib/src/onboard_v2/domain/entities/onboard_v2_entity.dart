@@ -11,4 +11,3 @@ abstract class OnboardV2Entity with _$OnboardV2Entity {
 
   factory OnboardV2Entity.fromJson(Map<String, dynamic> json) => _$OnboardV2EntityFromJson(json);
 }
-

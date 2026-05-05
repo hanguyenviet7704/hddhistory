@@ -51,7 +51,7 @@ class _FakeHomeRepository implements IHomeRepository {
 
 class _FakeCourseRepository implements ICourseRepository {
   @override
-  TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(PageBreakRequest request) => TaskEither.right(const BasePageBreak<CourseEntity>());
+  TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(PageBreakRequest<CourseFilterRequest> request) => TaskEither.right(const BasePageBreak<CourseEntity>());
   @override
   TaskEither<AppException, CourseEntity> getCourse(String id) => TaskEither.right(const CourseEntity());
   @override

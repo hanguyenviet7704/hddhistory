@@ -159,7 +159,7 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _goOnboardingEntryByFlowConfig() {
-    OnboardIntroduceRoute().go(context);
+    OnboardV2Route().go(context);
   }
 
   void _goToRegister({required bool showPaywallAfterAuth}) {

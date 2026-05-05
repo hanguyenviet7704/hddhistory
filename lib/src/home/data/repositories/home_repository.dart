@@ -32,6 +32,7 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
         await _localDataSource.cacheSkillsets(pageData.items);
       },
       onError: () async {
+        if (request.filter?.hasFilters ?? false) return null;
         final cachedModels = await _localDataSource.getCachedSkillsets();
         if (cachedModels.isNotEmpty) {
           return BasePageBreak<SkillsetEntity>(

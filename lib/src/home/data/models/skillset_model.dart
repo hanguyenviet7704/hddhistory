@@ -8,6 +8,11 @@ abstract class SkillsetModel with _$SkillsetModel {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default([]) List<CourseModel> courses,
+    @JsonKey(
+      fromJson: _skillsetOnboardingIntroduceFromJson,
+      toJson: _skillsetOnboardingIntroduceToJson,
+    )
+    SkillsetOnboardingIntroduce? onboardingIntroduce,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _SkillsetModel;
@@ -22,7 +27,21 @@ extension SkillsetModelExtension on SkillsetModel {
     description: description,
     image: image,
     courses: courses.map((model) => model.toEntity()).toList(),
+    onboardingIntroduce: onboardingIntroduce,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );
 }
+
+SkillsetOnboardingIntroduce? _skillsetOnboardingIntroduceFromJson(Object? value) {
+  final rawValue = value?.toString().trim();
+  if (rawValue == null || rawValue.isEmpty) return null;
+
+  for (final introduce in SkillsetOnboardingIntroduce.values) {
+    if (introduce.name == rawValue) return introduce;
+  }
+
+  return null;
+}
+
+String? _skillsetOnboardingIntroduceToJson(SkillsetOnboardingIntroduce? value) => value?.name;

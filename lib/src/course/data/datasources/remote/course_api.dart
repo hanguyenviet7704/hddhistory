@@ -8,7 +8,7 @@ abstract class CourseApi {
 
   @GET(AppEndpoint.courses)
   Future<BaseResponse<BasePageBreak<CourseModel>>> getAllCourses(
-    @Queries() PageBreakRequest request,
+    @Queries() PageBreakRequest<CourseFilterRequest> request,
   );
 
   @GET(AppEndpoint.coursesById)

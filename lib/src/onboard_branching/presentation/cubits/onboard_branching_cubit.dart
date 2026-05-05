@@ -221,7 +221,7 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
 
   void onChooseMyselfPressed() {
     AppService.instance.appTrackingService.trackEvent(TrackingKey.obBranchingChooseMyselfClick);
-    AppDI.injector.get<HomeCubit>().initializeData(isInit: true);
+    unawaited(const CourseHandoffHelper().prepareCourseCatalog());
     _completeOnboardingTransition();
   }
 
@@ -411,16 +411,8 @@ class OnboardBranchingCubit extends Cubit<OnboardBranchingState> {
   }
 
   Future<bool> _prepareCourseHandoff(CourseEntity course) async {
-    try {
-      final homeCubit = AppDI.injector.get<HomeCubit>();
-      await homeCubit.initializeData(isInit: true);
-      homeCubit.selectCourseFromCourseId(course.id);
-      AppDI.injector.get<CourseRoadmapCubit>().loadRoadmap(courseId: course.id);
-      return true;
-    } catch (error) {
-      LogDev.warning('[OnboardBranchingCubit] prepareCourseHandoff failed: $error');
-      return false;
-    }
+    final intent = await const CourseHandoffHelper().prepareRecommendedCourse(course: course);
+    return intent == CourseHandoffRouteIntent.courseRoadmap;
   }
 
   Future<bool> _ensureAnonymousSessionForTryNow() async {

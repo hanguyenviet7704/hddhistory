@@ -26,4 +26,3 @@ abstract class OnboardV2Api {
   @DELETE('${'/onboard_v2s'}/{id}')
   Future<BaseResponse<void>> deleteOnboardV2(@Path('id') String id);
 }
-

@@ -71,6 +71,33 @@ mixin TrackingKey {
   static const String obBranchingTryNowClick = 'ob_branching_try_now_click';
   static const String obBranchingChooseMyselfClick = 'ob_branching_choose_myself_click';
   static const String obBranchingFallback = 'ob_branching_fallback';
+  static const String onboardV2P1View = 'onboard_v2_p1_view';
+  static const String onboardV2P1GetStartedClick = 'onboard_v2_p1_get_started_click';
+  static const String onboardV2P2View = 'onboard_v2_p2_view';
+  static const String onboardV2P2ContinueClick = 'onboard_v2_p2_continue_click';
+  static const String onboardV2P3View = 'onboard_v2_p3_view';
+  static const String onboardV2AgeSelect = 'onboard_v2_age_select';
+  static const String onboardV2P3ContinueClick = 'onboard_v2_p3_continue_click';
+  static const String onboardV2AnonymousLoginFailure = 'onboard_v2_anonymous_login_failure';
+  static const String onboardV2AnonymousLoginSuccess = 'onboard_v2_anonymous_login_success';
+  static const String onboardV2UserUpdateFailure = 'onboard_v2_user_update_failure';
+  static const String onboardV2UserUpdateSuccess = 'onboard_v2_user_update_success';
+  static const String onboardV2P4View = 'onboard_v2_p4_view';
+  static const String onboardV2SkillsetSelect = 'onboard_v2_skillset_select';
+  static const String onboardV2SkillsetUnselect = 'onboard_v2_skillset_unselect';
+  static const String onboardV2P4ContinueClick = 'onboard_v2_p4_continue_click';
+  static const String onboardV2P5View = 'onboard_v2_p5_view';
+  static const String onboardV2P5ContinueClick = 'onboard_v2_p5_continue_click';
+  static const String onboardV2P6View = 'onboard_v2_p6_view';
+  static const String onboardV2NotificationNotifyClick = 'onboard_v2_notification_notify_click';
+  static const String onboardV2NotificationMaybeLaterClick = 'onboard_v2_notification_maybe_later_click';
+  static const String onboardV2NotificationResult = 'onboard_v2_notification_result';
+  static const String onboardV2P7View = 'onboard_v2_p7_view';
+  static const String onboardV2RecommendationLoaded = 'onboard_v2_recommendation_loaded';
+  static const String onboardV2RecommendationFailure = 'onboard_v2_recommendation_failure';
+  static const String onboardV2JumpInClick = 'onboard_v2_jump_in_click';
+  static const String onboardV2ExploreMyOwnClick = 'onboard_v2_explore_my_own_click';
+  static const String onboardV2Complete = 'onboard_v2_complete';
 
   //* Home events
   static const String homeScrView = 'home_scr_view';

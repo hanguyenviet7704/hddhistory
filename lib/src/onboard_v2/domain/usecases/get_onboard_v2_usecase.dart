@@ -11,4 +11,3 @@ class GetOnboardV2UseCase implements BaseUseCase<String, OnboardV2Entity> {
     return _repository.getOnboardV2(params);
   }
 }
-

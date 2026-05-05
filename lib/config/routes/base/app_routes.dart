@@ -22,6 +22,7 @@ mixin RoutePath {
   //* Onboard
   static const String onboard = '/onboard';
   static const String onboardBranching = '/onboard-branching';
+  static const String onboardV2 = '/onboard-v2';
   static const String dataCollect = '/data-collect';
   static const String dataCollectMotivationStep = '/data-collect-motivation-step/:step';
   static const String dataCollectFeedback = '/data-collect-feedback';
@@ -98,6 +99,7 @@ mixin RouteNamed {
   //* Onboard
   static const String onboard = 'Onboard Page';
   static const String onboardBranching = 'Onboard Branching Page';
+  static const String onboardV2 = 'Onboard V2 Page';
   static const String dataCollect = 'Data Collect Page';
   static const String dataCollectMotivationStep = 'Data Collect Motivation Step Page';
   static const String dataCollectFeedback = 'Data Collect Feedback Page';

@@ -5,6 +5,4 @@ abstract class IOnboardV2Repository {
     PageBreakRequest request,
   );
   TaskEither<AppException, OnboardV2Entity> getOnboardV2(String id);
-  
 }
-

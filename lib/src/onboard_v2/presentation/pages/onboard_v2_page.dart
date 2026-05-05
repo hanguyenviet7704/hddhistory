@@ -1,62 +1,46 @@
 part of '../../onboard_v2.dart';
 
-
-
-
-
-
-
-class OnboardV2Page extends StatelessWidget {
+class OnboardV2Page extends StatefulWidget {
   const OnboardV2Page({super.key});
 
   @override
-  Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppDI.injector.get<OnboardV2Cubit>(),
-      child: _BlankFeatureView(
-        builder: (context) => BlocBuilder<OnboardV2Cubit, OnboardV2State>(
-          builder: (context, state) => _buildPlaceholder(context, state),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPlaceholder(BuildContext context, OnboardV2State state) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.dashboard_customize, size: 56, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 16),
-        const Text(
-          'Blank canvas ready!',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Wire any domain logic through the injected Cubit or remove it if you want a pure UI screen.',
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
-  }
+  State<OnboardV2Page> createState() => _OnboardV2PageState();
 }
 
-class _BlankFeatureView extends StatelessWidget {
-  const _BlankFeatureView({required this.builder});
+class _OnboardV2PageState extends State<OnboardV2Page> {
+  OnboardV2PageStep? _lastTrackedPage;
 
-  final WidgetBuilder builder;
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _trackPage(context.read<OnboardV2Cubit>().state.currentPage);
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Onboard V2'),
-      ),
-      body: Center(child: builder(context)),
+    return BlocConsumer<OnboardV2Cubit, OnboardV2State>(
+      listenWhen: (previous, current) => previous.currentPage != current.currentPage,
+      listener: (_, state) => _trackPage(state.currentPage),
+      builder: (context, state) {
+        return switch (state.currentPage) {
+          OnboardV2PageStep.p1Intro => const OnboardV2IntroPage(),
+          OnboardV2PageStep.p2Name => const OnboardV2NamePage(),
+          OnboardV2PageStep.p3Age => const OnboardV2AgePage(),
+          OnboardV2PageStep.p4Skillset => const OnboardV2SkillsetChoicePage(),
+          OnboardV2PageStep.p5Demo => const OnboardV2SkillsetDemoPage(),
+          OnboardV2PageStep.p6Notification => const OnboardV2NotificationPage(),
+          OnboardV2PageStep.p7Recommendation => const OnboardV2RecommendationPage(),
+        };
+      },
     );
   }
+
+  void _trackPage(OnboardV2PageStep page) {
+    if (_lastTrackedPage == page) return;
+    _lastTrackedPage = page;
+    OnboardV2Tracking.trackPageView(page);
+  }
 }
-
-
-
-

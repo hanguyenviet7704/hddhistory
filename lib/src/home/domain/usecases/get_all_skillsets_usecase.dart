@@ -19,6 +19,8 @@ class SkillsetFilterRequest implements JsonRequestConvertible {
   final List<SkillsetOnboardingIntroduce> onboardingIntroduces;
   final bool? isAll;
 
+  bool get hasFilters => onboardingIntroduces.isNotEmpty || isAll != null;
+
   @override
   Map<String, dynamic> toJson() {
     return {

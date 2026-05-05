@@ -9,16 +9,14 @@ abstract class OnboardV2Model with _$OnboardV2Model {
     DateTime? updatedAt,
   }) = _OnboardV2Model;
 
-
   factory OnboardV2Model.fromJson(Map<String, dynamic> json) => _$OnboardV2ModelFromJson(json);
 }
 
 extension OnboardV2ModelExtension on OnboardV2Model {
   OnboardV2Entity toEntity() => OnboardV2Entity(
-        id: id,
-        name: name,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
-      );
+    id: id,
+    name: name,
+    createdAt: createdAt,
+    updatedAt: updatedAt,
+  );
 }
-

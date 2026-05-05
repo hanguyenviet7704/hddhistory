@@ -9,6 +9,7 @@ export 'lesson/lesson.dart';
 export 'monetization/monetization.dart';
 export 'onboard/onboard.dart';
 export 'onboard_branching/onboard_branching.dart';
+export 'onboard_v2/onboard_v2.dart';
 export 'output_practice/output_practice.dart';
 export 'profile/profile.dart';
 export 'progress/progress.dart';

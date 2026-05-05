@@ -85,7 +85,7 @@ class _FakeCourseRepository implements ICourseRepository {
   String? lastRoadmapCourseId;
 
   @override
-  TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(PageBreakRequest request) {
+  TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(PageBreakRequest<CourseFilterRequest> request) {
     throw UnimplementedError();
   }
 

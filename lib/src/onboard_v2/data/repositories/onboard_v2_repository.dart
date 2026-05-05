@@ -4,7 +4,6 @@ part of '../../onboard_v2.dart';
 class OnboardV2Repository with RestfulRequestHandlerMixin implements IOnboardV2Repository {
   final OnboardV2Api _api;
   final OnboardV2LocalDataSource _localDataSource;
-  
 
   OnboardV2Repository(
     this._api,
@@ -47,28 +46,4 @@ class OnboardV2Repository with RestfulRequestHandlerMixin implements IOnboardV2R
       },
     );
   }
-
-  
-
-  // ==================== HELPER METHODS ====================
-
-  /// Converts OnboardV2Entity to JSON Map for API requests
-  /// Provides flexibility to customize the request body structure without affecting domain models
-  /// Reusable helper to avoid duplication in create/update methods
-  Map<String, dynamic> _entityToJson(OnboardV2Entity entity) {
-    return {
-      'id': entity.id,
-      'name': entity.name,
-      // TODO: Add more fields as needed
-    };
-  }
-  
-
-  TaskEither<AppException, T> _missingDataSourceTask<T>(String operation) {
-    
-    return TaskEither.left(
-      AppException.unexpected('$operation is not implemented. Please provide a remote or local data source.'),
-    );
-  }
 }
-

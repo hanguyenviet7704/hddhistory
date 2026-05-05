@@ -49,9 +49,7 @@ class OnboardV2LocalDataSourceImpl implements OnboardV2LocalDataSource {
       if (data.isEmpty) return [];
 
       final List<dynamic> jsonList = data['items'] ?? [];
-      return jsonList
-          .map((json) => OnboardV2Model.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return jsonList.map((json) => OnboardV2Model.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }
@@ -122,4 +120,3 @@ class OnboardV2LocalDataSourceImpl implements OnboardV2LocalDataSource {
     }
   }
 }
-

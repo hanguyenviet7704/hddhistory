@@ -11,4 +11,3 @@ class GetAllOnboardV2sUseCase implements BaseUseCase<PageBreakRequest, BasePageB
     return _repository.getAllOnboardV2s(params);
   }
 }
-
