@@ -46,15 +46,18 @@ class _FakeHomeRepository implements IHomeRepository {
   _FakeHomeRepository({
     this.failuresBeforeSuccess = 0,
     this.skillsets = const [],
+    this.onGetAllSkillsets,
   });
 
   final int failuresBeforeSuccess;
   final List<SkillsetEntity> skillsets;
+  final void Function()? onGetAllSkillsets;
   int callCount = 0;
 
   @override
   TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(PageBreakRequest<SkillsetFilterRequest> request) {
     callCount += 1;
+    onGetAllSkillsets?.call();
     if (callCount <= failuresBeforeSuccess) {
       return TaskEither.left(const AppException.unauthorized('login required'));
     }
@@ -105,6 +108,21 @@ void main() {
   });
 
   group('OnboardV2Cubit', () {
+    test('initialize loads onboarding copy without requesting token-gated skillsets', () async {
+      final homeRepository = _FakeHomeRepository(
+        skillsets: const [SkillsetEntity(id: 'skill_1')],
+      );
+      final cubit = _buildCubit(homeRepository: homeRepository);
+
+      await cubit.initialize();
+
+      expect(cubit.state.onboardStatus, OnboardV2AsyncStatus.success);
+      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.initial);
+      expect(homeRepository.callCount, 0);
+
+      await cubit.close();
+    });
+
     test('accepts existing anonymous session but still updates user profile before P4', () async {
       final profileRepository = _FakeProfileRepository();
       var loginCount = 0;
@@ -183,7 +201,43 @@ void main() {
       await cubit.close();
     });
 
-    test('retries failed skillset preload after P3 auth and profile update succeeds', () async {
+    test('loads skillsets only after P3 anonymous auth and profile update succeeds', () async {
+      final events = <String>[];
+      var anonymousSessionReady = false;
+      final homeRepository = _FakeHomeRepository(
+        skillsets: const [SkillsetEntity(id: 'skill_1')],
+        onGetAllSkillsets: () {
+          events.add('skillsets');
+          expect(anonymousSessionReady, isTrue);
+        },
+      );
+      final cubit = _buildCubit(
+        homeRepository: homeRepository,
+        hasActiveAnonymousSession: () => false,
+        loginAnonymousSilently: (_) async {
+          events.add('login');
+          anonymousSessionReady = true;
+          return true;
+        },
+        readUserState: () => const UserState(
+          auth: AuthEntity(user: UserEntity(id: 'user_1', anonymous: true)),
+        ),
+      );
+
+      cubit.updateName('Alice');
+      cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
+      await cubit.submitAge();
+
+      expect(events, ['login', 'skillsets']);
+      expect(cubit.state.currentPage, OnboardV2PageStep.p4Skillset);
+      expect(homeRepository.callCount, 1);
+      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.success);
+      expect(cubit.state.skillsets.single.id, 'skill_1');
+
+      await cubit.close();
+    });
+
+    test('reloads failed skillsets after P3 auth and profile update succeeds', () async {
       final homeRepository = _FakeHomeRepository(
         failuresBeforeSuccess: 1,
         skillsets: const [SkillsetEntity(id: 'skill_1')],

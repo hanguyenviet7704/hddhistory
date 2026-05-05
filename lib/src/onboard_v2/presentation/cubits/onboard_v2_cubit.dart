@@ -58,10 +58,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   Future<void> initialize() async {
     reset();
-    await Future.wait([
-      loadOnboardData(),
-      loadSkillsets(),
-    ]);
+    await loadOnboardData();
   }
 
   void reset() {
@@ -213,32 +210,31 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       }).run();
       if (serial != _requestSerial) return;
 
-      updateResult.fold(
-        (failure) {
-          OnboardV2Tracking.track(
-            TrackingKey.onboardV2UserUpdateFailure,
-            parameters: {'error_reason': OnboardV2Tracking.exceptionReason(failure), 'source': source},
-          );
-          _emitP3Failure(failure.displayMessage);
-        },
-        (_) {
-          OnboardV2Tracking.track(
-            TrackingKey.onboardV2UserUpdateSuccess,
-            parameters: {'source': source},
-          );
-          final shouldRetrySkillsets = state.skillsetStatus == OnboardV2AsyncStatus.failure;
-          emit(
-            state.copyWith(
-              currentPage: OnboardV2PageStep.p4Skillset,
-              p3SubmitStatus: OnboardV2AsyncStatus.success,
-              p3ErrorMessage: null,
-            ),
-          );
-          if (shouldRetrySkillsets) {
-            unawaited(loadSkillsets());
-          }
-        },
+      final updateFailure = updateResult.fold<AppException?>(
+        (failure) => failure,
+        (_) => null,
       );
+      if (updateFailure != null) {
+        OnboardV2Tracking.track(
+          TrackingKey.onboardV2UserUpdateFailure,
+          parameters: {'error_reason': OnboardV2Tracking.exceptionReason(updateFailure), 'source': source},
+        );
+        _emitP3Failure(updateFailure.displayMessage);
+        return;
+      }
+
+      OnboardV2Tracking.track(
+        TrackingKey.onboardV2UserUpdateSuccess,
+        parameters: {'source': source},
+      );
+      emit(
+        state.copyWith(
+          currentPage: OnboardV2PageStep.p4Skillset,
+          p3SubmitStatus: OnboardV2AsyncStatus.success,
+          p3ErrorMessage: null,
+        ),
+      );
+      await loadSkillsets();
     } catch (error) {
       if (serial == _requestSerial) {
         LogDev.warning('[OnboardV2Cubit] submitAge failed: $error');
