@@ -6,14 +6,17 @@ class OnboardV2FloatingNotificationCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final onboardingL10n = context.l10n.onboarding;
+    final title = '${onboardingL10n.onboardingV2NotificationCardTitle} \u{1F31F}';
     return Container(
+      key: const Key('onboard_v2_notification_card'),
       width: 300.w,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      height: 74.w,
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 10.w),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppCustomColor.backgroundWhite,
         borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: AppCustomColor.brandPrimary, width: 2),
-        boxShadow: [BoxShadow(color: AppCustomColor.brandPrimary.op(0.12), blurRadius: 24, offset: const Offset(0, 10))],
+        border: GradientBoxBorder(gradient: OnboardV2GradientText.gradient, width: 2.w),
+        boxShadow: [BoxShadow(color: AppCustomColor.brandPrimary.op(0.12), blurRadius: 8.r, offset: Offset(0, 2.w))],
       ),
       child: Row(
         children: [
@@ -21,28 +24,36 @@ class OnboardV2FloatingNotificationCard extends StatelessWidget {
             width: 40.w,
             height: 40.w,
             decoration: BoxDecoration(color: AppCustomColor.brandPrimary, borderRadius: BorderRadius.circular(8.r)),
-            child: Icon(Icons.notifications_rounded, color: Colors.white, size: 24.w),
+            child: Icon(Icons.all_inclusive_rounded, color: AppCustomColor.textWhite, size: 26.w),
           ),
-          12.horizontalSpace,
+          SizedBox(width: 16.w),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Expanded(
                       child: AppText(
-                        onboardingL10n.onboardingV2NotificationCardTitle,
-                        style: AppStyle.text14.copyWith(fontWeight: FontWeight.w800, color: AppCustomColor.textPrimary),
+                        title,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: AppStyle.text14.copyWith(fontWeight: FontWeight.w700, color: AppCustomColor.textPrimary, height: 1.75),
                       ),
                     ),
-                    AppText(onboardingL10n.onboardingV2NotificationCardTimestamp, style: AppStyle.text12.copyWith(color: AppCustomColor.textTertiary)),
+                    AppText(
+                      onboardingL10n.onboardingV2NotificationCardTimestamp,
+                      style: AppStyle.text12.copyWith(color: AppCustomColor.streakTextMuted, height: 1.75),
+                    ),
                   ],
                 ),
                 AppText(
                   onboardingL10n.onboardingV2NotificationCardBody,
-                  overflow: TextOverflow.visible,
-                  style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary, height: 1.75),
                 ),
               ],
             ),

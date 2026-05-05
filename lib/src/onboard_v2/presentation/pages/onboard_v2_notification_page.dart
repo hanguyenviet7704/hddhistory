@@ -71,26 +71,34 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
       ),
       child: Column(
         children: [
-          24.verticalSpace,
-          Icon(Icons.notifications_rounded, size: 24.w, color: AppCustomColor.brandPrimary),
-          12.verticalSpace,
-          AppText(
-            onboardingL10n.onboardingV2P6HeadingPrefix,
-            textAlign: TextAlign.center,
-            style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
+          SizedBox(height: 32.w),
+          Image.asset(AppAsset.images.app.bellGold.path, width: 24.w, height: 24.w),
+          SizedBox(height: 8.w),
+          Wrap(
+            alignment: WrapAlignment.center,
+            runAlignment: WrapAlignment.center,
+            spacing: 6.w,
+            children: [
+              AppText(
+                onboardingL10n.onboardingV2P6HeadingPrefix,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w700, height: 1.4),
+              ),
+              OnboardV2GradientText(
+                onboardingL10n.onboardingV2P6HeadingHighlight,
+                textAlign: TextAlign.center,
+                style: AppStyle.text28.copyWith(fontWeight: FontWeight.w700, height: 1.4),
+              ),
+            ],
           ),
-          OnboardV2GradientText(
-            onboardingL10n.onboardingV2P6HeadingHighlight,
-            textAlign: TextAlign.center,
-            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
-          ),
-          12.verticalSpace,
+          SizedBox(height: 4.w),
           AppText(
             onboardingL10n.onboardingV2P6Subtitle,
             textAlign: TextAlign.center,
-            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+            style: AppStyle.text16.copyWith(color: AppCustomColor.streakTextMuted, height: 1.5),
           ),
-          20.verticalSpace,
+          SizedBox(height: 32.w),
           const OnboardV2NotificationPreview(),
         ],
       ),

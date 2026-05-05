@@ -136,6 +136,29 @@ void main() {
     await resetInjectorForTests();
   });
 
+  testWidgets('P6 renders Figma-aligned notification preview', (tester) async {
+    final refreshCompleter = Completer<void>();
+    final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
+    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p6Notification));
+    final userCubit = UserCubit(_NoopTrackingService());
+    addTearDown(notificationCubit.close);
+    addTearDown(onboardCubit.close);
+    addTearDown(userCubit.close);
+
+    await tester.pumpWidget(_buildPage(onboardCubit, notificationCubit, userCubit));
+
+    expect(find.text('Keep your'), findsOneWidget);
+    expect(find.text('momentum'), findsOneWidget);
+    expect(find.text('14'), findsOneWidget);
+    expect(find.text('00'), findsOneWidget);
+    expect(find.textContaining('Time to focus'), findsOneWidget);
+    expect(find.byKey(const Key('onboard_v2_notification_phone_preview')), findsOneWidget);
+    expect(find.byKey(const Key('onboard_v2_notification_card')), findsOneWidget);
+
+    refreshCompleter.complete();
+    await tester.pump();
+  });
+
   testWidgets('Notify me waits for initial permission refresh before requesting permission', (tester) async {
     final refreshCompleter = Completer<void>();
     final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
