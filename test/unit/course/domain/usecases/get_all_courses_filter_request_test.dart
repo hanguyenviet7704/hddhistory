@@ -14,7 +14,7 @@ void main() {
         filter: CourseFilterRequest.bySkillsets(['skillset_1', 'skillset_2']),
       );
 
-      expect(request.toJson(), containsPair('skillsetIds', 'skillset_1, skillset_2'));
+      expect(request.toJson(), containsPair('skillsetIds', 'skillset_1,skillset_2'));
       expect(request.toJson(), containsPair('isAll', true));
       expect(request.toJson(), containsPair('page', 1));
       expect(request.toJson(), containsPair('take', 10));

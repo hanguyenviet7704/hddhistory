@@ -15,7 +15,7 @@ void main() {
 
       expect(
         request.toJson(),
-        containsPair('onboardingIntroduces', 'MY_FEELINGS_FEEL_LOUD, MY_THOUGHTS_CIRCLE'),
+        containsPair('onboardingIntroduces', 'MY_FEELINGS_FEEL_LOUD,MY_THOUGHTS_CIRCLE'),
       );
       expect(request.toJson(), containsPair('isAll', true));
       expect(request.toJson(), containsPair('page', 1));

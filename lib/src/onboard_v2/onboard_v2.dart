@@ -47,6 +47,8 @@ part 'presentation/pages/onboard_v2_skillset_choice_page.dart';
 part 'presentation/pages/onboard_v2_skillset_demo_page.dart';
 
 //* Presentation Layer - Widgets
+part 'presentation/widgets/p1/onboard_v2_intro_carousel.dart';
+part 'presentation/widgets/p1/onboard_v2_intro_carousel_card.dart';
 part 'presentation/widgets/p5/onboard_v2_skillset_demo_subtitle.dart';
 part 'presentation/widgets/p5/onboard_v2_skillset_map.dart';
 part 'presentation/widgets/p5/onboard_v2_skillset_map_node.dart';

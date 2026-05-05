@@ -33,7 +33,7 @@ class CourseFilterRequest implements JsonRequestConvertible {
   @override
   Map<String, dynamic> toJson() {
     return {
-      if (skillsetIds.isNotEmpty) 'skillsetIds': skillsetIds.join(', '),
+      if (skillsetIds.isNotEmpty) 'skillsetIds': skillsetIds.join(','),
       if (isAll != null) 'isAll': isAll,
     };
   }
