@@ -16,24 +16,32 @@ class OnboardV2SkillsetDemoPage extends StatelessWidget {
       child: Column(
         children: [
           24.verticalSpace,
-          AppText(
-            onboardingL10n.onboardingV2P5HeadingPrefix,
-            textAlign: TextAlign.center,
-            style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
-          ),
-          OnboardV2GradientText(
-            onboardingL10n.onboardingV2P5HeadingHighlight,
-            textAlign: TextAlign.center,
-            style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+          Wrap(
+            alignment: WrapAlignment.center,
+            runAlignment: WrapAlignment.center,
+            spacing: 6.w,
+            children: [
+              AppText(
+                onboardingL10n.onboardingV2P5HeadingPrefix,
+                textAlign: TextAlign.center,
+                maxLines: 1,
+                style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w800, height: 1.4),
+              ),
+              OnboardV2GradientText(
+                onboardingL10n.onboardingV2P5HeadingHighlight,
+                textAlign: TextAlign.center,
+                style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4),
+              ),
+            ],
           ),
           AppText(
             onboardingL10n.onboardingV2P5HeadingSuffix,
             textAlign: TextAlign.center,
-            style: AppStyle.text28.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w800, height: 1.4),
+            style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w800, height: 1.4),
           ),
-          12.verticalSpace,
+          4.verticalSpace,
           OnboardV2SkillsetDemoSubtitle(count: introduces.length),
-          28.verticalSpace,
+          32.verticalSpace,
           OnboardV2SkillsetMap(activeIntroduces: introduces),
         ],
       ),

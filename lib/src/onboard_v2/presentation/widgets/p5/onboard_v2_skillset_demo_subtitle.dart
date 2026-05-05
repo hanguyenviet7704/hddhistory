@@ -26,14 +26,14 @@ class OnboardV2SkillsetDemoSubtitle extends StatelessWidget {
           firstLine,
           textAlign: TextAlign.center,
           overflow: TextOverflow.visible,
-          style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+          style: AppStyle.text16.copyWith(color: const Color(0xFF5F6F86)),
         ),
         if (secondLine.isNotEmpty)
           AppText(
             secondLine,
             textAlign: TextAlign.center,
             overflow: TextOverflow.visible,
-            style: AppStyle.text14.copyWith(color: AppCustomColor.textTertiary),
+            style: AppStyle.text16.copyWith(color: const Color(0xFF5F6F86)),
           ),
       ],
     );

@@ -5,13 +5,13 @@ class OnboardV2SkillsetMap extends StatelessWidget {
 
   final List<SkillsetOnboardingIntroduce> activeIntroduces;
 
-  static const _positions = <SkillsetOnboardingIntroduce, ({double left, double top, double width})>{
-    SkillsetOnboardingIntroduce.whatILearnFades: (left: 145.0, top: 13.0, width: 51.5),
-    SkillsetOnboardingIntroduce.myThoughtsCircle: (left: 251.0, top: 74.0, width: 51.5),
-    SkillsetOnboardingIntroduce.myFeelingsFeelLoud: (left: 35.6, top: 86.0, width: 36.0),
-    SkillsetOnboardingIntroduce.nothingFeelsNew: (left: 255.4, top: 213.3, width: 56.0),
-    SkillsetOnboardingIntroduce.iTalkToMany: (left: 136.5, top: 283.0, width: 62.0),
-    SkillsetOnboardingIntroduce.imBusyAllDay: (left: 34.8, top: 213.3, width: 41.0),
+  static const _nodeFrames = <SkillsetOnboardingIntroduce, ({double left, double top})>{
+    SkillsetOnboardingIntroduce.whatILearnFades: (left: 117.5, top: 13.0),
+    SkillsetOnboardingIntroduce.myThoughtsCircle: (left: 231.0, top: 74.0),
+    SkillsetOnboardingIntroduce.myFeelingsFeelLoud: (left: 4.84375, top: 74.0),
+    SkillsetOnboardingIntroduce.nothingFeelsNew: (left: 231.0, top: 213.25),
+    SkillsetOnboardingIntroduce.iTalkToMany: (left: 117.5, top: 283.0),
+    SkillsetOnboardingIntroduce.imBusyAllDay: (left: 4.84375, top: 213.25),
   };
 
   @override
@@ -22,18 +22,20 @@ class OnboardV2SkillsetMap extends StatelessWidget {
         fit: BoxFit.scaleDown,
         child: SizedBox(
           width: 335.w,
-          height: 395.h,
+          height: 395.w,
           child: RepaintBoundary(
             child: Stack(
               clipBehavior: Clip.none,
               children: [
                 Positioned.fill(child: CustomPaint(painter: const OnboardV2SkillsetMapPainter())),
-                for (final entry in _positions.entries)
+                for (final entry in _nodeFrames.entries)
                   Positioned(
                     left: entry.value.left.w,
-                    top: entry.value.top.h,
-                    width: entry.value.width.w,
+                    top: entry.value.top.w,
+                    width: 100.w,
+                    height: 100.w,
                     child: OnboardV2SkillsetMapNode(
+                      key: ValueKey('onboard_v2_skillset_map_node_${entry.key.name}'),
                       label: entry.key.shortTitle,
                       iconPath: activeSet.contains(entry.key) ? entry.key.image : entry.key.imageDisable,
                       active: activeSet.contains(entry.key),
