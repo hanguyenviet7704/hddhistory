@@ -138,6 +138,9 @@ void main() {
 
   testWidgets('P6 renders Figma-aligned notification preview', (tester) async {
     final refreshCompleter = Completer<void>();
+    addTearDown(() {
+      if (!refreshCompleter.isCompleted) refreshCompleter.complete();
+    });
     final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
     final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p6Notification));
     final userCubit = UserCubit(_NoopTrackingService());
@@ -157,8 +160,52 @@ void main() {
     await tester.pump();
   });
 
+  testWidgets('notification preview card enters then floats with synchronized shadow', (tester) async {
+    final refreshCompleter = Completer<void>();
+    addTearDown(() {
+      if (!refreshCompleter.isCompleted) refreshCompleter.complete();
+    });
+    final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
+    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p6Notification));
+    final userCubit = UserCubit(_NoopTrackingService());
+    addTearDown(notificationCubit.close);
+    addTearDown(onboardCubit.close);
+    addTearDown(userCubit.close);
+
+    await tester.pumpWidget(_buildPage(onboardCubit, notificationCubit, userCubit));
+
+    final entryY = _notificationCardDy(tester);
+    final restingShadow = _notificationCardShadow(tester);
+    expect(entryY, lessThan(-20));
+
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 640));
+    await tester.pump(const Duration(milliseconds: 1));
+    await tester.pump(const Duration(milliseconds: 800));
+
+    final liftedY = _notificationCardDy(tester);
+    final liftedShadow = _notificationCardShadow(tester);
+    expect(liftedY, lessThan(0));
+    expect(liftedShadow.blurRadius, greaterThan(restingShadow.blurRadius));
+    expect(liftedShadow.offset.dy, greaterThan(restingShadow.offset.dy));
+
+    await tester.pump(const Duration(milliseconds: 1600));
+
+    final sunkenY = _notificationCardDy(tester);
+    final sunkenShadow = _notificationCardShadow(tester);
+    expect(sunkenY, greaterThan(0));
+    expect(sunkenShadow.blurRadius, lessThan(liftedShadow.blurRadius));
+    expect(sunkenShadow.offset.dy, lessThan(liftedShadow.offset.dy));
+
+    refreshCompleter.complete();
+    await tester.pump();
+  });
+
   testWidgets('Notify me waits for initial permission refresh before requesting permission', (tester) async {
     final refreshCompleter = Completer<void>();
+    addTearDown(() {
+      if (!refreshCompleter.isCompleted) refreshCompleter.complete();
+    });
     final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
     final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p6Notification));
     final userCubit = UserCubit(_NoopTrackingService());
@@ -204,4 +251,15 @@ Widget _buildPage(
       ),
     ),
   );
+}
+
+double _notificationCardDy(WidgetTester tester) {
+  final transform = tester.widget<Transform>(find.byKey(const Key('onboard_v2_notification_card_transform')));
+  return transform.transform.getTranslation().y;
+}
+
+BoxShadow _notificationCardShadow(WidgetTester tester) {
+  final container = tester.widget<Container>(find.byKey(const Key('onboard_v2_notification_card')));
+  final decoration = container.decoration! as BoxDecoration;
+  return decoration.boxShadow!.single;
 }
