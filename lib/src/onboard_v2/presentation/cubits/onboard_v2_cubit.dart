@@ -56,10 +56,13 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   bool _isSubmittingAge = false;
   bool _isLoadingRecommendation = false;
   Future<void>? _recommendationLoadTask;
+  Future<void>? _skillsetLoadTask;
+  Future<bool>? _anonymousSessionTask;
   int _recommendationSerial = 0;
 
   Future<void> initialize() async {
     reset();
+    unawaited(loadSkillsets());
     await loadOnboardData();
   }
 
@@ -69,6 +72,8 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     _isSubmittingAge = false;
     _isLoadingRecommendation = false;
     _recommendationLoadTask = null;
+    _skillsetLoadTask = null;
+    _anonymousSessionTask = null;
     emit(OnboardV2State.initial());
   }
 
@@ -96,29 +101,72 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   }
 
   Future<void> loadSkillsets() async {
+    if (state.skillsetStatus == OnboardV2AsyncStatus.success && state.skillsets.isNotEmpty) {
+      return;
+    }
+
+    final activeTask = _skillsetLoadTask;
+    if (activeTask != null) return activeTask;
+
+    late final Future<void> task;
+    task = _loadSkillsetsWithAnonymousSession().whenComplete(() {
+      if (identical(_skillsetLoadTask, task)) {
+        _skillsetLoadTask = null;
+      }
+    });
+    _skillsetLoadTask = task;
+    return task;
+  }
+
+  Future<void> _loadSkillsetsWithAnonymousSession() async {
     final serial = _requestSerial;
+    if (isClosed) return;
     emit(state.copyWith(skillsetStatus: OnboardV2AsyncStatus.loading, skillsetErrorMessage: null));
 
-    final request = PageBreakRequest<SkillsetFilterRequest>(
-      filter: SkillsetFilterRequest.forOnboarding(),
-    );
-    final result = await _getAllSkillsetsUseCase(request).run();
-    if (serial != _requestSerial) return;
+    try {
+      final hasSession = await _ensureAnonymousSession(source: 'p1_preload');
+      if (serial != _requestSerial || isClosed) return;
 
-    result.fold(
-      (failure) => emit(
+      if (!hasSession) {
+        emit(
+          state.copyWith(
+            skillsetStatus: OnboardV2AsyncStatus.failure,
+            skillsetErrorMessage: l10n.onboarding.onboardingV2SkillsetLoadError,
+          ),
+        );
+        return;
+      }
+
+      final request = PageBreakRequest<SkillsetFilterRequest>(
+        filter: SkillsetFilterRequest.forOnboarding(),
+      );
+      final result = await _getAllSkillsetsUseCase(request).run();
+      if (serial != _requestSerial || isClosed) return;
+
+      result.fold(
+        (failure) => emit(
+          state.copyWith(
+            skillsetStatus: OnboardV2AsyncStatus.failure,
+            skillsetErrorMessage: failure.displayMessage,
+          ),
+        ),
+        (pageData) => emit(
+          state.copyWith(
+            skillsetStatus: OnboardV2AsyncStatus.success,
+            skillsets: pageData.items,
+          ),
+        ),
+      );
+    } catch (error) {
+      if (serial != _requestSerial || isClosed) return;
+      LogDev.warning('[OnboardV2Cubit] load skillsets failed: $error');
+      emit(
         state.copyWith(
           skillsetStatus: OnboardV2AsyncStatus.failure,
-          skillsetErrorMessage: failure.displayMessage,
+          skillsetErrorMessage: l10n.onboarding.onboardingV2SkillsetLoadError,
         ),
-      ),
-      (pageData) => emit(
-        state.copyWith(
-          skillsetStatus: OnboardV2AsyncStatus.success,
-          skillsets: pageData.items,
-        ),
-      ),
-    );
+      );
+    }
   }
 
   void goBack() {
@@ -175,111 +223,122 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
       TrackingKey.onboardV2P3ContinueClick,
       parameters: OnboardV2Tracking.ageParams(selectedAge),
     );
-    emit(state.copyWith(p3SubmitStatus: OnboardV2AsyncStatus.loading, p3ErrorMessage: null));
 
+    emit(
+      state.copyWith(
+        currentPage: OnboardV2PageStep.p4Skillset,
+        p3SubmitStatus: OnboardV2AsyncStatus.success,
+        p3ErrorMessage: null,
+      ),
+    );
+
+    unawaited(_updateSelectedAgeInBackground(selectedAge, serial: serial));
+    unawaited(loadSkillsets());
+    _isSubmittingAge = false;
+  }
+
+  Future<void> _updateSelectedAgeInBackground(OnboardOptionEntity selectedAge, {required int serial}) async {
+    final source = _hasActiveAnonymousSession ? 'existing_session' : 'p1_preload';
+    final hasSession = await _ensureAnonymousSession(source: source);
+    if (serial != _requestSerial) return;
+
+    if (!hasSession) {
+      OnboardV2Tracking.track(
+        TrackingKey.onboardV2UserUpdateFailure,
+        parameters: {'error_reason': 'missing_session', 'source': source},
+      );
+      LogDev.warning('[OnboardV2Cubit] Skip background user update: anonymous session unavailable');
+      return;
+    }
+
+    final currentUserId = _readUserState.user.id.trim();
+    if (currentUserId.isEmpty) {
+      OnboardV2Tracking.track(
+        TrackingKey.onboardV2UserUpdateFailure,
+        parameters: {'error_reason': 'missing_user_id', 'source': source},
+      );
+      LogDev.warning('[OnboardV2Cubit] Skip background user update: missing user id');
+      return;
+    }
+
+    await _updateUserProfileInBackground({
+      'id': currentUserId,
+      'name': state.name.trim(),
+      'age': OnboardV2AgeTextResolver.resolve(selectedAge),
+    }, source: source);
+  }
+
+  Future<void> _updateUserProfileInBackground(Map<String, dynamic> payload, {required String source}) async {
     try {
-      final hasExistingSession = _hasActiveAnonymousSession;
-      final source = hasExistingSession ? 'existing_session' : 'network';
-      final hasSession = hasExistingSession || await _loginAnonymous(selectedAge);
-      if (serial != _requestSerial) return;
-
-      if (!hasSession) {
-        OnboardV2Tracking.track(
-          TrackingKey.onboardV2AnonymousLoginFailure,
-          parameters: {'error_reason': 'login_failed'},
-        );
-        _emitP3Failure('anonymous_login_failed');
-        return;
-      }
-
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2AnonymousLoginSuccess,
-        parameters: {'source': source},
-      );
-
-      final currentUserId = _readUserState.user.id.trim();
-      if (currentUserId.isEmpty) {
-        OnboardV2Tracking.track(
-          TrackingKey.onboardV2UserUpdateFailure,
-          parameters: {'error_reason': 'missing_user_id', 'source': source},
-        );
-        _emitP3Failure('missing_user_id');
-        return;
-      }
-
-      final updateResult = await _updateUserUseCase({
-        'id': currentUserId,
-        'name': state.name.trim(),
-        'age': OnboardV2AgeTextResolver.resolve(selectedAge),
-      }).run();
-      if (serial != _requestSerial) return;
-
-      final updateFailure = updateResult.fold<AppException?>(
-        (failure) => failure,
-        (_) => null,
-      );
-      if (updateFailure != null) {
-        OnboardV2Tracking.track(
-          TrackingKey.onboardV2UserUpdateFailure,
-          parameters: {'error_reason': OnboardV2Tracking.exceptionReason(updateFailure), 'source': source},
-        );
-        _emitP3Failure(updateFailure.displayMessage);
-        return;
-      }
-
-      OnboardV2Tracking.track(
-        TrackingKey.onboardV2UserUpdateSuccess,
-        parameters: {'source': source},
-      );
-      emit(
-        state.copyWith(
-          currentPage: OnboardV2PageStep.p4Skillset,
-          p3SubmitStatus: OnboardV2AsyncStatus.success,
-          p3ErrorMessage: null,
+      final updateResult = await _updateUserUseCase(Map<String, dynamic>.from(payload)).run();
+      updateResult.fold(
+        (failure) {
+          OnboardV2Tracking.track(
+            TrackingKey.onboardV2UserUpdateFailure,
+            parameters: {'error_reason': OnboardV2Tracking.exceptionReason(failure), 'source': source},
+          );
+          LogDev.warning('[OnboardV2Cubit] background user update failed: ${failure.displayMessage}');
+        },
+        (_) => OnboardV2Tracking.track(
+          TrackingKey.onboardV2UserUpdateSuccess,
+          parameters: {'source': source},
         ),
       );
-      await loadSkillsets();
     } catch (error) {
-      if (serial == _requestSerial) {
-        LogDev.warning('[OnboardV2Cubit] submitAge failed: $error');
-        OnboardV2Tracking.track(
-          TrackingKey.onboardV2AnonymousLoginFailure,
-          parameters: {'error_reason': 'unexpected'},
-        );
-        _emitP3Failure(l10n.onboarding.onboardingV2GenericError);
-      }
-    } finally {
-      _isSubmittingAge = false;
+      OnboardV2Tracking.track(
+        TrackingKey.onboardV2UserUpdateFailure,
+        parameters: {'error_reason': 'unexpected', 'source': source},
+      );
+      LogDev.warning('[OnboardV2Cubit] background user update failed: $error');
     }
   }
 
-  Future<bool> _loginAnonymous(OnboardOptionEntity selectedAge) async {
-    final payload = {
-      'device': {
-        'deviceId': await _deviceInfoService.deviceToken,
-        'deviceName': await _deviceInfoService.deviceName,
-      },
-      'name': state.name.trim(),
-      'language': _localeCubit.state.languageCode,
-      'age': OnboardV2AgeTextResolver.resolve(selectedAge),
-    };
+  Future<bool> _ensureAnonymousSession({required String source}) async {
+    if (_hasActiveAnonymousSession) return true;
 
-    return (_loginAnonymousSilentlyOverride ?? _authBloc.loginAnonymousSilently)(payload);
+    final activeTask = _anonymousSessionTask;
+    if (activeTask != null) return activeTask;
+
+    late final Future<bool> task;
+    task = _loginAnonymousForOnboarding(source: source).whenComplete(() {
+      if (identical(_anonymousSessionTask, task)) {
+        _anonymousSessionTask = null;
+      }
+    });
+    _anonymousSessionTask = task;
+    return task;
+  }
+
+  Future<bool> _loginAnonymousForOnboarding({required String source}) async {
+    try {
+      final payload = buildAnonymousDeviceAuthPayload(
+        deviceId: await _deviceInfoService.deviceToken,
+        deviceName: await _deviceInfoService.deviceName,
+        languageCode: _localeCubit.state.languageCode,
+      );
+
+      final success = await (_loginAnonymousSilentlyOverride ?? _authBloc.loginAnonymousSilently)(payload);
+      OnboardV2Tracking.track(
+        success ? TrackingKey.onboardV2AnonymousLoginSuccess : TrackingKey.onboardV2AnonymousLoginFailure,
+        parameters: {
+          'source': source,
+          if (!success) 'error_reason': 'login_failed',
+        },
+      );
+      return success;
+    } catch (error) {
+      OnboardV2Tracking.track(
+        TrackingKey.onboardV2AnonymousLoginFailure,
+        parameters: {'source': source, 'error_reason': 'unexpected'},
+      );
+      LogDev.warning('[OnboardV2Cubit] anonymous onboarding login failed: $error');
+      return false;
+    }
   }
 
   bool get _hasActiveAnonymousSession => (_hasActiveAnonymousSessionOverride ?? () => _authBloc.hasActiveAnonymousSession)();
 
   UserState get _readUserState => (_readUserStateOverride ?? () => _userCubit.state)();
-
-  void _emitP3Failure(String message) {
-    emit(
-      state.copyWith(
-        currentPage: OnboardV2PageStep.p3Age,
-        p3SubmitStatus: OnboardV2AsyncStatus.failure,
-        p3ErrorMessage: message,
-      ),
-    );
-  }
 
   void toggleSkillset(SkillsetEntity skillset) {
     final selected = List<SkillsetEntity>.from(state.selectedSkillsets);

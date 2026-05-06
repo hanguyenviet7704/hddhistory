@@ -69,17 +69,30 @@ class _FakeHomeRepository implements IHomeRepository {
 }
 
 class _FakeProfileRepository implements IProfileRepository {
+  _FakeProfileRepository({this.updateCompleter});
+
+  final Completer<UserEntity>? updateCompleter;
   Map<String, dynamic>? lastParams;
   int updateCount = 0;
+  bool hasCompletedUpdate = false;
 
   @override
   TaskEither<AppException, UserEntity> getUser(String id) => TaskEither.right(const UserEntity(id: 'user_1'));
 
   @override
   TaskEither<AppException, UserEntity> updateUser(Map<String, dynamic> params) {
-    lastParams = Map<String, dynamic>.from(params);
-    updateCount += 1;
-    return TaskEither.right(UserEntity(id: params['id'] as String? ?? ''));
+    return TaskEither(() async {
+      lastParams = Map<String, dynamic>.from(params);
+      updateCount += 1;
+      final completer = updateCompleter;
+      if (completer != null) {
+        final user = await completer.future;
+        hasCompletedUpdate = true;
+        return right(user);
+      }
+      hasCompletedUpdate = true;
+      return right(UserEntity(id: params['id'] as String? ?? ''));
+    });
   }
 }
 
@@ -123,22 +136,41 @@ void main() {
   });
 
   group('OnboardV2Cubit', () {
-    test('initialize loads onboarding copy without requesting token-gated skillsets', () async {
+    test('initialize starts anonymous login and skillset preload from P1', () async {
+      final events = <String>[];
+      var hasAnonymousSession = false;
+      Map<String, dynamic>? loginPayload;
       final homeRepository = _FakeHomeRepository(
         skillsets: const [SkillsetEntity(id: 'skill_1')],
+        onGetAllSkillsets: () => events.add('skillsets'),
       );
-      final cubit = _buildCubit(homeRepository: homeRepository);
+      final cubit = _buildCubit(
+        homeRepository: homeRepository,
+        hasActiveAnonymousSession: () => hasAnonymousSession,
+        loginAnonymousSilently: (payload) async {
+          events.add('login');
+          loginPayload = Map<String, dynamic>.from(payload);
+          hasAnonymousSession = true;
+          return true;
+        },
+      );
 
       await cubit.initialize();
+      await cubit.loadSkillsets();
 
       expect(cubit.state.onboardStatus, OnboardV2AsyncStatus.success);
-      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.initial);
-      expect(homeRepository.callCount, 0);
+      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.success);
+      expect(cubit.state.skillsets.single.id, 'skill_1');
+      expect(homeRepository.callCount, 1);
+      expect(events, ['login', 'skillsets']);
+      expect(loginPayload?.keys, unorderedEquals(['device', 'language']));
+      expect(loginPayload?.containsKey('name'), isFalse);
+      expect(loginPayload?.containsKey('age'), isFalse);
 
       await cubit.close();
     });
 
-    test('accepts existing anonymous session but still updates user profile before P4', () async {
+    test('accepts existing anonymous session and starts profile update without blocking P4', () async {
       final profileRepository = _FakeProfileRepository();
       var loginCount = 0;
 
@@ -157,6 +189,7 @@ void main() {
       cubit.updateName('  Alice  ');
       cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
       await cubit.submitAge();
+      await Future<void>.delayed(Duration.zero);
 
       expect(loginCount, 0);
       expect(profileRepository.updateCount, 1);
@@ -169,8 +202,38 @@ void main() {
       await cubit.close();
     });
 
-    test('stays on P3 when anonymous login fails', () async {
+    test('moves to P4 before profile update finishes', () async {
+      final updateCompleter = Completer<UserEntity>();
+      final profileRepository = _FakeProfileRepository(updateCompleter: updateCompleter);
       final cubit = _buildCubit(
+        profileRepository: profileRepository,
+        hasActiveAnonymousSession: () => true,
+        readUserState: () => const UserState(
+          auth: AuthEntity(user: UserEntity(id: 'user_1', anonymous: true)),
+        ),
+      );
+
+      cubit.updateName('Alice');
+      cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
+      await cubit.submitAge();
+
+      expect(cubit.state.currentPage, OnboardV2PageStep.p4Skillset);
+      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.success);
+      await Future<void>.delayed(Duration.zero);
+      expect(profileRepository.updateCount, 1);
+      expect(profileRepository.hasCompletedUpdate, isFalse);
+
+      updateCompleter.complete(const UserEntity(id: 'user_1'));
+      await Future<void>.delayed(Duration.zero);
+      expect(profileRepository.hasCompletedUpdate, isTrue);
+
+      await cubit.close();
+    });
+
+    test('moves to P4 and exposes skillset failure when anonymous login fails', () async {
+      final profileRepository = _FakeProfileRepository();
+      final cubit = _buildCubit(
+        profileRepository: profileRepository,
         hasActiveAnonymousSession: () => false,
         loginAnonymousSilently: (_) async => false,
         readUserState: UserState.initial,
@@ -179,16 +242,21 @@ void main() {
       cubit.updateName('Alice');
       cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
       await cubit.submitAge();
+      await cubit.loadSkillsets();
+      await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.currentPage, OnboardV2PageStep.p3Age);
-      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.failure);
-      expect(cubit.state.p3ErrorMessage, isNotEmpty);
+      expect(cubit.state.currentPage, OnboardV2PageStep.p4Skillset);
+      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.success);
+      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.failure);
+      expect(profileRepository.updateCount, 0);
 
       await cubit.close();
     });
 
-    test('stays on P3 when current user id is missing after session acceptance', () async {
+    test('moves to P4 and skips profile update when current user id is missing', () async {
+      final profileRepository = _FakeProfileRepository();
       final cubit = _buildCubit(
+        profileRepository: profileRepository,
         hasActiveAnonymousSession: () => true,
         readUserState: UserState.initial,
       );
@@ -196,10 +264,12 @@ void main() {
       cubit.updateName('Alice');
       cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
       await cubit.submitAge();
+      await Future<void>.delayed(Duration.zero);
 
-      expect(cubit.state.currentPage, OnboardV2PageStep.p3Age);
-      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.failure);
-      expect(cubit.state.p3ErrorMessage, contains('user'));
+      expect(cubit.state.currentPage, OnboardV2PageStep.p4Skillset);
+      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.success);
+      expect(cubit.state.p3ErrorMessage, isNull);
+      expect(profileRepository.updateCount, 0);
 
       await cubit.close();
     });
@@ -295,22 +365,22 @@ void main() {
       await cubit.close();
     });
 
-    test('loads skillsets only after P3 anonymous auth and profile update succeeds', () async {
+    test('preloads skillsets after anonymous auth succeeds', () async {
       final events = <String>[];
-      var anonymousSessionReady = false;
+      var hasAnonymousSession = false;
       final homeRepository = _FakeHomeRepository(
         skillsets: const [SkillsetEntity(id: 'skill_1')],
         onGetAllSkillsets: () {
           events.add('skillsets');
-          expect(anonymousSessionReady, isTrue);
+          expect(hasAnonymousSession, isTrue);
         },
       );
       final cubit = _buildCubit(
         homeRepository: homeRepository,
-        hasActiveAnonymousSession: () => false,
+        hasActiveAnonymousSession: () => hasAnonymousSession,
         loginAnonymousSilently: (_) async {
           events.add('login');
-          anonymousSessionReady = true;
+          hasAnonymousSession = true;
           return true;
         },
         readUserState: () => const UserState(
@@ -318,12 +388,9 @@ void main() {
         ),
       );
 
-      cubit.updateName('Alice');
-      cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
-      await cubit.submitAge();
+      await cubit.loadSkillsets();
 
       expect(events, ['login', 'skillsets']);
-      expect(cubit.state.currentPage, OnboardV2PageStep.p4Skillset);
       expect(homeRepository.callCount, 1);
       expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.success);
       expect(cubit.state.skillsets.single.id, 'skill_1');
@@ -331,7 +398,7 @@ void main() {
       await cubit.close();
     });
 
-    test('reloads failed skillsets after P3 auth and profile update succeeds', () async {
+    test('reloads failed skillsets after P3 auth succeeds', () async {
       final homeRepository = _FakeHomeRepository(
         failuresBeforeSuccess: 1,
         skillsets: const [SkillsetEntity(id: 'skill_1')],
@@ -350,7 +417,7 @@ void main() {
       cubit.updateName('Alice');
       cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
       await cubit.submitAge();
-      await Future<void>.delayed(Duration.zero);
+      await cubit.loadSkillsets();
 
       expect(cubit.state.currentPage, OnboardV2PageStep.p4Skillset);
       expect(homeRepository.callCount, 2);
@@ -360,9 +427,11 @@ void main() {
       await cubit.close();
     });
 
-    test('pending P3 submit cannot advance after user backs up', () async {
+    test('pending P1 skillset preload cannot update state after reset', () async {
       final loginCompleter = Completer<bool>();
+      final homeRepository = _FakeHomeRepository(skillsets: const [SkillsetEntity(id: 'skill_1')]);
       final cubit = _buildCubit(
+        homeRepository: homeRepository,
         hasActiveAnonymousSession: () => false,
         loginAnonymousSilently: (_) => loginCompleter.future,
         readUserState: () => const UserState(
@@ -370,40 +439,34 @@ void main() {
         ),
       );
 
-      cubit.continueFromIntro();
-      cubit.updateName('Alice');
-      cubit.continueFromName();
-      cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
-
-      final submitFuture = cubit.submitAge();
+      final preloadFuture = cubit.loadSkillsets();
       await Future<void>.delayed(Duration.zero);
-      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.loading);
+      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.loading);
 
-      cubit.goBack();
+      cubit.reset();
       loginCompleter.complete(true);
-      await submitFuture;
+      await preloadFuture;
 
-      expect(cubit.state.currentPage, OnboardV2PageStep.p2Name);
-      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.initial);
+      expect(cubit.state.currentPage, OnboardV2PageStep.p1Intro);
+      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.initial);
+      expect(homeRepository.callCount, 0);
 
       await cubit.close();
     });
 
-    test('unexpected P3 submit errors use generic localized copy', () async {
+    test('unexpected anonymous preload errors use generic skillset copy', () async {
       final cubit = _buildCubit(
         hasActiveAnonymousSession: () => false,
-        loginAnonymousSilently: (_) => throw StateError('secret device token'),
+        loginAnonymousSilently: (_) async => throw StateError('secret device token'),
         readUserState: UserState.initial,
       );
 
-      cubit.updateName('Alice');
-      cubit.selectAge(const OnboardOptionEntity(id: 1, label: BaseMultiLanguage(en: '18-24')));
-      await cubit.submitAge();
+      await cubit.loadSkillsets();
 
-      expect(cubit.state.currentPage, OnboardV2PageStep.p3Age);
-      expect(cubit.state.p3SubmitStatus, OnboardV2AsyncStatus.failure);
-      expect(cubit.state.p3ErrorMessage, l10n.onboarding.onboardingV2GenericError);
-      expect(cubit.state.p3ErrorMessage, isNot(contains('secret')));
+      expect(cubit.state.currentPage, OnboardV2PageStep.p1Intro);
+      expect(cubit.state.skillsetStatus, OnboardV2AsyncStatus.failure);
+      expect(cubit.state.skillsetErrorMessage, l10n.onboarding.onboardingV2SkillsetLoadError);
+      expect(cubit.state.skillsetErrorMessage, isNot(contains('secret')));
 
       await cubit.close();
     });

@@ -6,7 +6,6 @@ enum AuthSuccessRouteDestination { course, home }
 
 enum RegisterGuestContinueAction { continueCurrentSession, loginAnonymousAndNavigate }
 
-@visibleForTesting
 Map<String, dynamic> buildAnonymousDeviceAuthPayload({
   required String deviceId,
   required String deviceName,
