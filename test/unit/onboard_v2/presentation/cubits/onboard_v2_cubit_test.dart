@@ -313,7 +313,7 @@ void main() {
 
       listCompleter.complete(
         BasePageBreak<CourseEntity>(
-          items: const [CourseEntity(id: 'course_1')],
+          items: const [CourseEntity(id: 'course_1', numberOfLesson: 1)],
         ),
       );
       await navigationFuture;

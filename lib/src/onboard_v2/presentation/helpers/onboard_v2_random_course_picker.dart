@@ -5,10 +5,11 @@ abstract final class OnboardV2RandomCoursePicker {
     List<CourseEntity> courses, {
     required int Function(int max) nextInt,
   }) {
-    if (courses.isEmpty) return null;
-    if (courses.length == 1) return courses.first;
+    final eligibleCourses = courses.where((course) => course.numberOfLesson > 0).toList();
+    if (eligibleCourses.isEmpty) return null;
+    if (eligibleCourses.length == 1) return eligibleCourses.first;
 
-    final index = nextInt(courses.length);
-    return courses[index.clamp(0, courses.length - 1)];
+    final index = nextInt(eligibleCourses.length);
+    return eligibleCourses[index.clamp(0, eligibleCourses.length - 1)];
   }
 }
