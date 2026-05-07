@@ -97,7 +97,7 @@ class AppService {
     // Initialize app event services early - they now handle tracking permission internally
     appEventService.initialize();
 
-    remoteConfigService.initialize();
+    await remoteConfigService.initialize();
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();
     // DeepLinkService.init();

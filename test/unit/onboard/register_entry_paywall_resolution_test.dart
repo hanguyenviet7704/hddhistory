@@ -30,4 +30,22 @@ void main() {
       expect(shouldShow, isFalse);
     });
   });
+
+  group('shouldSkipOnboardingByRemoteConfig', () {
+    test('returns true when onboarding config is disabled', () {
+      final shouldSkip = shouldSkipOnboardingByRemoteConfig(
+        const OnboardingConfigEntity(enable: false),
+      );
+
+      expect(shouldSkip, isTrue);
+    });
+
+    test('returns false when onboarding config is enabled', () {
+      final shouldSkip = shouldSkipOnboardingByRemoteConfig(
+        const OnboardingConfigEntity(enable: true),
+      );
+
+      expect(shouldSkip, isFalse);
+    });
+  });
 }

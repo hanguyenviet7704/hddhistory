@@ -61,8 +61,12 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _getAppData() {
-    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
-    AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
+    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
+    if (onboardingConfig.isEnabled) {
+      AppDI.injector.get<OnboardCubit>().loadAllOnboards();
+      AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
+    }
+
     UserState userState = context.read<UserCubit>().state;
     AppGlobalValue.accessToken = userState.accessToken;
     AppGlobalValue.refreshToken = userState.refreshToken;
@@ -108,6 +112,12 @@ class _SplashPageState extends State<SplashPage> {
           hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
         ),
       );
+      return;
+    }
+
+    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
+    if (shouldSkipOnboardingByRemoteConfig(onboardingConfig)) {
+      _skipOnboardingToRegister();
       return;
     }
 
@@ -159,7 +169,18 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _goOnboardingEntryByFlowConfig() {
+    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
+    if (shouldSkipOnboardingByRemoteConfig(onboardingConfig)) {
+      _skipOnboardingToRegister();
+      return;
+    }
+
     OnboardV2Route().go(context);
+  }
+
+  void _skipOnboardingToRegister() {
+    context.read<UserCubit>().startFirstTimeRegisterFlow();
+    _goToRegister(showPaywallAfterAuth: true);
   }
 
   void _goToRegister({required bool showPaywallAfterAuth}) {
@@ -247,4 +268,9 @@ bool shouldShowRegisterPaywallAfterAuth({
   required bool hasPendingFirstTimePaywallAfterAuth,
 }) {
   return hasRecognizedDevice || hasPendingFirstTimePaywallAfterAuth;
+}
+
+@visibleForTesting
+bool shouldSkipOnboardingByRemoteConfig(OnboardingConfigEntity config) {
+  return config.isDisabled;
 }

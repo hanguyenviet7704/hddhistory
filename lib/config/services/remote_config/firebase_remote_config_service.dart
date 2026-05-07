@@ -24,6 +24,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
           'finishOptionalKp': true,
         }),
         RemoteConfigKey.onboardingConfig: jsonEncode({
+          'enable': true,
           'flowType': OnboardingFlowType.normal.name,
         }),
         RemoteConfigKey.paywallConfig: jsonEncode({
