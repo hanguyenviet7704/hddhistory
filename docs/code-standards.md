@@ -1,6 +1,6 @@
 # Code Standards
 
-**Last Updated:** 2026-03-16  
+**Last Updated:** 2026-05-07
 **Scope:** Dart/Flutter source in this repository
 
 ## 1. Architecture Rules
@@ -40,7 +40,7 @@ Widget/Page -> Cubit/Bloc -> UseCase -> Repository Interface -> Repository Impl 
 ## 4. Naming Conventions
 ### Files and directories
 - Dart files: `snake_case.dart`.
-- Feature folders: existing path names are canonical and must be preserved (`achievenment`, `onboard_branching`, etc.).
+- Feature folders: existing path names are canonical and must be preserved (`achievenment`, `onboard_branching`, `onboard_v2`, `output_practice`, etc.).
 
 ### Types and members
 - Classes/enums/types: PascalCase.
@@ -173,6 +173,7 @@ Update docs when any of the following change:
 Minimum docs to review after technical changes:
 - `docs/codebase-summary.md`
 - `docs/system-architecture.md`
+- `docs/project-roadmap.md`
 - `docs/deployment-guide.md`
 - `docs/api-integration-guide.md`
 - `docs/gitlab-cicd-setup-guide.md`

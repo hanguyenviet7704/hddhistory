@@ -1,27 +1,21 @@
 # Codebase Summary
 
-**Last Updated:** 2026-05-05
-**Source Inputs:** `repomix-output.xml` (refreshed 2026-05-05) + direct repository verification
+**Last Updated:** 2026-05-07
+**Source Inputs:** direct repository verification with `find`, `wc`, and `rg`
 
 ## 1. Snapshot Metrics
-### Repomix package metrics
-- Total packed files: **1,415**
-- Total tokens: **1,190,674**
-- Total chars: **5,169,602**
-- Security-sensitive files excluded from output: **3 suspicious** and **3 binary**
-
-### Dart metrics (live repository)
-- Dart files in `lib/`: **1,071**
-- Dart LOC in `lib/`: **174,292**
-- Dart files in `test/`: **99**
-- Dart LOC in `test/`: **12,509**
+### Dart metrics (live repository, generated files included)
+- Dart files in `lib/`: **1,073**
+- Dart LOC in `lib/`: **175,430**
+- Dart files in `test/`: **107**
+- Dart LOC in `test/`: **13,947**
 
 ### Major app layers
 | Path | Dart files | Dart LOC |
 | --- | ---: | ---: |
-| `lib/config` | 100 | 20,877 |
+| `lib/config` | 100 | 21,022 |
 | `lib/core` | 103 | 13,191 |
-| `lib/src` | 862 | 140,082 |
+| `lib/src` | 864 | 141,075 |
 
 ## 2. Repository Structure (High-Level)
 ```text
@@ -45,20 +39,20 @@ meup/
 | Module | Dart files | Dart LOC | Notes |
 | --- | ---: | ---: | --- |
 | `achievenment` | 15 | 2,268 | Spelling matches codebase path |
-| `auth` | 48 | 6,158 | Auth/session lifecycle |
-| `common` | 21 | 2,576 | Shared state/pages/widgets |
+| `auth` | 48 | 6,157 | Auth/session lifecycle |
+| `common` | 21 | 2,596 | Shared state/pages/widgets |
 | `course` | 83 | 13,119 | Course, roadmap, course lessons, and completed-level additional-content request UI |
 | `data_collect` | 45 | 4,393 | Intake/onboarding data collection |
 | `feedback` | 29 | 4,684 | User feedback flow |
-| `home` | 18 | 2,216 | Dashboard/skillset entry + streak chip trigger |
+| `home` | 18 | 2,225 | Dashboard/skillset entry + streak chip trigger |
 | `learning_streak` | 21 | 2,581 | Home streak popup + shared completion streak success gate |
 | `lesson` | 158 | 30,987 | Largest module: learning/exercise runtime |
 | `monetization` | 38 | 5,989 | Products, purchase, verification |
-| `onboard` | 38 | 5,779 | Intro/onboarding flow |
+| `onboard` | 38 | 5,807 | Intro/onboarding flow |
 | `onboard_branching` | 44 | 9,828 | Remote-config controlled branching onboarding flow with fallback engine and course handoff |
-| `onboard_v2` | 38 | 3,563 | Seven-step onboarding flow with notification gate and course handoff |
+| `onboard_v2` | 40 | 4,487 | Seven-step onboarding flow with notification gate and course handoff |
 | `output_practice` | 45 | 8,055 | Course-shell output practice conversation flow, intro sheet, socket room, and retryable chat history |
-| `profile` | 35 | 4,880 | User profile and upload |
+| `profile` | 35 | 4,893 | User profile and upload |
 | `progress` | 41 | 9,867 | Progress, achievement progress, and completed-level additional-content request persistence |
 | `roleplay` | 70 | 11,357 | Roleplay + AI feedback |
 | `setting` | 17 | 2,202 | Theme/language/settings |

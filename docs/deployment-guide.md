@@ -1,11 +1,12 @@
 # Deployment Guide
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-05-07
 **Scope:** local builds, CI builds, distribution readiness
 
 ## 1. Runtime and Platform Baseline
 - Flavors: `dev`, `stg`, `prod`.
 - Entry points: `lib/main_dev.dart`, `lib/main_stg.dart`, `lib/main_prod.dart`.
+- Flavor builds use `--dart-define-from-file`; keep real values in local/CI secret sources.
 - Dart SDK: `>=3.11.0 <4.0.0`.
 - iOS minimum target: `15.0`.
 

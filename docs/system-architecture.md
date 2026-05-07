@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-05-05
+**Last Updated:** 2026-05-07
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -65,6 +65,8 @@ Widget/Page
 - Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
+Current module count: **19**.
+
 Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
 
 ## 4. State and Use Case Execution
