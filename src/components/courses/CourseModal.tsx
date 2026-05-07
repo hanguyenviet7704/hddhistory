@@ -46,8 +46,9 @@ export default function CourseModal({
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<CourseStatus>(CourseStatus.DRAFT);
   const [prices, setPrices] = useState<IPrice[]>([]);
-  const [onboardingSymptom, setOnboardingSymptom] =
-    useState<OnboardingSymptom | "">("");
+  const [onboardingSymptoms, setOnboardingSymptoms] = useState<
+    OnboardingSymptom[]
+  >([]);
 
   // State cho Skillset
   const [skillsetId, setSkillsetId] = useState("");
@@ -67,7 +68,7 @@ export default function CourseModal({
       setImage(initial.image ?? "");
       setStatus(initial.status);
       setPrices(initial.prices ?? []);
-      setOnboardingSymptom(initial.onboardingSymptom ?? "");
+      setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
       setSkillsetId(initial.skillsetId ?? "");
       setSelectedSkillsetLabel("");
     } else {
@@ -76,7 +77,7 @@ export default function CourseModal({
       setImage("");
       setStatus(CourseStatus.DRAFT);
       setPrices([]);
-      setOnboardingSymptom("");
+      setOnboardingSymptoms([]);
       setSkillsetId("");
       setSkillsetQuery("");
       setSelectedSkillsetLabel("");
@@ -148,7 +149,7 @@ export default function CourseModal({
       status,
       prices: prices,
       skillsetId, // Add skillsetId to payload
-      onboardingSymptom: onboardingSymptom || null,
+      onboardingSymptoms,
     };
 
     // Only include description if it has values
@@ -213,6 +214,14 @@ export default function CourseModal({
       .split("_")
       .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
       .join(" ");
+
+  const handleToggleOnboardingSymptom = (value: OnboardingSymptom) => {
+    setOnboardingSymptoms((prev) =>
+      prev.includes(value)
+        ? prev.filter((symptom) => symptom !== value)
+        : [...prev, value]
+    );
+  };
 
   const handleSkillsetInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -399,43 +408,39 @@ export default function CourseModal({
                 </div>
               </div>
 
-              {/* Onboarding Symptom */}
+              {/* Onboarding Symptoms */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Onboarding Symptom
+                  Onboarding Symptoms
                 </label>
-                <div className="relative">
-                  <select
-                    value={onboardingSymptom}
-                    onChange={(e) =>
-                      setOnboardingSymptom(
-                        e.target.value as OnboardingSymptom | ""
-                      )
-                    }
-                    className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
-                  >
-                    <option value="">None</option>
+                <div className="border border-gray-300 rounded-lg p-3 max-h-60 overflow-y-auto bg-white">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     {Object.values(OnboardingSymptom).map((symptom) => (
-                      <option key={symptom} value={symptom}>
-                        {formatOnboardingSymptomLabel(symptom)}
-                      </option>
+                      <label
+                        key={symptom}
+                        className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={onboardingSymptoms.includes(symptom)}
+                          onChange={() =>
+                            handleToggleOnboardingSymptom(symptom)
+                          }
+                          className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span>{formatOnboardingSymptomLabel(symptom)}</span>
+                      </label>
                     ))}
-                  </select>
-                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
-                    <svg
-                      className="w-5 h-5 text-gray-400"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 9l-7 7-7-7"
-                      />
-                    </svg>
                   </div>
+                  {onboardingSymptoms.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setOnboardingSymptoms([])}
+                      className="mt-3 text-sm font-medium text-gray-500 hover:text-gray-700"
+                    >
+                      Clear selection
+                    </button>
+                  )}
                 </div>
               </div>
 

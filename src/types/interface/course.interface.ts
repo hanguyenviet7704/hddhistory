@@ -20,7 +20,7 @@ export interface ICourse {
   status: CourseStatus;
   prices?: IPrice[];
   numberOfLesson?: number;
-  onboardingSymptom?: OnboardingSymptom | null;
+  onboardingSymptoms?: OnboardingSymptom[];
 }
 
 export interface CoursePayload {
@@ -31,7 +31,7 @@ export interface CoursePayload {
   status: CourseStatus;
   prices?: IPrice[];
   numberOfLesson?: number;
-  onboardingSymptom?: OnboardingSymptom | null;
+  onboardingSymptoms?: OnboardingSymptom[];
 }
 
 export interface ICourseBrief {
