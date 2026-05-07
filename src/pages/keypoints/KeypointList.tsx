@@ -15,6 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { getTranslationValue } from "../../utils/translation";
 import { formatEstimateCompleteTimeLabel } from "../../utils/estimate-complete-time";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
+import ExcelImportButton from "../../components/imports/ExcelImportButton";
 import { useNotification } from "../../utils/hooks/useNotification";
 
 const KeypointList: React.FC = () => {
@@ -165,7 +166,6 @@ const KeypointList: React.FC = () => {
             className="border rounded-lg px-3 py-2 w-64 focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
 
-          {/* Nút tạo */}
           <button
             onClick={() => {
               setSelected(null);
@@ -176,6 +176,17 @@ const KeypointList: React.FC = () => {
             <PlusIcon className="w-4 h-4 mr-2" />
             New Keypoint
           </button>
+
+          <ExcelImportButton
+            label="Import"
+            fileName="keypoint-import-result.xlsx"
+            importExcel={keypointService.importExcel}
+            onSuccess={() => {
+              showSuccess("Import keypoints successfully");
+              resetAndFetch();
+            }}
+            onError={showError}
+          />
         </div>
       </div>
 

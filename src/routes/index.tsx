@@ -34,6 +34,8 @@ import StatisticsPage from "../pages/statistics/Statistics";
 import VideoList from "../pages/video/VideoList";
 import VideoCreate from "../pages/video/VideoCreate";
 import VideoDetail from "../pages/video/VideoDetail";
+import DriveUploadPage from "../pages/drive-upload/DriveUploadPage";
+import CourseImportJobDetail from "../pages/imports/CourseImportJobDetail";
 
 export default function AppRouter() {
   return (
@@ -45,6 +47,8 @@ export default function AppRouter() {
 
           {/* Protected routes */}
           <Route element={<ProtectedRoute />}>
+            <Route path="/drive-upload" element={<DriveUploadPage />} />
+
             <Route path="/" element={<Layout />}>
               {/* Redirect from "/" to "/course" */}
               <Route index element={<Navigate to="/course" replace />} />
@@ -101,6 +105,10 @@ export default function AppRouter() {
               <Route path="statistics" element={<StatisticsPage />} />
 
               <Route path="payment" element={<PaymentDashboard />} />
+              <Route
+                path="course-import-jobs/:jobId"
+                element={<CourseImportJobDetail />}
+              />
             </Route>
           </Route>
         </Routes>

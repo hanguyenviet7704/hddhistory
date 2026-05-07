@@ -31,4 +31,32 @@ export const learningItemService = {
   async remove(id: string) {
     return axiosClient.delete(`/courses-learning-items/${id}`);
   },
+
+  async importTheories(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axiosClient.post(`/courses-learning-items/import-theories`, formData, {
+      responseType: "blob",
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+  },
+
+  async importExercises(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+
+    return axiosClient.post(
+      `/courses-learning-items/import-exercises`,
+      formData,
+      {
+        responseType: "blob",
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+  },
 };
