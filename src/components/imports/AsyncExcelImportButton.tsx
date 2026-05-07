@@ -31,8 +31,7 @@ const AsyncExcelImportButton: React.FC<AsyncExcelImportButtonProps> = ({
     setLoading(true);
     try {
       const response = await courseImportJobService.importLearningItems(
-        file,
-        target
+        file
       );
       const job = response.data || response;
       navigate(`/course-import-jobs/${job._id}?target=${target}`);

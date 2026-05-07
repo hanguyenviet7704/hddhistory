@@ -21,10 +21,9 @@ export interface CourseImportJob {
 export type LearningItemImportTarget = "theories" | "exercises";
 
 export const courseImportJobService = {
-  async importLearningItems(file: File, target: LearningItemImportTarget) {
+  async importLearningItems(file: File) {
     const formData = new FormData();
     formData.append("file", file);
-    formData.append("target", target);
 
     const res = await axiosClient.post(
       "/course-import-jobs/learning-items",

@@ -11,7 +11,8 @@ import {
   IPrice,
   CoursePayload,
 } from "../../types/interface/course.interface";
-import { CourseLevel, CourseStatus } from "../../types/enum/course.enum";
+import { OnboardingSymptom } from "../../types/enum/common.enum";
+import { CourseStatus } from "../../types/enum/course.enum";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,8 +45,9 @@ export default function CourseModal({
   const [description, setDescription] = useState<ITranslation>({});
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<CourseStatus>(CourseStatus.DRAFT);
-  const [level, setLevel] = useState<CourseLevel>(CourseLevel.LEVEL1);
   const [prices, setPrices] = useState<IPrice[]>([]);
+  const [onboardingSymptom, setOnboardingSymptom] =
+    useState<OnboardingSymptom | "">("");
 
   // State cho Skillset
   const [skillsetId, setSkillsetId] = useState("");
@@ -65,6 +67,7 @@ export default function CourseModal({
       setImage(initial.image ?? "");
       setStatus(initial.status);
       setPrices(initial.prices ?? []);
+      setOnboardingSymptom(initial.onboardingSymptom ?? "");
       setSkillsetId(initial.skillsetId ?? "");
       setSelectedSkillsetLabel("");
     } else {
@@ -72,8 +75,8 @@ export default function CourseModal({
       setDescription({});
       setImage("");
       setStatus(CourseStatus.DRAFT);
-      setLevel(CourseLevel.LEVEL1);
       setPrices([]);
+      setOnboardingSymptom("");
       setSkillsetId("");
       setSkillsetQuery("");
       setSelectedSkillsetLabel("");
@@ -145,6 +148,7 @@ export default function CourseModal({
       status,
       prices: prices,
       skillsetId, // Add skillsetId to payload
+      onboardingSymptom: onboardingSymptom || null,
     };
 
     // Only include description if it has values
@@ -202,6 +206,13 @@ export default function CourseModal({
     setSelectedSkillsetLabel("");
     setShowSkillsetDropdown(true);
   };
+
+  const formatOnboardingSymptomLabel = (value: OnboardingSymptom) =>
+    value
+      .toLowerCase()
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
 
   const handleSkillsetInputChange = (
     e: React.ChangeEvent<HTMLInputElement>
@@ -369,6 +380,46 @@ export default function CourseModal({
                   >
                     <option value={CourseStatus.PUBLISHED}>Published</option>
                     <option value={CourseStatus.DRAFT}>Draft</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
+                    <svg
+                      className="w-5 h-5 text-gray-400"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M19 9l-7 7-7-7"
+                      />
+                    </svg>
+                  </div>
+                </div>
+              </div>
+
+              {/* Onboarding Symptom */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Onboarding Symptom
+                </label>
+                <div className="relative">
+                  <select
+                    value={onboardingSymptom}
+                    onChange={(e) =>
+                      setOnboardingSymptom(
+                        e.target.value as OnboardingSymptom | ""
+                      )
+                    }
+                    className="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition appearance-none bg-white"
+                  >
+                    <option value="">None</option>
+                    {Object.values(OnboardingSymptom).map((symptom) => (
+                      <option key={symptom} value={symptom}>
+                        {formatOnboardingSymptomLabel(symptom)}
+                      </option>
+                    ))}
                   </select>
                   <div className="absolute inset-y-0 right-0 flex items-center px-2 pointer-events-none">
                     <svg
