@@ -53,8 +53,8 @@ class AppService {
     runZonedGuarded(
       () async {
         WidgetsFlutterBinding.ensureInitialized();
-        _configEnvironment();
-        _configUIResponsible();
+        await _configEnvironment();
+        await _configUIResponsible();
         _configLoading();
         _configErrorHandle();
         _configHelper();
@@ -72,7 +72,7 @@ class AppService {
     await AppDI.resetDependencies();
   }
 
-  void _configEnvironment() async {
+  Future<void> _configEnvironment() async {
     await AppDI.initializeDependencies();
     AppConfig.instance.init();
   }
@@ -97,7 +97,7 @@ class AppService {
     // Initialize app event services early - they now handle tracking permission internally
     appEventService.initialize();
 
-    await remoteConfigService.initialize();
+    unawaited(remoteConfigService.initialize());
     // AppDI.source.get<CacheService>(instanceName: DIKey.cacheService).initialize();
     // await graphql.initHiveForFlutter();
     // DeepLinkService.init();
@@ -107,11 +107,11 @@ class AppService {
     // AdMobService.init();
   }
 
-  Future<void> _configHelper() async {
+  void _configHelper() {
     // await CameraService.initCameras();
   }
 
-  void _configUIResponsible() async {
+  Future<void> _configUIResponsible() async {
     await ScreenUtil.ensureScreenSize();
 
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp, DeviceOrientation.portraitDown]);

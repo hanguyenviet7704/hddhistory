@@ -8,14 +8,17 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  late final Future<bool> _shouldForceUpdate;
+
   @override
   void initState() {
+    _shouldForceUpdate = _resolveShouldForceUpdate();
     _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
     _setTrackingUser();
     _getAppData();
-    _checkForUpdate();
+    WidgetsBinding.instance.addPostFrameCallback(_initScreen);
     super.initState();
   }
 
@@ -42,21 +45,12 @@ class _SplashPageState extends State<SplashPage> {
     context.read<UserCubit>().setIsAppEventConfigured(false);
   }
 
-  Future<void> _checkForUpdate() async {
+  Future<bool> _resolveShouldForceUpdate() async {
     try {
-      final shouldUpdate = await AppService.instance.remoteConfigService.shouldForceUpdate();
-      if (!mounted) return;
-
-      if (!shouldUpdate) {
-        WidgetsBinding.instance.addPostFrameCallback(_initScreen);
-        return;
-      }
-
-      _showUpdateDialog();
+      return await AppService.instance.remoteConfigService.shouldForceUpdate();
     } catch (e) {
       LogDev.error('Error checking for update: $e');
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback(_initScreen);
+      return false;
     }
   }
 
@@ -81,13 +75,21 @@ class _SplashPageState extends State<SplashPage> {
   Future<void> _initScreen(_) async {
     try {
       if (!mounted) return;
+      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 1500));
+      final shouldUpdate = await _shouldForceUpdate;
+      if (!mounted) return;
+      if (shouldUpdate) {
+        _showUpdateDialog();
+        return;
+      }
+
       final deeplinkCubit = context.read<DeeplinkCubit>();
       final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
       if (!mounted || hasHandledPendingLink) return;
 
       final hasHandledInitialLink = await deeplinkCubit.initialLink();
       if (!mounted || hasHandledInitialLink) return;
-      await Future<void>.delayed(const Duration(milliseconds: 1500));
+      await splashDelay;
       if (!mounted) return;
 
       if (AppGlobalValue.accessToken.isEmpty) {
