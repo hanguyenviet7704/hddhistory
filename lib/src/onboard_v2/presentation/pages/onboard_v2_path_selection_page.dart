@@ -42,7 +42,7 @@ class OnboardV2PathSelectionPage extends StatelessWidget {
               padding: EdgeInsets.only(bottom: 12.h),
               child: OnboardV2SelectableOptionRow(
                 label: path.title,
-                iconPath: selected ? path.image : path.imageDisable,
+                iconPath: path.image,
                 selected: selected,
                 onTap: () => cubit.togglePath(path),
               ),

@@ -135,6 +135,7 @@ void main() {
             CourseEntity(
               id: 'course_1',
               title: BaseMultiLanguage(en: 'Focus Basics'),
+              description: BaseMultiLanguage(en: 'A practical course for building steady routines and making useful progress every day.'),
               numberOfLesson: 1,
             ),
             CourseEntity(
@@ -150,6 +151,7 @@ void main() {
     await tester.pumpWidget(_buildCoursePage(cubit));
     await tester.pumpAndSettle();
 
+    expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('onboard_v2_course_picker_page_view')), findsOneWidget);
     expect(find.text('Focus Basics'), findsOneWidget);
 

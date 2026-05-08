@@ -14,7 +14,7 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
   @override
   void initState() {
     super.initState();
-    _courseController = PageController(viewportFraction: 0.72);
+    _courseController = PageController(viewportFraction: _p8CourseViewportFraction);
   }
 
   @override
@@ -30,23 +30,22 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
     return PopScope(
       canPop: false,
       child: OnboardV2ScreenShell(
-        backgroundColor: AppCustomColor.backgroundBrandSoft,
+        backgroundColor: AppCustomColor.backgroundWhite,
         cta: _buildCta(state, onboardingL10n),
         child: Column(
           children: [
-            40.verticalSpace,
+            12.verticalSpace,
             AppText(
               onboardingL10n.onboardingV2P8Eyebrow,
               textAlign: TextAlign.center,
-              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w700),
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textPrimary.op(0.5), height: 1.75),
             ),
-            8.verticalSpace,
             AppText(
               onboardingL10n.onboardingV2P8Title,
               textAlign: TextAlign.center,
-              style: AppStyle.text28.copyWith(color: AppCustomColor.textBrand, fontWeight: FontWeight.w800, height: 1.3),
+              style: AppStyle.text20.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700, height: 1.5),
             ),
-            32.verticalSpace,
+            24.verticalSpace,
             if (state.courseStatus == OnboardV2CourseStatus.loading)
               SizedBox(
                 height: 340.w,
@@ -149,6 +148,9 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
   }
 }
 
+const _p8CourseViewportFraction = 0.82;
+const _p8SideCourseCardScale = 220 / 260;
+
 class _CourseCarousel extends StatelessWidget {
   const _CourseCarousel({required this.controller, required this.state});
 
@@ -158,10 +160,13 @@ class _CourseCarousel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cubit = context.read<OnboardV2Cubit>();
+    final course = state.currentCourse;
     return Column(
       children: [
+        const _BestMatchedLabel(),
+        12.verticalSpace,
         SizedBox(
-          height: 380.w,
+          height: 260.w,
           child: PageView.builder(
             key: const Key('onboard_v2_course_picker_page_view'),
             controller: controller,
@@ -174,7 +179,7 @@ class _CourseCarousel extends StatelessWidget {
                 builder: (context, child) {
                   final page = controller.hasClients ? (controller.page ?? controller.initialPage.toDouble()) : state.currentCourseIndex.toDouble();
                   final distance = (page - index).abs().clamp(0.0, 1.0);
-                  final scale = 1.0 - (distance * 0.12);
+                  final scale = 1.0 - (distance * (1.0 - _p8SideCourseCardScale));
                   return Transform.scale(scale: scale, child: child);
                 },
                 child: OnboardV2CoursePickerCard(course: course),
@@ -182,16 +187,16 @@ class _CourseCarousel extends StatelessWidget {
             },
           ),
         ),
-        16.verticalSpace,
+        12.verticalSpace,
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: List.generate(state.recommendedCourses.length, (index) {
             final active = index == state.currentCourseIndex;
             return AnimatedContainer(
               duration: const Duration(milliseconds: 180),
-              width: active ? 18.w : 8.w,
+              width: 8.w,
               height: 8.w,
-              margin: EdgeInsets.symmetric(horizontal: 4.w),
+              margin: EdgeInsets.symmetric(horizontal: 6.w),
               decoration: BoxDecoration(
                 color: active ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
                 borderRadius: BorderRadius.circular(100.r),
@@ -199,7 +204,73 @@ class _CourseCarousel extends StatelessWidget {
             );
           }),
         ),
+        24.verticalSpace,
+        if (course != null) _CurrentCourseText(course: course),
       ],
+    );
+  }
+}
+
+class _BestMatchedLabel extends StatelessWidget {
+  const _BestMatchedLabel();
+
+  @override
+  Widget build(BuildContext context) {
+    final onboardingL10n = context.l10n.onboarding;
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _labelStar(),
+        8.horizontalSpace,
+        AppText(
+          onboardingL10n.onboardingV2P8Label.toUpperCase(),
+          textAlign: TextAlign.center,
+          style: AppStyle.text12.copyWith(color: AppCustomColor.brandPrimary, fontWeight: FontWeight.w700, height: 1.75),
+        ),
+        8.horizontalSpace,
+        _labelStar(),
+      ],
+    );
+  }
+
+  Widget _labelStar() {
+    return Icon(Icons.star_rounded, size: 8.w, color: AppCustomColor.brandPrimary.op(0.35));
+  }
+}
+
+class _CurrentCourseText extends StatelessWidget {
+  const _CurrentCourseText({required this.course});
+
+  final CourseEntity course;
+
+  @override
+  Widget build(BuildContext context) {
+    final onboardingL10n = context.l10n.onboarding;
+    final title = course.title.text.trim().isNotEmpty ? course.title.text.trim() : onboardingL10n.onboardingV2P8CourseTitleFallback;
+    final description = course.description.text.trim();
+    return SizedBox(
+      width: double.infinity,
+      child: Column(
+        children: [
+          AppText(
+            title,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: AppStyle.text24.copyWith(color: AppCustomColor.textPrimary, fontWeight: FontWeight.w700, height: 1.5),
+          ),
+          if (description.isNotEmpty) ...[
+            4.verticalSpace,
+            AppText(
+              description,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyle.text14.copyWith(color: AppCustomColor.textSecondary, height: 1.75),
+            ),
+          ],
+        ],
+      ),
     );
   }
 }
