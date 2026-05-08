@@ -124,6 +124,7 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 ### Splash and auth-entry runtime flow
 - `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
 - In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; ordinary first-time users without a recognized device go to `OnboardV2Route`, while recognized devices continue to the notification gate/register path.
+- Authenticated startup still honors `UserCubit.isUserPassOnboarding`: a persisted access token does not bypass unfinished onboarding, and home data initialization waits until onboarding is cleared.
 - `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
 - Recognized devices (`userByDeviceId.id.isNotEmpty`) skip `OnboardV2Route` and hand off through `NotificationRequestRoute(showPaywallAfterAuth: true)` before `RegisterRoute(showPaywallAfterAuth: true)`.
 - Unrecognized devices or safe lookup misses go to `OnboardV2Route` without surfacing a splash auth error.

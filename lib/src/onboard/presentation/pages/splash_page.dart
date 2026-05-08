@@ -68,7 +68,13 @@ class _SplashPageState extends State<SplashPage> {
     context.read<IapCubit>().init();
     context.read<PageCubit>().setIsPassSplashScreen(true);
 
-    if (AppGlobalValue.accessToken.isEmpty) return;
+    if (!shouldInitializeAuthenticatedHomeData(
+      accessToken: AppGlobalValue.accessToken,
+      needsOnboarding: userState.isUserPassOnboarding,
+    )) {
+      return;
+    }
+
     AppDI.injector.get<HomeCubit>().initializeData();
   }
 
@@ -142,21 +148,36 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _routeAuthenticatedEntry() {
-    final roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
-    if (roadmapId.isEmpty) {
-      CourseRoute().go(context);
-      return;
+    final destination = resolveAuthenticatedSplashDestination(
+      needsOnboarding: context.read<UserCubit>().state.isUserPassOnboarding,
+      hasRoadmap: AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id.isNotEmpty,
+    );
+
+    switch (destination) {
+      case SplashAuthenticatedDestination.onboardingEntry:
+        _goOnboardingEntryByFlowConfig();
+        return;
+      case SplashAuthenticatedDestination.course:
+        CourseRoute().go(context);
+        return;
+      case SplashAuthenticatedDestination.home:
+        HomeRoute().go(context);
+        return;
     }
-    HomeRoute().go(context);
   }
 
   Future<void> _routeFallbackAfterInitError() async {
+    final userCubit = context.read<UserCubit>();
+    if (userCubit.state.isUserPassOnboarding) {
+      _goOnboardingEntryByFlowConfig();
+      return;
+    }
+
     if (AppGlobalValue.accessToken.isNotEmpty) {
       HomeRoute().go(context);
       return;
     }
 
-    final userCubit = context.read<UserCubit>();
     if (!userCubit.state.isUserPassOnboarding) {
       _goToRegister(
         showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
@@ -275,4 +296,28 @@ bool shouldShowRegisterPaywallAfterAuth({
 @visibleForTesting
 bool shouldSkipOnboardingByRemoteConfig(OnboardingConfigEntity config) {
   return config.isDisabled;
+}
+
+enum SplashAuthenticatedDestination {
+  onboardingEntry,
+  course,
+  home,
+}
+
+@visibleForTesting
+SplashAuthenticatedDestination resolveAuthenticatedSplashDestination({
+  required bool needsOnboarding,
+  required bool hasRoadmap,
+}) {
+  if (needsOnboarding) return SplashAuthenticatedDestination.onboardingEntry;
+  if (hasRoadmap) return SplashAuthenticatedDestination.home;
+  return SplashAuthenticatedDestination.course;
+}
+
+@visibleForTesting
+bool shouldInitializeAuthenticatedHomeData({
+  required String accessToken,
+  required bool needsOnboarding,
+}) {
+  return accessToken.isNotEmpty && !needsOnboarding;
 }

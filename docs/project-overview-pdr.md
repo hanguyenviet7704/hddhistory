@@ -180,7 +180,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
-| 2026-05-08 | Updated Onboard V2 requirements for the eight-step path/symptom/course-picker flow and repeated symptom course filtering. |
+| 2026-05-08 | Updated Onboard V2 requirements for the eight-step path/symptom/course-picker flow, repeated symptom course filtering, and splash protection for authenticated unfinished onboarding. |
 | 2026-05-07 | Synced code-verified module scope to 19 modules, added Onboard V2 requirements, and aligned video-lesson observability wording with shipped overlays. |
 | 2026-04-23 | Added completed-level additional-content request requirements for roadmap footer eligibility, yes/no persistence, and centered request popup behavior. |
 | 2026-04-13 | Added dual-mode lesson requirements for roadmap popup branching, single-route read/listen entry, route-session audio playback, shared completion handoff, and no-audio fallback behavior. |
