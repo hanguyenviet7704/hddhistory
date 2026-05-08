@@ -5,7 +5,7 @@ import { RootState } from "../../store";
 import { learningItemService } from "../../services/learningItemService";
 import { keypointService } from "../../services/keypointService";
 import { LearningItemType } from "../../types/enum/learningItem.enum";
-import { PlusIcon } from "lucide-react";
+import { PlusIcon, Trash2Icon } from "lucide-react";
 import { Combobox } from "@headlessui/react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useEffect, useRef, useState, useCallback } from "react";
@@ -14,10 +14,11 @@ import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
 import AsyncExcelImportButton from "../../components/imports/AsyncExcelImportButton";
 import { useNotification } from "../../utils/hooks/useNotification";
+import LearningItemConfirm from "../../components/learning-item/LearningItemConfirm";
 
 const TheoryList: React.FC = () => {
   const navigate = useNavigate();
-  const { showError } = useNotification();
+  const { showError, showSuccess } = useNotification();
   const [theories, setTheories] = useState<ILearningItem[]>([]);
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,6 +28,10 @@ const TheoryList: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedKeypoint, setSelectedKeypoint] = useState<any>(null);
   const [keypointQuery, setKeypointQuery] = useState("");
+  const [isDeleteMode, setIsDeleteMode] = useState(false);
+  const [selectedTheoryIds, setSelectedTheoryIds] = useState<string[]>([]);
+  const [confirmBulkDelete, setConfirmBulkDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const debounceRef = useRef<number | undefined>(undefined);
   const observer = useRef<IntersectionObserver | null>(null);
@@ -95,6 +100,12 @@ const TheoryList: React.FC = () => {
     fetchTheories(searchTerm.trim(), selectedKeypoint?._id, 1, false);
   }, [selectedKeypoint]);
 
+  useEffect(() => {
+    setSelectedTheoryIds((prev) =>
+      prev.filter((id) => theories.some((theory) => theory._id === id))
+    );
+  }, [theories]);
+
   // debounce search theories
   useEffect(() => {
     window.clearTimeout(debounceRef.current);
@@ -132,6 +143,59 @@ const TheoryList: React.FC = () => {
     },
     [loading, loadingMore, hasMore, page, searchTerm, selectedKeypoint]
   );
+
+  const selectedCount = selectedTheoryIds.length;
+  const visibleTheoryIds = theories.map((theory) => theory._id);
+  const allVisibleSelected =
+    visibleTheoryIds.length > 0 &&
+    visibleTheoryIds.every((id) => selectedTheoryIds.includes(id));
+
+  const toggleTheorySelection = (id: string) => {
+    setSelectedTheoryIds((prev) =>
+      prev.includes(id) ? prev.filter((itemId) => itemId !== id) : [...prev, id]
+    );
+  };
+
+  const toggleAllVisibleTheories = () => {
+    if (allVisibleSelected) {
+      setSelectedTheoryIds((prev) =>
+        prev.filter((id) => !visibleTheoryIds.includes(id))
+      );
+      return;
+    }
+
+    setSelectedTheoryIds((prev) =>
+      Array.from(new Set([...prev, ...visibleTheoryIds]))
+    );
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTheoryIds.length === 0) return;
+
+    setDeleting(true);
+    setConfirmBulkDelete(false);
+    try {
+      await Promise.all(
+        selectedTheoryIds.map((id) => learningItemService.remove(id))
+      );
+      setTheories((prev) =>
+        prev.filter((theory) => !selectedTheoryIds.includes(theory._id))
+      );
+      showSuccess(`Deleted ${selectedTheoryIds.length} theories successfully`);
+      setSelectedTheoryIds([]);
+      setIsDeleteMode(false);
+    } catch (err) {
+      console.error("Failed to delete selected theories:", err);
+      showError("Failed to delete selected theories");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  const cancelDeleteMode = () => {
+    setIsDeleteMode(false);
+    setSelectedTheoryIds([]);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 p-6">
@@ -249,11 +313,49 @@ const TheoryList: React.FC = () => {
           </div>
         ) : (
           <>
+            {isDeleteMode && (
+              <div className="mb-4 flex flex-col gap-3 rounded-lg border border-gray-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <label className="inline-flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <input
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleAllVisibleTheories}
+                    className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                  />
+                  Select all visible theories
+                </label>
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="text-sm text-gray-500">
+                    {selectedCount} selected
+                  </span>
+                  <button
+                    type="button"
+                    onClick={cancelDeleteMode}
+                    disabled={deleting}
+                    className="rounded-lg border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setConfirmBulkDelete(true)}
+                    disabled={deleting || selectedCount === 0}
+                    className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <Trash2Icon className="h-4 w-4" />
+                    Delete selected
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <AnimatePresence>
                 {theories.map((theory, index) => {
                   // Add ref to the last element
                   const isLast = index === theories.length - 1;
+                  const isSelected = selectedTheoryIds.includes(theory._id);
                   return (
                     <motion.div
                       key={theory._id}
@@ -262,9 +364,35 @@ const TheoryList: React.FC = () => {
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, scale: 0.9 }}
                       transition={{ duration: 0.3 }}
-                      className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300 group flex flex-col h-full cursor-pointer"
-                      onClick={() => navigate(`/theory/${theory._id}`)}
+                      className={`relative bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition duration-300 group flex flex-col h-full cursor-pointer ${
+                        isDeleteMode && isSelected ? "ring-2 ring-red-500" : ""
+                      }`}
+                      onClick={() => {
+                        if (isDeleteMode) {
+                          toggleTheorySelection(theory._id);
+                          return;
+                        }
+                        navigate(`/theory/${theory._id}`);
+                      }}
                     >
+                      {isDeleteMode && (
+                        <label
+                          className="absolute right-3 top-3 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-white/95 shadow-md"
+                          onClick={(event) => event.stopPropagation()}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={isSelected}
+                            onChange={() => toggleTheorySelection(theory._id)}
+                            className="h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                            aria-label={`Select ${getTranslationValue(
+                              theory.title,
+                              lang
+                            )}`}
+                          />
+                        </label>
+                      )}
+
                       {/* Image */}
                       {theory.image && (
                         <div className="relative h-48 overflow-hidden flex-shrink-0">
@@ -346,6 +474,35 @@ const TheoryList: React.FC = () => {
           </>
         )}
       </div>
+
+      <button
+        type="button"
+        onClick={() => {
+          if (isDeleteMode) {
+            cancelDeleteMode();
+            return;
+          }
+          setIsDeleteMode(true);
+        }}
+        title={isDeleteMode ? "Cancel quick delete" : "Quick delete"}
+        aria-label={isDeleteMode ? "Cancel quick delete" : "Quick delete"}
+        className={`fixed bottom-6 left-1/2 z-40 inline-flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full border shadow-lg transition ${
+          isDeleteMode
+            ? "border-red-500 bg-red-600 text-white hover:bg-red-700"
+            : "border-gray-200 bg-white text-red-600 hover:bg-red-50"
+        }`}
+      >
+        <Trash2Icon className="h-5 w-5" />
+      </button>
+
+      {confirmBulkDelete && (
+        <LearningItemConfirm
+          title="Confirm Bulk Delete"
+          message={`Are you sure you want to delete ${selectedCount} selected theories? This action cannot be undone.`}
+          onCancel={() => setConfirmBulkDelete(false)}
+          onConfirm={handleBulkDelete}
+        />
+      )}
     </div>
   );
 };
