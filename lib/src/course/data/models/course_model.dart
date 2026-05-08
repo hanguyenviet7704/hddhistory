@@ -43,12 +43,21 @@ enum OnboardingPath {
   ;
 
   String get title => switch (this) {
-    feelBetter => l10n.onboarding.onboardingIntroduceMyFeelings,
-    thinkBetter => l10n.onboarding.onboardingIntroduceMyThoughts,
-    workBetter => l10n.onboarding.onboardingIntroduceBusyAllDay,
-    connectBetter => l10n.onboarding.onboardingIntroduceTalkToMany,
-    learnBetter => l10n.onboarding.onboardingIntroduceLearnFades,
-    exploreBetter => l10n.onboarding.onboardingIntroduceNothingNew,
+    feelBetter => l10n.onboarding.onboardingV2PathFeelBetter,
+    thinkBetter => l10n.onboarding.onboardingV2PathThinkBetter,
+    workBetter => l10n.onboarding.onboardingV2PathWorkBetter,
+    connectBetter => l10n.onboarding.onboardingV2PathConnectBetter,
+    learnBetter => l10n.onboarding.onboardingV2PathLearnBetter,
+    exploreBetter => l10n.onboarding.onboardingV2PathExploreBetter,
+  };
+
+  String get trackingId => switch (this) {
+    feelBetter => 'FEEL_BETTER',
+    thinkBetter => 'THINK_BETTER',
+    workBetter => 'WORK_BETTER',
+    connectBetter => 'CONNECT_BETTER',
+    learnBetter => 'LEARN_BETTER',
+    exploreBetter => 'EXPLORE_BETTER',
   };
 
   String get shortTitle => switch (this) {
@@ -157,6 +166,33 @@ enum OnboardingSymptom {
 
   @JsonValue('UNKNOWN')
   unknown,
+  ;
+
+  String get title => switch (this) {
+    motivationDisappears => l10n.onboarding.onboardingV2SymptomMotivationDisappears,
+    lifeFeelsOverwhelming => l10n.onboarding.onboardingV2SymptomLifeFeelsOverwhelming,
+    endlessScrollingFeelsEmpty => l10n.onboarding.onboardingV2SymptomEndlessScrollingFeelsEmpty,
+    overthinking => l10n.onboarding.onboardingV2SymptomOverthinking,
+    tryingToDoTooMuch => l10n.onboarding.onboardingV2SymptomTryingToDoTooMuch,
+    rushedDecisions => l10n.onboarding.onboardingV2SymptomRushedDecisions,
+    difficultyBuildingHabits => l10n.onboarding.onboardingV2SymptomDifficultyBuildingHabits,
+    timeSlipsAway => l10n.onboarding.onboardingV2SymptomTimeSlipsAway,
+    strugglingToBreakBadHabits => l10n.onboarding.onboardingV2SymptomStrugglingToBreakBadHabits,
+    anxietyAroundHardConversations => l10n.onboarding.onboardingV2SymptomAnxietyAroundHardConversations,
+    wantToListenMoreDeeply => l10n.onboarding.onboardingV2SymptomWantToListenMoreDeeply,
+    regretSayingThingsInEmotion => l10n.onboarding.onboardingV2SymptomRegretSayingThingsInEmotion,
+    learningDoesNotStick => l10n.onboarding.onboardingV2SymptomLearningDoesNotStick,
+    forgettingAfterStudying => l10n.onboarding.onboardingV2SymptomForgettingAfterStudying,
+    losingTrainOfThought => l10n.onboarding.onboardingV2SymptomLosingTrainOfThought,
+    curiousAboutBody => l10n.onboarding.onboardingV2SymptomCuriousAboutBody,
+    loveLearningFromGreatMinds => l10n.onboarding.onboardingV2SymptomLoveLearningFromGreatMinds,
+    amazedByHumanBody => l10n.onboarding.onboardingV2SymptomAmazedByHumanBody,
+    unknown => l10n.onboarding.onboardingV2GenericError,
+  };
+
+  String get trackingId {
+    return _$OnboardingSymptomEnumMap[this] ?? 'UNKNOWN';
+  }
 }
 
 extension CourseModelExtension on CourseModel {

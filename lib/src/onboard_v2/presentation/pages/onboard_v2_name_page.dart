@@ -46,7 +46,13 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
     _syncControllerFromState(state.name);
 
     return OnboardV2ScreenShell(
-      header: OnboardV2ProgressHeader(activeSegments: 0, showBack: false, onBack: cubit.goBack),
+      header: OnboardV2ProgressHeader(
+        activeSegments: 1,
+        totalSegments: 2,
+        pageStep: OnboardV2PageStep.p2Name,
+        showBack: false,
+        onBack: cubit.goBack,
+      ),
       cta: OnboardV2BottomCta(
         label: onboardingL10n.onboardingV2ContinueCta,
         onPressed: state.canContinueName ? _continueFromName : null,

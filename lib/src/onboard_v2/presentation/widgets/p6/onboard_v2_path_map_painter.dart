@@ -1,7 +1,7 @@
 part of '../../../onboard_v2.dart';
 
-class OnboardV2SkillsetMapPainter extends CustomPainter {
-  const OnboardV2SkillsetMapPainter();
+class OnboardV2PathMapPainter extends CustomPainter {
+  const OnboardV2PathMapPainter();
 
   static const _designWidth = 335.0;
   static const _hexLeft = 55.57867431640625;

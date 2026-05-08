@@ -38,16 +38,6 @@ class _FakeOnboardRepository implements IOnboardRepository {
   TaskEither<AppException, UserEntity> getUserByDeviceId(String deviceId) => TaskEither.right(const UserEntity());
 }
 
-class _FakeHomeRepository implements IHomeRepository {
-  @override
-  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(PageBreakRequest<SkillsetFilterRequest> request) {
-    return TaskEither.right(BasePageBreak<SkillsetEntity>());
-  }
-
-  @override
-  TaskEither<AppException, SkillsetEntity> getSkillset(String id) => TaskEither.right(const SkillsetEntity());
-}
-
 class _FakeProfileRepository implements IProfileRepository {
   @override
   TaskEither<AppException, UserEntity> getUser(String id) => TaskEither.right(const UserEntity());
@@ -73,7 +63,6 @@ class _SeededOnboardV2Cubit extends OnboardV2Cubit {
   _SeededOnboardV2Cubit()
     : super.withRandom(
         GetAllOnboardsUseCase(_FakeOnboardRepository()),
-        GetAllSkillsetsUseCase(_FakeHomeRepository()),
         UpdateUserUseCase(_FakeProfileRepository()),
         GetAllCoursesUseCase(_FakeCourseRepository()),
         GetCourseUseCase(_FakeCourseRepository()),
@@ -143,7 +132,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 380));
 
-    final p2HeaderFinder = find.byKey(const ValueKey('onboard_v2_progress_header_0'), skipOffstage: false);
+    final p2HeaderFinder = find.byKey(const ValueKey('onboard_v2_progress_header_1'), skipOffstage: false);
     expect(p2HeaderFinder, findsOneWidget);
     final anchoredLeft = tester.getTopLeft(p2HeaderFinder).dx;
 
@@ -152,7 +141,7 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 170));
 
-    final p3HeaderFinder = find.byKey(const ValueKey('onboard_v2_progress_header_1'), skipOffstage: false);
+    final p3HeaderFinder = find.byKey(const ValueKey('onboard_v2_progress_header_2'), skipOffstage: false);
     expect(p3HeaderFinder, findsOneWidget);
     final p2DuringLeft = tester.getTopLeft(p2HeaderFinder).dx;
     final p3DuringLeft = tester.getTopLeft(p3HeaderFinder).dx;

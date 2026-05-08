@@ -4,7 +4,6 @@ part of '../../onboard_v2.dart';
 class OnboardV2Cubit extends Cubit<OnboardV2State> {
   OnboardV2Cubit(
     this._getAllOnboardsUseCase,
-    this._getAllSkillsetsUseCase,
     this._updateUserUseCase,
     this._getAllCoursesUseCase,
     this._getCourseUseCase,
@@ -21,7 +20,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   @visibleForTesting
   OnboardV2Cubit.withRandom(
     this._getAllOnboardsUseCase,
-    this._getAllSkillsetsUseCase,
     this._updateUserUseCase,
     this._getAllCoursesUseCase,
     this._getCourseUseCase,
@@ -39,7 +37,6 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
        super(OnboardV2State.initial());
 
   final GetAllOnboardsUseCase _getAllOnboardsUseCase;
-  final GetAllSkillsetsUseCase _getAllSkillsetsUseCase;
   final UpdateUserUseCase _updateUserUseCase;
   final GetAllCoursesUseCase _getAllCoursesUseCase;
   final GetCourseUseCase _getCourseUseCase;
@@ -53,26 +50,24 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
   final UserState Function()? _readUserStateOverride;
 
   int _requestSerial = 0;
+  int _courseSerial = 0;
   bool _isSubmittingAge = false;
-  bool _isLoadingRecommendation = false;
-  Future<void>? _recommendationLoadTask;
-  Future<void>? _skillsetLoadTask;
+  bool _isLoadingCourses = false;
+  Future<void>? _courseLoadTask;
   Future<bool>? _anonymousSessionTask;
-  int _recommendationSerial = 0;
 
   Future<void> initialize() async {
     reset();
-    unawaited(loadSkillsets());
+    unawaited(_ensureAnonymousSession(source: 'p1_background'));
     await loadOnboardData();
   }
 
   void reset() {
     _requestSerial += 1;
-    _recommendationSerial += 1;
+    _courseSerial += 1;
     _isSubmittingAge = false;
-    _isLoadingRecommendation = false;
-    _recommendationLoadTask = null;
-    _skillsetLoadTask = null;
+    _isLoadingCourses = false;
+    _courseLoadTask = null;
     _anonymousSessionTask = null;
     emit(OnboardV2State.initial());
   }
@@ -100,79 +95,10 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     );
   }
 
-  Future<void> loadSkillsets() async {
-    if (state.skillsetStatus == OnboardV2AsyncStatus.success && state.skillsets.isNotEmpty) {
-      return;
-    }
-
-    final activeTask = _skillsetLoadTask;
-    if (activeTask != null) return activeTask;
-
-    late final Future<void> task;
-    task = _loadSkillsetsWithAnonymousSession().whenComplete(() {
-      if (identical(_skillsetLoadTask, task)) {
-        _skillsetLoadTask = null;
-      }
-    });
-    _skillsetLoadTask = task;
-    return task;
-  }
-
-  Future<void> _loadSkillsetsWithAnonymousSession() async {
-    final serial = _requestSerial;
-    if (isClosed) return;
-    emit(state.copyWith(skillsetStatus: OnboardV2AsyncStatus.loading, skillsetErrorMessage: null));
-
-    try {
-      final hasSession = await _ensureAnonymousSession(source: 'p1_preload');
-      if (serial != _requestSerial || isClosed) return;
-
-      if (!hasSession) {
-        emit(
-          state.copyWith(
-            skillsetStatus: OnboardV2AsyncStatus.failure,
-            skillsetErrorMessage: l10n.onboarding.onboardingV2SkillsetLoadError,
-          ),
-        );
-        return;
-      }
-
-      final request = PageBreakRequest<SkillsetFilterRequest>(
-        filter: SkillsetFilterRequest.forOnboarding(),
-      );
-      final result = await _getAllSkillsetsUseCase(request).run();
-      if (serial != _requestSerial || isClosed) return;
-
-      result.fold(
-        (failure) => emit(
-          state.copyWith(
-            skillsetStatus: OnboardV2AsyncStatus.failure,
-            skillsetErrorMessage: failure.displayMessage,
-          ),
-        ),
-        (pageData) => emit(
-          state.copyWith(
-            skillsetStatus: OnboardV2AsyncStatus.success,
-            skillsets: pageData.items,
-          ),
-        ),
-      );
-    } catch (error) {
-      if (serial != _requestSerial || isClosed) return;
-      LogDev.warning('[OnboardV2Cubit] load skillsets failed: $error');
-      emit(
-        state.copyWith(
-          skillsetStatus: OnboardV2AsyncStatus.failure,
-          skillsetErrorMessage: l10n.onboarding.onboardingV2SkillsetLoadError,
-        ),
-      );
-    }
-  }
-
   void goBack() {
     final currentIndex = OnboardV2PageStep.values.indexOf(state.currentPage);
     if (currentIndex <= OnboardV2PageStep.values.indexOf(OnboardV2PageStep.p1Intro)) return;
-    if (state.currentPage == OnboardV2PageStep.p7Recommendation) return;
+    if (state.currentPage == OnboardV2PageStep.p4Notification || state.currentPage == OnboardV2PageStep.p8CoursePicker) return;
 
     final isCancellingAgeSubmit = state.currentPage == OnboardV2PageStep.p3Age && state.p3SubmitStatus == OnboardV2AsyncStatus.loading;
     if (isCancellingAgeSubmit) {
@@ -226,19 +152,18 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
     emit(
       state.copyWith(
-        currentPage: OnboardV2PageStep.p4Skillset,
+        currentPage: OnboardV2PageStep.p4Notification,
         p3SubmitStatus: OnboardV2AsyncStatus.success,
         p3ErrorMessage: null,
       ),
     );
 
     unawaited(_updateSelectedAgeInBackground(selectedAge, serial: serial));
-    unawaited(loadSkillsets());
     _isSubmittingAge = false;
   }
 
   Future<void> _updateSelectedAgeInBackground(OnboardOptionEntity selectedAge, {required int serial}) async {
-    final source = _hasActiveAnonymousSession ? 'existing_session' : 'p1_preload';
+    final source = _hasActiveAnonymousSession ? 'existing_session' : 'p1_background';
     final hasSession = await _ensureAnonymousSession(source: source);
     if (serial != _requestSerial) return;
 
@@ -340,65 +265,248 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   UserState get _readUserState => (_readUserStateOverride ?? () => _userCubit.state)();
 
-  void toggleSkillset(SkillsetEntity skillset) {
-    final selected = List<SkillsetEntity>.from(state.selectedSkillsets);
-    final index = selected.indexWhere((item) => item.id == skillset.id);
+  void continueFromP4Notification({OnboardV2NotificationStatus? notificationStatus}) {
+    final resolvedStatus = notificationStatus ?? state.notificationStatus;
+    emit(
+      state.copyWith(
+        currentPage: OnboardV2PageStep.p5PathSelection,
+        notificationStatus: resolvedStatus,
+      ),
+    );
+  }
+
+  void togglePath(OnboardingPath path) {
+    final selected = List<OnboardingPath>.from(state.selectedPaths);
+    final index = selected.indexOf(path);
+    final isSelecting = index < 0;
+
+    if (isSelecting && selected.length >= 2) {
+      OnboardV2Tracking.track(TrackingKey.onboardV2PathMaxReached, parameters: OnboardV2Tracking.selectedPathParams(selected));
+      return;
+    }
+
+    if (index >= 0) {
+      selected.removeAt(index);
+    } else {
+      selected.add(path);
+    }
+
+    final selectedPaths = OnboardV2SymptomSelectionMapper.dedupePaths(selected);
+    final availableSymptoms = OnboardV2SymptomSelectionMapper.availableSymptoms(selectedPaths);
+    final selectedSymptoms = OnboardV2SymptomSelectionMapper.retainAvailableSymptoms(
+      selectedSymptoms: state.selectedSymptoms,
+      availableSymptoms: availableSymptoms,
+    );
+    _invalidateCourses();
+
+    OnboardV2Tracking.track(
+      isSelecting ? TrackingKey.onboardV2PathSelect : TrackingKey.onboardV2PathUnselect,
+      parameters: OnboardV2Tracking.pathParams(path, selectedPaths: selectedPaths),
+    );
+
+    emit(
+      state.copyWith(
+        selectedPaths: selectedPaths,
+        availableSymptoms: availableSymptoms,
+        selectedSymptoms: selectedSymptoms,
+        courseStatus: OnboardV2CourseStatus.initial,
+        recommendedCourses: const [],
+        currentCourseIndex: 0,
+        courseErrorMessage: null,
+      ),
+    );
+  }
+
+  void continueFromP5Paths() {
+    if (!state.canContinuePaths) return;
+    OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick, parameters: OnboardV2Tracking.selectedPathParams(state.selectedPaths));
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p6PathMap));
+  }
+
+  void continueFromP6PathMap() {
+    OnboardV2Tracking.track(TrackingKey.onboardV2P6ContinueClick, parameters: OnboardV2Tracking.selectedPathParams(state.selectedPaths));
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p7Symptoms));
+  }
+
+  void toggleSymptom(OnboardingSymptom symptom) {
+    if (!state.availableSymptoms.contains(symptom)) return;
+
+    final selected = List<OnboardingSymptom>.from(state.selectedSymptoms);
+    final index = selected.indexOf(symptom);
     final isSelecting = index < 0;
     if (index >= 0) {
       selected.removeAt(index);
     } else {
-      selected.add(skillset);
+      selected.add(symptom);
     }
 
-    final mappedSelection = OnboardV2SkillsetSelectionMapper.mapSelected(selected);
+    final selectedSymptoms = OnboardV2SymptomSelectionMapper.dedupeSymptoms(selected);
+    _invalidateCourses();
+
     OnboardV2Tracking.track(
-      isSelecting ? TrackingKey.onboardV2SkillsetSelect : TrackingKey.onboardV2SkillsetUnselect,
-      parameters: OnboardV2Tracking.skillsetParams(skillset, selectedCount: mappedSelection.skillsets.length),
+      isSelecting ? TrackingKey.onboardV2SymptomSelect : TrackingKey.onboardV2SymptomUnselect,
+      parameters: OnboardV2Tracking.symptomParams(symptom, selectedSymptoms: selectedSymptoms),
     );
-    _recommendationSerial += 1;
-    _isLoadingRecommendation = false;
-    _recommendationLoadTask = null;
+
     emit(
       state.copyWith(
-        selectedSkillsets: mappedSelection.skillsets,
-        recommendationStatus: OnboardV2RecommendationStatus.initial,
-        recommendationErrorMessage: null,
-        recommendedCourse: null,
+        selectedSymptoms: selectedSymptoms,
+        courseStatus: OnboardV2CourseStatus.initial,
+        recommendedCourses: const [],
+        currentCourseIndex: 0,
+        courseErrorMessage: null,
       ),
     );
   }
 
-  void continueFromP4() {
-    if (!state.canContinueSkillsets) return;
+  Future<void> continueFromP7Symptoms() async {
+    if (!state.canContinueSymptoms) return;
     OnboardV2Tracking.track(
-      TrackingKey.onboardV2P4ContinueClick,
-      parameters: OnboardV2Tracking.selectedSkillsetParams(state.selectedSkillsetSelection),
+      TrackingKey.onboardV2P7ContinueClick,
+      parameters: {
+        ...OnboardV2Tracking.selectedPathParams(state.selectedPaths),
+        ...OnboardV2Tracking.selectedSymptomParams(state.selectedSymptoms),
+      },
     );
-    emit(state.copyWith(currentPage: OnboardV2PageStep.p5Demo));
+    emit(state.copyWith(currentPage: OnboardV2PageStep.p8CoursePicker));
+    await loadCoursesForP8(force: true);
   }
 
-  void continueFromP5() {
-    OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick);
-    emit(state.copyWith(currentPage: OnboardV2PageStep.p6Notification));
-    unawaited(loadRecommendation());
+  Future<void> retryCoursesForP8() => loadCoursesForP8(force: true);
+
+  Future<void> loadCoursesForP8({bool force = false}) {
+    if (!force && (state.courseStatus == OnboardV2CourseStatus.loaded || state.courseStatus == OnboardV2CourseStatus.fallback)) {
+      return Future<void>.value();
+    }
+
+    final activeTask = _courseLoadTask;
+    if (activeTask != null) return activeTask;
+
+    late final Future<void> task;
+    task = _loadCoursesForP8().whenComplete(() {
+      if (identical(_courseLoadTask, task)) {
+        _courseLoadTask = null;
+      }
+    });
+    _courseLoadTask = task;
+    return task;
   }
 
-  Future<void> continueFromP6({OnboardV2NotificationStatus? notificationStatus}) async {
-    final resolvedStatus = notificationStatus ?? state.notificationStatus;
-    emit(
-      state.copyWith(
-        notificationStatus: resolvedStatus,
-      ),
-    );
-    await loadRecommendation();
-    if (isClosed) return;
+  Future<void> _loadCoursesForP8() async {
+    if (_isLoadingCourses) return;
+    final selectedSymptoms = List<OnboardingSymptom>.from(state.selectedSymptoms);
+    if (selectedSymptoms.isEmpty) {
+      _emitCoursesFallback('empty_symptoms', stage: 'list');
+      return;
+    }
 
+    _isLoadingCourses = true;
+    final serial = _requestSerial;
+    final courseSerial = _courseSerial;
     emit(
       state.copyWith(
-        currentPage: OnboardV2PageStep.p7Recommendation,
-        notificationStatus: resolvedStatus,
+        courseStatus: OnboardV2CourseStatus.loading,
+        courseErrorMessage: null,
+        recommendedCourses: const [],
+        currentCourseIndex: 0,
       ),
     );
+
+    try {
+      final listResult = await _getAllCoursesUseCase(
+        PageBreakRequest<CourseFilterRequest>(
+          filter: CourseFilterRequest.byOnboardingSymptoms(selectedSymptoms),
+        ),
+      ).run();
+      if (serial != _requestSerial || courseSerial != _courseSerial) return;
+
+      final courses = listResult.fold<List<CourseEntity>?>(
+        (failure) {
+          _emitCoursesFallback(OnboardV2Tracking.exceptionReason(failure), stage: 'list');
+          return null;
+        },
+        (pageData) => pageData.items,
+      );
+      if (courses == null) return;
+
+      final pickedCourses = OnboardV2RandomCoursePicker.pick(courses, nextInt: _random.nextInt);
+      if (pickedCourses.isEmpty) {
+        _emitCoursesFallback('empty_courses', stage: 'list');
+        return;
+      }
+
+      OnboardV2Tracking.track(
+        TrackingKey.onboardV2CoursesLoaded,
+        parameters: OnboardV2Tracking.coursesLoadedParams(
+          courses: pickedCourses,
+          selectedSymptoms: selectedSymptoms,
+        ),
+      );
+      emit(
+        state.copyWith(
+          courseStatus: OnboardV2CourseStatus.loaded,
+          recommendedCourses: pickedCourses,
+          currentCourseIndex: 0,
+          courseErrorMessage: null,
+        ),
+      );
+    } catch (error) {
+      if (serial == _requestSerial && courseSerial == _courseSerial) {
+        _emitCoursesFallback('unexpected', stage: 'unknown');
+      }
+    } finally {
+      if (courseSerial == _courseSerial) {
+        _isLoadingCourses = false;
+      }
+    }
+  }
+
+  void setCurrentCourseIndex(int index) {
+    if (state.recommendedCourses.isEmpty) return;
+    final nextIndex = index.clamp(0, state.recommendedCourses.length - 1);
+    if (nextIndex == state.currentCourseIndex) return;
+    emit(state.copyWith(currentCourseIndex: nextIndex));
+  }
+
+  Future<CourseEntity?> resolveCourseForHandoff(CourseEntity course) async {
+    final courseId = course.id.trim();
+    if (courseId.isEmpty) return null;
+    final serial = _requestSerial;
+    final courseSerial = _courseSerial;
+    emit(state.copyWith(navigationStatus: OnboardV2NavigationStatus.loading, navigationErrorMessage: null));
+
+    try {
+      final result = await _getCourseUseCase(courseId).run();
+      if (serial != _requestSerial || courseSerial != _courseSerial) return null;
+
+      return result.fold(
+        (failure) {
+          _emitCoursesFallback(OnboardV2Tracking.exceptionReason(failure), stage: 'detail');
+          emit(
+            state.copyWith(
+              navigationStatus: OnboardV2NavigationStatus.failure,
+              navigationErrorMessage: failure.displayMessage,
+            ),
+          );
+          return null;
+        },
+        (detail) {
+          emit(state.copyWith(navigationStatus: OnboardV2NavigationStatus.success));
+          return detail.id.trim().isEmpty ? course : detail;
+        },
+      );
+    } catch (error) {
+      if (serial == _requestSerial && courseSerial == _courseSerial) {
+        _emitCoursesFallback('unexpected', stage: 'detail');
+        emit(
+          state.copyWith(
+            navigationStatus: OnboardV2NavigationStatus.failure,
+            navigationErrorMessage: l10n.onboarding.onboardingV2GenericError,
+          ),
+        );
+      }
+      return null;
+    }
   }
 
   void markUserOnboardedInBackground() {
@@ -431,116 +539,28 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     }
   }
 
-  Future<void> loadRecommendation() {
-    if (state.recommendationStatus == OnboardV2RecommendationStatus.loaded || state.recommendationStatus == OnboardV2RecommendationStatus.fallback) {
-      return Future<void>.value();
-    }
-
-    final activeTask = _recommendationLoadTask;
-    if (activeTask != null) return activeTask;
-
-    final task = _loadRecommendation();
-    _recommendationLoadTask = task;
-    return task;
-  }
-
-  Future<void> _loadRecommendation() async {
-    if (_isLoadingRecommendation) return;
-
-    _isLoadingRecommendation = true;
-    final serial = _requestSerial;
-    final recommendationSerial = _recommendationSerial;
-    emit(
-      state.copyWith(
-        recommendationStatus: OnboardV2RecommendationStatus.loading,
-        recommendationErrorMessage: null,
-        recommendedCourse: null,
-      ),
-    );
-
-    try {
-      final selectedIds = state.selectedSkillsetSelection.skillsetIds;
-      if (selectedIds.isEmpty) {
-        _emitRecommendationFallback('empty_skillsets', stage: 'list');
-        return;
-      }
-
-      final listResult = await _getAllCoursesUseCase(
-        PageBreakRequest<CourseFilterRequest>(
-          filter: CourseFilterRequest.bySkillsets(selectedIds),
-        ),
-      ).run();
-      if (serial != _requestSerial || recommendationSerial != _recommendationSerial) return;
-
-      final courses = listResult.fold<List<CourseEntity>>(
-        (failure) {
-          _emitRecommendationFallback(OnboardV2Tracking.exceptionReason(failure), stage: 'list');
-          return const [];
-        },
-        (pageData) => pageData.items,
-      );
-      if (courses.isEmpty) {
-        if (state.recommendationStatus != OnboardV2RecommendationStatus.fallback) {
-          _emitRecommendationFallback('empty_courses', stage: 'list');
-        }
-        return;
-      }
-
-      final selectedCourse = OnboardV2RandomCoursePicker.pick(courses, nextInt: _random.nextInt);
-      if (selectedCourse == null || selectedCourse.id.isEmpty) {
-        _emitRecommendationFallback('empty_course_id', stage: 'list');
-        return;
-      }
-
-      final detailResult = await _getCourseUseCase(selectedCourse.id).run();
-      if (serial != _requestSerial || recommendationSerial != _recommendationSerial) return;
-
-      detailResult.fold(
-        (failure) => _emitRecommendationFallback(OnboardV2Tracking.exceptionReason(failure), stage: 'detail'),
-        (course) {
-          OnboardV2Tracking.track(
-            TrackingKey.onboardV2RecommendationLoaded,
-            parameters: {
-              'recommended_course_id': course.id,
-              'recommended_course_name': course.trackingNameOrText,
-              ...OnboardV2Tracking.selectedSkillsetParams(state.selectedSkillsetSelection),
-            },
-          );
-          emit(
-            state.copyWith(
-              recommendationStatus: OnboardV2RecommendationStatus.loaded,
-              recommendedCourse: course,
-            ),
-          );
-        },
-      );
-    } catch (error) {
-      if (serial == _requestSerial && recommendationSerial == _recommendationSerial) {
-        _emitRecommendationFallback('unexpected', stage: 'unknown');
-      }
-    } finally {
-      if (recommendationSerial == _recommendationSerial) {
-        _isLoadingRecommendation = false;
-        _recommendationLoadTask = null;
-      }
-    }
-  }
-
-  void _emitRecommendationFallback(String reason, {required String stage}) {
+  void _emitCoursesFallback(String reason, {required String stage}) {
     OnboardV2Tracking.track(
-      TrackingKey.onboardV2RecommendationFailure,
+      TrackingKey.onboardV2CoursesFailure,
       parameters: {
+        ...OnboardV2Tracking.selectedSymptomParams(state.selectedSymptoms),
         'error_reason': reason,
         'stage': stage,
-        'fallback_primary_available': false,
       },
     );
     emit(
       state.copyWith(
-        recommendationStatus: OnboardV2RecommendationStatus.fallback,
-        recommendationErrorMessage: reason,
-        recommendedCourse: null,
+        courseStatus: OnboardV2CourseStatus.fallback,
+        courseErrorMessage: reason,
+        recommendedCourses: const [],
+        currentCourseIndex: 0,
       ),
     );
+  }
+
+  void _invalidateCourses() {
+    _courseSerial += 1;
+    _isLoadingCourses = false;
+    _courseLoadTask = null;
   }
 }

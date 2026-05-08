@@ -33,7 +33,7 @@ part 'presentation/cubits/onboard_v2_cubit.dart';
 part 'presentation/helpers/onboard_v2_age_text_resolver.dart';
 part 'presentation/helpers/onboard_v2_notification_status_mapper.dart';
 part 'presentation/helpers/onboard_v2_random_course_picker.dart';
-part 'presentation/helpers/onboard_v2_skillset_selection_mapper.dart';
+part 'presentation/helpers/onboard_v2_symptom_selection_mapper.dart';
 part 'presentation/helpers/onboard_v2_tracking_helper.dart';
 
 //* Presentation Layer - Pages
@@ -42,20 +42,21 @@ part 'presentation/pages/onboard_v2_intro_page.dart';
 part 'presentation/pages/onboard_v2_name_page.dart';
 part 'presentation/pages/onboard_v2_notification_page.dart';
 part 'presentation/pages/onboard_v2_page.dart';
-part 'presentation/pages/onboard_v2_recommendation_page.dart';
-part 'presentation/pages/onboard_v2_skillset_choice_page.dart';
-part 'presentation/pages/onboard_v2_skillset_demo_page.dart';
+part 'presentation/pages/onboard_v2_course_picker_page.dart';
+part 'presentation/pages/onboard_v2_path_map_page.dart';
+part 'presentation/pages/onboard_v2_path_selection_page.dart';
+part 'presentation/pages/onboard_v2_symptom_selection_page.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/p1/onboard_v2_intro_carousel.dart';
 part 'presentation/widgets/p1/onboard_v2_intro_carousel_card.dart';
-part 'presentation/widgets/p5/onboard_v2_skillset_demo_subtitle.dart';
-part 'presentation/widgets/p5/onboard_v2_skillset_map.dart';
-part 'presentation/widgets/p5/onboard_v2_skillset_map_node.dart';
-part 'presentation/widgets/p5/onboard_v2_skillset_map_painter.dart';
 part 'presentation/widgets/p6/onboard_v2_floating_notification_card.dart';
 part 'presentation/widgets/p6/onboard_v2_notification_preview.dart';
-part 'presentation/widgets/p7/onboard_v2_course_recommendation_card.dart';
+part 'presentation/widgets/p6/onboard_v2_path_map.dart';
+part 'presentation/widgets/p6/onboard_v2_path_map_node.dart';
+part 'presentation/widgets/p6/onboard_v2_path_map_painter.dart';
+part 'presentation/widgets/p6/onboard_v2_path_map_subtitle.dart';
+part 'presentation/widgets/p8/onboard_v2_course_picker_card.dart';
 part 'presentation/widgets/shared/onboard_v2_bottom_cta.dart';
 part 'presentation/widgets/shared/onboard_v2_gradient_text.dart';
 part 'presentation/widgets/shared/onboard_v2_progress_header.dart';

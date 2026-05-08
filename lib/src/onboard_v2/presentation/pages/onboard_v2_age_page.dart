@@ -9,7 +9,13 @@ class OnboardV2AgePage extends StatelessWidget {
     final cubit = context.read<OnboardV2Cubit>();
     final onboardingL10n = context.l10n.onboarding;
     return OnboardV2ScreenShell(
-      header: OnboardV2ProgressHeader(activeSegments: 1, showBack: true, onBack: cubit.goBack),
+      header: OnboardV2ProgressHeader(
+        activeSegments: 2,
+        totalSegments: 2,
+        pageStep: OnboardV2PageStep.p3Age,
+        showBack: true,
+        onBack: cubit.goBack,
+      ),
       cta: OnboardV2BottomCta(
         label: onboardingL10n.onboardingV2ContinueCta,
         isLoading: state.p3SubmitStatus == OnboardV2AsyncStatus.loading,

@@ -26,47 +26,47 @@ void main() {
     expect(selectedDecorations, hasLength(1));
   });
 
-  testWidgets('P5 map renders skillset short titles', (tester) async {
+  testWidgets('P6 map renders path short titles', (tester) async {
     await tester.pumpWidget(
       _buildHarness(
-        const OnboardV2SkillsetMap(
-          activeIntroduces: [
-            SkillsetOnboardingIntroduce.myThoughtsCircle,
-            SkillsetOnboardingIntroduce.whatILearnFades,
+        const OnboardV2PathMap(
+          activePaths: [
+            OnboardingPath.thinkBetter,
+            OnboardingPath.learnBetter,
           ],
         ),
       ),
     );
 
-    for (final introduce in SkillsetOnboardingIntroduce.values) {
-      expect(find.text(introduce.shortTitle), findsOneWidget);
+    for (final path in OnboardingPath.values) {
+      expect(find.text(path.shortTitle), findsOneWidget);
     }
     expect(find.text('What'), findsNothing);
     expect(find.text('My'), findsNothing);
   });
 
-  testWidgets('P5 map uses symmetric Figma node frames', (tester) async {
+  testWidgets('P6 map uses symmetric Figma node frames', (tester) async {
     await tester.pumpWidget(
       _buildHarness(
-        const OnboardV2SkillsetMap(
-          activeIntroduces: [
-            SkillsetOnboardingIntroduce.myThoughtsCircle,
-            SkillsetOnboardingIntroduce.whatILearnFades,
+        const OnboardV2PathMap(
+          activePaths: [
+            OnboardingPath.thinkBetter,
+            OnboardingPath.learnBetter,
           ],
         ),
       ),
     );
 
-    Rect nodeRect(SkillsetOnboardingIntroduce introduce) {
-      return tester.getRect(find.byKey(ValueKey('onboard_v2_skillset_map_node_${introduce.name}')));
+    Rect nodeRect(OnboardingPath path) {
+      return tester.getRect(find.byKey(ValueKey('onboard_v2_path_map_node_${path.name}')));
     }
 
-    final learn = nodeRect(SkillsetOnboardingIntroduce.whatILearnFades);
-    final think = nodeRect(SkillsetOnboardingIntroduce.myThoughtsCircle);
-    final feel = nodeRect(SkillsetOnboardingIntroduce.myFeelingsFeelLoud);
-    final explore = nodeRect(SkillsetOnboardingIntroduce.nothingFeelsNew);
-    final connect = nodeRect(SkillsetOnboardingIntroduce.iTalkToMany);
-    final work = nodeRect(SkillsetOnboardingIntroduce.imBusyAllDay);
+    final learn = nodeRect(OnboardingPath.learnBetter);
+    final think = nodeRect(OnboardingPath.thinkBetter);
+    final feel = nodeRect(OnboardingPath.feelBetter);
+    final explore = nodeRect(OnboardingPath.exploreBetter);
+    final connect = nodeRect(OnboardingPath.connectBetter);
+    final work = nodeRect(OnboardingPath.workBetter);
     const figmaRoundingTolerance = 1.0;
 
     expect(learn.center.dx, closeTo(connect.center.dx, figmaRoundingTolerance));

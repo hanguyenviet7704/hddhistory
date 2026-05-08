@@ -1,7 +1,7 @@
 part of '../../../onboard_v2.dart';
 
-class OnboardV2SkillsetMapNode extends StatelessWidget {
-  const OnboardV2SkillsetMapNode({
+class OnboardV2PathMapNode extends StatelessWidget {
+  const OnboardV2PathMapNode({
     super.key,
     required this.label,
     required this.iconPath,

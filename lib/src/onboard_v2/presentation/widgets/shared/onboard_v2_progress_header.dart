@@ -4,11 +4,15 @@ class OnboardV2ProgressHeader extends StatelessWidget {
   const OnboardV2ProgressHeader({
     super.key,
     required this.activeSegments,
+    required this.totalSegments,
+    required this.pageStep,
     required this.showBack,
     required this.onBack,
   });
 
   final int activeSegments;
+  final int totalSegments;
+  final OnboardV2PageStep pageStep;
   final bool showBack;
   final VoidCallback? onBack;
 
@@ -33,7 +37,7 @@ class OnboardV2ProgressHeader extends StatelessWidget {
           SizedBox(
             width: 240.w,
             child: Row(
-              children: List.generate(5, (index) {
+              children: List.generate(totalSegments, (index) {
                 final active = index < activeSegments;
                 return Expanded(
                   child: Container(
@@ -57,7 +61,7 @@ class OnboardV2ProgressHeader extends StatelessWidget {
 
     return _OnboardV2StickyProgressHeader(
       controller: transitionScope.controller,
-      pageIndex: activeSegments + 1,
+      pageIndex: OnboardV2PageStep.values.indexOf(pageStep),
       child: header,
     );
   }

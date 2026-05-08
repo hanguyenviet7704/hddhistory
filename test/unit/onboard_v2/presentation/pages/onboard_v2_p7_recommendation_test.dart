@@ -10,6 +10,8 @@ class _MockAuthBloc extends Mock implements AuthBloc {}
 
 class _MockUserCubit extends Mock implements UserCubit {}
 
+class _NoopTrackingService extends BaseTrackingService {}
+
 class _FakeDeviceInfoService implements IDeviceInfoService {
   @override
   Future<BaseDeviceInfo?> get deviceInfo async => null;
@@ -38,16 +40,6 @@ class _FakeOnboardRepository implements IOnboardRepository {
   TaskEither<AppException, UserEntity> getUserByDeviceId(String deviceId) => TaskEither.right(const UserEntity());
 }
 
-class _FakeHomeRepository implements IHomeRepository {
-  @override
-  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(PageBreakRequest<SkillsetFilterRequest> request) {
-    return TaskEither.right(BasePageBreak<SkillsetEntity>());
-  }
-
-  @override
-  TaskEither<AppException, SkillsetEntity> getSkillset(String id) => TaskEither.right(const SkillsetEntity());
-}
-
 class _FakeProfileRepository implements IProfileRepository {
   @override
   TaskEither<AppException, UserEntity> getUser(String id) => TaskEither.right(const UserEntity());
@@ -63,7 +55,7 @@ class _FakeCourseRepository implements ICourseRepository {
   }
 
   @override
-  TaskEither<AppException, CourseEntity> getCourse(String id) => TaskEither.right(const CourseEntity());
+  TaskEither<AppException, CourseEntity> getCourse(String id) => TaskEither.right(CourseEntity(id: id, numberOfLesson: 1));
 
   @override
   TaskEither<AppException, RoadmapEntity> getRoadmap(String id) => TaskEither.right(const RoadmapEntity());
@@ -73,7 +65,6 @@ class _SeededOnboardV2Cubit extends OnboardV2Cubit {
   _SeededOnboardV2Cubit()
     : super.withRandom(
         GetAllOnboardsUseCase(_FakeOnboardRepository()),
-        GetAllSkillsetsUseCase(_FakeHomeRepository()),
         UpdateUserUseCase(_FakeProfileRepository()),
         GetAllCoursesUseCase(_FakeCourseRepository()),
         GetCourseUseCase(_FakeCourseRepository()),
@@ -99,7 +90,6 @@ class _SpyOnboardV2Cubit extends _SeededOnboardV2Cubit {
 void main() {
   setUp(() async {
     await setupLocaleCubitForTests();
-    LocaleSettings.setLocaleSync(AppLocale.en);
     AppConfig.instance.rootNaviKey = GlobalKey<NavigatorState>();
   });
 
@@ -107,68 +97,98 @@ void main() {
     await resetInjectorForTests();
   });
 
-  testWidgets('loaded recommendation shows primary CTA and Figma social proof', (tester) async {
+  testWidgets('P7 renders merged symptoms and disables CTA until one is selected', (tester) async {
+    await _setPhoneSurface(tester);
     final cubit = _SeededOnboardV2Cubit()
       ..seed(
-        const OnboardV2State(
-          currentPage: OnboardV2PageStep.p7Recommendation,
-          recommendationStatus: OnboardV2RecommendationStatus.loaded,
-          recommendedCourse: CourseEntity(
-            id: 'course_1',
-            title: BaseMultiLanguage(en: 'Decision Making Mastery'),
-          ),
+        OnboardV2State(
+          currentPage: OnboardV2PageStep.p7Symptoms,
+          selectedPaths: const [OnboardingPath.workBetter],
+          availableSymptoms: OnboardV2SymptomSelectionMapper.availableSymptoms(const [OnboardingPath.workBetter]),
         ),
       );
     addTearDown(cubit.close);
 
-    await tester.pumpWidget(_buildPage(cubit));
+    await tester.pumpWidget(_buildSymptomPage(cubit));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('onboard_v2_primary_cta')), findsOneWidget);
-    expect(find.byKey(const Key('onboard_v2_secondary_cta')), findsNothing);
-    expect(find.text('Decision Making Mastery'), findsOneWidget);
-    expect(find.textContaining('facing similar challenges', findRichText: true), findsOneWidget);
+    expect(find.text(OnboardingSymptom.difficultyBuildingHabits.title), findsOneWidget);
+    expect(find.text(OnboardingSymptom.timeSlipsAway.title), findsOneWidget);
+    expect(find.text(OnboardingSymptom.strugglingToBreakBadHabits.title), findsOneWidget);
+    expect(tester.widget<ElevatedButton>(find.byKey(const Key('onboard_v2_primary_cta'))).onPressed, isNull);
+
+    await tester.tap(find.text(OnboardingSymptom.timeSlipsAway.title));
+    await tester.pump();
+
+    expect(cubit.state.selectedSymptoms, [OnboardingSymptom.timeSlipsAway]);
+    expect(tester.widget<ElevatedButton>(find.byKey(const Key('onboard_v2_primary_cta'))).onPressed, isNotNull);
   });
 
-  testWidgets('fallback recommendation hides primary CTA and keeps secondary CTA', (tester) async {
+  testWidgets('P8 loaded courses render carousel and CTA uses current visible course', (tester) async {
+    await _setPhoneSurface(tester);
     final cubit = _SeededOnboardV2Cubit()
       ..seed(
         const OnboardV2State(
-          currentPage: OnboardV2PageStep.p7Recommendation,
-          recommendationStatus: OnboardV2RecommendationStatus.fallback,
+          currentPage: OnboardV2PageStep.p8CoursePicker,
+          courseStatus: OnboardV2CourseStatus.loaded,
+          recommendedCourses: [
+            CourseEntity(
+              id: 'course_1',
+              title: BaseMultiLanguage(en: 'Focus Basics'),
+              numberOfLesson: 1,
+            ),
+            CourseEntity(
+              id: 'course_2',
+              title: BaseMultiLanguage(en: 'Better Habits'),
+              numberOfLesson: 1,
+            ),
+          ],
         ),
       );
     addTearDown(cubit.close);
 
-    await tester.pumpWidget(_buildPage(cubit));
+    await tester.pumpWidget(_buildCoursePage(cubit));
     await tester.pumpAndSettle();
 
-    expect(find.byKey(const Key('onboard_v2_primary_cta')), findsNothing);
-    expect(find.byKey(const Key('onboard_v2_secondary_cta')), findsOneWidget);
-    expect(find.text('Your course map is ready'), findsOneWidget);
+    expect(find.byKey(const Key('onboard_v2_course_picker_page_view')), findsOneWidget);
+    expect(find.text('Focus Basics'), findsOneWidget);
+
+    await tester.drag(find.byKey(const Key('onboard_v2_course_picker_page_view')), const Offset(-280, 0));
+    await tester.pumpAndSettle();
+
+    expect(cubit.state.currentCourseIndex, 1);
+    expect(cubit.state.currentCourse?.id, 'course_2');
   });
 
-  testWidgets('P7 completion starts onboarded update in background', (tester) async {
+  testWidgets('P8 fallback keeps retry/catalog actions and does not complete on view', (tester) async {
+    await _setPhoneSurface(tester);
     final cubit = _SpyOnboardV2Cubit()
       ..seed(
         const OnboardV2State(
-          currentPage: OnboardV2PageStep.p7Recommendation,
-          recommendationStatus: OnboardV2RecommendationStatus.fallback,
+          currentPage: OnboardV2PageStep.p8CoursePicker,
+          courseStatus: OnboardV2CourseStatus.fallback,
         ),
       );
     addTearDown(cubit.close);
 
-    await tester.pumpWidget(_buildPage(cubit));
+    await tester.pumpWidget(_buildCoursePage(cubit));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.byKey(const Key('onboard_v2_secondary_cta')));
-    await tester.pumpAndSettle();
-
-    expect(cubit.markOnboardedCount, 1);
+    expect(find.byKey(const Key('onboard_v2_primary_cta')), findsOneWidget);
+    expect(find.byKey(const Key('onboard_v2_secondary_cta')), findsOneWidget);
+    expect(find.text('We could not load matches'), findsOneWidget);
+    expect(cubit.markOnboardedCount, 0);
   });
 }
 
-Widget _buildPage(OnboardV2Cubit cubit) {
+Future<void> _setPhoneSurface(WidgetTester tester) async {
+  tester.view.devicePixelRatio = 1.0;
+  tester.view.physicalSize = const Size(375, 812);
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
+}
+
+Widget _buildSymptomPage(OnboardV2Cubit cubit) {
   return ScreenUtilInit(
     designSize: const Size(375, 812),
     minTextAdapt: true,
@@ -177,7 +197,26 @@ Widget _buildPage(OnboardV2Cubit cubit) {
       child: MaterialApp(
         home: BlocProvider<OnboardV2Cubit>.value(
           value: cubit,
-          child: const OnboardV2RecommendationPage(),
+          child: const OnboardV2SymptomSelectionPage(),
+        ),
+      ),
+    ),
+  );
+}
+
+Widget _buildCoursePage(OnboardV2Cubit cubit) {
+  return ScreenUtilInit(
+    designSize: const Size(375, 812),
+    minTextAdapt: true,
+    splitScreenMode: true,
+    builder: (context, child) => TranslationProvider(
+      child: MaterialApp(
+        home: MultiBlocProvider(
+          providers: [
+            BlocProvider<OnboardV2Cubit>.value(value: cubit),
+            BlocProvider<UserCubit>.value(value: UserCubit(_NoopTrackingService())),
+          ],
+          child: const OnboardV2CoursePickerPage(),
         ),
       ),
     ),

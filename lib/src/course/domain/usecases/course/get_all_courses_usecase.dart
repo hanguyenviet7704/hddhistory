@@ -3,6 +3,7 @@ part of '../../../course.dart';
 class CourseFilterRequest implements JsonRequestConvertible {
   const CourseFilterRequest({
     this.skillsetIds = const [],
+    this.onboardingSymptoms = const [],
     this.isAll,
   });
 
@@ -25,17 +26,45 @@ class CourseFilterRequest implements JsonRequestConvertible {
     );
   }
 
+  factory CourseFilterRequest.byOnboardingSymptoms(
+    Iterable<OnboardingSymptom> symptoms, {
+    bool isAll = true,
+  }) {
+    final dedupedSymptoms = <OnboardingSymptom>[];
+    final seenSymptoms = <OnboardingSymptom>{};
+
+    for (final symptom in symptoms) {
+      if (symptom == OnboardingSymptom.unknown || !seenSymptoms.add(symptom)) continue;
+      dedupedSymptoms.add(symptom);
+    }
+
+    return CourseFilterRequest(
+      onboardingSymptoms: dedupedSymptoms,
+      isAll: isAll,
+    );
+  }
+
   final List<String> skillsetIds;
+  final List<OnboardingSymptom> onboardingSymptoms;
   final bool? isAll;
 
-  bool get hasFilters => skillsetIds.isNotEmpty || isAll != null;
+  bool get hasFilters => skillsetIds.isNotEmpty || onboardingSymptoms.isNotEmpty || isAll != null;
 
   @override
   Map<String, dynamic> toJson() {
     return {
       if (skillsetIds.isNotEmpty) 'skillsetIds': ListParam<String>(skillsetIds, ListFormat.multi),
+      if (onboardingSymptoms.isNotEmpty)
+        'onboardingSymptoms': ListParam<String>(
+          onboardingSymptoms.map(_onboardingSymptomRequestValue).toList(),
+          ListFormat.multi,
+        ),
       if (isAll != null) 'isAll': isAll,
     };
+  }
+
+  static String _onboardingSymptomRequestValue(OnboardingSymptom symptom) {
+    return _$OnboardingSymptomEnumMap[symptom] ?? 'UNKNOWN';
   }
 }
 

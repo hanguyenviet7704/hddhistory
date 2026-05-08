@@ -40,16 +40,6 @@ class _FakeOnboardRepository implements IOnboardRepository {
   TaskEither<AppException, UserEntity> getUserByDeviceId(String deviceId) => TaskEither.right(const UserEntity());
 }
 
-class _FakeHomeRepository implements IHomeRepository {
-  @override
-  TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(PageBreakRequest<SkillsetFilterRequest> request) {
-    return TaskEither.right(BasePageBreak<SkillsetEntity>());
-  }
-
-  @override
-  TaskEither<AppException, SkillsetEntity> getSkillset(String id) => TaskEither.right(const SkillsetEntity());
-}
-
 class _FakeProfileRepository implements IProfileRepository {
   @override
   TaskEither<AppException, UserEntity> getUser(String id) => TaskEither.right(const UserEntity());
@@ -75,7 +65,6 @@ class _SeededOnboardV2Cubit extends OnboardV2Cubit {
   _SeededOnboardV2Cubit()
     : super.withRandom(
         GetAllOnboardsUseCase(_FakeOnboardRepository()),
-        GetAllSkillsetsUseCase(_FakeHomeRepository()),
         UpdateUserUseCase(_FakeProfileRepository()),
         GetAllCoursesUseCase(_FakeCourseRepository()),
         GetCourseUseCase(_FakeCourseRepository()),
@@ -142,7 +131,7 @@ void main() {
       if (!refreshCompleter.isCompleted) refreshCompleter.complete();
     });
     final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
-    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p6Notification));
+    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p4Notification));
     final userCubit = UserCubit(_NoopTrackingService());
     addTearDown(notificationCubit.close);
     addTearDown(onboardCubit.close);
@@ -160,13 +149,29 @@ void main() {
     await tester.pump();
   });
 
+  testWidgets('P4 notification has no progress header and blocks system back', (tester) async {
+    final refreshCompleter = Completer<void>()..complete();
+    final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
+    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p4Notification));
+    final userCubit = UserCubit(_NoopTrackingService());
+    addTearDown(notificationCubit.close);
+    addTearDown(onboardCubit.close);
+    addTearDown(userCubit.close);
+
+    await tester.pumpWidget(_buildPage(onboardCubit, notificationCubit, userCubit));
+
+    expect(find.byKey(const Key('onboard_v2_back_button')), findsNothing);
+    expect(find.byType(PopScope), findsOneWidget);
+    expect(tester.widget<PopScope>(find.byType(PopScope)).canPop, isFalse);
+  });
+
   testWidgets('notification preview card enters then floats with synchronized shadow', (tester) async {
     final refreshCompleter = Completer<void>();
     addTearDown(() {
       if (!refreshCompleter.isCompleted) refreshCompleter.complete();
     });
     final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
-    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p6Notification));
+    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p4Notification));
     final userCubit = UserCubit(_NoopTrackingService());
     addTearDown(notificationCubit.close);
     addTearDown(onboardCubit.close);
@@ -207,7 +212,7 @@ void main() {
       if (!refreshCompleter.isCompleted) refreshCompleter.complete();
     });
     final notificationCubit = _GateNotificationCubit(refreshCompleter: refreshCompleter);
-    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p6Notification));
+    final onboardCubit = _SeededOnboardV2Cubit()..seed(const OnboardV2State(currentPage: OnboardV2PageStep.p4Notification));
     final userCubit = UserCubit(_NoopTrackingService());
     addTearDown(notificationCubit.close);
     addTearDown(onboardCubit.close);
@@ -218,14 +223,14 @@ void main() {
     await tester.pump();
 
     expect(notificationCubit.enableCount, 0);
-    expect(onboardCubit.state.currentPage, OnboardV2PageStep.p6Notification);
+    expect(onboardCubit.state.currentPage, OnboardV2PageStep.p4Notification);
 
     refreshCompleter.complete();
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 100));
 
     expect(notificationCubit.enableCount, 1);
-    expect(onboardCubit.state.currentPage, OnboardV2PageStep.p7Recommendation);
+    expect(onboardCubit.state.currentPage, OnboardV2PageStep.p5PathSelection);
   });
 }
 

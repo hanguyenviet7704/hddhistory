@@ -53,58 +53,59 @@ class _OnboardV2NotificationPageState extends State<OnboardV2NotificationPage> {
       parameters: {'notification_status': OnboardV2Tracking.notificationStatus(status)},
     );
     context.read<UserCubit>().completeFirstTimeNotificationGate();
-    await context.read<OnboardV2Cubit>().continueFromP6(notificationStatus: status);
+    context.read<OnboardV2Cubit>().continueFromP4Notification(notificationStatus: status);
     if (!mounted) return;
-    if (context.read<OnboardV2Cubit>().state.currentPage == OnboardV2PageStep.p6Notification) {
+    if (context.read<OnboardV2Cubit>().state.currentPage == OnboardV2PageStep.p4Notification) {
       setState(() => _isHandling = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final cubit = context.read<OnboardV2Cubit>();
     final onboardingL10n = context.l10n.onboarding;
-    return OnboardV2ScreenShell(
-      header: OnboardV2ProgressHeader(activeSegments: 4, showBack: true, onBack: _isHandling ? null : cubit.goBack),
-      cta: OnboardV2BottomCta(
-        label: onboardingL10n.onboardingV2NotifyCta,
-        isLoading: _isHandling,
-        onPressed: _handlePrimary,
-        secondaryLabel: onboardingL10n.onboardingV2MaybeLaterCta,
-        onSecondaryPressed: _handleSecondary,
-      ),
-      child: Column(
-        children: [
-          SizedBox(height: 32.w),
-          Image.asset(AppAsset.images.app.bellGold.path, width: 24.w, height: 24.w),
-          SizedBox(height: 8.w),
-          Wrap(
-            alignment: WrapAlignment.center,
-            runAlignment: WrapAlignment.center,
-            spacing: 6.w,
-            children: [
-              AppText(
-                onboardingL10n.onboardingV2P6HeadingPrefix,
-                textAlign: TextAlign.center,
-                maxLines: 1,
-                style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w700, height: 1.4),
-              ),
-              OnboardV2GradientText(
-                onboardingL10n.onboardingV2P6HeadingHighlight,
-                textAlign: TextAlign.center,
-                style: AppStyle.text28.copyWith(fontWeight: FontWeight.w700, height: 1.4),
-              ),
-            ],
-          ),
-          SizedBox(height: 4.w),
-          AppText(
-            onboardingL10n.onboardingV2P6Subtitle,
-            textAlign: TextAlign.center,
-            style: AppStyle.text16.copyWith(color: AppCustomColor.streakTextMuted, height: 1.5),
-          ),
-          SizedBox(height: 32.w),
-          const OnboardV2NotificationPreview(),
-        ],
+    return PopScope(
+      canPop: false,
+      child: OnboardV2ScreenShell(
+        cta: OnboardV2BottomCta(
+          label: onboardingL10n.onboardingV2NotifyCta,
+          isLoading: _isHandling,
+          onPressed: _handlePrimary,
+          secondaryLabel: onboardingL10n.onboardingV2MaybeLaterCta,
+          onSecondaryPressed: _handleSecondary,
+        ),
+        child: Column(
+          children: [
+            SizedBox(height: 32.w),
+            Image.asset(AppAsset.images.app.bellGold.path, width: 24.w, height: 24.w),
+            SizedBox(height: 8.w),
+            Wrap(
+              alignment: WrapAlignment.center,
+              runAlignment: WrapAlignment.center,
+              spacing: 6.w,
+              children: [
+                AppText(
+                  onboardingL10n.onboardingV2P6HeadingPrefix,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  style: AppStyle.text28.copyWith(color: AppCustomColor.textSecondary, fontWeight: FontWeight.w700, height: 1.4),
+                ),
+                OnboardV2GradientText(
+                  onboardingL10n.onboardingV2P6HeadingHighlight,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text28.copyWith(fontWeight: FontWeight.w700, height: 1.4),
+                ),
+              ],
+            ),
+            SizedBox(height: 4.w),
+            AppText(
+              onboardingL10n.onboardingV2P6Subtitle,
+              textAlign: TextAlign.center,
+              style: AppStyle.text16.copyWith(color: AppCustomColor.streakTextMuted, height: 1.5),
+            ),
+            SizedBox(height: 32.w),
+            const OnboardV2NotificationPreview(),
+          ],
+        ),
       ),
     );
   }

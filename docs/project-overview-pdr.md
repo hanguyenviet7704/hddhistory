@@ -43,7 +43,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `monetization` | Paywall, products, purchase verification |
 | `onboard` | Intro/onboarding screens |
 | `onboard_branching` | Branching onboarding scenario module |
-| `onboard_v2` | Seven-step first-time onboarding, notification gate, and recommendation handoff |
+| `onboard_v2` | Eight-step first-time onboarding, notification gate, path/symptom selection, and course-picker handoff |
 | `output_practice` | Course-shell output practice conversation flow, intro sheet, socket room, and retryable history |
 | `profile` | User profile and upload flows |
 | `progress` | User progress, course and achievement progress |
@@ -120,10 +120,10 @@ Notes:
 
 12. Onboard V2 first-time flow
 - Route ordinary first-time no-token users to `/onboard-v2`.
-- Drive intro, name, age, skillset, demo, notification, and recommendation steps from `OnboardV2Cubit`.
-- Perform anonymous login/profile update before recommendation.
-- Persist one-time notification-gate completion and hand off to the recommended course roadmap or course list.
-- Track Onboard V2 step, selection, notification, recommendation, and handoff events.
+- Drive intro, name, age, notification, path selection, path map, symptom selection, and course picker steps from `OnboardV2Cubit`.
+- Start anonymous login in background and update profile after age selection without blocking the notification gate.
+- Persist one-time notification-gate completion and hand off to the selected course roadmap or course list.
+- Track Onboard V2 step, path, symptom, notification, course picker, and handoff events.
 
 ## 5. Non-Functional Requirements
 1. Architecture consistency
@@ -180,6 +180,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-05-08 | Updated Onboard V2 requirements for the eight-step path/symptom/course-picker flow and repeated symptom course filtering. |
 | 2026-05-07 | Synced code-verified module scope to 19 modules, added Onboard V2 requirements, and aligned video-lesson observability wording with shipped overlays. |
 | 2026-04-23 | Added completed-level additional-content request requirements for roadmap footer eligibility, yes/no persistence, and centered request popup behavior. |
 | 2026-04-13 | Added dual-mode lesson requirements for roadmap popup branching, single-route read/listen entry, route-session audio playback, shared completion handoff, and no-audio fallback behavior. |

@@ -1,7 +1,7 @@
 part of '../../../onboard_v2.dart';
 
-class OnboardV2SkillsetDemoSubtitle extends StatelessWidget {
-  const OnboardV2SkillsetDemoSubtitle({super.key, required this.count});
+class OnboardV2PathMapSubtitle extends StatelessWidget {
+  const OnboardV2PathMapSubtitle({super.key, required this.count});
 
   final int count;
 

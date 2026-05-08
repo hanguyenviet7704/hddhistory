@@ -137,10 +137,10 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 
 ### Onboarding V2 runtime flow
 - `OnboardV2Route` is the default first-time path and is typed at `/onboard-v2`; it builds `OnboardV2Cubit.initialize()` alongside `UserCubit` and `NotificationCubit`.
-- `OnboardV2Page` is a seven-step shell: intro, name, age, skillset, demo, notification, and recommendation.
-- `OnboardV2Cubit` owns the flow state machine. It loads onboarding content and onboarding-only skillsets in parallel, submits anonymous login plus profile update after P3, and uses filtered skillset/course queries only for the recommendation step. This flow does not add a broad cache fallback.
-- P6 uses the shared notification boundary: the page refreshes permission state, either requests permission or records "maybe later", and persists `UserCubit.hasCompletedFirstTimeNotificationGate`.
-- P7 picks from the filtered course list, fetches the selected course detail, then hands off through `CourseHandoffHelper` to either `CourseRoadmapRoute` or `CourseRoute(selectedTabIndex: 0)` before clearing `isUserPassOnboarding`.
+- `OnboardV2Page` is an eight-step shell: intro, name, age, notification, path selection, path map, symptom selection, and course picker.
+- `OnboardV2Cubit` owns the flow state machine. It loads onboarding content, starts anonymous login in background, submits the P3 profile update asynchronously, derives symptoms from selected paths, and loads P8 courses with repeated `onboardingSymptoms` filters. This flow does not add a broad cache fallback.
+- P4 uses the shared notification boundary: the page refreshes permission state, either requests permission or records "maybe later", persists `UserCubit.hasCompletedFirstTimeNotificationGate`, and blocks runtime back navigation.
+- P8 shows up to three valid randomized courses, fetches the current visible course detail, then hands off through `CourseHandoffHelper` to either `CourseRoadmapRoute` or `CourseRoute(selectedTabIndex: 0)` before clearing `isUserPassOnboarding`.
 - Tracking is centralized in `TrackingKey.onboardV2*` and `OnboardV2Tracking`; onboarding copy lives in `assets/i18n/<locale>/onboarding.yaml` and generated `lib/config/l10n/*` keys.
 
 ### Notification preference runtime flow
