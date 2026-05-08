@@ -8,6 +8,7 @@ class OnboardV2PathSelectionPage extends StatelessWidget {
     final state = context.watch<OnboardV2Cubit>().state;
     final cubit = context.read<OnboardV2Cubit>();
     final onboardingL10n = context.l10n.onboarding;
+    final pathSelectionCount = state.selectedPaths.length.clamp(0, 2);
     return OnboardV2ScreenShell(
       header: OnboardV2ProgressHeader(
         activeSegments: 1,
@@ -30,7 +31,10 @@ class OnboardV2PathSelectionPage extends StatelessWidget {
           ),
           OnboardV2GradientText(onboardingL10n.onboardingV2P5PathHeadingHighlight, style: AppStyle.text28.copyWith(fontWeight: FontWeight.w800, height: 1.4)),
           12.verticalSpace,
-          AppText(onboardingL10n.onboardingV2P5PathSubtitle, style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary)),
+          AppText(
+            onboardingL10n.onboardingV2P5PathSubtitle(count: pathSelectionCount),
+            style: AppStyle.text16.copyWith(color: AppCustomColor.textSecondary),
+          ),
           28.verticalSpace,
           ...OnboardingPath.values.map((path) {
             final selected = state.selectedPaths.contains(path);

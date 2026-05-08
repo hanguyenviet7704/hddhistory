@@ -154,6 +154,25 @@ void main() {
 
     await tester.pumpWidget(const SizedBox.shrink());
   });
+
+  testWidgets('P5 path subtitle reflects selected option count', (tester) async {
+    final cubit = _SeededOnboardV2Cubit();
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(_buildHarness(BlocProvider<OnboardV2Cubit>.value(value: cubit, child: const OnboardV2PathSelectionPage())));
+
+    expect(find.text('Pick up 0/2 you most want to grow in'), findsOneWidget);
+
+    cubit.togglePath(OnboardingPath.feelBetter);
+    await tester.pump();
+    expect(find.text('Pick up 1/2 you most want to grow in'), findsOneWidget);
+
+    cubit.togglePath(OnboardingPath.thinkBetter);
+    await tester.pump();
+    expect(find.text('Pick up 2/2 you most want to grow in'), findsOneWidget);
+
+    await tester.pumpWidget(const SizedBox.shrink());
+  });
 }
 
 Widget _buildHarness(Widget child) {
