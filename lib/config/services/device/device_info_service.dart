@@ -20,9 +20,9 @@ class DeviceInfoService implements IDeviceInfoService {
 
   DeviceInfoService(
     this._localStoreService, {
-    @visibleForTesting bool? isIOSOverride,
-    @visibleForTesting bool? isAndroidOverride,
-    @visibleForTesting bool enableStartupInitialization = true,
+    @ignoreParam @visibleForTesting bool? isIOSOverride,
+    @ignoreParam @visibleForTesting bool? isAndroidOverride,
+    @ignoreParam @visibleForTesting bool enableStartupInitialization = true,
   }) : _isIOSOverride = isIOSOverride,
        _isAndroidOverride = isAndroidOverride {
     if (enableStartupInitialization) {
