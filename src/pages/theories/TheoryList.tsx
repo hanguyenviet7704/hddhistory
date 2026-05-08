@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { ILearningItem } from "../../types/interface/learning-item/learning-item.interface";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
@@ -12,9 +12,12 @@ import { useEffect, useRef, useState, useCallback } from "react";
 import { IKeypoint } from "../../types/interface/keypoint.interface";
 import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
+import AsyncExcelImportButton from "../../components/imports/AsyncExcelImportButton";
+import { useNotification } from "../../utils/hooks/useNotification";
 
 const TheoryList: React.FC = () => {
   const navigate = useNavigate();
+  const { showError } = useNotification();
   const [theories, setTheories] = useState<ILearningItem[]>([]);
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [loading, setLoading] = useState(true);
@@ -203,6 +206,12 @@ const TheoryList: React.FC = () => {
               <PlusIcon className="h-5 w-5" />
               <span>New Theory</span>
             </button>
+
+            <AsyncExcelImportButton
+              label="Import"
+              target="theories"
+              onError={showError}
+            />
           </div>
         </div>
       </div>

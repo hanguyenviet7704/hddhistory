@@ -1,7 +1,11 @@
 import { useEffect, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "../../store";
-import { UserCircleIcon, ArrowLeftIcon } from "@heroicons/react/24/solid";
+import {
+  ArrowLeftIcon,
+  CloudArrowUpIcon,
+  UserCircleIcon,
+} from "@heroicons/react/24/solid";
 import ReactCountryFlag from "react-country-flag";
 import { LangCode } from "../../types/enum/common.enum";
 import { LangOption } from "../../utils/interface/lang.interface";
@@ -100,6 +104,10 @@ export default function Header() {
     navigate(-1); // Quay lại trang trước đó
   };
 
+  const handleOpenDriveImport = () => {
+    window.open("/drive-upload", "_blank", "noopener,noreferrer");
+  };
+
   return (
     <header className="w-full bg-white shadow px-6 py-3 flex items-center relative">
       {/* Left section - Nút quay lại */}
@@ -117,6 +125,15 @@ export default function Header() {
 
       {/* Right section - Các nút cũ */}
       <div className="flex items-center gap-6">
+        <button
+          onClick={handleOpenDriveImport}
+          className="flex h-10 w-10 items-center justify-center rounded-full border border-blue-200 text-blue-700 hover:bg-blue-50"
+          aria-label="Import File From Drive"
+          title="Import File From Drive"
+        >
+          <CloudArrowUpIcon className="h-5 w-5" />
+        </button>
+
         {/* Language switcher */}
         <div className="relative">
           <button

@@ -11,7 +11,8 @@ import {
   IPrice,
   CoursePayload,
 } from "../../types/interface/course.interface";
-import { CourseLevel, CourseStatus } from "../../types/enum/course.enum";
+import { OnboardingSymptom } from "../../types/enum/common.enum";
+import { CourseStatus } from "../../types/enum/course.enum";
 import { useSelector } from "react-redux";
 import { RootState } from "../../store";
 import { motion, AnimatePresence } from "framer-motion";
@@ -44,8 +45,10 @@ export default function CourseModal({
   const [description, setDescription] = useState<ITranslation>({});
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<CourseStatus>(CourseStatus.DRAFT);
-  const [level, setLevel] = useState<CourseLevel>(CourseLevel.LEVEL1);
   const [prices, setPrices] = useState<IPrice[]>([]);
+  const [onboardingSymptoms, setOnboardingSymptoms] = useState<
+    OnboardingSymptom[]
+  >([]);
 
   // State cho Skillset
   const [skillsetId, setSkillsetId] = useState("");
@@ -65,6 +68,7 @@ export default function CourseModal({
       setImage(initial.image ?? "");
       setStatus(initial.status);
       setPrices(initial.prices ?? []);
+      setOnboardingSymptoms(initial.onboardingSymptoms ?? []);
       setSkillsetId(initial.skillsetId ?? "");
       setSelectedSkillsetLabel("");
     } else {
@@ -72,8 +76,8 @@ export default function CourseModal({
       setDescription({});
       setImage("");
       setStatus(CourseStatus.DRAFT);
-      setLevel(CourseLevel.LEVEL1);
       setPrices([]);
+      setOnboardingSymptoms([]);
       setSkillsetId("");
       setSkillsetQuery("");
       setSelectedSkillsetLabel("");
@@ -145,6 +149,7 @@ export default function CourseModal({
       status,
       prices: prices,
       skillsetId, // Add skillsetId to payload
+      onboardingSymptoms,
     };
 
     // Only include description if it has values
@@ -201,6 +206,21 @@ export default function CourseModal({
     setSkillsetQuery("");
     setSelectedSkillsetLabel("");
     setShowSkillsetDropdown(true);
+  };
+
+  const formatOnboardingSymptomLabel = (value: OnboardingSymptom) =>
+    value
+      .toLowerCase()
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+  const handleToggleOnboardingSymptom = (value: OnboardingSymptom) => {
+    setOnboardingSymptoms((prev) =>
+      prev.includes(value)
+        ? prev.filter((symptom) => symptom !== value)
+        : [...prev, value]
+    );
   };
 
   const handleSkillsetInputChange = (
@@ -385,6 +405,42 @@ export default function CourseModal({
                       />
                     </svg>
                   </div>
+                </div>
+              </div>
+
+              {/* Onboarding Symptoms */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Onboarding Symptoms
+                </label>
+                <div className="border border-gray-300 rounded-lg p-3 max-h-60 overflow-y-auto bg-white">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {Object.values(OnboardingSymptom).map((symptom) => (
+                      <label
+                        key={symptom}
+                        className="flex items-start gap-2 rounded-md px-2 py-1.5 text-sm text-gray-700 hover:bg-gray-50"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={onboardingSymptoms.includes(symptom)}
+                          onChange={() =>
+                            handleToggleOnboardingSymptom(symptom)
+                          }
+                          className="mt-0.5 h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                        />
+                        <span>{formatOnboardingSymptomLabel(symptom)}</span>
+                      </label>
+                    ))}
+                  </div>
+                  {onboardingSymptoms.length > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => setOnboardingSymptoms([])}
+                      className="mt-3 text-sm font-medium text-gray-500 hover:text-gray-700"
+                    >
+                      Clear selection
+                    </button>
+                  )}
                 </div>
               </div>
 

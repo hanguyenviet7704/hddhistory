@@ -1,4 +1,5 @@
 import { ITranslation } from "../../utils/translate";
+import { OnboardingSymptom } from "../enum/common.enum";
 import { CourseLevel, CourseStatus } from "../enum/course.enum";
 import { BaseQuery } from "./common.interface";
 import { ILessonBrief } from "./lesson.interface";
@@ -19,6 +20,7 @@ export interface ICourse {
   status: CourseStatus;
   prices?: IPrice[];
   numberOfLesson?: number;
+  onboardingSymptoms?: OnboardingSymptom[];
 }
 
 export interface CoursePayload {
@@ -29,6 +31,7 @@ export interface CoursePayload {
   status: CourseStatus;
   prices?: IPrice[];
   numberOfLesson?: number;
+  onboardingSymptoms?: OnboardingSymptom[];
 }
 
 export interface ICourseBrief {
