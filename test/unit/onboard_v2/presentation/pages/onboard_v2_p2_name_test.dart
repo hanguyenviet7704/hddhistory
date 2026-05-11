@@ -93,6 +93,9 @@ void main() {
     await tester.pumpWidget(_buildPage(cubit));
     await tester.pump();
 
+    final waveHandImage = tester.widget<Image>(find.byKey(const Key('onboard_v2_name_wave_hand')));
+    expect((waveHandImage.image as AssetImage).assetName, AppAsset.icons.app.icWaveHand.path);
+
     final editableText = tester.widget<EditableText>(find.byType(EditableText));
     expect(editableText.focusNode.hasFocus, isTrue);
 

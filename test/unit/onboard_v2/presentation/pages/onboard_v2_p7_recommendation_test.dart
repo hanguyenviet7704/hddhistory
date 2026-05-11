@@ -153,6 +153,9 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('onboard_v2_course_picker_page_view')), findsOneWidget);
+    expect(tester.widget<PageView>(find.byKey(const Key('onboard_v2_course_picker_page_view'))).padEnds, isFalse);
+    expect(find.byKey(const Key('onboard_v2_course_best_matched_label')), findsOneWidget);
+    expect(find.byKey(const Key('onboard_v2_course_indicator_row')), findsOneWidget);
     expect(find.text('Focus Basics'), findsOneWidget);
 
     await tester.drag(find.byKey(const Key('onboard_v2_course_picker_page_view')), const Offset(-280, 0));
@@ -160,6 +163,32 @@ void main() {
 
     expect(cubit.state.currentCourseIndex, 1);
     expect(cubit.state.currentCourse?.id, 'course_2');
+    expect(find.byKey(const Key('onboard_v2_course_best_matched_label')), findsNothing);
+  });
+
+  testWidgets('P8 single course hides dot indicator', (tester) async {
+    await _setPhoneSurface(tester);
+    final cubit = _SeededOnboardV2Cubit()
+      ..seed(
+        const OnboardV2State(
+          currentPage: OnboardV2PageStep.p8CoursePicker,
+          courseStatus: OnboardV2CourseStatus.loaded,
+          recommendedCourses: [
+            CourseEntity(
+              id: 'course_1',
+              title: BaseMultiLanguage(en: 'Focus Basics'),
+              numberOfLesson: 1,
+            ),
+          ],
+        ),
+      );
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(_buildCoursePage(cubit));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('onboard_v2_course_best_matched_label')), findsOneWidget);
+    expect(find.byKey(const Key('onboard_v2_course_indicator_row')), findsNothing);
   });
 
   testWidgets('P8 fallback keeps retry/catalog actions and does not complete on view', (tester) async {

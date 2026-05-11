@@ -61,7 +61,12 @@ class _OnboardV2NamePageState extends State<OnboardV2NamePage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           32.verticalSpace,
-          Icon(Icons.waving_hand_rounded, size: 32.w, color: AppCustomColor.brandPrimary),
+          AppAsset.icons.app.icWaveHand.image(
+            key: const Key('onboard_v2_name_wave_hand'),
+            width: 32.w,
+            height: 32.w,
+            fit: BoxFit.contain,
+          ),
           18.verticalSpace,
           AppText(
             onboardingL10n.onboardingV2P2HeadingPrefix,

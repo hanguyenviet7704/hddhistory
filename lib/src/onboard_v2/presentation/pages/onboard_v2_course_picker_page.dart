@@ -161,15 +161,18 @@ class _CourseCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final cubit = context.read<OnboardV2Cubit>();
     final course = state.currentCourse;
+    final isFirstCourse = state.currentCourseIndex == 0;
+    final hasMultipleCourses = state.recommendedCourses.length > 1;
     return Column(
       children: [
-        const _BestMatchedLabel(),
+        if (isFirstCourse) const _BestMatchedLabel() else 21.verticalSpace,
         12.verticalSpace,
         SizedBox(
           height: 260.w,
           child: PageView.builder(
             key: const Key('onboard_v2_course_picker_page_view'),
             controller: controller,
+            padEnds: false,
             itemCount: state.recommendedCourses.length,
             onPageChanged: cubit.setCurrentCourseIndex,
             itemBuilder: (context, index) {
@@ -187,23 +190,27 @@ class _CourseCarousel extends StatelessWidget {
             },
           ),
         ),
-        12.verticalSpace,
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(state.recommendedCourses.length, (index) {
-            final active = index == state.currentCourseIndex;
-            return AnimatedContainer(
-              duration: const Duration(milliseconds: 180),
-              width: 8.w,
-              height: 8.w,
-              margin: EdgeInsets.symmetric(horizontal: 6.w),
-              decoration: BoxDecoration(
-                color: active ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
-                borderRadius: BorderRadius.circular(100.r),
-              ),
-            );
-          }),
-        ),
+        if (hasMultipleCourses) ...[
+          12.verticalSpace,
+          Row(
+            key: const Key('onboard_v2_course_indicator_row'),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(state.recommendedCourses.length, (index) {
+              final active = index == state.currentCourseIndex;
+              return AnimatedContainer(
+                key: ValueKey('onboard_v2_course_indicator_$index'),
+                duration: const Duration(milliseconds: 180),
+                width: 8.w,
+                height: 8.w,
+                margin: EdgeInsets.symmetric(horizontal: 6.w),
+                decoration: BoxDecoration(
+                  color: active ? AppCustomColor.brandPrimary : AppCustomColor.borderSecondary,
+                  borderRadius: BorderRadius.circular(100.r),
+                ),
+              );
+            }),
+          ),
+        ],
         24.verticalSpace,
         if (course != null) _CurrentCourseText(course: course),
       ],
@@ -218,6 +225,7 @@ class _BestMatchedLabel extends StatelessWidget {
   Widget build(BuildContext context) {
     final onboardingL10n = context.l10n.onboarding;
     return Row(
+      key: const Key('onboard_v2_course_best_matched_label'),
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         _labelStar(),
