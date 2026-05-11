@@ -153,7 +153,8 @@ void main() {
 
     expect(tester.takeException(), isNull);
     expect(find.byKey(const Key('onboard_v2_course_picker_page_view')), findsOneWidget);
-    expect(tester.widget<PageView>(find.byKey(const Key('onboard_v2_course_picker_page_view'))).padEnds, isFalse);
+    expect(tester.widget<PageView>(find.byKey(const Key('onboard_v2_course_picker_page_view'))).padEnds, isTrue);
+    expect(tester.getSize(find.byKey(const Key('onboard_v2_course_picker_page_view'))).width, 375);
     expect(find.byKey(const Key('onboard_v2_course_best_matched_label')), findsOneWidget);
     expect(find.byKey(const Key('onboard_v2_course_indicator_row')), findsOneWidget);
     expect(find.text('Focus Basics'), findsOneWidget);

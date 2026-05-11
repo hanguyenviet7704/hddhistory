@@ -169,25 +169,33 @@ class _CourseCarousel extends StatelessWidget {
         12.verticalSpace,
         SizedBox(
           height: 260.w,
-          child: PageView.builder(
-            key: const Key('onboard_v2_course_picker_page_view'),
-            controller: controller,
-            padEnds: false,
-            itemCount: state.recommendedCourses.length,
-            onPageChanged: cubit.setCurrentCourseIndex,
-            itemBuilder: (context, index) {
-              final course = state.recommendedCourses[index];
-              return AnimatedBuilder(
-                animation: controller,
-                builder: (context, child) {
-                  final page = controller.hasClients ? (controller.page ?? controller.initialPage.toDouble()) : state.currentCourseIndex.toDouble();
-                  final distance = (page - index).abs().clamp(0.0, 1.0);
-                  final scale = 1.0 - (distance * (1.0 - _p8SideCourseCardScale));
-                  return Transform.scale(scale: scale, child: child);
+          child: OverflowBox(
+            minWidth: MediaQuery.sizeOf(context).width,
+            maxWidth: MediaQuery.sizeOf(context).width,
+            alignment: Alignment.center,
+            child: SizedBox(
+              width: MediaQuery.sizeOf(context).width,
+              height: 260.w,
+              child: PageView.builder(
+                key: const Key('onboard_v2_course_picker_page_view'),
+                controller: controller,
+                itemCount: state.recommendedCourses.length,
+                onPageChanged: cubit.setCurrentCourseIndex,
+                itemBuilder: (context, index) {
+                  final course = state.recommendedCourses[index];
+                  return AnimatedBuilder(
+                    animation: controller,
+                    builder: (context, child) {
+                      final page = controller.hasClients ? (controller.page ?? controller.initialPage.toDouble()) : state.currentCourseIndex.toDouble();
+                      final distance = (page - index).abs().clamp(0.0, 1.0);
+                      final scale = 1.0 - (distance * (1.0 - _p8SideCourseCardScale));
+                      return Transform.scale(scale: scale, child: child);
+                    },
+                    child: OnboardV2CoursePickerCard(course: course),
+                  );
                 },
-                child: OnboardV2CoursePickerCard(course: course),
-              );
-            },
+              ),
+            ),
           ),
         ),
         if (hasMultipleCourses) ...[
