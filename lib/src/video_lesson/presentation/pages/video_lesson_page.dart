@@ -85,6 +85,7 @@ class _VideoLessonPageState extends State<VideoLessonPage> {
             AppService.instance.appTrackingService.trackVideoLessonExitClick(
               trackingData,
               nodeId: state.nodeId,
+              videoPosition: state.positionSeconds,
             );
           }
           _hasTrackedExit = true;

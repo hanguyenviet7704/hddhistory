@@ -8,11 +8,13 @@ class RoadmapDetailPopup extends StatelessWidget {
     required this.lesson,
     required this.courseLevel,
     this.bottomInset = 0,
+    this.onStart,
   });
 
   final LessonEntity lesson;
   final CourseLevel courseLevel;
   final double bottomInset;
+  final VoidCallback? onStart;
 
   KeypointEntity get keypoint => lesson.firstKeypoint;
 
@@ -38,7 +40,8 @@ class RoadmapDetailPopup extends StatelessWidget {
       AppService.instance.appTrackingService.trackKeypointAudioPopupView(keypointTracking);
     }
 
-    return showModalBottomSheet<void>(
+    var didStart = false;
+    await showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
@@ -57,13 +60,19 @@ class RoadmapDetailPopup extends StatelessWidget {
           lesson: lesson,
           courseLevel: courseLevel,
           bottomInset: bottomInset,
+          onStart: () => didStart = true,
         ),
       ),
     );
+
+    if (!didStart && lesson.firstKeypoint.hasUsableAudio && keypointTracking != null) {
+      AppService.instance.appTrackingService.trackKeypointAudioPopupExitClick(keypointTracking);
+    }
   }
 
   void _startLearning(BuildContext context, LessonEntryMode mode) {
     if (lesson.id.isEmpty || keypoint.id.isEmpty) return;
+    onStart?.call();
 
     final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
     if (trackingData != null) {

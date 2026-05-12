@@ -144,6 +144,7 @@ extension _VideoLessonPageOverlayActions on _VideoLessonPageState {
       AppService.instance.appTrackingService.trackVideoLessonExitClick(
         trackingData,
         nodeId: state.nodeId,
+        videoPosition: state.positionSeconds,
       );
     }
 

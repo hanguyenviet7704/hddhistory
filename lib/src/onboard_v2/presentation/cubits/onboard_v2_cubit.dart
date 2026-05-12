@@ -147,7 +147,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     final serial = _requestSerial;
     OnboardV2Tracking.track(
       TrackingKey.onboardV2P3ContinueClick,
-      parameters: OnboardV2Tracking.ageParams(selectedAge),
+      parameters: OnboardV2Tracking.ageSheetParams(selectedAge),
     );
 
     emit(
@@ -319,7 +319,7 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
 
   void continueFromP5Paths() {
     if (!state.canContinuePaths) return;
-    OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick, parameters: OnboardV2Tracking.selectedPathParams(state.selectedPaths));
+    OnboardV2Tracking.track(TrackingKey.onboardV2P5ContinueClick, parameters: OnboardV2Tracking.selectedPathSheetParams(state.selectedPaths));
     emit(state.copyWith(currentPage: OnboardV2PageStep.p6PathMap));
   }
 
@@ -363,10 +363,10 @@ class OnboardV2Cubit extends Cubit<OnboardV2State> {
     if (!state.canContinueSymptoms) return;
     OnboardV2Tracking.track(
       TrackingKey.onboardV2P7ContinueClick,
-      parameters: {
-        ...OnboardV2Tracking.selectedPathParams(state.selectedPaths),
-        ...OnboardV2Tracking.selectedSymptomParams(state.selectedSymptoms),
-      },
+      parameters: OnboardV2Tracking.pathRelateSheetParams(
+        selectedPaths: state.selectedPaths,
+        selectedSymptoms: state.selectedSymptoms,
+      ),
     );
     emit(state.copyWith(currentPage: OnboardV2PageStep.p8CoursePicker));
     await loadCoursesForP8(force: true);

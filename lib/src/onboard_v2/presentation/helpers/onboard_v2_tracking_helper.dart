@@ -28,6 +28,14 @@ class OnboardV2Tracking {
     };
   }
 
+  static Map<String, dynamic> ageSheetParams(OnboardOptionEntity age) {
+    final trackingLabel = age.trackingLabel.trim();
+    return {
+      ...ageParams(age),
+      'age': trackingLabel.isNotEmpty ? trackingLabel : OnboardV2AgeTextResolver.resolve(age),
+    };
+  }
+
   static Map<String, dynamic> pathParams(OnboardingPath path, {required List<OnboardingPath> selectedPaths}) {
     return {
       'path_id': path.trackingId,
@@ -41,6 +49,13 @@ class OnboardV2Tracking {
       'selected_path_ids': selectedPaths.map((path) => path.trackingId).toList(),
       'selected_path_names': selectedPaths.map((path) => path.title).toList(),
       'selected_path_count': selectedPaths.length,
+    };
+  }
+
+  static Map<String, dynamic> selectedPathSheetParams(List<OnboardingPath> selectedPaths) {
+    return {
+      ...selectedPathParams(selectedPaths),
+      'path_selected': _joinTrackingValues(selectedPaths.map(_pathSheetValue)),
     };
   }
 
@@ -66,6 +81,23 @@ class OnboardV2Tracking {
     };
   }
 
+  static Map<String, dynamic> selectedSymptomSheetParams(List<OnboardingSymptom> selectedSymptoms) {
+    return {
+      ...selectedSymptomParams(selectedSymptoms),
+      'symptom_selected': _joinTrackingValues(selectedSymptoms.map(_symptomSheetValue)),
+    };
+  }
+
+  static Map<String, dynamic> pathRelateSheetParams({
+    required List<OnboardingPath> selectedPaths,
+    required List<OnboardingSymptom> selectedSymptoms,
+  }) {
+    return {
+      ...selectedPathParams(selectedPaths),
+      ...selectedSymptomSheetParams(selectedSymptoms),
+    };
+  }
+
   static Map<String, dynamic> coursesLoadedParams({
     required List<CourseEntity> courses,
     required List<OnboardingSymptom> selectedSymptoms,
@@ -84,6 +116,9 @@ class OnboardV2Tracking {
       'current_course_index': currentCourseIndex,
       'selected_course_id': course.id,
       'selected_course_name': course.trackingNameOrText,
+      'course_id': course.id,
+      'course_name': course.trackingNameOrText,
+      'is_best_matched': currentCourseIndex == 0 ? 'yes' : 'no',
     };
   }
 
@@ -142,6 +177,45 @@ class OnboardV2Tracking {
       OnboardV2PageStep.p6PathMap => 'p6_path_map',
       OnboardV2PageStep.p7Symptoms => 'p7_symptoms',
       OnboardV2PageStep.p8CoursePicker => 'p8_course_picker',
+    };
+  }
+
+  static String _joinTrackingValues(Iterable<String> values) {
+    return values.where((value) => value.isNotEmpty).join(',');
+  }
+
+  static String _pathSheetValue(OnboardingPath path) {
+    return switch (path) {
+      OnboardingPath.feelBetter => 'feel_better',
+      OnboardingPath.thinkBetter => 'think_better',
+      OnboardingPath.workBetter => 'work_better',
+      OnboardingPath.connectBetter => 'connect_better',
+      OnboardingPath.learnBetter => 'learn_better',
+      OnboardingPath.exploreBetter => 'explore_better',
+    };
+  }
+
+  static String _symptomSheetValue(OnboardingSymptom symptom) {
+    return switch (symptom) {
+      OnboardingSymptom.motivationDisappears => 'motivation_disappear',
+      OnboardingSymptom.lifeFeelsOverwhelming => 'life_overwhelming',
+      OnboardingSymptom.endlessScrollingFeelsEmpty => 'scroll_feel_empty',
+      OnboardingSymptom.overthinking => 'tend_overthink',
+      OnboardingSymptom.tryingToDoTooMuch => 'too_much_at_once',
+      OnboardingSymptom.rushedDecisions => 'rush_decisions_regret',
+      OnboardingSymptom.difficultyBuildingHabits => 'building_habits_hard',
+      OnboardingSymptom.timeSlipsAway => 'time_slips_away',
+      OnboardingSymptom.strugglingToBreakBadHabits => 'break_bad_habit',
+      OnboardingSymptom.anxietyAroundHardConversations => 'hard_conversations_anxious',
+      OnboardingSymptom.wantToListenMoreDeeply => 'listen_more_deeply',
+      OnboardingSymptom.regretSayingThingsInEmotion => 'regret_words_emotions',
+      OnboardingSymptom.learningDoesNotStick => 'learning_not_stick',
+      OnboardingSymptom.forgettingAfterStudying => 'study_forget_morning',
+      OnboardingSymptom.losingTrainOfThought => 'losing_train_thought',
+      OnboardingSymptom.curiousAboutBody => 'curious_body_works',
+      OnboardingSymptom.loveLearningFromGreatMinds => 'learn_from_great_minds',
+      OnboardingSymptom.amazedByHumanBody => 'body_surprises_me',
+      OnboardingSymptom.unknown => '',
     };
   }
 }

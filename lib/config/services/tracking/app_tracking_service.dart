@@ -69,6 +69,7 @@ final class AppTrackingService extends ITrackingService {
     String? mode,
     String? entryPoint,
     double? speed,
+    int? audioPosition,
     int? seekFromSecond,
     int? seekToSecond,
   }) {
@@ -77,6 +78,8 @@ final class AppTrackingService extends ITrackingService {
       ..._optionalStringParam('mode', mode),
       ..._optionalStringParam('entry_point', entryPoint),
       ..._optionalParam('speed', speed),
+      ..._optionalParam('speed_value', speed),
+      ..._optionalParam('audio_position', audioPosition),
       ..._optionalParam('seek_from_second', seekFromSecond),
       ..._optionalParam('seek_to_second', seekToSecond),
     };
@@ -127,15 +130,20 @@ final class AppTrackingService extends ITrackingService {
     int? seekToSecond,
     int? seekLatencyMs,
     int? timeToFirstFrameMs,
+    int? videoPosition,
     bool? isCorrect,
     String? initStatus,
     String? warmupState,
   }) {
+    final keypoint = trackingData.lesson.firstKeypoint;
     return {
       ..._courseLessonParams(trackingData),
+      'keypoint_id': keypoint.id,
+      'keypoint_name': keypoint.trackingName,
       'node_id': nodeId,
       'lesson_type': LessonType.video.trackingName,
       ..._optionalParam('at_second', atSecond),
+      ..._optionalParam('video_position', videoPosition),
       ..._optionalStringParam('question_id', questionId),
       ..._optionalStringParam('note_id', noteId),
       ..._optionalStringParam('note_mode', noteMode),
@@ -960,10 +968,15 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackVideoLessonExitClick(
     CourseLessonTrackingData trackingData, {
     required String nodeId,
+    required int videoPosition,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.videoLessonExitClick,
-      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        videoPosition: videoPosition,
+      ),
     );
   }
 
@@ -982,10 +995,15 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackVideoLessonPauseClick(
     CourseLessonTrackingData trackingData, {
     required String nodeId,
+    required int videoPosition,
   }) async {
     _appTrackingService.trackEvent(
       TrackingKey.videoLessonPauseClick,
-      parameters: _videoLessonParams(trackingData, nodeId: nodeId),
+      parameters: _videoLessonParams(
+        trackingData,
+        nodeId: nodeId,
+        videoPosition: videoPosition,
+      ),
     );
   }
 
@@ -1005,6 +1023,7 @@ final class AppTrackingService extends ITrackingService {
         seekFromSecond: seekFromSecond,
         seekToSecond: seekToSecond,
         seekLatencyMs: seekLatencyMs,
+        videoPosition: seekToSecond,
       ),
     );
   }
@@ -1074,6 +1093,7 @@ final class AppTrackingService extends ITrackingService {
         noteMode: noteMode,
         noteId: noteId,
         atSecond: atSecond,
+        videoPosition: atSecond,
       ),
     );
   }
@@ -1189,6 +1209,7 @@ final class AppTrackingService extends ITrackingService {
         nodeId: nodeId,
         questionId: questionId,
         atSecond: atSecond,
+        videoPosition: atSecond,
         isCorrect: isCorrect,
       ),
     );
@@ -1209,6 +1230,7 @@ final class AppTrackingService extends ITrackingService {
         nodeId: nodeId,
         questionId: questionId,
         atSecond: atSecond,
+        videoPosition: atSecond,
         isCorrect: isCorrect,
       ),
     );
@@ -1229,6 +1251,7 @@ final class AppTrackingService extends ITrackingService {
         nodeId: nodeId,
         questionId: questionId,
         atSecond: atSecond,
+        videoPosition: atSecond,
         isCorrect: isCorrect,
       ),
     );
@@ -1290,6 +1313,14 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
+  Future<void> trackKeypointAudioPopupExitClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioPopupExitClick,
+      parameters: _keypointAudioParams(trackingData, entryPoint: 'roadmap_popup'),
+    );
+  }
+
+  @override
   Future<void> trackKeypointAudioScreenView(
     KeypointTrackingData trackingData, {
     required String mode,
@@ -1305,13 +1336,15 @@ final class AppTrackingService extends ITrackingService {
     KeypointTrackingData trackingData, {
     required String mode,
     required String entryPoint,
+    int? audioPosition,
   }) async {
     _appTrackingService.trackEvent(
-      TrackingKey.keypointAudioModeSwitch,
+      mode == LessonEntryMode.read.routeValue ? TrackingKey.keypointAudioToTextSwitchClick : TrackingKey.keypointTextToAudioSwitchClick,
       parameters: _keypointAudioParams(
         trackingData,
         mode: mode,
         entryPoint: entryPoint,
+        audioPosition: audioPosition,
       ),
     );
   }
@@ -1325,10 +1358,32 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackKeypointAudioPauseClick(KeypointTrackingData trackingData) async {
+  Future<void> trackKeypointAudioPauseClick(
+    KeypointTrackingData trackingData, {
+    required int audioPosition,
+  }) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointAudioPauseClick,
-      parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: LessonEntryMode.audio.routeValue,
+        audioPosition: audioPosition,
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioExitClick(
+    KeypointTrackingData trackingData, {
+    required int audioPosition,
+  }) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioExitClick,
+      parameters: _keypointAudioParams(
+        trackingData,
+        mode: LessonEntryMode.audio.routeValue,
+        audioPosition: audioPosition,
+      ),
     );
   }
 
@@ -1393,6 +1448,14 @@ final class AppTrackingService extends ITrackingService {
   Future<void> trackKeypointAudioCompleteView(KeypointTrackingData trackingData) async {
     _appTrackingService.trackEvent(
       TrackingKey.keypointAudioCompleteView,
+      parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
+    );
+  }
+
+  @override
+  Future<void> trackKeypointAudioCompleteContinueClick(KeypointTrackingData trackingData) async {
+    _appTrackingService.trackEvent(
+      TrackingKey.keypointAudioCompleteContinueClick,
       parameters: _keypointAudioParams(trackingData, mode: LessonEntryMode.audio.routeValue),
     );
   }

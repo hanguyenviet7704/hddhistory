@@ -33,6 +33,9 @@ class _KeypointCompletePageState extends State<KeypointCompletePage> {
       final trackingData = KeypointTrackingData.fromContext();
       if (trackingData != null) {
         AppService.instance.appTrackingService.trackKeypointFinishComplete(trackingData);
+        if (context.read<LessonCubit>().state.completionOrigin == LessonCompletionOrigin.audio) {
+          AppService.instance.appTrackingService.trackKeypointAudioCompleteContinueClick(trackingData);
+        }
       }
 
       await _handleLearningStreakGate();
