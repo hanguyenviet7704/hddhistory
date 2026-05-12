@@ -8,11 +8,62 @@ abstract class SkillsetEntity with _$SkillsetEntity {
     @Default(BaseMultiLanguage()) BaseMultiLanguage description,
     @Default('') String image,
     @Default([]) List<CourseEntity> courses,
+    SkillsetOnboardingIntroduce? onboardingIntroduce,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _SkillsetEntity;
 
   factory SkillsetEntity.fromJson(Map<String, dynamic> json) => _$SkillsetEntityFromJson(json);
+}
+
+enum SkillsetOnboardingIntroduce {
+  myFeelingsFeelLoud('MY_FEELINGS_FEEL_LOUD'),
+  myThoughtsCircle('MY_THOUGHTS_CIRCLE'),
+  imBusyAllDay('IM_BUSY_ALL_DAY'),
+  iTalkToMany('I_TALK_TO_MANY'),
+  whatILearnFades('WHAT_I_LEARN_FADES'),
+  nothingFeelsNew('NOTHING_FEELS_NEW'),
+  ;
+
+  const SkillsetOnboardingIntroduce(this.name);
+
+  final String name;
+
+  String get title => switch (this) {
+    myFeelingsFeelLoud => l10n.onboarding.onboardingIntroduceMyFeelings,
+    myThoughtsCircle => l10n.onboarding.onboardingIntroduceMyThoughts,
+    imBusyAllDay => l10n.onboarding.onboardingIntroduceBusyAllDay,
+    iTalkToMany => l10n.onboarding.onboardingIntroduceTalkToMany,
+    whatILearnFades => l10n.onboarding.onboardingIntroduceLearnFades,
+    nothingFeelsNew => l10n.onboarding.onboardingIntroduceNothingNew,
+  };
+
+  String get shortTitle => switch (this) {
+    myFeelingsFeelLoud => 'Feel',
+    myThoughtsCircle => 'Think',
+    imBusyAllDay => 'Work',
+    iTalkToMany => 'Connect',
+    whatILearnFades => 'Learn',
+    nothingFeelsNew => 'Explore',
+  };
+  
+  String get image => switch (this) {
+    myFeelingsFeelLoud => AppAsset.icons.app.icHeart.path,
+    myThoughtsCircle => AppAsset.icons.app.icCompass.path,
+    imBusyAllDay => AppAsset.icons.app.icDirectHit.path,
+    iTalkToMany => AppAsset.icons.app.icSpeechBallon.path,
+    whatILearnFades => AppAsset.icons.app.icBook.path,
+    nothingFeelsNew => AppAsset.icons.app.icWorldMap.path,
+  };
+
+  String get imageDisable => switch (this) {
+    myFeelingsFeelLoud => AppAsset.icons.app.icHeartDisable.path,
+    myThoughtsCircle => AppAsset.icons.app.icCompassDisable.path,
+    imBusyAllDay => AppAsset.icons.app.icDirectHitDisable.path,
+    iTalkToMany => AppAsset.icons.app.icSpeechBallonDisable.path,
+    whatILearnFades => AppAsset.icons.app.icBookDisable.path,
+    nothingFeelsNew => AppAsset.icons.app.icWorldMapDisable.path,
+  };
 }
 
 extension SkillsetEntityExtension on SkillsetEntity {
@@ -22,7 +73,6 @@ extension SkillsetEntityExtension on SkillsetEntity {
 }
 
 extension SkillsetListExtension on List<SkillsetEntity> {
-
   SkillsetEntity? skillsetFromIndex(int index) => elementAtOrNull(index);
 
   SkillsetEntity resolveSkillsetByCourseId(String courseId, {SkillsetEntity? fallback}) {

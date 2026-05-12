@@ -41,6 +41,7 @@ part 'domain/entities/learning_item_entity.dart';
 part 'domain/entities/roadmap_entity.dart';
 part 'domain/entities/roadmap_level_entity.dart';
 part 'domain/entities/roadmap_node_entity.dart';
+part 'domain/helpers/course_handoff_helper.dart';
 part 'domain/repositories/i_course_lesson_repository.dart';
 part 'domain/repositories/i_course_repository.dart';
 part 'domain/usecases/course/get_all_courses_usecase.dart';

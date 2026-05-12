@@ -39,6 +39,12 @@ class ContinueButton extends StatelessWidget {
     if (state.currentStep == DataCollectStep.collectName) {
       AppService.instance.appTrackingService.trackObdNameContinue();
       final flowConfig = AppService.instance.remoteConfigService.onboardingConfig;
+      if (flowConfig.isDisabled) {
+        AppDI.injector.get<UserCubit>().startFirstTimeRegisterFlow();
+        const NotificationRequestRoute(showPaywallAfterAuth: true).go(context);
+        return;
+      }
+
       if (flowConfig.isBranching && !state.shouldSkipBranchingFlow) {
         OnboardBranchingRoute(userName: _resolveUserName(cubit)).go(context);
         return;

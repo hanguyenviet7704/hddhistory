@@ -25,6 +25,21 @@ class OnboardBranchingRoute extends GoRouteData with $OnboardBranchingRoute {
   );
 }
 
+@TypedGoRoute<OnboardV2Route>(path: RoutePath.onboardV2, name: RouteNamed.onboardV2)
+class OnboardV2Route extends GoRouteData with $OnboardV2Route {
+  const OnboardV2Route();
+
+  @override
+  Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
+    providers: [
+      BlocProvider.value(value: AppDI.injector.get<OnboardV2Cubit>()..initialize()),
+      BlocProvider.value(value: AppDI.injector.get<UserCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<NotificationCubit>()),
+    ],
+    child: const OnboardV2Page(),
+  );
+}
+
 //* Data Collect Page
 @TypedGoRoute<DataCollectRoute>(path: RoutePath.dataCollect, name: RouteNamed.dataCollect)
 class DataCollectRoute extends GoRouteData with $DataCollectRoute {

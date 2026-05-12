@@ -23,7 +23,7 @@ class CourseRepository with RestfulRequestHandlerMixin implements ICourseReposit
 
   @override
   TaskEither<AppException, BasePageBreak<CourseEntity>> getAllCourses(
-    PageBreakRequest request,
+    PageBreakRequest<CourseFilterRequest> request,
   ) {
     return callApiPageBreak<CourseModel, CourseEntity>(
       apiCall: () => _api.getAllCourses(request),
@@ -32,6 +32,7 @@ class CourseRepository with RestfulRequestHandlerMixin implements ICourseReposit
         await _localDataSource.cacheCourses(pageData.items);
       },
       onError: () async {
+        if (request.filter?.hasFilters ?? false) return null;
         final cachedModels = await _localDataSource.getCachedCourses();
         if (cachedModels.isNotEmpty) {
           return BasePageBreak<CourseEntity>(

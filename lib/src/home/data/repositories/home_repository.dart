@@ -23,7 +23,7 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
 
   @override
   TaskEither<AppException, BasePageBreak<SkillsetEntity>> getAllSkillsets(
-    PageBreakRequest request,
+    PageBreakRequest<SkillsetFilterRequest> request,
   ) {
     return callApiPageBreak<SkillsetModel, SkillsetEntity>(
       apiCall: () => _skillsetApi.getAllSkillsets(request),
@@ -32,6 +32,7 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
         await _localDataSource.cacheSkillsets(pageData.items);
       },
       onError: () async {
+        if (request.filter?.hasFilters ?? false) return null;
         final cachedModels = await _localDataSource.getCachedSkillsets();
         if (cachedModels.isNotEmpty) {
           return BasePageBreak<SkillsetEntity>(

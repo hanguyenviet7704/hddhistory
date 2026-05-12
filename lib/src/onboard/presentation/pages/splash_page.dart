@@ -8,14 +8,17 @@ class SplashPage extends StatefulWidget {
 }
 
 class _SplashPageState extends State<SplashPage> {
+  late final Future<bool> _shouldForceUpdate;
+
   @override
   void initState() {
+    _shouldForceUpdate = _resolveShouldForceUpdate();
     _trackSplashView();
     _configAppLocalization();
     _onboardingUser();
     _setTrackingUser();
     _getAppData();
-    _checkForUpdate();
+    WidgetsBinding.instance.addPostFrameCallback(_initScreen);
     super.initState();
   }
 
@@ -42,27 +45,22 @@ class _SplashPageState extends State<SplashPage> {
     context.read<UserCubit>().setIsAppEventConfigured(false);
   }
 
-  Future<void> _checkForUpdate() async {
+  Future<bool> _resolveShouldForceUpdate() async {
     try {
-      final shouldUpdate = await AppService.instance.remoteConfigService.shouldForceUpdate();
-      if (!mounted) return;
-
-      if (!shouldUpdate) {
-        WidgetsBinding.instance.addPostFrameCallback(_initScreen);
-        return;
-      }
-
-      _showUpdateDialog();
+      return await AppService.instance.remoteConfigService.shouldForceUpdate();
     } catch (e) {
       LogDev.error('Error checking for update: $e');
-      if (!mounted) return;
-      WidgetsBinding.instance.addPostFrameCallback(_initScreen);
+      return false;
     }
   }
 
   void _getAppData() {
-    AppDI.injector.get<OnboardCubit>().loadAllOnboards();
-    AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
+    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
+    if (onboardingConfig.isEnabled) {
+      AppDI.injector.get<OnboardCubit>().loadAllOnboards();
+      AppDI.injector.get<OnboardBranchingCubit>().loadOnboardingScenarioBranching();
+    }
+
     UserState userState = context.read<UserCubit>().state;
     AppGlobalValue.accessToken = userState.accessToken;
     AppGlobalValue.refreshToken = userState.refreshToken;
@@ -70,20 +68,34 @@ class _SplashPageState extends State<SplashPage> {
     context.read<IapCubit>().init();
     context.read<PageCubit>().setIsPassSplashScreen(true);
 
-    if (AppGlobalValue.accessToken.isEmpty) return;
+    if (!shouldInitializeAuthenticatedHomeData(
+      accessToken: AppGlobalValue.accessToken,
+      needsOnboarding: userState.isUserPassOnboarding,
+    )) {
+      return;
+    }
+
     AppDI.injector.get<HomeCubit>().initializeData();
   }
 
   Future<void> _initScreen(_) async {
     try {
       if (!mounted) return;
+      final splashDelay = Future<void>.delayed(const Duration(milliseconds: 1500));
+      final shouldUpdate = await _shouldForceUpdate;
+      if (!mounted) return;
+      if (shouldUpdate) {
+        _showUpdateDialog();
+        return;
+      }
+
       final deeplinkCubit = context.read<DeeplinkCubit>();
       final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
       if (!mounted || hasHandledPendingLink) return;
 
       final hasHandledInitialLink = await deeplinkCubit.initialLink();
       if (!mounted || hasHandledInitialLink) return;
-      await Future<void>.delayed(const Duration(milliseconds: 1500));
+      await splashDelay;
       if (!mounted) return;
 
       if (AppGlobalValue.accessToken.isEmpty) {
@@ -111,6 +123,12 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
+    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
+    if (shouldSkipOnboardingByRemoteConfig(onboardingConfig)) {
+      _skipOnboardingToRegister();
+      return;
+    }
+
     final onboardCubit = AppDI.injector.get<OnboardCubit>();
     await onboardCubit.loadUserByDeviceId();
     if (!mounted) return;
@@ -130,21 +148,36 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _routeAuthenticatedEntry() {
-    final roadmapId = AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id;
-    if (roadmapId.isEmpty) {
-      CourseRoute().go(context);
-      return;
+    final destination = resolveAuthenticatedSplashDestination(
+      needsOnboarding: context.read<UserCubit>().state.isUserPassOnboarding,
+      hasRoadmap: AppDI.injector.get<CourseRoadmapCubit>().state.roadmap.id.isNotEmpty,
+    );
+
+    switch (destination) {
+      case SplashAuthenticatedDestination.onboardingEntry:
+        _goOnboardingEntryByFlowConfig();
+        return;
+      case SplashAuthenticatedDestination.course:
+        CourseRoute().go(context);
+        return;
+      case SplashAuthenticatedDestination.home:
+        HomeRoute().go(context);
+        return;
     }
-    HomeRoute().go(context);
   }
 
   Future<void> _routeFallbackAfterInitError() async {
+    final userCubit = context.read<UserCubit>();
+    if (userCubit.state.isUserPassOnboarding) {
+      _goOnboardingEntryByFlowConfig();
+      return;
+    }
+
     if (AppGlobalValue.accessToken.isNotEmpty) {
       HomeRoute().go(context);
       return;
     }
 
-    final userCubit = context.read<UserCubit>();
     if (!userCubit.state.isUserPassOnboarding) {
       _goToRegister(
         showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
@@ -159,7 +192,18 @@ class _SplashPageState extends State<SplashPage> {
   }
 
   void _goOnboardingEntryByFlowConfig() {
-    OnboardIntroduceRoute().go(context);
+    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
+    if (shouldSkipOnboardingByRemoteConfig(onboardingConfig)) {
+      _skipOnboardingToRegister();
+      return;
+    }
+
+    OnboardV2Route().go(context);
+  }
+
+  void _skipOnboardingToRegister() {
+    context.read<UserCubit>().startFirstTimeRegisterFlow();
+    _goToRegister(showPaywallAfterAuth: true);
   }
 
   void _goToRegister({required bool showPaywallAfterAuth}) {
@@ -247,4 +291,33 @@ bool shouldShowRegisterPaywallAfterAuth({
   required bool hasPendingFirstTimePaywallAfterAuth,
 }) {
   return hasRecognizedDevice || hasPendingFirstTimePaywallAfterAuth;
+}
+
+@visibleForTesting
+bool shouldSkipOnboardingByRemoteConfig(OnboardingConfigEntity config) {
+  return config.isDisabled;
+}
+
+enum SplashAuthenticatedDestination {
+  onboardingEntry,
+  course,
+  home,
+}
+
+@visibleForTesting
+SplashAuthenticatedDestination resolveAuthenticatedSplashDestination({
+  required bool needsOnboarding,
+  required bool hasRoadmap,
+}) {
+  if (needsOnboarding) return SplashAuthenticatedDestination.onboardingEntry;
+  if (hasRoadmap) return SplashAuthenticatedDestination.home;
+  return SplashAuthenticatedDestination.course;
+}
+
+@visibleForTesting
+bool shouldInitializeAuthenticatedHomeData({
+  required String accessToken,
+  required bool needsOnboarding,
+}) {
+  return accessToken.isNotEmpty && !needsOnboarding;
 }

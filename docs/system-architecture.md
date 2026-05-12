@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-04-23
+**Last Updated:** 2026-05-07
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -65,7 +65,9 @@ Widget/Page
 - Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
-Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
+Current module count: **19**.
+
+Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -121,18 +123,26 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 
 ### Splash and auth-entry runtime flow
 - `SplashPage` remains the single first-entry gate after force-update and deep-link checks complete.
-- In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; otherwise it routes straight to the onboarding notification gate and then into the normal register flow.
+- In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; ordinary first-time users without a recognized device go to `OnboardV2Route`, while recognized devices continue to the notification gate/register path.
+- Authenticated startup still honors `UserCubit.isUserPassOnboarding`: a persisted access token does not bypass unfinished onboarding, and home data initialization waits until onboarding is cleared.
 - `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
-- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip onboarding content but now hand off through `NotificationRequestRoute(showPaywallAfterAuth: true)` before `RegisterRoute(showPaywallAfterAuth: true)`.
-- Unrecognized devices or safe lookup misses continue the existing onboarding intro path without surfacing a splash auth error.
+- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip `OnboardV2Route` and hand off through `NotificationRequestRoute(showPaywallAfterAuth: true)` before `RegisterRoute(showPaywallAfterAuth: true)`.
+- Unrecognized devices or safe lookup misses go to `OnboardV2Route` without surfacing a splash auth error.
 - Opening `RegisterRoute()` still silently bootstraps an anonymous guest session through `AuthBloc`, preloads `HomeCubit.initializeData(isInit: true)`, and keeps the register UI visible while the user picks Guest, Google, or Apple.
-- First-time onboarding completion now routes through `StartJourneyButton -> NotificationRequestRoute(showPaywallAfterAuth: true) -> RegisterRoute(showPaywallAfterAuth: true)` so the gate stays onboarding-scoped and the paywall handoff stays explicit.
 - The no-onboarding splash path also routes through `NotificationRequestRoute(showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(...))`, so both first-time and recognized-device register entry resolve the notification gate before auth.
 - Silent register bootstrap never opens paywall by itself. The paywall branch is only evaluated after an explicit Guest, Google, or Apple auth success.
 - Guest continue now reuses the bootstrapped anonymous session when available and only falls back to a fresh anonymous login if bootstrap failed.
 - Google and Apple continue to replace the guest session through the existing auth-success path, and any guest course handoff now routes with `CourseRoute(selectedTabIndex: 0)` while resetting home selection to the first category to avoid stale post-logout state.
 - If that first-time post-auth paywall intent is active, auth now refreshes `ProfileCubit.loadUserIapSubscriptions()` before deciding the handoff. When the refreshed user already carries active `iapSubscriptions` (`UserEntity.isPremium == true`), auth consumes the pending paywall intent and routes straight to `CourseRoute(selectedTabIndex: 0)` instead of mounting `PaywallRoute`.
 - Every paywall entry keeps the top-bar close slot reserved but hides the close affordance for five seconds before revealing it. `PaywallRoute(firstTimeUserFlow: true)` still marks the first-time onboarding paywall session for destination handling only: closing the paywall or dismissing purchase success routes to `CourseRoute(selectedTabIndex: 0)` after home data reset, while standard paywall close/purchase-success flows still route back and purchase failure or cancel leaves the user on paywall.
+
+### Onboarding V2 runtime flow
+- `OnboardV2Route` is the default first-time path and is typed at `/onboard-v2`; it builds `OnboardV2Cubit.initialize()` alongside `UserCubit` and `NotificationCubit`.
+- `OnboardV2Page` is an eight-step shell: intro, name, age, notification, path selection, path map, symptom selection, and course picker.
+- `OnboardV2Cubit` owns the flow state machine. It loads onboarding content, starts anonymous login in background, submits the P3 profile update asynchronously, derives symptoms from selected paths, and loads P8 courses with repeated `onboardingSymptoms` filters. This flow does not add a broad cache fallback.
+- P4 uses the shared notification boundary: the page refreshes permission state, either requests permission or records "maybe later", persists `UserCubit.hasCompletedFirstTimeNotificationGate`, and blocks runtime back navigation.
+- P8 shows up to three valid randomized courses, fetches the current visible course detail, then hands off through `CourseHandoffHelper` to either `CourseRoadmapRoute` or `CourseRoute(selectedTabIndex: 0)` before clearing `isUserPassOnboarding`.
+- Tracking is centralized in `TrackingKey.onboardV2*` and `OnboardV2Tracking`; onboarding copy lives in `assets/i18n/<locale>/onboarding.yaml` and generated `lib/config/l10n/*` keys.
 
 ### Notification preference runtime flow
 - `NotificationRequestRoute` is a dedicated onboarding-only pre-register gate. It mirrors `RegisterRoute` query intent flags but keeps non-onboarding `RegisterRoute()` callers unchanged.

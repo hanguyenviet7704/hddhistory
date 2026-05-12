@@ -20,6 +20,7 @@ abstract class UserModel with _$UserModel {
     @Default(false) bool anonymous,
     // @Default(OnboardModel()) OnboardModel onboarding,
     @Default([]) List<IapSubscriptionModel> iapSubscriptions,
+    @Default(false) bool isOnboarded,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _UserModel;
@@ -90,6 +91,7 @@ extension UserModelExtension on UserModel {
     anonymous: anonymous,
     // onboarding: onboarding.toEntity(),
     iapSubscriptions: iapSubscriptions.map((e) => e.toEntity()).toList(),
+    isOnboarded: isOnboarded,
     createdAt: createdAt,
     updatedAt: updatedAt,
   );

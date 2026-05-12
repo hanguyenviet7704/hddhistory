@@ -73,12 +73,12 @@ class HomeCubit extends Cubit<HomeState> with CubitUseCaseHandlerMixin<HomeState
 
     emit(state.copyWith(status: HomeStatus.loading));
 
-    PageBreakRequest pageRequest;
+    PageBreakRequest<SkillsetFilterRequest> pageRequest;
     pageRequest = isInit
-        ? const PageBreakRequest(
+        ? const PageBreakRequest<SkillsetFilterRequest>(
             order: PageBreakOrder.asc,
           )
-        : PageBreakRequest(
+        : PageBreakRequest<SkillsetFilterRequest>(
             page: state.pageData.nextPage,
             order: PageBreakOrder.asc,
           );

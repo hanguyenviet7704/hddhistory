@@ -2,15 +2,24 @@ part of '../services.dart';
 
 @LazySingleton(as: IRemoteConfigService)
 class FirebaseRemoteConfigService implements IRemoteConfigService {
+  static const Duration _fetchTimeout = Duration(seconds: 2);
+  static const Duration _startupFetchWaitTimeout = Duration(milliseconds: 1200);
+
   late final FirebaseRemoteConfig _remoteConfig;
   final IPackageInfoService _packageInfoService;
+  Future<void>? _initializeFuture;
+  Future<bool>? _fetchAndActivateFuture;
 
   FirebaseRemoteConfigService(this._packageInfoService) {
     _remoteConfig = FirebaseRemoteConfig.instance;
   }
 
   @override
-  Future<void> initialize() async {
+  Future<void> initialize() {
+    return _initializeFuture ??= _initialize();
+  }
+
+  Future<void> _initialize() async {
     try {
       // Set default values
       await _remoteConfig.setDefaults({
@@ -24,6 +33,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
           'finishOptionalKp': true,
         }),
         RemoteConfigKey.onboardingConfig: jsonEncode({
+          'enable': true,
           'flowType': OnboardingFlowType.normal.name,
         }),
         RemoteConfigKey.paywallConfig: jsonEncode({
@@ -35,15 +45,35 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
       // Set config settings
       await _remoteConfig.setConfigSettings(
         RemoteConfigSettings(
-          fetchTimeout: const Duration(minutes: 1),
+          fetchTimeout: _fetchTimeout,
           minimumFetchInterval: Duration.zero,
         ),
       );
 
-      // Fetch and activate
-      await _remoteConfig.fetchAndActivate();
+      _fetchAndActivateFuture = _fetchAndActivate();
     } catch (e) {
       LogDev.error('Error initializing Firebase Remote Config: $e');
+    }
+  }
+
+  Future<bool> _fetchAndActivate() async {
+    try {
+      return await _remoteConfig.fetchAndActivate();
+    } catch (e) {
+      LogDev.error('Error fetching Firebase Remote Config: $e');
+      return false;
+    }
+  }
+
+  Future<void> _waitForStartupFetch() async {
+    await initialize();
+    final fetchAndActivateFuture = _fetchAndActivateFuture;
+    if (fetchAndActivateFuture == null) return;
+
+    try {
+      await fetchAndActivateFuture.timeout(_startupFetchWaitTimeout);
+    } on TimeoutException {
+      LogDev.warning('Firebase Remote Config startup fetch timed out; using active cached/default config');
     }
   }
 
@@ -121,6 +151,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   @override
   Future<bool> shouldForceUpdate() async {
     try {
+      await _waitForStartupFetch();
       final config = appVersionConfig;
       if (!config.forceUserUpdate) {
         return false;

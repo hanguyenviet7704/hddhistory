@@ -10,11 +10,13 @@ abstract class CourseEntity with _$CourseEntity {
     @Default('') String skillsetId,
     @Default(SkillsetEntity()) SkillsetEntity skillset,
     @Default(0) int numberOfLesson,
+    @Default([]) List<OnboardingSymptom> onboardingSymptoms,
     @Default(CoursePublishStatus.published) CoursePublishStatus status,
   }) = _CourseEntity;
 
   factory CourseEntity.fromJson(Map<String, dynamic> json) => _$CourseEntityFromJson(json);
 }
+
 
 extension CourseEntityExtension on CourseEntity {
   CourseEntity get withSkillset {

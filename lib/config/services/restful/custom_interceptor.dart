@@ -4,7 +4,7 @@ part of '../services.dart';
 @Named(DIKey.thirdPartyInterceptor)
 class ThirdPartyInterceptor extends BaseInterceptor {
   final bool enableLog;
-  ThirdPartyInterceptor({this.enableLog = false})
+  ThirdPartyInterceptor({@ignoreParam this.enableLog = false})
     : super(
         prefix: '[ThirdParty]',
         error: enableLog,

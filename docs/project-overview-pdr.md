@@ -1,6 +1,6 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-04-23
+**Last Updated:** 2026-05-07
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
@@ -27,7 +27,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 10. Daily streak check/commit from home and lesson-completion moments.
 
 ## 3. Current Module Scope (Code-Verified)
-`lib/src` currently contains 18 feature modules:
+`lib/src` currently contains 19 feature modules:
 
 | Module | Primary responsibility |
 | --- | --- |
@@ -43,6 +43,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `monetization` | Paywall, products, purchase verification |
 | `onboard` | Intro/onboarding screens |
 | `onboard_branching` | Branching onboarding scenario module |
+| `onboard_v2` | Eight-step first-time onboarding, notification gate, path/symptom selection, and course-picker handoff |
 | `output_practice` | Course-shell output practice conversation flow, intro sheet, socket room, and retryable history |
 | `profile` | User profile and upload flows |
 | `progress` | User progress, course and achievement progress |
@@ -52,7 +53,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 
 Notes:
 - Naming intentionally follows code paths, including `achievenment`.
-- `feedback`, `learning_streak`, `onboard_branching`, and `video_lesson` are part of the current module map.
+- `feedback`, `learning_streak`, `onboard_branching`, `onboard_v2`, `output_practice`, and `video_lesson` are part of the current module map.
 
 ## 4. Functional Requirements
 1. Authentication and session handling
@@ -117,6 +118,13 @@ Notes:
 - Enforce deterministic fallback from malformed branching scenario data to normal onboarding.
 - Prevent forced register redirects during active onboarding branching transition.
 
+12. Onboard V2 first-time flow
+- Route ordinary first-time no-token users to `/onboard-v2`.
+- Drive intro, name, age, notification, path selection, path map, symptom selection, and course picker steps from `OnboardV2Cubit`.
+- Start anonymous login in background and update profile after age selection without blocking the notification gate.
+- Persist one-time notification-gate completion and hand off to the selected course roadmap or course list.
+- Track Onboard V2 step, path, symptom, notification, course picker, and handoff events.
+
 ## 5. Non-Functional Requirements
 1. Architecture consistency
 - Maintain `presentation -> domain -> data` flow for feature work.
@@ -136,7 +144,7 @@ Notes:
 
 5. Observability
 - Preserve app-level error tracking and analytics service integrations.
-- Keep the shipped video-lesson slice scoped to entry, playback shell, and completion; do not imply notes/summary/share/timed-question are complete until their slices land.
+- Keep video-lesson tracking aligned with shipped entry, playback, notes, summary, share, timed-question, and completion states.
 
 ## 6. Technical Constraints (Code-Verified)
 - Dart SDK: `>=3.11.0 <4.0.0` (`pubspec.yaml`).
@@ -172,6 +180,8 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-05-08 | Updated Onboard V2 requirements for the eight-step path/symptom/course-picker flow, repeated symptom course filtering, and splash protection for authenticated unfinished onboarding. |
+| 2026-05-07 | Synced code-verified module scope to 19 modules, added Onboard V2 requirements, and aligned video-lesson observability wording with shipped overlays. |
 | 2026-04-23 | Added completed-level additional-content request requirements for roadmap footer eligibility, yes/no persistence, and centered request popup behavior. |
 | 2026-04-13 | Added dual-mode lesson requirements for roadmap popup branching, single-route read/listen entry, route-session audio playback, shared completion handoff, and no-audio fallback behavior. |
 | 2026-04-08 | Added first-slice video-lesson course-shell requirements (roadmap entry, intro sheet, player shell, completion handoff, and tracking) and synced module scope to 18 modules. |

@@ -13,32 +13,46 @@ abstract interface class IDeviceInfoService {
 class DeviceInfoService implements IDeviceInfoService {
   final ILocalStoreService _localStoreService;
   final DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
+  final bool? _isIOSOverride;
+  final bool? _isAndroidOverride;
+  String? _cachedIosDeviceToken;
+  Future<String>? _iosDeviceTokenTask;
 
-  DeviceInfoService(this._localStoreService) {
-    initialize();
+  DeviceInfoService(
+    this._localStoreService, {
+    @ignoreParam @visibleForTesting bool? isIOSOverride,
+    @ignoreParam @visibleForTesting bool? isAndroidOverride,
+    @ignoreParam @visibleForTesting bool enableStartupInitialization = true,
+  }) : _isIOSOverride = isIOSOverride,
+       _isAndroidOverride = isAndroidOverride {
+    if (enableStartupInitialization) {
+      unawaited(initialize());
+    }
   }
 
   DeviceInfoPlugin get deviceInfoPlugin => _deviceInfoPlugin;
+  bool get _isIOS => _isIOSOverride ?? Platform.isIOS;
+  bool get _isAndroid => _isAndroidOverride ?? Platform.isAndroid;
 
   /// Initialize the device info service
-  void initialize() async {
+  Future<void> initialize() async {
     LogDev.info('DeviceInfoService initialized');
-    await getAllDeviceInfo();
-    if (!Platform.isIOS) return;
+    try {
+      await getAllDeviceInfo();
+    } catch (error) {
+      LogDev.warning('Error initializing device info: $error');
+    }
+    if (!_isIOS) return;
 
-    final deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
+    final deviceId = await _getOrCreateIosDeviceToken();
     LogDev.one('deviceId: $deviceId');
-    if (deviceId.isNotEmpty) return;
-
-    final fakeDeviceId = const Uuid().v8();
-    await _localStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: fakeDeviceId);
   }
 
   /// Returns the Android SDK version as an integer.
   /// For non-Android devices, it returns null.
   @override
   Future<int?> getAndroidSdkVersion() async {
-    if (Platform.isAndroid) {
+    if (_isAndroid) {
       final androidInfo = await _deviceInfoPlugin.androidInfo;
       return androidInfo.version.sdkInt;
     }
@@ -62,21 +76,56 @@ class DeviceInfoService implements IDeviceInfoService {
   Future<String> get deviceToken async {
     String deviceId = '';
     try {
-      if (Platform.isAndroid) {
+      if (_isAndroid) {
         final AndroidDeviceInfo androidInfo = await _deviceInfoPlugin.androidInfo;
         deviceId = androidInfo.id;
-      } else if (Platform.isIOS) {
-        deviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
+      } else if (_isIOS) {
+        deviceId = await _getOrCreateIosDeviceToken();
       }
     } catch (e) {
       LogDev.warning('Error getting device info: $e');
     }
 
-    if (deviceId.isEmpty) {
+    if (deviceId.isEmpty && _isIOS) {
+      deviceId = _cachedIosDeviceToken ?? const Uuid().v8();
+      _cachedIosDeviceToken = deviceId;
+    } else if (deviceId.isEmpty) {
       deviceId = const Uuid().v4();
     }
 
     return deviceId;
+  }
+
+  Future<String> _getOrCreateIosDeviceToken() {
+    final cachedToken = _cachedIosDeviceToken;
+    if (cachedToken != null && cachedToken.isNotEmpty) {
+      return Future.value(cachedToken);
+    }
+
+    final activeTask = _iosDeviceTokenTask;
+    if (activeTask != null) return activeTask;
+
+    late final Future<String> task;
+    task = _loadOrCreateIosDeviceToken().whenComplete(() {
+      if (identical(_iosDeviceTokenTask, task)) {
+        _iosDeviceTokenTask = null;
+      }
+    });
+    _iosDeviceTokenTask = task;
+    return task;
+  }
+
+  Future<String> _loadOrCreateIosDeviceToken() async {
+    final storedDeviceId = await _localStoreService.getString(key: LocalStoreKey.deviceTokenUID);
+    if (storedDeviceId.isNotEmpty) {
+      _cachedIosDeviceToken = storedDeviceId;
+      return storedDeviceId;
+    }
+
+    final generatedDeviceId = const Uuid().v8();
+    await _localStoreService.setString(key: LocalStoreKey.deviceTokenUID, value: generatedDeviceId);
+    _cachedIosDeviceToken = generatedDeviceId;
+    return generatedDeviceId;
   }
 
   @override

@@ -28,7 +28,11 @@ class AppInterceptor extends BaseInterceptor {
 
   void _applyHeaders(RequestOptions options) {
     final hasAuthorizationHeader = options.headers.containsKey(NetworkConstant.authorization);
-    if (!hasAuthorizationHeader && AppGlobalValue.accessToken.isNotEmpty) {
+    if (shouldAttachAuthorizationHeaderToPath(
+      options.path,
+      hasAuthorizationHeader: hasAuthorizationHeader,
+      hasAccessToken: AppGlobalValue.accessToken.isNotEmpty,
+    )) {
       options.headers[NetworkConstant.authorization] = 'Bearer ${AppGlobalValue.accessToken}';
     }
     options.headers['lang'] = _currentLanguage;
@@ -55,6 +59,13 @@ class AppInterceptor extends BaseInterceptor {
     _logUnauthorizedError(err);
 
     final requestOptions = err.requestOptions;
+    if (_isRefreshTokenRequest(requestOptions)) {
+      LogDev.warning('$prefix Cannot retry: Refresh token request is unauthorized');
+      _handleUnauthorized();
+      handler.reject(err);
+      return true;
+    }
+
     final retryCount = (requestOptions.extra[_retryCountKey] as int?) ?? 0;
 
     if (retryCount >= _maxRetryAttempts) {
@@ -187,6 +198,20 @@ class AppInterceptor extends BaseInterceptor {
     return data.toString();
   }
 }
+
+@visibleForTesting
+bool isRefreshTokenRequestPath(String path) => path.contains('/refresh-token');
+
+@visibleForTesting
+bool shouldAttachAuthorizationHeaderToPath(
+  String path, {
+  required bool hasAuthorizationHeader,
+  required bool hasAccessToken,
+}) {
+  return !hasAuthorizationHeader && !isRefreshTokenRequestPath(path) && hasAccessToken;
+}
+
+bool _isRefreshTokenRequest(RequestOptions options) => isRefreshTokenRequestPath(options.path);
 
 class ThirdPartyInterceptors extends BaseInterceptor {
   ThirdPartyInterceptors() : super(prefix: '[Third Party]');

@@ -20,6 +20,7 @@ abstract class UserEntity with _$UserEntity {
     @Default(false) bool anonymous,
     // @Default(OnboardEntity()) OnboardEntity onboarding,
     @Default([]) List<IapSubscriptionEntity> iapSubscriptions,
+    @Default(false) bool isOnboarded,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) = _UserEntity;
