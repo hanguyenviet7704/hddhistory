@@ -102,24 +102,25 @@ class DataCollectSummaryRoute extends GoRouteData with $DataCollectSummaryRoute 
 @TypedGoRoute<NotificationRequestRoute>(path: RoutePath.notificationRequest, name: RouteNamed.notificationRequest)
 class NotificationRequestRoute extends GoRouteData with $NotificationRequestRoute {
   const NotificationRequestRoute({
-    this.forceChooseCourseAfterLogin = false,
+    this.courseEntryMode = false,
     this.showPaywallAfterAuth = false,
   }) : assert(
-         !(forceChooseCourseAfterLogin && showPaywallAfterAuth),
-         'NotificationRequestRoute cannot force course selection and show paywall after auth at the same time.',
+         !(courseEntryMode && showPaywallAfterAuth),
+         'NotificationRequestRoute cannot enter course mode and show paywall after auth at the same time.',
        );
 
-  final bool forceChooseCourseAfterLogin;
+  final bool courseEntryMode;
   final bool showPaywallAfterAuth;
 
   @override
   Widget build(BuildContext context, GoRouterState state) => MultiBlocProvider(
     providers: [
+      BlocProvider.value(value: AppDI.injector.get<AuthBloc>()),
       BlocProvider.value(value: AppDI.injector.get<UserCubit>()),
       BlocProvider.value(value: AppDI.injector.get<NotificationCubit>()),
     ],
     child: NotificationRequestPage(
-      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+      courseEntryMode: courseEntryMode,
       showPaywallAfterAuth: showPaywallAfterAuth,
     ),
   );

@@ -1,19 +1,19 @@
 # Project Roadmap
 
-**Last Updated:** 2026-05-08
+**Last Updated:** 2026-05-12
 **Scope:** product and engineering roadmap tracked from current repository state
 
 ## 1. Current Status
 Meup is in active Flutter mobile development with 19 feature modules under `lib/src`.
 
-The current product surface includes first-time onboarding V2, branching onboarding fallback, course roadmap entry, read/listen lessons, output-practice conversations, video lessons, roleplay, learning streaks, progress, profile/settings, and monetization.
+The current product surface includes first-time onboarding V2, disabled-onboarding course-entry gating, branching onboarding fallback, course roadmap entry, read/listen lessons, output-practice conversations, video lessons, roleplay, learning streaks, progress, profile/settings, and monetization.
 
 ## 2. Roadmap Phases
 | Phase | Status | Notes |
 | --- | --- | --- |
 | Foundation architecture | Complete | Clean Architecture, BLoC/Cubit, DI, typed routing, generated models, localization pipeline. |
 | Core learning flows | In progress | Course roadmap, lesson runtime, read/listen branching, exercise completion, progress sync. |
-| Onboarding and activation | In progress | Onboard V2 path/symptom/course picker, notification gate, branching onboarding fallback. |
+| Onboarding and activation | In progress | Onboard V2 path/symptom/course picker, notification gate, disabled-onboarding course-entry gate, branching onboarding fallback. |
 | Practice expansion | In progress | Output-practice socket conversation flow, roleplay feedback, video lesson player/notes/quiz states. |
 | Monetization | In progress | Paywall, IAP package load, purchase verification, first-time paywall routing. |
 | Operations and release | In progress | Cross-platform build scripts, GitHub/GitLab CI, localization tooling, symbol upload policy. |

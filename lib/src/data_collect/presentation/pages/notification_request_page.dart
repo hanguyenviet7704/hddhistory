@@ -3,22 +3,28 @@ part of '../../data_collect.dart';
 @visibleForTesting
 bool shouldSkipNotificationRequestGate({
   required bool hasCompletedFirstTimeNotificationGate,
+  bool hasCompletedCourseEntryNotificationGate = false,
+  bool courseEntryMode = false,
   required NotificationState notificationState,
 }) {
+  if (courseEntryMode) {
+    return hasCompletedCourseEntryNotificationGate;
+  }
+
   return hasCompletedFirstTimeNotificationGate || notificationState.shouldSkipOnboardingGate;
 }
 
 class NotificationRequestPage extends StatefulWidget {
   const NotificationRequestPage({
     super.key,
-    this.forceChooseCourseAfterLogin = false,
+    this.courseEntryMode = false,
     this.showPaywallAfterAuth = false,
   }) : assert(
-         !(forceChooseCourseAfterLogin && showPaywallAfterAuth),
-         'NotificationRequestPage cannot force course selection and show paywall after auth at the same time.',
+         !(courseEntryMode && showPaywallAfterAuth),
+         'NotificationRequestPage cannot enter course mode and show paywall after auth at the same time.',
        );
 
-  final bool forceChooseCourseAfterLogin;
+  final bool courseEntryMode;
   final bool showPaywallAfterAuth;
 
   @override
@@ -28,6 +34,7 @@ class NotificationRequestPage extends StatefulWidget {
 class _NotificationRequestPageState extends State<NotificationRequestPage> {
   bool _hasTrackedView = false;
   bool _hasNavigated = false;
+  bool _isCourseEntryBootstrapping = false;
 
   @override
   void initState() {
@@ -40,7 +47,7 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
   Future<void> _initializeGate() async {
     if (!mounted) return;
     final userCubit = context.read<UserCubit>();
-    if (userCubit.state.hasCompletedFirstTimeNotificationGate) {
+    if (!widget.courseEntryMode && userCubit.state.hasCompletedFirstTimeNotificationGate) {
       _goToRegister();
       return;
     }
@@ -52,6 +59,8 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
 
     if (shouldSkipNotificationRequestGate(
       hasCompletedFirstTimeNotificationGate: userCubit.state.hasCompletedFirstTimeNotificationGate,
+      hasCompletedCourseEntryNotificationGate: userCubit.state.hasCompletedCourseEntryNotificationGate,
+      courseEntryMode: widget.courseEntryMode,
       notificationState: notificationState,
     )) {
       _completeGateAndContinue();
@@ -79,14 +88,48 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
 
   void _completeGateAndContinue() {
     if (_hasNavigated) return;
+    if (widget.courseEntryMode) {
+      _completeCourseEntryGateAndContinue();
+      return;
+    }
+
     _hasNavigated = true;
     context.read<UserCubit>().completeFirstTimeNotificationGate();
     _goToRegister();
   }
 
+  Future<void> _completeCourseEntryGateAndContinue() async {
+    if (_isCourseEntryBootstrapping) return;
+    final userCubit = context.read<UserCubit>()..completeCourseEntryNotificationGate();
+
+    setState(() {
+      _isCourseEntryBootstrapping = true;
+    });
+
+    final result = await context.read<AuthBloc>().bootstrapCourseEntrySession();
+    if (!mounted) return;
+
+    setState(() {
+      _isCourseEntryBootstrapping = false;
+    });
+
+    switch (result) {
+      case CourseEntryBootstrapResult.success:
+        _hasNavigated = true;
+        userCubit.setIsUserPassOnboarding(false);
+        const CourseRoute(selectedTabIndex: 0).go(context);
+        return;
+      case CourseEntryBootstrapResult.retryableFailure:
+        return;
+      case CourseEntryBootstrapResult.unrecoverableFailure:
+        _hasNavigated = true;
+        const RegisterRoute().go(context);
+        return;
+    }
+  }
+
   void _goToRegister() {
     RegisterRoute(
-      forceChooseCourseAfterLogin: widget.forceChooseCourseAfterLogin,
       showPaywallAfterAuth: widget.showPaywallAfterAuth,
     ).go(context);
   }
@@ -95,7 +138,7 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
   Widget build(BuildContext context) {
     return BlocBuilder<NotificationCubit, NotificationState>(
       builder: (context, state) {
-        final isLoading = state.isLoading && !_hasNavigated;
+        final isLoading = (state.isLoading || _isCourseEntryBootstrapping) && !_hasNavigated;
         final onboardingL10n = context.l10n.onboarding;
         return OnboardV2ScreenShell(
           cta: Column(

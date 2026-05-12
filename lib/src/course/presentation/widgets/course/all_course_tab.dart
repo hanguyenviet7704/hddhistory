@@ -115,16 +115,16 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
       source: 'all_course',
     );
 
-    final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
-    if (isFirstTimeUserChooseCourse) {
-      AppService.instance.appTrackingService.trackCourseSelectFirstCourseClick(skillset, course);
-      CourseIntroPopup.show(
-        context,
-        course: course,
-        onClose: () => _handleCourseTap(context, skillset, course, index),
-      );
-      return;
-    }
+    // final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
+    // if (isFirstTimeUserChooseCourse) {
+    //   AppService.instance.appTrackingService.trackCourseSelectFirstCourseClick(skillset, course);
+    //   CourseIntroPopup.show(
+    //     context,
+    //     course: course,
+    //     onClose: () => _handleCourseTap(context, skillset, course, index),
+    //   );
+    //   return;
+    // }
 
     _handleCourseTap(context, skillset, course, index);
   }

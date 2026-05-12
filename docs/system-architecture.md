@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-05-12
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -126,10 +126,10 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - In no-token startup, splash only runs the device lookup when `UserCubit.isUserPassOnboarding` is still `true`; ordinary first-time users without a recognized device go to `OnboardV2Route`, while recognized devices continue to the notification gate/register path.
 - Authenticated startup still honors `UserCubit.isUserPassOnboarding`: a persisted access token does not bypass unfinished onboarding, and home data initialization waits until onboarding is cleared.
 - `OnboardCubit` now keeps onboarding-content load state separate from device-recognition state so intro content and device lookup do not race.
-- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip `OnboardV2Route` and hand off through `NotificationRequestRoute(showPaywallAfterAuth: true)` before `RegisterRoute(showPaywallAfterAuth: true)`.
+- Recognized devices (`userByDeviceId.id.isNotEmpty`) skip `OnboardV2Route` and keep the legacy `NotificationRequestRoute(showPaywallAfterAuth: true)` before `RegisterRoute(showPaywallAfterAuth: true)` path while onboarding stays enabled.
 - Unrecognized devices or safe lookup misses go to `OnboardV2Route` without surfacing a splash auth error.
 - Opening `RegisterRoute()` still silently bootstraps an anonymous guest session through `AuthBloc`, preloads `HomeCubit.initializeData(isInit: true)`, and keeps the register UI visible while the user picks Guest, Google, or Apple.
-- The no-onboarding splash path also routes through `NotificationRequestRoute(showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(...))`, so both first-time and recognized-device register entry resolve the notification gate before auth.
+- When onboarding is disabled, first open now routes through `NotificationRequestRoute(courseEntryMode: true)` instead of the legacy register/paywall shortcut. Splash may warm anonymous course-entry auth in the background, but the notification CTA remains the source of truth; CTA success completes the dedicated course-entry notification gate, bootstraps anonymous auth/home-course data, clears onboarding, and opens `CourseRoute(selectedTabIndex: 0)`. Retryable bootstrap failure keeps the user on the notification gate, and only unrecoverable anonymous auth failure falls back to plain `RegisterRoute()`. `CoursePage` remains manual and does not auto-transition to roadmap entry.
 - Silent register bootstrap never opens paywall by itself. The paywall branch is only evaluated after an explicit Guest, Google, or Apple auth success.
 - Guest continue now reuses the bootstrapped anonymous session when available and only falls back to a fresh anonymous login if bootstrap failed.
 - Google and Apple continue to replace the guest session through the existing auth-success path, and any guest course handoff now routes with `CourseRoute(selectedTabIndex: 0)` while resetting home selection to the first category to avoid stale post-logout state.

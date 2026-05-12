@@ -18,9 +18,7 @@ class StartJourneyButton extends StatelessWidget {
         child: InkWell(
           onTap: () {
             AppService.instance.appTrackingService.trackObdCompleteClick();
-            AppDI.injector.get<HomeCubit>().initializeData();
-            AppDI.injector.get<UserCubit>().startFirstTimeRegisterFlow();
-            const NotificationRequestRoute(showPaywallAfterAuth: true).go(context);
+            const NotificationRequestRoute(courseEntryMode: true).go(context);
           },
           borderRadius: BorderRadius.circular(1000.r),
           child: Center(

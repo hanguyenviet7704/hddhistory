@@ -113,6 +113,8 @@ class _SplashPageState extends State<SplashPage> {
 
   Future<void> _handleUnauthenticatedEntry() async {
     final userCubit = context.read<UserCubit>();
+    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
+
     if (!userCubit.state.isUserPassOnboarding) {
       _goToRegister(
         showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
@@ -123,9 +125,8 @@ class _SplashPageState extends State<SplashPage> {
       return;
     }
 
-    final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
     if (shouldSkipOnboardingByRemoteConfig(onboardingConfig)) {
-      _skipOnboardingToRegister();
+      _goToCourseEntryNotification();
       return;
     }
 
@@ -133,18 +134,29 @@ class _SplashPageState extends State<SplashPage> {
     await onboardCubit.loadUserByDeviceId();
     if (!mounted) return;
 
-    if (onboardCubit.state.hasRecognizedDevice) {
-      userCubit.startFirstTimeRegisterFlow();
-      _goToRegister(
-        showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
-          hasRecognizedDevice: onboardCubit.state.hasRecognizedDevice,
-          hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
-        ),
-      );
-      return;
-    }
+    final destination = resolveUnauthenticatedSplashEntryDestination(
+      needsOnboarding: userCubit.state.isUserPassOnboarding,
+      onboardingDisabled: onboardingConfig.isDisabled,
+      hasRecognizedDevice: onboardCubit.state.hasRecognizedDevice,
+    );
 
-    _goOnboardingEntryByFlowConfig();
+    switch (destination) {
+      case SplashUnauthenticatedDestination.courseEntryNotification:
+        _goToCourseEntryNotification();
+        return;
+      case SplashUnauthenticatedDestination.legacyRegisterNotification:
+        userCubit.startFirstTimeRegisterFlow();
+        _goToRegister(
+          showPaywallAfterAuth: shouldShowRegisterPaywallAfterAuth(
+            hasRecognizedDevice: onboardCubit.state.hasRecognizedDevice,
+            hasPendingFirstTimePaywallAfterAuth: userCubit.state.hasPendingFirstTimePaywallAfterAuth,
+          ),
+        );
+        return;
+      case SplashUnauthenticatedDestination.onboardingFlow:
+        _goOnboardingEntryByFlowConfig();
+        return;
+    }
   }
 
   void _routeAuthenticatedEntry() {
@@ -194,16 +206,16 @@ class _SplashPageState extends State<SplashPage> {
   void _goOnboardingEntryByFlowConfig() {
     final onboardingConfig = AppService.instance.remoteConfigService.onboardingConfig;
     if (shouldSkipOnboardingByRemoteConfig(onboardingConfig)) {
-      _skipOnboardingToRegister();
+      _goToCourseEntryNotification();
       return;
     }
 
     OnboardV2Route().go(context);
   }
 
-  void _skipOnboardingToRegister() {
-    context.read<UserCubit>().startFirstTimeRegisterFlow();
-    _goToRegister(showPaywallAfterAuth: true);
+  void _goToCourseEntryNotification() {
+    unawaited(AppDI.injector.get<AuthBloc>().warmUpCourseEntrySession());
+    const NotificationRequestRoute(courseEntryMode: true).go(context);
   }
 
   void _goToRegister({required bool showPaywallAfterAuth}) {
@@ -302,6 +314,24 @@ enum SplashAuthenticatedDestination {
   onboardingEntry,
   course,
   home,
+}
+
+enum SplashUnauthenticatedDestination {
+  courseEntryNotification,
+  legacyRegisterNotification,
+  onboardingFlow,
+}
+
+@visibleForTesting
+SplashUnauthenticatedDestination resolveUnauthenticatedSplashEntryDestination({
+  required bool needsOnboarding,
+  required bool onboardingDisabled,
+  required bool hasRecognizedDevice,
+}) {
+  if (!needsOnboarding) return SplashUnauthenticatedDestination.legacyRegisterNotification;
+  if (onboardingDisabled) return SplashUnauthenticatedDestination.courseEntryNotification;
+  if (hasRecognizedDevice) return SplashUnauthenticatedDestination.legacyRegisterNotification;
+  return SplashUnauthenticatedDestination.onboardingFlow;
 }
 
 @visibleForTesting

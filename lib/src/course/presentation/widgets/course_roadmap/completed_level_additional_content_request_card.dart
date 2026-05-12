@@ -21,7 +21,7 @@ class CompletedLevelAdditionalContentRequestCard extends StatelessWidget {
     if (!status.isVisible) return const SizedBox.shrink();
 
     return Padding(
-      padding: EdgeInsets.only(bottom: 6.h),
+      padding: EdgeInsets.only(bottom: 60.h),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
