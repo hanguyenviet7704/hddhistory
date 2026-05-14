@@ -156,8 +156,8 @@ class _LessonPageState extends State<LessonPage> {
       return;
     }
 
-    _trackAudioShellViewIfNeeded();
     if (_selectedMode.isAudio) {
+      _trackAudioShellViewIfNeeded();
       await _lessonAudioCubit.enterAudioMode();
     }
   }
@@ -195,6 +195,7 @@ class _LessonPageState extends State<LessonPage> {
     }
 
     if (nextMode.isAudio) {
+      _trackAudioShellViewIfNeeded();
       await _lessonAudioCubit.enterAudioMode();
     }
   }

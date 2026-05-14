@@ -13,6 +13,17 @@ void main() {
   });
 
   group('OnboardV2Tracking sheet params', () {
+    test('maps only the first onboard view to the documented obd screen view event', () {
+      expect(TrackingKey.onboardV2P1View, 'obd_scr_view');
+      expect(TrackingKey.onboardV2P2View, 'onboard_v2_p2_view');
+      expect(TrackingKey.onboardV2P3View, 'onboard_v2_p3_view');
+      expect(TrackingKey.onboardV2P4View, 'onboard_v2_p4_view');
+      expect(TrackingKey.onboardV2P5View, 'onboard_v2_p5_view');
+      expect(TrackingKey.onboardV2P6View, 'onboard_v2_p6_view');
+      expect(TrackingKey.onboardV2P7View, 'onboard_v2_p7_view');
+      expect(TrackingKey.onboardV2P8View, 'onboard_v2_p8_view');
+    });
+
     test('keeps existing age params and adds sheet age alias', () {
       const option = OnboardOptionEntity(
         id: 18,
