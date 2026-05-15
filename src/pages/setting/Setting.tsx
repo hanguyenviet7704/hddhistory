@@ -7,6 +7,7 @@ import {
   SparklesIcon,
   PaintBrushIcon,
   ChatBubbleLeftRightIcon,
+  FaceSmileIcon,
 } from "@heroicons/react/24/outline";
 import UserManagement from "../../components/setting/UserManagement";
 import TagManagement from "../../components/setting/TagManagement";
@@ -14,10 +15,17 @@ import AvatarManagement from "../../components/setting/AvatarManagement";
 import IconManagement from "../../components/setting/IconManagement";
 import RoleplayColorManagement from "../../components/setting/RoleplayColorManagement";
 import QuoteManagement from "../../components/setting/QuoteManagement";
+import InAppSurveyManagement from "../../components/setting/InAppSurveyManagement";
 
 const SettingsPage = () => {
   const [activeTab, setActiveTab] = useState<
-    "users" | "tags" | "avatars" | "icons" | "roleplayColors" | "quotes"
+    | "users"
+    | "tags"
+    | "avatars"
+    | "icons"
+    | "roleplayColors"
+    | "quotes"
+    | "inAppSurvey"
   >("users");
 
   return (
@@ -109,6 +117,20 @@ const SettingsPage = () => {
             <ChatBubbleLeftRightIcon className="h-4 w-4 mr-2" />
             Quotes
           </button>
+          <button
+            onClick={() => setActiveTab("inAppSurvey")}
+            className={`
+              flex items-center px-4 py-2 rounded-lg text-sm font-medium transition-colors mb-2
+              ${
+                activeTab === "inAppSurvey"
+                  ? "bg-sky-600 text-white"
+                  : "bg-white text-gray-700 border border-gray-300 hover:bg-gray-50"
+              }
+            `}
+          >
+            <FaceSmileIcon className="h-4 w-4 mr-2" />
+            In-App Survey
+          </button>
         </div>
 
         {/* Content based on active tab */}
@@ -118,6 +140,7 @@ const SettingsPage = () => {
         {activeTab === "icons" && <IconManagement />}
         {activeTab === "roleplayColors" && <RoleplayColorManagement />}
         {activeTab === "quotes" && <QuoteManagement />}
+        {activeTab === "inAppSurvey" && <InAppSurveyManagement />}
       </div>
     </div>
   );
