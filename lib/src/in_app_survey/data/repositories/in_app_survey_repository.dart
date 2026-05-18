@@ -30,11 +30,9 @@ class InAppSurveyRepository with RestfulRequestHandlerMixin implements IInAppSur
 
   Map<String, dynamic> _responseEntityToJson(InAppSurveyResponseEntity entity) {
     return {
-      'configKey': entity.configKey,
       'branchId': entity.branchId,
-      'closedAnswerIds': entity.closedAnswerIds,
-      'openAnswer': entity.openAnswer,
+      'selectedOptionIds': entity.selectedOptionIds,
+      'feedback': entity.feedback,
     };
   }
 }
-

@@ -26,11 +26,12 @@ part 'domain/usecases/get_skillset_usecase.dart';
 //* Parts for generated files
 part 'home.freezed.dart';
 part 'home.g.dart';
-//* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs 
+//* Presentation Layer - BLoC or Cubit - States, Events, Cubits, Blocs
 part 'presentation/cubits/home_cubit.dart';
 part 'presentation/cubits/home_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/home_page.dart';
+part 'presentation/mixins/home_in_app_survey_mixin.dart';
 //* Presentation Layer - Custom Widgets
 part 'presentation/widgets/course_card.dart';
 part 'presentation/widgets/home_header.dart';

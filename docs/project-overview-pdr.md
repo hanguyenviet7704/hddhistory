@@ -1,11 +1,11 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, completed-level additional-content requests, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, daily streak continuity, and progress visibility.
+Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, completed-level additional-content requests, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, Home in-app survey feedback, daily streak continuity, and progress visibility.
 The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
@@ -26,9 +26,10 @@ The product combines course content, interactive exercise formats, AI-assisted s
 9. Scenario-branching onboarding handoff and recommendation-based course entry.
 10. Daily streak check/commit from home and lesson-completion moments.
 11. Disabled-onboarding course-entry gate and course landing.
+12. Home in-app survey feedback from P1 entry through P2-P4 submit.
 
 ## 3. Current Module Scope (Code-Verified)
-`lib/src` currently contains 19 feature modules:
+`lib/src` currently contains 20 feature modules:
 
 | Module | Primary responsibility |
 | --- | --- |
@@ -39,6 +40,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `data_collect` | Onboarding survey and profile intake steps |
 | `feedback` | User feedback submission/view |
 | `home` | Skillset and dashboard entry |
+| `in_app_survey` | Home in-app survey config, entry, modal flow, response submit, and tracking |
 | `learning_streak` | Home streak popup and completion streak success overlays |
 | `lesson` | Learning-item and exercise flows |
 | `monetization` | Paywall, products, purchase verification |
@@ -55,6 +57,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 Notes:
 - Naming intentionally follows code paths, including `achievenment`.
 - `feedback`, `learning_streak`, `onboard_branching`, `onboard_v2`, `output_practice`, and `video_lesson` are part of the current module map.
+- `in_app_survey` is part of the current module map and is launched from Home, not as a standalone route.
 
 ## 4. Functional Requirements
 1. Authentication and session handling

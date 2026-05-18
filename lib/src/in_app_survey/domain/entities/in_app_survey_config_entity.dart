@@ -13,4 +13,14 @@ abstract class InAppSurveyConfigEntity with _$InAppSurveyConfigEntity {
 
 extension InAppSurveyConfigEntityExtension on InAppSurveyConfigEntity {
   List<InAppSurveyEmojiEntity> get emojis => branches.map((b) => b.emoji).toList();
+
+  bool get hasUsableConfig => branches.isNotEmpty && branches.every((branch) => branch.isUsableForSurvey);
+}
+
+extension InAppSurveyBranchEntityExtension on InAppSurveyBranchEntity {
+  bool get hasUsableEmoji => emoji.lightUrl.trim().isNotEmpty || emoji.darkUrl.trim().isNotEmpty || (emoji.name?.trim().isNotEmpty ?? false);
+
+  bool get hasUsableClosedQuestion => closedQuestion.options.any((option) => option.id.trim().isNotEmpty);
+
+  bool get isUsableForSurvey => id.trim().isNotEmpty && hasUsableEmoji && hasUsableClosedQuestion;
 }
