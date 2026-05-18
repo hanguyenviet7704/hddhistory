@@ -1,6 +1,6 @@
 # Codebase Summary
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-05-12
 **Source Inputs:** direct repository verification with `find`, `wc`, and `rg`
 
 ## 1. Snapshot Metrics
@@ -67,7 +67,7 @@ meup/
 - Notification boot now runs as a dedicated config-level core in `lib/config/services/notification/`, with app startup awaiting `NotificationService.initialize(NotificationCoreConfig)` after Firebase.
 - Notification folder modularization stays grouped under `adapters`, `bootstrap`, `constants`, `models`, `permissions`, `routing`, `runtime`, and `schedulers`, but the files are now owned by the shared `library + part` architecture in `lib/config/services/services.dart`.
 - This reintroduces notification helper types into the exported services namespace as an intentional tradeoff, while Firebase/Awesome transport-specific package types still remain implementation-only.
-- Onboard V2 now lives under `lib/src/onboard_v2/` and is launched from `/onboard-v2` as the default first-time path. `SplashPage` routes ordinary first-time users there and keeps authenticated-but-unfinished users in onboarding even when an access token was persisted. `OnboardV2Cubit` drives the eight pages, P3 moves immediately into the notification gate while profile update runs in background, P5 selects up to two paths, P7 selects symptoms, and P8 loads up to three valid courses by repeated `onboardingSymptoms` filters. `CourseHandoffHelper` owns the final course or roadmap handoff. Tracking events are centralized in `TrackingKey.onboardV2*`, and the localized copy lives in `assets/i18n/<locale>/onboarding.yaml`.
+- Onboard V2 now lives under `lib/src/onboard_v2/` and is launched from `/onboard-v2` as the default first-time path. `SplashPage` routes ordinary first-time users there and keeps authenticated-but-unfinished users in onboarding even when an access token was persisted. When onboarding is disabled, splash now uses `NotificationRequestRoute(courseEntryMode: true)` as the course-entry gate: the CTA can warm anonymous auth/home-course data in background, retryable bootstrap failure keeps the gate open, unrecoverable auth failure falls back to plain `RegisterRoute()`, and success clears onboarding then opens `CourseRoute(selectedTabIndex: 0)`. `OnboardV2Cubit` drives the eight pages, P3 moves immediately into the notification gate while profile update runs in background, P5 selects up to two paths, P7 selects symptoms, and P8 loads up to three valid courses by repeated `onboardingSymptoms` filters. `CourseHandoffHelper` owns the final course or roadmap handoff. Tracking events are centralized in `TrackingKey.onboardV2*`, and the localized copy lives in `assets/i18n/<locale>/onboarding.yaml`.
 - Course output practice now lives under `lib/src/output_practice/` and is launched from course roadmap output lessons through a typed `output-practice/:sectionId` route, with intro sheet handoff, conversation fetch/create fallback, scoped history pagination, socket join/reconnect handling, optimistic send/reconcile, retry affordances, and dedicated analytics events.
 - Course roadmap now includes a completed-level additional-content request flow. Eligibility is derived from current roadmap completion plus matching `userCourseProgress.completedLevels`, and `ProgressCubit.loadAllUserProgresss()` now scopes course-grade refreshes so stale or lesson-filtered responses do not suppress the footer for the wrong course.
 - Lesson runtime now keeps one typed `lesson` route for both read and listen entry. `RoadmapDetailPopup` branches between read-only and read/listen CTA states before navigation, `LessonPage` swaps between the preserved read surface and the new audio surface, and `LessonAudioCubit` owns route-session playback, speed, seek, inline failure recovery, and audio-complete handoff without folding that state into `LessonCubit`.
@@ -103,6 +103,7 @@ meup/
 6. Keep lesson route `initial-mode`, popup branching, and dual-mode runtime responsibilities aligned with the implementation and route config.
 7. Keep video lesson route, overlays, timed-question contracts, and tracking event names aligned with the implementation and route config.
 8. Keep Onboard V2 route, eight-step path/symptom/course-picker flow, notification gate, course handoff, tracking keys, and onboarding localization keys aligned with the implementation and route config.
+9. Keep disabled-onboarding course-entry gating aligned with `NotificationRequestRoute(courseEntryMode: true)`, anonymous bootstrap fallback rules, and the manual `CoursePage` entry path.
 
 ## 9. Quick Verification Commands
 ```bash

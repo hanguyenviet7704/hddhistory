@@ -170,6 +170,7 @@ abstract interface class ITrackingService {
   Future<void> trackVideoLessonExitClick(
     CourseLessonTrackingData trackingData, {
     required String nodeId,
+    required int videoPosition,
   });
   Future<void> trackVideoLessonPlayClick(
     CourseLessonTrackingData trackingData, {
@@ -178,6 +179,7 @@ abstract interface class ITrackingService {
   Future<void> trackVideoLessonPauseClick(
     CourseLessonTrackingData trackingData, {
     required String nodeId,
+    required int videoPosition,
   });
   Future<void> trackVideoLessonSeek(
     CourseLessonTrackingData trackingData, {
@@ -277,6 +279,7 @@ abstract interface class ITrackingService {
   Future<void> trackKeypointAudioPopupView(KeypointTrackingData trackingData);
   Future<void> trackKeypointAudioPopupReadClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointAudioPopupListenClick(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioPopupExitClick(KeypointTrackingData trackingData);
   Future<void> trackKeypointAudioScreenView(
     KeypointTrackingData trackingData, {
     required String mode,
@@ -285,9 +288,17 @@ abstract interface class ITrackingService {
     KeypointTrackingData trackingData, {
     required String mode,
     required String entryPoint,
+    int? audioPosition,
   });
   Future<void> trackKeypointAudioPlayClick(KeypointTrackingData trackingData);
-  Future<void> trackKeypointAudioPauseClick(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioPauseClick(
+    KeypointTrackingData trackingData, {
+    required int audioPosition,
+  });
+  Future<void> trackKeypointAudioExitClick(
+    KeypointTrackingData trackingData, {
+    required int audioPosition,
+  });
   Future<void> trackKeypointAudioSeekBackClick(
     KeypointTrackingData trackingData, {
     required int seekFromSecond,
@@ -304,6 +315,7 @@ abstract interface class ITrackingService {
     required double speed,
   });
   Future<void> trackKeypointAudioCompleteView(KeypointTrackingData trackingData);
+  Future<void> trackKeypointAudioCompleteContinueClick(KeypointTrackingData trackingData);
 
   //* Keypoint events
   Future<void> trackKeypointTheoryScroll(KeypointTrackingData trackingData);

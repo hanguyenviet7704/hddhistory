@@ -10,6 +10,7 @@ abstract class UserState with _$UserState {
     @Default(true) bool isAppEventConfigured,
     @Default(true) bool isUserPassOnboarding,
     @Default(false) bool hasCompletedFirstTimeNotificationGate,
+    @Default(false) bool hasCompletedCourseEntryNotificationGate,
     @Default(false) bool hasPendingFirstTimePaywallAfterAuth,
     @Default(true) bool isFirstTimeUserAccessLessonList,
     @Default(true) bool isFirstTimeUserChooseCourse,

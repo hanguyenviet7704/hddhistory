@@ -58,6 +58,61 @@ void main() {
         isTrue,
       );
     });
+
+    test('Given course-entry mode before CTA, When legacy notification gate is complete, Then the course-entry gate is not skipped', () {
+      const state = NotificationState(
+        hasLoadedPermissionState: true,
+        permissionStatus: NotificationPermissionStatus.authorized,
+        systemNotificationsEnabled: true,
+        localNotificationsEnabled: true,
+        pushNotificationsEnabled: true,
+      );
+
+      expect(
+        shouldSkipNotificationRequestGate(
+          hasCompletedFirstTimeNotificationGate: true,
+          hasCompletedCourseEntryNotificationGate: false,
+          courseEntryMode: true,
+          notificationState: state,
+        ),
+        isFalse,
+      );
+    });
+
+    test('Given course-entry mode before CTA, When notifications are unsupported, Then the user still sees the course-entry gate', () {
+      const state = NotificationState(
+        hasLoadedPermissionState: true,
+        permissionStatus: NotificationPermissionStatus.unsupported,
+      );
+
+      expect(
+        shouldSkipNotificationRequestGate(
+          hasCompletedFirstTimeNotificationGate: false,
+          hasCompletedCourseEntryNotificationGate: false,
+          courseEntryMode: true,
+          notificationState: state,
+        ),
+        isFalse,
+      );
+    });
+
+    test('Given course-entry CTA was completed, When course-entry gate helper runs, Then the notification page can continue', () {
+      const state = NotificationState(
+        hasLoadedPermissionState: true,
+        permissionStatus: NotificationPermissionStatus.notDetermined,
+        canRequestPermission: true,
+      );
+
+      expect(
+        shouldSkipNotificationRequestGate(
+          hasCompletedFirstTimeNotificationGate: false,
+          hasCompletedCourseEntryNotificationGate: true,
+          courseEntryMode: true,
+          notificationState: state,
+        ),
+        isTrue,
+      );
+    });
   });
 
   group('UserCubit notification gate persistence', () {
@@ -82,6 +137,29 @@ void main() {
 
       expect(cubit.state.hasCompletedFirstTimeNotificationGate, isTrue);
       verify(profileCubit.reset()).called(1);
+    });
+
+    test('Given course-entry notification gate is completed, When clearData runs, Then course-entry completion persists without paywall intent', () async {
+      final cubit = UserCubit(NoOpTrackingService());
+      addTearDown(cubit.close);
+
+      cubit.completeCourseEntryNotificationGate();
+      await cubit.clearData();
+
+      expect(cubit.state.hasCompletedCourseEntryNotificationGate, isTrue);
+      expect(cubit.state.hasPendingFirstTimePaywallAfterAuth, isFalse);
+      verify(profileCubit.reset()).called(1);
+    });
+
+    test('Given only legacy notification gate is completed, When state updates, Then course-entry completion remains independent', () {
+      final cubit = UserCubit(NoOpTrackingService());
+      addTearDown(cubit.close);
+
+      cubit.completeFirstTimeNotificationGate();
+
+      expect(cubit.state.hasCompletedFirstTimeNotificationGate, isTrue);
+      expect(cubit.state.hasCompletedCourseEntryNotificationGate, isFalse);
+      expect(cubit.state.hasPendingFirstTimePaywallAfterAuth, isFalse);
     });
   });
 }

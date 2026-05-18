@@ -6,6 +6,8 @@ enum AuthSuccessRouteDestination { course, home }
 
 enum RegisterGuestContinueAction { continueCurrentSession, loginAnonymousAndNavigate }
 
+enum CourseEntryBootstrapResult { success, retryableFailure, unrecoverableFailure }
+
 Map<String, dynamic> buildAnonymousDeviceAuthPayload({
   required String deviceId,
   required String deviceName,
@@ -68,6 +70,25 @@ RegisterGuestContinueAction resolveRegisterGuestContinueAction({
 }
 
 @visibleForTesting
+CourseEntryBootstrapResult resolveCourseEntryBootstrapResult(AppException? failure) {
+  return switch (failure) {
+    UnauthorizedException() || ForbiddenException() || InvalidInputException() => CourseEntryBootstrapResult.unrecoverableFailure,
+    _ => CourseEntryBootstrapResult.retryableFailure,
+  };
+}
+
+@visibleForTesting
+bool isCourseEntryDataReady({
+  required HomeState homeState,
+  required ProgressState progressState,
+  required ProfileState profileState,
+}) {
+  final hasCourseCatalog = homeState.status == HomeStatus.success && homeState.skillsets.any((skillset) => skillset.courses.isNotEmpty);
+  final hasBlockingFailure = progressState.status == ProgressStatus.failure || profileState.status == ProfileStatus.failure;
+  return hasCourseCatalog && !hasBlockingFailure;
+}
+
+@visibleForTesting
 int? resolveAuthSuccessSelectedCourseTabIndex({
   required AuthSuccessRouteDestination destination,
   required bool resetToFirstCourseCategory,
@@ -106,6 +127,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
 
   static Completer<bool>? _refreshCompleter;
   Completer<bool>? _anonymousAuthCompleter;
+  AppException? _lastAnonymousAuthFailure;
 
   AuthBloc(
     this._loginUsecase,
@@ -251,6 +273,51 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     }
   }
 
+  Future<void> warmUpCourseEntrySession() async {
+    try {
+      if (hasActiveAnonymousSession) return;
+      final payload = await _buildAnonymousDeviceLoginPayload();
+      await _authenticateAnonymousSession(payload);
+    } catch (error) {
+      LogDev.warning('[AuthBloc] warmUpCourseEntrySession failed: $error');
+    }
+  }
+
+  Future<CourseEntryBootstrapResult> bootstrapCourseEntrySession() async {
+    try {
+      if (hasActiveAnonymousSession) {
+        return await _initializeCourseEntryData() ? CourseEntryBootstrapResult.success : CourseEntryBootstrapResult.retryableFailure;
+      }
+
+      final payload = await _buildAnonymousDeviceLoginPayload();
+      final success = await _authenticateAnonymousSession(payload);
+      if (!success) {
+        return resolveCourseEntryBootstrapResult(_lastAnonymousAuthFailure);
+      }
+
+      return await _initializeCourseEntryData() ? CourseEntryBootstrapResult.success : CourseEntryBootstrapResult.retryableFailure;
+    } catch (error) {
+      LogDev.warning('[AuthBloc] bootstrapCourseEntrySession failed: $error');
+      return CourseEntryBootstrapResult.retryableFailure;
+    }
+  }
+
+  Future<bool> _initializeCourseEntryData() async {
+    await _homeCubit.initializeData(isInit: true);
+    final isReady = isCourseEntryDataReady(
+      homeState: _homeCubit.state,
+      progressState: _progressCubit.state,
+      profileState: _profileCubit.state,
+    );
+    if (!isReady) {
+      LogDev.warning('[AuthBloc] Course entry data bootstrap incomplete');
+      return false;
+    }
+
+    _homeCubit.resetSelection(skillsetIndex: 0);
+    return true;
+  }
+
   Future<void> continueWithCurrentGuestSession({
     bool forceChooseCourseAfterLogin = false,
     bool showPaywallAfterAuth = false,
@@ -320,21 +387,35 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
       }
     }
 
-    runUseCase(
-      usecase: () => _loginAnonymousUsecase(data),
-      onSuccess: (auth) {
-        _onAuthSuccess(auth);
-        complete(true);
-        if (navigateAfterSuccess) {
-          unawaited(
-            _navigateAfterAuth(
-              forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
-              showPaywallAfterAuth: showPaywallAfterAuth,
-            ),
-          );
-        }
-      },
-      onFailure: (error) => complete(false),
+    unawaited(
+      _loginAnonymousUsecase(data)
+          .run()
+          .then((result) {
+            result.match(
+              (failure) {
+                _lastAnonymousAuthFailure = failure;
+                complete(false);
+              },
+              (auth) {
+                _lastAnonymousAuthFailure = null;
+                _onAuthSuccess(auth);
+                complete(true);
+                if (navigateAfterSuccess) {
+                  unawaited(
+                    _navigateAfterAuth(
+                      forceChooseCourseAfterLogin: forceChooseCourseAfterLogin,
+                      showPaywallAfterAuth: showPaywallAfterAuth,
+                    ),
+                  );
+                }
+              },
+            );
+          })
+          .catchError((Object error) {
+            LogDev.warning('[AuthBloc] Anonymous auth failed unexpectedly: $error');
+            _lastAnonymousAuthFailure = const AppException.unexpected();
+            complete(false);
+          }),
     );
 
     return completer.future;

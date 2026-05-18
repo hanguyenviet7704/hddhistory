@@ -103,4 +103,107 @@ void main() {
     expect(payload.containsKey('name'), isFalse);
     expect(payload.containsKey('onboarding'), isFalse);
   });
+
+  group('resolveCourseEntryBootstrapResult', () {
+    test('returns retryable failure for ordinary network and server failures', () {
+      expect(
+        resolveCourseEntryBootstrapResult(const AppException.connection()),
+        CourseEntryBootstrapResult.retryableFailure,
+      );
+      expect(
+        resolveCourseEntryBootstrapResult(const AppException.server()),
+        CourseEntryBootstrapResult.retryableFailure,
+      );
+    });
+
+    test('returns unrecoverable failure for auth rejection failures', () {
+      expect(
+        resolveCourseEntryBootstrapResult(const AppException.unauthorized()),
+        CourseEntryBootstrapResult.unrecoverableFailure,
+      );
+      expect(
+        resolveCourseEntryBootstrapResult(const AppException.forbidden()),
+        CourseEntryBootstrapResult.unrecoverableFailure,
+      );
+      expect(
+        resolveCourseEntryBootstrapResult(const AppException.invalidInput()),
+        CourseEntryBootstrapResult.unrecoverableFailure,
+      );
+    });
+
+    test('returns retryable failure when anonymous auth fails without a classified exception', () {
+      expect(
+        resolveCourseEntryBootstrapResult(null),
+        CourseEntryBootstrapResult.retryableFailure,
+      );
+    });
+  });
+
+  group('isCourseEntryDataReady', () {
+    final homeReady = HomeState.initial().copyWith(
+      status: HomeStatus.success,
+      pageData: const BasePageBreak<SkillsetEntity>(
+        items: [
+          SkillsetEntity(
+            id: 'skillset-1',
+            courses: [CourseEntity(id: 'course-1')],
+          ),
+        ],
+      ),
+    );
+    final progressReady = ProgressState.initial().copyWith(status: ProgressStatus.success);
+    final profileReady = ProfileState.initial().copyWith(status: ProfileStatus.success);
+
+    test('returns true when course catalog is loaded and dependent states have no failures', () {
+      expect(
+        isCourseEntryDataReady(
+          homeState: homeReady,
+          progressState: progressReady,
+          profileState: profileReady,
+        ),
+        isTrue,
+      );
+    });
+
+    test('returns false when home catalog loading failed', () {
+      expect(
+        isCourseEntryDataReady(
+          homeState: HomeState.initial().copyWith(status: HomeStatus.failure),
+          progressState: progressReady,
+          profileState: profileReady,
+        ),
+        isFalse,
+      );
+    });
+
+    test('returns false when home catalog succeeds without any courses', () {
+      expect(
+        isCourseEntryDataReady(
+          homeState: HomeState.initial().copyWith(status: HomeStatus.success),
+          progressState: progressReady,
+          profileState: profileReady,
+        ),
+        isFalse,
+      );
+    });
+
+    test('returns false when progress or profile dependency reports failure', () {
+      expect(
+        isCourseEntryDataReady(
+          homeState: homeReady,
+          progressState: ProgressState.initial().copyWith(status: ProgressStatus.failure),
+          profileState: profileReady,
+        ),
+        isFalse,
+      );
+      expect(
+        isCourseEntryDataReady(
+          homeState: homeReady,
+          progressState: progressReady,
+          profileState: ProfileState.initial().copyWith(status: ProfileStatus.failure),
+        ),
+        isFalse,
+      );
+    });
+  });
 }

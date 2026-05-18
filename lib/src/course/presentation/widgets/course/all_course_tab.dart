@@ -116,7 +116,7 @@ class _AllCourseTabState extends State<AllCourseTab> with AutomaticKeepAliveClie
     );
 
     final isFirstTimeUserChooseCourse = context.read<UserCubit>().state.isFirstTimeUserChooseCourse;
-    if (isFirstTimeUserChooseCourse) {
+    if (isFirstTimeUserChooseCourse && kDebugMode) {
       AppService.instance.appTrackingService.trackCourseSelectFirstCourseClick(skillset, course);
       CourseIntroPopup.show(
         context,

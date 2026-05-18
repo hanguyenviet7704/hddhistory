@@ -94,7 +94,10 @@ class LessonAudioSurface extends StatelessWidget {
 
     if (state.isPlaying) {
       if (trackingData != null) {
-        AppService.instance.appTrackingService.trackKeypointAudioPauseClick(trackingData);
+        AppService.instance.appTrackingService.trackKeypointAudioPauseClick(
+          trackingData,
+          audioPosition: state.positionSeconds,
+        );
       }
       await audioCubit.pause();
       return;

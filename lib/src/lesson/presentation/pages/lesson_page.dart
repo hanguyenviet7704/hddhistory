@@ -129,6 +129,7 @@ class _LessonPageState extends State<LessonPage> {
             onClose: () => LessonExitFlow.open(
               context,
               onBeforePopup: () {
+                _trackAudioExitIfNeeded();
                 context.read<LessonAudioCubit>().pauseForOverlay();
                 return Future.value();
               },
@@ -155,8 +156,8 @@ class _LessonPageState extends State<LessonPage> {
       return;
     }
 
-    _trackAudioShellViewIfNeeded();
     if (_selectedMode.isAudio) {
+      _trackAudioShellViewIfNeeded();
       await _lessonAudioCubit.enterAudioMode();
     }
   }
@@ -189,10 +190,12 @@ class _LessonPageState extends State<LessonPage> {
         trackingData,
         mode: nextMode.routeValue,
         entryPoint: 'in_route_switch',
+        audioPosition: nextMode.isRead ? _lessonAudioCubit.state.positionSeconds : null,
       );
     }
 
     if (nextMode.isAudio) {
+      _trackAudioShellViewIfNeeded();
       await _lessonAudioCubit.enterAudioMode();
     }
   }
@@ -255,6 +258,18 @@ class _LessonPageState extends State<LessonPage> {
     _trackingDelegate.trackCurrentLearningItemScroll(
       lessonState: context.read<LessonCubit>().state,
       shouldTrackScroll: _controller.shouldTrackScroll,
+    );
+  }
+
+  void _trackAudioExitIfNeeded() {
+    if (!_selectedMode.isAudio) return;
+
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData == null) return;
+
+    AppService.instance.appTrackingService.trackKeypointAudioExitClick(
+      trackingData,
+      audioPosition: _lessonAudioCubit.state.positionSeconds,
     );
   }
 }

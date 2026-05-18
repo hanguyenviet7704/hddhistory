@@ -1,6 +1,6 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-05-12
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
@@ -25,6 +25,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 8. Subscription purchase and management.
 9. Scenario-branching onboarding handoff and recommendation-based course entry.
 10. Daily streak check/commit from home and lesson-completion moments.
+11. Disabled-onboarding course-entry gate and course landing.
 
 ## 3. Current Module Scope (Code-Verified)
 `lib/src` currently contains 19 feature modules:
@@ -125,6 +126,12 @@ Notes:
 - Persist one-time notification-gate completion and hand off to the selected course roadmap or course list.
 - Track Onboard V2 step, path, symptom, notification, course picker, and handoff events.
 
+13. Disabled-onboarding course-entry flow
+- Route the first open through `NotificationRequestRoute(courseEntryMode: true)` when onboarding is disabled.
+- Treat the notification CTA as the source of truth; background anonymous auth warmup is allowed but not authoritative.
+- Keep the user on the gate for retryable bootstrap failure; fall back to plain `RegisterRoute()` only when anonymous auth fails unrecoverably.
+- Clear onboarding and open `CourseRoute(selectedTabIndex: 0)` on success; keep `CoursePage` manual with no auto-roadmap transition.
+
 ## 5. Non-Functional Requirements
 1. Architecture consistency
 - Maintain `presentation -> domain -> data` flow for feature work.
@@ -180,6 +187,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-05-12 | Added disabled-onboarding course-entry requirements and aligned splash/notification routing language with the current course-entry gate. |
 | 2026-05-08 | Updated Onboard V2 requirements for the eight-step path/symptom/course-picker flow, repeated symptom course filtering, and splash protection for authenticated unfinished onboarding. |
 | 2026-05-07 | Synced code-verified module scope to 19 modules, added Onboard V2 requirements, and aligned video-lesson observability wording with shipped overlays. |
 | 2026-04-23 | Added completed-level additional-content request requirements for roadmap footer eligibility, yes/no persistence, and centered request popup behavior. |

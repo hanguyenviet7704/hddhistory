@@ -177,6 +177,7 @@ extension _VideoLessonPageControllerActions on _VideoLessonPageState {
         AppService.instance.appTrackingService.trackVideoLessonPauseClick(
           trackingData,
           nodeId: state.nodeId,
+          videoPosition: state.positionSeconds,
         );
       }
       _cubit.setPlaybackState(isPlaying: false, controlsVisible: true);

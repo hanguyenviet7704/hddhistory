@@ -49,6 +49,38 @@ void main() {
     });
   });
 
+  group('resolveUnauthenticatedSplashEntryDestination', () {
+    test('returns course-entry notification when onboarding is disabled', () {
+      final destination = resolveUnauthenticatedSplashEntryDestination(
+        needsOnboarding: true,
+        onboardingDisabled: true,
+        hasRecognizedDevice: false,
+      );
+
+      expect(destination, SplashUnauthenticatedDestination.courseEntryNotification);
+    });
+
+    test('returns course-entry notification when onboarding is disabled even for recognized devices', () {
+      final destination = resolveUnauthenticatedSplashEntryDestination(
+        needsOnboarding: true,
+        onboardingDisabled: true,
+        hasRecognizedDevice: true,
+      );
+
+      expect(destination, SplashUnauthenticatedDestination.courseEntryNotification);
+    });
+
+    test('returns legacy register notification when onboarding is enabled and the device is recognized', () {
+      final destination = resolveUnauthenticatedSplashEntryDestination(
+        needsOnboarding: true,
+        onboardingDisabled: false,
+        hasRecognizedDevice: true,
+      );
+
+      expect(destination, SplashUnauthenticatedDestination.legacyRegisterNotification);
+    });
+  });
+
   group('resolveAuthenticatedSplashDestination', () {
     test('returns onboarding entry when authenticated user has not finished onboarding', () {
       final destination = resolveAuthenticatedSplashDestination(

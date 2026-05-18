@@ -21,10 +21,17 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   void setIsFirstTimeLessonNavigationGuide(bool isFirstTimeLessonNavigationGuide) => emit(state.copyWith(isFirstTimeLessonNavigationGuide: isFirstTimeLessonNavigationGuide));
   void setHasCompletedFirstTimeNotificationGate(bool hasCompletedFirstTimeNotificationGate) =>
       emit(state.copyWith(hasCompletedFirstTimeNotificationGate: hasCompletedFirstTimeNotificationGate));
+  void setHasCompletedCourseEntryNotificationGate(bool hasCompletedCourseEntryNotificationGate) =>
+      emit(state.copyWith(hasCompletedCourseEntryNotificationGate: hasCompletedCourseEntryNotificationGate));
 
   void completeFirstTimeNotificationGate() {
     if (state.hasCompletedFirstTimeNotificationGate) return;
     emit(state.copyWith(hasCompletedFirstTimeNotificationGate: true));
+  }
+
+  void completeCourseEntryNotificationGate() {
+    if (state.hasCompletedCourseEntryNotificationGate) return;
+    emit(state.copyWith(hasCompletedCourseEntryNotificationGate: true));
   }
 
   void startFirstTimeRegisterFlow() {
@@ -82,12 +89,14 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     final previousUserId = state.user.id;
     bool isUserPassOnboarding = state.isUserPassOnboarding;
     bool hasCompletedFirstTimeNotificationGate = state.hasCompletedFirstTimeNotificationGate;
+    bool hasCompletedCourseEntryNotificationGate = state.hasCompletedCourseEntryNotificationGate;
     emit(UserState.initial());
     AppDI.injector.get<ProfileCubit>().reset();
     emit(
       state.copyWith(
         isUserPassOnboarding: isUserPassOnboarding,
         hasCompletedFirstTimeNotificationGate: hasCompletedFirstTimeNotificationGate,
+        hasCompletedCourseEntryNotificationGate: hasCompletedCourseEntryNotificationGate,
       ),
     );
     if (previousUserId.isNotEmpty) {
