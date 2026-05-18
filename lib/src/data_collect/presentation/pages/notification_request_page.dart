@@ -41,7 +41,12 @@ class _NotificationRequestPageState extends State<NotificationRequestPage> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _initializeGate();
+      _requestTrackingPermission();
     });
+  }
+
+  void _requestTrackingPermission() {
+    AppService.instance.appEventService.requestTrackingPermission();
   }
 
   Future<void> _initializeGate() async {

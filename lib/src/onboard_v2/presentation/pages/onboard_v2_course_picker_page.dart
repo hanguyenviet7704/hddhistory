@@ -15,6 +15,11 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
   void initState() {
     super.initState();
     _courseController = PageController(viewportFraction: _p8CourseViewportFraction);
+    _requestTrackingPermission();
+  }
+
+  void _requestTrackingPermission() {
+    AppService.instance.appEventService.requestTrackingPermission();
   }
 
   @override
