@@ -4,8 +4,8 @@ part of '../../in_app_survey.dart';
 abstract class InAppSurveyEmojiModel with _$InAppSurveyEmojiModel {
   const factory InAppSurveyEmojiModel({
     String? name,
-    @Default('') String lightIcon,
-    @Default('') String darkIcon,
+    @Default('') String lightUrl,
+    @Default('') String darkUrl,
   }) = _InAppSurveyEmojiModel;
 
   factory InAppSurveyEmojiModel.fromJson(Map<String, dynamic> json) => _$InAppSurveyEmojiModelFromJson(json);
@@ -14,7 +14,7 @@ abstract class InAppSurveyEmojiModel with _$InAppSurveyEmojiModel {
 extension InAppSurveyEmojiModelExtension on InAppSurveyEmojiModel {
   InAppSurveyEmojiEntity toEntity() => InAppSurveyEmojiEntity(
         name: name,
-        lightIcon: lightIcon,
-        darkIcon: darkIcon,
+        lightUrl: lightUrl,
+        darkUrl: darkUrl,
       );
 }
