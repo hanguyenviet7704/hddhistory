@@ -11,3 +11,6 @@ abstract class InAppSurveyConfigEntity with _$InAppSurveyConfigEntity {
   factory InAppSurveyConfigEntity.fromJson(Map<String, dynamic> json) => _$InAppSurveyConfigEntityFromJson(json);
 }
 
+extension InAppSurveyConfigEntityExtension on InAppSurveyConfigEntity {
+  List<InAppSurveyEmojiEntity> get emojis => branches.map((b) => b.emoji).toList();
+}
