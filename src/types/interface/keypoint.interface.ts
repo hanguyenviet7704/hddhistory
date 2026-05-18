@@ -8,16 +8,6 @@ export interface IKeypointAudio {
 export interface IKeypoint {
   _id: string;
   title: ITranslation;
-  description: ITranslation;
-  tag?: string[];
-  image: string;
-  estimateCompleTime?: ITranslation;
-  estimateCompleTimeNumber?: number;
-  audio?: IKeypointAudio;
-}
-
-export interface KeypointPayload {
-  title: ITranslation;
   description?: ITranslation;
   tag?: string[];
   image: string;
@@ -25,6 +15,8 @@ export interface KeypointPayload {
   estimateCompleTimeNumber?: number;
   audio?: IKeypointAudio;
 }
+
+export type KeypointPayload = Omit<IKeypoint, "_id">;
 
 export interface IKeypointBrief {
   _id: string;

@@ -43,6 +43,7 @@ export default function CourseModal({
 
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
+  const [titleError, setTitleError] = useState("");
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<CourseStatus>(CourseStatus.DRAFT);
   const [prices, setPrices] = useState<IPrice[]>([]);
@@ -63,6 +64,7 @@ export default function CourseModal({
   useEffect(() => {
     if (!isOpen) return;
     if (initial) {
+      setTitleError("");
       setTitle(initial.title ?? {});
       setDescription(initial.description ?? {});
       setImage(initial.image ?? "");
@@ -72,6 +74,7 @@ export default function CourseModal({
       setSkillsetId(initial.skillsetId ?? "");
       setSelectedSkillsetLabel("");
     } else {
+      setTitleError("");
       setTitle({});
       setDescription({});
       setImage("");
@@ -142,9 +145,15 @@ export default function CourseModal({
     const cleanedTitle = cleanTranslation(title);
     const cleanedDescription = cleanTranslation(description);
 
+    if (!cleanedTitle) {
+      setTitleError("Title is required");
+      return;
+    }
+    setTitleError("");
+
     // Create CoursePayload with cleaned translations
     const payload: Partial<CoursePayload> = {
-      title: cleanedTitle || { [lang]: "" }, // Always include title
+      title: cleanedTitle,
       image,
       status,
       prices: prices,
@@ -268,9 +277,9 @@ export default function CourseModal({
             onSubmit={handleSubmit}
             className="flex-grow overflow-y-auto p-6"
           >
-            {error && (
+            {(error || titleError) && (
               <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-                {error}
+                {titleError || error}
               </div>
             )}
 
@@ -282,11 +291,11 @@ export default function CourseModal({
                 </label>
                 <input
                   value={title[lang] || ""}
-                  onChange={(e) =>
-                    setTitle((prev) => ({ ...prev, [lang]: e.target.value }))
-                  }
+                  onChange={(e) => {
+                    setTitle((prev) => ({ ...prev, [lang]: e.target.value }));
+                    setTitleError("");
+                  }}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  required
                 />
               </div>
 

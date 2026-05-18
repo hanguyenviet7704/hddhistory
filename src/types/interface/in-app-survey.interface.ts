@@ -12,7 +12,8 @@ export interface IInAppSurveyQuestion {
 
 export interface IInAppSurveyEmoji {
   name?: string;
-  url: string;
+  darkUrl: string;
+  lightUrl?: string;
 }
 
 export interface IInAppSurveyOption {

@@ -40,6 +40,7 @@ export default function SkillsetModal({
 
   const [title, setTitle] = useState<ITranslation>({});
   const [description, setDescription] = useState<ITranslation>({});
+  const [titleError, setTitleError] = useState("");
   const [image, setImage] = useState("");
   const [status, setStatus] = useState<SkillsetStatus>(SkillsetStatus.DRAFT);
   const [onboardingIntroduce, setOnboardingIntroduce] = useState<
@@ -50,6 +51,7 @@ export default function SkillsetModal({
   useEffect(() => {
     if (isOpen) {
       if (initial) {
+        setTitleError("");
         setTitle(initial.title ?? {});
         setDescription(initial.description ?? {});
         setImage(initial.image ?? "");
@@ -61,6 +63,7 @@ export default function SkillsetModal({
             : ""
         );
       } else {
+        setTitleError("");
         setTitle({});
         setDescription({});
         setImage("");
@@ -84,12 +87,18 @@ export default function SkillsetModal({
       updateTranslationValue(description, lang, description[lang] || "")
     );
 
+    if (!cleanedTitle) {
+      setTitleError("Title is required");
+      return;
+    }
+    setTitleError("");
+
     // Create SkillsetPayload with cleaned translations
     const trimmedIndex = indexValue.trim();
     const parsedIndex =
       trimmedIndex === "" ? undefined : Number(trimmedIndex);
     const payload: SkillsetPayload = {
-      title: cleanedTitle || { [lang]: "" }, // Always include title
+      title: cleanedTitle,
       ...(cleanedDescription && { description: cleanedDescription }),
       image,
       status,
@@ -128,9 +137,9 @@ export default function SkillsetModal({
             onSubmit={handleSubmit}
             className="flex-grow overflow-y-auto p-6"
           >
-            {error && (
+            {(error || titleError) && (
               <div className="mb-4 p-3 bg-red-50 text-red-700 rounded-lg text-sm">
-                {error}
+                {titleError || error}
               </div>
             )}
 
@@ -142,11 +151,13 @@ export default function SkillsetModal({
                 </label>
                 <input
                   value={title[lang] || ""}
-                  onChange={(e) =>
-                    setTitle((prev) => updateTranslationValue(prev, lang, e.target.value))
-                  }
+                  onChange={(e) => {
+                    setTitle((prev) =>
+                      updateTranslationValue(prev, lang, e.target.value)
+                    );
+                    setTitleError("");
+                  }}
                   className="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-                  required
                 />
               </div>
 

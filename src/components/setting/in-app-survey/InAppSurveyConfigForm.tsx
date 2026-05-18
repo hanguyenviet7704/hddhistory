@@ -34,7 +34,11 @@ const InAppSurveyConfigForm = ({
   };
 
   return (
-    <form onSubmit={onSubmit} className="space-y-6">
+    <form
+      id="in-app-survey-config-form"
+      onSubmit={onSubmit}
+      className="space-y-6"
+    >
       <InAppSurveyQuestionFields
         title="Intro Question"
         tone="intro"
@@ -83,15 +87,6 @@ const InAppSurveyConfigForm = ({
             Add Branch
           </button>
         </div>
-      </div>
-
-      <div className="sticky bottom-0 flex justify-end border-t border-slate-200 bg-white/95 py-4 backdrop-blur">
-        <button
-          type="submit"
-          className="rounded-xl bg-sky-600 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-sky-700"
-        >
-          Save Survey Config
-        </button>
       </div>
     </form>
   );

@@ -43,9 +43,9 @@ const InAppSurveyResponseCard = ({ response, lang }: Props) => {
     <div className="space-y-3 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          {emoji?.url ? (
+          {emoji?.darkUrl ? (
             <img
-              src={emoji.url}
+              src={emoji.darkUrl}
               alt={emoji.name || "Selected emoji"}
               className="h-9 w-9 rounded-full border border-slate-200 object-cover"
             />

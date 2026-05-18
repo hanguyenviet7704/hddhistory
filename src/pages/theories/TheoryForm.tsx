@@ -1403,7 +1403,6 @@ export default function TheoryForm({
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                   placeholder="Theory title..."
-                  required
                 />
               </div>
               <div>
@@ -1431,7 +1430,7 @@ export default function TheoryForm({
                         setKeypointQuery(e.target.value)
                       }
                       className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
-                      placeholder="Search course..."
+                      placeholder="Search keypoint..."
                     />
                     <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-lg border bg-white shadow-lg">
                       {keypoints

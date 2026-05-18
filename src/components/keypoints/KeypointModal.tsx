@@ -53,10 +53,7 @@ export const buildKeypointPayload = ({
   lang,
   keypoint,
 }: BuildKeypointPayloadParams): KeypointPayload => {
-  const titleValue = (title[lang] || "").trim();
-  const cleanedTitle = cleanTranslation(
-    updateTranslationValue(title, lang, titleValue)
-  );
+  const cleanedTitle = cleanTranslation(title);
   const cleanedDescription = cleanTranslation(
     updateTranslationValue(description, lang, description[lang] || "")
   );
@@ -84,7 +81,7 @@ export const buildKeypointPayload = ({
     !cleanedAudioText;
 
   return {
-    title: cleanedTitle || { [lang]: "" },
+    title: cleanedTitle || {},
     ...(cleanedDescription && { description: cleanedDescription }),
     ...(cleanedEstimateCompleTime && {
       estimateCompleTime: cleanedEstimateCompleTime,
@@ -162,9 +159,8 @@ const KeypointModal: React.FC<Props> = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const titleValue = (title[lang] || "").trim();
 
-    if (!titleValue) {
+    if (!cleanTranslation(title)) {
       showError("Title is required");
       return;
     }
@@ -213,7 +209,6 @@ const KeypointModal: React.FC<Props> = ({
             placeholder="Title"
             value={title[lang] || ""}
             onChange={(e) => setTitle((prev) => updateTranslationValue(prev, lang, e.target.value))}
-            required
           />
 
           {/* Description */}

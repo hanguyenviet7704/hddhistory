@@ -68,24 +68,37 @@ const InAppSurveyManagement = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex w-fit rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-        {[
-          { key: "editor" as const, label: "Editor" },
-          { key: "feedback" as const, label: "Feedback" },
-        ].map((tab) => (
+      <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-3 border-b border-slate-200 bg-white/95 py-3 backdrop-blur">
+        <div className="flex w-fit rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
+          {[
+            { key: "editor" as const, label: "Editor" },
+            { key: "feedback" as const, label: "Feedback" },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => setActiveTab(tab.key)}
+              className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
+                activeTab === tab.key
+                  ? "bg-indigo-600 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-50"
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        {activeTab === "editor" ? (
           <button
-            key={tab.key}
-            type="button"
-            onClick={() => setActiveTab(tab.key)}
-            className={`rounded-lg px-4 py-2 text-sm font-semibold transition ${
-              activeTab === tab.key
-                ? "bg-indigo-600 text-white shadow-sm"
-                : "text-slate-600 hover:bg-slate-50"
-            }`}
+            type="submit"
+            form="in-app-survey-config-form"
+            disabled={saving || loading}
+            className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
           >
-            {tab.label}
+            Save Survey
           </button>
-        ))}
+        ) : null}
       </div>
 
       {activeTab === "editor" ? (

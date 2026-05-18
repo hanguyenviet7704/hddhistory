@@ -79,16 +79,27 @@ const SortableInAppSurveyBranchCard = ({
       <div className="grid grid-cols-1 gap-5 xl:grid-cols-[minmax(320px,0.8fr)_minmax(460px,1.2fr)]">
         <div className="space-y-4">
           <div className="rounded-2xl border border-indigo-100 bg-indigo-50/30 p-4">
-            <div className="grid grid-cols-1 items-start gap-4 sm:grid-cols-[160px_1fr]">
+            <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-[160px_160px_1fr]">
               <CloudflareFileUpload
-                initialUrl={branch.emoji.url}
-                onUrlChange={(url) =>
+                initialUrl={branch.emoji.darkUrl}
+                onUrlChange={(darkUrl) =>
                   onChange(branchIndex, {
                     ...branch,
-                    emoji: { ...branch.emoji, url },
+                    emoji: { ...branch.emoji, darkUrl },
                   })
                 }
-                label="Emoji Image"
+                label="Dark Emoji"
+                uploadPayload={{ prefix: "", folder: "in-app-survey" }}
+              />
+              <CloudflareFileUpload
+                initialUrl={branch.emoji.lightUrl || ""}
+                onUrlChange={(lightUrl) =>
+                  onChange(branchIndex, {
+                    ...branch,
+                    emoji: { ...branch.emoji, lightUrl },
+                  })
+                }
+                label="Light Emoji"
                 uploadPayload={{ prefix: "", folder: "in-app-survey" }}
               />
               <div className="min-w-0">

@@ -23,16 +23,7 @@ export interface ICourse {
   onboardingSymptoms?: OnboardingSymptom[];
 }
 
-export interface CoursePayload {
-  title: ITranslation;
-  description: ITranslation;
-  skillsetId: string;
-  image: string;
-  status: CourseStatus;
-  prices?: IPrice[];
-  numberOfLesson?: number;
-  onboardingSymptoms?: OnboardingSymptom[];
-}
+export type CoursePayload = Omit<ICourse, "_id">;
 
 export interface ICourseBrief {
   _id: string;

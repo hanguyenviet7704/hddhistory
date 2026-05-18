@@ -23,7 +23,7 @@ export const emptySurveyOption = (
 export const emptySurveyBranch = (
   lang: LangCode
 ): InAppSurveyBranchPayload => ({
-  emoji: { name: "", url: "" },
+  emoji: { name: "", darkUrl: "", lightUrl: "" },
   closedQuestion: {
     ...emptySurveyQuestion(lang),
     type: InAppSurveyClosedQuestionType.MULTIPLE_CHOICE,
@@ -48,7 +48,16 @@ export const normalizeSurveyConfig = (
 
   return {
     introQuestion: data.introQuestion,
-    branches: data.branches.length ? data.branches : [emptySurveyBranch(lang)],
+    branches: data.branches.length
+      ? data.branches.map((branch: any) => ({
+          ...branch,
+          emoji: {
+            name: branch.emoji?.name || "",
+            darkUrl: branch.emoji?.darkUrl || branch.emoji?.url || "",
+            lightUrl: branch.emoji?.lightUrl || "",
+          },
+        }))
+      : [emptySurveyBranch(lang)],
   };
 };
 
@@ -68,7 +77,10 @@ export const buildSurveyPayload = (
       ...(branch.emoji.name?.trim()
         ? { name: branch.emoji.name.trim() }
         : {}),
-      url: branch.emoji.url.trim(),
+      darkUrl: branch.emoji.darkUrl.trim(),
+      ...(branch.emoji.lightUrl?.trim()
+        ? { lightUrl: branch.emoji.lightUrl.trim() }
+        : {}),
     },
     closedQuestion: {
       question: cleanTranslation(branch.closedQuestion.question) || {

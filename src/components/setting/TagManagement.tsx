@@ -8,6 +8,10 @@ import { tagService } from "../../services/tagService";
 import { useNotification } from "../../utils/hooks/useNotification";
 import CloudflareFileUpload from "../files/CloudflareFileUpload";
 import TagConfirm from "./TagConfirm";
+import {
+  cleanTranslation,
+  updateTranslationValue,
+} from "../../utils/translation";
 
 const TagManagement = () => {
   const { showSuccess, showError } = useNotification();
@@ -18,8 +22,7 @@ const TagManagement = () => {
   const [showForm, setShowForm] = useState(false);
   const [editingTag, setEditingTag] = useState<ITag | null>(null);
   const [formData, setFormData] = useState<TagPayload>({
-    _id: "",
-    title: "",
+    title: {},
     color: "#3B82F6",
     url: "",
   });
@@ -43,8 +46,11 @@ const TagManagement = () => {
   };
 
   const handleCreateTag = async () => {
+    const payload = buildTagPayload();
+    if (!payload) return;
+
     try {
-      await tagService.create(formData);
+      await tagService.create(payload);
       fetchTags();
       resetForm();
       showSuccess("Create tag successfully");
@@ -56,8 +62,11 @@ const TagManagement = () => {
 
   const handleUpdateTag = async () => {
     if (!editingTag) return;
+    const payload = buildTagPayload();
+    if (!payload) return;
+
     try {
-      await tagService.update(editingTag._id, formData);
+      await tagService.update(editingTag._id, payload);
       fetchTags();
       resetForm();
       showSuccess("Saved tag successfully");
@@ -88,11 +97,9 @@ const TagManagement = () => {
 
   const handleEditTag = (tag: ITag) => {
     setEditingTag(tag);
-    const titleValue = tag.title[lang] || "";
 
     setFormData({
-      _id: tag._id,
-      title: titleValue,
+      title: tag.title ?? {},
       color: tag.color,
       url: tag.url,
     });
@@ -101,13 +108,27 @@ const TagManagement = () => {
 
   const resetForm = () => {
     setFormData({
-      _id: "",
-      title: "",
+      title: {},
       color: "#3B82F6",
       url: "",
     });
     setEditingTag(null);
     setShowForm(false);
+  };
+
+  const buildTagPayload = (): TagPayload | null => {
+    const cleanedTitle = cleanTranslation(formData.title);
+
+    if (!cleanedTitle) {
+      showError("Title is required");
+      return null;
+    }
+
+    return {
+      title: cleanedTitle,
+      color: formData.color,
+      url: formData.url,
+    };
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -148,12 +169,18 @@ const TagManagement = () => {
                 <input
                   type="text"
                   id="title"
-                  value={formData.title}
+                  value={formData.title[lang] || ""}
                   onChange={(e) =>
-                    setFormData({ ...formData, title: e.target.value })
+                    setFormData({
+                      ...formData,
+                      title: updateTranslationValue(
+                        formData.title,
+                        lang,
+                        e.target.value,
+                      ),
+                    })
                   }
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
-                  required
                 />
               </div>
               <div>
