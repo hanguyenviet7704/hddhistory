@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Pagination } from "@mui/material";
+import { Pagination, Tooltip } from "@mui/material";
 import {
   ArrowPathIcon,
   DocumentDuplicateIcon,
@@ -155,12 +155,22 @@ const CompletedLevelsCell = ({ levels }: { levels?: ICompletedLevel[] }) => {
               {request ? (
                 <div className="space-y-1">
                   {request.requestText ? (
-                    <div
-                      className="max-w-[300px] truncate text-gray-700"
-                      title={request.requestText}
+                    <Tooltip
+                      title={
+                        <span className="whitespace-pre-wrap">
+                          {request.requestText}
+                        </span>
+                      }
+                      arrow
+                      placement="top"
                     >
-                      {request.requestText}
-                    </div>
+                      <div
+                        className="max-w-[300px] cursor-help truncate text-gray-700"
+                        tabIndex={0}
+                      >
+                        {request.requestText}
+                      </div>
+                    </Tooltip>
                   ) : null}
                   <div className="text-gray-500">
                     Submitted: {formatDate(request.submittedAt)}

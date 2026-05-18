@@ -8,12 +8,7 @@ export interface ITag {
   url: string;
 }
 
-export interface TagPayload {
-  _id: string;
-  title: string;
-  color: string;
-  url: string;
-}
+export type TagPayload = Omit<ITag, "_id">;
 
 export class TagListQuery extends BaseQuery {
   constructor(init?: Partial<TagListQuery>) {

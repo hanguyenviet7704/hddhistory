@@ -9,16 +9,6 @@ import { ICourse } from "./course.interface";
 export interface ISkillset {
   _id: string;
   title: ITranslation;
-  description: ITranslation;
-  status: SkillsetStatus;
-  image: string;
-  onboardingIntroduce?: SkillsetOnboardingIntroduce | null;
-  courses?: ICourse[];
-  index?: number;
-}
-
-export interface SkillsetPayload {
-  title: ITranslation;
   description?: ITranslation;
   status: SkillsetStatus;
   image: string;
@@ -26,6 +16,8 @@ export interface SkillsetPayload {
   courses?: ICourse[];
   index?: number;
 }
+
+export type SkillsetPayload = Omit<ISkillset, "_id">;
 
 export class SkillsetListQuery extends BaseQuery {
   status?: SkillsetStatus;

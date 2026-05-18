@@ -697,7 +697,6 @@ export default function LessonForm({ lesson, onSave }: LessonFormProps) {
                   }
                   className="border rounded-lg w-full p-3 focus:outline-none focus:ring-2 focus:ring-blue-400 transition"
                   placeholder="Lesson title..."
-                  required
                 />
               </div>
 
