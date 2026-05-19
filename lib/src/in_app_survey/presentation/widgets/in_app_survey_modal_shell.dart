@@ -34,7 +34,7 @@ class InAppSurveyModalShell extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Semantics(
                     button: true,
-                    label: 'Close survey',
+                    label: context.l10n.home.inAppSurveyCloseSemantics,
                     child: InkWell(
                       borderRadius: BorderRadius.circular(12.r),
                       onTap: onClose,

@@ -1,11 +1,5 @@
 part of '../../in_app_survey.dart';
 
-
-
-
-
-
-
 class InAppSurveyPage extends StatelessWidget {
   const InAppSurveyPage({super.key});
 
@@ -27,13 +21,13 @@ class InAppSurveyPage extends StatelessWidget {
       children: [
         Icon(Icons.dashboard_customize, size: 56, color: Theme.of(context).colorScheme.primary),
         const SizedBox(height: 16),
-        const Text(
-          'Blank canvas ready!',
+        Text(
+          context.l10n.home.inAppSurveyPlaceholderTitle,
           textAlign: TextAlign.center,
         ),
         const SizedBox(height: 8),
         Text(
-          'Wire any domain logic through the injected Cubit or remove it if you want a pure UI screen.',
+          context.l10n.home.inAppSurveyPlaceholderDescription,
           textAlign: TextAlign.center,
         ),
       ],
@@ -50,13 +44,9 @@ class _BlankFeatureView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('In App Survey'),
+        title: Text(context.l10n.home.inAppSurveyPageTitle),
       ),
       body: Center(child: builder(context)),
     );
   }
 }
-
-
-
-

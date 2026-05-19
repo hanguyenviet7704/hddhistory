@@ -51,7 +51,7 @@ class _InAppSurveyOpenFeedbackStepState extends State<InAppSurveyOpenFeedbackSte
         24.verticalSpace,
         Semantics(
           textField: true,
-          label: 'Survey feedback',
+          label: context.l10n.home.inAppSurveyFeedbackSemantics,
           child: TextField(
             controller: _controller,
             minLines: 4,
@@ -61,7 +61,7 @@ class _InAppSurveyOpenFeedbackStepState extends State<InAppSurveyOpenFeedbackSte
             textInputAction: TextInputAction.newline,
             decoration: InputDecoration(
               counterText: '',
-              hintText: 'Maybe if MeUp...',
+              hintText: context.l10n.home.inAppSurveyFeedbackHint,
               hintStyle: AppStyle.text14.copyWith(color: _InAppSurveyColors.textTertiary, height: 1.75),
               filled: true,
               fillColor: Colors.white,

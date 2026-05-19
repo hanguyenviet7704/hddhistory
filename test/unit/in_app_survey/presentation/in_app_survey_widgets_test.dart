@@ -34,6 +34,46 @@ void main() {
   });
 
   group('InAppSurveyDialog', () {
+    testWidgets('rating step shows dark emoji first and advances after selected emoji turns light', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final cubit = _buildCubit();
+      addTearDown(cubit.close);
+      await cubit.loadInAppSurveyConfig();
+      cubit.openSurvey();
+
+      await tester.pumpWidget(_buildHarness(cubit));
+      await tester.pumpAndSettle();
+
+      expect(cubit.state.step, InAppSurveyStep.rating);
+      _expectNetworkImageUrls(
+        tester,
+        contains('https://example.com/emoji-0-dark.png'),
+      );
+      _expectNetworkImageUrls(
+        tester,
+        isNot(contains('https://example.com/emoji-0-light.png')),
+      );
+
+      await tester.ensureVisible(find.text('Awful'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Awful'));
+      await tester.pump(const Duration(milliseconds: 300));
+
+      expect(cubit.state.step, InAppSurveyStep.rating);
+      _expectNetworkImageUrls(
+        tester,
+        contains('https://example.com/emoji-0-light.png'),
+      );
+
+      await tester.pump(const Duration(milliseconds: 51));
+      await tester.pump();
+
+      expect(cubit.state.step, InAppSurveyStep.closedQuestion);
+      expect(find.text('Continue'), findsOneWidget);
+    });
+
     testWidgets('closed question keeps Continue disabled until an option is selected', (tester) async {
       await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -97,13 +137,20 @@ Widget _buildHarness(InAppSurveyCubit cubit) {
     designSize: const Size(375, 812),
     minTextAdapt: true,
     splitScreenMode: true,
-    builder: (context, child) => MaterialApp(
-      home: BlocProvider.value(
-        value: cubit,
-        child: const InAppSurveyDialog(),
+    builder: (context, child) => TranslationProvider(
+      child: MaterialApp(
+        home: BlocProvider.value(
+          value: cubit,
+          child: const InAppSurveyDialog(),
+        ),
       ),
     ),
   );
+}
+
+void _expectNetworkImageUrls(WidgetTester tester, Matcher matcher) {
+  final urls = tester.widgetList<Image>(find.byType(Image)).where((image) => image.image is NetworkImage).map((image) => (image.image as NetworkImage).url).toList();
+  expect(urls, matcher);
 }
 
 InAppSurveyCubit _buildCubit() {
@@ -125,7 +172,10 @@ InAppSurveyConfigEntity _surveyConfig() {
       InAppSurveyBranchEntity(
         id: 'branch-1',
         index: 0,
-        emoji: InAppSurveyEmojiEntity(lightUrl: 'https://example.com/emoji-0.png'),
+        emoji: InAppSurveyEmojiEntity(
+          lightUrl: 'https://example.com/emoji-0-light.png',
+          darkUrl: 'https://example.com/emoji-0-dark.png',
+        ),
         closedQuestion: InAppSurveyClosedQuestionEntity(
           question: BaseMultiLanguage(en: 'What is not working?'),
           guide: BaseMultiLanguage(en: 'Tap what applies'),

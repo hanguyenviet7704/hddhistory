@@ -12,7 +12,7 @@ class InAppSurveyEntryPill extends StatelessWidget {
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: "Got ideas? We're listening.",
+      label: context.l10n.home.inAppSurveyEntrySemantics,
       child: Material(
         color: Colors.transparent,
         child: InkWell(
@@ -55,12 +55,12 @@ class InAppSurveyEntryPill extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       AppText(
-                        'Got ideas?',
+                        context.l10n.home.inAppSurveyEntryTitle,
                         maxLines: 1,
                         style: AppStyle.textBold16.copyWith(color: _InAppSurveyColors.textPrimary),
                       ),
                       AppText(
-                        "We're listening.",
+                        context.l10n.home.inAppSurveyEntrySubtitle,
                         maxLines: 1,
                         style: AppStyle.text12.copyWith(color: _InAppSurveyColors.textTertiary),
                       ),

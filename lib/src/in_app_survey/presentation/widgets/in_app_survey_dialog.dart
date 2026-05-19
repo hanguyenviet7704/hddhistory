@@ -62,7 +62,7 @@ class _DialogContent extends StatelessWidget {
       InAppSurveyStep.closedQuestion when branch != null => InAppSurveyModalShell(
         onClose: () => _close(context),
         bottom: _InAppSurveyPrimaryButton(
-          text: 'Continue',
+          text: context.l10n.common.kContinue,
           enabled: state.canContinueClosedQuestion,
           onPressed: cubit.continueToOpenFeedback,
         ),
@@ -75,7 +75,7 @@ class _DialogContent extends StatelessWidget {
       InAppSurveyStep.openFeedback when branch != null => InAppSurveyModalShell(
         onClose: () => _close(context),
         bottom: _InAppSurveyPrimaryButton(
-          text: state.trimmedFeedback.isEmpty ? 'Send without feedback' : 'Send feedback',
+          text: state.trimmedFeedback.isEmpty ? context.l10n.home.inAppSurveySendWithoutFeedback : context.l10n.home.inAppSurveySendFeedback,
           enabled: state.canSubmit,
           isLoading: state.isSubmitting,
           onPressed: () => cubit.submitSurveyResponse(),
