@@ -59,7 +59,8 @@ void main() {
       await tester.ensureVisible(find.text('Awful'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Awful'));
-      await tester.pump(const Duration(milliseconds: 300));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 600));
 
       expect(cubit.state.step, InAppSurveyStep.rating);
       _expectNetworkImageUrls(
@@ -67,7 +68,7 @@ void main() {
         contains('https://example.com/emoji-0-light.png'),
       );
 
-      await tester.pump(const Duration(milliseconds: 51));
+      await tester.pump(const Duration(milliseconds: 100));
       await tester.pump();
 
       expect(cubit.state.step, InAppSurveyStep.closedQuestion);

@@ -15,7 +15,7 @@ class InAppSurveyRatingStep extends StatefulWidget {
 }
 
 class _InAppSurveyRatingStepState extends State<InAppSurveyRatingStep> {
-  static const Duration _selectionDelay = Duration(milliseconds: 350);
+  static const Duration _selectionVisibleDuration = Duration(milliseconds: 650);
 
   late final ValueNotifier<int?> _selectedIndexNotifier;
 
@@ -77,7 +77,8 @@ class _InAppSurveyRatingStepState extends State<InAppSurveyRatingStep> {
     if (_selectedIndexNotifier.value != null) return;
     _selectedIndexNotifier.value = index;
 
-    await Future<void>.delayed(_selectionDelay);
+    await WidgetsBinding.instance.endOfFrame;
+    await Future<void>.delayed(_selectionVisibleDuration);
     if (!mounted) return;
     widget.onSelectBranch(index);
   }
@@ -130,10 +131,10 @@ class _RatingBranchButton extends StatelessWidget {
                     child: Center(
                       child: AnimatedScale(
                         scale: isSelected ? 1.08 : 1,
-                        duration: const Duration(milliseconds: 160),
+                        duration: const Duration(milliseconds: 220),
                         curve: Curves.easeOutBack,
                         child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 160),
+                          duration: const Duration(milliseconds: 220),
                           switchInCurve: Curves.easeOut,
                           switchOutCurve: Curves.easeIn,
                           child: SizedBox(
