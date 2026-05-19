@@ -9,6 +9,8 @@ import 'package:meup/meup.dart';
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:html/dom.dart' as html_dom;
+import 'package:html/parser.dart' as html_parser;
 import 'package:injectable/injectable.dart';
 import 'package:retrofit/retrofit.dart';
 
@@ -45,6 +47,8 @@ part 'presentation/pages/in_app_survey_page.dart';
 
 //* Presentation Layer - Widgets
 part 'presentation/widgets/in_app_survey_widget_helpers.dart';
+part 'presentation/widgets/in_app_survey_html_title.dart';
+part 'presentation/widgets/in_app_survey_html_title_helpers.dart';
 part 'presentation/widgets/in_app_survey_entry_pill.dart';
 part 'presentation/widgets/in_app_survey_modal_shell.dart';
 part 'presentation/widgets/in_app_survey_rating_step.dart';

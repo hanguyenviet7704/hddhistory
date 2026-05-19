@@ -130,7 +130,73 @@ void main() {
       expect(cubit.state.feedback, 'More focused lessons');
       expect(find.text('Send feedback'), findsOneWidget);
     });
+
+    testWidgets('renders gradient title span from backend HTML', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final cubit = _buildCubit(
+        config: _surveyConfig(
+          introTitle: '<h1>How was <span data-gradient="survey-title">your experience</span> ?</h1>',
+        ),
+      );
+      addTearDown(cubit.close);
+      await cubit.loadInAppSurveyConfig();
+      cubit.openSurvey();
+
+      await tester.pumpWidget(_buildHarness(cubit));
+      await tester.pumpAndSettle();
+
+      final title = _findSurveyTitleRichText();
+      expect(title, findsOneWidget);
+      final gradientText = find.text('your experience');
+      expect(gradientText, findsOneWidget);
+      expect(find.ancestor(of: gradientText, matching: find.byType(ShaderMask)), findsOneWidget);
+    });
+
+    testWidgets('collapses formatted backend HTML whitespace before layout', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final cubit = _buildCubit(
+        config: _surveyConfig(
+          introTitle: '<h1>   How was <span data-gradient="survey-title">your experience</span> ? </h1>',
+        ),
+      );
+      addTearDown(cubit.close);
+      await cubit.loadInAppSurveyConfig();
+      cubit.openSurvey();
+
+      await tester.pumpWidget(_buildHarness(cubit));
+      await tester.pumpAndSettle();
+
+      final titleFinder = _findSurveyTitleRichText();
+      expect(titleFinder, findsOneWidget);
+
+      final titleWidget = tester.widget<RichText>(titleFinder);
+      final titleParts = _textSpanParts(titleWidget.text);
+      expect(titleParts, contains('How was '));
+      expect(find.text('your experience'), findsOneWidget);
+      expect(titleParts, contains(' ?'));
+
+      final titleBox = tester.renderObject<RenderBox>(titleFinder);
+      expect(titleBox.size.height, lessThan(80));
+    });
   });
+}
+
+Finder _findSurveyTitleRichText() {
+  return find.byWidgetPredicate(
+    (widget) => widget is RichText && widget.text.toPlainText().contains('How was'),
+  );
+}
+
+List<String> _textSpanParts(InlineSpan span) {
+  if (span is! TextSpan) return const [];
+  return [
+    if (span.text != null) span.text!,
+    ...?span.children?.expand(_textSpanParts),
+  ];
 }
 
 Widget _buildHarness(InAppSurveyCubit cubit) {
@@ -154,22 +220,22 @@ void _expectNetworkImageUrls(WidgetTester tester, Matcher matcher) {
   expect(urls, matcher);
 }
 
-InAppSurveyCubit _buildCubit() {
-  final repository = _FakeInAppSurveyRepository(config: _surveyConfig());
+InAppSurveyCubit _buildCubit({InAppSurveyConfigEntity? config}) {
+  final repository = _FakeInAppSurveyRepository(config: config ?? _surveyConfig());
   return InAppSurveyCubit(
     GetInAppSurveyConfigUseCase(repository),
     CreateInAppSurveyResponseUseCase(repository),
   );
 }
 
-InAppSurveyConfigEntity _surveyConfig() {
-  return const InAppSurveyConfigEntity(
+InAppSurveyConfigEntity _surveyConfig({String introTitle = 'How was your experience?'}) {
+  return InAppSurveyConfigEntity(
     configKey: 'config-1',
     introQuestion: InAppSurveyQuestionEntity(
-      question: BaseMultiLanguage(en: 'How was your experience?'),
-      guide: BaseMultiLanguage(en: 'Pick what feels right'),
+      question: BaseMultiLanguage(en: introTitle),
+      guide: const BaseMultiLanguage(en: 'Pick what feels right'),
     ),
-    branches: [
+    branches: const [
       InAppSurveyBranchEntity(
         id: 'branch-1',
         index: 0,

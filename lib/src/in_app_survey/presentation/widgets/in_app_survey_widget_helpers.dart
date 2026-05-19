@@ -28,27 +28,6 @@ BoxDecoration _surveyCardDecoration() {
   );
 }
 
-class _InAppSurveyTitle extends StatelessWidget {
-  const _InAppSurveyTitle(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return AppText(
-      text,
-      forceHtmlRendering: true,
-      textAlign: TextAlign.center,
-      maxLines: 3,
-      overflow: TextOverflow.visible,
-      style: AppStyle.textBold20.copyWith(
-        color: _InAppSurveyColors.textPrimary,
-        height: 1.5,
-      ),
-    );
-  }
-}
-
 class _InAppSurveyGuide extends StatelessWidget {
   const _InAppSurveyGuide(this.text);
 
