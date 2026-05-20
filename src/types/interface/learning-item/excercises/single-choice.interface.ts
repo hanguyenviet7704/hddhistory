@@ -18,6 +18,7 @@ export interface IExerciseSingleChoice {
   options: IExerciseChoiceOption[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }
@@ -31,6 +32,7 @@ export interface ExerciseSingleChoicePayload {
   options: IExerciseChoiceOption[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }

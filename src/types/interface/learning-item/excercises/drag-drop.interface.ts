@@ -29,6 +29,7 @@ export interface IExerciseDragDrop {
   options: IOptions[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }
@@ -45,6 +46,7 @@ export interface ExerciseDragDropPayload {
   options: IOptions[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }

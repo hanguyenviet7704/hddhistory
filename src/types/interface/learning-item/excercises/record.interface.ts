@@ -21,6 +21,7 @@ export interface IExerciseRecord {
   scoringCriteria: IScoringCriteria[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }
@@ -37,6 +38,7 @@ export interface ExerciseRecordPayload {
   scoringCriteria: IScoringCriteria[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }
