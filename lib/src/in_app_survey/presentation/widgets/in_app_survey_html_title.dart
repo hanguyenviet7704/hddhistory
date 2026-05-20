@@ -109,7 +109,7 @@ class _InAppSurveyTitle extends StatelessWidget {
       final style = _styleForElement(node, inheritedStyle);
 
       if (_shouldUseGradient(node)) {
-        final value = _normalizeHtmlText(node.text).trim();
+        final value = _normalizeHtmlText(node.text);
         if (value.trim().isEmpty) continue;
         spans.add(
           WidgetSpan(

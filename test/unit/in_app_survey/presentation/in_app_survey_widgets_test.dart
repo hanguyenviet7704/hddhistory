@@ -147,11 +147,40 @@ void main() {
       await tester.pumpWidget(_buildHarness(cubit));
       await tester.pumpAndSettle();
 
-      final title = _findSurveyTitleRichText();
+      final title = _findSurveyTitleRichText('How was');
       expect(title, findsOneWidget);
       final gradientText = find.text('your experience');
       expect(gradientText, findsOneWidget);
       expect(find.ancestor(of: gradientText, matching: find.byType(ShaderMask)), findsOneWidget);
+    });
+
+    testWidgets('preserves leading whitespace inside gradient title span', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final cubit = _buildCubit(
+        config: _surveyConfig(
+          openTitle: '''
+<h1>
+  What would 
+<span data-gradient="survey-title"> bring you back</span> 
+</h1>
+''',
+        ),
+      );
+      addTearDown(cubit.close);
+      await cubit.loadInAppSurveyConfig();
+      cubit.openSurvey();
+      cubit.selectBranch(0);
+      cubit.toggleOption('option-1');
+      cubit.continueToOpenFeedback();
+
+      await tester.pumpWidget(_buildHarness(cubit));
+      await tester.pumpAndSettle();
+
+      expect(_findSurveyTitleRichText('What would'), findsOneWidget);
+      expect(find.text(' bring you back'), findsOneWidget);
+      expect(find.ancestor(of: find.text(' bring you back'), matching: find.byType(ShaderMask)), findsOneWidget);
     });
 
     testWidgets('collapses formatted backend HTML whitespace before layout', (tester) async {
@@ -170,7 +199,7 @@ void main() {
       await tester.pumpWidget(_buildHarness(cubit));
       await tester.pumpAndSettle();
 
-      final titleFinder = _findSurveyTitleRichText();
+      final titleFinder = _findSurveyTitleRichText('How was');
       expect(titleFinder, findsOneWidget);
 
       final titleWidget = tester.widget<RichText>(titleFinder);
@@ -185,9 +214,9 @@ void main() {
   });
 }
 
-Finder _findSurveyTitleRichText() {
+Finder _findSurveyTitleRichText(String text) {
   return find.byWidgetPredicate(
-    (widget) => widget is RichText && widget.text.toPlainText().contains('How was'),
+    (widget) => widget is RichText && widget.text.toPlainText().contains(text),
   );
 }
 
@@ -228,22 +257,25 @@ InAppSurveyCubit _buildCubit({InAppSurveyConfigEntity? config}) {
   );
 }
 
-InAppSurveyConfigEntity _surveyConfig({String introTitle = 'How was your experience?'}) {
+InAppSurveyConfigEntity _surveyConfig({
+  String introTitle = 'How was your experience?',
+  String openTitle = 'What would bring you back?',
+}) {
   return InAppSurveyConfigEntity(
     configKey: 'config-1',
     introQuestion: InAppSurveyQuestionEntity(
       question: BaseMultiLanguage(en: introTitle),
       guide: const BaseMultiLanguage(en: 'Pick what feels right'),
     ),
-    branches: const [
+    branches: [
       InAppSurveyBranchEntity(
         id: 'branch-1',
         index: 0,
-        emoji: InAppSurveyEmojiEntity(
+        emoji: const InAppSurveyEmojiEntity(
           lightUrl: 'https://example.com/emoji-0-light.png',
           darkUrl: 'https://example.com/emoji-0-dark.png',
         ),
-        closedQuestion: InAppSurveyClosedQuestionEntity(
+        closedQuestion: const InAppSurveyClosedQuestionEntity(
           question: BaseMultiLanguage(en: 'What is not working?'),
           guide: BaseMultiLanguage(en: 'Tap what applies'),
           type: InAppSurveyClosedQuestionType.singleChoice,
@@ -259,7 +291,7 @@ InAppSurveyConfigEntity _surveyConfig({String introTitle = 'How was your experie
           ],
         ),
         openQuestion: InAppSurveyQuestionEntity(
-          question: BaseMultiLanguage(en: 'What would bring you back?'),
+          question: BaseMultiLanguage(en: openTitle),
         ),
       ),
     ],
