@@ -156,7 +156,7 @@ const createDefaultTextDocument = (currentLang: LangCode): IDocument => ({
 
 const createDefaultDocumentsForExercise = (
   type: ExerciseType,
-  currentLang: LangCode
+  currentLang: LangCode,
 ): IDocument[] =>
   type === ExerciseType.DRAG_DROP
     ? []
@@ -212,7 +212,7 @@ const scaleValuesToTotal = (values: number[], target: number) => {
 const rebalanceRecordScoringCriteria = (
   criteriaInput?: Partial<IScoringCriteria>[],
   exerciseMaxScore?: number,
-  lang?: LangCode
+  lang?: LangCode,
 ): IScoringCriteria[] => {
   const isValidNumber = (value: unknown): value is number =>
     typeof value === "number" && !Number.isNaN(value);
@@ -342,7 +342,7 @@ const getExerciseTypeLabel = (type?: ExerciseType): string => {
 
 const getDragDropFormLabel = (
   type?: ExerciseType,
-  form?: string | FormDragDropType
+  form?: string | FormDragDropType,
 ): string => {
   if (type !== ExerciseType.DRAG_DROP) return "";
   return (form as string) || FormDragDropType.TextGapFilling;
@@ -462,10 +462,10 @@ const KeypointSelector = ({
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [keypointQuery, setKeypointQuery] = useState("");
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
-    null
+    null,
   );
   const lang = useSelector(
-    (state: RootState) => state.lang.code
+    (state: RootState) => state.lang.code,
   ) as keyof ITranslation as LangCode;
 
   useEffect(() => {
@@ -540,7 +540,7 @@ const KeypointSelector = ({
               .filter((k) =>
                 k.title?.[lang]
                   ?.toLowerCase()
-                  .includes(keypointQuery.toLowerCase())
+                  .includes(keypointQuery.toLowerCase()),
               )
               .map((c) => (
                 <Combobox.Option
@@ -585,7 +585,7 @@ export default function RoleplayFromDetail({
 }: RoleplayFormProps) {
   const navigate = useNavigate();
   const lang = useSelector(
-    (state: RootState) => state.lang.code
+    (state: RootState) => state.lang.code,
   ) as keyof ITranslation as LangCode;
   const isEditMode = !!roleplay;
   const { showSuccess, showError } = useNotification();
@@ -605,10 +605,10 @@ export default function RoleplayFromDetail({
   const [keypoints, setKeypoints] = useState<IKeypoint[]>([]);
   const [keypointQuery, setKeypointQuery] = useState("");
   const [selectedKeypoint, setSelectedKeypoint] = useState<IKeypoint | null>(
-    null
+    null,
   );
   const [keypointCache, setKeypointCache] = useState<Record<string, IKeypoint>>(
-    {}
+    {},
   );
   const pendingKeypointFetches = useRef<Set<string>>(new Set());
   const mergeKeypointCache = useCallback((items: IKeypoint[]) => {
@@ -650,7 +650,7 @@ export default function RoleplayFromDetail({
         documents: [],
         roleplay: createEmptyRoleplayData(),
         index: 0,
-      } as ILearningItem)
+      } as ILearningItem),
   );
 
   useEffect(() => {
@@ -660,7 +660,7 @@ export default function RoleplayFromDetail({
 
       const maxContentId = contents.reduce(
         (max, c) => Math.max(max, c.id ?? 0),
-        0
+        0,
       );
       let contentCounter = maxContentId;
 
@@ -685,10 +685,10 @@ export default function RoleplayFromDetail({
       const normalizeExerciseIds = (exerciseData: any) => {
         if (exerciseData?.type !== ExerciseType.DRAG_DROP) return exerciseData;
         const options = (exerciseData.options || []).map((opt: any) =>
-          opt && opt.id ? opt : { ...opt, id: optionCounter++ }
+          opt && opt.id ? opt : { ...opt, id: optionCounter++ },
         );
         const answer = (exerciseData.answer || []).map((ans: any) =>
-          ans && ans.id ? ans : { ...ans, id: answerCounter++ }
+          ans && ans.id ? ans : { ...ans, id: answerCounter++ },
         );
         return { ...exerciseData, options, answer } as IExerciseDragDrop;
       };
@@ -708,7 +708,7 @@ export default function RoleplayFromDetail({
 
       const missionCounterStart = missions.reduce(
         (max, m) => Math.max(max, m.id ?? 0),
-        0
+        0,
       );
       let missionCounter = missionCounterStart;
       const normalizedMissions = missions.map((mission) => {
@@ -838,7 +838,7 @@ export default function RoleplayFromDetail({
   };
 
   const transformExerciseToPayload = (
-    exercise?: ExerciseInput
+    exercise?: ExerciseInput,
   ): ExerciseInputPayload | undefined => {
     if (!exercise) return undefined;
 
@@ -861,7 +861,7 @@ export default function RoleplayFromDetail({
     // Clean ITranslation fields - only add if not empty
     if ("explanation" in exercisePayload && exercisePayload.explanation) {
       const cleanedExplanation = cleanTranslation(
-        exercisePayload.explanation as ITranslation
+        exercisePayload.explanation as ITranslation,
       );
       if (cleanedExplanation) {
         (exercisePayload as any).explanation = cleanedExplanation;
@@ -871,7 +871,7 @@ export default function RoleplayFromDetail({
     }
     if ("targetArea" in exercisePayload && exercisePayload.targetArea) {
       const cleanedTargetArea = cleanTranslation(
-        exercisePayload.targetArea as ITranslation
+        exercisePayload.targetArea as ITranslation,
       );
       if (cleanedTargetArea) {
         (exercisePayload as any).targetArea = cleanedTargetArea;
@@ -895,7 +895,7 @@ export default function RoleplayFromDetail({
             cleanedOption.text = cleanedText;
           }
           return cleanedOption;
-        }
+        },
       );
     }
     if ("answer" in exercisePayload && Array.isArray(exercisePayload.answer)) {
@@ -907,7 +907,7 @@ export default function RoleplayFromDetail({
             cleanedAnswer.correctAnswer = cleanedCorrectAnswer;
           }
           return cleanedAnswer;
-        }
+        },
       );
     }
     if (
@@ -915,7 +915,7 @@ export default function RoleplayFromDetail({
       Array.isArray(exercisePayload.document)
     ) {
       const cleanedDocuments = cleanDocumentItems(
-        exercisePayload.document as IDocument[]
+        exercisePayload.document as IDocument[],
       );
       if (cleanedDocuments.length > 0) {
         (exercisePayload as any).document = cleanedDocuments;
@@ -928,7 +928,7 @@ export default function RoleplayFromDetail({
   };
 
   const transformRoleplayToPayload = (
-    roleplayData?: IRoleplay
+    roleplayData?: IRoleplay,
   ): IRoleplayPayload | undefined => {
     if (!roleplayData) return undefined;
 
@@ -956,7 +956,7 @@ export default function RoleplayFromDetail({
           content.conversation
         ) {
           const cleanedConversationAudio = cleanTranslation(
-            content.conversation.audio
+            content.conversation.audio,
           );
           contentPayload.conversation = {
             position: content.conversation.position,
@@ -976,7 +976,7 @@ export default function RoleplayFromDetail({
           content.leadingText
         ) {
           const cleanedLeadingAudio = cleanTranslation(
-            content.leadingText.audio
+            content.leadingText.audio,
           );
           contentPayload.leadingText = {
             ...content.leadingText,
@@ -1013,7 +1013,7 @@ export default function RoleplayFromDetail({
 
   const buildLearningItemPayload = (
     item: ILearningItem,
-    titleOverride?: ITranslation
+    titleOverride?: ITranslation,
   ): LearningItemPayload => {
     const payload: any = {
       keypointId: item.keypointId,
@@ -1026,7 +1026,7 @@ export default function RoleplayFromDetail({
     };
 
     payload.roleplay = transformRoleplayToPayload(
-      item.roleplay || createEmptyRoleplayData()
+      item.roleplay || createEmptyRoleplayData(),
     );
 
     const cleanedDescription = cleanTranslation(item.description);
@@ -1118,7 +1118,7 @@ export default function RoleplayFromDetail({
           } finally {
             pendingKeypointFetches.current.delete(id);
           }
-        })
+        }),
       );
     };
 
@@ -1144,7 +1144,10 @@ export default function RoleplayFromDetail({
     async (options?: { suppressToast?: boolean }) => {
       try {
         setSaving(true);
-        const payload = buildLearningItemPayload(currentRoleplay, externalTitle);
+        const payload = buildLearningItemPayload(
+          currentRoleplay,
+          externalTitle,
+        );
 
         let res;
         if (currentRoleplay._id) {
@@ -1196,16 +1199,16 @@ export default function RoleplayFromDetail({
             : showSuccess("Create roleplay successfully");
         }
         return mergedRoleplay as ILearningItem;
-    } catch (err) {
-      console.error("handleSaveRoleplay", err);
-      showError(
-        (err as any).response?.data?.message || "Failed to save roleplay"
-      );
-      return undefined;
-    } finally {
-      setSaving(false);
-    }
-  },
+      } catch (err) {
+        console.error("handleSaveRoleplay", err);
+        showError(
+          (err as any).response?.data?.message || "Failed to save roleplay",
+        );
+        return undefined;
+      } finally {
+        setSaving(false);
+      }
+    },
     [
       currentRoleplay,
       embedded,
@@ -1214,7 +1217,7 @@ export default function RoleplayFromDetail({
       onSave,
       showError,
       showSuccess,
-    ]
+    ],
   );
 
   useEffect(() => {
@@ -1278,7 +1281,7 @@ export default function RoleplayFromDetail({
 
   const handleOpenModal = (
     contentType: RoleplayContentType,
-    content?: IRoleplayContent
+    content?: IRoleplayContent,
   ) => {
     const roleplayTemplate = getRoleplayColorTemplate();
     const formData = content
@@ -1292,7 +1295,7 @@ export default function RoleplayFromDetail({
   const createEmptyContent = (
     type: RoleplayContentType,
     id: number,
-    template?: IRoleplayColorTemplate
+    template?: IRoleplayColorTemplate,
   ) => {
     switch (type) {
       case RoleplayContentType.CONVERSATION: {
@@ -1343,7 +1346,7 @@ export default function RoleplayFromDetail({
             keypointId: "",
             document: createDefaultDocumentsForExercise(
               ExerciseType.SINGLE_CHOICE,
-              lang
+              lang,
             ),
             explanation: { [lang]: "" },
             options: [] as IExerciseChoiceOption[],
@@ -1360,7 +1363,7 @@ export default function RoleplayFromDetail({
   // Request delete content
   const requestDeleteContent = (
     contentId: number,
-    contentTitle = "content"
+    contentTitle = "content",
   ) => {
     setConfirmDeleteContent({ contentId, contentTitle });
   };
@@ -1386,7 +1389,7 @@ export default function RoleplayFromDetail({
   // Handle saving content and roleplay together
   const handleSaveContentAndRoleplay = async (
     contentData: IRoleplayContent,
-    options?: { isEditing?: boolean }
+    options?: { isEditing?: boolean },
   ) => {
     try {
       setValidationErrors({});
@@ -1424,7 +1427,7 @@ export default function RoleplayFromDetail({
         if (
           !getCurrentTranslationValue(
             normalizedContent.leadingText?.content,
-            lang
+            lang,
           )
         ) {
           errors.content = "Content is required for leading text";
@@ -1434,7 +1437,7 @@ export default function RoleplayFromDetail({
         if (
           !getCurrentTranslationValue(
             normalizedContent.transition?.content,
-            lang
+            lang,
           )
         ) {
           errors.transitionContent = "Content is required for transition";
@@ -1459,7 +1462,7 @@ export default function RoleplayFromDetail({
 
       if (isEditingExisting) {
         updatedContents = contents.map((content) =>
-          content.id === normalizedContent.id ? normalizedContent : content
+          content.id === normalizedContent.id ? normalizedContent : content,
         );
       } else {
         updatedContents = [...contents, normalizedContent];
@@ -1495,7 +1498,7 @@ export default function RoleplayFromDetail({
     } catch (err) {
       console.error("handleSaveContentAndRoleplay", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save content"
+        (err as any).response?.data?.message || "Failed to save content",
       );
     } finally {
       setSaving(false);
@@ -1537,7 +1540,7 @@ export default function RoleplayFromDetail({
     } catch (err) {
       console.error("handleDeleteContentAndSaveRoleplay", err);
       showError(
-        (err as any).response?.data?.message || "Failed to delete content"
+        (err as any).response?.data?.message || "Failed to delete content",
       );
     } finally {
       setSaving(false);
@@ -1615,7 +1618,7 @@ export default function RoleplayFromDetail({
     } catch (err) {
       console.error("updateRoleplayColorTemplate", err);
       showError(
-        (err as any).response?.data?.message || "Failed to save color template"
+        (err as any).response?.data?.message || "Failed to save color template",
       );
     } finally {
       setSaving(false);
@@ -1642,7 +1645,7 @@ export default function RoleplayFromDetail({
     setCurrentRoleplay((prev) => {
       const roleplayData = prev.roleplay || createEmptyRoleplayData();
       const missions = (roleplayData.missions || []).map((mission) =>
-        mission.id === missionId ? { ...mission, content } : mission
+        mission.id === missionId ? { ...mission, content } : mission,
       );
       return { ...prev, roleplay: { ...roleplayData, missions } };
     });
@@ -1652,7 +1655,7 @@ export default function RoleplayFromDetail({
     setCurrentRoleplay((prev) => {
       const roleplayData = prev.roleplay || createEmptyRoleplayData();
       const missions = (roleplayData.missions || []).filter(
-        (mission) => mission.id !== missionId
+        (mission) => mission.id !== missionId,
       );
       return { ...prev, roleplay: { ...roleplayData, missions } };
     });
@@ -1690,7 +1693,7 @@ export default function RoleplayFromDetail({
               }}
             />
             <p className="text-xs text-gray-500">
-              Image is shown in previews and alongside the roleplay lesson.
+              Image is shown in previews and alongside the roleplay lesson...
             </p>
           </div>
 
@@ -1728,7 +1731,7 @@ export default function RoleplayFromDetail({
                       <textarea
                         value={getCurrentTranslationValue(
                           mission.content,
-                          lang
+                          lang,
                         )}
                         onChange={(e) =>
                           updateMissionContent(
@@ -1736,8 +1739,8 @@ export default function RoleplayFromDetail({
                             updateTranslationValue(
                               mission.content || {},
                               lang,
-                              e.target.value
-                            )
+                              e.target.value,
+                            ),
                           )
                         }
                         rows={2}
@@ -1866,11 +1869,11 @@ export default function RoleplayFromDetail({
                       content.type === RoleplayContentType.EXERCISE
                         ? getTranslationValue(
                             content.exercise.explanation,
-                            lang
+                            lang,
                           ) ||
                           getCurrentTranslationValue(
                             content.exercise.explanation,
-                            lang
+                            lang,
                           )
                         : "";
                     const dragDropFormLabel =
@@ -1878,7 +1881,7 @@ export default function RoleplayFromDetail({
                       content.exercise?.type === ExerciseType.DRAG_DROP
                         ? getDragDropFormLabel(
                             content.exercise.type,
-                            (content.exercise as IExerciseDragDrop)?.form
+                            (content.exercise as IExerciseDragDrop)?.form,
                           )
                         : "";
                     return (
@@ -1891,358 +1894,362 @@ export default function RoleplayFromDetail({
                           animate={{ opacity: 1, y: 0 }}
                           className="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
                         >
-                        <div className="flex items-start justify-between">
-                          <div className="flex flex-col gap-2">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium text-pink-500 uppercase tracking-wide">
-                                {content.type}
-                              </span>
-                              <span className="text-xs text-gray-500">
-                                ID: {content.id}
-                              </span>
-                              {selectedTemplate && (
-                                <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
-                                  {selectedTemplate.title}
-                                </span>
-                              )}
-                            </div>
-                            {content.type ===
-                              RoleplayContentType.CONVERSATION && (
+                          <div className="flex items-start justify-between">
+                            <div className="flex flex-col gap-2">
                               <div className="flex items-center gap-2">
-                                {content.conversation.avatar?.url && (
-                                  <img
-                                    src={content.conversation.avatar.url}
-                                    alt={content.conversation.avatar.name}
-                                    className="w-8 h-8 rounded-full object-cover border"
-                                  />
+                                <span className="text-xs font-medium text-pink-500 uppercase tracking-wide">
+                                  {content.type}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  ID: {content.id}
+                                </span>
+                                {selectedTemplate && (
+                                  <span className="text-xs text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-full">
+                                    {selectedTemplate.title}
+                                  </span>
                                 )}
+                              </div>
+                              {content.type ===
+                                RoleplayContentType.CONVERSATION && (
+                                <div className="flex items-center gap-2">
+                                  {content.conversation.avatar?.url && (
+                                    <img
+                                      src={content.conversation.avatar.url}
+                                      alt={content.conversation.avatar.name}
+                                      className="w-8 h-8 rounded-full object-cover border"
+                                    />
+                                  )}
+                                  <div className="flex items-center gap-2">
+                                    <div
+                                      className="w-4 h-4 rounded-full border border-gray-300"
+                                      style={{
+                                        backgroundColor:
+                                          content.conversation.backgroundColor,
+                                      }}
+                                    ></div>
+                                    <div
+                                      className="w-4 h-4 rounded-full border border-gray-300"
+                                      style={{
+                                        backgroundColor:
+                                          content.conversation.textColor,
+                                      }}
+                                    ></div>
+                                    <span className="text-xs text-gray-500">
+                                      {content.conversation.position}
+                                    </span>
+                                  </div>
+                                  {getTranslationValue(
+                                    content.conversation.audio,
+                                    lang,
+                                  ) && (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 text-gray-500"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                      />
+                                    </svg>
+                                  )}
+                                  <TextWithTooltip
+                                    text={content.conversation.content}
+                                    maxLength={120}
+                                    lang={lang}
+                                  />
+                                </div>
+                              )}
+
+                              {content.type ===
+                                RoleplayContentType.LEADING_TEXT && (
                                 <div className="flex items-center gap-2">
                                   <div
                                     className="w-4 h-4 rounded-full border border-gray-300"
                                     style={{
                                       backgroundColor:
-                                        content.conversation.backgroundColor,
+                                        content.leadingText.backgroundColor,
                                     }}
                                   ></div>
                                   <div
                                     className="w-4 h-4 rounded-full border border-gray-300"
                                     style={{
                                       backgroundColor:
-                                        content.conversation.textColor,
+                                        content.leadingText.textColor,
                                     }}
                                   ></div>
-                                  <span className="text-xs text-gray-500">
-                                    {content.conversation.position}
-                                  </span>
+                                  {getTranslationValue(
+                                    content.leadingText.audio,
+                                    lang,
+                                  ) && (
+                                    <svg
+                                      xmlns="http://www.w3.org/2000/svg"
+                                      className="h-4 w-4 text-gray-500"
+                                      fill="none"
+                                      viewBox="0 0 24 24"
+                                      stroke="currentColor"
+                                    >
+                                      <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth={2}
+                                        d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
+                                      />
+                                    </svg>
+                                  )}
+                                  <TextWithTooltip
+                                    text={content.leadingText.content}
+                                    maxLength={120}
+                                    lang={lang}
+                                  />
                                 </div>
-                                {getTranslationValue(
-                                  content.conversation.audio,
-                                  lang
-                                ) && (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 text-gray-500"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                                    />
-                                  </svg>
-                                )}
-                                <TextWithTooltip
-                                  text={content.conversation.content}
-                                  maxLength={120}
-                                  lang={lang}
-                                />
-                              </div>
-                            )}
+                              )}
 
-                            {content.type ===
-                              RoleplayContentType.LEADING_TEXT && (
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="w-4 h-4 rounded-full border border-gray-300"
-                                  style={{
-                                    backgroundColor:
-                                      content.leadingText.backgroundColor,
-                                  }}
-                                ></div>
-                                <div
-                                  className="w-4 h-4 rounded-full border border-gray-300"
-                                  style={{
-                                    backgroundColor:
-                                      content.leadingText.textColor,
-                                  }}
-                                ></div>
-                                {getTranslationValue(
-                                  content.leadingText.audio,
-                                  lang
-                                ) && (
-                                  <svg
-                                    xmlns="http://www.w3.org/2000/svg"
-                                    className="h-4 w-4 text-gray-500"
-                                    fill="none"
-                                    viewBox="0 0 24 24"
-                                    stroke="currentColor"
-                                  >
-                                    <path
-                                      strokeLinecap="round"
-                                      strokeLinejoin="round"
-                                      strokeWidth={2}
-                                      d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"
-                                    />
-                                  </svg>
-                                )}
-                                <TextWithTooltip
-                                  text={content.leadingText.content}
-                                  maxLength={120}
-                                  lang={lang}
-                                />
-                              </div>
-                            )}
-
-                            {content.type ===
-                              RoleplayContentType.TRANSITION && (
-                              <div className="flex items-center gap-2">
-                                <div
-                                  className="w-4 h-4 rounded-full border border-gray-300"
-                                  style={{
-                                    backgroundColor:
-                                      content.transition?.textColor ||
-                                      "#000000",
-                                  }}
-                                ></div>
-                                <TextWithTooltip
-                                  text={content.transition?.content}
-                                  maxLength={120}
-                                  lang={lang}
-                                />
-                              </div>
-                            )}
-
-                            {content.type === RoleplayContentType.EXERCISE && (
-                              <div className="space-y-3">
-                                <div className="flex flex-wrap items-center gap-3">
-                                  <span className="text-base font-semibold text-gray-800">
-                                    {exerciseTypeLabel || "Exercise"}
-                                  </span>
-                                  {dragDropFormLabel && (
-                                    <span className="text-xs flex items-center gap-1 text-gray-400">
-                                      <span className="font-semibold text-blue-700">
-                                        Form:
-                                      </span>
-                                      <span className="text-gray-600">
-                                        {dragDropFormLabel}
-                                      </span>
-                                    </span>
-                                  )}
-                                  {keypointLabel && (
-                                    <span className="text-xs flex items-center gap-1 text-gray-400">
-                                      <span className="font-semibold text-emerald-700">
-                                        Keypoint:
-                                      </span>
-                                      <span className="text-gray-600">
-                                        {keypointLabel}
-                                      </span>
-                                    </span>
-                                  )}
-                                  {content.exercise.tag && (
-                                    <TagDisplay
-                                      tag={content.exercise.tag}
-                                      lang={lang}
-                                    />
-                                  )}
+                              {content.type ===
+                                RoleplayContentType.TRANSITION && (
+                                <div className="flex items-center gap-2">
+                                  <div
+                                    className="w-4 h-4 rounded-full border border-gray-300"
+                                    style={{
+                                      backgroundColor:
+                                        content.transition?.textColor ||
+                                        "#000000",
+                                    }}
+                                  ></div>
+                                  <TextWithTooltip
+                                    text={content.transition?.content}
+                                    maxLength={120}
+                                    lang={lang}
+                                  />
                                 </div>
-                                {content.exercise.maxScore && (
-                                  <div className="flex items-center gap-2 flex-wrap text-xs text-gray-600">
-                                    <span className="font-medium text-gray-600">
-                                      Max score: {content.exercise.maxScore}
+                              )}
+
+                              {content.type ===
+                                RoleplayContentType.EXERCISE && (
+                                <div className="space-y-3">
+                                  <div className="flex flex-wrap items-center gap-3">
+                                    <span className="text-base font-semibold text-gray-800">
+                                      {exerciseTypeLabel || "Exercise"}
                                     </span>
-                                    {"scoringCriteria" in content.exercise &&
-                                      content.exercise.scoringCriteria && (
-                                        <span className="text-xs text-gray-500 font-mono">
-                                          Criteria:{" "}
-                                          {
-                                            content.exercise.scoringCriteria
-                                              .length
-                                          }
+                                    {dragDropFormLabel && (
+                                      <span className="text-xs flex items-center gap-1 text-gray-400">
+                                        <span className="font-semibold text-blue-700">
+                                          Form:
                                         </span>
-                                      )}
+                                        <span className="text-gray-600">
+                                          {dragDropFormLabel}
+                                        </span>
+                                      </span>
+                                    )}
+                                    {keypointLabel && (
+                                      <span className="text-xs flex items-center gap-1 text-gray-400">
+                                        <span className="font-semibold text-emerald-700">
+                                          Keypoint:
+                                        </span>
+                                        <span className="text-gray-600">
+                                          {keypointLabel}
+                                        </span>
+                                      </span>
+                                    )}
+                                    {content.exercise.tag && (
+                                      <TagDisplay
+                                        tag={content.exercise.tag}
+                                        lang={lang}
+                                      />
+                                    )}
                                   </div>
-                                )}
-                                {content.exercise.type ===
-                                  ExerciseType.DRAG_DROP &&
-                                  (content.exercise as IExerciseDragDrop)
-                                    .targetArea && (
+                                  {content.exercise.maxScore && (
+                                    <div className="flex items-center gap-2 flex-wrap text-xs text-gray-600">
+                                      <span className="font-medium text-gray-600">
+                                        Max score: {content.exercise.maxScore}
+                                      </span>
+                                      {"scoringCriteria" in content.exercise &&
+                                        content.exercise.scoringCriteria && (
+                                          <span className="text-xs text-gray-500 font-mono">
+                                            Criteria:{" "}
+                                            {
+                                              content.exercise.scoringCriteria
+                                                .length
+                                            }
+                                          </span>
+                                        )}
+                                    </div>
+                                  )}
+                                  {content.exercise.type ===
+                                    ExerciseType.DRAG_DROP &&
+                                    (content.exercise as IExerciseDragDrop)
+                                      .targetArea && (
+                                      <div className="text-xs text-gray-600">
+                                        <span className="font-semibold text-gray-700">
+                                          Target Area:
+                                        </span>
+                                        <div className="pl-2">
+                                          <TextWithTooltip
+                                            text={formatDisplay(
+                                              (
+                                                content.exercise as IExerciseDragDrop
+                                              ).targetArea,
+                                            )}
+                                            maxLength={120}
+                                            lang={lang}
+                                          />
+                                        </div>
+                                      </div>
+                                    )}
+                                  {exerciseExplanation?.trim() && (
                                     <div className="text-xs text-gray-600">
                                       <span className="font-semibold text-gray-700">
-                                        Target Area:
+                                        Explanation:
                                       </span>
                                       <div className="pl-2">
                                         <TextWithTooltip
-                                          text={formatDisplay(
-                                            (
-                                              content.exercise as IExerciseDragDrop
-                                            ).targetArea
-                                          )}
+                                          text={content.exercise.explanation}
                                           maxLength={120}
                                           lang={lang}
                                         />
                                       </div>
                                     </div>
                                   )}
-                                {exerciseExplanation?.trim() && (
-                                  <div className="text-xs text-gray-600">
-                                    <span className="font-semibold text-gray-700">
-                                      Explanation:
-                                    </span>
-                                    <div className="pl-2">
-                                      <TextWithTooltip
-                                        text={content.exercise.explanation}
-                                        maxLength={120}
-                                        lang={lang}
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-                                {"options" in content.exercise &&
-                                  Array.isArray(content.exercise.options) &&
-                                  content.exercise.options.length > 0 && (
-                                    <div>
-                                      <span className="font-semibold text-blue-500 text-sm">
-                                        Options
-                                      </span>
-                                      <ul className="mt-2 space-y-1 text-sm text-gray-600">
-                                        {content.exercise.options.map(
-                                          (opt: any, idx: number) => (
-                                            <li
-                                              key={opt.id || idx}
-                                              className="flex items-start gap-2"
-                                            >
-                                              {(content.exercise.type ===
-                                                ExerciseType.SINGLE_CHOICE ||
-                                                content.exercise.type ===
-                                                  ExerciseType.MULTIPLE_CHOICE) && (
-                                                <span
-                                                  className={`w-3 h-3 rounded-full mt-1 ${
-                                                    opt.isCorrect
-                                                      ? "bg-green-500"
-                                                      : "bg-gray-300"
-                                                  }`}
-                                                ></span>
-                                              )}
-                                              <TextWithTooltip
-                                                text={formatDisplay(
+                                  {"options" in content.exercise &&
+                                    Array.isArray(content.exercise.options) &&
+                                    content.exercise.options.length > 0 && (
+                                      <div>
+                                        <span className="font-semibold text-blue-500 text-sm">
+                                          Options
+                                        </span>
+                                        <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                                          {content.exercise.options.map(
+                                            (opt: any, idx: number) => (
+                                              <li
+                                                key={opt.id || idx}
+                                                className="flex items-start gap-2"
+                                              >
+                                                {(content.exercise.type ===
+                                                  ExerciseType.SINGLE_CHOICE ||
                                                   content.exercise.type ===
-                                                    ExerciseType.DRAG_DROP
-                                                    ? opt.text
-                                                    : opt.value
+                                                    ExerciseType.MULTIPLE_CHOICE) && (
+                                                  <span
+                                                    className={`w-3 h-3 rounded-full mt-1 ${
+                                                      opt.isCorrect
+                                                        ? "bg-green-500"
+                                                        : "bg-gray-300"
+                                                    }`}
+                                                  ></span>
                                                 )}
-                                                maxLength={120}
-                                                lang={lang}
-                                              />
-                                            </li>
-                                          )
-                                        )}
-                                      </ul>
-                                    </div>
-                                  )}
-                                {"answer" in content.exercise &&
-                                  Array.isArray(content.exercise.answer) &&
-                                  content.exercise.answer.length > 0 && (
-                                    <div>
-                                      <span className="font-semibold text-blue-500 text-sm">
-                                        Answers
+                                                <TextWithTooltip
+                                                  text={formatDisplay(
+                                                    content.exercise.type ===
+                                                      ExerciseType.DRAG_DROP
+                                                      ? opt.text
+                                                      : opt.value,
+                                                  )}
+                                                  maxLength={120}
+                                                  lang={lang}
+                                                />
+                                              </li>
+                                            ),
+                                          )}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  {"answer" in content.exercise &&
+                                    Array.isArray(content.exercise.answer) &&
+                                    content.exercise.answer.length > 0 && (
+                                      <div>
+                                        <span className="font-semibold text-blue-500 text-sm">
+                                          Answers
+                                        </span>
+                                        <ul className="mt-2 space-y-1 text-sm text-gray-600">
+                                          {content.exercise.answer.map(
+                                            (ans: any, idx: number) => (
+                                              <li
+                                                key={ans.id || idx}
+                                                className="pl-2"
+                                              >
+                                                <TextWithTooltip
+                                                  text={formatDisplay(
+                                                    ans.correctAnswer,
+                                                  )}
+                                                  maxLength={120}
+                                                  lang={lang}
+                                                />
+                                              </li>
+                                            ),
+                                          )}
+                                        </ul>
+                                      </div>
+                                    )}
+                                  {"scoringCriteria" in content.exercise &&
+                                    Array.isArray(
+                                      content.exercise.scoringCriteria,
+                                    ) &&
+                                    content.exercise.scoringCriteria.length >
+                                      0 && (
+                                      <span className="text-xs text-gray-600">
+                                        Scoring criteria:{" "}
+                                        {
+                                          content.exercise.scoringCriteria
+                                            .length
+                                        }
                                       </span>
-                                      <ul className="mt-2 space-y-1 text-sm text-gray-600">
-                                        {content.exercise.answer.map(
-                                          (ans: any, idx: number) => (
-                                            <li
-                                              key={ans.id || idx}
-                                              className="pl-2"
-                                            >
-                                              <TextWithTooltip
-                                                text={formatDisplay(
-                                                  ans.correctAnswer
-                                                )}
-                                                maxLength={120}
-                                                lang={lang}
-                                              />
-                                            </li>
-                                          )
-                                        )}
-                                      </ul>
-                                    </div>
-                                  )}
-                                {"scoringCriteria" in content.exercise &&
-                                  Array.isArray(
-                                    content.exercise.scoringCriteria
-                                  ) &&
-                                  content.exercise.scoringCriteria.length >
-                                    0 && (
-                                    <span className="text-xs text-gray-600">
-                                      Scoring criteria:{" "}
-                                      {content.exercise.scoringCriteria.length}
-                                    </span>
-                                  )}
-                                {content.exercise.type ===
-                                  ExerciseType.RECORD &&
-                                  (content.exercise as any).maxDuration && (
-                                    <span className="text-xs text-gray-600">
-                                      Max duration:{" "}
-                                      {(content.exercise as any).maxDuration}s
-                                    </span>
-                                  )}
-                                {content.exercise.type ===
-                                  ExerciseType.RECORD &&
-                                  (content.exercise as any).maxCharacter && (
-                                    <span className="text-xs text-gray-600">
-                                      Max characters:{" "}
-                                      {(content.exercise as any).maxCharacter}
-                                    </span>
-                                  )}
-                              </div>
-                            )}
-                          </div>
+                                    )}
+                                  {content.exercise.type ===
+                                    ExerciseType.RECORD &&
+                                    (content.exercise as any).maxDuration && (
+                                      <span className="text-xs text-gray-600">
+                                        Max duration:{" "}
+                                        {(content.exercise as any).maxDuration}s
+                                      </span>
+                                    )}
+                                  {content.exercise.type ===
+                                    ExerciseType.RECORD &&
+                                    (content.exercise as any).maxCharacter && (
+                                      <span className="text-xs text-gray-600">
+                                        Max characters:{" "}
+                                        {(content.exercise as any).maxCharacter}
+                                      </span>
+                                    )}
+                                </div>
+                              )}
+                            </div>
 
-                          <div className="flex gap-1">
-                            <button
-                              onClick={() =>
-                                handleOpenModal(content.type, content)
-                              }
-                              className="text-blue-600 hover:text-blue-800 p-1 rounded"
-                              title="Edit"
-                            >
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-4 w-4"
-                                viewBox="0 0 20 20"
-                                fill="currentColor"
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() =>
+                                  handleOpenModal(content.type, content)
+                                }
+                                className="text-blue-600 hover:text-blue-800 p-1 rounded"
+                                title="Edit"
                               >
-                                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-                              </svg>
-                            </button>
-                            <button
-                              onClick={() =>
-                                requestDeleteContent(
-                                  content.id || 0,
-                                  `${content.type} content`
-                                )
-                              }
-                              className="text-red-500 hover:text-red-700 p-1 rounded"
-                              title="Delete"
-                            >
-                              <TrashIcon className="h-4 w-4" />
-                            </button>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  className="h-4 w-4"
+                                  viewBox="0 0 20 20"
+                                  fill="currentColor"
+                                >
+                                  <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                                </svg>
+                              </button>
+                              <button
+                                onClick={() =>
+                                  requestDeleteContent(
+                                    content.id || 0,
+                                    `${content.type} content`,
+                                  )
+                                }
+                                className="text-red-500 hover:text-red-700 p-1 rounded"
+                                title="Delete"
+                              >
+                                <TrashIcon className="h-4 w-4" />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      </motion.div>
-                    </SortableItem>
+                        </motion.div>
+                      </SortableItem>
                     );
                   })}
                 </div>
@@ -2292,7 +2299,7 @@ export default function RoleplayFromDetail({
     const [localNextAnswerId, setLocalNextAnswerId] = useState(nextAnswerId);
 
     const normalizeTranslationField = (
-      value: ITranslation | string | undefined
+      value: ITranslation | string | undefined,
     ): ITranslation => {
       if (!value) return { [lang]: "" };
       if (typeof value === "string") {
@@ -2385,7 +2392,7 @@ export default function RoleplayFromDetail({
           normalizedFormData.exercise.scoringCriteria,
           typeof normalizedFormData.exercise.maxScore === "number"
             ? normalizedFormData.exercise.maxScore
-            : undefined
+            : undefined,
         );
 
         nextFormData = {
@@ -2420,7 +2427,7 @@ export default function RoleplayFromDetail({
                 ...opt,
                 value: opt.value || { [lang]: "" },
                 text: opt.text || { [lang]: "" },
-              })
+              }),
             );
           }
 
@@ -2429,7 +2436,7 @@ export default function RoleplayFromDetail({
               (ans: any) => ({
                 ...ans,
                 correctAnswer: ans.correctAnswer || { [lang]: "" },
-              })
+              }),
             );
           }
         }
@@ -2544,7 +2551,7 @@ export default function RoleplayFromDetail({
     const handleExerciseChange = (
       field: string,
       value: any,
-      options?: { skipRebalance?: boolean }
+      options?: { skipRebalance?: boolean },
     ) => {
       setLocalFormData((prev: any) => {
         const nextExercise = {
@@ -2558,7 +2565,9 @@ export default function RoleplayFromDetail({
               value === ExerciseType.MULTIPLE_CHOICE) &&
             (!nextExercise.options || nextExercise.options.length === 0)
           ) {
-            nextExercise.options = [{ value: { [lang]: "" }, isCorrect: false }];
+            nextExercise.options = [
+              { value: { [lang]: "" }, isCorrect: false },
+            ];
           }
 
           if (
@@ -2566,11 +2575,16 @@ export default function RoleplayFromDetail({
             (!nextExercise.answer || nextExercise.answer.length === 0)
           ) {
             const newId = localNextAnswerId;
-            nextExercise.answer = [{ correctAnswer: { [lang]: "" }, id: newId }];
+            nextExercise.answer = [
+              { correctAnswer: { [lang]: "" }, id: newId },
+            ];
             setLocalNextAnswerId(newId + 1);
           }
 
-          if (value === ExerciseType.DRAG_DROP && nextExercise.options?.length) {
+          if (
+            value === ExerciseType.DRAG_DROP &&
+            nextExercise.options?.length
+          ) {
             const hasContent = nextExercise.options.some((opt: any) => {
               const tokens = getTranslationTokens(opt.text || opt.value);
               return tokens.size > 0;
@@ -2589,7 +2603,7 @@ export default function RoleplayFromDetail({
             nextExercise.scoringCriteria,
             typeof nextExercise.maxScore === "number"
               ? nextExercise.maxScore
-              : undefined
+              : undefined,
           );
           nextExercise.scoringCriteria = normalized;
         }
@@ -2604,7 +2618,7 @@ export default function RoleplayFromDetail({
     const handleDocumentChange = (
       index: number,
       field: keyof IDocument,
-      value: any
+      value: any,
     ) => {
       setLocalFormData((prev: any) => {
         if (!prev.exercise?.document) return prev;
@@ -2630,7 +2644,7 @@ export default function RoleplayFromDetail({
     const handleDataChange = (
       docIndex: number,
       field: keyof IDocumentData,
-      value: string | ITranslation
+      value: string | ITranslation,
     ) => {
       setLocalFormData((prev: any) => {
         if (!prev.exercise?.document) return prev;
@@ -2648,7 +2662,7 @@ export default function RoleplayFromDetail({
               ? updateTranslationValue(
                   (targetFieldValue as ITranslation) || {},
                   lang,
-                  value
+                  value,
                 )
               : value,
           },
@@ -2791,7 +2805,7 @@ export default function RoleplayFromDetail({
         const baseDocs = shouldDropEmpty ? [] : existingDocs;
         const currentMaxId = baseDocs.reduce(
           (max: number, doc: IDocument) => Math.max(max, doc.id || 0),
-          0
+          0,
         );
         const newId = currentMaxId + 1;
 
@@ -2825,7 +2839,7 @@ export default function RoleplayFromDetail({
           return prev;
         }
         const updatedDocuments = documents.filter(
-          (_: IDocument, i: number) => i !== index
+          (_: IDocument, i: number) => i !== index,
         );
         if (updatedDocuments.length === 0) {
           setShowEmptyDocuments(false);
@@ -2856,7 +2870,7 @@ export default function RoleplayFromDetail({
         localFormData.exercise
       ) {
         const cleanedDocuments = cleanDocumentItems(
-          localFormData.exercise.document || []
+          localFormData.exercise.document || [],
         );
         dataToSave = {
           ...dataToSave,
@@ -2875,7 +2889,7 @@ export default function RoleplayFromDetail({
           localFormData.exercise.scoringCriteria,
           typeof localFormData.exercise.maxScore === "number"
             ? localFormData.exercise.maxScore
-            : undefined
+            : undefined,
         );
 
         dataToSave = {
@@ -2951,7 +2965,7 @@ export default function RoleplayFromDetail({
         const updatedTranslation = updateTranslationValue(
           currentTranslation,
           lang,
-          value
+          value,
         );
         newOptions[index] = { ...newOptions[index], value: updatedTranslation };
         handleExerciseChange("options", newOptions);
@@ -2964,7 +2978,7 @@ export default function RoleplayFromDetail({
         const updatedTranslation = updateTranslationValue(
           currentTranslation,
           lang,
-          value
+          value,
         );
         newOptions[index] = { ...newOptions[index], text: updatedTranslation };
         handleExerciseChange("options", newOptions);
@@ -3004,7 +3018,7 @@ export default function RoleplayFromDetail({
         : [];
 
       const newAnswer = existingAnswers.filter(
-        (_: any, i: number) => i !== index
+        (_: any, i: number) => i !== index,
       );
       if (newAnswer.length === 0) {
         const newId = localNextAnswerId;
@@ -3025,7 +3039,7 @@ export default function RoleplayFromDetail({
       const updatedTranslation = updateTranslationValue(
         currentTranslation,
         lang,
-        value
+        value,
       );
       newAnswer[index] = {
         ...newAnswer[index],
@@ -3035,7 +3049,7 @@ export default function RoleplayFromDetail({
     };
 
     const getTranslationTokens = (
-      value: ITranslation | string | undefined
+      value: ITranslation | string | undefined,
     ): Set<string> => {
       const tokens = new Set<string>();
       if (!value) return tokens;
@@ -3056,7 +3070,7 @@ export default function RoleplayFromDetail({
     };
 
     const ensureTranslation = (
-      value: ITranslation | string | undefined
+      value: ITranslation | string | undefined,
     ): ITranslation => {
       if (!value) return { [lang]: "" };
       if (typeof value === "string") {
@@ -3067,7 +3081,7 @@ export default function RoleplayFromDetail({
 
     const mergeTranslations = (
       target: ITranslation | undefined,
-      source: ITranslation
+      source: ITranslation,
     ): ITranslation => {
       const merged: ITranslation = { ...(target || {}) };
       Object.entries(source).forEach(([code, text]) => {
@@ -3115,7 +3129,7 @@ export default function RoleplayFromDetail({
       let nextId = localNextOptionId;
       const mergedOptions = [...currentOptions];
       const optionTokens = mergedOptions.map((opt: IOptions) =>
-        getTranslationTokens(opt.text)
+        getTranslationTokens(opt.text),
       );
 
       currentAnswers.forEach((ans: IAnswer) => {
@@ -3124,7 +3138,7 @@ export default function RoleplayFromDetail({
         if (answerTokens.size === 0) return;
 
         const matchIndex = optionTokens.findIndex((tokens) =>
-          hasOverlap(tokens, answerTokens)
+          hasOverlap(tokens, answerTokens),
         );
 
         if (matchIndex === -1) {
@@ -3136,7 +3150,7 @@ export default function RoleplayFromDetail({
         const existingOption = mergedOptions[matchIndex];
         const mergedText = mergeTranslations(
           existingOption.text,
-          answerTranslation
+          answerTranslation,
         );
         mergedOptions[matchIndex] = { ...existingOption, text: mergedText };
         optionTokens[matchIndex] = getTranslationTokens(mergedText);
@@ -3149,7 +3163,7 @@ export default function RoleplayFromDetail({
 
     const handlePasteExerciseOptions = (
       index: number,
-      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
       if (contentType !== RoleplayContentType.EXERCISE) return;
       const pasted = e.clipboardData.getData("text");
@@ -3205,7 +3219,7 @@ export default function RoleplayFromDetail({
 
     const handlePasteExerciseAnswers = (
       index: number,
-      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>
+      e: React.ClipboardEvent<HTMLInputElement | HTMLTextAreaElement>,
     ) => {
       const pasted = e.clipboardData.getData("text");
       if (!pasted) return;
@@ -3240,7 +3254,7 @@ export default function RoleplayFromDetail({
             correctAnswer: updateTranslationValue(
               existing?.correctAnswer || {},
               lang,
-              line
+              line,
             ),
           };
         });
@@ -3255,7 +3269,7 @@ export default function RoleplayFromDetail({
 
     const handlePasteCriteria = (
       index: number,
-      e: React.ClipboardEvent<HTMLTextAreaElement>
+      e: React.ClipboardEvent<HTMLTextAreaElement>,
     ) => {
       const pasted = e.clipboardData.getData("text");
       if (!pasted) return;
@@ -3279,7 +3293,7 @@ export default function RoleplayFromDetail({
           criteria: updateTranslationValue(
             (existing as any)?.criteria || {},
             lang,
-            line
+            line,
           ),
           maxScore: existing?.maxScore,
         };
@@ -3310,7 +3324,7 @@ export default function RoleplayFromDetail({
     const updateScoringCriteria = (
       index: number,
       field: keyof IScoringCriteria,
-      value: string | ITranslation
+      value: string | ITranslation,
     ) => {
       const current = getScoringCriteria();
       if (!current[index]) return;
@@ -3321,11 +3335,11 @@ export default function RoleplayFromDetail({
             ? undefined
             : Number(value)
           : field === "criteria" && typeof value === "string"
-          ? updateTranslationValue(current[index].criteria || {}, lang, value)
-          : value;
+            ? updateTranslationValue(current[index].criteria || {}, lang, value)
+            : value;
 
       const next = current.map((item, idx) =>
-        idx === index ? { ...item, [field]: parsedValue } : item
+        idx === index ? { ...item, [field]: parsedValue } : item,
       );
 
       const isNumeric =
@@ -3381,7 +3395,7 @@ export default function RoleplayFromDetail({
       (effectiveDragDropForm === FormDragDropType.TextGapFilling ||
         effectiveDragDropForm === FormDragDropType.ArrangeTheSequence);
     const hasDocumentContent = cleanDocumentItems(
-      localFormData.exercise?.document || []
+      localFormData.exercise?.document || [],
     ).length;
     const showDocumentItems =
       localFormData.exercise?.type !== ExerciseType.DRAG_DROP ||
@@ -3449,7 +3463,7 @@ export default function RoleplayFromDetail({
               <textarea
                 value={getCurrentTranslationValue(
                   localFormData.conversation.content,
-                  lang
+                  lang,
                 )}
                 onChange={(e) =>
                   handleConversationChange(
@@ -3457,8 +3471,8 @@ export default function RoleplayFromDetail({
                     updateTranslationValue(
                       localFormData.conversation.content || {},
                       lang,
-                      e.target.value
-                    )
+                      e.target.value,
+                    ),
                   )
                 }
                 rows={3}
@@ -3475,7 +3489,7 @@ export default function RoleplayFromDetail({
                 initialUrl={
                   getCurrentTranslationValue(
                     localFormData.conversation.audio,
-                    lang
+                    lang,
                   ) || ""
                 }
                 onUrlChange={(newUrl) =>
@@ -3515,7 +3529,7 @@ export default function RoleplayFromDetail({
               <textarea
                 value={getCurrentTranslationValue(
                   localFormData.leadingText.content,
-                  lang
+                  lang,
                 )}
                 onChange={(e) =>
                   handleLeadingTextChange(
@@ -3523,8 +3537,8 @@ export default function RoleplayFromDetail({
                     updateTranslationValue(
                       localFormData.leadingText.content || {},
                       lang,
-                      e.target.value
-                    )
+                      e.target.value,
+                    ),
                   )
                 }
                 rows={3}
@@ -3548,7 +3562,7 @@ export default function RoleplayFromDetail({
                 initialUrl={
                   getCurrentTranslationValue(
                     localFormData.leadingText.audio,
-                    lang
+                    lang,
                   ) || ""
                 }
                 onUrlChange={(newUrl) =>
@@ -3580,7 +3594,7 @@ export default function RoleplayFromDetail({
               <textarea
                 value={getCurrentTranslationValue(
                   localFormData.transition?.content,
-                  lang
+                  lang,
                 )}
                 onChange={(e) =>
                   handleTransitionChange(
@@ -3588,8 +3602,8 @@ export default function RoleplayFromDetail({
                     updateTranslationValue(
                       localFormData.transition?.content || {},
                       lang,
-                      e.target.value
-                    )
+                      e.target.value,
+                    ),
                   )
                 }
                 rows={3}
@@ -3673,13 +3687,15 @@ export default function RoleplayFromDetail({
                               handleDocumentChange(
                                 index,
                                 "type",
-                                e.target.value as DocumentType
+                                e.target.value as DocumentType,
                               )
                             }
                             className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                           >
                             <option value={DocumentType.TITLE}>Title</option>
-                            <option value={DocumentType.CAPTION}>Caption</option>
+                            <option value={DocumentType.CAPTION}>
+                              Caption
+                            </option>
                             <option value={DocumentType.TEXT}>Text</option>
                             <option value={DocumentType.IMAGE}>Image</option>
                             <option value={DocumentType.VIDEO}>Video</option>
@@ -3693,7 +3709,7 @@ export default function RoleplayFromDetail({
                         {renderDocumentFields(doc, index)}
                       </div>
                     </div>
-                  )
+                  ),
                 )}
 
               <div className="text-center">
@@ -3734,7 +3750,7 @@ export default function RoleplayFromDetail({
                 rows={3}
                 value={getCurrentTranslationValue(
                   localFormData.exercise.explanation,
-                  lang
+                  lang,
                 )}
                 onChange={(e) =>
                   handleExerciseChange(
@@ -3742,8 +3758,8 @@ export default function RoleplayFromDetail({
                     updateTranslationValue(
                       localFormData.exercise.explanation || {},
                       lang,
-                      e.target.value
-                    )
+                      e.target.value,
+                    ),
                   )
                 }
                 className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
@@ -3797,7 +3813,7 @@ export default function RoleplayFromDetail({
                           </button>
                         )}
                       </div>
-                    )
+                    ),
                   )}
                   <button
                     type="button"
@@ -3849,7 +3865,7 @@ export default function RoleplayFromDetail({
                   rows={3}
                   value={getCurrentTranslationValue(
                     localFormData.exercise?.targetArea,
-                    lang
+                    lang,
                   )}
                   onChange={(e) =>
                     handleExerciseChange(
@@ -3857,8 +3873,8 @@ export default function RoleplayFromDetail({
                       updateTranslationValue(
                         localFormData.exercise.targetArea || {},
                         lang,
-                        e.target.value
-                      )
+                        e.target.value,
+                      ),
                     )
                   }
                   className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400 whitespace-pre-wrap"
@@ -3880,7 +3896,7 @@ export default function RoleplayFromDetail({
                           type="text"
                           value={getCurrentTranslationValue(
                             ans.correctAnswer,
-                            lang
+                            lang,
                           )}
                           onChange={(e) =>
                             updateAnswerValue(idx, e.target.value)
@@ -3897,7 +3913,7 @@ export default function RoleplayFromDetail({
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
-                    )
+                    ),
                   )}
                   <button
                     type="button"
@@ -3949,7 +3965,7 @@ export default function RoleplayFromDetail({
                           <TrashIcon className="h-5 w-5" />
                         </button>
                       </div>
-                    )
+                    ),
                   )}
                   <button
                     type="button"
@@ -3974,7 +3990,7 @@ export default function RoleplayFromDetail({
                   onChange={(e) =>
                     handleExerciseChange(
                       "maxDuration",
-                      parseInt(e.target.value)
+                      parseInt(e.target.value),
                     )
                   }
                   className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -3994,7 +4010,7 @@ export default function RoleplayFromDetail({
                   onChange={(e) =>
                     handleExerciseChange(
                       "maxCharacter",
-                      parseInt(e.target.value)
+                      parseInt(e.target.value),
                     )
                   }
                   className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -4050,13 +4066,13 @@ export default function RoleplayFromDetail({
                             <textarea
                               value={getCurrentTranslationValue(
                                 criteriaItem.criteria,
-                                lang
+                                lang,
                               )}
                               onChange={(e) =>
                                 updateScoringCriteria(
                                   index,
                                   "criteria",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               onPaste={(e) => handlePasteCriteria(index, e)}
@@ -4080,7 +4096,7 @@ export default function RoleplayFromDetail({
                                 updateScoringCriteria(
                                   index,
                                   "maxScore",
-                                  e.target.value
+                                  e.target.value,
                                 )
                               }
                               className="border rounded-lg w-full p-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
@@ -4210,7 +4226,7 @@ export default function RoleplayFromDetail({
                       <input
                         value={getCurrentTranslationValue(
                           currentRoleplay.title,
-                          lang
+                          lang,
                         )}
                         onChange={(e) =>
                           lockTitle
@@ -4220,7 +4236,7 @@ export default function RoleplayFromDetail({
                                 title: updateTranslationValue(
                                   prev.title,
                                   lang,
-                                  e.target.value
+                                  e.target.value,
                                 ),
                               }))
                         }
@@ -4250,7 +4266,7 @@ export default function RoleplayFromDetail({
                       <textarea
                         value={getCurrentTranslationValue(
                           currentRoleplay.description,
-                          lang
+                          lang,
                         )}
                         onChange={(e) =>
                           setCurrentRoleplay((prev) => ({
@@ -4258,7 +4274,7 @@ export default function RoleplayFromDetail({
                             description: updateTranslationValue(
                               prev.description,
                               lang,
-                              e.target.value
+                              e.target.value,
                             ),
                           }))
                         }

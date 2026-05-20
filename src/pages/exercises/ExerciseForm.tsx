@@ -669,6 +669,7 @@ export default function ExerciseForm({
           options: [] as IExerciseChoiceOption[],
           level: [...DEFAULT_LEVELS],
           maxScore: 10,
+          isDailyWarmUp: false,
           completionTime: 60,
           mainQuestion: 0,
         } as IExerciseSingleChoice;
@@ -682,6 +683,7 @@ export default function ExerciseForm({
           options: [] as IExerciseChoiceOption[],
           level: [...DEFAULT_LEVELS],
           maxScore: 10,
+          isDailyWarmUp: false,
           completionTime: 60,
           mainQuestion: 0,
         } as IExerciseMultipleChoice;
@@ -698,6 +700,7 @@ export default function ExerciseForm({
             [] as IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[],
           level: [...DEFAULT_LEVELS],
           maxScore: 10,
+          isDailyWarmUp: false,
           completionTime: 60,
           mainQuestion: 0,
         } as IExerciseSingleChoiceNoCorrectAnswer;
@@ -713,6 +716,7 @@ export default function ExerciseForm({
           options: [] as IOptions[],
           level: [...DEFAULT_LEVELS],
           maxScore: 10,
+          isDailyWarmUp: false,
           completionTime: 60,
           form: FormDragDropType.TextGapFilling,
           mainQuestion: 0,
@@ -729,6 +733,7 @@ export default function ExerciseForm({
           scoringCriteria: [],
           level: [...DEFAULT_LEVELS],
           maxScore: 10,
+          isDailyWarmUp: false,
           completionTime: 60,
           mainQuestion: 0,
         } as IExerciseRecord;
@@ -984,6 +989,14 @@ export default function ExerciseForm({
                           </div>
 
                           <div className="text-sm text-gray-600 space-y-1">
+                            {question.isDailyWarmUp && (
+                              <div>
+                                <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">
+                                  Daily Warm-up
+                                </span>
+                              </div>
+                            )}
+
                             {question.tag && (
                               <div className="flex items-start">
                                 <span className="font-medium text-blue-400 flex-shrink-0 mr-2">
@@ -2416,6 +2429,22 @@ export default function ExerciseForm({
             />
           </div>
         )}
+
+        <div>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={!!localFormData.isDailyWarmUp}
+              onChange={(e) =>
+                handleChange("isDailyWarmUp", e.target.checked)
+              }
+              className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+            />
+            <span className="ml-2 text-sm font-medium text-gray-700">
+              Daily Warm-up
+            </span>
+          </label>
+        </div>
 
         {/* Documents Section */}
         <div className="border rounded-lg p-4 bg-gray-50">

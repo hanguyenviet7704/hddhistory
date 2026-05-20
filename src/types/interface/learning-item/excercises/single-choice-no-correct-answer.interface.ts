@@ -25,6 +25,7 @@ export interface IExerciseSingleChoiceNoCorrectAnswer {
   documentGroups: IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }
@@ -40,6 +41,7 @@ export interface ExerciseSingleChoiceNoCorrectAnswerPayload {
   documentGroups: IExerciseSingleChoiceNoCorrectAnswerDocumentGroup[];
   level: KeypointLevel[];
   maxScore: number;
+  isDailyWarmUp?: boolean;
   mainQuestion?: number;
   keypointId?: string;
 }
