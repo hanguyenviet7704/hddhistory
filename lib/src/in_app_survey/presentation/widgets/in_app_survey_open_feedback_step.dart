@@ -44,6 +44,8 @@ class _InAppSurveyOpenFeedbackStepState extends State<InAppSurveyOpenFeedbackSte
 
   @override
   Widget build(BuildContext context) {
+    final feedbackHint = _surveyText(widget.branch.openQuestion.guide);
+
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -61,7 +63,7 @@ class _InAppSurveyOpenFeedbackStepState extends State<InAppSurveyOpenFeedbackSte
             textInputAction: TextInputAction.newline,
             decoration: InputDecoration(
               counterText: '',
-              hintText: context.l10n.home.inAppSurveyFeedbackHint,
+              hintText: feedbackHint.isEmpty ? context.l10n.home.inAppSurveyFeedbackHint : feedbackHint,
               hintStyle: AppStyle.text14.copyWith(color: _InAppSurveyColors.textTertiary, height: 1.75),
               filled: true,
               fillColor: Colors.white,

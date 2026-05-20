@@ -131,6 +131,27 @@ void main() {
       expect(find.text('Send feedback'), findsOneWidget);
     });
 
+    testWidgets('open feedback hint uses backend guide', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final cubit = _buildCubit(
+        config: _surveyConfig(openGuide: 'Tell us what would help'),
+      );
+      addTearDown(cubit.close);
+      await cubit.loadInAppSurveyConfig();
+      cubit.openSurvey();
+      cubit.selectBranch(0);
+      cubit.toggleOption('option-1');
+      cubit.continueToOpenFeedback();
+
+      await tester.pumpWidget(_buildHarness(cubit));
+      await tester.pumpAndSettle();
+
+      final textField = tester.widget<TextField>(find.byType(TextField));
+      expect(textField.decoration?.hintText, 'Tell us what would help');
+    });
+
     testWidgets('renders gradient title span from backend HTML', (tester) async {
       await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -260,6 +281,7 @@ InAppSurveyCubit _buildCubit({InAppSurveyConfigEntity? config}) {
 InAppSurveyConfigEntity _surveyConfig({
   String introTitle = 'How was your experience?',
   String openTitle = 'What would bring you back?',
+  String? openGuide,
 }) {
   return InAppSurveyConfigEntity(
     configKey: 'config-1',
@@ -292,6 +314,7 @@ InAppSurveyConfigEntity _surveyConfig({
         ),
         openQuestion: InAppSurveyQuestionEntity(
           question: BaseMultiLanguage(en: openTitle),
+          guide: openGuide == null ? null : BaseMultiLanguage(en: openGuide),
         ),
       ),
     ],
