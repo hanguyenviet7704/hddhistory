@@ -130,7 +130,7 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
                     isDragging: true,
                   );
                 },
-                onReorder: (oldIndex, newIndex) {
+                onReorderItem: (oldIndex, newIndex) {
                   if (state.hasChecked) return;
                   context.read<ArrangeTheSequenceCubit>().reorderItems(oldIndex, newIndex);
                 },

@@ -553,13 +553,15 @@ class _PreloadPageViewState extends State<PreloadPageView> {
         physics: physics,
         viewportBuilder: (BuildContext context, ViewportOffset position) {
           return Viewport(
-            cacheExtent: _preloadPagesCount < 1
-                ? 0
-                : (_preloadPagesCount == 1
-                    ? 1
-                    : widget.scrollDirection == Axis.horizontal
-                        ? MediaQuery.of(context).size.width * _preloadPagesCount - 1
-                        : MediaQuery.of(context).size.height * _preloadPagesCount - 1),
+            scrollCacheExtent: ScrollCacheExtent.pixels(
+              _preloadPagesCount < 1
+                  ? 0.0
+                  : (_preloadPagesCount == 1
+                      ? 1.0
+                      : widget.scrollDirection == Axis.horizontal
+                          ? MediaQuery.of(context).size.width * _preloadPagesCount - 1
+                          : MediaQuery.of(context).size.height * _preloadPagesCount - 1),
+            ),
             axisDirection: axisDirection,
             offset: position,
             slivers: <Widget>[
