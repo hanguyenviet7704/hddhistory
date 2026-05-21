@@ -2,7 +2,11 @@ import { ReactNode } from "react";
 import { Tooltip } from "@mui/material";
 import { LangCode } from "../../../types/enum/common.enum";
 import { IInAppSurveyResponse } from "../../../types/interface/in-app-survey.interface";
-import { getTranslationValue } from "../../../utils/translation";
+import InAppSurveyEmojiImage from "./InAppSurveyEmojiImage";
+import {
+  getPlainTranslationValue,
+  getQuestionText,
+} from "./in-app-survey-analytics-utils";
 
 interface Props {
   response: IInAppSurveyResponse;
@@ -33,25 +37,22 @@ const TextTooltip = ({
 const InAppSurveyResponseCard = ({ response, lang }: Props) => {
   const emoji = response.branch?.emoji;
   const optionTexts = response.selectedOptions
-    ?.map((option) => getTranslationValue(option.value, lang))
+    ?.map((option) => getPlainTranslationValue(option.value, lang))
     .filter(Boolean);
   const question =
-    getTranslationValue(response.branch?.openQuestion?.question, lang) || "-";
+    getQuestionText(response.branch?.openQuestion, lang) || "-";
   const feedback = response.feedback || "-";
 
   return (
     <div className="space-y-3 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div className="flex items-center gap-3">
-          {emoji?.darkUrl ? (
-            <img
-              src={emoji.darkUrl}
-              alt={emoji.name || "Selected emoji"}
-              className="h-9 w-9 rounded-full border border-slate-200 object-cover"
-            />
-          ) : (
-            <div className="h-9 w-9 rounded-full border border-slate-200 bg-slate-100" />
-          )}
+          <InAppSurveyEmojiImage
+            emoji={emoji}
+            label={emoji?.name || "Selected emoji"}
+            score={response.ratingScore}
+            className="h-9 w-9 border border-slate-200"
+          />
           <div>
             <div className="text-sm font-semibold text-slate-900">
               {emoji?.name || "Selected emoji"}

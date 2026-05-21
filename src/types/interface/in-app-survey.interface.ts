@@ -33,6 +33,7 @@ export interface IInAppSurveyBranch {
   closedQuestion: IInAppSurveyClosedQuestion;
   openQuestion: IInAppSurveyQuestion;
   index: number;
+  score?: number;
 }
 
 export interface IInAppSurveyConfig {
@@ -59,6 +60,7 @@ export interface InAppSurveyBranchPayload {
   closedQuestion: InAppSurveyClosedQuestionPayload;
   openQuestion: IInAppSurveyQuestion;
   index?: number;
+  score?: number;
 }
 
 export interface InAppSurveyConfigPayload {
@@ -75,14 +77,25 @@ export interface IInAppSurveyResponseBranch {
 export interface IInAppSurveyResponse {
   _id: string;
   userId: string;
+  userSnapshot?: IInAppSurveyUserSnapshot | null;
   branchId: string;
+  branchIndex?: number;
+  branchName?: string;
+  ratingScore?: number;
   introQuestion: IInAppSurveyQuestion;
   branch: IInAppSurveyResponseBranch;
   selectedOptions: IInAppSurveyOption[];
   feedback?: string;
   submittedAt?: string;
+  completedAt?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface IInAppSurveyUserSnapshot {
+  name?: string;
+  email?: string;
+  avatar?: string;
 }
 
 export interface InAppSurveyResponseListParams {
@@ -97,4 +110,86 @@ export interface InAppSurveyResponseListResult {
   totalPages: number;
   currentPage: number;
   itemsPerPage: number;
+}
+
+export interface InAppSurveyDateRangeParams {
+  startDate?: string;
+  endDate?: string;
+}
+
+export interface InAppSurveyMetricValue {
+  value: number;
+  delta: number;
+}
+
+export interface InAppSurveyRatingDistributionItem {
+  branchId: string;
+  branchIndex?: number;
+  branchName?: string;
+  ratingScore: number;
+  emoji?: IInAppSurveyEmoji;
+  count: number;
+  percent: number;
+}
+
+export interface InAppSurveyOptionDistributionItem {
+  option: IInAppSurveyOption;
+  count: number;
+  percent: number;
+}
+
+export interface InAppSurveyBranchSummary
+  extends InAppSurveyRatingDistributionItem {
+  closedQuestion?: Omit<IInAppSurveyClosedQuestion, "options">;
+  openQuestion?: IInAppSurveyQuestion;
+  options: InAppSurveyOptionDistributionItem[];
+  feedbacks: Pick<
+    IInAppSurveyResponse,
+    "_id" | "feedback" | "submittedAt" | "selectedOptions"
+  >[];
+}
+
+export interface InAppSurveyStatisticsOverview {
+  metrics: {
+    totalResponses: InAppSurveyMetricValue;
+    averageRating: InAppSurveyMetricValue;
+    completionRate: InAppSurveyMetricValue;
+    responseRate: InAppSurveyMetricValue;
+  };
+  ratingDistribution: InAppSurveyRatingDistributionItem[];
+  branches: InAppSurveyBranchSummary[];
+}
+
+export interface InAppSurveyBranchResponsesResult
+  extends InAppSurveyResponseListResult {
+  branch: {
+    branchId: string;
+    branchIndex?: number;
+    branchName?: string;
+    ratingScore: number;
+    emoji?: IInAppSurveyEmoji;
+    closedQuestion?: Omit<IInAppSurveyClosedQuestion, "options">;
+    openQuestion?: IInAppSurveyQuestion;
+  } | null;
+  optionFilters: {
+    option: IInAppSurveyOption;
+    count: number;
+  }[];
+}
+
+export interface InAppSurveyUserResponsesResult
+  extends InAppSurveyResponseListResult {
+  branchFilters: InAppSurveyRatingDistributionItem[];
+  distinctUsers: number;
+}
+
+export interface InAppSurveyExportRow {
+  user_id: string;
+  user_name: string | null;
+  user_email: string | null;
+  emoji_level: number;
+  emoji_name: string;
+  selected_options: string;
+  feedback: string;
+  submitted_at: string;
 }
