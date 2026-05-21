@@ -39,7 +39,7 @@ dependencies:
   # cupertino_icons: ^1.0.8
   # carousel_slider: ^5.0.0
   smooth_page_indicator: ^2.0.1
-  flutter_svg: ^2.2.4
+  flutter_svg: ^2.3.0
   font_awesome_flutter: ^11.0.0 # App icons
   cached_network_image: ^3.4.1
   flutter_widget_from_html_core: ^0.17.2
@@ -101,14 +101,14 @@ dependencies:
   slang_flutter: ^4.14.0
 
   # App State Management
-  bloc: ^9.2.0
+  bloc: ^9.2.1
   flutter_bloc: ^9.1.1
   # equatable: ^2.0.7
 
   # App Services 
   # App Storage Services
   hydrated_bloc: ^11.0.0
-  flutter_secure_storage: ^10.1.0
+  flutter_secure_storage: ^10.2.0
   path_provider: ^2.1.5
   
   # Supabase Services
@@ -130,7 +130,7 @@ dependencies:
 
   # App Purchases Services
   in_app_purchase: ^3.2.3
-  in_app_purchase_storekit: ^0.4.8
+  in_app_purchase_storekit: ^0.4.9
   in_app_purchase_android: ^0.4.0+3
   # purchases_flutter: ^8.2.2
 
@@ -145,20 +145,20 @@ dependencies:
 #  geocoding: ^3.0.0
 
   # App Firebase Services
-  firebase_core: ^4.7.0
-  firebase_auth: ^6.4.0
-  firebase_remote_config: ^6.4.0
+  firebase_core: ^4.9.0
+  firebase_auth: ^6.5.1
+  firebase_remote_config: ^6.5.1
 
   # SSO Auth
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^8.0.0
 
   # App Notification Services
-  firebase_messaging: ^16.2.0
+  firebase_messaging: ^16.2.2
   awesome_notifications: ^0.11.0
 
   # App Models and Utils
-  json_annotation: ^4.11.0
+  json_annotation: ^4.12.0
   freezed_annotation: ^3.1.0
 
   # App File Services
@@ -183,9 +183,9 @@ dependencies:
 #  open_settings_plus: ^0.4.0
 
   # App Tracking Services
-  sentry_flutter: ^9.19.0
-  firebase_crashlytics: ^5.2.0
-  firebase_analytics: ^12.3.0
+  sentry_flutter: ^9.20.0
+  firebase_crashlytics: ^5.2.2
+  firebase_analytics: ^12.4.1
 
   # ffmpeg_kit_flutter_new: ^1.1.0
 
@@ -253,7 +253,7 @@ dev_dependencies:
   retrofit_generator: ^10.2.6
   build_runner: ^2.15.0
   flutter_gen_runner: ^5.14.1
-  json_serializable: ^6.13.2
+  json_serializable: ^6.14.0
   injectable_generator: ^3.0.2
   go_router_builder: ^4.3.0
   freezed: ^3.2.5
