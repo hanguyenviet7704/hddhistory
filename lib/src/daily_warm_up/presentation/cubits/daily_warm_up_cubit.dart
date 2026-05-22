@@ -1,21 +1,15 @@
-
-
 part of '../../daily_warm_up.dart';
 
 @lazySingleton
 class DailyWarmUpCubit extends Cubit<DailyWarmUpState>
     with CubitUseCaseHandlerMixin<DailyWarmUpState> {
   final GetDailyWarmUpUseCase _getUseCase;
-  
 
-  DailyWarmUpCubit(
-    this._getUseCase,
-    
-  ) : super(DailyWarmUpState.initial());
+  DailyWarmUpCubit(this._getUseCase) : super(DailyWarmUpState.initial());
 
-  void loadDailyWarmUp(String id) async {
+  void loadDailyWarmUp() async {
     await runUseCase<DailyWarmUpEntity>(
-      usecase: () => _getUseCase(id),
+      usecase: () => _getUseCase(unit),
       buildLoadingState: () => state.copyWith(status: DailyWarmUpStatus.loading),
       onFailure: (error) {
         emit(state.copyWith(
@@ -31,8 +25,4 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState>
       },
     );
   }
-
-  
 }
-
-

@@ -3,10 +3,12 @@ part of '../../daily_warm_up.dart';
 @freezed
 abstract class DailyWarmUpModel with _$DailyWarmUpModel {
   const factory DailyWarmUpModel({
-    @Default('') String id,
-    @Default('') String name,
-    DateTime? createdAt,
-    DateTime? updatedAt,
+    @Default('') String courseId,
+    @Default('') String suggestedCourseId,
+    @Default('') String lessonId,
+    @Default('') String lessonIdkeypointId,
+    @Default(false) bool isKeypointCompleted,
+    @Default([]) List<QuestionModel> questions,
   }) = _DailyWarmUpModel;
 
 
@@ -15,10 +17,12 @@ abstract class DailyWarmUpModel with _$DailyWarmUpModel {
 
 extension DailyWarmUpModelExtension on DailyWarmUpModel {
   DailyWarmUpEntity toEntity() => DailyWarmUpEntity(
-        id: id,
-        name: name,
-        createdAt: createdAt,
-        updatedAt: updatedAt,
+        courseId: courseId,
+        suggestedCourseId: suggestedCourseId,
+        lessonId: lessonId,
+        lessonIdkeypointId: lessonIdkeypointId,
+        isKeypointCompleted: isKeypointCompleted,
+        questions: questions.map((q) => q.toEntity()).toList(),
       );
 }
 
