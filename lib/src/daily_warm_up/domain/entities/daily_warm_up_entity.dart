@@ -6,7 +6,7 @@ abstract class DailyWarmUpEntity with _$DailyWarmUpEntity {
     @Default('') String courseId,
     @Default('') String suggestedCourseId,
     @Default('') String lessonId,
-    @Default('') String lessonIdkeypointId,
+    @Default('') String keypointId,
     @Default(false) bool isKeypointCompleted,
     @Default([]) List<QuestionEntity> questions,
   }) = _DailyWarmUpEntity;
