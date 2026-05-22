@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -65,9 +65,9 @@ Widget/Page
 - Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
-Current module count: **19**.
+Current module count: **20**.
 
-Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
+Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `in_app_survey`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -194,6 +194,13 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `HomePage` prefetches streak data with a short timeout and safe-default fallback before/while rendering the header streak chip.
 - `LearningStreakPage` is used as a bottom-sheet style popup flow and emits home streak popup view/close tracking events.
 - `KeypointCompletePage`, `RoleplayFeedbackPage`, and video lesson completion success run a streak gate: load streak, show success overlay only on remote positive streak, then persist commit day via `LearningStreakCubit.lastStreakCountedDate` (UTC-day guard).
+
+### Home in-app survey runtime flow
+- `HomeRoute` now composes `InAppSurveyCubit`; `HomePage` loads survey config once per usable session and renders the P1 floating entry pill above the bottom navigation area.
+- The P1 pill opens a non-dismissible `showGeneralDialog` that reuses the route-level Cubit for P2 rating, P3 closed-question options, and P4 optional feedback.
+- `InAppSurveyCubit` owns transient draft state only: selected branch index, selected option ids, feedback, and submit loading. Closing resets the draft without submitting; submit failure preserves the draft; submit success resets the draft and returns to P1.
+- `InAppSurveyRepository` posts only `branchId`, `selectedOptionIds`, and trimmed `feedback` to `/api/v1/courses-in-app-survey/responses`.
+- Survey analytics use `TrackingKey.inAppSurvey*` via semantic `ITrackingService` helpers. Raw feedback text and raw API error bodies are not tracked; tracking failures are swallowed.
 
 ### Onboarding branching runtime flow
 - Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.

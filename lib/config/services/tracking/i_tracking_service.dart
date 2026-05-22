@@ -75,6 +75,52 @@ abstract interface class ITrackingService {
   Future<void> trackHomeStreakChipClick({required int currentStreak});
   Future<void> trackHomeStreakPopupView({required int currentStreak});
   Future<void> trackHomeStreakPopupClose({required int currentStreak});
+  Future<void> trackInAppSurveyEntryView({required String source});
+  Future<void> trackInAppSurveyEntryClick({required String source});
+  Future<void> trackInAppSurveyPopupView({required String source, required String step});
+  Future<void> trackInAppSurveyPopupClose({required String source, required String step});
+  Future<void> trackInAppSurveyEmojiClick({required String source, required String branchId, required int branchIndex});
+  Future<void> trackInAppSurveyClosedQuestionView({required String source, required String branchId, required int branchIndex});
+  Future<void> trackInAppSurveyClosedOptionClick({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+  });
+  Future<void> trackInAppSurveyClosedContinueClick({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+  });
+  Future<void> trackInAppSurveyOpenQuestionView({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+  });
+  Future<void> trackInAppSurveySendClick({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+    required bool feedbackEmpty,
+  });
+  Future<void> trackInAppSurveySendSuccess({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+    required bool feedbackEmpty,
+  });
+  Future<void> trackInAppSurveySendFailure({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+    required bool feedbackEmpty,
+    required String errorType,
+  });
 
   //* Course selection events
   Future<void> trackCourseSelectAllCourseView({required String source});

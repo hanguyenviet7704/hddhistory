@@ -1,12 +1,12 @@
 # Project Roadmap
 
-**Last Updated:** 2026-05-12
+**Last Updated:** 2026-05-18
 **Scope:** product and engineering roadmap tracked from current repository state
 
 ## 1. Current Status
-Meup is in active Flutter mobile development with 19 feature modules under `lib/src`.
+Meup is in active Flutter mobile development with 20 feature modules under `lib/src`.
 
-The current product surface includes first-time onboarding V2, disabled-onboarding course-entry gating, branching onboarding fallback, course roadmap entry, read/listen lessons, output-practice conversations, video lessons, roleplay, learning streaks, progress, profile/settings, and monetization.
+The current product surface includes first-time onboarding V2, disabled-onboarding course-entry gating, branching onboarding fallback, course roadmap entry, read/listen lessons, output-practice conversations, video lessons, roleplay, Home in-app survey feedback, learning streaks, progress, profile/settings, and monetization.
 
 ## 2. Roadmap Phases
 | Phase | Status | Notes |
@@ -17,7 +17,7 @@ The current product surface includes first-time onboarding V2, disabled-onboardi
 | Practice expansion | In progress | Output-practice socket conversation flow, roleplay feedback, video lesson player/notes/quiz states. |
 | Monetization | In progress | Paywall, IAP package load, purchase verification, first-time paywall routing. |
 | Operations and release | In progress | Cross-platform build scripts, GitHub/GitLab CI, localization tooling, symbol upload policy. |
-| Test coverage and hardening | Needs focus | Unit tests exist under `test/unit`; broaden coverage for newer onboarding, output practice, and video lesson flows. |
+| Test coverage and hardening | Needs focus | Unit tests exist under `test/unit`; broaden coverage for newer onboarding, output practice, video lesson, and survey-adjacent Home flows. |
 
 ## 3. Near-Term Priorities
 1. Keep docs and module metrics synced whenever `lib/src/*`, route contracts, platform constraints, or build scripts change.

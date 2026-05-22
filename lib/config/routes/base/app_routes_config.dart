@@ -360,7 +360,7 @@ abstract class BaseTransitionRouteData extends GoRouteData {
           child: SizeTransition(
             sizeFactor: curvedAnimation,
             axis: Axis.vertical,
-            axisAlignment: -1.0,
+            alignment: Alignment(0.0, -1.0),
             child: FadeTransition(
               opacity: curvedAnimation,
               child: child,

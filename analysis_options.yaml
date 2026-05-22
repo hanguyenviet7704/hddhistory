@@ -8,8 +8,6 @@
 # The following line activates a set of recommended lints for Flutter apps,
 # packages, and plugins designed to encourage good coding practices.
 analyzer:
-  enable-experiment:
-    - dot-shorthands
   errors:
     invalid_annotation_target: ignore
     annotate_overrides: ignore
@@ -19,6 +17,7 @@ analyzer:
     - "**/*.graphql.dart"
     - "assets/arb/module/**/*.arb"
     - "bricks/**/__brick__/**/*.dart"
+    - "build/**"
 include: package:flutter_lints/flutter.yaml
 
 linter:
@@ -36,10 +35,10 @@ linter:
   rules:
     # avoid_print: false  # Uncomment to disable the `avoid_print` rule
     # prefer_single_quotes: true  # Uncomment to enable the `prefer_single_quotes` rule
-
-formatter: 
+    prefer_initializing_formals: false
+formatter:
   page_width: 180
   trailing_commas: preserve
-  
+
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options

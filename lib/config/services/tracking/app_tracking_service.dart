@@ -167,6 +167,34 @@ final class AppTrackingService extends ITrackingService {
     return {key: value};
   }
 
+  Future<void> _trackSafely(Future<void> Function() action) async {
+    try {
+      await action();
+    } catch (_) {}
+  }
+
+  Map<String, dynamic> _inAppSurveyParams({
+    required String source,
+    String? step,
+    String? branchId,
+    int? branchIndex,
+    List<String>? selectedOptionIds,
+    bool? feedbackEmpty,
+    String? errorType,
+  }) {
+    final optionIds = selectedOptionIds ?? const <String>[];
+    return {
+      'source': source,
+      ..._optionalStringParam('step', step),
+      ..._optionalStringParam('branch_id', branchId),
+      ..._optionalParam('branch_index', branchIndex),
+      'selected_option_ids': optionIds,
+      'selected_option_count': optionIds.length,
+      ..._optionalParam('feedback_empty', feedbackEmpty),
+      ..._optionalStringParam('error_type', errorType),
+    };
+  }
+
   Map<String, dynamic> _premiumParams() {
     try {
       final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
@@ -607,6 +635,200 @@ final class AppTrackingService extends ITrackingService {
       parameters: {
         'current_streak': currentStreak,
       },
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyEntryView({required String source}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyEntryView,
+        parameters: _inAppSurveyParams(source: source, step: 'p1'),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyEntryClick({required String source}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyEntryClick,
+        parameters: _inAppSurveyParams(source: source, step: 'p1'),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyPopupView({required String source, required String step}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyPopupView,
+        parameters: _inAppSurveyParams(source: source, step: step),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyPopupClose({required String source, required String step}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyPopupClose,
+        parameters: _inAppSurveyParams(source: source, step: step),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyEmojiClick({required String source, required String branchId, required int branchIndex}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyEmojiClick,
+        parameters: _inAppSurveyParams(source: source, step: 'p2', branchId: branchId, branchIndex: branchIndex),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyClosedQuestionView({required String source, required String branchId, required int branchIndex}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyClosedQuestionView,
+        parameters: _inAppSurveyParams(source: source, step: 'p3', branchId: branchId, branchIndex: branchIndex),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyClosedOptionClick({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyClosedOptionClick,
+        parameters: _inAppSurveyParams(
+          source: source,
+          step: 'p3',
+          branchId: branchId,
+          branchIndex: branchIndex,
+          selectedOptionIds: selectedOptionIds,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyClosedContinueClick({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyClosedContinueClick,
+        parameters: _inAppSurveyParams(
+          source: source,
+          step: 'p3',
+          branchId: branchId,
+          branchIndex: branchIndex,
+          selectedOptionIds: selectedOptionIds,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveyOpenQuestionView({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveyOpenQuestionView,
+        parameters: _inAppSurveyParams(
+          source: source,
+          step: 'p4',
+          branchId: branchId,
+          branchIndex: branchIndex,
+          selectedOptionIds: selectedOptionIds,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveySendClick({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+    required bool feedbackEmpty,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveySendClick,
+        parameters: _inAppSurveyParams(
+          source: source,
+          step: 'p4',
+          branchId: branchId,
+          branchIndex: branchIndex,
+          selectedOptionIds: selectedOptionIds,
+          feedbackEmpty: feedbackEmpty,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveySendSuccess({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+    required bool feedbackEmpty,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveySendSuccess,
+        parameters: _inAppSurveyParams(
+          source: source,
+          step: 'p4',
+          branchId: branchId,
+          branchIndex: branchIndex,
+          selectedOptionIds: selectedOptionIds,
+          feedbackEmpty: feedbackEmpty,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackInAppSurveySendFailure({
+    required String source,
+    required String branchId,
+    required int branchIndex,
+    required List<String> selectedOptionIds,
+    required bool feedbackEmpty,
+    required String errorType,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.inAppSurveySendFailure,
+        parameters: _inAppSurveyParams(
+          source: source,
+          step: 'p4',
+          branchId: branchId,
+          branchIndex: branchIndex,
+          selectedOptionIds: selectedOptionIds,
+          feedbackEmpty: feedbackEmpty,
+          errorType: errorType,
+        ),
+      ),
     );
   }
 

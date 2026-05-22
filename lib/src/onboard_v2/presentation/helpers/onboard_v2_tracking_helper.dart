@@ -10,7 +10,7 @@ class OnboardV2Tracking {
   static void track(String eventName, {Map<String, dynamic>? parameters}) {
     final eventParameters = <String, dynamic>{
       'onboard_version': 'v2',
-      if (parameters != null) ...parameters,
+      ...?parameters,
     }..removeWhere((_, value) => value == null);
 
     try {

@@ -110,6 +110,18 @@ mixin TrackingKey {
   static const String homeStreakChipClick = 'home_streak_chip_click';
   static const String homeStreakPopupView = 'home_streak_popup_view';
   static const String homeStreakPopupClose = 'home_streak_popup_close';
+  static const String inAppSurveyEntryView = 'in_app_survey_entry_view';
+  static const String inAppSurveyEntryClick = 'in_app_survey_entry_click';
+  static const String inAppSurveyPopupView = 'in_app_survey_popup_view';
+  static const String inAppSurveyPopupClose = 'in_app_survey_popup_close';
+  static const String inAppSurveyEmojiClick = 'in_app_survey_emoji_click';
+  static const String inAppSurveyClosedQuestionView = 'in_app_survey_closed_question_view';
+  static const String inAppSurveyClosedOptionClick = 'in_app_survey_closed_option_click';
+  static const String inAppSurveyClosedContinueClick = 'in_app_survey_closed_continue_click';
+  static const String inAppSurveyOpenQuestionView = 'in_app_survey_open_question_view';
+  static const String inAppSurveySendClick = 'in_app_survey_send_click';
+  static const String inAppSurveySendSuccess = 'in_app_survey_send_success';
+  static const String inAppSurveySendFailure = 'in_app_survey_send_failure';
 
   //* Course selection events
   static const String courseSelectAllCourseView = 'course_select_all_course_view';
