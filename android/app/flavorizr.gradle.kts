@@ -1,9 +1,9 @@
-import com.android.build.gradle.AppExtension
+import com.android.build.api.dsl.ApplicationExtension
 
-val android = project.extensions.getByType(AppExtension::class.java)
+val android = project.extensions.getByType(ApplicationExtension::class.java)
 
 android.apply {
-    flavorDimensions("flavor-type")
+    flavorDimensions += listOf("flavor-type")
 
     productFlavors {
         create("dev") {
@@ -36,4 +36,5 @@ android.apply {
     }
 
     buildFeatures.buildConfig = true
+    buildFeatures.resValues = true
 }
