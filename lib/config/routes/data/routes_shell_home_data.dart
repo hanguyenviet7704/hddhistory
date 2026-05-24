@@ -41,6 +41,7 @@ class HomeRoute extends BaseTransitionRouteData with $HomeRoute {
           BlocProvider.value(value: AppDI.injector.get<LearningStreakCubit>()),
           BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
           BlocProvider.value(value: AppDI.injector.get<InAppSurveyCubit>()),
+          BlocProvider.value(value: AppDI.injector.get<DailyWarmUpCubit>()),
         ],
         child: const HomePage(),
       ),
@@ -59,6 +60,21 @@ class HomeLearningStreakRoute extends BaseTransitionRouteData with $HomeLearning
     return BlocProvider.value(
       value: AppDI.injector.get<LearningStreakCubit>(),
       child: const LearningStreakPage(),
+    );
+  }
+}
+
+class DailyWarmUpRoute extends BaseTransitionRouteData with $DailyWarmUpRoute {
+  const DailyWarmUpRoute();
+
+  @override
+  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.slideFromBottom;
+
+  @override
+  Widget buildPageWidget(BuildContext context, GoRouterState state) {
+    return BlocProvider.value(
+      value: AppDI.injector.get<DailyWarmUpCubit>(),
+      child: const DailyWarmUpPage(),
     );
   }
 }

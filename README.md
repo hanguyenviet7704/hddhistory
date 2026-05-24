@@ -50,8 +50,8 @@ flutter run --flavor dev -t lib/main_dev.dart
 ```
 
 ## Current Repo Facts
-- Feature modules in `lib/src`: **19**.
-- Module folders: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
+- Feature modules in `lib/src`: **21**.
+- Module folders: `achievenment`, `auth`, `common`, `course`, `daily_warm_up`, `data_collect`, `feedback`, `home`, `in_app_survey`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
 - Dart SDK constraint (`pubspec.yaml`): `>=3.11.0 <4.0.0`.
 - iOS deployment target (`ios/Podfile`): `15.0`.
 

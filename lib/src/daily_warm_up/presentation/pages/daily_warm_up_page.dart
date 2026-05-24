@@ -1,62 +1,106 @@
 part of '../../daily_warm_up.dart';
 
-
-
-
-
-
-
 class DailyWarmUpPage extends StatelessWidget {
   const DailyWarmUpPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AppDI.injector.get<DailyWarmUpCubit>(),
-      child: _BlankFeatureView(
-        builder: (context) => BlocBuilder<DailyWarmUpCubit, DailyWarmUpState>(
-          builder: (context, state) => _buildPlaceholder(context, state),
-        ),
+    return BlocConsumer<DailyWarmUpCubit, DailyWarmUpState>(
+      listenWhen: (previous, current) {
+        return previous.status != current.status ||
+            previous.latestResult != current.latestResult ||
+            previous.suggestedCourse != current.suggestedCourse ||
+            previous.hasMarkedShown != current.hasMarkedShown;
+      },
+      listener: _handleStateChanged,
+      builder: (context, state) {
+        final cubit = context.read<DailyWarmUpCubit>();
+        return switch (state.status) {
+          DailyWarmUpStatus.entry => DailyWarmUpEntryStep(
+            onStart: cubit.startWarmUp,
+            onMaybeLater: () async {
+              await cubit.dismissEntry();
+              if (!context.mounted) return;
+              _closeRoute(context);
+            },
+          ),
+          DailyWarmUpStatus.question || DailyWarmUpStatus.result => DailyWarmUpQuestionStep(
+            state: state,
+            onClose: () {
+              cubit.closeFlow();
+              _closeRoute(context);
+            },
+            onCheck: () => cubit.checkCurrentQuestion(),
+            onSelectChoice: cubit.selectChoiceAnswer,
+            onSetOrderedOptionIds: cubit.setOrderedOptionIds,
+            onPlaceOption: (slotIndex, optionId) => cubit.placeOption(slotIndex: slotIndex, optionId: optionId),
+            onToggleWordIndex: cubit.toggleWordIndex,
+          ),
+          DailyWarmUpStatus.completion => DailyWarmUpCompletionStep(
+            state: state,
+            onStartLesson: () async {
+              final canRoute = await cubit.startTodayLesson();
+              if (!context.mounted) return;
+              if (canRoute) {
+                CourseRoadmapRoute().go(context);
+                return;
+              }
+              cubit.closeFlow();
+              _closeRoute(context);
+            },
+            onExploreMore: () async {
+              await cubit.exploreMore();
+              if (context.mounted) _closeRoute(context);
+            },
+          ),
+          _ => const Scaffold(body: SizedBox.shrink()),
+        };
+      },
+    );
+  }
+
+  void _handleStateChanged(BuildContext context, DailyWarmUpState state) {
+    final cubit = context.read<DailyWarmUpCubit>();
+
+    if (state.status == DailyWarmUpStatus.entry && !state.hasMarkedShown) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) cubit.markEntryPresented();
+      });
+    }
+
+    if (state.status == DailyWarmUpStatus.result && state.latestResult != null) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!context.mounted) return;
+        _showResultSheet(context, state.latestResult!);
+      });
+    }
+
+    if (state.status == DailyWarmUpStatus.completion && state.suggestedCourse == null && !state.isLoadingCourse) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (context.mounted) cubit.loadSuggestedCourse();
+      });
+    }
+  }
+
+  Future<void> _showResultSheet(BuildContext context, DailyWarmUpAnswerResultEntity result) async {
+    if (ModalRoute.of(context)?.isCurrent != true) return;
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      isDismissible: false,
+      enableDrag: false,
+      backgroundColor: Colors.transparent,
+      builder: (sheetContext) => DailyWarmUpResultBottomSheet(
+        result: result,
+        onContinue: () {
+          Navigator.of(sheetContext).pop();
+          context.read<DailyWarmUpCubit>().continueFromResult();
+        },
       ),
     );
   }
 
-  Widget _buildPlaceholder(BuildContext context, DailyWarmUpState state) {
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Icon(Icons.dashboard_customize, size: 56, color: Theme.of(context).colorScheme.primary),
-        const SizedBox(height: 16),
-        const Text(
-          'Blank canvas ready!',
-          textAlign: TextAlign.center,
-        ),
-        const SizedBox(height: 8),
-        Text(
-          'Wire any domain logic through the injected Cubit or remove it if you want a pure UI screen.',
-          textAlign: TextAlign.center,
-        ),
-      ],
-    );
+  void _closeRoute(BuildContext context) {
+    if (context.canPop()) context.pop();
   }
 }
-
-class _BlankFeatureView extends StatelessWidget {
-  const _BlankFeatureView({required this.builder});
-
-  final WidgetBuilder builder;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Daily Warm Up'),
-      ),
-      body: Center(child: builder(context)),
-    );
-  }
-}
-
-
-
-

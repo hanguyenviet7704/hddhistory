@@ -11,18 +11,16 @@ abstract class DailyWarmUpModel with _$DailyWarmUpModel {
     @Default([]) List<QuestionModel> questions,
   }) = _DailyWarmUpModel;
 
-
   factory DailyWarmUpModel.fromJson(Map<String, dynamic> json) => _$DailyWarmUpModelFromJson(json);
 }
 
 extension DailyWarmUpModelExtension on DailyWarmUpModel {
   DailyWarmUpEntity toEntity() => DailyWarmUpEntity(
-        courseId: courseId,
-        suggestedCourseId: suggestedCourseId,
-        lessonId: lessonId,
-        keypointId: keypointId,
-        isKeypointCompleted: isKeypointCompleted,
-        questions: questions.map((q) => q.toEntity()).toList(),
-      );
+    courseId: courseId,
+    suggestedCourseId: suggestedCourseId,
+    lessonId: lessonId,
+    keypointId: keypointId,
+    isKeypointCompleted: isKeypointCompleted,
+    questions: questions.map((q) => q.toEntity()).toList(),
+  );
 }
-

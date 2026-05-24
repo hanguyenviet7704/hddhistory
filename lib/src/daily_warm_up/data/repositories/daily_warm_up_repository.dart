@@ -13,11 +13,8 @@ class DailyWarmUpRepository with RestfulRequestHandlerMixin implements IDailyWar
       apiCall: () => _api.getDailyWarmUp(),
       transform: (model) => model.toEntity(),
       onSuccess: (data) async => await _localDataSource.cacheDailyWarmUp(data ?? DailyWarmUpModel()),
-      onError: () async {
-        final cachedModel = await _localDataSource.getCachedDailyWarmUp();
-        return cachedModel?.toEntity();
-      },
       defaultValue: DailyWarmUpEntity(),
+      enableErrorMessages: false,
     );
   }
 }

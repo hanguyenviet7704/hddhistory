@@ -12,6 +12,10 @@ part of '../routes.dart';
               path: RoutePath.homeLearningStreak,
               name: RouteNamed.homeLearningStreak,
             ),
+            TypedGoRoute<DailyWarmUpRoute>(
+              path: RoutePath.dailyWarmUp,
+              name: RouteNamed.dailyWarmUp,
+            ),
           ],
         ),
       ],

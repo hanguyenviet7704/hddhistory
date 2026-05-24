@@ -122,6 +122,20 @@ mixin TrackingKey {
   static const String inAppSurveySendClick = 'in_app_survey_send_click';
   static const String inAppSurveySendSuccess = 'in_app_survey_send_success';
   static const String inAppSurveySendFailure = 'in_app_survey_send_failure';
+  static const String dailyWarmUpEntryCheck = 'daily_warm_up_entry_check';
+  static const String dailyWarmUpSkip = 'daily_warm_up_skip';
+  static const String dailyWarmUpP1View = 'daily_warm_up_p1_view';
+  static const String dailyWarmUpStartClick = 'daily_warm_up_start_click';
+  static const String dailyWarmUpMaybeLaterClick = 'daily_warm_up_maybe_later_click';
+  static const String dailyWarmUpQuestionView = 'daily_warm_up_question_view';
+  static const String dailyWarmUpQuestionCheckClick = 'daily_warm_up_question_check_click';
+  static const String dailyWarmUpQuestionResultView = 'daily_warm_up_question_result_view';
+  static const String dailyWarmUpQuestionContinueClick = 'daily_warm_up_question_continue_click';
+  static const String dailyWarmUpExitClick = 'daily_warm_up_exit_click';
+  static const String dailyWarmUpCompleteView = 'daily_warm_up_complete_view';
+  static const String dailyWarmUpStartLessonClick = 'daily_warm_up_start_lesson_click';
+  static const String dailyWarmUpExploreMoreClick = 'daily_warm_up_explore_more_click';
+  static const String dailyWarmUpRouteFailure = 'daily_warm_up_route_failure';
 
   //* Course selection events
   static const String courseSelectAllCourseView = 'course_select_all_course_view';

@@ -41,6 +41,7 @@ mixin RoutePath {
   //* Home
   static const String home = '/';
   static const String homeLearningStreak = 'learning-streak';
+  static const String dailyWarmUp = 'daily-warm-up';
 
   //* Course
   static const String course = '/course';
@@ -118,6 +119,7 @@ mixin RouteNamed {
   //* Home - Road Map
   static const String home = 'Home';
   static const String homeLearningStreak = 'Home Learning Streak';
+  static const String dailyWarmUp = 'Daily Warm Up';
 
   //* Course
   static const String course = 'Course';

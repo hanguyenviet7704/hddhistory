@@ -13,4 +13,3 @@ abstract class DailyWarmUpEntity with _$DailyWarmUpEntity {
 
   factory DailyWarmUpEntity.fromJson(Map<String, dynamic> json) => _$DailyWarmUpEntityFromJson(json);
 }
-

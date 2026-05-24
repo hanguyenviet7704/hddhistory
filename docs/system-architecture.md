@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-05-23
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -65,9 +65,9 @@ Widget/Page
 - Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
-Current module count: **20**.
+Current module count: **21**.
 
-Current modules: `achievenment`, `auth`, `common`, `course`, `data_collect`, `feedback`, `home`, `in_app_survey`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
+Current modules: `achievenment`, `auth`, `common`, `course`, `daily_warm_up`, `data_collect`, `feedback`, `home`, `in_app_survey`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -201,6 +201,13 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `InAppSurveyCubit` owns transient draft state only: selected branch index, selected option ids, feedback, and submit loading. Closing resets the draft without submitting; submit failure preserves the draft; submit success resets the draft and returns to P1.
 - `InAppSurveyRepository` posts only `branchId`, `selectedOptionIds`, and trimmed `feedback` to `/api/v1/courses-in-app-survey/responses`.
 - Survey analytics use `TrackingKey.inAppSurvey*` via semantic `ITrackingService` helpers. Raw feedback text and raw API error bodies are not tracked; tracking failures are swallowed.
+
+### Daily warm-up runtime flow
+- `HomeRoute` composes `DailyWarmUpCubit`; authenticated Home checks a per-user local date gate after streak prefetch and before in-app survey display.
+- `DailyWarmUpRepository` calls `/api/v1/courses-user-progress/daily-warm-up` through the authenticated REST client and skips Home entry silently on API or payload validation failure. Stale cached warm-up data is not displayed after failure.
+- `DailyWarmUpPage` renders P1 entry, P2 local-only non-speaking questions, and P3 completion in a full-screen Home child route. P2 answer checks do not call lesson progress, completion, or score APIs.
+- P3 loads the suggested course with `GetCourseUseCase` and routes to `CourseRoadmapRoute` only when `CourseHandoffHelper.prepareRecommendedCourse` returns the roadmap intent; course or roadmap preparation failure closes back to Home.
+- Daily warm-up analytics use `TrackingKey.dailyWarmUp*` via semantic `ITrackingService` helpers. Raw question text, option text, answer text, and raw API error bodies are not tracked.
 
 ### Onboarding branching runtime flow
 - Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.

@@ -9,4 +9,3 @@ abstract class DailyWarmUpApi {
   @GET(AppEndpoint.dailyWarmUp)
   Future<BaseResponse<DailyWarmUpModel>> getDailyWarmUp();
 }
-
