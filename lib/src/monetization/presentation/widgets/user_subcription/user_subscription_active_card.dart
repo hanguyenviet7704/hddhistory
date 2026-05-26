@@ -65,7 +65,7 @@ class UserSubscriptionActiveCard extends StatelessWidget {
     required String productId,
     required DateTime? date,
     required BuildContext context,
-    required TranslationsMonetizationEn text,
+    required Translations$monetization$en text,
   }) {
     final id = productId.toLowerCase();
     if (id.contains('life')) return text.manageNoNextBilling;

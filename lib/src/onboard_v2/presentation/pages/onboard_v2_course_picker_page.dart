@@ -66,7 +66,7 @@ class _OnboardV2CoursePickerPageState extends State<OnboardV2CoursePickerPage> {
     );
   }
 
-  Widget _buildCta(OnboardV2State state, TranslationsOnboardingEn onboardingL10n) {
+  Widget _buildCta(OnboardV2State state, Translations$onboarding$en onboardingL10n) {
     final course = state.currentCourse;
     if (state.courseStatus == OnboardV2CourseStatus.loading) {
       return OnboardV2BottomCta(label: onboardingL10n.onboardingV2P8SelectCta, isLoading: true, onPressed: null);
