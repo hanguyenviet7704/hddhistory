@@ -90,10 +90,7 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
                   context.l10n.dailyWarmUp.memoryRetentionHint,
                   textAlign: TextAlign.center,
                   maxLines: 2,
-                  style: AppStyle.text14.copyWith(
-                    color: const Color(0xFF362F82),
-                    fontWeight: FontWeight.w600,
-                  ),
+                  style: AppStyle.textBold14.copyWith(color: const Color(0xFF362F82)),
                 ),
               ),
             ],
