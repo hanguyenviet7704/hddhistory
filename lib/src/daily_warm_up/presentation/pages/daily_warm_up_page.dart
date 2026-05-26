@@ -76,6 +76,7 @@ class DailyWarmUpPage extends StatelessWidget {
         _showResultSheet(
           context,
           state.latestResult!,
+          question: state.currentQuestion,
           explanationText: state.currentQuestion?.explanationText ?? '',
         );
       });
@@ -91,6 +92,7 @@ class DailyWarmUpPage extends StatelessWidget {
   Future<void> _showResultSheet(
     BuildContext context,
     DailyWarmUpAnswerResultEntity result, {
+    required QuestionEntity? question,
     required String explanationText,
   }) async {
     if (ModalRoute.of(context)?.isCurrent != true) return;
@@ -102,6 +104,7 @@ class DailyWarmUpPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => DailyWarmUpResultBottomSheet(
         result: result,
+        question: question,
         explanationText: explanationText,
         onContinue: () {
           Navigator.of(sheetContext).pop();

@@ -53,6 +53,8 @@ part 'presentation/widgets/daily_warm_up_question_drag_drop_body.dart';
 part 'presentation/widgets/daily_warm_up_question_step.dart';
 part 'presentation/widgets/daily_warm_up_question_stress_body.dart';
 part 'presentation/widgets/daily_warm_up_result_bottom_sheet.dart';
+part 'presentation/widgets/daily_warm_up_result_explanation_content.dart';
+part 'presentation/widgets/daily_warm_up_result_explanation_card.dart';
 part 'presentation/widgets/daily_warm_up_result_summary.dart';
 
 //* Parts for generated files

@@ -77,42 +77,39 @@ class DailyWarmUpResultSummary extends StatelessWidget {
               if (onExplain != null) ...[
                 12.horizontalSpace,
                 Flexible(
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Opacity(
-                      opacity: 0.5,
-                      child: GestureDetector(
-                        key: const ValueKey('daily-warm-up-result-explain-action'),
-                        behavior: HitTestBehavior.opaque,
-                        onTap: onExplain,
-                        child: SizedBox(
-                          height: 24.h,
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.center,
-                            children: [
-                              showExplanation
-                                  ? Icon(Icons.close_rounded, color: const Color(0xFF0D121C), size: 20.w)
-                                  : SvgPicture.asset(
-                                      AppAsset.svg.app.icBookOpen,
-                                      width: 20.w,
-                                      height: 20.w,
-                                    ),
-                              8.horizontalSpace,
-                              Flexible(
-                                child: AppText(
-                                  explainText,
-                                  maxLines: 1,
-                                  textAlign: TextAlign.center,
-                                  style: AppStyle.text14.copyWith(
-                                    color: const Color(0xFF0D121C),
-                                    fontWeight: FontWeight.w600,
-                                    height: 1,
+                  child: GestureDetector(
+                    key: const ValueKey('daily-warm-up-result-explain-action'),
+                    behavior: HitTestBehavior.opaque,
+                    onTap: onExplain,
+                    child: SizedBox(
+                      height: 24.h,
+                      child: Opacity(
+                        opacity: 0.5,
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            showExplanation
+                                ? Icon(Icons.close_rounded, color: const Color(0xFF0D121C), size: 20.w)
+                                : SvgPicture.asset(
+                                    AppAsset.svg.app.icBookOpen,
+                                    width: 20.w,
+                                    height: 20.w,
                                   ),
+                            8.horizontalSpace,
+                            Flexible(
+                              child: AppText(
+                                explainText,
+                                maxLines: 1,
+                                textAlign: TextAlign.center,
+                                style: AppStyle.text14.copyWith(
+                                  color: const Color(0xFF0D121C),
+                                  fontWeight: FontWeight.w600,
+                                  height: 1,
                                 ),
                               ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
                       ),
                     ),

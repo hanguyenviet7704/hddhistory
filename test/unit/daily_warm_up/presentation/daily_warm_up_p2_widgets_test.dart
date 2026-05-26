@@ -111,6 +111,7 @@ void main() {
         _harness(
           DailyWarmUpResultBottomSheet(
             result: _result(isCorrect: false),
+            question: _multipleChoiceQuestion(),
             explanationText: 'The best answer keeps the tone natural.',
             onContinue: () {},
           ),
@@ -144,6 +145,7 @@ void main() {
         _harness(
           DailyWarmUpResultBottomSheet(
             result: _result(),
+            question: _multipleChoiceQuestion(),
             explanationText: '   ',
             onContinue: () {},
           ),
@@ -152,6 +154,31 @@ void main() {
 
       expect(find.text('Explain'), findsNothing);
       expect(find.byKey(const ValueKey('daily-warm-up-result-explanation')), findsNothing);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('result sheet uses copied lesson-style explanation card for sequence questions', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _harness(
+          DailyWarmUpResultBottomSheet(
+            result: _orderedResult(),
+            question: _arrangeQuestion(),
+            explanationText: 'Put the actions in the natural order.',
+            onContinue: () {},
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Explain'));
+      await tester.pumpAndSettle();
+
+      expect(find.byKey(const ValueKey('daily-warm-up-lesson-style-explanation-card')), findsOneWidget);
+      expect(find.text('First'), findsOneWidget);
+      expect(find.text('second'), findsOneWidget);
+      expect(find.text('Put the actions in the natural order.'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
   });
@@ -302,6 +329,17 @@ DailyWarmUpAnswerResultEntity _result({bool isCorrect = true}) {
     isCorrect: isCorrect,
     selectedIndices: [0],
     correctIndices: [0],
+  );
+}
+
+DailyWarmUpAnswerResultEntity _orderedResult() {
+  return const DailyWarmUpAnswerResultEntity(
+    questionId: 4,
+    questionIndex: 0,
+    type: DailyWarmUpAnswerResultType.incorrect,
+    isCorrect: false,
+    selectedOptionIds: [2, 1],
+    correctOptionIds: [1, 2],
   );
 }
 

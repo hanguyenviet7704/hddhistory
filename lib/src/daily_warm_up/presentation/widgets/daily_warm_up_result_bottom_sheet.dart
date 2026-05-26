@@ -4,11 +4,13 @@ class DailyWarmUpResultBottomSheet extends StatefulWidget {
   const DailyWarmUpResultBottomSheet({
     super.key,
     required this.result,
+    required this.question,
     required this.explanationText,
     required this.onContinue,
   });
 
   final DailyWarmUpAnswerResultEntity result;
+  final QuestionEntity? question;
   final String explanationText;
   final VoidCallback onContinue;
 
@@ -29,7 +31,13 @@ class _DailyWarmUpResultBottomSheetState extends State<DailyWarmUpResultBottomSh
 
     return LessonResultOverlay(
       showExplanation: explanationVisible,
-      explanation: hasExplanation ? DailyWarmUpResultExplanationContent(explanationText: explanationText) : null,
+      explanation: hasExplanation
+          ? DailyWarmUpResultExplanationContent(
+              result: widget.result,
+              question: widget.question,
+              explanationText: explanationText,
+            )
+          : null,
       summary: DailyWarmUpResultSummary(
         type: isCorrect ? ResultType.correct : ResultType.incorrect,
         onContinue: widget.onContinue,
@@ -47,46 +55,5 @@ class _DailyWarmUpResultBottomSheetState extends State<DailyWarmUpResultBottomSh
 
   void _toggleExplanation() {
     setState(() => _showExplanation = !_showExplanation);
-  }
-}
-
-class DailyWarmUpResultExplanationContent extends StatelessWidget {
-  const DailyWarmUpResultExplanationContent({
-    super.key,
-    required this.explanationText,
-  });
-
-  final String explanationText;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      key: const ValueKey('daily-warm-up-result-explanation'),
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 24.h),
-      color: Colors.white,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AppText(
-            context.l10n.exercise.exerciseExplanationTitle,
-            style: AppStyle.text20.copyWith(
-              fontWeight: FontWeight.w600,
-              color: const Color(0xFF0D121C),
-            ),
-          ),
-          16.verticalSpace,
-          AppText(
-            explanationText,
-            maxLines: 100,
-            style: AppStyle.text14.copyWith(
-              color: const Color(0xFF364152),
-              height: 1.5,
-            ),
-          ),
-        ],
-      ),
-    );
   }
 }
