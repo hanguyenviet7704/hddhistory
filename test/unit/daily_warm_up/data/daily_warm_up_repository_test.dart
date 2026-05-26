@@ -13,6 +13,7 @@ class _FakeDailyWarmUpApi implements DailyWarmUpApi {
 class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   DailyWarmUpModel? cachedModel;
   final Map<String, String> shownDates = {};
+  final Set<String> seenPostOnboardingLaunchUserIds = {};
 
   @override
   Future<void> cacheDailyWarmUp(DailyWarmUpModel model) async {
@@ -31,8 +32,16 @@ class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   Future<String> getShownDate(String userId) async => shownDates[userId] ?? '';
 
   @override
+  Future<bool> hasSeenPostOnboardingLaunch(String userId) async => seenPostOnboardingLaunchUserIds.contains(userId);
+
+  @override
   Future<void> markShownDate(String userId, String date) async {
     shownDates[userId] = date;
+  }
+
+  @override
+  Future<void> markPostOnboardingLaunchSeen(String userId) async {
+    seenPostOnboardingLaunchUserIds.add(userId);
   }
 }
 

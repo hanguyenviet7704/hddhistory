@@ -19,6 +19,7 @@ class _FakeDailyWarmUpRepository implements IDailyWarmUpRepository {
 
 class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   final Map<String, String> shownDates = {};
+  final Set<String> seenPostOnboardingLaunchUserIds = {};
 
   @override
   Future<void> cacheDailyWarmUp(DailyWarmUpModel model) async {}
@@ -33,8 +34,16 @@ class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   Future<String> getShownDate(String userId) async => shownDates[userId] ?? '';
 
   @override
+  Future<bool> hasSeenPostOnboardingLaunch(String userId) async => seenPostOnboardingLaunchUserIds.contains(userId);
+
+  @override
   Future<void> markShownDate(String userId, String date) async {
     shownDates[userId] = date;
+  }
+
+  @override
+  Future<void> markPostOnboardingLaunchSeen(String userId) async {
+    seenPostOnboardingLaunchUserIds.add(userId);
   }
 }
 
@@ -85,7 +94,11 @@ void main() {
       final cubit = _buildCubit(repository: repository, localDataSource: localDataSource);
       addTearDown(cubit.close);
 
-      final canOpen = await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
 
       expect(canOpen, isFalse);
       expect(repository.callCount, 0);
@@ -94,13 +107,18 @@ void main() {
 
     test('Given API failure, When Home checks entry, Then P1 is skipped and shown date is not marked', () async {
       final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      localDataSource.seenPostOnboardingLaunchUserIds.add('user-1');
       final cubit = _buildCubit(
         repository: _FakeDailyWarmUpRepository(TaskEither.left(const AppException.connection('offline'))),
         localDataSource: localDataSource,
       );
       addTearDown(cubit.close);
 
-      final canOpen = await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
 
       expect(canOpen, isFalse);
       expect(cubit.state.status, DailyWarmUpStatus.closed);
@@ -109,13 +127,18 @@ void main() {
 
     test('Given invalid entry data, When loaded for Home, Then P1 is skipped and shown date is not marked', () async {
       final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      localDataSource.seenPostOnboardingLaunchUserIds.add('user-1');
       final cubit = _buildCubit(
         repository: _FakeDailyWarmUpRepository(TaskEither.right(const DailyWarmUpEntity())),
         localDataSource: localDataSource,
       );
       addTearDown(cubit.close);
 
-      final canOpen = await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
 
       expect(canOpen, isFalse);
       expect(cubit.state.canShowEntry, isFalse);
@@ -124,13 +147,18 @@ void main() {
 
     test('Given only unsupported questions, When loaded for Home, Then P1 is skipped', () async {
       final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      localDataSource.seenPostOnboardingLaunchUserIds.add('user-1');
       final cubit = _buildCubit(
         repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity(questions: [_speakingQuestion()]))),
         localDataSource: localDataSource,
       );
       addTearDown(cubit.close);
 
-      final canOpen = await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
 
       expect(canOpen, isFalse);
       expect(cubit.state.canShowEntry, isFalse);
@@ -144,8 +172,13 @@ void main() {
         localDataSource: localDataSource,
       );
       addTearDown(cubit.close);
+      localDataSource.seenPostOnboardingLaunchUserIds.add('user-1');
 
-      final canOpen = await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
       await cubit.markEntryPresented();
 
       expect(canOpen, isTrue);
@@ -160,7 +193,12 @@ void main() {
         localDataSource: localDataSource,
       );
       addTearDown(cubit.close);
-      await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      localDataSource.seenPostOnboardingLaunchUserIds.add('user-1');
+      await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
 
       await cubit.dismissEntry();
 
@@ -169,9 +207,17 @@ void main() {
     });
 
     test('Given final question result, When continuing, Then completion step opens without backend progress', () async {
-      final cubit = _buildCubit(repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity())));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource()..seenPostOnboardingLaunchUserIds.add('user-1');
+      final cubit = _buildCubit(
+        repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity())),
+        localDataSource: localDataSource,
+      );
       addTearDown(cubit.close);
-      await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
       cubit.startWarmUp();
       cubit.selectChoiceAnswer(0);
 
@@ -184,14 +230,20 @@ void main() {
     });
 
     test('Given suggested course load fails, When completion loads course, Then flow closes silently', () async {
+      final localDataSource = _FakeDailyWarmUpLocalDataSource()..seenPostOnboardingLaunchUserIds.add('user-1');
       final cubit = _buildCubit(
         repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity())),
+        localDataSource: localDataSource,
         courseRepository: _FakeCourseRepository(
           courseResult: TaskEither.left(const AppException.notFound('missing')),
         ),
       );
       addTearDown(cubit.close);
-      await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
       cubit.startWarmUp();
       cubit.showCompletion();
 
@@ -202,9 +254,17 @@ void main() {
     });
 
     test('Given roadmap helper falls back to catalog, When starting today lesson, Then handoff fails', () async {
-      final cubit = _buildCubit(repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity())));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource()..seenPostOnboardingLaunchUserIds.add('user-1');
+      final cubit = _buildCubit(
+        repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity())),
+        localDataSource: localDataSource,
+      );
       addTearDown(cubit.close);
-      await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
       cubit.showCompletion();
       await cubit.loadSuggestedCourse();
 
@@ -217,9 +277,17 @@ void main() {
     });
 
     test('Given route handoff is running, When primary CTA is tapped again, Then second tap is ignored', () async {
-      final cubit = _buildCubit(repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity())));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource()..seenPostOnboardingLaunchUserIds.add('user-1');
+      final cubit = _buildCubit(
+        repository: _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity())),
+        localDataSource: localDataSource,
+      );
       addTearDown(cubit.close);
-      await cubit.loadForHomeEntry(userId: 'user-1', localDate: '2026-05-22');
+      await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
       cubit.showCompletion();
       await cubit.loadSuggestedCourse();
       var prepareCount = 0;
@@ -242,6 +310,101 @@ void main() {
       expect(firstResult, isTrue);
       expect(secondTap, isFalse);
       expect(prepareCount, 1);
+    });
+
+    test('Given onboarding is incomplete, When Home checks entry, Then API is skipped and shown date is not marked', () async {
+      final repository = _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity()));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      final cubit = _buildCubit(repository: repository, localDataSource: localDataSource);
+      addTearDown(cubit.close);
+
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: false,
+      );
+
+      expect(canOpen, isFalse);
+      expect(repository.callCount, 0);
+      expect(localDataSource.shownDates, isEmpty);
+      expect(localDataSource.seenPostOnboardingLaunchUserIds, isEmpty);
+    });
+
+    test('Given first completed-onboarding launch, When Home checks entry, Then launch is marked and API is skipped', () async {
+      final repository = _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity()));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      final cubit = _buildCubit(repository: repository, localDataSource: localDataSource);
+      addTearDown(cubit.close);
+
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
+
+      expect(canOpen, isFalse);
+      expect(repository.callCount, 0);
+      expect(localDataSource.shownDates, isEmpty);
+      expect(localDataSource.seenPostOnboardingLaunchUserIds, contains('user-1'));
+    });
+
+    test('Given first completed-onboarding launch was skipped, When Home refreshes same app session, Then API remains skipped', () async {
+      final repository = _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity()));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      final cubit = _buildCubit(repository: repository, localDataSource: localDataSource);
+      addTearDown(cubit.close);
+
+      await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
+      final canOpenAfterRefresh = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
+
+      expect(canOpenAfterRefresh, isFalse);
+      expect(repository.callCount, 0);
+      expect(localDataSource.shownDates, isEmpty);
+    });
+
+    test('Given next app launch after first completed-onboarding launch, When Home checks entry, Then API can load warm-up', () async {
+      final repository = _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity()));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      localDataSource.seenPostOnboardingLaunchUserIds.add('user-1');
+      final cubit = _buildCubit(repository: repository, localDataSource: localDataSource);
+      addTearDown(cubit.close);
+
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
+
+      expect(canOpen, isTrue);
+      expect(repository.callCount, 1);
+      expect(localDataSource.shownDates, isEmpty);
+      expect(cubit.state.canShowEntry, isTrue);
+    });
+
+    test('Given launch gate was seen by one user, When another user checks entry, Then second user still skips first launch', () async {
+      final repository = _FakeDailyWarmUpRepository(TaskEither.right(_warmUpEntity()));
+      final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      localDataSource.seenPostOnboardingLaunchUserIds.add('user-1');
+      final cubit = _buildCubit(repository: repository, localDataSource: localDataSource);
+      addTearDown(cubit.close);
+
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-2',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
+
+      expect(canOpen, isFalse);
+      expect(repository.callCount, 0);
+      expect(localDataSource.seenPostOnboardingLaunchUserIds, containsAll(['user-1', 'user-2']));
     });
   });
 }

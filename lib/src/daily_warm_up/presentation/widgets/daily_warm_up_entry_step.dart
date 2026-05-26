@@ -40,9 +40,8 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
       backgroundColor: const Color(0xFFC7C5FA),
       body: SafeArea(
         child: ListView(
-          padding: EdgeInsets.fromLTRB(20.w, 56.h, 20.w, 24.h),
+          padding: EdgeInsets.fromLTRB(20.w, 58.h, 20.w, 24.h),
           children: [
-            SizedBox(height: 20.h),
             AppText(
               context.l10n.dailyWarmUp.dailyChallenge,
               textAlign: TextAlign.center,
@@ -51,27 +50,31 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
                 fontWeight: FontWeight.w700,
               ),
             ),
-            28.verticalSpace,
+            48.verticalSpace,
             SizedBox(
-              height: 290.h,
+              height: 240.h,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Image.asset(AppAsset.images.app.dailyWarmUpDecor.path, width: 275.w, fit: BoxFit.contain),
-                  AnimatedBuilder(
-                    animation: _float,
-                    builder: (context, child) {
-                      return Transform.translate(
-                        offset: Offset(0, reduceMotion ? 0 : _float.value),
-                        child: child,
-                      );
-                    },
-                    child: Image.asset(AppAsset.images.app.dailyWarmUpDecorOption.path, width: 126.w, fit: BoxFit.contain),
+                  Image.asset(AppAsset.images.app.dailyWarmUpDecor.path, width: 250.w, fit: BoxFit.contain),
+                  Positioned(
+                    top: 70.h,
+                    left: 100.w,
+                    child: AnimatedBuilder(
+                      animation: _float,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, reduceMotion ? 0 : _float.value),
+                          child: child,
+                        );
+                      },
+                      child: Image.asset(AppAsset.images.app.dailyWarmUpDecorOption.path, width: 132.w, fit: BoxFit.contain),
+                    ),
                   ),
                 ],
               ),
             ),
-            20.verticalSpace,
+            44.verticalSpace,
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -99,6 +102,7 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
           DailyWarmUpBottomCta(
             label: context.l10n.dailyWarmUp.startWarmUp,
             enabled: true,
+            width: 164,
             onPressed: widget.onStart,
           ),
           TextButton(

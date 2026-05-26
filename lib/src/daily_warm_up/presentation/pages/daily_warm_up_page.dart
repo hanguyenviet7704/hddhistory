@@ -34,6 +34,7 @@ class DailyWarmUpPage extends StatelessWidget {
             onSelectChoice: cubit.selectChoiceAnswer,
             onSetOrderedOptionIds: cubit.setOrderedOptionIds,
             onPlaceOption: (slotIndex, optionId) => cubit.placeOption(slotIndex: slotIndex, optionId: optionId),
+            onRemovePlacedOption: cubit.removePlacedOption,
             onToggleWordIndex: cubit.toggleWordIndex,
           ),
           DailyWarmUpStatus.completion => DailyWarmUpCompletionStep(

@@ -7,7 +7,8 @@ mixin _HomeDailyWarmUpMixin on State<HomePage> {
     if (!mounted || _dailyWarmUpCheckInFlight) return false;
     if (_hasBlockingDailyWarmUpRoute()) return false;
 
-    final userId = context.read<UserCubit>().state.user.id.trim();
+    final userState = context.read<UserCubit>().state;
+    final userId = userState.user.id.trim();
     if (userId.isEmpty) return false;
 
     _dailyWarmUpCheckInFlight = true;
@@ -17,6 +18,7 @@ mixin _HomeDailyWarmUpMixin on State<HomePage> {
       canOpen = await cubit.loadForHomeEntry(
         userId: userId,
         localDate: _localDateKey(DateTime.now()),
+        hasCompletedOnboarding: !userState.isUserPassOnboarding,
       );
     } catch (_) {
       return false;

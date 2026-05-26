@@ -5,6 +5,8 @@ abstract class DailyWarmUpLocalDataSource {
   Future<void> cacheDailyWarmUp(DailyWarmUpModel model);
   Future<String> getShownDate(String userId);
   Future<void> markShownDate(String userId, String date);
+  Future<bool> hasSeenPostOnboardingLaunch(String userId);
+  Future<void> markPostOnboardingLaunchSeen(String userId);
   Future<void> clearCache();
 }
 
@@ -12,6 +14,7 @@ abstract class DailyWarmUpLocalDataSource {
 class DailyWarmUpLocalDataSourceImpl implements DailyWarmUpLocalDataSource {
   static const String _cacheKey = 'daily_warm_up_cache';
   static const String _shownDateKeyPrefix = 'daily_warm_up_shown_date';
+  static const String _postOnboardingLaunchSeenKeyPrefix = 'daily_warm_up_post_onboarding_launch_seen';
 
   final ILocalStoreService _localStoreService;
 
@@ -59,6 +62,24 @@ class DailyWarmUpLocalDataSourceImpl implements DailyWarmUpLocalDataSource {
   }
 
   @override
+  Future<bool> hasSeenPostOnboardingLaunch(String userId) async {
+    try {
+      return await _localStoreService.getBool(key: _postOnboardingLaunchSeenKey(userId));
+    } catch (_) {
+      return false;
+    }
+  }
+
+  @override
+  Future<void> markPostOnboardingLaunchSeen(String userId) async {
+    try {
+      await _localStoreService.setBool(key: _postOnboardingLaunchSeenKey(userId), value: true);
+    } catch (e) {
+      LogDev.error('Error marking daily warm up post-onboarding launch seen: $e');
+    }
+  }
+
+  @override
   Future<void> clearCache() async {
     try {
       await _localStoreService.remove(key: _cacheKey);
@@ -68,7 +89,14 @@ class DailyWarmUpLocalDataSourceImpl implements DailyWarmUpLocalDataSource {
   }
 
   String _shownDateKey(String userId) {
-    final normalizedUserId = userId.trim().isEmpty ? 'anonymous' : userId.trim();
-    return '${_shownDateKeyPrefix}_$normalizedUserId';
+    return '${_shownDateKeyPrefix}_${_normalizedUserId(userId)}';
+  }
+
+  String _postOnboardingLaunchSeenKey(String userId) {
+    return '${_postOnboardingLaunchSeenKeyPrefix}_${_normalizedUserId(userId)}';
+  }
+
+  String _normalizedUserId(String userId) {
+    return userId.trim().isEmpty ? 'anonymous' : userId.trim();
   }
 }

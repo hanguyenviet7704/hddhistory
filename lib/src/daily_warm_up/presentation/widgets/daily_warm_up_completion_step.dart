@@ -22,9 +22,9 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
       body: SafeArea(
         child: Stack(
           children: [
-            const _DailyWarmUpConfetti(),
+            const _DailyWarmUpCongratulationsBackground(),
             ListView(
-              padding: EdgeInsets.fromLTRB(20.w, 56.h, 20.w, 24.h),
+              padding: EdgeInsets.fromLTRB(20.w, 84.h, 20.w, 24.h),
               children: [
                 ShaderMask(
                   shaderCallback: (rect) => const LinearGradient(
@@ -43,9 +43,9 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
                   maxLines: 3,
                   style: AppStyle.text16.copyWith(color: const Color(0xFF364152), fontWeight: FontWeight.w500),
                 ),
-                32.verticalSpace,
+                40.verticalSpace,
                 if (state.suggestedCourse != null)
-                  DailyWarmUpCourseCard(course: state.suggestedCourse!)
+                  Center(child: DailyWarmUpCourseCard(course: state.suggestedCourse!))
                 else
                   SizedBox(
                     height: 180.h,
@@ -80,8 +80,8 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
   }
 }
 
-class _DailyWarmUpConfetti extends StatelessWidget {
-  const _DailyWarmUpConfetti();
+class _DailyWarmUpCongratulationsBackground extends StatelessWidget {
+  const _DailyWarmUpCongratulationsBackground();
 
   @override
   Widget build(BuildContext context) {
@@ -91,28 +91,12 @@ class _DailyWarmUpConfetti extends StatelessWidget {
 
     return Positioned.fill(
       child: IgnorePointer(
-        child: CustomPaint(painter: _DailyWarmUpConfettiPainter()),
+        child: Lottie.asset(
+          AppAsset.lottie.congratulations,
+          fit: BoxFit.cover,
+          repeat: true,
+        ),
       ),
     );
   }
-}
-
-class _DailyWarmUpConfettiPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint();
-    const colors = [Color(0xFF554FF0), Color(0xFFEF81D4), Color(0xFFFFCE66), Color(0xFF41AE8C)];
-    for (var i = 0; i < 26; i++) {
-      paint.color = colors[i % colors.length].withValues(alpha: 0.65);
-      final x = (i * 47 % math.max(size.width.toInt(), 1)).toDouble();
-      final y = (i * 71 % math.max((size.height * .45).toInt(), 1)).toDouble() + 12;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(Rect.fromLTWH(x, y, 8, 4), const Radius.circular(2)),
-        paint,
-      );
-    }
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

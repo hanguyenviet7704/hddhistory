@@ -1,23 +1,24 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:lottie/lottie.dart';
 import 'package:meup/meup.dart';
 
 import '../../../support/test_di.dart';
 
 void main() {
-  setUp(() async {
+  setUpAll(() async {
     await setupLocaleCubitForTests();
     LocaleSettings.setLocaleSync(AppLocale.en);
   });
 
-  tearDown(() async {
+  tearDownAll(() async {
     await resetInjectorForTests();
   });
 
   group('Daily warm-up P1/P3 widgets', () {
-    testWidgets('P1 renders entry copy and handles actions without overflow', (tester) async {
+    testWidgets('P1 renders centered entry CTA and handles actions without overflow', (tester) async {
       var started = false;
       var dismissed = false;
-      await tester.binding.setSurfaceSize(const Size(375, 640));
+      await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(
@@ -35,8 +36,27 @@ void main() {
       await tester.pump();
 
       expect(find.text('Daily challenge'), findsOneWidget);
+      expect(tester.getSize(find.byType(ElevatedButton)).width, lessThan(280));
       expect(started, isTrue);
       expect(dismissed, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('P1 avoids overflow on a small Android viewport', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(360, 640));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _harness(
+          DailyWarmUpEntryStep(
+            onStart: () {},
+            onMaybeLater: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('Daily challenge'), findsOneWidget);
+      expect(find.text('Start warm-up'), findsOneWidget);
       expect(tester.takeException(), isNull);
     });
 
@@ -67,10 +87,43 @@ void main() {
       await tester.pump();
 
       expect(find.text('Complete challenge!'), findsOneWidget);
-      expect(find.byType(DailyWarmUpCourseCard, skipOffstage: false), findsOneWidget);
+      final courseCardFinder = find.byType(DailyWarmUpCourseCard, skipOffstage: false);
+      expect(courseCardFinder, findsOneWidget);
+      expect(find.byType(LottieBuilder), findsOneWidget);
+      expect(tester.getSize(courseCardFinder).width, greaterThan(280));
+      expect(tester.getSize(courseCardFinder).width, lessThanOrEqualTo(307));
       expect(find.byType(CircularProgressIndicator), findsOneWidget);
       expect(explored, isTrue);
       expect(startTapped, isFalse);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('P3 hides Lottie background when accessibility animations are disabled', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _harness(
+          MediaQuery(
+            data: const MediaQueryData(
+              size: Size(375, 812),
+              disableAnimations: true,
+              accessibleNavigation: true,
+            ),
+            child: DailyWarmUpCompletionStep(
+              state: DailyWarmUpState(
+                status: DailyWarmUpStatus.completion,
+                entity: const DailyWarmUpEntity(isKeypointCompleted: true, suggestedCourseId: 'course-2'),
+                suggestedCourse: CourseEntity(id: 'course-2', title: _text('Mindful Speaking')),
+              ),
+              onStartLesson: () {},
+              onExploreMore: () {},
+            ),
+          ),
+        ),
+      );
+
+      expect(find.byType(LottieBuilder), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });

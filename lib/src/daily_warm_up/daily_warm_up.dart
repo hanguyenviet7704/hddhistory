@@ -10,6 +10,7 @@ import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;
 import 'package:freezed_annotation/freezed_annotation.dart';
 import 'package:injectable/injectable.dart';
+import 'package:lottie/lottie.dart';
 import 'package:retrofit/retrofit.dart';
 
 //* Data Layer - Models, Datasources, Repositories
@@ -43,7 +44,12 @@ part 'presentation/widgets/daily_warm_up_completion_step.dart';
 part 'presentation/widgets/daily_warm_up_course_card.dart';
 part 'presentation/widgets/daily_warm_up_entry_step.dart';
 part 'presentation/widgets/daily_warm_up_progress_dots.dart';
+part 'presentation/widgets/daily_warm_up_question_arrange_body.dart';
+part 'presentation/widgets/daily_warm_up_question_body_helpers.dart';
+part 'presentation/widgets/daily_warm_up_question_cues_body.dart';
+part 'presentation/widgets/daily_warm_up_question_drag_drop_body.dart';
 part 'presentation/widgets/daily_warm_up_question_step.dart';
+part 'presentation/widgets/daily_warm_up_question_stress_body.dart';
 part 'presentation/widgets/daily_warm_up_result_bottom_sheet.dart';
 
 //* Parts for generated files

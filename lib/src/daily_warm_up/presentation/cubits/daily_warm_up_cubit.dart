@@ -5,6 +5,8 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
   final GetDailyWarmUpUseCase _getUseCase;
   final DailyWarmUpLocalDataSource _localDataSource;
   final GetCourseUseCase _getCourseUseCase;
+  final Set<String> _currentLaunchSkippedUserIds = {};
+  final Set<String> _currentLaunchAllowedUserIds = {};
 
   DailyWarmUpCubit(this._getUseCase, this._localDataSource, this._getCourseUseCase) : super(DailyWarmUpState.initial());
 
@@ -34,6 +36,7 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
   Future<bool> loadForHomeEntry({
     required String userId,
     required String localDate,
+    required bool hasCompletedOnboarding,
   }) async {
     final normalizedUserId = userId.trim();
     final normalizedDate = localDate.trim();
@@ -42,7 +45,17 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
       return false;
     }
 
+    if (!hasCompletedOnboarding) {
+      await trackDailyWarmUpSkip(source: 'home_open', skipReason: 'onboarding_not_completed');
+      return false;
+    }
+
     await trackDailyWarmUpEntryCheck(source: 'home_open', shownDate: normalizedDate);
+    if (await _shouldSkipForFirstEligibleLaunch(normalizedUserId)) {
+      await trackDailyWarmUpSkip(source: 'home_open', skipReason: 'first_post_onboarding_launch');
+      return false;
+    }
+
     final shownDate = await _localDataSource.getShownDate(normalizedUserId);
     if (shownDate == normalizedDate) {
       await trackDailyWarmUpSkip(source: 'home_open', skipReason: 'already_shown_today');
@@ -170,7 +183,14 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
   void placeOption({required int slotIndex, required int optionId}) {
     if (state.latestResult != null) return;
     final placed = Map<int, int>.from(state.placedOptionIds);
+    placed.removeWhere((key, value) => key == slotIndex || value == optionId);
     placed[slotIndex] = optionId;
+    emit(state.copyWith(placedOptionIds: placed));
+  }
+
+  void removePlacedOption(int slotIndex) {
+    if (state.latestResult != null) return;
+    final placed = Map<int, int>.from(state.placedOptionIds)..remove(slotIndex);
     emit(state.copyWith(placedOptionIds: placed));
   }
 
@@ -297,5 +317,20 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
       placedOptionIds: const {},
       selectedWordIndices: const {},
     );
+  }
+
+  Future<bool> _shouldSkipForFirstEligibleLaunch(String userId) async {
+    if (_currentLaunchSkippedUserIds.contains(userId)) return true;
+    if (_currentLaunchAllowedUserIds.contains(userId)) return false;
+
+    final hasSeenLaunch = await _localDataSource.hasSeenPostOnboardingLaunch(userId);
+    if (hasSeenLaunch) {
+      _currentLaunchAllowedUserIds.add(userId);
+      return false;
+    }
+
+    await _localDataSource.markPostOnboardingLaunchSeen(userId);
+    _currentLaunchSkippedUserIds.add(userId);
+    return true;
   }
 }
