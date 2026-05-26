@@ -8,6 +8,7 @@ class DailyWarmUpBottomCta extends StatelessWidget {
     required this.onPressed,
     this.isLoading = false,
     this.width,
+    this.enableSafeArea = false,
   });
 
   final String label;
@@ -15,6 +16,7 @@ class DailyWarmUpBottomCta extends StatelessWidget {
   final bool isLoading;
   final double? width;
   final VoidCallback onPressed;
+  final bool enableSafeArea;
 
   @override
   Widget build(BuildContext context) {
@@ -50,16 +52,20 @@ class DailyWarmUpBottomCta extends StatelessWidget {
       ),
     );
 
-    return SafeArea(
-      top: false,
-      child: Padding(
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
-        child: width == null
-            ? button
-            : Center(
-                child: button,
-              ),
-      ),
+    Widget child = Padding(
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 16.h),
+      child: width == null
+          ? button
+          : Center(
+              child: button,
+            ),
     );
+
+    return enableSafeArea
+        ? SafeArea(
+            top: false,
+            child: child,
+          )
+        : child;
   }
 }

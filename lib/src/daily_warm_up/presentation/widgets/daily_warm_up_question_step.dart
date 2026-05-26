@@ -86,6 +86,7 @@ class DailyWarmUpQuestionStep extends StatelessWidget {
         label: context.l10n.dailyWarmUp.check,
         enabled: state.canCheckCurrentQuestion,
         onPressed: onCheck,
+        enableSafeArea: true,
       ),
     );
   }

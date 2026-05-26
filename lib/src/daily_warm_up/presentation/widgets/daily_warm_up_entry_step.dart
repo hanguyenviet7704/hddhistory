@@ -52,14 +52,14 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
             ),
             48.verticalSpace,
             SizedBox(
-              height: 240.h,
+              height: 290.h,
               child: Stack(
                 alignment: Alignment.center,
                 children: [
-                  Image.asset(AppAsset.images.app.dailyWarmUpDecor.path, width: 250.w, fit: BoxFit.contain),
+                  Image.asset(AppAsset.images.app.dailyWarmUpDecor.path, width: 275.w, fit: BoxFit.contain),
                   Positioned(
-                    top: 70.h,
-                    left: 100.w,
+                    top: 85.h,
+                    left: 110.w,
                     child: AnimatedBuilder(
                       animation: _float,
                       builder: (context, child) {
@@ -68,30 +68,11 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
                           child: child,
                         );
                       },
-                      child: Image.asset(AppAsset.images.app.dailyWarmUpDecorOption.path, width: 132.w, fit: BoxFit.contain),
+                      child: Image.asset(AppAsset.images.app.dailyWarmUpDecorOption.path, width: 145.w, fit: BoxFit.contain),
                     ),
                   ),
                 ],
               ),
-            ),
-            44.verticalSpace,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(Icons.trending_up_rounded, size: 20.w, color: const Color(0xFF4B44CA)),
-                8.horizontalSpace,
-                Flexible(
-                  child: AppText(
-                    context.l10n.dailyWarmUp.memoryRetentionHint,
-                    textAlign: TextAlign.center,
-                    maxLines: 2,
-                    style: AppStyle.text14.copyWith(
-                      color: const Color(0xFF362F82),
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
             ),
           ],
         ),
@@ -99,13 +80,37 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
       bottomNavigationBar: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.trending_up_rounded, size: 20.w, color: const Color(0xFF4B44CA)),
+              8.horizontalSpace,
+              Flexible(
+                child: AppText(
+                  context.l10n.dailyWarmUp.memoryRetentionHint,
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
+                  style: AppStyle.text14.copyWith(
+                    color: const Color(0xFF362F82),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ],
+          ),
           DailyWarmUpBottomCta(
             label: context.l10n.dailyWarmUp.startWarmUp,
             enabled: true,
-            width: 164,
+            width: 200.w,
             onPressed: widget.onStart,
           ),
           TextButton(
+            style: TextButton.styleFrom(
+              padding: EdgeInsets.zero,
+              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              minimumSize: Size.zero,
+              visualDensity: VisualDensity.compact,
+            ),
             onPressed: widget.onMaybeLater,
             child: AppText(
               context.l10n.dailyWarmUp.maybeLater,
@@ -115,7 +120,7 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
               ),
             ),
           ),
-          16.verticalSpace,
+          32.verticalSpace,
         ],
       ),
     );

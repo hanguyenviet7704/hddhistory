@@ -73,7 +73,7 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
               style: AppStyle.text16.copyWith(color: const Color(0xFF362F82), fontWeight: FontWeight.w600),
             ),
           ),
-          12.verticalSpace,
+          32.verticalSpace,
         ],
       ),
     );
