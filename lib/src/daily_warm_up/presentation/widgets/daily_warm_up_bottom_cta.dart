@@ -29,6 +29,9 @@ class DailyWarmUpBottomCta extends StatelessWidget {
       child: ElevatedButton(
         onPressed: enabled && !isLoading ? onPressed : null,
         style: ElevatedButton.styleFrom(
+          fixedSize: width == null ? null : Size(width!, 54.h),
+          minimumSize: width == null ? null : Size.zero,
+          tapTargetSize: width == null ? null : MaterialTapTargetSize.shrinkWrap,
           disabledBackgroundColor: background,
           disabledForegroundColor: foreground,
           backgroundColor: background,

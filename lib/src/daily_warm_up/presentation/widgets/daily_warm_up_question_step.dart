@@ -94,7 +94,7 @@ class DailyWarmUpQuestionStep extends StatelessWidget {
   Widget _buildQuestionBody(BuildContext context, QuestionEntity question) {
     final payload = question.typedPayload;
     return switch (payload) {
-      QuestionSingleChoicePayloadEntity() || QuestionMultipleChoicePayloadEntity() || QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => _ChoiceBody(
+      QuestionSingleChoicePayloadEntity() || QuestionMultipleChoicePayloadEntity() || QuestionSingleChoiceNoCorrectAnswerPayloadEntity() => DailyWarmUpChoiceBody(
         state: state,
         question: question,
         onSelectChoice: onSelectChoice,
@@ -125,52 +125,5 @@ class DailyWarmUpQuestionStep extends StatelessWidget {
       ),
       _ => const SizedBox.shrink(),
     };
-  }
-}
-
-class _ChoiceBody extends StatelessWidget {
-  const _ChoiceBody({
-    required this.state,
-    required this.question,
-    required this.onSelectChoice,
-  });
-
-  final DailyWarmUpState state;
-  final QuestionEntity question;
-  final ValueChanged<int> onSelectChoice;
-
-  @override
-  Widget build(BuildContext context) {
-    final isMultiple = question.typedPayload is QuestionMultipleChoicePayloadEntity;
-    final options = questionRuntimeOptions(question);
-    return Column(
-      children: [
-        if (isMultiple)
-          Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: AppText(
-              context.l10n.dailyWarmUp.selectAllThatApply,
-              style: AppStyle.text12.copyWith(color: const Color(0xFF7F8EA4), fontWeight: FontWeight.w600),
-            ),
-          ),
-        if (isMultiple) 12.verticalSpace,
-        ...List.generate(options.length, (index) {
-          final answerState = dailyWarmUpChoiceAnswerState(
-            question: question,
-            index: index,
-            selectedAnswerIndex: state.selectedAnswerIndex,
-            selectedAnswersIndices: state.selectedAnswersIndices,
-            result: state.latestResult,
-          );
-          final card = isMultiple
-              ? MultipleChoiceAnswerCard(option: options[index], state: answerState, onTap: () => onSelectChoice(index))
-              : ChoiceAnswerCard(option: options[index], state: answerState, onTap: () => onSelectChoice(index));
-          return Padding(
-            padding: EdgeInsets.only(bottom: 10.h),
-            child: card,
-          );
-        }),
-      ],
-    );
   }
 }

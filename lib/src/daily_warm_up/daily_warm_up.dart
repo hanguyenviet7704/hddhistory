@@ -44,13 +44,16 @@ part 'presentation/widgets/daily_warm_up_completion_step.dart';
 part 'presentation/widgets/daily_warm_up_course_card.dart';
 part 'presentation/widgets/daily_warm_up_entry_step.dart';
 part 'presentation/widgets/daily_warm_up_progress_dots.dart';
+part 'presentation/widgets/daily_warm_up_choice_answer_cards.dart';
 part 'presentation/widgets/daily_warm_up_question_arrange_body.dart';
 part 'presentation/widgets/daily_warm_up_question_body_helpers.dart';
+part 'presentation/widgets/daily_warm_up_question_choice_body.dart';
 part 'presentation/widgets/daily_warm_up_question_cues_body.dart';
 part 'presentation/widgets/daily_warm_up_question_drag_drop_body.dart';
 part 'presentation/widgets/daily_warm_up_question_step.dart';
 part 'presentation/widgets/daily_warm_up_question_stress_body.dart';
 part 'presentation/widgets/daily_warm_up_result_bottom_sheet.dart';
+part 'presentation/widgets/daily_warm_up_result_summary.dart';
 
 //* Parts for generated files
 part 'daily_warm_up.freezed.dart';

@@ -43,6 +43,7 @@ class DailyWarmUpPage extends StatelessWidget {
               final canRoute = await cubit.startTodayLesson();
               if (!context.mounted) return;
               if (canRoute) {
+                context.read<PageCubit>().requestHomeBranchResetOnNextSelection();
                 CourseRoadmapRoute().go(context);
                 return;
               }
@@ -72,7 +73,11 @@ class DailyWarmUpPage extends StatelessWidget {
     if (state.status == DailyWarmUpStatus.result && state.latestResult != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!context.mounted) return;
-        _showResultSheet(context, state.latestResult!);
+        _showResultSheet(
+          context,
+          state.latestResult!,
+          explanationText: state.currentQuestion?.explanationText ?? '',
+        );
       });
     }
 
@@ -83,7 +88,11 @@ class DailyWarmUpPage extends StatelessWidget {
     }
   }
 
-  Future<void> _showResultSheet(BuildContext context, DailyWarmUpAnswerResultEntity result) async {
+  Future<void> _showResultSheet(
+    BuildContext context,
+    DailyWarmUpAnswerResultEntity result, {
+    required String explanationText,
+  }) async {
     if (ModalRoute.of(context)?.isCurrent != true) return;
     await showModalBottomSheet<void>(
       context: context,
@@ -93,6 +102,7 @@ class DailyWarmUpPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       builder: (sheetContext) => DailyWarmUpResultBottomSheet(
         result: result,
+        explanationText: explanationText,
         onContinue: () {
           Navigator.of(sheetContext).pop();
           context.read<DailyWarmUpCubit>().continueFromResult();

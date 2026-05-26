@@ -98,7 +98,7 @@ class _DailyWarmUpEntryStepState extends State<DailyWarmUpEntryStep> with Single
           DailyWarmUpBottomCta(
             label: context.l10n.dailyWarmUp.startWarmUp,
             enabled: true,
-            width: 200.w,
+            width: 200,
             onPressed: widget.onStart,
           ),
           TextButton(

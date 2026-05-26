@@ -45,15 +45,15 @@ void main() {
       expect(tapped, isFalse);
     });
 
-    testWidgets('question step uses lesson leaf widgets for supported P2 question types', (tester) async {
+    testWidgets('question step uses daily warm-up copies for choice P2 question types', (tester) async {
       await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
       await tester.pumpWidget(_harness(_questionStep(_stateFor(_singleChoiceQuestion()))));
-      expect(find.byType(ChoiceAnswerCard), findsWidgets);
+      expect(find.byType(DailyWarmUpChoiceAnswerCard), findsWidgets);
 
       await tester.pumpWidget(_harness(_questionStep(_stateFor(_multipleChoiceQuestion()))));
-      expect(find.byType(MultipleChoiceAnswerCard), findsWidgets);
+      expect(find.byType(DailyWarmUpMultipleChoiceAnswerCard), findsWidgets);
 
       await tester.pumpWidget(_harness(_questionStep(_stateFor(_dragQuestion()))));
       expect(find.byType(BlankSlot), findsWidgets);
@@ -100,6 +100,58 @@ void main() {
       await tester.pump();
 
       expect(checked, isTrue);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('result sheet toggles explanation when explanation text exists', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _harness(
+          DailyWarmUpResultBottomSheet(
+            result: _result(isCorrect: false),
+            explanationText: 'The best answer keeps the tone natural.',
+            onContinue: () {},
+          ),
+        ),
+      );
+
+      expect(tester.widget<LessonResultOverlay>(find.byType(LessonResultOverlay)).showExplanation, isFalse);
+      expect(find.text('Explain'), findsOneWidget);
+      expect(_verticalCenterDelta(tester, find.text('Incorrect!'), find.byKey(const ValueKey('daily-warm-up-result-explain-action'))), lessThanOrEqualTo(1));
+
+      await tester.tap(find.text('Explain'));
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<LessonResultOverlay>(find.byType(LessonResultOverlay)).showExplanation, isTrue);
+      expect(find.byKey(const ValueKey('daily-warm-up-result-explanation')), findsOneWidget);
+      expect(find.text('The best answer keeps the tone natural.'), findsOneWidget);
+
+      await tester.tap(find.text('Close explain'));
+      await tester.pumpAndSettle();
+
+      expect(tester.widget<LessonResultOverlay>(find.byType(LessonResultOverlay)).showExplanation, isFalse);
+      expect(find.text('Explain'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('result sheet hides explanation action when explanation text is empty', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        _harness(
+          DailyWarmUpResultBottomSheet(
+            result: _result(),
+            explanationText: '   ',
+            onContinue: () {},
+          ),
+        ),
+      );
+
+      expect(find.text('Explain'), findsNothing);
+      expect(find.byKey(const ValueKey('daily-warm-up-result-explanation')), findsNothing);
       expect(tester.takeException(), isNull);
     });
   });
@@ -241,3 +293,18 @@ QuestionDragDropOptionEntity _dragOption({required int id, required String text}
 }
 
 BaseMultiLanguage _text(String value) => BaseMultiLanguage(en: value, vi: value, zh: value);
+
+DailyWarmUpAnswerResultEntity _result({bool isCorrect = true}) {
+  return DailyWarmUpAnswerResultEntity(
+    questionId: 1,
+    questionIndex: 0,
+    type: isCorrect ? DailyWarmUpAnswerResultType.correct : DailyWarmUpAnswerResultType.incorrect,
+    isCorrect: isCorrect,
+    selectedIndices: [0],
+    correctIndices: [0],
+  );
+}
+
+double _verticalCenterDelta(WidgetTester tester, Finder first, Finder second) {
+  return (tester.getCenter(first).dy - tester.getCenter(second).dy).abs();
+}
