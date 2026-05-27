@@ -18,6 +18,9 @@ import { userService } from "../../services/userService";
 const langs: LangOption[] = [
   { code: LangCode.EN, label: "English", countryCode: "GB" },
   { code: LangCode.VI, label: "Tiếng Việt", countryCode: "VN" },
+  { code: LangCode.ZH, label: "中文", countryCode: "CN" },
+  { code: LangCode.JA, label: "日本語", countryCode: "JP" },
+  { code: LangCode.KO, label: "한국어", countryCode: "KR" },
 ];
 
 export default function Header() {

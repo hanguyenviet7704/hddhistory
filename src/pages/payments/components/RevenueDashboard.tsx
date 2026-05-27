@@ -15,6 +15,7 @@ import {
   GetRevenueListQuery,
   IPurchase,
   PurchaseHistory,
+  RevenueStatisticsItem,
   RevenueStatisticsResponse,
 } from "../../../types/interface/payments/purchase.interface";
 import {
@@ -76,8 +77,25 @@ const normalizeProducts = (payload: any): ProductRecord[] => {
 
 const normalizeStats = (payload: any): RevenueStatisticsResponse | null => {
   if (!payload) return null;
-  if (payload.data) return payload.data;
-  return payload;
+  const data = payload.data ?? payload;
+  if (Array.isArray(data.items)) return data;
+  if (
+    "totalRevenue" in data ||
+    "refundedRevenue" in data ||
+    "totalPurchases" in data
+  ) {
+    return {
+      items: [
+        {
+          currency: data.currency ?? null,
+          totalRevenue: Number(data.totalRevenue ?? 0),
+          refundedRevenue: Number(data.refundedRevenue ?? 0),
+          totalPurchases: Number(data.totalPurchases ?? 0),
+        },
+      ],
+    };
+  }
+  return { items: [] };
 };
 
 const startOfCurrentMonth = () => {
@@ -98,9 +116,7 @@ const defaultEnvironment =
     : PaymentEnvironment.SANDBOX;
 
 const RevenueDashboard: React.FC = () => {
-  const [currency, setCurrency] = useState<PaymentCurrency>(
-    PaymentCurrency.VND
-  );
+  const [currency, setCurrency] = useState<PaymentCurrency | "">("");
   const [environment, setEnvironment] =
     useState<PaymentEnvironment>(defaultEnvironment);
   const [from, setFrom] = useState<string>(startOfCurrentMonth().toISOString());
@@ -157,10 +173,10 @@ const RevenueDashboard: React.FC = () => {
     try {
       const query = new GetRevenueListQuery({
         environment,
-        currency,
         page,
         take,
       });
+      if (currency) query.currency = currency;
       if (from) query.from = from;
       if (to) query.to = to;
       if (eventType) query.eventType = eventType as PurchaseEventType;
@@ -290,11 +306,74 @@ const RevenueDashboard: React.FC = () => {
     }
   };
 
-  const refundRate = useMemo(() => {
-    if (!stats) return 0;
-    if (!stats.totalRevenue) return 0;
-    return (stats.refundedRevenue / stats.totalRevenue) * 100;
-  }, [stats]);
+  const statItems = useMemo<RevenueStatisticsItem[]>(
+    () => stats?.items ?? [],
+    [stats]
+  );
+
+  const totalPurchases = useMemo(
+    () => statItems.reduce((sum, item) => sum + item.totalPurchases, 0),
+    [statItems]
+  );
+
+  const renderMoneyList = (field: "totalRevenue" | "refundedRevenue") => {
+    if (statItems.length === 0) {
+      return (
+        <p className="text-lg font-semibold text-slate-900">
+          {priceLabel(0, currency || undefined)}
+        </p>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        {statItems.map((item) => (
+          <p
+            key={`${field}-${item.currency || "unknown"}`}
+            className="text-lg font-semibold text-slate-900"
+          >
+            {priceLabel(item[field], item.currency || undefined)}
+          </p>
+        ))}
+      </div>
+    );
+  };
+
+  const renderRefundMoneyList = () => {
+    if (statItems.length === 0) {
+      return (
+        <div className="flex items-baseline gap-2">
+          <p className="text-lg font-semibold text-slate-900">
+            {priceLabel(0, currency || undefined)}
+          </p>
+          <p className="text-[11px] text-amber-600">Tỷ lệ: 0.0%</p>
+        </div>
+      );
+    }
+
+    return (
+      <div className="space-y-1">
+        {statItems.map((item) => {
+          const rate = item.totalRevenue
+            ? (item.refundedRevenue / item.totalRevenue) * 100
+            : 0;
+          return (
+            <div
+              key={`refund-rate-${item.currency || "unknown"}`}
+              className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5"
+            >
+              <p className="text-lg font-semibold text-slate-900">
+                {priceLabel(item.refundedRevenue, item.currency || undefined)}
+              </p>
+              <p className="text-[11px] text-amber-600">
+                Tỷ lệ {item.currency || "N/A"}: {rate.toFixed(1)}%
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    );
+  };
 
   return (
     <div className="space-y-5">
@@ -305,12 +384,7 @@ const RevenueDashboard: React.FC = () => {
           </div>
           <div>
             <p className="text-xs text-slate-500">Tổng doanh thu</p>
-            <p className="text-lg font-semibold text-slate-900">
-              {priceLabel(
-                stats?.totalRevenue || 0,
-                stats?.currency as PaymentCurrency
-              )}
-            </p>
+            {renderMoneyList("totalRevenue")}
           </div>
         </div>
         <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-4 flex items-center gap-3">
@@ -319,15 +393,7 @@ const RevenueDashboard: React.FC = () => {
           </div>
           <div>
             <p className="text-xs text-slate-500">Hoàn tiền</p>
-            <p className="text-lg font-semibold text-slate-900">
-              {priceLabel(
-                stats?.refundedRevenue || 0,
-                stats?.currency as PaymentCurrency
-              )}
-            </p>
-            <p className="text-[11px] text-amber-600">
-              Tỷ lệ: {refundRate.toFixed(1)}%
-            </p>
+            {renderRefundMoneyList()}
           </div>
         </div>
         <div className="rounded-2xl border border-slate-100 bg-white shadow-sm p-4 flex items-center gap-3">
@@ -337,7 +403,7 @@ const RevenueDashboard: React.FC = () => {
           <div>
             <p className="text-xs text-slate-500">Số giao dịch</p>
             <p className="text-lg font-semibold text-slate-900">
-              {stats?.totalPurchases ?? 0}
+              {totalPurchases}
             </p>
           </div>
         </div>
@@ -348,9 +414,12 @@ const RevenueDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-3">
             <select
               value={currency}
-              onChange={(e) => setCurrency(e.target.value as PaymentCurrency)}
+              onChange={(e) =>
+                setCurrency(e.target.value as PaymentCurrency | "")
+              }
               className="h-10 px-3 rounded-xl border border-slate-200 bg-white focus:ring-2 focus:ring-teal-500"
             >
+              <option value="">Tất cả tiền tệ</option>
               <option value={PaymentCurrency.USD}>USD</option>
               <option value={PaymentCurrency.VND}>VND</option>
             </select>

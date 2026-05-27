@@ -58,7 +58,7 @@ export class PurchaseListQuery extends BaseQuery {
 
 export class GetRevenueListQuery extends BaseQuery {
   environment!: PaymentEnvironment;
-  currency!: PaymentCurrency;
+  currency?: PaymentCurrency;
   from?: string;
   to?: string;
   platform?: PaymentPlatform;
@@ -73,7 +73,7 @@ export class GetRevenueListQuery extends BaseQuery {
   override toQueryParams(): string {
     const params = new URLSearchParams(super.toQueryParams());
     params.set("environment", this.environment);
-    params.set("currency", this.currency);
+    if (this.currency) params.set("currency", this.currency);
     if (this.platform) params.set("platform", this.platform);
     if (this.eventType) params.set("eventType", this.eventType);
     if (this.from) params.set("from", this.from);
@@ -84,11 +84,15 @@ export class GetRevenueListQuery extends BaseQuery {
   }
 }
 
-export interface RevenueStatisticsResponse {
-  currency: string;
+export interface RevenueStatisticsItem {
+  currency: PaymentCurrency | null;
   totalRevenue: number;
   refundedRevenue: number;
   totalPurchases: number;
+}
+
+export interface RevenueStatisticsResponse {
+  items: RevenueStatisticsItem[];
 }
 
 export interface PurchaseHistory {

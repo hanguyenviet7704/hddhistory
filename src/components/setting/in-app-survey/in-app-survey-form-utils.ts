@@ -103,5 +103,6 @@ export const buildSurveyPayload = (
       guide: cleanTranslation(branch.openQuestion.guide),
     },
     index,
+    score: branch.score ?? index + 1,
   })),
 });
