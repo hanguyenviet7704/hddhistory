@@ -1,13 +1,23 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:lottie/lottie.dart';
 import 'package:meup/meup.dart';
 
 import '../../../support/test_di.dart';
+import 'daily_warm_up_test_fakes.dart';
 
 void main() {
   setUpAll(() async {
     await setupLocaleCubitForTests();
     LocaleSettings.setLocaleSync(AppLocale.en);
+  });
+
+  setUp(() {
+    if (!AppDI.injector.isRegistered<ITrackingService>()) {
+      AppDI.injector.registerSingleton<ITrackingService>(
+        AppTrackingService(NoOpTrackingService()),
+      );
+    }
   });
 
   tearDownAll(() async {
@@ -57,6 +67,41 @@ void main() {
 
       expect(find.text('Daily challenge'), findsOneWidget);
       expect(find.text('Start warm-up'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('DailyWarmUpPage marks shown date when route opens with initial entry state', (tester) async {
+      await tester.binding.setSurfaceSize(const Size(375, 812));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      final localDataSource = FakeDailyWarmUpLocalDataSource()..seenPostOnboardingLaunchUserIds.add('user-1');
+      final cubit = DailyWarmUpCubit(
+        GetDailyWarmUpUseCase(FakeDailyWarmUpRepository(TaskEither.right(dailyWarmUpTestEntity()))),
+        localDataSource,
+        GetCourseUseCase(FakeCourseRepository()),
+      );
+      addTearDown(cubit.close);
+
+      final canOpen = await cubit.loadForHomeEntry(
+        userId: 'user-1',
+        localDate: '2026-05-22',
+        hasCompletedOnboarding: true,
+      );
+
+      await tester.pumpWidget(
+        _harness(
+          BlocProvider.value(
+            value: cubit,
+            child: const DailyWarmUpPage(),
+          ),
+        ),
+      );
+      await tester.pump();
+
+      expect(canOpen, isTrue);
+      expect(find.text('Daily challenge'), findsOneWidget);
+      expect(localDataSource.shownDates['user-1'], '2026-05-22');
+      expect(cubit.state.hasMarkedShown, isTrue);
       expect(tester.takeException(), isNull);
     });
 

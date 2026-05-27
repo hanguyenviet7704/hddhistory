@@ -1,7 +1,14 @@
 part of '../../daily_warm_up.dart';
 
-class DailyWarmUpPage extends StatelessWidget {
+class DailyWarmUpPage extends StatefulWidget {
   const DailyWarmUpPage({super.key});
+
+  @override
+  State<DailyWarmUpPage> createState() => _DailyWarmUpPageState();
+}
+
+class _DailyWarmUpPageState extends State<DailyWarmUpPage> {
+  bool _entryMarkScheduled = false;
 
   @override
   Widget build(BuildContext context) {
@@ -15,6 +22,7 @@ class DailyWarmUpPage extends StatelessWidget {
       listener: _handleStateChanged,
       builder: (context, state) {
         final cubit = context.read<DailyWarmUpCubit>();
+        _scheduleEntryPresentedMark(cubit, state);
         return switch (state.status) {
           DailyWarmUpStatus.entry => DailyWarmUpEntryStep(
             onStart: cubit.startWarmUp,
@@ -64,11 +72,7 @@ class DailyWarmUpPage extends StatelessWidget {
   void _handleStateChanged(BuildContext context, DailyWarmUpState state) {
     final cubit = context.read<DailyWarmUpCubit>();
 
-    if (state.status == DailyWarmUpStatus.entry && !state.hasMarkedShown) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (context.mounted) cubit.markEntryPresented();
-      });
-    }
+    _scheduleEntryPresentedMark(cubit, state);
 
     if (state.status == DailyWarmUpStatus.result && state.latestResult != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -87,6 +91,16 @@ class DailyWarmUpPage extends StatelessWidget {
         if (context.mounted) cubit.loadSuggestedCourse();
       });
     }
+  }
+
+  void _scheduleEntryPresentedMark(DailyWarmUpCubit cubit, DailyWarmUpState state) {
+    if (state.status != DailyWarmUpStatus.entry || state.hasMarkedShown || _entryMarkScheduled) return;
+    _entryMarkScheduled = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (!mounted) return;
+      await cubit.markEntryPresented();
+      if (mounted) _entryMarkScheduled = false;
+    });
   }
 
   Future<void> _showResultSheet(
