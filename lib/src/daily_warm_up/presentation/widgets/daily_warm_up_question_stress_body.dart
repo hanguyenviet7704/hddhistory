@@ -14,23 +14,53 @@ class DailyWarmUpStressBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Wrap(
-        spacing: 6.w,
-        runSpacing: 10.h,
-        alignment: WrapAlignment.center,
-        children: List.generate(words.length, (index) {
-          return MarkStressWordCard(
-            option: OptionEntity(
-              id: index + 1,
-              text: BaseMultiLanguage(en: words[index], vi: words[index], zh: words[index]),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          context.l10n.exercise.exerciseStressMarkInstruction,
+          margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+          maxLines: 10,
+          style: AppStyle.text12.copyWith(
+            color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+            fontWeight: FontWeight.w500,
+            height: 1.5,
+          ),
+        ),
+        12.verticalSpace,
+        Container(
+          key: const ValueKey('daily-warm-up-stress-sentence-container'),
+          padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+          margin: EdgeInsets.symmetric(horizontal: 20.w),
+          alignment: Alignment.center,
+          decoration: ShapeDecoration(
+            color: Colors.white,
+            shape: RoundedRectangleBorder(
+              side: const BorderSide(
+                width: 2,
+                strokeAlign: BorderSide.strokeAlignOutside,
+                color: Color(0xFFE3E8EF),
+              ),
+              borderRadius: BorderRadius.circular(10),
             ),
-            state: _wordState(index),
-            onTap: () => onToggleWordIndex(index),
-          );
-        }),
-      ),
+          ),
+          child: Wrap(
+            spacing: 2.w,
+            runSpacing: 6.h,
+            children: List.generate(words.length, (index) {
+              return MarkStressWordCard(
+                option: OptionEntity(
+                  id: index,
+                  text: BaseMultiLanguage(en: words[index], vi: words[index], zh: words[index]),
+                  value: BaseMultiLanguage(en: words[index], vi: words[index], zh: words[index]),
+                ),
+                state: _wordState(index),
+                onTap: () => onToggleWordIndex(index),
+              );
+            }),
+          ),
+        ),
+      ],
     );
   }
 

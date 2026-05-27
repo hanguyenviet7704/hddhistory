@@ -21,41 +21,40 @@ class DailyWarmUpDragDropBody extends StatelessWidget {
     final options = _dailyWarmUpOptions(question);
     final allWords = options.map((option) => option.labelText).toList(growable: false);
     final availableWords = options.where((option) => !state.placedOptionIds.containsValue(option.id)).map((option) => option.labelText).toList(growable: false);
+    final targetArea = switch (question.typedPayload) {
+      QuestionDragAndDropPayloadEntity(:final targetArea) => targetArea.text,
+      _ => '',
+    };
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: Column(
-        children: [
-          Wrap(
-            spacing: 8.w,
-            runSpacing: 12.h,
-            alignment: WrapAlignment.center,
-            children: List.generate(slotCount, (index) {
-              final option = _dailyWarmUpOptionById(options, state.placedOptionIds[index] ?? 0);
-              return BlankSlot(
-                index: index,
-                placedWord: option?.labelText,
-                slotState: _slotState(index),
-                onWordPlaced: (word, fromIndex) {
-                  final movedOptionId = fromIndex == null ? null : state.placedOptionIds[fromIndex];
-                  final optionToPlace = movedOptionId == null
-                      ? _dailyWarmUpFirstAvailableByLabel(options, state.placedOptionIds, word)
-                      : _dailyWarmUpOptionById(options, movedOptionId);
-                  if (optionToPlace != null) onPlaceOption(index, optionToPlace.id);
-                },
-                onWordRemoved: (_, fromIndex) => onRemovePlacedOption(fromIndex),
-                onDragCancelled: (_, _) {},
-              );
-            }),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        DailyWarmUpSentenceBuilder(
+          placedOptionIds: state.placedOptionIds,
+          options: options,
+          targetArea: targetArea,
+          answerCount: slotCount,
+          onOptionPlaced: onPlaceOption,
+          onOptionRemoved: onRemovePlacedOption,
+          getSlotState: _slotState,
+        ),
+        24.verticalSpace,
+        AppText(
+          context.l10n.exercise.exerciseGapFillingInstruction,
+          margin: EdgeInsets.symmetric(horizontal: 20.w),
+          style: AppStyle.text12.copyWith(
+            color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+            fontWeight: FontWeight.w500,
+            height: 1.5,
           ),
-          32.verticalSpace,
-          AnswerCardsArea(
-            availableWords: availableWords,
-            allWords: allWords,
-            onWordReturnedFromSlot: (_, fromIndex) => onRemovePlacedOption(fromIndex),
-          ),
-        ],
-      ),
+        ),
+        12.verticalSpace,
+        AnswerCardsArea(
+          availableWords: availableWords,
+          allWords: allWords,
+          onWordReturnedFromSlot: (_, fromIndex) => onRemovePlacedOption(fromIndex),
+        ),
+      ],
     );
   }
 

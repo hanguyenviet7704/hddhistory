@@ -56,17 +56,21 @@ void main() {
       expect(find.byType(DailyWarmUpMultipleChoiceAnswerCard), findsWidgets);
 
       await tester.pumpWidget(_harness(_questionStep(_stateFor(_dragQuestion()))));
+      expect(find.byType(DailyWarmUpSentenceBuilder), findsOneWidget);
       expect(find.byType(BlankSlot), findsWidgets);
       expect(find.byType(AnswerCardsArea), findsOneWidget);
 
       await tester.pumpWidget(_harness(_questionStep(_stateFor(_arrangeQuestion()))));
+      expect(find.byKey(const ValueKey('daily-warm-up-arrange-list')), findsOneWidget);
       expect(find.byType(ArrangeSequenceAnswerCard), findsWidgets);
 
       await tester.pumpWidget(_harness(_questionStep(_stateFor(_cuesQuestion()))));
+      expect(find.byKey(const ValueKey('daily-warm-up-cues-sentence-container')), findsOneWidget);
       expect(find.byType(CuesPlacementWordWithDropZone), findsWidgets);
       expect(find.byType(CuesPlacementAvailableMarks), findsOneWidget);
 
       await tester.pumpWidget(_harness(_questionStep(_stateFor(_stressQuestion()))));
+      expect(find.byKey(const ValueKey('daily-warm-up-stress-sentence-container')), findsOneWidget);
       expect(find.byType(MarkStressWordCard), findsWidgets);
       expect(tester.takeException(), isNull);
     });
@@ -246,7 +250,7 @@ QuestionEntity _dragQuestion() {
     type: QuestionTypeEnum.dragAndDrop,
     document: [_document('Fill blanks')],
     typedPayload: QuestionPayloadEntity.dragAndDrop(
-      targetArea: _text('First second'),
+      targetArea: _text('First ___ second ___'),
       answers: [
         _dragAnswer(id: 1, text: 'First'),
         _dragAnswer(id: 2, text: 'second'),

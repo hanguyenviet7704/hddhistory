@@ -1,5 +1,14 @@
 # Project Changelog
 
+## 2026-05-27
+
+### Fixed
+- Copied and adapted lesson-style body layouts inside daily warm-up for drag/drop, arrange, cues, and stress questions, keeping lesson module untouched.
+- Kept daily warm-up's local question state/evaluation while matching lesson instruction text, sentence containers, reorder proxy, and drag/drop sentence builder behavior.
+
+### Verification
+- Passed `flutter test test/unit/daily_warm_up/presentation/daily_warm_up_p2_widgets_test.dart`, `flutter test test/unit/daily_warm_up test/unit/common/presentation/cubits/page_cubit_test.dart`, `flutter analyze`, and `git diff --check`.
+
 ## 2026-05-26
 
 ### Fixed

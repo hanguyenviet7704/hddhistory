@@ -17,34 +17,60 @@ class DailyWarmUpArrangeBody extends StatelessWidget {
     final options = _dailyWarmUpOptions(question);
     final orderedOptions = _orderedOptions(options);
 
-    return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 20.w),
-      child: ReorderableListView.builder(
-        shrinkWrap: true,
-        physics: const NeverScrollableScrollPhysics(),
-        buildDefaultDragHandles: false,
-        proxyDecorator: (child, index, animation) => child,
-        itemCount: orderedOptions.length,
-        onReorderItem: (oldIndex, newIndex) {
-          final ids = orderedOptions.map((option) => option.id).toList();
-          final moved = ids.removeAt(oldIndex);
-          ids.insert(newIndex, moved);
-          onSetOrderedOptionIds(ids);
-        },
-        itemBuilder: (context, index) {
-          final option = orderedOptions[index];
-          return Padding(
-            key: ValueKey('daily-warm-up-arrange-${option.id}'),
-            padding: EdgeInsets.only(bottom: 10.h),
-            child: ArrangeSequenceAnswerCard(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        AppText(
+          context.l10n.exercise.exerciseSequenceInstruction,
+          margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
+          maxLines: 10,
+          style: AppStyle.text12.copyWith(
+            color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+            fontWeight: FontWeight.w500,
+            height: 1.5,
+          ),
+        ),
+        ReorderableListView.builder(
+          key: const ValueKey('daily-warm-up-arrange-list'),
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          buildDefaultDragHandles: false,
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          proxyDecorator: (child, index, animation) {
+            if (index < 0 || index >= orderedOptions.length) return child;
+            final option = orderedOptions[index];
+            return ArrangeSequenceAnswerCard(
+              key: Key('daily-warm-up-drag-${option.id}'),
               text: option.labelText,
               index: index,
               state: _answerState(orderedOptions, index),
-              dragEnabled: state.latestResult == null,
-            ),
-          );
-        },
-      ),
+              dragEnabled: false,
+              isDragging: true,
+            );
+          },
+          itemCount: orderedOptions.length,
+          onReorderItem: (oldIndex, newIndex) {
+            if (state.latestResult != null) return;
+            final ids = orderedOptions.map((option) => option.id).toList();
+            final moved = ids.removeAt(oldIndex);
+            ids.insert(newIndex, moved);
+            onSetOrderedOptionIds(ids);
+          },
+          itemBuilder: (context, index) {
+            final option = orderedOptions[index];
+            return Padding(
+              key: ValueKey('daily-warm-up-arrange-${option.id}'),
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: ArrangeSequenceAnswerCard(
+                text: option.labelText,
+                index: index,
+                state: _answerState(orderedOptions, index),
+                dragEnabled: state.latestResult == null,
+              ),
+            );
+          },
+        ),
+      ],
     );
   }
 
