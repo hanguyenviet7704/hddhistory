@@ -3,7 +3,9 @@ import { ITranslation } from "../../utils/translation";
 export enum LangCode {
   EN = "en",
   VI = "vi",
-  // JA = "ja",
+  ZH = "zh",
+  JA = "ja",
+  KO = "ko",
 }
 
 export enum OrderType {

@@ -8,8 +8,8 @@ export interface EstimateCompleteTimeInput {
   unit: EstimateCompleteTimeUnit;
 }
 
-const HOUR_PATTERN = /(giờ|hour|hours|hr|hrs)/i;
-const MINUTE_PATTERN = /(phút|minute|minutes|min|mins)/i;
+const HOUR_PATTERN = /(giờ|hour|hours|hr|hrs|小时|小時|時間|시간)/i;
+const MINUTE_PATTERN = /(phút|minute|minutes|min|mins|分钟|分鐘|分|분)/i;
 
 const isPositiveNumber = (value: unknown): value is number =>
   typeof value === "number" && Number.isFinite(value) && value > 0;
@@ -41,6 +41,18 @@ export const getEstimateCompleteTimeUnitLabel = (
 ): string => {
   if (lang === LangCode.VI) {
     return unit === "hour" ? "giờ" : "phút";
+  }
+
+  if (lang === LangCode.ZH) {
+    return unit === "hour" ? "小时" : "分钟";
+  }
+
+  if (lang === LangCode.JA) {
+    return unit === "hour" ? "時間" : "分";
+  }
+
+  if (lang === LangCode.KO) {
+    return unit === "hour" ? "시간" : "분";
   }
 
   if (unit === "hour") {

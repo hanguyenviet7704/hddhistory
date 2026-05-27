@@ -14,7 +14,7 @@ import {
   DatePreset,
   SurveyTab,
   buildDateRangeParams,
-  downloadSurveyCsv,
+  downloadSurveyXlsx,
 } from "./in-app-survey-analytics-utils";
 
 interface Props {
@@ -34,6 +34,7 @@ const InAppSurveyFeedbackList = ({ lang }: Props) => {
   );
   const [loading, setLoading] = useState(false);
   const [exporting, setExporting] = useState(false);
+  const [confirmDownloadOpen, setConfirmDownloadOpen] = useState(false);
   const [selectedBranch, setSelectedBranch] =
     useState<InAppSurveyBranchSummary | null>(null);
 
@@ -61,12 +62,13 @@ const InAppSurveyFeedbackList = ({ lang }: Props) => {
 
   const handleExport = async () => {
     try {
+      setConfirmDownloadOpen(false);
       setExporting(true);
-      const rows = await inAppSurveyService.exportResponses({
+      const file = await inAppSurveyService.exportResponses({
         ...rangeParams,
         lang,
       });
-      downloadSurveyCsv(rows);
+      downloadSurveyXlsx(file);
       showSuccess("Export survey thành công");
     } catch (error) {
       console.error("Failed to export survey", error);
@@ -92,8 +94,37 @@ const InAppSurveyFeedbackList = ({ lang }: Props) => {
           }}
           onCustomStartChange={setCustomStart}
           onCustomEndChange={setCustomEnd}
-          onExport={handleExport}
+          onExport={() => setConfirmDownloadOpen(true)}
         />
+      ) : null}
+
+      {confirmDownloadOpen ? (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/60">
+          <div className="w-[90%] max-w-md rounded-xl bg-white p-6 shadow-xl">
+            <h2 className="mb-3 text-xl font-semibold text-gray-800">
+              Confirm download
+            </h2>
+            <p className="mb-6 text-gray-600">
+              Are you sure you want to download the in-app survey export file?
+            </p>
+            <div className="flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setConfirmDownloadOpen(false)}
+                className="rounded-lg bg-gray-200 px-4 py-2 text-gray-700 transition hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleExport}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-white transition hover:bg-blue-700"
+              >
+                Download
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {selectedBranch ? (

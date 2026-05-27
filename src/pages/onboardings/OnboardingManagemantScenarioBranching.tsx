@@ -604,11 +604,11 @@ const getDisplayTranslationValue = (
   const currentValue = translation[currentLang];
   if (currentValue?.trim()) return currentValue;
 
-  const viValue = translation[LangCode.VI];
-  if (viValue?.trim()) return viValue;
-
   const enValue = translation[LangCode.EN];
   if (enValue?.trim()) return enValue;
+
+  const viValue = translation[LangCode.VI];
+  if (viValue?.trim()) return viValue;
 
   return Object.values(translation).find((value) => value?.trim()) || "";
 };
@@ -701,7 +701,7 @@ const TranslationInputs = ({
           ) || {},
         )
       }
-      placeholder={lang === LangCode.VI ? "Nhập tiếng Việt" : "Enter English"}
+      placeholder={`Enter ${lang} content`}
       rows={2}
     />
   </label>

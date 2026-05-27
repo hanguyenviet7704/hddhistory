@@ -1,7 +1,6 @@
 import {
   InAppSurveyConfigPayload,
   InAppSurveyDateRangeParams,
-  InAppSurveyExportRow,
   InAppSurveyStatisticsOverview,
   InAppSurveyBranchResponsesResult,
   InAppSurveyResponseListParams,
@@ -85,10 +84,11 @@ export const inAppSurveyService = {
 
   async exportResponses(
     params: InAppSurveyDateRangeParams & { branchId?: string; lang?: string },
-  ): Promise<InAppSurveyExportRow[]> {
+  ): Promise<Blob> {
     const res = await axiosClient.get(`${basePath}/statistics/export`, {
       params,
+      responseType: "blob",
     });
-    return unwrapData<InAppSurveyExportRow[]>(res.data);
+    return res.data;
   },
 };

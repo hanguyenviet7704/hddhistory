@@ -1,5 +1,4 @@
 import { LangCode } from "../../../types/enum/common.enum";
-import { InAppSurveyExportRow } from "../../../types/interface/in-app-survey.interface";
 import { getTranslationValue } from "../../../utils/translation";
 
 export type SurveyTab = "byResponse" | "byUser";
@@ -90,36 +89,14 @@ export const getPlainTranslationValue = (value: any, lang: LangCode) =>
 export const getQuestionText = (value: any, lang: LangCode) =>
   getPlainTranslationValue(value?.question, lang) || "-";
 
-export const downloadSurveyCsv = (
-  rows: InAppSurveyExportRow[],
-  fileName = "in-app-survey-responses.csv",
+export const downloadSurveyXlsx = (
+  blob: Blob,
+  fileName = "in-app-survey-responses.xlsx",
 ) => {
-  const headers = [
-    "user_id",
-    "user_name",
-    "user_email",
-    "emoji_level",
-    "emoji_name",
-    "selected_options",
-    "feedback",
-    "submitted_at",
-  ];
-  const csv = [
-    headers.join(","),
-    ...rows.map((row) =>
-      headers.map((header) => escapeCsv((row as any)[header])).join(","),
-    ),
-  ].join("\n");
-  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
   link.download = fileName;
   link.click();
   URL.revokeObjectURL(url);
-};
-
-const escapeCsv = (value: unknown) => {
-  const text = String(value ?? "");
-  return `"${text.replace(/"/g, '""')}"`;
 };

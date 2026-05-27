@@ -288,7 +288,7 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
 
       const localizedTitleValue =
         currentOutput.title?.[lang] ||
-        (lang !== "en" ? currentOutput.title?.en || "" : "");
+        (lang !== LangCode.EN ? currentOutput.title?.[LangCode.EN] || "" : "");
 
       const title = cleanTranslation(
         updateTranslationValue(
@@ -480,7 +480,9 @@ export default function OutputForm({ output, onSave }: OutputFormProps) {
                 <input
                   value={
                     currentOutput.title?.[lang] ||
-                    (lang !== "en" ? currentOutput.title?.en || "" : "")
+                    (lang !== LangCode.EN
+                      ? currentOutput.title?.[LangCode.EN] || ""
+                      : "")
                   }
                   onChange={(e) =>
                     setCurrentOutput((prev) => ({
