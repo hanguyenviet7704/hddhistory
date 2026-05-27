@@ -3,12 +3,13 @@
 ## 2026-05-27
 
 ### Fixed
+- Fixed daily warm-up first-day eligibility so onboarding completion/bypass date is persisted per user and warm-up can only open from the next local day.
 - Fixed daily warm-up shown-date marking so the once-per-day gate is written when the entry route opens with an initial `entry` state.
 - Copied and adapted lesson-style body layouts inside daily warm-up for drag/drop, arrange, cues, and stress questions, keeping lesson module untouched.
 - Kept daily warm-up's local question state/evaluation while matching lesson instruction text, sentence containers, reorder proxy, and drag/drop sentence builder behavior.
 
 ### Verification
-- Passed `flutter test test/unit/daily_warm_up/presentation/daily_warm_up_p1_p3_widgets_test.dart`, `flutter test test/unit/daily_warm_up/presentation/daily_warm_up_p2_widgets_test.dart`, `flutter test test/unit/daily_warm_up test/unit/common/presentation/cubits/page_cubit_test.dart`, `flutter analyze`, and `git diff --check`.
+- Passed `flutter test test/unit/daily_warm_up`, focused auth/onboarding regression tests, `flutter analyze`, and `git diff --check`.
 
 ## 2026-05-26
 

@@ -59,13 +59,14 @@ void main() {
       expect(await dataSource.getShownDate('user-b'), '2026-05-23');
     });
 
-    test('Given two users, When post-onboarding launch is marked, Then gate is scoped by user', () async {
+    test('Given two users, When onboarding completed date is marked, Then date is scoped by user and not overwritten', () async {
       final dataSource = DailyWarmUpLocalDataSourceImpl(_MemoryLocalStoreService());
 
-      await dataSource.markPostOnboardingLaunchSeen('user-a');
+      await dataSource.markOnboardingCompletedDateIfAbsent('user-a', '2026-05-22');
+      await dataSource.markOnboardingCompletedDateIfAbsent('user-a', '2026-05-23');
 
-      expect(await dataSource.hasSeenPostOnboardingLaunch('user-a'), isTrue);
-      expect(await dataSource.hasSeenPostOnboardingLaunch('user-b'), isFalse);
+      expect(await dataSource.getOnboardingCompletedDate('user-a'), '2026-05-22');
+      expect(await dataSource.getOnboardingCompletedDate('user-b'), isEmpty);
     });
   });
 }

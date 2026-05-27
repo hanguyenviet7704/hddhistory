@@ -5,8 +5,8 @@ abstract class DailyWarmUpLocalDataSource {
   Future<void> cacheDailyWarmUp(DailyWarmUpModel model);
   Future<String> getShownDate(String userId);
   Future<void> markShownDate(String userId, String date);
-  Future<bool> hasSeenPostOnboardingLaunch(String userId);
-  Future<void> markPostOnboardingLaunchSeen(String userId);
+  Future<String> getOnboardingCompletedDate(String userId);
+  Future<void> markOnboardingCompletedDateIfAbsent(String userId, String date);
   Future<void> clearCache();
 }
 
@@ -14,7 +14,7 @@ abstract class DailyWarmUpLocalDataSource {
 class DailyWarmUpLocalDataSourceImpl implements DailyWarmUpLocalDataSource {
   static const String _cacheKey = 'daily_warm_up_cache';
   static const String _shownDateKeyPrefix = 'daily_warm_up_shown_date';
-  static const String _postOnboardingLaunchSeenKeyPrefix = 'daily_warm_up_post_onboarding_launch_seen';
+  static const String _onboardingCompletedDateKeyPrefix = 'daily_warm_up_onboarding_completed_date';
 
   final ILocalStoreService _localStoreService;
 
@@ -62,20 +62,25 @@ class DailyWarmUpLocalDataSourceImpl implements DailyWarmUpLocalDataSource {
   }
 
   @override
-  Future<bool> hasSeenPostOnboardingLaunch(String userId) async {
+  Future<String> getOnboardingCompletedDate(String userId) async {
     try {
-      return await _localStoreService.getBool(key: _postOnboardingLaunchSeenKey(userId));
+      return await _localStoreService.getString(key: _onboardingCompletedDateKey(userId));
     } catch (_) {
-      return false;
+      return '';
     }
   }
 
   @override
-  Future<void> markPostOnboardingLaunchSeen(String userId) async {
+  Future<void> markOnboardingCompletedDateIfAbsent(String userId, String date) async {
+    final normalizedDate = date.trim();
+    if (normalizedDate.isEmpty) return;
+
     try {
-      await _localStoreService.setBool(key: _postOnboardingLaunchSeenKey(userId), value: true);
+      final existingDate = await getOnboardingCompletedDate(userId);
+      if (existingDate.trim().isNotEmpty) return;
+      await _localStoreService.setString(key: _onboardingCompletedDateKey(userId), value: normalizedDate);
     } catch (e) {
-      LogDev.error('Error marking daily warm up post-onboarding launch seen: $e');
+      LogDev.error('Error marking daily warm up onboarding completed date: $e');
     }
   }
 
@@ -92,8 +97,8 @@ class DailyWarmUpLocalDataSourceImpl implements DailyWarmUpLocalDataSource {
     return '${_shownDateKeyPrefix}_${_normalizedUserId(userId)}';
   }
 
-  String _postOnboardingLaunchSeenKey(String userId) {
-    return '${_postOnboardingLaunchSeenKeyPrefix}_${_normalizedUserId(userId)}';
+  String _onboardingCompletedDateKey(String userId) {
+    return '${_onboardingCompletedDateKeyPrefix}_${_normalizedUserId(userId)}';
   }
 
   String _normalizedUserId(String userId) {

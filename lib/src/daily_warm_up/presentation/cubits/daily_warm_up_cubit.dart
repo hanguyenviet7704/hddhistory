@@ -5,8 +5,6 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
   final GetDailyWarmUpUseCase _getUseCase;
   final DailyWarmUpLocalDataSource _localDataSource;
   final GetCourseUseCase _getCourseUseCase;
-  final Set<String> _currentLaunchSkippedUserIds = {};
-  final Set<String> _currentLaunchAllowedUserIds = {};
 
   DailyWarmUpCubit(this._getUseCase, this._localDataSource, this._getCourseUseCase) : super(DailyWarmUpState.initial());
 
@@ -51,8 +49,8 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
     }
 
     await trackDailyWarmUpEntryCheck(source: 'home_open', shownDate: normalizedDate);
-    if (await _shouldSkipForFirstEligibleLaunch(normalizedUserId)) {
-      await trackDailyWarmUpSkip(source: 'home_open', skipReason: 'first_post_onboarding_launch');
+    if (await _shouldSkipForOnboardingCompletionDate(normalizedUserId, normalizedDate)) {
+      await trackDailyWarmUpSkip(source: 'home_open', skipReason: 'first_post_onboarding_day');
       return false;
     }
 
@@ -319,18 +317,12 @@ class DailyWarmUpCubit extends Cubit<DailyWarmUpState> with CubitUseCaseHandlerM
     );
   }
 
-  Future<bool> _shouldSkipForFirstEligibleLaunch(String userId) async {
-    if (_currentLaunchSkippedUserIds.contains(userId)) return true;
-    if (_currentLaunchAllowedUserIds.contains(userId)) return false;
-
-    final hasSeenLaunch = await _localDataSource.hasSeenPostOnboardingLaunch(userId);
-    if (hasSeenLaunch) {
-      _currentLaunchAllowedUserIds.add(userId);
-      return false;
+  Future<bool> _shouldSkipForOnboardingCompletionDate(String userId, String localDate) async {
+    final completedDate = await _localDataSource.getOnboardingCompletedDate(userId);
+    if (completedDate.trim().isEmpty) {
+      await _localDataSource.markOnboardingCompletedDateIfAbsent(userId, localDate);
+      return true;
     }
-
-    await _localDataSource.markPostOnboardingLaunchSeen(userId);
-    _currentLaunchSkippedUserIds.add(userId);
-    return true;
+    return completedDate.trim() == localDate;
   }
 }

@@ -12,7 +12,7 @@ class FakeDailyWarmUpRepository implements IDailyWarmUpRepository {
 
 class FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   final Map<String, String> shownDates = {};
-  final Set<String> seenPostOnboardingLaunchUserIds = {};
+  final Map<String, String> onboardingCompletedDates = {};
 
   @override
   Future<void> cacheDailyWarmUp(DailyWarmUpModel model) async {}
@@ -27,11 +27,11 @@ class FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   Future<String> getShownDate(String userId) async => shownDates[userId] ?? '';
 
   @override
-  Future<bool> hasSeenPostOnboardingLaunch(String userId) async => seenPostOnboardingLaunchUserIds.contains(userId);
+  Future<String> getOnboardingCompletedDate(String userId) async => onboardingCompletedDates[userId] ?? '';
 
   @override
-  Future<void> markPostOnboardingLaunchSeen(String userId) async {
-    seenPostOnboardingLaunchUserIds.add(userId);
+  Future<void> markOnboardingCompletedDateIfAbsent(String userId, String date) async {
+    onboardingCompletedDates.putIfAbsent(userId, () => date);
   }
 
   @override

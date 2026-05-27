@@ -14,7 +14,14 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   @override
   Map<String, dynamic> toJson(UserState state) => state.toJson();
 
-  void setIsUserPassOnboarding(bool isUserPassOnboarding) => emit(state.copyWith(isUserPassOnboarding: isUserPassOnboarding));
+  void setIsUserPassOnboarding(bool isUserPassOnboarding) {
+    final shouldMarkDailyWarmUpOnboardingDate = state.isUserPassOnboarding && !isUserPassOnboarding;
+    emit(state.copyWith(isUserPassOnboarding: isUserPassOnboarding));
+    if (shouldMarkDailyWarmUpOnboardingDate) {
+      unawaited(_markDailyWarmUpOnboardingCompletedDate());
+    }
+  }
+
   void setIsAppEventConfigured(bool isAppEventConfigured) => emit(state.copyWith(isAppEventConfigured: isAppEventConfigured));
   void setIsFirstTimeUserAccessLessonList(bool isFirstTimeUserAccessLessonList) => emit(state.copyWith(isFirstTimeUserAccessLessonList: isFirstTimeUserAccessLessonList));
   void setIsFirstTimeUserChooseCourse(bool isFirstTimeUserChooseCourse) => emit(state.copyWith(isFirstTimeUserChooseCourse: isFirstTimeUserChooseCourse));
@@ -35,12 +42,16 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   }
 
   void startFirstTimeRegisterFlow() {
+    final shouldMarkDailyWarmUpOnboardingDate = state.isUserPassOnboarding;
     emit(
       state.copyWith(
         isUserPassOnboarding: false,
         hasPendingFirstTimePaywallAfterAuth: true,
       ),
     );
+    if (shouldMarkDailyWarmUpOnboardingDate) {
+      unawaited(_markDailyWarmUpOnboardingCompletedDate());
+    }
   }
 
   void consumeFirstTimePaywallAfterAuthIntent() {
@@ -61,6 +72,9 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
     final isUserChanged = previousUserId != nextUserId;
 
     emit(state.copyWith(auth: auth));
+    if (!state.isUserPassOnboarding && nextUserId.isNotEmpty) {
+      unawaited(_markDailyWarmUpOnboardingCompletedDate());
+    }
 
     if (isUserChanged && previousUserId.isNotEmpty) {
       unawaited(_clearLearningStreakCacheForUser(previousUserId));
@@ -123,5 +137,22 @@ class UserCubit extends HydratedCubit<UserState> with CubitUseCaseHandlerMixin<U
   Future<void> _clearLearningStreakCacheForUser(String userId) async {
     if (!AppDI.injector.isRegistered<LearningStreakLocalDataSource>()) return;
     await AppDI.injector.get<LearningStreakLocalDataSource>().clearCache(userId: userId);
+  }
+
+  Future<void> _markDailyWarmUpOnboardingCompletedDate() async {
+    final userId = state.user.id.trim();
+    if (userId.isEmpty || !AppDI.injector.isRegistered<DailyWarmUpLocalDataSource>()) return;
+
+    try {
+      await AppDI.injector.get<DailyWarmUpLocalDataSource>().markOnboardingCompletedDateIfAbsent(userId, _localDateKey(DateTime.now()));
+    } catch (error) {
+      LogDev.warning('[UserCubit] daily warm-up onboarding completion mark failed: $error');
+    }
+  }
+
+  String _localDateKey(DateTime date) {
+    final month = date.month.toString().padLeft(2, '0');
+    final day = date.day.toString().padLeft(2, '0');
+    return '${date.year}-$month-$day';
   }
 }

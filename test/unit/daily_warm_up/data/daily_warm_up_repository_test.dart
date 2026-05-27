@@ -13,7 +13,7 @@ class _FakeDailyWarmUpApi implements DailyWarmUpApi {
 class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   DailyWarmUpModel? cachedModel;
   final Map<String, String> shownDates = {};
-  final Set<String> seenPostOnboardingLaunchUserIds = {};
+  final Map<String, String> onboardingCompletedDates = {};
 
   @override
   Future<void> cacheDailyWarmUp(DailyWarmUpModel model) async {
@@ -32,7 +32,7 @@ class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   Future<String> getShownDate(String userId) async => shownDates[userId] ?? '';
 
   @override
-  Future<bool> hasSeenPostOnboardingLaunch(String userId) async => seenPostOnboardingLaunchUserIds.contains(userId);
+  Future<String> getOnboardingCompletedDate(String userId) async => onboardingCompletedDates[userId] ?? '';
 
   @override
   Future<void> markShownDate(String userId, String date) async {
@@ -40,8 +40,8 @@ class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
   }
 
   @override
-  Future<void> markPostOnboardingLaunchSeen(String userId) async {
-    seenPostOnboardingLaunchUserIds.add(userId);
+  Future<void> markOnboardingCompletedDateIfAbsent(String userId, String date) async {
+    onboardingCompletedDates.putIfAbsent(userId, () => date);
   }
 }
 

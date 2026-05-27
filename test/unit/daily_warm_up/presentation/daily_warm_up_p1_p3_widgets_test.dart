@@ -74,7 +74,7 @@ void main() {
       await tester.binding.setSurfaceSize(const Size(375, 812));
       addTearDown(() => tester.binding.setSurfaceSize(null));
 
-      final localDataSource = FakeDailyWarmUpLocalDataSource()..seenPostOnboardingLaunchUserIds.add('user-1');
+      final localDataSource = FakeDailyWarmUpLocalDataSource()..onboardingCompletedDates['user-1'] = '2026-05-21';
       final cubit = DailyWarmUpCubit(
         GetDailyWarmUpUseCase(FakeDailyWarmUpRepository(TaskEither.right(dailyWarmUpTestEntity()))),
         localDataSource,

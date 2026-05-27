@@ -3,6 +3,7 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../../../../" && pwd)"
 IOS_DIR="${PROJECT_ROOT}/ios"
+IOS_WORKSPACE="${IOS_DIR}/Runner.xcworkspace"
 PREFERRED_BUNDLE_BIN="/opt/homebrew/opt/ruby/bin/bundle"
 CI_MODE=false
 DRY_RUN=false
@@ -66,6 +67,7 @@ Execution mapping (runs inside @ios/):
 Bundler pre-steps inside @ios/:
   bundle config set path vendor/bundle
   bundle check || bundle install --jobs 4 --retry 3
+Build/deploy lanes also resolve Xcode Swift packages before Fastlane.
 EOF
 }
 
@@ -175,6 +177,40 @@ prepare_bundler() {
   fi
 }
 
+needs_swift_package_resolution() {
+  local lane="${COMMAND_ARGS[0]:-}"
+  case "$lane" in
+    build_ios|build_ipa|beta|beta_ipa|deploy|deploy_alpha|deploy_beta|deploy_production)
+      return 0
+      ;;
+    *)
+      return 1
+      ;;
+  esac
+}
+
+resolve_scheme() {
+  local arg
+  for arg in "${COMMAND_ARGS[@]}"; do
+    case "$arg" in
+      flavor:*)
+        printf "%s" "${arg#flavor:}"
+        return 0
+        ;;
+    esac
+  done
+  printf "prod"
+}
+
+prepare_swift_packages() {
+  needs_swift_package_resolution || return 0
+  [[ -d "$IOS_WORKSPACE" ]] || return 0
+
+  local scheme
+  scheme="$(resolve_scheme)"
+  run_cmd xcodebuild -resolvePackageDependencies -workspace "$IOS_WORKSPACE" -scheme "$scheme"
+}
+
 main() {
   parse_global_options "$@"
   [[ "$SHOW_HELP" == "true" ]] && { print_usage; exit 0; }
@@ -188,6 +224,7 @@ main() {
 
   (
     cd "$IOS_DIR"
+    prepare_swift_packages
     prepare_bundler
     local fastlane_cmd=("$BUNDLE_BIN" "exec" "fastlane")
     [[ "$VERBOSE" == "true" ]] && fastlane_cmd+=("--verbose")
