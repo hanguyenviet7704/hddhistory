@@ -108,7 +108,7 @@ dependencies:
   # App Services 
   # App Storage Services
   hydrated_bloc: ^11.0.0
-  flutter_secure_storage: ^10.3.0
+  flutter_secure_storage: ^10.3.1
   path_provider: ^2.1.5
   
   # Supabase Services
@@ -131,7 +131,7 @@ dependencies:
   # App Purchases Services
   in_app_purchase: ^3.2.3
   in_app_purchase_storekit: ^0.4.9
-  in_app_purchase_android: ^0.4.0+3
+  in_app_purchase_android: ^0.4.0+11
   # purchases_flutter: ^8.2.2
 
   # App Ads Services
@@ -193,7 +193,7 @@ dependencies:
   socket_io_client: ^3.1.4
 
   # App Deep Links Services
-  app_links: ^7.0.0
+  app_links: ^7.1.1
 
   # App Isolate Services
   flutter_isolate: ^2.1.0
