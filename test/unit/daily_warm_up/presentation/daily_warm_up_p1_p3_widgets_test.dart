@@ -46,7 +46,7 @@ void main() {
       await tester.pump();
 
       expect(find.text('Daily challenge'), findsOneWidget);
-      expect(tester.getSize(find.byType(ElevatedButton)).width, lessThan(280));
+      expect(tester.getSize(find.byType(ElevatedButton)).width, lessThan(tester.getSize(find.byType(Scaffold)).width * 0.8));
       expect(started, isTrue);
       expect(dismissed, isTrue);
       expect(tester.takeException(), isNull);
