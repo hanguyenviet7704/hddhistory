@@ -74,10 +74,10 @@ class RoadmapDetailPopup extends StatelessWidget {
     if (lesson.id.isEmpty || keypoint.id.isEmpty) return;
     onStart?.call();
 
-    final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
-    if (trackingData != null) {
-      AppService.instance.appTrackingService.trackPopupItemClick(trackingData);
-    }
+    // final trackingData = CourseLessonTrackingData.fromLesson(context, lesson);
+    // if (trackingData != null) {
+    //   AppService.instance.appTrackingService.trackPopupItemClick(trackingData);
+    // }
 
     final keypointTracking = KeypointTrackingData.fromLesson(
       context,
