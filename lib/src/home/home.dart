@@ -32,6 +32,7 @@ part 'presentation/cubits/home_state.dart';
 //* Presentation Layer - Pages
 part 'presentation/pages/home_page.dart';
 part 'presentation/mixins/home_in_app_survey_mixin.dart';
+part 'presentation/mixins/home_daily_warm_up_mixin.dart';
 //* Presentation Layer - Custom Widgets
 part 'presentation/widgets/course_card.dart';
 part 'presentation/widgets/home_header.dart';

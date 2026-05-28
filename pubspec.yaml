@@ -17,7 +17,7 @@ publish_to: "none" # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.1.6+3 # ios
+version: 1.1.6+6 # ios
 # version: 1.1.6+26 # android
 
 environment:
@@ -62,7 +62,7 @@ dependencies:
   popover: ^0.4.0
   flutter_staggered_grid_view: ^0.7.0
   scrollable_positioned_list: ^0.3.8
-  record: ^6.2.0
+  record: ^7.0.0
   dotted_border: ^3.1.0
   timeline_tile_plus: ^0.1.0
   fl_chart: ^1.2.0
@@ -98,7 +98,7 @@ dependencies:
   # App Localizations
   flutter_localizations:
     sdk: flutter
-  slang_flutter: ^4.14.0
+  slang_flutter: ^4.15.0
 
   # App State Management
   bloc: ^9.2.1
@@ -108,7 +108,7 @@ dependencies:
   # App Services 
   # App Storage Services
   hydrated_bloc: ^11.0.0
-  flutter_secure_storage: ^10.2.0
+  flutter_secure_storage: ^10.3.1
   path_provider: ^2.1.5
   
   # Supabase Services
@@ -131,7 +131,7 @@ dependencies:
   # App Purchases Services
   in_app_purchase: ^3.2.3
   in_app_purchase_storekit: ^0.4.9
-  in_app_purchase_android: ^0.4.0+3
+  in_app_purchase_android: ^0.4.0+11
   # purchases_flutter: ^8.2.2
 
   # App Ads Services
@@ -193,7 +193,7 @@ dependencies:
   socket_io_client: ^3.1.4
 
   # App Deep Links Services
-  app_links: ^7.0.0
+  app_links: ^7.1.1
 
   # App Isolate Services
   flutter_isolate: ^2.1.0
@@ -259,8 +259,8 @@ dev_dependencies:
   freezed: ^3.2.5
   flutter_gen: ^5.14.1
   # graphql_codegen: ^3.0.1
-  slang: ^4.14.0
-  slang_build_runner: ^4.14.0
+  slang: ^4.15.0
+  slang_build_runner: ^4.15.0
   mockito: ^5.6.4
 
   # App Change Info
@@ -276,7 +276,7 @@ dev_dependencies:
   # or this command
   # dart run change_app_package_name:main com.new.package.name
   change_app_package_name: ^1.5.0
-  flutter_flavorizr: ^2.4.2
+  flutter_flavorizr: ^2.5.0
 
 
   # Active rename tool, run this command

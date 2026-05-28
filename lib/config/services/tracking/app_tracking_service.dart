@@ -195,6 +195,38 @@ final class AppTrackingService extends ITrackingService {
     };
   }
 
+  Map<String, dynamic> _dailyWarmUpEntityParams({
+    required String source,
+    required String courseId,
+    required String suggestedCourseId,
+    required String lessonId,
+    required String keypointId,
+    required String shownDate,
+  }) {
+    return {
+      'source': source,
+      'course_id': courseId,
+      'suggested_course_id': suggestedCourseId,
+      'lesson_id': lessonId,
+      'keypoint_id': keypointId,
+      'shown_date': shownDate,
+    };
+  }
+
+  Map<String, dynamic> _dailyWarmUpQuestionParams({
+    required String questionId,
+    required int questionIndex,
+    required String questionType,
+    required String questionForm,
+  }) {
+    return {
+      'question_id': questionId,
+      'question_index': questionIndex,
+      'question_type': questionType,
+      'question_form': questionForm,
+    };
+  }
+
   Map<String, dynamic> _premiumParams() {
     try {
       final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
@@ -828,6 +860,247 @@ final class AppTrackingService extends ITrackingService {
           feedbackEmpty: feedbackEmpty,
           errorType: errorType,
         ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpEntryCheck({required String source, required String shownDate}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpEntryCheck,
+        parameters: {
+          'source': source,
+          'shown_date': shownDate,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpSkip({required String source, required String skipReason}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpSkip,
+        parameters: {
+          'source': source,
+          'skip_reason': skipReason,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpP1View({
+    required String source,
+    required String courseId,
+    required String suggestedCourseId,
+    required String lessonId,
+    required String keypointId,
+    required String shownDate,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpP1View,
+        parameters: _dailyWarmUpEntityParams(
+          source: source,
+          courseId: courseId,
+          suggestedCourseId: suggestedCourseId,
+          lessonId: lessonId,
+          keypointId: keypointId,
+          shownDate: shownDate,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpStartClick({
+    required String source,
+    required String courseId,
+    required String suggestedCourseId,
+    required String lessonId,
+    required String keypointId,
+    required String shownDate,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpStartClick,
+        parameters: _dailyWarmUpEntityParams(
+          source: source,
+          courseId: courseId,
+          suggestedCourseId: suggestedCourseId,
+          lessonId: lessonId,
+          keypointId: keypointId,
+          shownDate: shownDate,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpMaybeLaterClick({
+    required String source,
+    required String courseId,
+    required String suggestedCourseId,
+    required String lessonId,
+    required String keypointId,
+    required String shownDate,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpMaybeLaterClick,
+        parameters: _dailyWarmUpEntityParams(
+          source: source,
+          courseId: courseId,
+          suggestedCourseId: suggestedCourseId,
+          lessonId: lessonId,
+          keypointId: keypointId,
+          shownDate: shownDate,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpQuestionView({
+    required String questionId,
+    required int questionIndex,
+    required String questionType,
+    required String questionForm,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpQuestionView,
+        parameters: _dailyWarmUpQuestionParams(
+          questionId: questionId,
+          questionIndex: questionIndex,
+          questionType: questionType,
+          questionForm: questionForm,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpQuestionCheckClick({
+    required String questionId,
+    required int questionIndex,
+    required String questionType,
+    required String questionForm,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpQuestionCheckClick,
+        parameters: _dailyWarmUpQuestionParams(
+          questionId: questionId,
+          questionIndex: questionIndex,
+          questionType: questionType,
+          questionForm: questionForm,
+        ),
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpQuestionResultView({
+    required String questionId,
+    required int questionIndex,
+    required String questionType,
+    required String questionForm,
+    required bool isCorrect,
+    required String resultType,
+  }) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpQuestionResultView,
+        parameters: {
+          ..._dailyWarmUpQuestionParams(
+            questionId: questionId,
+            questionIndex: questionIndex,
+            questionType: questionType,
+            questionForm: questionForm,
+          ),
+          'is_correct': isCorrect,
+          'result_type': resultType,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpQuestionContinueClick({required String questionId, required int questionIndex}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpQuestionContinueClick,
+        parameters: {
+          'question_id': questionId,
+          'question_index': questionIndex,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpExitClick({required int questionIndex, required int answeredCount}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpExitClick,
+        parameters: {
+          'question_index': questionIndex,
+          'answered_count': answeredCount,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpCompleteView({required int answeredCount, required int correctCount, required String suggestedCourseId}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpCompleteView,
+        parameters: {
+          'answered_count': answeredCount,
+          'correct_count': correctCount,
+          'suggested_course_id': suggestedCourseId,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpStartLessonClick({required String suggestedCourseId}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpStartLessonClick,
+        parameters: {
+          'suggested_course_id': suggestedCourseId,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpExploreMoreClick({required String suggestedCourseId}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpExploreMoreClick,
+        parameters: {
+          'suggested_course_id': suggestedCourseId,
+        },
+      ),
+    );
+  }
+
+  @override
+  Future<void> trackDailyWarmUpRouteFailure({required String suggestedCourseId, required String failureStage}) async {
+    await _trackSafely(
+      () => _appTrackingService.trackEvent(
+        TrackingKey.dailyWarmUpRouteFailure,
+        parameters: {
+          'suggested_course_id': suggestedCourseId,
+          'failure_stage': failureStage,
+        },
       ),
     );
   }

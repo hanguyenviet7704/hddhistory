@@ -121,6 +121,58 @@ abstract interface class ITrackingService {
     required bool feedbackEmpty,
     required String errorType,
   });
+  Future<void> trackDailyWarmUpEntryCheck({required String source, required String shownDate});
+  Future<void> trackDailyWarmUpSkip({required String source, required String skipReason});
+  Future<void> trackDailyWarmUpP1View({
+    required String source,
+    required String courseId,
+    required String suggestedCourseId,
+    required String lessonId,
+    required String keypointId,
+    required String shownDate,
+  });
+  Future<void> trackDailyWarmUpStartClick({
+    required String source,
+    required String courseId,
+    required String suggestedCourseId,
+    required String lessonId,
+    required String keypointId,
+    required String shownDate,
+  });
+  Future<void> trackDailyWarmUpMaybeLaterClick({
+    required String source,
+    required String courseId,
+    required String suggestedCourseId,
+    required String lessonId,
+    required String keypointId,
+    required String shownDate,
+  });
+  Future<void> trackDailyWarmUpQuestionView({
+    required String questionId,
+    required int questionIndex,
+    required String questionType,
+    required String questionForm,
+  });
+  Future<void> trackDailyWarmUpQuestionCheckClick({
+    required String questionId,
+    required int questionIndex,
+    required String questionType,
+    required String questionForm,
+  });
+  Future<void> trackDailyWarmUpQuestionResultView({
+    required String questionId,
+    required int questionIndex,
+    required String questionType,
+    required String questionForm,
+    required bool isCorrect,
+    required String resultType,
+  });
+  Future<void> trackDailyWarmUpQuestionContinueClick({required String questionId, required int questionIndex});
+  Future<void> trackDailyWarmUpExitClick({required int questionIndex, required int answeredCount});
+  Future<void> trackDailyWarmUpCompleteView({required int answeredCount, required int correctCount, required String suggestedCourseId});
+  Future<void> trackDailyWarmUpStartLessonClick({required String suggestedCourseId});
+  Future<void> trackDailyWarmUpExploreMoreClick({required String suggestedCourseId});
+  Future<void> trackDailyWarmUpRouteFailure({required String suggestedCourseId, required String failureStage});
 
   //* Course selection events
   Future<void> trackCourseSelectAllCourseView({required String source});

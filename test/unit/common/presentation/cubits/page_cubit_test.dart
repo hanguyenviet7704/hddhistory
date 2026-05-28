@@ -44,5 +44,19 @@ void main() {
 
       expect(cubit.state.currentIndex, 2);
     });
+
+    test('preserves home branch state by default', () {
+      expect(cubit.consumeInitialLocationForShellTab(0), isFalse);
+      expect(cubit.consumeInitialLocationForShellTab(1), isFalse);
+      expect(cubit.consumeInitialLocationForShellTab(2), isFalse);
+    });
+
+    test('consumes one home branch reset after daily warm-up handoff', () {
+      cubit.requestHomeBranchResetOnNextSelection();
+
+      expect(cubit.consumeInitialLocationForShellTab(1), isFalse);
+      expect(cubit.consumeInitialLocationForShellTab(0), isTrue);
+      expect(cubit.consumeInitialLocationForShellTab(0), isFalse);
+    });
   });
 }

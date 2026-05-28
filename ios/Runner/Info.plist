@@ -96,6 +96,8 @@
     </dict>
     <key>NSCameraUsageDescription</key>
     <string>We need camera access to let you create and share videos with other users, join video calls, and livestream content. Your camera will only be used when you choose to record videos or participate in live sessions.</string>
+    <key>NSLocationWhenInUseUsageDescription</key>
+    <string>We use your location only while you are using the app to support location-based features, such as showing content and services relevant to your region.</string>
     <key>NSMicrophoneUsageDescription</key>
     <string>We need microphone access to record audio during video creation, video calls, and livestreams. Your microphone will only be used when you actively participate in these features.</string>
     <key>NSPhotoLibraryAddUsageDescription</key>

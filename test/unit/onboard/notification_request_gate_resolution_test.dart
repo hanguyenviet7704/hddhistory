@@ -4,7 +4,37 @@ import 'package:mockito/mockito.dart';
 
 import '../../support/test_di.dart';
 
-class _MockProfileCubit extends Mock implements ProfileCubit {}
+class _MockProfileCubit extends Mock implements ProfileCubit {
+  @override
+  Future<void> loadUser({bool isInit = false}) async {}
+}
+
+class _FakeDailyWarmUpLocalDataSource implements DailyWarmUpLocalDataSource {
+  final Map<String, String> onboardingCompletedDates = {};
+
+  @override
+  Future<void> cacheDailyWarmUp(DailyWarmUpModel model) async {}
+
+  @override
+  Future<void> clearCache() async {}
+
+  @override
+  Future<DailyWarmUpModel?> getCachedDailyWarmUp() async => null;
+
+  @override
+  Future<String> getOnboardingCompletedDate(String userId) async => onboardingCompletedDates[userId] ?? '';
+
+  @override
+  Future<String> getShownDate(String userId) async => '';
+
+  @override
+  Future<void> markOnboardingCompletedDateIfAbsent(String userId, String date) async {
+    onboardingCompletedDates.putIfAbsent(userId, () => date);
+  }
+
+  @override
+  Future<void> markShownDate(String userId, String date) async {}
+}
 
 void main() {
   group('Notification gate resolution', () {
@@ -160,6 +190,19 @@ void main() {
       expect(cubit.state.hasCompletedFirstTimeNotificationGate, isTrue);
       expect(cubit.state.hasCompletedCourseEntryNotificationGate, isFalse);
       expect(cubit.state.hasPendingFirstTimePaywallAfterAuth, isFalse);
+    });
+
+    test('Given recognized-device flow receives auth later, When auth is set, Then daily warm-up onboarding date is persisted', () async {
+      final localDataSource = _FakeDailyWarmUpLocalDataSource();
+      AppDI.injector.registerSingleton<DailyWarmUpLocalDataSource>(localDataSource);
+      final cubit = UserCubit(NoOpTrackingService());
+      addTearDown(cubit.close);
+
+      cubit.startFirstTimeRegisterFlow();
+      cubit.setAuth(const AuthEntity(user: UserEntity(id: 'user-1')));
+      await pumpEventQueue();
+
+      expect(localDataSource.onboardingCompletedDates['user-1'], matches(RegExp(r'^\d{4}-\d{2}-\d{2}$')));
     });
   });
 }

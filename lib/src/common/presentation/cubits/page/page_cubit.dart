@@ -4,6 +4,7 @@ part of '../../../common.dart';
 class PageCubit extends Cubit<PageState> {
   PageCubit() : super(PageState.initial());
   List<String> navigationHistory = [];
+  bool _shouldResetHomeBranchOnNextSelection = false;
 
   void setCurrentIndex(int index) {
     final normalizedIndex = _normalizeTabIndex(index);
@@ -16,6 +17,7 @@ class PageCubit extends Cubit<PageState> {
   void clearNavigationHistory() => navigationHistory.clear();
   void replaceNavigationHistory(String newRouteName, String oldRouteName) => navigationHistory.replaceAt(newRouteName, at: navigationHistory.indexOf(oldRouteName));
   void setIsPassSplashScreen(bool isPassSplashScreen) => emit(state.copyWith(isPassSplashScreen: isPassSplashScreen));
+  void requestHomeBranchResetOnNextSelection() => _shouldResetHomeBranchOnNextSelection = true;
 
   void setCurrentRouteName(String routeName) {
     final currentIndex = _tabIndexForRouteName(routeName) ?? state.currentIndex;
@@ -49,8 +51,16 @@ class PageCubit extends Cubit<PageState> {
   }
 
   void _routeNavigationShell(int index, StatefulNavigationShell navigationShell) {
+    final initialLocation = consumeInitialLocationForShellTab(index);
     setCurrentIndex(index);
-    navigationShell.goBranch(index);
+    navigationShell.goBranch(index, initialLocation: initialLocation);
+  }
+
+  @visibleForTesting
+  bool consumeInitialLocationForShellTab(int index) {
+    if (index != 0 || !_shouldResetHomeBranchOnNextSelection) return false;
+    _shouldResetHomeBranchOnNextSelection = false;
+    return true;
   }
 
   int? _normalizeTabIndex(int index) {

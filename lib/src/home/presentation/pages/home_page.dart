@@ -7,7 +7,7 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin {
+class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDailyWarmUpMixin {
   void _loadIapProducts(BuildContext context) {
     // AppDI.injector.get<UserCubit>()
     //   ..setIsFirstTimeUserChooseCourse(true)
@@ -38,8 +38,11 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _trackHomeScrView();
       await _prefetchLearningStreak();
-      await _loadInAppSurveyConfig();
-      if (mounted) _handleSurveyStateChanged(context.read<InAppSurveyCubit>().state);
+      final didOpenWarmUp = await _tryOpenDailyWarmUp();
+      if (!didOpenWarmUp) {
+        await _loadInAppSurveyConfig();
+        if (mounted) _handleSurveyStateChanged(context.read<InAppSurveyCubit>().state);
+      }
     });
   }
 
@@ -64,7 +67,8 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin {
                   onRefresh: () async {
                     context.read<HomeCubit>().initializeData(isInit: true);
                     await _prefetchLearningStreak();
-                    await _loadInAppSurveyConfig();
+                    final didOpenWarmUp = await _tryOpenDailyWarmUp();
+                    if (!didOpenWarmUp) await _loadInAppSurveyConfig();
                   },
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),

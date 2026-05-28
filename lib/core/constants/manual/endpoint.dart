@@ -100,6 +100,9 @@ mixin AppEndpoint {
   static const String coursesUserVideoLessonsActivity = '/api/v1/courses-user-video-lesson-activity';
   static const String coursesUserVideoLessonsActivityById = '/api/v1/courses-user-video-lesson-activity/{id}';
 
+  //* Daily Warm Up API
+  static const String dailyWarmUp = '/api/v1/courses-user-progress/daily-warm-up';
+
   //* In App Survey API
   static const String inAppSurveyConfigs = '/api/v1/courses-in-app-survey/config';
   static const String inAppSurveyResponses = '/api/v1/courses-in-app-survey/responses';
