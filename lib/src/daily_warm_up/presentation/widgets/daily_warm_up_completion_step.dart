@@ -15,7 +15,7 @@ class DailyWarmUpCompletionStep extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final entity = state.entity;
-    final subtitle = entity?.isKeypointCompleted == true ? context.l10n.dailyWarmUp.keepLearningWithNewCourses : context.l10n.dailyWarmUp.readyToContinueProgress;
+    final subtitle = entity?.isCourseCompleted == true ? context.l10n.dailyWarmUp.keepLearningWithNewCourses : context.l10n.dailyWarmUp.readyToContinueProgress;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF2F1FE),
