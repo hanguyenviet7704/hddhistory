@@ -235,7 +235,7 @@ class _SplashPageState extends State<SplashPage> {
   void _showUpdateDialog() {
     showDDialog(
       context,
-      backgroundColor: AppColorLight.surface,
+      backgroundColor: Colors.transparent,
       dialogContent: ForceUpdateContent(
         onUpdatePressed: _handleUpdatePressed,
       ),
