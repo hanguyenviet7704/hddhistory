@@ -79,7 +79,7 @@ class PackageInfoService implements IPackageInfoService {
   }
 
   List<int> _parseVersionParts(String value) {
-    final matches = RegExp(r'\\d+').allMatches(value);
+    final matches = RegExp(r'\d+').allMatches(value);
     if (matches.isEmpty) return [];
     return matches.map((match) => int.tryParse(match.group(0)!) ?? 0).toList();
   }
