@@ -2,8 +2,7 @@ part of '../services.dart';
 
 @LazySingleton(as: IRemoteConfigService)
 class FirebaseRemoteConfigService implements IRemoteConfigService {
-  static const Duration _fetchTimeout = Duration(seconds: 2);
-  static const Duration _startupFetchWaitTimeout = Duration(milliseconds: 1200);
+  static const Duration _fetchTimeout = Duration(seconds: 10);
 
   late final FirebaseRemoteConfig _remoteConfig;
   final IPackageInfoService _packageInfoService;
@@ -70,11 +69,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
     final fetchAndActivateFuture = _fetchAndActivateFuture;
     if (fetchAndActivateFuture == null) return;
 
-    try {
-      await fetchAndActivateFuture.timeout(_startupFetchWaitTimeout);
-    } on TimeoutException {
-      LogDev.warning('Firebase Remote Config startup fetch timed out; using active cached/default config');
-    }
+    await fetchAndActivateFuture;
   }
 
   @override
