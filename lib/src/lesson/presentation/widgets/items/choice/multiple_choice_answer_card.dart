@@ -104,13 +104,13 @@ class MultipleChoiceAnswerCard extends StatelessWidget {
       child: GestureDetector(
         onTap: state == AnswerState.disabled ? null : onTap,
         child: Container(
+          constraints: BoxConstraints(minHeight: 60.h),
           padding: EdgeInsets.only(
-            left: 16.w,
-            right: checkboxIcon != null ? 12.w : 16.w,
+            left: 20.w,
+            right: checkboxIcon != null ? 12.w : 20.w,
             top: 12.h,
             bottom: 12.h,
           ),
-          margin: EdgeInsets.symmetric(horizontal: 20.w),
           decoration: BoxDecoration(
             color: backgroundColor,
             border: Border.all(color: borderColor, width: 2.w),

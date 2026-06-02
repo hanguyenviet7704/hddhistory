@@ -123,9 +123,42 @@ void main() {
     expect(find.byType(LessonContentCard), findsOneWidget);
     expect(find.text('Theory content'), findsOneWidget);
   });
+
+  testWidgets('lets active theory cards fill the scoped lesson viewport height', (tester) async {
+    final cubit = _TestTheoryCubit(
+      TheoryState(
+        status: TheoryStatus.success,
+        currentLearningItem: _buildTheoryLearningItem(
+          documents: const [
+            DocumentEntity(
+              id: 1,
+              document: [
+                ContentDocumentEntity(
+                  id: 11,
+                  type: ContentDocumentType.text,
+                  data: DocumentDataEntity(
+                    content: BaseMultiLanguage(en: 'Short theory content'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(_buildTheoryBody(cubit, minCardHeight: 500));
+    await tester.pumpAndSettle();
+
+    expect(tester.getSize(find.byType(LessonContentCard)).height, greaterThanOrEqualTo(500));
+  });
 }
 
-Widget _buildTheoryBody(TheoryCubit cubit) {
+Widget _buildTheoryBody(
+  TheoryCubit cubit, {
+  double? minCardHeight,
+}) {
   final body = TheoryLessonBody(onAnswerChecked: (_) {});
 
   return ScreenUtilInit(
@@ -140,7 +173,14 @@ Widget _buildTheoryBody(TheoryCubit cubit) {
             builder: (context) => Scaffold(
               body: Column(
                 children: [
-                  Expanded(child: body),
+                  Expanded(
+                    child: minCardHeight == null
+                        ? body
+                        : LessonCardMinHeightScope(
+                            minHeight: minCardHeight,
+                            child: body,
+                          ),
+                  ),
                   body.buildBottomButton(context),
                 ],
               ),

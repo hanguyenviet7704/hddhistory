@@ -42,9 +42,13 @@ class _NoCorrectAnswerDocumentPageState extends State<NoCorrectAnswerDocumentPag
         child: resolvedGroup == null
             ? const SizedBox.shrink()
             : ListView(
-                padding: EdgeInsets.only(bottom: 16.h),
+                padding: EdgeInsets.fromLTRB(24.w, 24.h, 24.w, 16.h),
                 children: [
-                  if (resolvedGroup.documents.isNotEmpty) DocumentWidget(documents: resolvedGroup.documents),
+                  if (resolvedGroup.documents.isNotEmpty)
+                    DocumentWidget(
+                      documents: resolvedGroup.documents,
+                      asCard: false,
+                    ),
                 ],
               ),
       ),

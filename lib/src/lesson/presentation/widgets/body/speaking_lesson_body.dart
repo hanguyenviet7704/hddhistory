@@ -76,42 +76,41 @@ class SpeakingLessonBody extends LessonBodyWidget {
           final hasExplainData = state.textInput.isNotEmpty || (state.audioFilePath?.isNotEmpty ?? false);
           final showExplainButton = isLessonExercise && isReadOnly && hasExplainData;
 
-          final content = LessonContentCard(
+          return LessonContentCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (currentQuestion.document.isNotEmpty) ...[
-                  DocumentWidget(
-                    documents: currentQuestion.document,
-                    asCard: false,
+                IgnorePointer(
+                  ignoring: isReadOnly,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (currentQuestion.document.isNotEmpty) ...[
+                        DocumentWidget(
+                          documents: currentQuestion.document,
+                          asCard: false,
+                        ),
+                        16.verticalSpace,
+                      ],
+
+                      _SpeakingAnswerCard(
+                        question: currentQuestion,
+                        audioFilePath: state.audioFilePath,
+                        textInput: state.textInput,
+                        onPlayTap: onRoleplayReplayTap,
+                      ),
+
+                      16.verticalSpace,
+                    ],
                   ),
-                  16.verticalSpace,
-                ],
-
-                _SpeakingAnswerCard(
-                  question: currentQuestion,
-                  audioFilePath: state.audioFilePath,
-                  textInput: state.textInput,
-                  onPlayTap: onRoleplayReplayTap,
                 ),
-
-                16.verticalSpace,
+                if (showExplainButton)
+                  LessonExplainButton(
+                    onTap: () => _handleExplainTap(context, hasExplainData, state),
+                    hasExplanation: hasExplainData,
+                  ),
               ],
             ),
-          );
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IgnorePointer(ignoring: isReadOnly, child: content),
-              if (showExplainButton) ...[
-                12.verticalSpace,
-                LessonExplainButton(
-                  onTap: () => _handleExplainTap(context, hasExplainData, state),
-                  hasExplanation: hasExplainData,
-                ),
-              ],
-            ],
           );
         },
       ),

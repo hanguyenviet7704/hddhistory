@@ -77,55 +77,56 @@ class MultipleChoiceLessonBody extends LessonBodyWidget {
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
-          final content = LessonContentCard(
+          return LessonContentCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (currentQuestion.document.isNotEmpty) ...[
-                  DocumentWidget(
-                    documents: currentQuestion.document,
-                    asCard: false,
+                IgnorePointer(
+                  ignoring: isReadOnly,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (currentQuestion.document.isNotEmpty) ...[
+                        DocumentWidget(
+                          documents: currentQuestion.document,
+                          asCard: false,
+                        ),
+                        12.verticalSpace,
+                      ],
+                      AppText(
+                        context.l10n.exercise.exerciseMultiChoicesInstruction,
+                        margin: EdgeInsets.symmetric(vertical: 8.h),
+                        maxLines: 10,
+                        style: AppStyle.text12.copyWith(
+                          color: const Color(0xFF7F8EA4),
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                      ListView.separated(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: state.answerOptions.length,
+                        separatorBuilder: (context, index) => 12.verticalSpace,
+                        itemBuilder: (context, index) {
+                          return MultipleChoiceAnswerCard(
+                            option: state.answerOptions[index],
+                            state: state.getAnswerState(index),
+                            onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
+                          );
+                        },
+                      ),
+                    ],
                   ),
-                  12.verticalSpace,
+                ),
+                if (showExplainButton) ...[
+                  16.verticalSpace,
+                  LessonExplainButton(
+                    onTap: () => _handleExplainTap(context, currentQuestion, state),
+                    hasExplanation: currentQuestion.hasExplanation,
+                  ),
                 ],
-                AppText(
-                  context.l10n.exercise.exerciseMultiChoicesInstruction,
-                  margin: EdgeInsets.symmetric(vertical: 8.h),
-                  maxLines: 10,
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4),
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-                ListView.separated(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: state.answerOptions.length,
-                  separatorBuilder: (context, index) => 12.verticalSpace,
-                  itemBuilder: (context, index) {
-                    return MultipleChoiceAnswerCard(
-                      option: state.answerOptions[index],
-                      state: state.getAnswerState(index),
-                      onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
-                    );
-                  },
-                ),
               ],
             ),
-          );
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IgnorePointer(ignoring: isReadOnly, child: content),
-              if (showExplainButton) ...[
-                12.verticalSpace,
-                LessonExplainButton(
-                  onTap: () => _handleExplainTap(context, currentQuestion, state),
-                  hasExplanation: currentQuestion.hasExplanation,
-                ),
-              ],
-            ],
           );
         },
       ),

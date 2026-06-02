@@ -27,7 +27,6 @@ class AnswerCardsArea extends StatelessWidget {
 
         return AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          padding: EdgeInsets.symmetric(horizontal: 20.w),
           alignment: Alignment.center,
           decoration: BoxDecoration(
             color: isDraggingFromSlot ? const Color(0xFFE3E8EF).withValues(alpha: 0.1) : Colors.white,

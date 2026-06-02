@@ -86,89 +86,90 @@ class ArrangeTheSequenceLessonBody extends LessonBodyWidget {
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
-          final content = LessonContentCard(
+          return LessonContentCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (currentQuestion.document.isNotEmpty) ...[
-                  DocumentWidget(
-                    documents: currentQuestion.document,
-                    asCard: false,
-                  ),
-                  12.verticalSpace,
-                ],
-                AppText(
-                  context.l10n.exercise.exerciseSequenceInstruction,
-                  margin: EdgeInsets.symmetric(vertical: 8.h),
-                  maxLines: 10,
-                  style: AppStyle.text12
-                      .copyWith(
-                        color: const Color(0xFF7F8EA4),
-                        fontWeight: FontWeight.w500,
-                        height: 1.5,
-                      )
-                      .copyWith(
-                        color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                IgnorePointer(
+                  ignoring: isReadOnly,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (currentQuestion.document.isNotEmpty) ...[
+                        DocumentWidget(
+                          documents: currentQuestion.document,
+                          asCard: false,
+                        ),
+                        12.verticalSpace,
+                      ],
+                      AppText(
+                        context.l10n.exercise.exerciseSequenceInstruction,
+                        margin: EdgeInsets.symmetric(vertical: 8.h),
+                        maxLines: 10,
+                        style: AppStyle.text12
+                            .copyWith(
+                              color: const Color(0xFF7F8EA4),
+                              fontWeight: FontWeight.w500,
+                              height: 1.5,
+                            )
+                            .copyWith(
+                              color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                            ),
                       ),
-                ),
-                ReorderableListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  buildDefaultDragHandles: false,
-                  padding: EdgeInsets.zero,
-                  proxyDecorator: (child, index, animation) {
-                    final cubit = context.read<ArrangeTheSequenceCubit>();
-                    final currentState = cubit.state;
-                    if (index < 0 || index >= currentState.currentItems.length) {
-                      return child;
-                    }
-                    final item = currentState.currentItems[index];
-                    final itemState = currentState.getItemState(index);
+                      ReorderableListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        buildDefaultDragHandles: false,
+                        padding: EdgeInsets.zero,
+                        proxyDecorator: (child, index, animation) {
+                          final cubit = context.read<ArrangeTheSequenceCubit>();
+                          final currentState = cubit.state;
+                          if (index < 0 || index >= currentState.currentItems.length) {
+                            return child;
+                          }
+                          final item = currentState.currentItems[index];
+                          final itemState = currentState.getItemState(index);
 
-                    return ArrangeSequenceAnswerCard(
-                      key: Key('drag-${item.id}'),
-                      text: item.text.text,
-                      index: index,
-                      state: itemState,
-                      dragEnabled: false,
-                      isDragging: true,
-                    );
-                  },
-                  onReorderItem: (oldIndex, newIndex) {
-                    if (state.hasChecked) return;
-                    context.read<ArrangeTheSequenceCubit>().reorderItems(oldIndex, newIndex);
-                  },
-                  itemCount: state.currentItems.length,
-                  itemBuilder: (context, index) {
-                    final item = state.currentItems[index];
-                    return Padding(
-                      key: Key('${item.id}'),
-                      padding: EdgeInsets.only(bottom: 12.h),
-                      child: ArrangeSequenceAnswerCard(
-                        text: item.text.text,
-                        index: index,
-                        state: state.getItemState(index),
-                        dragEnabled: !state.hasChecked,
+                          return ArrangeSequenceAnswerCard(
+                            key: Key('drag-${item.id}'),
+                            text: item.text.text,
+                            index: index,
+                            state: itemState,
+                            dragEnabled: false,
+                            isDragging: true,
+                          );
+                        },
+                        onReorderItem: (oldIndex, newIndex) {
+                          if (state.hasChecked) return;
+                          context.read<ArrangeTheSequenceCubit>().reorderItems(oldIndex, newIndex);
+                        },
+                        itemCount: state.currentItems.length,
+                        itemBuilder: (context, index) {
+                          final item = state.currentItems[index];
+                          return Padding(
+                            key: Key('${item.id}'),
+                            padding: EdgeInsets.only(bottom: 12.h),
+                            child: ArrangeSequenceAnswerCard(
+                              text: item.text.text,
+                              index: index,
+                              state: state.getItemState(index),
+                              dragEnabled: !state.hasChecked,
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
+                if (showExplainButton) ...[
+                  16.verticalSpace,
+                  LessonExplainButton(
+                    onTap: () => _handleExplainTap(context, currentQuestion, state),
+                    hasExplanation: currentQuestion.hasExplanation,
+                  ),
+                ],
               ],
             ),
-          );
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IgnorePointer(ignoring: isReadOnly, child: content),
-              if (showExplainButton) ...[
-                12.verticalSpace,
-                LessonExplainButton(
-                  onTap: () => _handleExplainTap(context, currentQuestion, state),
-                  hasExplanation: currentQuestion.hasExplanation,
-                ),
-              ],
-            ],
           );
         },
       ),

@@ -90,13 +90,6 @@ class _LessonShellLayoutState extends State<LessonShellLayout> with SingleTicker
                             )
                           : _LessonShellTabPage(child: widget.readBody),
                     ),
-                    if (widget.bottom != null && widget.selectedMode.isRead)
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: LessonStickyBottomAction(child: widget.bottom!),
-                      ),
                     Positioned.fill(
                       child: IgnorePointer(
                         ignoring: !widget.isLoading,
@@ -109,6 +102,7 @@ class _LessonShellLayoutState extends State<LessonShellLayout> with SingleTicker
                   ],
                 ),
               ),
+              if (widget.bottom != null && widget.selectedMode.isRead) LessonStickyBottomAction(child: widget.bottom!),
             ],
           ),
         ),

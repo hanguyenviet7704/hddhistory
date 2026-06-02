@@ -29,20 +29,22 @@ class LessonTimelineBuilder {
     return LayoutBuilder(
       builder: (context, constraints) {
         final listHeight = constraints.maxHeight.isFinite ? constraints.maxHeight : 0.0;
+        final verticalPadding = 40.h;
+        final activeCardMinHeight = math.max(0.0, listHeight - verticalPadding);
 
         return NotificationListener<UserScrollNotification>(
           onNotification: (notification) => controller.handleUserScroll(notification, onTrackCurrentLearningItemScroll),
           child: ListView.separated(
             controller: controller.scrollController,
             itemCount: items.length,
-            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 160.h),
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 20.h),
             separatorBuilder: (context, index) => 24.verticalSpace,
             itemBuilder: (context, index) {
               if (index == items.length - 1) {
                 return KeyedSubtree(
                   key: controller.lastItemKey,
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(minHeight: listHeight),
+                  child: LessonCardMinHeightScope(
+                    minHeight: activeCardMinHeight,
                     child: items[index],
                   ),
                 );

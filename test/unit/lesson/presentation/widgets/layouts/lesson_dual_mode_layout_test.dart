@@ -85,6 +85,35 @@ void main() {
     expect(find.byType(LessonStickyBottomAction), findsOneWidget);
   });
 
+  testWidgets('bounds the read body above the sticky bottom action', (tester) async {
+    await tester.pumpWidget(
+      _buildShellTestApp(
+        LessonShellLayout(
+          selectedMode: LessonEntryMode.read,
+          onModeSelected: (_) {},
+          onClose: () {},
+          showModeToggle: true,
+          readBody: const SizedBox.expand(
+            key: ValueKey('read-boundary'),
+            child: Text('Read boundary'),
+          ),
+          audioBody: const Center(child: Text('Audio body')),
+          bottom: const ExerciseContinueButton(
+            onPressed: null,
+            text: 'Sticky action',
+          ),
+          isLoading: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final readBodyBottom = tester.getRect(find.byKey(const ValueKey('read-boundary'))).bottom;
+    final stickyActionTop = tester.getRect(find.byType(LessonStickyBottomAction)).top;
+
+    expect(readBodyBottom, lessThanOrEqualTo(stickyActionTop));
+  });
+
   testWidgets('preserves read scroll offset when switching read to audio and back', (tester) async {
     final lessonCubit = LessonCubit(
       _FakeGetAllLearningItemsUseCase(),

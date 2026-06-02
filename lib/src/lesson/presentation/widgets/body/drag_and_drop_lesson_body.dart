@@ -79,62 +79,63 @@ class DragAndDropLessonBody extends LessonBodyWidget {
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
-          final content = LessonContentCard(
+          return LessonContentCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
-                  DocumentWidget(
-                    documents: currentQuestion.document,
-                    asCard: false,
+                IgnorePointer(
+                  ignoring: isReadOnly,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
+                        DocumentWidget(
+                          documents: currentQuestion.document,
+                          asCard: false,
+                        ),
+                        12.verticalSpace,
+                      ],
+                      SentenceBuilder(
+                        placedWords: state.placedWords,
+                        targetArea: questionRuntimeTargetArea(currentQuestion).text,
+                        answerCount: state.dropZoneCount,
+                        onWordPlaced: (index, word, fromIndex) {
+                          context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
+                        },
+                        onWordRemoved: (index) {
+                          context.read<DragAndDropCubit>().removeWord(index);
+                        },
+                        getSlotState: (index) => state.getSlotState(index),
+                      ),
+                      24.verticalSpace,
+                      AppText(
+                        context.l10n.exercise.exerciseGapFillingInstruction,
+                        style: AppStyle.text12.copyWith(
+                          color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                          fontWeight: FontWeight.w500,
+                          height: 1.5,
+                        ),
+                      ),
+                      12.verticalSpace,
+                      AnswerCardsArea(
+                        availableWords: state.availableWords,
+                        allWords: questionRuntimeOptions(currentQuestion).map((option) => option.labelText).where((text) => text.isNotEmpty).toList(),
+                        onWordReturnedFromSlot: (word, fromIndex) {
+                          context.read<DragAndDropCubit>().removeWord(fromIndex);
+                        },
+                      ),
+                    ],
                   ),
-                  12.verticalSpace,
+                ),
+                if (showExplainButton) ...[
+                  16.verticalSpace,
+                  LessonExplainButton(
+                    onTap: () => _handleExplainTap(context, currentQuestion, state),
+                    hasExplanation: currentQuestion.hasExplanation,
+                  ),
                 ],
-                SentenceBuilder(
-                  placedWords: state.placedWords,
-                  targetArea: questionRuntimeTargetArea(currentQuestion).text,
-                  answerCount: state.dropZoneCount,
-                  onWordPlaced: (index, word, fromIndex) {
-                    context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
-                  },
-                  onWordRemoved: (index) {
-                    context.read<DragAndDropCubit>().removeWord(index);
-                  },
-                  getSlotState: (index) => state.getSlotState(index),
-                ),
-                24.verticalSpace,
-                AppText(
-                  context.l10n.exercise.exerciseGapFillingInstruction,
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
-                    fontWeight: FontWeight.w500,
-                    height: 1.5,
-                  ),
-                ),
-                12.verticalSpace,
-                AnswerCardsArea(
-                  availableWords: state.availableWords,
-                  allWords: questionRuntimeOptions(currentQuestion).map((option) => option.labelText).where((text) => text.isNotEmpty).toList(),
-                  onWordReturnedFromSlot: (word, fromIndex) {
-                    context.read<DragAndDropCubit>().removeWord(fromIndex);
-                  },
-                ),
               ],
             ),
-          );
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IgnorePointer(ignoring: isReadOnly, child: content),
-              if (showExplainButton) ...[
-                12.verticalSpace,
-                LessonExplainButton(
-                  onTap: () => _handleExplainTap(context, currentQuestion, state),
-                  hasExplanation: currentQuestion.hasExplanation,
-                ),
-              ],
-            ],
           );
         },
       ),

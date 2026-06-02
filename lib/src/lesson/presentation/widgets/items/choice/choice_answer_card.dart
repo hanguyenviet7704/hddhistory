@@ -61,8 +61,9 @@ class ChoiceAnswerCard extends StatelessWidget {
       child: GestureDetector(
         onTap: state == AnswerState.disabled ? null : onTap,
         child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          margin: EdgeInsets.symmetric(horizontal: 20.w),
+          alignment: Alignment.centerLeft,
+          constraints: BoxConstraints(minHeight: 60.h),
+          padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 12.h),
           decoration: BoxDecoration(
             color: backgroundColor,
             border: Border.all(color: borderColor, width: 2.w),

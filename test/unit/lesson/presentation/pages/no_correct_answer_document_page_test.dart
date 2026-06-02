@@ -96,6 +96,7 @@ void main() {
     expect(find.byType(Scaffold), findsOneWidget);
     expect(find.byType(ListView), findsOneWidget);
     expect(find.byType(LessonLayout), findsNothing);
+    expect(find.byType(LessonContentCard), findsNothing);
     expect(find.byType(ExerciseContinueButton), findsOneWidget);
     expect(find.text('Document page content'), findsOneWidget);
 
