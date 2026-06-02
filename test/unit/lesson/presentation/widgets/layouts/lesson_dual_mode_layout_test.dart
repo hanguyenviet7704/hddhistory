@@ -16,6 +16,75 @@ void main() {
     await resetInjectorForTests();
   });
 
+  testWidgets('renders close-only shell without the read/listen toggle', (tester) async {
+    var closed = false;
+
+    await tester.pumpWidget(
+      _buildShellTestApp(
+        LessonShellLayout(
+          selectedMode: LessonEntryMode.read,
+          onModeSelected: (_) {},
+          onClose: () => closed = true,
+          showModeToggle: false,
+          readBody: const Center(child: Text('Read only body')),
+          audioBody: const SizedBox.shrink(),
+          bottom: const ExerciseContinueButton(onPressed: null),
+          isLoading: false,
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    expect(scaffold.backgroundColor, AppCustomColor.brandPrimary50);
+    expect(find.text('Read only body'), findsOneWidget);
+    expect(find.text('Read'), findsNothing);
+    expect(find.text('Listen'), findsNothing);
+    expect(find.byType(LessonProgressBar), findsNothing);
+    expect(find.byType(LessonBadge), findsNothing);
+
+    await tester.tap(find.byKey(const ValueKey('lesson-shell-close-button')));
+    expect(closed, isTrue);
+  });
+
+  testWidgets('keeps sticky bottom action visible when old visibility flag is false', (tester) async {
+    final lessonCubit = LessonCubit(
+      _FakeGetAllLearningItemsUseCase(),
+      _FakeGetLearningItemUseCase(),
+      _FakeProgressCubit(),
+      _FakeExerciseCubit(),
+      _FakeTheoryCubit(),
+    );
+    addTearDown(lessonCubit.close);
+
+    lessonCubit.setBottomButtonVisible(false);
+
+    await tester.pumpWidget(
+      _buildShellTestApp(
+        BlocProvider<LessonCubit>.value(
+          value: lessonCubit,
+          child: LessonShellLayout(
+            selectedMode: LessonEntryMode.read,
+            onModeSelected: (_) {},
+            onClose: () {},
+            showModeToggle: true,
+            readBody: const Center(child: Text('Read body')),
+            audioBody: const Center(child: Text('Audio body')),
+            bottom: const ExerciseContinueButton(
+              onPressed: null,
+              text: 'Sticky action',
+            ),
+            isLoading: false,
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sticky action'), findsOneWidget);
+    expect(find.byType(LessonStickyBottomAction), findsOneWidget);
+  });
+
   testWidgets('preserves read scroll offset when switching read to audio and back', (tester) async {
     final lessonCubit = LessonCubit(
       _FakeGetAllLearningItemsUseCase(),
@@ -75,13 +144,24 @@ void main() {
 
     expect(offsetBeforeModeSwitch, greaterThan(0));
 
-    await tester.tap(find.text('Listen'));
+    await tester.tap(find.byKey(const ValueKey('lesson-mode-audio-tab')));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Read'));
+    await tester.tap(find.byKey(const ValueKey('lesson-mode-read-tab')));
     await tester.pumpAndSettle();
 
     expect(readScrollController.offset, closeTo(offsetBeforeModeSwitch, 1));
   });
+}
+
+Widget _buildShellTestApp(Widget child) {
+  return ScreenUtilInit(
+    designSize: const Size(375, 812),
+    minTextAdapt: true,
+    splitScreenMode: true,
+    builder: (context, _) => TranslationProvider(
+      child: MaterialApp(home: child),
+    ),
+  );
 }
 
 class _FakeGetAllLearningItemsUseCase implements GetAllLearningItemsUseCase {

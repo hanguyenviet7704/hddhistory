@@ -92,6 +92,37 @@ void main() {
 
     expect(_continueButton(tester).isEnabled, isTrue);
   });
+
+  testWidgets('wraps theory documents in the shared Figma content card', (tester) async {
+    final cubit = _TestTheoryCubit(
+      TheoryState(
+        status: TheoryStatus.success,
+        currentLearningItem: _buildTheoryLearningItem(
+          documents: const [
+            DocumentEntity(
+              id: 1,
+              document: [
+                ContentDocumentEntity(
+                  id: 11,
+                  type: ContentDocumentType.text,
+                  data: DocumentDataEntity(
+                    content: BaseMultiLanguage(en: 'Theory content'),
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+    addTearDown(cubit.close);
+
+    await tester.pumpWidget(_buildTheoryBody(cubit));
+    await tester.pumpAndSettle();
+
+    expect(find.byType(LessonContentCard), findsOneWidget);
+    expect(find.text('Theory content'), findsOneWidget);
+  });
 }
 
 Widget _buildTheoryBody(TheoryCubit cubit) {

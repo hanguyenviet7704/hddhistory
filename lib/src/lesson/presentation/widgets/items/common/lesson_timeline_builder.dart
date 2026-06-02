@@ -35,8 +35,8 @@ class LessonTimelineBuilder {
           child: ListView.separated(
             controller: controller.scrollController,
             itemCount: items.length,
-            padding: EdgeInsets.only(bottom: 160.h),
-            separatorBuilder: (context, index) => 40.verticalSpace,
+            padding: EdgeInsets.fromLTRB(20.w, 20.h, 20.w, 160.h),
+            separatorBuilder: (context, index) => 24.verticalSpace,
             itemBuilder: (context, index) {
               if (index == items.length - 1) {
                 return KeyedSubtree(

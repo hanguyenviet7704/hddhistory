@@ -107,9 +107,11 @@ class SingleChoiceLessonBody extends LessonBodyWidget {
 
 class _SingleChoiceQuestionContent extends StatelessWidget {
   final ChoiceState state;
+  final List<Widget> footer;
 
   const _SingleChoiceQuestionContent({
     required this.state,
+    this.footer = const [],
   });
 
   @override
@@ -117,37 +119,43 @@ class _SingleChoiceQuestionContent extends StatelessWidget {
     final currentQuestion = state.question;
     final instructionText = _resolveSingleChoiceInstruction(context, currentQuestion);
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (currentQuestion.document.isNotEmpty) ...[
-          DocumentWidget(documents: currentQuestion.document),
-          12.verticalSpace,
-        ],
-        AppText(
-          instructionText,
-          margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-          maxLines: 10,
-          style: AppStyle.text12.copyWith(
-            color: const Color(0xFF7F8EA4),
-            fontWeight: FontWeight.w500,
+    return LessonContentCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (currentQuestion.document.isNotEmpty) ...[
+            DocumentWidget(
+              documents: currentQuestion.document,
+              asCard: false,
+            ),
+            12.verticalSpace,
+          ],
+          AppText(
+            instructionText,
+            margin: EdgeInsets.symmetric(vertical: 8.h),
+            maxLines: 10,
+            style: AppStyle.text12.copyWith(
+              color: const Color(0xFF7F8EA4),
+              fontWeight: FontWeight.w500,
+            ),
           ),
-        ),
-        ListView.separated(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          itemCount: state.answerOptions.length,
-          separatorBuilder: (context, index) => 12.verticalSpace,
-          itemBuilder: (context, index) {
-            return ChoiceAnswerCard(
-              option: state.answerOptions[index],
-              isMultiChoice: false,
-              state: state.getAnswerState(index),
-              onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
-            );
-          },
-        ),
-      ],
+          ListView.separated(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: state.answerOptions.length,
+            separatorBuilder: (context, index) => 12.verticalSpace,
+            itemBuilder: (context, index) {
+              return ChoiceAnswerCard(
+                option: state.answerOptions[index],
+                isMultiChoice: false,
+                state: state.getAnswerState(index),
+                onTap: () => context.read<ChoiceCubit>().selectAnswer(index),
+              );
+            },
+          ),
+          ...footer,
+        ],
+      ),
     );
   }
 }

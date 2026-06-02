@@ -115,8 +115,13 @@ class _LessonPageState extends State<LessonPage> {
           final bottomButton = _bodyFactory.buildBottomButton(context, activeBody);
 
           if (!currentKeypoint.hasUsableAudio) {
-            return LessonLayout(
-              body: readSurface,
+            return LessonShellLayout(
+              selectedMode: LessonEntryMode.read,
+              onModeSelected: (_) {},
+              onClose: () => LessonExitFlow.open(context),
+              showModeToggle: false,
+              readBody: readSurface,
+              audioBody: const SizedBox.shrink(),
               bottom: bottomButton,
               isLoading: state.status == LessonStatus.loading,
             );
@@ -135,10 +140,9 @@ class _LessonPageState extends State<LessonPage> {
               },
             ),
             readBody: readSurface,
-            audioBody: LessonAudioSurface(
-              onOpenSpeedSheet: _openSpeedSheet,
-            ),
+            audioBody: const LessonAudioSurface(),
             bottom: selectedMode.isRead ? bottomButton : null,
+            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : null,
             isLoading: state.status == LessonStatus.loading,
           );
         },
@@ -221,6 +225,27 @@ class _LessonPageState extends State<LessonPage> {
     );
 
     await _lessonAudioCubit.restoreAfterSpeedSheet(resumePlayback: shouldResume);
+  }
+
+  Widget _buildAudioSpeedPill() {
+    return BlocBuilder<LessonAudioCubit, LessonAudioState>(
+      buildWhen: (previous, current) => previous.speed != current.speed || previous.status != current.status,
+      builder: (context, state) {
+        return LessonAudioSpeedPill(
+          label: state.speedValueLabel,
+          enabled: !state.isLoading,
+          onTap: _handleOpenAudioSpeedSheet,
+        );
+      },
+    );
+  }
+
+  Future<void> _handleOpenAudioSpeedSheet() async {
+    final trackingData = KeypointTrackingData.fromContext();
+    if (trackingData != null) {
+      AppService.instance.appTrackingService.trackKeypointAudioSpeedOpen(trackingData);
+    }
+    await _openSpeedSheet();
   }
 
   void _handleAnswerChecked(bool isCorrect) {

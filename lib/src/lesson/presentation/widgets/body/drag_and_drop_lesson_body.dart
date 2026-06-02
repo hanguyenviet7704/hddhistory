@@ -79,45 +79,48 @@ class DragAndDropLessonBody extends LessonBodyWidget {
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
-          final content = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
-                DocumentWidget(documents: currentQuestion.document),
-                12.verticalSpace,
-              ],
-              SentenceBuilder(
-                placedWords: state.placedWords,
-                targetArea: questionRuntimeTargetArea(currentQuestion).text,
-                answerCount: state.dropZoneCount,
-                onWordPlaced: (index, word, fromIndex) {
-                  context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
-                },
-                onWordRemoved: (index) {
-                  context.read<DragAndDropCubit>().removeWord(index);
-                },
-                getSlotState: (index) => state.getSlotState(index),
-              ),
-              24.verticalSpace,
-              AppText(
-                context.l10n.exercise.exerciseGapFillingInstruction,
-                margin: EdgeInsets.symmetric(horizontal: 20.w),
-                style: AppStyle.text12.copyWith(
-                  color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
+          final content = LessonContentCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
+                  DocumentWidget(
+                    documents: currentQuestion.document,
+                    asCard: false,
+                  ),
+                  12.verticalSpace,
+                ],
+                SentenceBuilder(
+                  placedWords: state.placedWords,
+                  targetArea: questionRuntimeTargetArea(currentQuestion).text,
+                  answerCount: state.dropZoneCount,
+                  onWordPlaced: (index, word, fromIndex) {
+                    context.read<DragAndDropCubit>().placeWord(index, word, fromIndex);
+                  },
+                  onWordRemoved: (index) {
+                    context.read<DragAndDropCubit>().removeWord(index);
+                  },
+                  getSlotState: (index) => state.getSlotState(index),
                 ),
-              ),
-              12.verticalSpace,
-              AnswerCardsArea(
-                availableWords: state.availableWords,
-                allWords: questionRuntimeOptions(currentQuestion).map((option) => option.labelText).where((text) => text.isNotEmpty).toList(),
-                onWordReturnedFromSlot: (word, fromIndex) {
-                  // Word is being dragged back to available area from a slot
-                  context.read<DragAndDropCubit>().removeWord(fromIndex);
-                },
-              ),
-            ],
+                24.verticalSpace,
+                AppText(
+                  context.l10n.exercise.exerciseGapFillingInstruction,
+                  style: AppStyle.text12.copyWith(
+                    color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                    fontWeight: FontWeight.w500,
+                    height: 1.5,
+                  ),
+                ),
+                12.verticalSpace,
+                AnswerCardsArea(
+                  availableWords: state.availableWords,
+                  allWords: questionRuntimeOptions(currentQuestion).map((option) => option.labelText).where((text) => text.isNotEmpty).toList(),
+                  onWordReturnedFromSlot: (word, fromIndex) {
+                    context.read<DragAndDropCubit>().removeWord(fromIndex);
+                  },
+                ),
+              ],
+            ),
           );
 
           return Column(

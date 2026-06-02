@@ -85,15 +85,17 @@ class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
 
           return IgnorePointer(
             ignoring: isReadOnly,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _SingleChoiceQuestionContent(state: state),
-                if (hasInlineDocuments) ...[
-                  12.verticalSpace,
-                  DocumentWidget(documents: inlineDocumentGroup.documents),
-                ],
-              ],
+            child: _SingleChoiceQuestionContent(
+              state: state,
+              footer: hasInlineDocuments
+                  ? [
+                      12.verticalSpace,
+                      DocumentWidget(
+                        documents: inlineDocumentGroup.documents,
+                        asCard: false,
+                      ),
+                    ]
+                  : const [],
             ),
           );
         },
