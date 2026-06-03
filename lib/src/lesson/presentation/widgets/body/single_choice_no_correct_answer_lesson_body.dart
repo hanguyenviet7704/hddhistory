@@ -57,7 +57,8 @@ class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
             selectedAnswerIndex: state.selectedAnswerIndex,
           );
           if (resolvedGroup != null) {
-            await NoCorrectAnswerDocumentRoute(groupId: resolvedGroup.groupId).push(context);
+            final didContinue = await NoCorrectAnswerDocumentRoute(groupId: resolvedGroup.groupId).push(context);
+            if (didContinue != true) return;
             if (!context.mounted) return;
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (!context.mounted) return;

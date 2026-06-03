@@ -30,9 +30,9 @@ class ExerciseContinueButton extends StatelessWidget {
     return Container(
       margin: EdgeInsets.fromLTRB(20.w, 0, 20.w, 16.h),
       width: double.infinity,
-        height: 54.h,
+      height: 54.h,
       decoration: BoxDecoration(
-          color: isEnabled ? activeBgColor : disabledBgColor,
+        color: isEnabled ? activeBgColor : disabledBgColor,
         borderRadius: BorderRadius.circular(1000.r),
       ),
       child: Material(
@@ -41,11 +41,11 @@ class ExerciseContinueButton extends StatelessWidget {
           onTap: isEnabled ? onPressed : null,
           borderRadius: BorderRadius.circular(1000.r),
           child: Center(
-        child: AppText(
-          text,
+            child: AppText(
+              text,
               style: AppStyle.text16.copyWith(
                 fontWeight: FontWeight.w600,
-            color: isEnabled ? activeTextColor : disabledTextColor,
+                color: isEnabled ? activeTextColor : disabledTextColor,
                 height: 1.5,
               ),
             ),
