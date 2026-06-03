@@ -1,6 +1,10 @@
 part of '../../onboard.dart';
 
 class ForceUpdateContent extends StatelessWidget {
+  static const String _title = "We're getting better!";
+  static const String _message = 'For more features and a better user experience,\nupgrade your app please.';
+  static const String _actionText = 'Go to Update';
+
   final VoidCallback? onUpdatePressed;
 
   const ForceUpdateContent({
@@ -10,86 +14,75 @@ class ForceUpdateContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return IntrinsicWidth(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _buildIllustrationSection(),
-          _buildContentSection(context),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildIllustrationSection() {
-    return Container(
-      width: double.infinity,
-      height: 286.h,
-      decoration: BoxDecoration(
-        color: const Color(0xFFD9F4FD),
-        borderRadius: BorderRadius.only(
-          topLeft: Radius.circular(20.r),
-          topRight: Radius.circular(20.r),
-        ),
-      ),
-      child: CacheNetworkGraphic(
-        url: AppAsset.images.common.mainIcon.path,
-        height: 286.h,
-        fit: BoxFit.contain,
-      ),
-    );
-  }
-
-  Widget _buildContentSection(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(24.w),
-      child: IntrinsicWidth(
-        child: Column(
-          children: [
-            _buildTextContent(context),
-            SizedBox(height: 24.h),
-            _buildUpdateButton(context),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTextContent(BuildContext context) {
-    return Column(
+    return Stack(
+      clipBehavior: Clip.none,
+      alignment: Alignment.topCenter,
       children: [
-        AppText(
-          context.l10n.lesson.emptyPopupTitle,
-          style: AppStyle.textBold32.copyWith(
-            color: const Color(0xFF0D121C),
-            height: 40.h / 32.sp,
+        Padding(
+          padding: EdgeInsets.only(top: 45.h),
+          child: Container(
+            width: double.infinity,
+            padding: EdgeInsets.fromLTRB(20.w, 52.h, 20.w, 20.h),
+            decoration: BoxDecoration(
+              color: AppCustomColor.backgroundWhite,
+              borderRadius: BorderRadius.circular(16.r),
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
+                      _title,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.visible,
+                      style: AppStyle.textBold20.copyWith(
+                        color: AppCustomColor.textPrimary,
+                        height: 1.5,
+                      ),
+                    ),
+                    8.verticalSpace,
+                    AppText(
+                      _message,
+                      textAlign: TextAlign.center,
+                      overflow: TextOverflow.visible,
+                      style: AppStyle.text12.copyWith(
+                        color: AppCustomColor.textSecondary,
+                        height: 1.75,
+                      ),
+                    ),
+                  ],
+                ),
+                24.verticalSpace,
+                SizedBox(
+                  width: double.infinity,
+                  child: DButton(
+                    onPressed: onUpdatePressed,
+                    backgroundColor: AppCustomColor.brandPrimary,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(1000.r)),
+                    size: Size.fromHeight(48.h),
+                    customChild: AppText(
+                      _actionText,
+                      textAlign: TextAlign.center,
+                      style: AppStyle.textBold16.copyWith(
+                        color: AppCustomColor.textWhite,
+                        height: 1.5,
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
-          textAlign: TextAlign.center,
         ),
-        8.verticalSpace,
-        AppText(
-          context.l10n.lesson.emptyPopupDescription,
-          style: AppStyle.text20.copyWith(
-            fontWeight: FontWeight.w600,
-            color: const Color(0xFF364152),
-            height: 32.h / 20.sp,
-          ),
-          textAlign: TextAlign.center,
+        AppAsset.images.app.forceUpdateDecor.image(
+          width: 216.84.w,
+          height: 90.h,
+          fit: BoxFit.contain,
+          excludeFromSemantics: true,
         ),
       ],
-    );
-  }
-
-  Widget _buildUpdateButton(BuildContext context) {
-    return AppButton.primary(
-      onPressed: onUpdatePressed,
-      child: AppText(
-        context.l10n.onboarding.onboardingStartNowButton,
-        style: AppStyle.textBold20.copyWith(
-          color: Colors.white,
-          height: 28.h / 20.sp,
-        ),
-      ),
     );
   }
 }

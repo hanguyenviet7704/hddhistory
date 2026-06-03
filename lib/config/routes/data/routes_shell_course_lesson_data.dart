@@ -65,7 +65,28 @@ class NoCorrectAnswerDocumentRoute extends BaseTransitionRouteData with $NoCorre
   const NoCorrectAnswerDocumentRoute({required this.groupId});
 
   @override
-  RouteTransitionConfig get transitionConfig => RouteTransitionConfig.scale;
+  CustomTransitionPage<void> buildPage(BuildContext context, GoRouterState state) {
+    return CustomTransitionPage<void>(
+      name: state.name,
+      key: state.pageKey,
+      opaque: false,
+      barrierDismissible: false,
+      barrierColor: Colors.transparent,
+      transitionDuration: const Duration(milliseconds: 180),
+      reverseTransitionDuration: const Duration(milliseconds: 140),
+      child: buildPageWidget(context, state),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(parent: animation, curve: Curves.easeOutCubic);
+        return FadeTransition(
+          opacity: curvedAnimation,
+          child: ScaleTransition(
+            scale: Tween<double>(begin: 0.96, end: 1).animate(curvedAnimation),
+            child: child,
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget buildPageWidget(BuildContext context, GoRouterState state) {

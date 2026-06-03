@@ -103,6 +103,9 @@ void main() {
     final exerciseCubit = _SpyExerciseCubit()..setLearningItemType(LearningItemType.exercise);
     final choiceCubit = _TestChoiceCubit()..setQuestion(_noCorrectQuestion);
 
+    if (AppDI.injector.isRegistered<ExerciseCubit>()) {
+      AppDI.injector.unregister<ExerciseCubit>();
+    }
     AppDI.injector.registerSingleton<ExerciseCubit>(exerciseCubit);
 
     var routedToDocumentPage = false;
@@ -155,6 +158,68 @@ void main() {
 
     expect(routedToDocumentPage, isTrue);
     expect(exerciseCubit.nextQuestionCallCount, 1);
+
+    await choiceCubit.close();
+    await exerciseCubit.close();
+  });
+
+  testWidgets('does not advance when no-correct document route returns false', (tester) async {
+    LocaleSettings.setLocaleSync(AppLocale.en);
+
+    final exerciseCubit = _SpyExerciseCubit()..setLearningItemType(LearningItemType.exercise);
+    final choiceCubit = _TestChoiceCubit()..setQuestion(_noCorrectQuestion);
+
+    if (AppDI.injector.isRegistered<ExerciseCubit>()) {
+      AppDI.injector.unregister<ExerciseCubit>();
+    }
+    AppDI.injector.registerSingleton<ExerciseCubit>(exerciseCubit);
+
+    final router = GoRouter(
+      initialLocation: '/course-roadmap/lesson',
+      routes: [
+        GoRoute(
+          path: '/course-roadmap/lesson',
+          builder: (context, state) {
+            return MultiBlocProvider(
+              providers: [
+                BlocProvider<ExerciseCubit>.value(value: exerciseCubit),
+                BlocProvider<ChoiceCubit>.value(value: choiceCubit),
+              ],
+              child: Scaffold(
+                body: SingleChoiceNoCorrectAnswerLessonBody(onAnswerChecked: (_) {}),
+              ),
+            );
+          },
+        ),
+        GoRoute(
+          path: '/course-roadmap/no-correct-answer-document/:groupId',
+          builder: (context, state) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (!context.mounted) return;
+              context.pop(false);
+            });
+            return const SizedBox.shrink();
+          },
+        ),
+      ],
+    );
+
+    await tester.pumpWidget(
+      ScreenUtilInit(
+        designSize: const Size(375, 812),
+        minTextAdapt: true,
+        splitScreenMode: true,
+        builder: (context, child) => TranslationProvider(
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      ),
+    );
+
+    choiceCubit.markCheckedNoCorrect();
+
+    await tester.pumpAndSettle();
+
+    expect(exerciseCubit.nextQuestionCallCount, 0);
 
     await choiceCubit.close();
     await exerciseCubit.close();

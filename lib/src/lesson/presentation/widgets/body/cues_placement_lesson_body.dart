@@ -86,112 +86,113 @@ class CuesPlacementLessonBody extends LessonBodyWidget {
           final isLessonExercise = context.select((ExerciseCubit bloc) => bloc.state.currentLearningItem.type == LearningItemType.exercise);
           final showExplainButton = isLessonExercise && isReadOnly && currentQuestion.hasExplanation;
 
-          final content = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
-                DocumentWidget(documents: currentQuestion.document),
-                12.verticalSpace,
-              ],
-              AppText(
-                context.l10n.exercise.exerciseStressMarkInstruction,
-                margin: EdgeInsets.symmetric(horizontal: 20.w, vertical: 8.h),
-                maxLines: 10,
-                style: AppStyle.text12.copyWith(
-                  color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
-                  fontWeight: FontWeight.w500,
-                  height: 1.5,
-                ),
-              ),
-              12.verticalSpace,
-              // Words with drop zones in styled container
-              Container(
-                padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
-                margin: EdgeInsets.symmetric(horizontal: 20.w),
-                alignment: Alignment.center,
-                decoration: ShapeDecoration(
-                  color: Colors.white,
-                  shape: RoundedRectangleBorder(
-                    side: BorderSide(
-                      width: 2,
-                      strokeAlign: BorderSide.strokeAlignOutside,
-                      color: const Color(0xFFE3E8EF) /* Border-border-secondary */,
-                    ),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Wrap(
-                  spacing: 2.w,
-                  runSpacing: 6.h,
-                  children: List.generate(
-                    words.length,
-                    (index) {
-                      final placedMarkId = state.placedMarks[index];
-                      final placedMark = placedMarkId != null
-                          ? runtimeOptions.firstWhere(
-                              (opt) => opt.id == placedMarkId,
-                              orElse: () => const OptionEntity(),
-                            )
-                          : null;
-                      return CuesPlacementWordWithDropZone(
-                        word: words[index],
-                        wordIndex: index,
-                        placedMark: placedMark,
-                        markState: state.getPauseMarkState(index),
-                        hasChecked: state.hasChecked,
-                        onAcceptMark: (wordIndex, data) {
+          return LessonContentCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                IgnorePointer(
+                  ignoring: isReadOnly,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (currentQuestion.document.any((document) => document.dataAvailable)) ...[
+                        DocumentWidget(
+                          documents: currentQuestion.document,
+                          asCard: false,
+                        ),
+                        12.verticalSpace,
+                      ],
+                      AppText(
+                        context.l10n.exercise.exerciseStressMarkInstruction,
+                        margin: EdgeInsets.symmetric(vertical: 8.h),
+                        maxLines: 10,
+                        style: AppStyle.text12.copyWith(
+                          color: const Color(0xFF7F8EA4).withValues(alpha: 0.6),
+                          fontWeight: FontWeight.w500,
+                          height: 1.5,
+                        ),
+                      ),
+                      12.verticalSpace,
+                      // Words with drop zones in styled container
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 12.h),
+                        alignment: Alignment.center,
+                        decoration: ShapeDecoration(
+                          color: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            side: BorderSide(
+                              width: 2,
+                              strokeAlign: BorderSide.strokeAlignOutside,
+                              color: const Color(0xFFE3E8EF) /* Border-border-secondary */,
+                            ),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Wrap(
+                          spacing: 2.w,
+                          runSpacing: 6.h,
+                          children: List.generate(
+                            words.length,
+                            (index) {
+                              final placedMarkId = state.placedMarks[index];
+                              final placedMark = placedMarkId != null
+                                  ? runtimeOptions.firstWhere(
+                                      (opt) => opt.id == placedMarkId,
+                                      orElse: () => const OptionEntity(),
+                                    )
+                                  : null;
+                              return CuesPlacementWordWithDropZone(
+                                word: words[index],
+                                wordIndex: index,
+                                placedMark: placedMark,
+                                markState: state.getPauseMarkState(index),
+                                hasChecked: state.hasChecked,
+                                onAcceptMark: (wordIndex, data) {
+                                  if (data.fromWordIndex != null) {
+                                    // Moving from another position
+                                    context.read<CuesPlacementCubit>().movePauseMark(
+                                      data.fromWordIndex!,
+                                      wordIndex,
+                                    );
+                                  } else {
+                                    // Placing from available pool
+                                    context.read<CuesPlacementCubit>().placePauseMark(
+                                      wordIndex,
+                                      data.optionId,
+                                    );
+                                  }
+                                },
+                                onRemoveMark: (wordIndex) {
+                                  context.read<CuesPlacementCubit>().removePauseMark(wordIndex);
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                      24.verticalSpace,
+                      // Available pause marks pool
+                      CuesPlacementAvailableMarks(
+                        allOptions: runtimeOptions,
+                        availableOptions: state.availableOptions,
+                        onAcceptReturn: (data) {
                           if (data.fromWordIndex != null) {
-                            // Moving from another position
-                            context.read<CuesPlacementCubit>().movePauseMark(
-                              data.fromWordIndex!,
-                              wordIndex,
-                            );
-                          } else {
-                            // Placing from available pool
-                            context.read<CuesPlacementCubit>().placePauseMark(
-                              wordIndex,
-                              data.optionId,
-                            );
+                            context.read<CuesPlacementCubit>().removePauseMark(data.fromWordIndex!);
                           }
                         },
-                        onRemoveMark: (wordIndex) {
-                          context.read<CuesPlacementCubit>().removePauseMark(wordIndex);
-                        },
-                      );
-                    },
+                      ),
+                      20.verticalSpace,
+                    ],
                   ),
                 ),
-              ),
-              24.verticalSpace,
-              // Available pause marks pool
-              Padding(
-                padding: EdgeInsets.symmetric(horizontal: 20.w),
-                child: CuesPlacementAvailableMarks(
-                  allOptions: runtimeOptions,
-                  availableOptions: state.availableOptions,
-                  onAcceptReturn: (data) {
-                    if (data.fromWordIndex != null) {
-                      context.read<CuesPlacementCubit>().removePauseMark(data.fromWordIndex!);
-                    }
-                  },
-                ),
-              ),
-              20.verticalSpace,
-            ],
-          );
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IgnorePointer(ignoring: isReadOnly, child: content),
-              if (showExplainButton) ...[
-                12.verticalSpace,
-                LessonExplainButton(
-                  onTap: () => _handleExplainTap(context, currentQuestion, state),
-                  hasExplanation: currentQuestion.hasExplanation,
-                ),
+                if (showExplainButton) ...[
+                  LessonExplainButton(
+                    onTap: () => _handleExplainTap(context, currentQuestion, state),
+                    hasExplanation: currentQuestion.hasExplanation,
+                  ),
+                ],
               ],
-            ],
+            ),
           );
         },
       ),

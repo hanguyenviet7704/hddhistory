@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-06-02
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -156,8 +156,8 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `CourseRoadmapRoute` composes roadmap + lesson + progress + feedback state providers.
 - `RoadmapDetailPopup` resolves usable keypoint audio before rendering its CTA contract and routes through the same lesson path with `LessonRoute(initialMode: read|audio)`.
 - `LessonRoute` composes lesson execution providers (`LessonCubit`, `LessonAudioCubit`, exercise/theory/speaking variants, `ProgressCubit`, `FeedbackCubit`, `PageCubit`).
-- `LessonPage` now acts as the lesson shell/orchestrator: audio-enabled keypoints render the dual-mode shell and no-audio keypoints stay on the read-only shell path.
-- `LessonAudioCubit` owns route-session audio playback state, speed, seek bounds, inline failure recovery, and audio-complete handoff into the shared keypoint completion seam.
+- `LessonPage` now acts as the lesson shell/orchestrator: every lesson route renders the Figma-style lesson shell, no-audio keypoints show close-only read mode, and audio-enabled keypoints add the read/listen mode toggle.
+- `LessonAudioCubit` owns route-session audio playback state, speed, seek bounds, inline failure recovery, and audio-complete handoff into the shared keypoint completion seam; the speed selector is exposed through the audio-mode shell header.
 - Completion routes (`KeypointCompleteRoute`, `BadgeProgressRoute`) merge lesson progress back into roadmap/home state.
 
 ### Output practice runtime flow

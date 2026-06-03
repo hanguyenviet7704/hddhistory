@@ -7,7 +7,7 @@ abstract class DailyWarmUpModel with _$DailyWarmUpModel {
     @Default('') String suggestedCourseId,
     @Default('') String lessonId,
     @Default('') String keypointId,
-    @Default(false) bool isKeypointCompleted,
+    @Default(false) bool isCourseCompleted,
     @Default([]) List<QuestionModel> questions,
   }) = _DailyWarmUpModel;
 
@@ -20,7 +20,7 @@ extension DailyWarmUpModelExtension on DailyWarmUpModel {
     suggestedCourseId: suggestedCourseId,
     lessonId: lessonId,
     keypointId: keypointId,
-    isKeypointCompleted: isKeypointCompleted,
+    isCourseCompleted: isCourseCompleted,
     questions: questions.map((q) => q.toEntity()).toList(),
   );
 }

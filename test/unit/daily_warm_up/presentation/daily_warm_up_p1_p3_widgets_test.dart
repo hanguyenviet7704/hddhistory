@@ -116,7 +116,7 @@ void main() {
           DailyWarmUpCompletionStep(
             state: DailyWarmUpState(
               status: DailyWarmUpStatus.completion,
-              entity: const DailyWarmUpEntity(isKeypointCompleted: false, suggestedCourseId: 'course-2'),
+              entity: const DailyWarmUpEntity(isCourseCompleted: false, suggestedCourseId: 'course-2'),
               suggestedCourse: CourseEntity(id: 'course-2', title: _text('Mindful Speaking')),
               isRoutingToRoadmap: true,
             ),
@@ -158,7 +158,7 @@ void main() {
             child: DailyWarmUpCompletionStep(
               state: DailyWarmUpState(
                 status: DailyWarmUpStatus.completion,
-                entity: const DailyWarmUpEntity(isKeypointCompleted: true, suggestedCourseId: 'course-2'),
+                entity: const DailyWarmUpEntity(isCourseCompleted: true, suggestedCourseId: 'course-2'),
                 suggestedCourse: CourseEntity(id: 'course-2', title: _text('Mindful Speaking')),
               ),
               onStartLesson: () {},

@@ -33,52 +33,56 @@ class UnsupportedLessonBody extends LessonBodyWidget {
   @override
   Widget build(BuildContext context) {
     final unsupportedType = _unsupportedTypeLabel();
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (question.document.isNotEmpty) ...[
-          DocumentWidget(documents: question.document),
-          12.verticalSpace,
-        ],
-        Container(
-          width: double.infinity,
-          margin: EdgeInsets.symmetric(horizontal: 20.w),
-          padding: EdgeInsets.all(16.w),
-          decoration: BoxDecoration(
-            color: const Color(0xFFF5F7FA),
-            borderRadius: BorderRadius.circular(12.r),
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              AppText(
-                context.l10n.lesson.emptyPopupTitle,
-                style: AppStyle.text16.copyWith(
-                  fontWeight: FontWeight.w600,
-                  color: const Color(0xFF0D121C),
-                ),
-              ),
-              8.verticalSpace,
-              AppText(
-                context.l10n.lesson.emptyPopupDescription,
-                maxLines: 4,
-                style: AppStyle.text14.copyWith(
-                  color: const Color(0xFF364152),
-                ),
-              ),
-              if (unsupportedType.isNotEmpty) ...[
-                12.verticalSpace,
+    return LessonContentCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (question.document.isNotEmpty) ...[
+            DocumentWidget(
+              documents: question.document,
+              asCard: false,
+            ),
+            12.verticalSpace,
+          ],
+          Container(
+            width: double.infinity,
+            padding: EdgeInsets.all(16.w),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF5F7FA),
+              borderRadius: BorderRadius.circular(12.r),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
                 AppText(
-                  'Type: $unsupportedType',
-                  style: AppStyle.text12.copyWith(
-                    color: const Color(0xFF7F8EA4),
+                  context.l10n.lesson.emptyPopupTitle,
+                  style: AppStyle.text16.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: const Color(0xFF0D121C),
                   ),
                 ),
+                8.verticalSpace,
+                AppText(
+                  context.l10n.lesson.emptyPopupDescription,
+                  maxLines: 4,
+                  style: AppStyle.text14.copyWith(
+                    color: const Color(0xFF364152),
+                  ),
+                ),
+                if (unsupportedType.isNotEmpty) ...[
+                  12.verticalSpace,
+                  AppText(
+                    'Type: $unsupportedType',
+                    style: AppStyle.text12.copyWith(
+                      color: const Color(0xFF7F8EA4),
+                    ),
+                  ),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }

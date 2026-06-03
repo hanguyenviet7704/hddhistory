@@ -1,6 +1,6 @@
 # Codebase Summary
 
-**Last Updated:** 2026-05-23
+**Last Updated:** 2026-06-02
 **Source Inputs:** direct repository verification with `find`, `wc`, `rg`, `flutter test`, and `flutter analyze`
 
 ## 1. Snapshot Metrics
@@ -74,7 +74,7 @@ meup/
 - Course roadmap now includes a completed-level additional-content request flow. Eligibility is derived from current roadmap completion plus matching `userCourseProgress.completedLevels`, and `ProgressCubit.loadAllUserProgresss()` now scopes course-grade refreshes so stale or lesson-filtered responses do not suppress the footer for the wrong course.
 - Home in-app survey now lives under `lib/src/in_app_survey/` and is wired through `HomeRoute`. `HomePage` loads a usable survey config, shows the P1 floating pill, opens a non-dismissible P2-P4 dialog, submits `branchId`, `selectedOptionIds`, and trimmed `feedback`, keeps P1 eligible after success, and preserves the draft on submit failure for retry. Tracking is centralized in `TrackingKey.inAppSurvey*` and excludes raw feedback or raw API error bodies.
 - Daily warm-up now lives under `lib/src/daily_warm_up/` and is gated from `HomeRoute` before the in-app survey. The entry is shown once per local day per user, stale cache is not used when the API fails, and the flow moves through P1 start/dismiss, P2 two-question answer/result checks, and P3 suggested-course handoff. It reuses course handoff and lesson choice-card UI where practical, avoids lesson/progress cubit side effects, and centralizes privacy-safe events under `TrackingKey.dailyWarmUp*`.
-- Lesson runtime now keeps one typed `lesson` route for both read and listen entry. `RoadmapDetailPopup` branches between read-only and read/listen CTA states before navigation, `LessonPage` swaps between the preserved read surface and the new audio surface, and `LessonAudioCubit` owns route-session playback, speed, seek, inline failure recovery, and audio-complete handoff without folding that state into `LessonCubit`.
+- Lesson runtime now keeps one typed `lesson` route for both read and listen entry. `RoadmapDetailPopup` branches between read-only and read/listen CTA states before navigation, `LessonPage` renders the shared Figma-style lesson shell for both no-audio and audio keypoints, read/listen mode keeps the read surface alive while swapping to the audio player card, and `LessonAudioCubit` owns route-session playback, speed, seek, inline failure recovery, and audio-complete handoff without folding that state into `LessonCubit`.
 - Video lesson now lives under `lib/src/video_lesson/` and is launched from roadmap `openingVideo` / `closingVideo` lessons through a typed `video-lesson/:courseId/:nodeId/:lessonId` route. `RoadmapNodeActionHelper` resolves a unique roadmap node id, opens a tracked intro sheet, keeps a mounted player shell around the active video controller, scopes notes cache by `courseId + nodeId + lessonId`, supports summary/share overlays plus timed-question/result overlays, pushes completion back into roadmap state after the progress update, and runs the shared streak gate before auto-exit.
 
 ## 5. API and Pagination Contract Summary

@@ -76,38 +76,41 @@ class SpeakingLessonBody extends LessonBodyWidget {
           final hasExplainData = state.textInput.isNotEmpty || (state.audioFilePath?.isNotEmpty ?? false);
           final showExplainButton = isLessonExercise && isReadOnly && hasExplainData;
 
-          final content = Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Display question document (images, audio, text, etc.)
-              if (currentQuestion.document.isNotEmpty) ...[
-                DocumentWidget(documents: currentQuestion.document),
-                16.verticalSpace,
-              ],
+          return LessonContentCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                IgnorePointer(
+                  ignoring: isReadOnly,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      if (currentQuestion.document.isNotEmpty) ...[
+                        DocumentWidget(
+                          documents: currentQuestion.document,
+                          asCard: false,
+                        ),
+                        16.verticalSpace,
+                      ],
 
-              _SpeakingAnswerCard(
-                question: currentQuestion,
-                audioFilePath: state.audioFilePath,
-                textInput: state.textInput,
-                onPlayTap: onRoleplayReplayTap,
-              ),
+                      _SpeakingAnswerCard(
+                        question: currentQuestion,
+                        audioFilePath: state.audioFilePath,
+                        textInput: state.textInput,
+                        onPlayTap: onRoleplayReplayTap,
+                      ),
 
-              16.verticalSpace,
-            ],
-          );
-
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              IgnorePointer(ignoring: isReadOnly, child: content),
-              if (showExplainButton) ...[
-                12.verticalSpace,
-                LessonExplainButton(
-                  onTap: () => _handleExplainTap(context, hasExplainData, state),
-                  hasExplanation: hasExplainData,
+                      16.verticalSpace,
+                    ],
+                  ),
                 ),
+                if (showExplainButton)
+                  LessonExplainButton(
+                    onTap: () => _handleExplainTap(context, hasExplainData, state),
+                    hasExplanation: hasExplainData,
+                  ),
               ],
-            ],
+            ),
           );
         },
       ),
@@ -135,43 +138,31 @@ class _SpeakingAnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<ExerciseCubit, ExerciseState, bool>(
-      selector: (state) => state.currentLearningItem.type == LearningItemType.roleplay,
-      builder: (context, isRoleplay) {
-        if (!isRoleplay) return const SizedBox.shrink();
-        final resultRecordPath = question.result.recordAnswer.record.trim();
-        final fallbackRecordPath = audioFilePath?.trim() ?? '';
-        final recordPath = resultRecordPath.isNotEmpty ? resultRecordPath : fallbackRecordPath;
+    final resultRecordPath = question.result.recordAnswer.record.trim();
+    final fallbackRecordPath = audioFilePath?.trim() ?? '';
+    final recordPath = resultRecordPath.isNotEmpty ? resultRecordPath : fallbackRecordPath;
 
-        final resultReviewText = question.result.recordAnswer.review.trim();
-        final fallbackReviewText = textInput.trim();
-        final reviewText = resultReviewText.isNotEmpty ? resultReviewText : fallbackReviewText;
+    final resultReviewText = question.result.recordAnswer.review.trim();
+    final fallbackReviewText = textInput.trim();
+    final reviewText = resultReviewText.isNotEmpty ? resultReviewText : fallbackReviewText;
 
-        if (recordPath.isNotEmpty) {
-          final normalizedRecordPath = recordPath.startsWith('//') ? 'https:$recordPath' : recordPath;
-          final isRemoteAudio = normalizedRecordPath.startsWith('http://') || normalizedRecordPath.startsWith('https://');
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: isRemoteAudio
-                ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath, onPlayTap: onPlayTap)
-                : AudioPlayerFileWidget(filePath: normalizedRecordPath, onPlayTap: onPlayTap),
-          );
-        }
+    if (recordPath.isNotEmpty) {
+      final normalizedRecordPath = recordPath.startsWith('//') ? 'https:$recordPath' : recordPath;
+      final isRemoteAudio = normalizedRecordPath.startsWith('http://') || normalizedRecordPath.startsWith('https://');
+      return isRemoteAudio
+          ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath, onPlayTap: onPlayTap)
+          : AudioPlayerFileWidget(filePath: normalizedRecordPath, onPlayTap: onPlayTap);
+    }
 
-        if (reviewText.isNotEmpty) {
-          return Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20.w),
-            child: AppText(
-              reviewText,
-              maxLines: 8,
-              overflow: TextOverflow.visible,
-              style: AppStyle.text14,
-            ),
-          );
-        }
+    if (reviewText.isNotEmpty) {
+      return AppText(
+        reviewText,
+        maxLines: 8,
+        overflow: TextOverflow.visible,
+        style: AppStyle.text14,
+      );
+    }
 
-        return const SizedBox.shrink();
-      },
-    );
+    return const SizedBox.shrink();
   }
 }

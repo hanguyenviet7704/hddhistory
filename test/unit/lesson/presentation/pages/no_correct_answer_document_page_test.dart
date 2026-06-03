@@ -70,7 +70,7 @@ void main() {
     await resetInjectorForTests();
   });
 
-  testWidgets('renders scaffold and list view with continue button without LessonLayout', (tester) async {
+  testWidgets('renders popup card with continue button without LessonLayout', (tester) async {
     LocaleSettings.setLocaleSync(AppLocale.en);
 
     final choiceCubit = ChoiceCubit()..setQuestion(_noCorrectQuestion);
@@ -93,10 +93,14 @@ void main() {
 
     await tester.pumpAndSettle();
 
-    expect(find.byType(Scaffold), findsOneWidget);
-    expect(find.byType(ListView), findsOneWidget);
+    final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
+    expect(scaffold.backgroundColor, Colors.transparent);
+    expect(find.byType(BackdropFilter), findsOneWidget);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
     expect(find.byType(LessonLayout), findsNothing);
-    expect(find.byType(ExerciseContinueButton), findsOneWidget);
+    expect(find.byType(LessonContentCard), findsNothing);
+    expect(find.text('Continue'), findsOneWidget);
+    expect(find.text('Explanation'), findsOneWidget);
     expect(find.text('Document page content'), findsOneWidget);
 
     await choiceCubit.close();
