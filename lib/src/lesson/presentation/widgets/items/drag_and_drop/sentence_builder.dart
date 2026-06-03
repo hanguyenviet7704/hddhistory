@@ -60,8 +60,7 @@ class SentenceBuilder extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
-      margin: EdgeInsets.symmetric(horizontal: 20.w),
+      padding: EdgeInsets.symmetric(horizontal: 20.w, vertical: 20.h),
       decoration: ShapeDecoration(
         color: Colors.white /* Background-White */,
         shape: RoundedRectangleBorder(
@@ -75,6 +74,7 @@ class SentenceBuilder extends StatelessWidget {
       child: Wrap(
         spacing: 6.w,
         runSpacing: 10.h,
+        alignment: WrapAlignment.start,
         crossAxisAlignment: WrapCrossAlignment.center,
         children: _buildSentenceWidgets(),
       ),

@@ -138,37 +138,31 @@ class _SpeakingAnswerCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocSelector<ExerciseCubit, ExerciseState, bool>(
-      selector: (state) => state.currentLearningItem.type == LearningItemType.roleplay,
-      builder: (context, isRoleplay) {
-        if (!isRoleplay) return const SizedBox.shrink();
-        final resultRecordPath = question.result.recordAnswer.record.trim();
-        final fallbackRecordPath = audioFilePath?.trim() ?? '';
-        final recordPath = resultRecordPath.isNotEmpty ? resultRecordPath : fallbackRecordPath;
+    final resultRecordPath = question.result.recordAnswer.record.trim();
+    final fallbackRecordPath = audioFilePath?.trim() ?? '';
+    final recordPath = resultRecordPath.isNotEmpty ? resultRecordPath : fallbackRecordPath;
 
-        final resultReviewText = question.result.recordAnswer.review.trim();
-        final fallbackReviewText = textInput.trim();
-        final reviewText = resultReviewText.isNotEmpty ? resultReviewText : fallbackReviewText;
+    final resultReviewText = question.result.recordAnswer.review.trim();
+    final fallbackReviewText = textInput.trim();
+    final reviewText = resultReviewText.isNotEmpty ? resultReviewText : fallbackReviewText;
 
-        if (recordPath.isNotEmpty) {
-          final normalizedRecordPath = recordPath.startsWith('//') ? 'https:$recordPath' : recordPath;
-          final isRemoteAudio = normalizedRecordPath.startsWith('http://') || normalizedRecordPath.startsWith('https://');
-          return isRemoteAudio
-              ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath, onPlayTap: onPlayTap)
-              : AudioPlayerFileWidget(filePath: normalizedRecordPath, onPlayTap: onPlayTap);
-        }
+    if (recordPath.isNotEmpty) {
+      final normalizedRecordPath = recordPath.startsWith('//') ? 'https:$recordPath' : recordPath;
+      final isRemoteAudio = normalizedRecordPath.startsWith('http://') || normalizedRecordPath.startsWith('https://');
+      return isRemoteAudio
+          ? AudioPlayerUrlWidget(audioUrl: normalizedRecordPath, onPlayTap: onPlayTap)
+          : AudioPlayerFileWidget(filePath: normalizedRecordPath, onPlayTap: onPlayTap);
+    }
 
-        if (reviewText.isNotEmpty) {
-          return AppText(
-            reviewText,
-            maxLines: 8,
-            overflow: TextOverflow.visible,
-            style: AppStyle.text14,
-          );
-        }
+    if (reviewText.isNotEmpty) {
+      return AppText(
+        reviewText,
+        maxLines: 8,
+        overflow: TextOverflow.visible,
+        style: AppStyle.text14,
+      );
+    }
 
-        return const SizedBox.shrink();
-      },
-    );
+    return const SizedBox.shrink();
   }
 }

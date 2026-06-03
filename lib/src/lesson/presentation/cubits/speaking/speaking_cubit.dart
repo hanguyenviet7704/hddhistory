@@ -173,6 +173,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
   // Submit answer (recording or text)
   Future<void> submitAnswer() async {
     if (state.inputMode == SpeakingInputMode.recording) {
+      _storeLessonResult(toExerciseResult());
       emit(state.copyWith(status: SpeakingStatus.success));
       if (state.audioFilePath == null) return;
       emit(state.copyWith(status: SpeakingStatus.loading));
@@ -181,6 +182,7 @@ class SpeakingCubit extends Cubit<SpeakingState> with CubitUseCaseHandlerMixin<S
     }
 
     if (state.textInput.isEmpty) return;
+    _storeLessonResult(toExerciseResult());
     emit(state.copyWith(status: SpeakingStatus.success));
     AppDI.injector.get<RoleplayCubit>().setExerciseRecordAnswer(
       exerciseId: state.question.exerciseId,

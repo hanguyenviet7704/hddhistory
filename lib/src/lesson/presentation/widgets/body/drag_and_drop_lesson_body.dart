@@ -119,7 +119,6 @@ class DragAndDropLessonBody extends LessonBodyWidget {
                       12.verticalSpace,
                       AnswerCardsArea(
                         availableWords: state.availableWords,
-                        allWords: questionRuntimeOptions(currentQuestion).map((option) => option.labelText).where((text) => text.isNotEmpty).toList(),
                         onWordReturnedFromSlot: (word, fromIndex) {
                           context.read<DragAndDropCubit>().removeWord(fromIndex);
                         },

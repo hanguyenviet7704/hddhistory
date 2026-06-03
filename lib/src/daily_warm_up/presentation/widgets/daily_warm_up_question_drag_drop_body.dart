@@ -19,7 +19,6 @@ class DailyWarmUpDragDropBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final options = _dailyWarmUpOptions(question);
-    final allWords = options.map((option) => option.labelText).toList(growable: false);
     final availableWords = options.where((option) => !state.placedOptionIds.containsValue(option.id)).map((option) => option.labelText).toList(growable: false);
     final targetArea = switch (question.typedPayload) {
       QuestionDragAndDropPayloadEntity(:final targetArea) => targetArea.text,
@@ -51,7 +50,6 @@ class DailyWarmUpDragDropBody extends StatelessWidget {
         12.verticalSpace,
         AnswerCardsArea(
           availableWords: availableWords,
-          allWords: allWords,
           onWordReturnedFromSlot: (_, fromIndex) => onRemovePlacedOption(fromIndex),
         ),
       ],

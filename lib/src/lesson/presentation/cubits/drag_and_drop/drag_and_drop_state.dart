@@ -22,8 +22,9 @@ extension DragAndDropStateExtension on DragAndDropState {
 
   /// Check if all drop zones are filled
   bool get isAllFilled {
-    if (runtimeAnswers.isEmpty) return false;
-    for (int i = 0; i < runtimeAnswers.length; i++) {
+    final requiredSlots = dropZoneCount;
+    if (requiredSlots == 0) return false;
+    for (int i = 0; i < requiredSlots; i++) {
       if (!placedWords.containsKey(i) || placedWords[i] == null || placedWords[i]!.isEmpty) {
         return false;
       }
@@ -32,7 +33,15 @@ extension DragAndDropStateExtension on DragAndDropState {
   }
 
   /// Get the number of drop zones based on answer count
-  int get dropZoneCount => runtimeAnswers.length;
+  int get dropZoneCount {
+    final answerCount = runtimeAnswers.length;
+    if (answerCount == 0) return 0;
+
+    final blankCount = questionRuntimeTargetArea(question).text.split('___').length - 1;
+    if (blankCount <= 0) return answerCount;
+
+    return math.min(answerCount, blankCount);
+  }
 
   /// Get the slot state for a specific index
   SlotState getSlotState(int index) {
