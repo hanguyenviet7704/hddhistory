@@ -90,7 +90,7 @@ class SingleChoiceNoCorrectAnswerLessonBody extends LessonBodyWidget {
               state: state,
               footer: hasInlineDocuments
                   ? [
-                      12.verticalSpace,
+                      24.verticalSpace,
                       DocumentWidget(
                         documents: inlineDocumentGroup.documents,
                         asCard: false,
