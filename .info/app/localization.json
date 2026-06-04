@@ -124,7 +124,9 @@
         "updatedAt": "UpdatedAt",
         "en": "English (EN)",
         "vi": "Vietnamese (VI)",
-        "zh": "Chinese (ZH)"
+        "zh": "Chinese (ZH)",
+        "ja": "Japanese (JA)",
+        "ko": "Korean (KO)"
       }
     },
     "auth": {
@@ -156,13 +158,21 @@
       "vi": "vi",
       "chinese": "zh",
       "china": "zh",
-      "zh": "zh"
+      "zh": "zh",
+      "japanese": "ja",
+      "japan": "ja",
+      "ja": "ja",
+      "korean": "ko",
+      "korea": "ko",
+      "ko": "ko"
     },
     "default": "en",
     "supported": [
       "en",
       "vi",
-      "zh"
+      "zh",
+      "ja",
+      "ko"
     ]
   },
   "paths": {

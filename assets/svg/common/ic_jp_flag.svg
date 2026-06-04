@@ -1,0 +1,11 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_jp_flag)">
+<path d="M16 32C24.8366 32 32 24.8366 32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32Z" fill="#F0F0F0"/>
+<path d="M16 23.6522C20.2278 23.6522 23.6522 20.2278 23.6522 16C23.6522 11.7722 20.2278 8.34784 16 8.34784C11.7722 8.34784 8.34784 11.7722 8.34784 16C8.34784 20.2278 11.7722 23.6522 16 23.6522Z" fill="#D80027"/>
+</g>
+<defs>
+<clipPath id="clip0_jp_flag">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>

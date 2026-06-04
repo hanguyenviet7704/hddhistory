@@ -1,0 +1,27 @@
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g clip-path="url(#clip0_kr_flag)">
+<path d="M16 32C24.8366 32 32 24.8366 32 16C32 7.16344 24.8366 0 16 0C7.16344 0 0 7.16344 0 16C0 24.8366 7.16344 32 16 32Z" fill="#F0F0F0"/>
+<!-- Taegeuk: blue base + red upper comma -->
+<path d="M22 16C22 19.3137 19.3137 22 16 22C12.6863 22 10 19.3137 10 16C10 12.6863 12.6863 10 16 10C19.3137 10 22 12.6863 22 16Z" fill="#0052B4"/>
+<path d="M16 10C19.3137 10 22 12.6863 22 16C22 17.6569 20.6569 19 19 19C17.3431 19 16 17.6569 16 16C16 14.3431 14.6569 13 13 13C11.3431 13 10 14.3431 10 16C10 12.6863 12.6863 10 16 10Z" fill="#D80027"/>
+<!-- Trigrams (simplified, black bars) -->
+<g fill="#1A1A1A">
+<!-- Top-left: Geon (3 solid) -->
+<rect x="4.6" y="6.0" width="5" height="0.85" transform="rotate(45 7.1 6.4)"/>
+<rect x="5.7" y="7.1" width="5" height="0.85" transform="rotate(45 8.2 7.5)"/>
+<rect x="6.8" y="8.2" width="5" height="0.85" transform="rotate(45 9.3 8.6)"/>
+<!-- Bottom-right: Gon (3 broken) -->
+<rect x="22.4" y="23.8" width="2" height="0.85" transform="rotate(45 23.4 24.2)"/>
+<rect x="25.2" y="23.8" width="2" height="0.85" transform="rotate(45 26.2 24.2)"/>
+<rect x="23.5" y="24.9" width="2" height="0.85" transform="rotate(45 24.5 25.3)"/>
+<rect x="26.3" y="24.9" width="2" height="0.85" transform="rotate(45 27.3 25.3)"/>
+<rect x="24.6" y="26.0" width="2" height="0.85" transform="rotate(45 25.6 26.4)"/>
+<rect x="27.4" y="26.0" width="2" height="0.85" transform="rotate(45 28.4 26.4)"/>
+</g>
+</g>
+<defs>
+<clipPath id="clip0_kr_flag">
+<rect width="32" height="32" fill="white"/>
+</clipPath>
+</defs>
+</svg>
