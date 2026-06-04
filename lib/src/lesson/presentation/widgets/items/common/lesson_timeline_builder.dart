@@ -83,7 +83,7 @@ class LessonTimelineBuilder {
 
           for (int docIndex = 0; docIndex <= activeDocIndex; docIndex++) {
             if (isCurrentItem && docIndex == activeDocIndex) {
-              items.add(activeBody);
+              items.add(LessonActiveTimelineItem(child: activeBody));
               continue;
             }
 
@@ -98,7 +98,7 @@ class LessonTimelineBuilder {
 
           for (int questionIndex = 0; questionIndex <= activeQuestionIndex; questionIndex++) {
             if (isCurrentItem && questionIndex == activeQuestionIndex) {
-              items.add(activeBody);
+              items.add(LessonActiveTimelineItem(child: activeBody));
               continue;
             }
 
@@ -110,5 +110,28 @@ class LessonTimelineBuilder {
     }
 
     return items;
+  }
+}
+
+class LessonActiveTimelineItem extends StatefulWidget {
+  const LessonActiveTimelineItem({
+    super.key,
+    required this.child,
+  });
+
+  final Widget child;
+
+  @override
+  State<LessonActiveTimelineItem> createState() => _LessonActiveTimelineItemState();
+}
+
+class _LessonActiveTimelineItemState extends State<LessonActiveTimelineItem> with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
+  Widget build(BuildContext context) {
+    super.build(context);
+    return widget.child;
   }
 }

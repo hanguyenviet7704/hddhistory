@@ -497,7 +497,7 @@ class _FakeFirebaseMessagingPlatform extends firebase_messaging_platform.Firebas
   }
 
   @override
-  Future<String?> getToken({String? vapidKey}) async => token;
+  Future<String?> getToken({String? serviceWorkerScriptPath, String? vapidKey}) async => token;
 
   @override
   Stream<String> get onTokenRefresh => tokenRefreshController.stream;

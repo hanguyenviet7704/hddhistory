@@ -46,7 +46,7 @@ void main() {
       expect(items.length, 3);
       expect(items[0], isA<DocumentWidget>());
       expect(items[1], isA<DocumentWidget>());
-      expect(identical(items[2], activeBody), isTrue);
+      expect(items[2], isA<LessonActiveTimelineItem>());
       expect(reviewQuestions, isEmpty);
     });
 
@@ -84,8 +84,86 @@ void main() {
       expect(items.length, 3);
       expect(items[0], isA<Text>());
       expect(items[1], isA<Text>());
-      expect(identical(items[2], activeBody), isTrue);
+      expect(items[2], isA<LessonActiveTimelineItem>());
       expect(reviewQuestions, [21, 22]);
     });
+
+    testWidgets('keeps active body mounted after it scrolls offscreen', (tester) async {
+      final controller = ScrollController();
+      var disposeCount = 0;
+
+      addTearDown(controller.dispose);
+
+      await tester.pumpWidget(
+        ScreenUtilInit(
+          designSize: const Size(375, 812),
+          minTextAdapt: true,
+          splitScreenMode: true,
+          builder: (context, child) {
+            return MaterialApp(
+              home: SizedBox(
+                height: 360,
+                child: ListView.builder(
+                  controller: controller,
+                  itemCount: 8,
+                  itemBuilder: (context, index) {
+                    if (index == 7) {
+                      return LessonActiveTimelineItem(
+                        child: _DisposableProbe(
+                          key: const Key('active-probe'),
+                          onDispose: () => disposeCount++,
+                        ),
+                      );
+                    }
+
+                    return SizedBox(
+                      height: 260,
+                      child: Text('review-$index'),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+      );
+
+      for (var i = 0; i < 8 && find.byKey(const Key('active-probe')).evaluate().isEmpty; i++) {
+        await tester.drag(find.byType(ListView), const Offset(0, -320));
+        await tester.pump();
+      }
+      await tester.pumpAndSettle();
+      expect(find.byKey(const Key('active-probe')), findsOneWidget);
+
+      controller.jumpTo(0);
+      await tester.pumpAndSettle();
+
+      expect(disposeCount, 0);
+    });
   });
+}
+
+class _DisposableProbe extends StatefulWidget {
+  const _DisposableProbe({
+    super.key,
+    required this.onDispose,
+  });
+
+  final VoidCallback onDispose;
+
+  @override
+  State<_DisposableProbe> createState() => _DisposableProbeState();
+}
+
+class _DisposableProbeState extends State<_DisposableProbe> {
+  @override
+  void dispose() {
+    widget.onDispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const SizedBox(height: 260, child: Text('active'));
+  }
 }
