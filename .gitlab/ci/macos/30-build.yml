@@ -1,3 +1,13 @@
+# Regenerate slang localization output before building. get_sources `git clean`
+# strips the untracked lib/config/l10n/l10n.g.dart, which is not part of the
+# restored prepare:generated artifacts, so each build must recreate it the same
+# way the quality jobs do. build_runner outputs (*.g.dart/*.freezed.dart) are
+# restored via artifacts and do not need regeneration here.
+.codegen:
+  script:
+    - flutter pub get
+    - bash tools/macos/localization/localization.sh slang
+
 build:apk:develop:
   extends: .macos_job_base
   stage: build
@@ -10,6 +20,7 @@ build:apk:develop:
     - job: prepare:generated
       artifacts: true
   script:
+    - !reference [.codegen, script]
     - export CI=true
     - export SKIP_SYMBOL_UPLOAD=true
     - bash tools/macos/build/build_apk.sh "$FLAVOR" --ci
@@ -35,6 +46,7 @@ build:apk:release:
     - job: prepare:generated
       artifacts: true
   script:
+    - !reference [.codegen, script]
     - export CI=true
     - export SKIP_SYMBOL_UPLOAD=true
     - bash tools/macos/build/build_apk.sh "$FLAVOR" --ci
@@ -61,6 +73,7 @@ build:aab:prod:
     - job: prepare:generated
       artifacts: true
   script:
+    - !reference [.codegen, script]
     - export CI=true
     - export SKIP_SYMBOL_UPLOAD=true
     - bash tools/macos/build/build_appbundle.sh prod --ci
