@@ -21,6 +21,14 @@ variables:
 
 default:
   interruptible: true
+  # Remove leftover Flutter build output before git fetch. The default
+  # `git clean -ffdx` cannot delete nested gRPC .xcframework paths left in
+  # build/ by iOS builds, which fails get_sources on the persistent macOS
+  # shell runner. Running this before sources are fetched keeps the checkout
+  # clean. Restored job artifacts arrive after this hook, so they are unaffected.
+  hooks:
+    pre_get_sources_script:
+      - rm -rf build
   cache:
     key:
       files:
