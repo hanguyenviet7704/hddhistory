@@ -1,6 +1,4 @@
 PODS:
-  - app_tracking_transparency (0.0.1):
-    - Flutter
   - awesome_notifications (0.11.0):
     - Flutter
     - IosAwnCore (~> 0.11.0)
@@ -13,7 +11,6 @@ PODS:
   - TikTokBusinessSDK (1.6.1)
 
 DEPENDENCIES:
-  - app_tracking_transparency (from `.symlinks/plugins/app_tracking_transparency/ios`)
   - awesome_notifications (from `.symlinks/plugins/awesome_notifications/ios`)
   - Flutter (from `Flutter`)
   - flutter_isolate (from `.symlinks/plugins/flutter_isolate/ios`)
@@ -26,8 +23,6 @@ SPEC REPOS:
     - TikTokBusinessSDK
 
 EXTERNAL SOURCES:
-  app_tracking_transparency:
-    :path: ".symlinks/plugins/app_tracking_transparency/ios"
   awesome_notifications:
     :path: ".symlinks/plugins/awesome_notifications/ios"
   Flutter:
@@ -38,7 +33,6 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/permission_handler_apple/ios"
 
 SPEC CHECKSUMS:
-  app_tracking_transparency: 3d84f147f67ca82d3c15355c36b1fa6b66ca7c92
   awesome_notifications: 8291dd4082db761556cd8bf7977567f5c960c87e
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   flutter_isolate: ca1a284bbb8dcfeb26c4764794e0206f58ffa984
