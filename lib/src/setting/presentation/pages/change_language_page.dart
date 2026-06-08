@@ -8,7 +8,7 @@ class ChangeLanguagePage extends StatefulWidget {
 }
 
 class _ChangeLanguagePageState extends State<ChangeLanguagePage> {
-  static const List<AppLocale> _displayLocales = [AppLocale.en, AppLocale.vi];
+  static final List<AppLocale> _displayLocales = AppLocaleX.displayLocales;
   bool _hasTrackedView = false;
 
   void _handleSelectLanguage(BuildContext context, AppLocale locale) {

@@ -25,12 +25,16 @@ extension AppLocaleX on AppLocale {
     AppLocale.en => 'English',
     AppLocale.vi => 'Tiếng Việt',
     AppLocale.zh => '中文',
+    AppLocale.ja => '日本語',
+    AppLocale.ko => '한국어',
   };
 
   String get languageAISupport => switch (this) {
     AppLocale.en => 'English',
     AppLocale.vi => 'Vietnamese',
     AppLocale.zh => 'Chinese',
+    AppLocale.ja => 'Japanese',
+    AppLocale.ko => 'Korean',
   };
 
   Locale get localeData => flutterLocale;
@@ -39,7 +43,9 @@ extension AppLocaleX on AppLocale {
     AppLocale.en => AppAsset.svg.common.icUsFlag,
     AppLocale.vi => AppAsset.svg.common.icVnFlag,
     AppLocale.zh => AppAsset.svg.common.icCnFlag,
+    AppLocale.ja => AppAsset.svg.common.icJpFlag,
+    AppLocale.ko => AppAsset.svg.common.icKrFlag,
   };
 
-  static List<AppLocale> get displayLocales => [AppLocale.en, AppLocale.vi];
+  static List<AppLocale> get displayLocales => [AppLocale.en, AppLocale.vi, AppLocale.zh, AppLocale.ja, AppLocale.ko];
 }

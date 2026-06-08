@@ -36,8 +36,9 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
           children: [
             20.verticalSpace,
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Expanded(
+                Flexible(
                   child: BlocSelector<ProfileCubit, ProfileState, String>(
                     selector: (state) => state.user.name,
                     builder: (context, username) {
