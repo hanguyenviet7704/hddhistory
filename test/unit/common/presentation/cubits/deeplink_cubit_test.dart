@@ -48,7 +48,7 @@ void main() {
     });
 
     test('keeps explicit app-link paths intact', () {
-      expect(resolveDeeplinkRoutePath(Uri.parse('https://meup.com/notification-request')), RoutePath.notificationRequest);
+      expect(resolveDeeplinkRoutePath(Uri.parse('https://meup.training/notification-request')), RoutePath.notificationRequest);
     });
   });
 
@@ -67,7 +67,7 @@ void main() {
     });
 
     test('returns false for unsupported initial links so splash can continue', () async {
-      service.initialUri = Uri.parse('https://meup.com/profile');
+      service.initialUri = Uri.parse('https://meup.training/profile');
       cubit.setIsPassSplashScreen(true);
 
       final isHandled = await cubit.initialLink();

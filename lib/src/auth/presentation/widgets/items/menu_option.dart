@@ -109,12 +109,12 @@ class AboutMenu extends StatelessWidget {
             children: [
               AboutMenuOption(
                 title: context.l10n.auth.privacyPolicy,
-                onTap: () => _launchURL('https://meup.com/privacy.html', context),
+                onTap: () => _launchURL('https://meup.training/privacy.html', context),
               ),
               4.verticalSpace,
               AboutMenuOption(
                 title: context.l10n.auth.termsOfUse,
-                onTap: () => _launchURL('https://meup.com/terms.html', context),
+                onTap: () => _launchURL('https://meup.training/terms.html', context),
               ),
             ],
           ),
