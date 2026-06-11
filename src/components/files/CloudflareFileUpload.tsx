@@ -6,13 +6,46 @@ import {
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
 import lottie, { AnimationItem } from "lottie-web";
+import { useSelector } from "react-redux";
 import { UploadFileToCloudflare } from "../../types/interface/files/cloudflare.interface";
 import { cloudflareService } from "../../services/cloudflareR2Service";
+import { RootState } from "../../store";
+import { LangCode } from "../../types/enum/common.enum";
+import { compressImageFile } from "../../utils/compressImage";
 
 const AUDIO_EXT_REGEX = /\.(mp3|wav|m4a|ogg)(\?|#|$)/i;
 const IMAGE_EXT_REGEX = /\.(png|jpe?g|gif|webp|svg)(\?|#|$)/i;
 const ANIMATION_EXT_REGEX = /\.(json|lottie)(\?|#|$)/i;
 const VIDEO_EXT_REGEX = /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i;
+
+const uploadText = {
+  [LangCode.EN]: {
+    animationPreview: "Animation preview",
+    animationPreviewError:
+      "Cannot display a preview for this animation. Please check the file.",
+    audioUnsupported: "Your browser does not support audio playback.",
+    fileLabel: "Uploaded file",
+    open: "Open",
+    previewAlt: "Preview",
+    uploadFailed: "Upload failed.",
+    uploadHint: "Click to upload file PNG, JPG, GIF...",
+    uploading: "Uploading...",
+    videoUnsupported: "Your browser does not support video playback.",
+  },
+  [LangCode.VI]: {
+    animationPreview: "Xem trước animation",
+    animationPreviewError:
+      "Không thể hiển thị preview cho animation này. Vui lòng kiểm tra lại file.",
+    audioUnsupported: "Trình duyệt của bạn không hỗ trợ phát audio.",
+    fileLabel: "File đã tải lên",
+    open: "Mở",
+    previewAlt: "Xem trước",
+    uploadFailed: "Tải file thất bại.",
+    uploadHint: "Bấm để tải file PNG, JPG, GIF...",
+    uploading: "Đang tải lên...",
+    videoUnsupported: "Trình duyệt của bạn không hỗ trợ phát video.",
+  },
+};
 
 interface Props {
   initialUrl?: string;
@@ -31,6 +64,10 @@ export default function CloudflareFileUpload({
   disabled = false,
   accept = "image/*", // mặc định vẫn là ảnh
 }: Props) {
+  const currentLang = useSelector((state: RootState) => state.lang.code);
+  const text =
+    uploadText[currentLang as LangCode.EN | LangCode.VI] ||
+    uploadText[LangCode.EN];
   const uniqueId = useId();
   const inputId = `file-upload-${label
     .replace(/\s+/g, "-")
@@ -100,17 +137,20 @@ export default function CloudflareFileUpload({
     setFileType(file.type);
 
     try {
-      const response = await cloudflareService.upload(file, uploadPayload);
+      const uploadFile = await compressImageFile(file);
+      setFileType(uploadFile.type || file.type);
+
+      const response = await cloudflareService.upload(uploadFile, uploadPayload);
       const newUrl = response?.data?.data?.url;
 
       if (!newUrl) throw new Error("API did not return a valid URL");
 
       setPreviewUrl(newUrl);
-      setFileName(file.name);
+      setFileName(uploadFile.name);
       onUrlChange(newUrl);
     } catch (err: any) {
       console.error("Upload error:", err);
-      setError(err.response?.data?.message || err.message || "Upload failed.");
+      setError(err.response?.data?.message || err.message || text.uploadFailed);
       setPreviewUrl(initialUrl);
     } finally {
       setIsUploading(false);
@@ -236,19 +276,21 @@ export default function CloudflareFileUpload({
         {isUploading ? (
           <div className="flex flex-col items-center">
             <ArrowPathIcon className="h-8 w-8 text-gray-400 animate-spin" />
-            <span className="mt-2 text-sm text-gray-500">Uploading...</span>
+            <span className="mt-2 text-sm text-gray-500">
+              {text.uploading}
+            </span>
           </div>
         ) : previewUrl ? (
           <div className="relative w-full h-full flex items-center justify-center">
             {isAudio ? (
               <audio controls className="w-full">
                 <source src={previewUrl} />
-                Trình duyệt của bạn không hỗ trợ phát audio.
+                {text.audioUnsupported}
               </audio>
             ) : isVideo ? (
               <video controls className="w-full h-full rounded-lg bg-black">
                 <source src={previewUrl} />
-                Trình duyệt của bạn không hỗ trợ phát video.
+                {text.videoUnsupported}
               </video>
             ) : isAnimation ? (
               <div className="relative w-full h-full bg-gray-50 rounded-lg overflow-hidden flex items-center justify-center">
@@ -258,13 +300,12 @@ export default function CloudflareFileUpload({
                 />
                 {animationError && (
                   <div className="absolute inset-0 flex items-center justify-center bg-white/80 text-sm text-red-600 px-3 text-center">
-                    Không thể hiển thị preview cho animation này. Vui lòng kiểm
-                    tra lại file.
+                    {text.animationPreviewError}
                   </div>
                 )}
                 <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between gap-2 text-xs text-gray-700">
                   <span className="font-semibold truncate">
-                    {fileName || "Animation preview"}
+                    {fileName || text.animationPreview}
                   </span>
                   <a
                     href={previewUrl}
@@ -272,19 +313,19 @@ export default function CloudflareFileUpload({
                     rel="noreferrer"
                     className="text-indigo-600 hover:underline"
                   >
-                    Open
+                    {text.open}
                   </a>
                 </div>
               </div>
             ) : isImage ? (
               <img
                 src={previewUrl}
-                alt="Preview"
+                alt={text.previewAlt}
                 className="w-full h-full object-cover rounded-lg"
               />
             ) : (
               <div className="text-center text-sm text-gray-700 px-3 py-2 bg-gray-100 border border-dashed border-gray-300 rounded">
-                <div className="font-semibold">Uploaded file</div>
+                <div className="font-semibold">{text.fileLabel}</div>
                 <div className="text-xs text-gray-500 break-all">
                   {fileName || previewUrl}
                 </div>
@@ -294,7 +335,7 @@ export default function CloudflareFileUpload({
                   rel="noreferrer"
                   className="mt-1 inline-block text-indigo-600 hover:underline text-xs"
                 >
-                  Open
+                  {text.open}
                 </a>
               </div>
             )}
@@ -310,7 +351,7 @@ export default function CloudflareFileUpload({
           <div className="flex flex-col items-center">
             <CloudArrowUpIcon className="h-10 w-10 text-gray-400" />
             <span className="mt-2 text-sm text-gray-500">
-              Click to upload file PNG, JPG, GIF...
+              {text.uploadHint}
             </span>
           </div>
         )}
