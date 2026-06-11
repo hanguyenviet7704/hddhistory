@@ -36,4 +36,19 @@ export const courseService = {
   async remove(id: string) {
     return axiosClient.delete(`/courses/${id}`);
   },
+
+  async downloadTemplate() {
+    return axiosClient.get(`/courses/import/template`, {
+      responseType: "blob",
+    });
+  },
+
+  async importExcel(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return axiosClient.post(`/courses/import`, formData, {
+      responseType: "blob",
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
 };
