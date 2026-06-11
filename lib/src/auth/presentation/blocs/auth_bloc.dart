@@ -114,6 +114,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   final DeleteAccountUsecase _deleteAccountUsecase;
   final DeletePermanentUserUsecase _deletePermanentUserUsecase;
   final RefreshTokenUsecase _refreshTokenUsecase;
+  final SyncHomeWidgetsUseCase _syncHomeWidgetsUseCase;
+  final ClearHomeWidgetsUseCase _clearHomeWidgetsUseCase;
 
   final IDeviceInfoService _deviceInfoService;
   final UserCubit _userCubit;
@@ -142,6 +144,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     this._deleteAccountUsecase,
     this._deletePermanentUserUsecase,
     this._refreshTokenUsecase,
+    this._syncHomeWidgetsUseCase,
+    this._clearHomeWidgetsUseCase,
     this._deviceInfoService,
     this._userCubit,
     this._profileCubit,
@@ -167,6 +171,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
     AppGlobalValue.accessToken = auth.token.accessToken;
     AppGlobalValue.refreshToken = auth.token.refreshToken;
     _profileCubit.loadUser();
+    unawaited(_syncHomeWidgetsUseCase(HomeWidgetSyncParams(localeCode: _localeCubit.state.languageCode)).run());
   }
 
   Future<bool> _userHaveCourseData() async {
@@ -240,6 +245,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> with BlocUseCaseHandlerMixin<A
   }
 
   void _onResetAuth() {
+    unawaited(_clearHomeWidgetsUseCase(unit).run());
     _userCubit.clearData();
     AppGlobalValue.accessToken = '';
     AppGlobalValue.refreshToken = '';

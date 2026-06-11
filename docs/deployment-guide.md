@@ -1,6 +1,6 @@
 # Deployment Guide
 
-**Last Updated:** 2026-05-07
+**Last Updated:** 2026-06-11
 **Scope:** local builds, CI builds, distribution readiness
 
 ## 1. Runtime and Platform Baseline
@@ -64,7 +64,15 @@ tools/macos/build/build_ios.sh <dev|stg|prod>
 tools/macos/build/build_ipa.sh <dev|stg|prod>
 ```
 
-## 4. CI-Safe Build Flags and Symbol Upload Behavior
+## 4. Native Home Widgets
+- iOS builds include `MeupHomeWidgetsExtension`; Apple Developer App Groups must exist before signed device/archive builds:
+  - dev: `group.com.eup.meup.dev.homewidget`
+  - stg: `group.com.eup.meup.stg.homewidget`
+  - prod: `group.com.eup.meup.homewidget`
+- Android builds register three Glance receivers under `com.eup.meup.homewidget` and provider XML under `android/app/src/main/res/xml/`.
+- Local validation: run Android Kotlin compile, Android dev debug APK build, and iOS dev debug no-codesign build after native widget changes.
+
+## 5. CI-Safe Build Flags and Symbol Upload Behavior
 ### `--ci` support
 - Supported: macOS/Linux Android build scripts (`build_apk.sh`, `build_appbundle.sh`).
 - Not supported: Windows `.bat` Android build scripts.
@@ -82,7 +90,7 @@ tools/macos/build/build_ipa.sh <dev|stg|prod>
 - `build_ipa.sh` documents automatic Crashlytics symbol upload via Xcode build phase.
 - `build_ios.sh` attempts Crashlytics upload through setup script.
 
-## 5. Localization Deployment Workflow
+## 6. Localization Deployment Workflow
 ### Command parity
 ```bash
 # macOS
@@ -103,7 +111,7 @@ tools\\windows\\localization\\localization.bat <pull|push|validate|slang|cache-g
 5. `slang`
 6. Optional cache refresh: `cache-gids --ensure-readme`
 
-## 6. CI/CD Overview
+## 7. CI/CD Overview
 ### GitHub Actions
 - Entry workflow: `.github/workflows/flutter-ci.yml`.
 - Delegates to reusable macOS or Linux pipeline based on `ENABLE_LINUX_PIPELINE`.
@@ -114,7 +122,7 @@ tools\\windows\\localization\\localization.bat <pull|push|validate|slang|cache-g
 - Current top-level includes are macOS templates.
 - Linux templates exist under `.gitlab/ci/linux/` for reusable/parallel adoption.
 
-## 7. CI Variable Contract
+## 8. CI Variable Contract
 ### Build and stage toggles
 - `ENABLE_BUILD_DEV`
 - `ENABLE_BUILD_STG`
@@ -148,7 +156,7 @@ Distribution:
 Pipeline behavior:
 - CI jobs export `CI=true` and `SKIP_SYMBOL_UPLOAD=true` before Android builds.
 
-## 8. Distribution Paths
+## 9. Distribution Paths
 ### Android Firebase distribution
 - macOS/Linux CI distribution jobs call `tools/macos/distribution/distribute_android.sh`.
 - Local script-driven distribution is available via build script `--distribute` on macOS/Linux/Windows APK scripts.
@@ -157,14 +165,14 @@ Pipeline behavior:
 - Use `tools/macos/distribution/distribute_ios.sh` for Firebase/TestFlight paths.
 - Fastlane skeleton checks verify contract readiness, lanes, and credentials.
 
-## 9. Release Checklist
+## 10. Release Checklist
 1. Confirm env files and keys are supplied through CI variables or secure files.
 2. Confirm localization pull/slang generation is clean.
 3. Confirm `flutter analyze` and `flutter test` pass.
 4. Confirm build toggles match target flavor release intent.
 5. Confirm symbol-upload policy (`SKIP_SYMBOL_UPLOAD`) matches build purpose.
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 ### Build prints env content in logs
 - Use `--ci` on macOS/Linux build scripts.
 - On Windows, no `--ci` switch exists currently.

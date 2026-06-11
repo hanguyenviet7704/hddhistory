@@ -29,6 +29,8 @@ class _FakeDeepLinkService implements IDeepLinkService {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   group('normalizeDeeplinkPath', () {
     test('normalizes empty and home aliases to the home route', () {
       expect(normalizeDeeplinkPath(''), RoutePath.home);
@@ -49,6 +51,60 @@ void main() {
 
     test('keeps explicit app-link paths intact', () {
       expect(resolveDeeplinkRoutePath(Uri.parse('https://meup.training/notification-request')), RoutePath.notificationRequest);
+    });
+
+    test('maps widget host-style course roadmap links to the route path', () {
+      expect(
+        resolveDeeplinkRoutePath(
+          Uri.parse('meup://course-roadmap?courseId=course-1&source=home_widget&widgetType=in_progress_course'),
+        ),
+        RoutePath.courseRoadmap,
+      );
+    });
+  });
+
+  group('HomeWidgetDeeplinkTarget', () {
+    test('parses ready course widget links as course roadmap targets', () {
+      final target = HomeWidgetDeeplinkTarget.tryParse(
+        Uri.parse('meup://course-roadmap?courseId=course-1&source=home_widget&widgetType=suggest_course'),
+      );
+
+      expect(target?.routePath, RoutePath.courseRoadmap);
+      expect(target?.widgetType, HomeWidgetType.suggestCourse);
+      expect(target?.courseId, 'course-1');
+      expect(target?.trackingParams, containsPair('widget_type', 'suggest_course'));
+    });
+
+    test('parses weekly streak widget links without course id as course roadmap targets', () {
+      final target = HomeWidgetDeeplinkTarget.tryParse(
+        Uri.parse('https://meup.training/course-roadmap?source=home_widget&widgetType=weekly_streak'),
+      );
+
+      expect(target?.routePath, RoutePath.courseRoadmap);
+      expect(target?.widgetType, HomeWidgetType.weeklyStreak);
+      expect(target?.courseId, isNull);
+    });
+
+    test('parses empty and exhausted widget links as home targets', () {
+      final emptyTarget = HomeWidgetDeeplinkTarget.tryParse(
+        Uri.parse('meup://home?source=home_widget&widgetType=in_progress_course&state=empty'),
+      );
+      final exhaustedTarget = HomeWidgetDeeplinkTarget.tryParse(
+        Uri.parse('meup://home?source=home_widget&widgetType=suggest_course&state=exhausted'),
+      );
+
+      expect(emptyTarget?.routePath, RoutePath.home);
+      expect(emptyTarget?.state, HomeWidgetPayloadState.empty);
+      expect(exhaustedTarget?.routePath, RoutePath.home);
+      expect(exhaustedTarget?.state, HomeWidgetPayloadState.exhausted);
+    });
+
+    test('rejects non-widget and unsupported widget links', () {
+      expect(HomeWidgetDeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?widgetType=suggest_course')), isNull);
+      expect(
+        HomeWidgetDeeplinkTarget.tryParse(Uri.parse('meup://course-roadmap?source=home_widget&widgetType=unknown')),
+        isNull,
+      );
     });
   });
 

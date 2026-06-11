@@ -7,6 +7,7 @@ import 'package:meup/meup.dart';
 
 //* Package imports
 import 'package:freezed_annotation/freezed_annotation.dart';
+import 'package:home_widget/home_widget.dart' as home_widget_plugin;
 import 'package:injectable/injectable.dart';
 
 //* Data Layer - Models, Datasources, Repositories

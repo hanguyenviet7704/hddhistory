@@ -1,6 +1,6 @@
 # System Architecture
 
-**Last Updated:** 2026-06-02
+**Last Updated:** 2026-06-11
 **Pattern:** Feature-based Clean Architecture + BLoC/Cubit  
 **Platforms:** Android (project-configured `flutter.minSdkVersion`) and iOS (15.0+)
 
@@ -65,9 +65,9 @@ Widget/Page
 - Firebase Messaging and Awesome Notifications types still stay implementation-only inside the services layer.
 
 ## 3. Module Topology (`lib/src`)
-Current module count: **21**.
+Current module count: **22**.
 
-Current modules: `achievenment`, `auth`, `common`, `course`, `daily_warm_up`, `data_collect`, `feedback`, `home`, `in_app_survey`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
+Current modules: `achievenment`, `auth`, `common`, `course`, `daily_warm_up`, `data_collect`, `feedback`, `home`, `home_widget`, `in_app_survey`, `learning_streak`, `lesson`, `monetization`, `onboard`, `onboard_branching`, `onboard_v2`, `output_practice`, `profile`, `progress`, `roleplay`, `setting`, `video_lesson`.
 
 ## 4. State and Use Case Execution
 ### Core state stack
@@ -208,6 +208,13 @@ These helpers centralize loading/success/failure handling and reduce Cubit/Bloc 
 - `DailyWarmUpPage` renders P1 entry, P2 local-only non-speaking questions, and P3 completion in a full-screen Home child route. P2 answer checks do not call lesson progress, completion, or score APIs.
 - P3 loads the suggested course with `GetCourseUseCase` and routes to `CourseRoadmapRoute` only when `CourseHandoffHelper.prepareRecommendedCourse` returns the roadmap intent; course or roadmap preparation failure closes back to Home.
 - Daily warm-up analytics use `TrackingKey.dailyWarmUp*` via semantic `ITrackingService` helpers. Raw question text, option text, answer text, and raw API error bodies are not tracked.
+
+### Home widget runtime flow
+- `AuthBloc` starts a best-effort `SyncHomeWidgetsUseCase` after auth success and clears stored widget payloads during session reset.
+- `HomeWidgetRepository` calls the in-progress, suggested-course, and streak APIs, builds display-only JSON payloads, saves course images best-effort through `home_widget`, and preserves previous payloads on API failures.
+- Suggested-course payloads are reused for the same local day to avoid random backend churn on repeated syncs.
+- iOS WidgetKit and Android Glance read shared JSON/image data using the same storage keys. Bundled native assets cover book, certificate, and flame fallbacks when shared image paths are missing.
+- Widget taps emit sanitized `meup://` / `https://meup.training` URLs. `DeeplinkCubit` validates `source=home_widget`, routes empty/exhausted states to Home, routes valid course/streak states to Course Roadmap, and tracks tap/result events without raw URLs.
 
 ### Onboarding branching runtime flow
 - Flow switch is driven by remote config key `onboarding_config` (`normal`/`branching`) with fail-safe fallback to `normal`.

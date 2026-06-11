@@ -7,6 +7,7 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
     init();
   }
 
+  StreamSubscription<Uri?>? _homeWidgetClickSubscription;
   String _serviceRoutePath = '';
   String _pendingUriKey = '';
   String _lastHandledInitialUriKey = '';
@@ -19,6 +20,13 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
         // _deepLinkService.uriStream.drain();
       },
       onError: (error, stackTrace) => LogDev.one('navigationFromService error: $error, stackTrace: $stackTrace'),
+    );
+    _homeWidgetClickSubscription = home_widget_plugin.HomeWidget.widgetClicked.listen(
+      (uri) {
+        if (uri == null) return;
+        navigationFromService(uri);
+      },
+      onError: (error, stackTrace) => LogDev.one('homeWidgetClicked error: $error, stackTrace: $stackTrace'),
     );
   }
 
@@ -51,9 +59,16 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   Future<bool> initialLink() async {
     try {
       Uri? uri = await _deepLinkService.getInitialLink();
+      if (uri != null && _lastHandledInitialUriKey == uri.toString()) {
+        LogDev.info('Skipping duplicate initial deeplink: $uri');
+        return false;
+      }
+      if (uri != null && navigationFromService(uri)) return true;
+
+      uri = await home_widget_plugin.HomeWidget.initiallyLaunchedFromHomeWidget();
       if (uri == null) return false;
       if (_lastHandledInitialUriKey == uri.toString()) {
-        LogDev.info('Skipping duplicate initial deeplink: $uri');
+        LogDev.info('Skipping duplicate initial home widget deeplink: $uri');
         return false;
       }
       return navigationFromService(uri);
@@ -79,7 +94,9 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   }
 
   bool _handleShellRoute() {
-    return false;
+    final target = HomeWidgetDeeplinkTarget.tryParse(Uri(path: _serviceRoutePath, queryParameters: _serviceRouteQuery));
+    if (target == null) return false;
+    return _handleHomeWidgetRoute(target);
   }
 
   bool _handleNormalRoute() {
@@ -95,6 +112,55 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
       default:
         return false;
     }
+  }
+
+  bool _handleHomeWidgetRoute(HomeWidgetDeeplinkTarget target) {
+    final navContext = AppConfig.instance.context;
+    if (navContext == null) {
+      LogDev.warning('Ignoring home widget deeplink because navigator context is unavailable');
+      _trackHomeWidgetRoute(target, TrackingKey.homeWidgetDeeplinkFailure, reason: 'missing_context');
+      return false;
+    }
+
+    _trackHomeWidgetRoute(target, TrackingKey.homeWidgetTap);
+
+    if (target.routePath == RoutePath.home) {
+      HomeRoute().go(navContext);
+      _trackHomeWidgetRoute(target, TrackingKey.homeWidgetDeeplinkSuccess, resolvedRoute: RoutePath.home);
+      return true;
+    }
+
+    if (target.routePath != RoutePath.courseRoadmap) return false;
+
+    final courseId = target.courseId;
+    if (courseId?.isNotEmpty == true) {
+      final isSelected = AppDI.injector.get<HomeCubit>().trySelectCourseFromCourseId(courseId!);
+      if (!isSelected) {
+        HomeRoute().go(navContext);
+        _trackHomeWidgetRoute(target, TrackingKey.homeWidgetDeeplinkFailure, reason: 'course_not_found', resolvedRoute: RoutePath.home);
+        return true;
+      }
+    }
+
+    AppDI.injector.get<CourseRoadmapCubit>().setRoadmapSource(HomeWidgetDeeplinkTarget.sourceValue);
+    AppDI.injector.get<PageCubit>().setCurrentIndex(1);
+    CourseRoadmapRoute().go(navContext);
+    _trackHomeWidgetRoute(target, TrackingKey.homeWidgetDeeplinkSuccess, resolvedRoute: RoutePath.courseRoadmap);
+    return true;
+  }
+
+  void _trackHomeWidgetRoute(
+    HomeWidgetDeeplinkTarget target,
+    String eventName, {
+    String? reason,
+    String? resolvedRoute,
+  }) {
+    final params = {
+      ...target.trackingParams,
+      if (reason?.isNotEmpty == true) 'reason': reason,
+      if (resolvedRoute?.isNotEmpty == true) 'resolved_route': resolvedRoute,
+    };
+    unawaited(AppService.instance.appTrackingService.trackEvent(eventName, parameters: params));
   }
 
   void _resolveServiceLink(Uri uri) {
@@ -118,17 +184,23 @@ class DeeplinkCubit extends Cubit<DeeplinkState> {
   void _handleServiceRouteHomeTab() {
     if (_serviceRouteQuery['module'] == null) return;
   }
+
+  @override
+  Future<void> close() async {
+    await _homeWidgetClickSubscription?.cancel();
+    return super.close();
+  }
 }
 
-@visibleForTesting
 String resolveDeeplinkRoutePath(Uri uri) {
-  final normalizedPath = normalizeDeeplinkPath(uri.path);
-  if (normalizedPath.isNotEmpty) {
+  final path = uri.path.trim();
+  if (path.isNotEmpty && path != RoutePath.home) {
+    final normalizedPath = normalizeDeeplinkPath(path);
     return normalizedPath;
   }
 
   final normalizedHost = uri.host.trim().toLowerCase();
-  if (normalizedHost.isEmpty) {
+  if (normalizedHost.isEmpty || normalizedHost == 'meup.training') {
     return RoutePath.home;
   }
 

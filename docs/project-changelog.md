@@ -1,5 +1,15 @@
 # Project Changelog
 
+## 2026-06-11
+
+### Added
+- Implemented native home widgets for in-progress course, weekly streak, and suggested course with Flutter sync, Android Glance, and iOS WidgetKit.
+- Added display-only widget payloads, best-effort image caching, same-day suggested-course reuse, and logout/account reset clearing.
+- Added home-widget tap deeplink routing and centralized placeholder tracking events.
+
+### Verification
+- Passed `flutter test` (549 tests), `flutter analyze`, Android Kotlin compile, Android dev debug APK build, iOS dev debug no-codesign build, and `git diff --check`.
+
 ## 2026-05-27
 
 ### Fixed

@@ -136,6 +136,9 @@ mixin TrackingKey {
   static const String dailyWarmUpStartLessonClick = 'daily_warm_up_start_lesson_click';
   static const String dailyWarmUpExploreMoreClick = 'daily_warm_up_explore_more_click';
   static const String dailyWarmUpRouteFailure = 'daily_warm_up_route_failure';
+  static const String homeWidgetTap = 'home_widget_tap';
+  static const String homeWidgetDeeplinkSuccess = 'home_widget_deeplink_success';
+  static const String homeWidgetDeeplinkFailure = 'home_widget_deeplink_failure';
 
   //* Course selection events
   static const String courseSelectAllCourseView = 'course_select_all_course_view';

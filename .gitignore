@@ -99,3 +99,4 @@ report.xml
 ios/vendor/
 android/vendor/
 .bundle/
+ios/build/

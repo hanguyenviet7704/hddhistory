@@ -1,14 +1,14 @@
 # Codebase Summary
 
-**Last Updated:** 2026-06-02
+**Last Updated:** 2026-06-11
 **Source Inputs:** direct repository verification with `find`, `wc`, `rg`, `flutter test`, and `flutter analyze`
 
 ## 1. Snapshot Metrics
 ### Dart metrics (live repository, generated files included)
-- Dart files in `lib/`: **1,136**
-- Dart LOC in `lib/`: **187,343**
-- Dart files in `test/`: **121**
-- Dart LOC in `test/`: **16,147**
+- Dart files in `lib/`: **1,173**
+- Dart LOC in `lib/`: **192,054**
+- Dart files in `test/`: **131**
+- Dart LOC in `test/`: **18,419**
 
 ### Major app layers
 | Path | Dart files | Dart LOC |
@@ -34,7 +34,7 @@ meup/
 ```
 
 ## 3. Feature Module Inventory (`lib/src`)
-`lib/src` currently has **21** modules:
+`lib/src` currently has **22** modules:
 
 | Module | Dart files | Dart LOC | Notes |
 | --- | ---: | ---: | --- |
@@ -45,7 +45,8 @@ meup/
 | `daily_warm_up` | 25 | 3,323 | Home daily warm-up entry, question/result flow, suggested-course handoff, and privacy-safe tracking |
 | `data_collect` | 45 | 4,438 | Intake/onboarding data collection |
 | `feedback` | 29 | 4,684 | User feedback flow |
-| `home` | 20 | 2,331 | Dashboard/skillset entry, streak chip trigger, daily warm-up route gate, and in-app survey entry overlay |
+| `home` | 20 | 2,388 | Dashboard/skillset entry, streak chip trigger, daily warm-up route gate, and in-app survey entry overlay |
+| `home_widget` | 15 | 1,175 | Native widget payload sync, image caching, WidgetKit/Glance bridge, tap deeplinks, and logout clearing |
 | `in_app_survey` | 35 | 6,386 | Home in-app survey config, P1-P4 modal flow, response submit, and tracking helpers |
 | `learning_streak` | 21 | 2,581 | Home streak popup + shared completion streak success gate |
 | `lesson` | 158 | 30,987 | Largest module: learning/exercise runtime |
@@ -74,6 +75,7 @@ meup/
 - Course roadmap now includes a completed-level additional-content request flow. Eligibility is derived from current roadmap completion plus matching `userCourseProgress.completedLevels`, and `ProgressCubit.loadAllUserProgresss()` now scopes course-grade refreshes so stale or lesson-filtered responses do not suppress the footer for the wrong course.
 - Home in-app survey now lives under `lib/src/in_app_survey/` and is wired through `HomeRoute`. `HomePage` loads a usable survey config, shows the P1 floating pill, opens a non-dismissible P2-P4 dialog, submits `branchId`, `selectedOptionIds`, and trimmed `feedback`, keeps P1 eligible after success, and preserves the draft on submit failure for retry. Tracking is centralized in `TrackingKey.inAppSurvey*` and excludes raw feedback or raw API error bodies.
 - Daily warm-up now lives under `lib/src/daily_warm_up/` and is gated from `HomeRoute` before the in-app survey. The entry is shown once per local day per user, stale cache is not used when the API fails, and the flow moves through P1 start/dismiss, P2 two-question answer/result checks, and P3 suggested-course handoff. It reuses course handoff and lesson choice-card UI where practical, avoids lesson/progress cubit side effects, and centralizes privacy-safe events under `TrackingKey.dailyWarmUp*`.
+- Home widgets now live under `lib/src/home_widget/` and sync display-only payloads for in-progress course, weekly streak, and suggested course. The module stores JSON/image data through `home_widget`, keeps suggested course stable for the local day, clears widget data on auth reset, and uses WidgetKit/Glance native surfaces with bundled fallback assets and sanitized tap deeplinks.
 - Lesson runtime now keeps one typed `lesson` route for both read and listen entry. `RoadmapDetailPopup` branches between read-only and read/listen CTA states before navigation, `LessonPage` renders the shared Figma-style lesson shell for both no-audio and audio keypoints, read/listen mode keeps the read surface alive while swapping to the audio player card, and `LessonAudioCubit` owns route-session playback, speed, seek, inline failure recovery, and audio-complete handoff without folding that state into `LessonCubit`.
 - Video lesson now lives under `lib/src/video_lesson/` and is launched from roadmap `openingVideo` / `closingVideo` lessons through a typed `video-lesson/:courseId/:nodeId/:lessonId` route. `RoadmapNodeActionHelper` resolves a unique roadmap node id, opens a tracked intro sheet, keeps a mounted player shell around the active video controller, scopes notes cache by `courseId + nodeId + lessonId`, supports summary/share overlays plus timed-question/result overlays, pushes completion back into roadmap state after the progress update, and runs the shared streak gate before auto-exit.
 
@@ -99,7 +101,7 @@ meup/
 - CI bootstrap script: `.gitlab/scripts/bootstrap-secrets.sh` writes runtime files and exports `build/ci/runtime.env`.
 
 ## 8. Drift Watch Items
-1. Keep module count references at 21 unless `lib/src/*` changes.
+1. Keep module count references at 22 unless `lib/src/*` changes.
 2. Keep folder/module spelling as implemented (`achievenment`).
 3. Keep use-case helper naming aligned with `runUseCase*` APIs.
 4. Keep deployment docs aligned with platform script differences and the remaining Windows symbol-upload parity gap.
@@ -110,6 +112,7 @@ meup/
 9. Keep disabled-onboarding course-entry gating aligned with `NotificationRequestRoute(courseEntryMode: true)`, anonymous bootstrap fallback rules, and the manual `CoursePage` entry path.
 10. Keep Home in-app survey entry/modal behavior, submit payload fields, and tracking privacy params aligned with `raw_plan/in_app_survey`.
 11. Keep daily warm-up entry cadence, P1-P3 state transitions, suggested-course handoff, and privacy-safe tracking params aligned with `plans/260522-1613-daily-warm-up-flow-implementation`.
+12. Keep home-widget storage keys, App Group ids, native receiver names, and tap deeplink contracts aligned across Flutter, Android, and iOS.
 
 ## 9. Quick Verification Commands
 ```bash

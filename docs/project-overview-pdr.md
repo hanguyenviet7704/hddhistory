@@ -1,11 +1,11 @@
 # Meup Project Overview & Product Development Requirements
 
-**Last Updated:** 2026-05-18
+**Last Updated:** 2026-06-11
 **Project Type:** Flutter mobile application  
 **Status:** Active development
 
 ## 1. Product Summary
-Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, completed-level additional-content requests, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, Home in-app survey feedback, daily streak continuity, and progress visibility.
+Meup is a language-learning app focused on structured lessons, roadmap-driven read/listen lesson entry, completed-level additional-content requests, first-slice video-lesson entry/completion flow, output-practice conversation flows, roleplay practice, Home in-app survey feedback, home screen widgets, daily streak continuity, and progress visibility.
 The product combines course content, interactive exercise formats, AI-assisted speaking/roleplay feedback, learning-streak surfaces, and subscription features.
 
 ## 2. Scope and Users
@@ -27,9 +27,10 @@ The product combines course content, interactive exercise formats, AI-assisted s
 10. Daily streak check/commit from home and lesson-completion moments.
 11. Disabled-onboarding course-entry gate and course landing.
 12. Home in-app survey feedback from P1 entry through P2-P4 submit.
+13. Native home widgets for course progress, weekly streak, and daily suggestion.
 
 ## 3. Current Module Scope (Code-Verified)
-`lib/src` currently contains 20 feature modules:
+`lib/src` currently contains 22 feature modules:
 
 | Module | Primary responsibility |
 | --- | --- |
@@ -40,6 +41,7 @@ The product combines course content, interactive exercise formats, AI-assisted s
 | `data_collect` | Onboarding survey and profile intake steps |
 | `feedback` | User feedback submission/view |
 | `home` | Skillset and dashboard entry |
+| `home_widget` | Native widget payload sync, image caching, tap deeplinks, and logout clearing |
 | `in_app_survey` | Home in-app survey config, entry, modal flow, response submit, and tracking |
 | `learning_streak` | Home streak popup and completion streak success overlays |
 | `lesson` | Learning-item and exercise flows |
@@ -58,6 +60,7 @@ Notes:
 - Naming intentionally follows code paths, including `achievenment`.
 - `feedback`, `learning_streak`, `onboard_branching`, `onboard_v2`, `output_practice`, and `video_lesson` are part of the current module map.
 - `in_app_survey` is part of the current module map and is launched from Home, not as a standalone route.
+- `home_widget` syncs display-only native widget payloads and renders through WidgetKit/Glance, not Flutter views.
 
 ## 4. Functional Requirements
 1. Authentication and session handling
@@ -135,6 +138,13 @@ Notes:
 - Keep the user on the gate for retryable bootstrap failure; fall back to plain `RegisterRoute()` only when anonymous auth fails unrecoverably.
 - Clear onboarding and open `CourseRoute(selectedTabIndex: 0)` on success; keep `CoursePage` manual with no auto-roadmap transition.
 
+14. Native home widget flow
+- Sync in-progress course, weekly streak, and suggested-course payloads after auth success.
+- Keep suggested-course payload stable for the local day.
+- Save course images best-effort; native widgets fall back to bundled art when shared image paths are missing.
+- Clear display payloads best-effort on logout/account reset.
+- Route widget taps through sanitized `meup://` / `https://meup.training` deeplinks to Home or Course Roadmap.
+
 ## 5. Non-Functional Requirements
 1. Architecture consistency
 - Maintain `presentation -> domain -> data` flow for feature work.
@@ -190,6 +200,7 @@ Notes:
 ## 10. Requirement Version Notes
 | Date | Change |
 | --- | --- |
+| 2026-06-11 | Added native home-widget requirements and synced module scope to 22 modules. |
 | 2026-05-12 | Added disabled-onboarding course-entry requirements and aligned splash/notification routing language with the current course-entry gate. |
 | 2026-05-08 | Updated Onboard V2 requirements for the eight-step path/symptom/course-picker flow, repeated symptom course filtering, and splash protection for authenticated unfinished onboarding. |
 | 2026-05-07 | Synced code-verified module scope to 19 modules, added Onboard V2 requirements, and aligned video-lesson observability wording with shipped overlays. |

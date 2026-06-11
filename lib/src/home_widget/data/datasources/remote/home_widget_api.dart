@@ -6,24 +6,12 @@ abstract class HomeWidgetApi {
   @factoryMethod
   factory HomeWidgetApi(@Named(DIKey.appDio) Dio dio) = _HomeWidgetApi;
 
-  @GET('/home_widgets')
-  Future<BaseResponse<BasePageBreak<HomeWidgetModel>>> getAllHomeWidgets(
-    @Queries() PageBreakRequest request,
-  );
+  @GET('/api/v1/courses-user-progress/widget/in-progress')
+  Future<BaseResponse<HomeWidgetCourseModel>> getInProgressWidget();
 
-  @GET('${'/home_widgets'}/{id}')
-  Future<BaseResponse<HomeWidgetModel>> getHomeWidget(@Path('id') String id);
+  @GET('/api/v1/courses-user-progress/widget/suggest-course')
+  Future<BaseResponse<HomeWidgetCourseModel>> getSuggestCourseWidget();
 
-  @POST('/home_widgets')
-  Future<BaseResponse<HomeWidgetModel>> createHomeWidget(@Body() Map<String, dynamic> body);
-
-  @PUT('${'/home_widgets'}/{id}')
-  Future<BaseResponse<HomeWidgetModel>> updateHomeWidget(
-    @Path('id') String id,
-    @Body() Map<String, dynamic> body,
-  );
-
-  @DELETE('${'/home_widgets'}/{id}')
-  Future<BaseResponse<void>> deleteHomeWidget(@Path('id') String id);
+  @GET('/api/v1/courses-user-progress/streak')
+  Future<BaseResponse<HomeWidgetStreakModel>> getLearningStreak();
 }
-

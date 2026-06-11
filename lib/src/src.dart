@@ -5,6 +5,7 @@ export 'auth/auth.dart';
 export 'course/course.dart';
 export 'data_collect/data_collect.dart';
 export 'home/home.dart';
+export 'home_widget/home_widget.dart';
 export 'in_app_survey/in_app_survey.dart';
 export 'learning_streak/learning_streak.dart';
 export 'lesson/lesson.dart';

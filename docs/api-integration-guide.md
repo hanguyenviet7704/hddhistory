@@ -1,6 +1,6 @@
 # API Integration Guide
 
-**Last Updated:** 2026-03-30  
+**Last Updated:** 2026-06-11
 **Related:** `docs/system-architecture.md`, `lib/core/base/`, `lib/src/*/data/datasources/remote/`
 
 ## 1. Integration Stack
@@ -157,6 +157,18 @@ Runtime behavior:
 - Conversation fetch is section-scoped.
 - Message history is conversation-scoped and paginated.
 - A missing conversation is treated as create-on-demand rather than a hard failure.
+
+### 6.6 Home widget display payload requests
+`HomeWidgetApi` defines feature-scoped read endpoints for native widget payload sync:
+- `getInProgressWidget()` -> `GET /api/v1/courses-user-progress/widget/in-progress`
+- `getSuggestCourseWidget()` -> `GET /api/v1/courses-user-progress/widget/suggest-course`
+- `getLearningStreak()` -> `GET /api/v1/courses-user-progress/streak`
+
+Runtime behavior:
+- Payloads are display-only data written to native widget shared storage.
+- Course cover images are cached best-effort; native widgets use bundled fallback art when image save fails.
+- Suggested course is reused for the same local day after a successful sync.
+- Logout/account reset clears widget payloads and image/static keys best-effort.
 
 ## 7. Repository Integration Pattern
 Use repositories to isolate transport details from domain/presentation:

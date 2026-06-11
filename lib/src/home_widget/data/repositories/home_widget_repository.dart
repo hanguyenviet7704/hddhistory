@@ -1,51 +1,199 @@
 part of '../../home_widget.dart';
 
 @LazySingleton(as: IHomeWidgetRepository)
-class HomeWidgetRepository with RestfulRequestHandlerMixin implements IHomeWidgetRepository {
+class HomeWidgetRepository implements IHomeWidgetRepository {
   final HomeWidgetApi _api;
   final HomeWidgetLocalDataSource _localDataSource;
-  
+  final HomeWidgetBridge _bridge;
+  Future<HomeWidgetSyncResult>? _suggestSyncInFlight;
 
   HomeWidgetRepository(
     this._api,
     this._localDataSource,
+    this._bridge,
   );
 
   @override
-  TaskEither<AppException, HomeWidgetEntity> getHomeWidget(String id) {
-    return callApiWithTransform<HomeWidgetModel, HomeWidgetEntity>(
-      apiCall: () => _api.getHomeWidget(id),
-      transform: (model) => model.toEntity(),
-      onSuccess: (data) async => await _localDataSource.cacheHomeWidget(data ?? HomeWidgetModel()),
-      onError: () async {
-        final cachedModel = await _localDataSource.getCachedHomeWidget(id);
-        return cachedModel?.toEntity();
-      },
-      defaultValue: HomeWidgetEntity(),
-    );
+  TaskEither<AppException, List<HomeWidgetSyncResult>> syncAll(HomeWidgetSyncParams params) {
+    return TaskEither(() async {
+      final results = <HomeWidgetSyncResult>[];
+      results.add(
+        (await syncInProgress(
+          params,
+        ).run()).getOrElse((error) => HomeWidgetSyncResult(widgetType: HomeWidgetType.inProgressCourse, status: HomeWidgetSyncStatus.failed, message: error.message ?? '')),
+      );
+      results.add(
+        (await syncStreak(
+          params,
+        ).run()).getOrElse((error) => HomeWidgetSyncResult(widgetType: HomeWidgetType.weeklyStreak, status: HomeWidgetSyncStatus.failed, message: error.message ?? '')),
+      );
+      results.add(
+        (await syncSuggestCourse(
+          params,
+        ).run()).getOrElse((error) => HomeWidgetSyncResult(widgetType: HomeWidgetType.suggestCourse, status: HomeWidgetSyncStatus.failed, message: error.message ?? '')),
+      );
+      return right(results);
+    });
   }
 
-  
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> syncInProgress(HomeWidgetSyncParams params) {
+    return _bestEffort(() async {
+      final response = await _api.getInProgressWidget();
+      final payload = HomeWidgetPayloadBuilder.buildInProgress(
+        response.data?.toEntity(),
+        localeCode: params.localeCode,
+        updatedAt: params.currentTime,
+      );
+      return _savePayloadOrPreserve(payload);
+    }, HomeWidgetType.inProgressCourse);
+  }
 
-  // ==================== HELPER METHODS ====================
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> syncStreak(HomeWidgetSyncParams params) {
+    return _bestEffort(() async {
+      final response = await _api.getLearningStreak();
+      if (response.data == null) {
+        throw StateError('Streak widget response data is null');
+      }
+      final payload = HomeWidgetPayloadBuilder.buildStreak(
+        response.data!.toEntity(),
+        updatedAt: params.currentTime,
+      );
+      return _savePayloadOrPreserve(payload);
+    }, HomeWidgetType.weeklyStreak);
+  }
 
-  /// Converts HomeWidgetEntity to JSON Map for API requests
-  /// Provides flexibility to customize the request body structure without affecting domain models
-  /// Reusable helper to avoid duplication in create/update methods
-  Map<String, dynamic> _entityToJson(HomeWidgetEntity entity) {
-    return {
-      'id': entity.id,
-      'name': entity.name,
-      // TODO: Add more fields as needed
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> syncSuggestCourse(HomeWidgetSyncParams params) {
+    final existing = _suggestSyncInFlight;
+    if (existing != null) {
+      return TaskEither(() async => right(await existing));
+    }
+
+    return TaskEither(() async {
+      final future = _runBestEffort(
+        () => _syncSuggestCourse(params),
+        HomeWidgetType.suggestCourse,
+      );
+      _suggestSyncInFlight = future;
+      try {
+        return right(await future);
+      } finally {
+        if (identical(_suggestSyncInFlight, future)) {
+          _suggestSyncInFlight = null;
+        }
+      }
+    });
+  }
+
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> clearStoredWidgets() {
+    return TaskEither(() async {
+      for (final key in HomeWidgetStorageKeys.allKeys) {
+        try {
+          await _bridge.clearKey(key);
+        } catch (_) {}
+      }
+      await _localDataSource.clearCache();
+      await _updateWidgetQuietly(HomeWidgetType.inProgressCourse);
+      await _updateWidgetQuietly(HomeWidgetType.weeklyStreak);
+      await _updateWidgetQuietly(HomeWidgetType.suggestCourse);
+      return right(const HomeWidgetSyncResult(widgetType: null, status: HomeWidgetSyncStatus.cleared));
+    });
+  }
+
+  TaskEither<AppException, HomeWidgetSyncResult> _bestEffort(
+    Future<HomeWidgetSyncResult> Function() action,
+    HomeWidgetType widgetType,
+  ) {
+    return TaskEither(() async => right(await _runBestEffort(action, widgetType)));
+  }
+
+  Future<HomeWidgetSyncResult> _runBestEffort(
+    Future<HomeWidgetSyncResult> Function() action,
+    HomeWidgetType widgetType,
+  ) async {
+    try {
+      return await action();
+    } catch (error) {
+      final cached = await _localDataSource.getCachedPayload(_storageKeyFor(widgetType));
+      await _updateWidgetQuietly(widgetType);
+      if (cached != null) {
+        return HomeWidgetSyncResult(widgetType: widgetType, status: HomeWidgetSyncStatus.preserved, payload: cached, message: error.toString());
+      }
+      return HomeWidgetSyncResult(widgetType: widgetType, status: HomeWidgetSyncStatus.failed, message: error.toString());
+    }
+  }
+
+  Future<HomeWidgetSyncResult> _savePayloadOrPreserve(HomeWidgetPayload payload) async {
+    try {
+      String? nonBlockingMessage;
+      try {
+        await _bridge.prepareStaticAssets();
+      } catch (error) {
+        nonBlockingMessage = error.toString();
+      }
+
+      if (payload.imageUrl != null && payload.imageKey != null) {
+        try {
+          await _bridge.saveImage(key: payload.imageKey!, imageUrl: payload.imageUrl!);
+        } catch (error) {
+          nonBlockingMessage = [nonBlockingMessage, '${payload.imageKey}: $error'].where((message) => message?.isNotEmpty == true).join('; ');
+        }
+      }
+      await _bridge.savePayload(payload);
+      await _localDataSource.cachePayload(payload);
+      await _bridge.updateWidget(payload.widgetType);
+      return HomeWidgetSyncResult(widgetType: payload.widgetType, status: HomeWidgetSyncStatus.updated, payload: payload, message: nonBlockingMessage ?? '');
+    } catch (error) {
+      final cached = await _localDataSource.getCachedPayload(payload.storageKey);
+      await _updateWidgetQuietly(payload.widgetType);
+      if (cached != null) {
+        return HomeWidgetSyncResult(widgetType: payload.widgetType, status: HomeWidgetSyncStatus.preserved, payload: cached, message: error.toString());
+      }
+
+      await _bridge.savePayload(payload);
+      await _localDataSource.cachePayload(payload);
+      await _updateWidgetQuietly(payload.widgetType);
+      return HomeWidgetSyncResult(widgetType: payload.widgetType, status: HomeWidgetSyncStatus.updated, payload: payload, message: error.toString());
+    }
+  }
+
+  Future<HomeWidgetSyncResult> _syncSuggestCourse(HomeWidgetSyncParams params) async {
+    final today = params.localDateKey;
+    final cachedDate = await _localDataSource.getSuggestionDate();
+    final cachedPayload = await _localDataSource.getCachedPayload(HomeWidgetStorageKeys.suggestCoursePayload);
+    if (cachedDate == today && cachedPayload != null) {
+      await _bridge.updateWidget(HomeWidgetType.suggestCourse);
+      return HomeWidgetSyncResult(widgetType: HomeWidgetType.suggestCourse, status: HomeWidgetSyncStatus.preserved, payload: cachedPayload);
+    }
+
+    final response = await _api.getSuggestCourseWidget();
+    final payload = HomeWidgetPayloadBuilder.buildSuggestCourse(
+      response.data?.toEntity(),
+      localeCode: params.localeCode,
+      updatedAt: params.currentTime,
+      suggestionDate: params.now,
+    );
+    final result = await _savePayloadOrPreserve(payload);
+    if (result.status == HomeWidgetSyncStatus.updated) {
+      await _localDataSource.setSuggestionDate(today);
+    }
+    return result;
+  }
+
+  Future<void> _updateWidgetQuietly(HomeWidgetType widgetType) async {
+    try {
+      await _bridge.updateWidget(widgetType);
+    } catch (_) {}
+  }
+
+  static String _storageKeyFor(HomeWidgetType widgetType) {
+    return switch (widgetType) {
+      HomeWidgetType.inProgressCourse => HomeWidgetStorageKeys.inProgressPayload,
+      HomeWidgetType.weeklyStreak => HomeWidgetStorageKeys.streakPayload,
+      HomeWidgetType.suggestCourse => HomeWidgetStorageKeys.suggestCoursePayload,
     };
   }
-  
-
-  TaskEither<AppException, T> _missingDataSourceTask<T>(String operation) {
-    
-    return TaskEither.left(
-      AppException.unexpected('$operation is not implemented. Please provide a remote or local data source.'),
-    );
-  }
 }
-
