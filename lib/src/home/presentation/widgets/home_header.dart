@@ -9,6 +9,7 @@ class HomeHeaderWidget extends StatefulWidget {
 
 class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
   bool _isOpeningStreakPopup = false;
+  int _debugHomeWidgetScenarioIndex = 0;
 
   Future<void> _openStreakPopup(int currentStreak) async {
     if (_isOpeningStreakPopup) return;
@@ -23,6 +24,125 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
         setState(() => _isOpeningStreakPopup = false);
       }
     }
+  }
+
+  Future<void> _debugApplyNextHomeWidgetScenario() async {
+    if (!kDebugMode) return;
+
+    final scenarioIndex = _debugHomeWidgetScenarioIndex;
+    _debugHomeWidgetScenarioIndex = (_debugHomeWidgetScenarioIndex + 1) % 3;
+
+    try {
+      switch (scenarioIndex) {
+        case 0:
+          await _debugApplyHomeWidgetPayloads(
+            message: 'Home widget fake: no started course',
+            payloads: _debugNoStartedCoursePayloads(),
+          );
+          break;
+        case 1:
+          await _debugApplyHomeWidgetPayloads(
+            message: 'Home widget fake: done all courses',
+            payloads: _debugDoneAllCoursesPayloads(),
+          );
+          break;
+        default:
+          await AppDI.injector.get<ClearHomeWidgetsUseCase>()(unit).run();
+          await AppDI.injector
+              .get<SyncHomeWidgetsUseCase>()(
+                HomeWidgetSyncParams(localeCode: _debugLocaleCode()),
+              )
+              .run();
+          _showDebugSnackBar('Home widget reset: synced from API');
+      }
+    } catch (error) {
+      LogDev.error('Home widget debug fake failed: $error');
+      _showDebugSnackBar('Home widget fake failed: $error', type: MessageType.error);
+    }
+  }
+
+  Future<void> _debugApplyHomeWidgetPayloads({
+    required String message,
+    required List<HomeWidgetPayload> payloads,
+  }) async {
+    final bridge = AppDI.injector.get<HomeWidgetBridge>();
+
+    await AppDI.injector.get<ClearHomeWidgetsUseCase>()(unit).run();
+    await bridge.prepareStaticAssets();
+    for (final payload in payloads) {
+      await bridge.savePayload(payload);
+      await bridge.updateWidget(payload.widgetType);
+    }
+
+    _showDebugSnackBar(message);
+  }
+
+  List<HomeWidgetPayload> _debugNoStartedCoursePayloads() {
+    final now = DateTime.now();
+    final localeCode = _debugLocaleCode();
+    return [
+      HomeWidgetPayloadBuilder.buildInProgress(
+        null,
+        localeCode: localeCode,
+        updatedAt: now,
+      ),
+      HomeWidgetPayloadBuilder.buildStreak(
+        const HomeWidgetStreakEntity(),
+        updatedAt: now,
+      ),
+      HomeWidgetPayloadBuilder.buildSuggestCourse(
+        const HomeWidgetCourseEntity(
+          courseId: 'debug-suggest-course',
+          title: BaseMultiLanguage(en: 'Try a course today'),
+          description: BaseMultiLanguage(en: 'Pick a lesson and start building your streak.'),
+        ),
+        localeCode: localeCode,
+        updatedAt: now,
+        suggestionDate: now,
+      ),
+    ];
+  }
+
+  List<HomeWidgetPayload> _debugDoneAllCoursesPayloads() {
+    final now = DateTime.now();
+    final localeCode = _debugLocaleCode();
+    return [
+      HomeWidgetPayloadBuilder.buildInProgress(
+        null,
+        localeCode: localeCode,
+        updatedAt: now,
+      ),
+      HomeWidgetPayloadBuilder.buildStreak(
+        const HomeWidgetStreakEntity(
+          weekStudy: [true, true, true, true, true, false, false],
+          currentStreak: 5,
+          bestStreak: 12,
+        ),
+        updatedAt: now,
+      ),
+      HomeWidgetPayloadBuilder.buildSuggestCourse(
+        null,
+        localeCode: localeCode,
+        updatedAt: now,
+        suggestionDate: now,
+      ),
+    ];
+  }
+
+  String _debugLocaleCode() {
+    if (AppDI.injector.isRegistered<LocaleCubit>()) {
+      return AppDI.injector.get<LocaleCubit>().state.languageCode;
+    }
+    return AppLocale.en.languageCode;
+  }
+
+  void _showDebugSnackBar(String message, {MessageType type = MessageType.success}) {
+    if (!mounted) return;
+    context.showDSnackBar(
+      message: message,
+      type: type,
+      duration: const Duration(seconds: 2),
+    );
   }
 
   @override
@@ -42,12 +162,21 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                   child: BlocSelector<ProfileCubit, ProfileState, String>(
                     selector: (state) => state.user.name,
                     builder: (context, username) {
-                      return AppText(
+                      final title = AppText(
                         context.l10n.home.homeGreetingTitle(username: username),
                         enableFitScaleDown: true,
                         style: AppStyle.text12.copyWith(
                           color: AppCustomColor.textTertiary,
                         ),
+                      );
+
+                      if (!kDebugMode) return title;
+
+                      // Debug-only manual QA hook. Remove after home widget state checks.
+                      return GestureDetector(
+                        behavior: HitTestBehavior.opaque,
+                        onTap: _debugApplyNextHomeWidgetScenario,
+                        child: title,
                       );
                     },
                   ),
