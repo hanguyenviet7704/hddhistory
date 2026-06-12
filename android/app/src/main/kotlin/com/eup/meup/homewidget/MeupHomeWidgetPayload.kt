@@ -29,7 +29,7 @@ enum class MeupWidgetType(
     SuggestCourse(
         payloadKey = "meup_home_widget_suggest_course_v1",
         defaultDeeplink = "meup://home?source=home_widget&widgetType=suggest_course",
-        defaultTitle = "Today's suggestion",
+        defaultTitle = "You crushed every course!",
         fallbackImageKey = "meup_home_widget_certificate_asset",
         fallbackImageResId = R.drawable.meup_widget_certificate,
     ),
@@ -64,8 +64,10 @@ internal fun MeupWidgetType.fallbackPayload(): MeupHomeWidgetPayload {
 
     if (this == MeupWidgetType.Streak) {
         data.put("currentStreak", 0)
+        data.put("countText", "0 days")
         data.put("subtitle", defaultTitle)
         data.put("weekStudy", JSONArray(listOf(false, false, false, false, false, false, false)))
+        data.put("weekLabels", JSONArray(listOf("M", "T", "W", "T", "F", "S", "S")))
     }
 
     if (this == MeupWidgetType.SuggestCourse) {
@@ -78,6 +80,23 @@ internal fun MeupWidgetType.fallbackPayload(): MeupHomeWidgetPayload {
         data = data,
     )
 }
+
+internal fun MeupWidgetType.titleFor(data: JSONObject, isReady: Boolean): String {
+    val value = data.stringValue("title", defaultTitle)
+    return if (this == MeupWidgetType.SuggestCourse && !isReady && value in legacySuggestLabels) {
+        defaultTitle
+    } else {
+        value
+    }
+}
+
+private val legacySuggestLabels = setOf(
+    "Today's suggestion",
+    "Gợi ý hôm nay",
+    "今日推荐",
+    "今日のおすすめ",
+    "오늘의 추천",
+)
 
 internal fun JSONObject.stringValue(key: String, fallback: String = ""): String {
     return optString(key, fallback).ifBlank { fallback }
@@ -100,5 +119,17 @@ internal fun JSONObject.boolList(key: String, targetSize: Int): List<Boolean> {
         }
     }
     while (values.size < targetSize) values.add(false)
+    return values
+}
+
+internal fun JSONObject.stringList(key: String, fallback: List<String>, targetSize: Int): List<String> {
+    val values = mutableListOf<String>()
+    val array = optJSONArray(key)
+    if (array != null) {
+        for (index in 0 until minOf(array.length(), targetSize)) {
+            values.add(array.optString(index, fallback.getOrElse(index) { "" }).ifBlank { fallback.getOrElse(index) { "" } })
+        }
+    }
+    while (values.size < targetSize) values.add(fallback.getOrElse(values.size) { "" })
     return values
 }

@@ -29,19 +29,20 @@ private val WeekCheckText = ColorProvider(androidx.compose.ui.graphics.Color.Whi
 @Composable
 internal fun StreakWeekStudyRow(
     days: List<Boolean>,
+    labels: List<String>,
     gapDp: Int,
     daySizeDp: Int,
 ) {
     val cellWidthDp = daySizeDp + gapDp
     val rowWidthDp = (cellWidthDp * 6) + daySizeDp
     Row(modifier = GlanceModifier.width(rowWidthDp.dp)) {
-        StreakWeekDay("M", days.isStudied(0), daySizeDp, cellWidthDp)
-        StreakWeekDay("T", days.isStudied(1), daySizeDp, cellWidthDp)
-        StreakWeekDay("W", days.isStudied(2), daySizeDp, cellWidthDp)
-        StreakWeekDay("T", days.isStudied(3), daySizeDp, cellWidthDp)
-        StreakWeekDay("F", days.isStudied(4), daySizeDp, cellWidthDp)
-        StreakWeekDay("S", days.isStudied(5), daySizeDp, cellWidthDp)
-        StreakWeekDay("S", days.isStudied(6), daySizeDp, daySizeDp)
+        StreakWeekDay(labels.getOrElse(0) { "M" }, days.isStudied(0), daySizeDp, cellWidthDp)
+        StreakWeekDay(labels.getOrElse(1) { "T" }, days.isStudied(1), daySizeDp, cellWidthDp)
+        StreakWeekDay(labels.getOrElse(2) { "W" }, days.isStudied(2), daySizeDp, cellWidthDp)
+        StreakWeekDay(labels.getOrElse(3) { "T" }, days.isStudied(3), daySizeDp, cellWidthDp)
+        StreakWeekDay(labels.getOrElse(4) { "F" }, days.isStudied(4), daySizeDp, cellWidthDp)
+        StreakWeekDay(labels.getOrElse(5) { "S" }, days.isStudied(5), daySizeDp, cellWidthDp)
+        StreakWeekDay(labels.getOrElse(6) { "S" }, days.isStudied(6), daySizeDp, daySizeDp)
     }
 }
 

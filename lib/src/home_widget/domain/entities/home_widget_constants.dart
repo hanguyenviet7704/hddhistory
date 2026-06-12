@@ -69,6 +69,7 @@ class HomeWidgetStorageKeys {
   static const certificateAsset = 'meup_home_widget_certificate_asset';
   static const flameAsset = 'meup_home_widget_flame_asset';
   static const suggestionDate = 'meup_home_widget_suggest_course_date';
+  static const localeCode = 'meup_home_widget_locale_code';
 
   static const allKeys = [
     inProgressPayload,
@@ -80,6 +81,7 @@ class HomeWidgetStorageKeys {
     certificateAsset,
     flameAsset,
     suggestionDate,
+    localeCode,
   ];
 }
 

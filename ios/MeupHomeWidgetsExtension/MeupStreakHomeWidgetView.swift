@@ -18,8 +18,8 @@ private struct SmallStreakWidgetView: View {
 
   var body: some View {
     VStack(spacing: 5) {
-      WidgetImageView(type: .streak, payload: payload, size: 64)
-      StreakCountText(streak: payload.int("currentStreak"), fontSize: 25)
+      WidgetImageView(type: .streak, payload: payload, width: 72, height: 77)
+      StreakCountText(payload: payload, fontSize: 26)
       Text(payload.string("subtitle", fallback: "Start your streak today"))
         .widgetCaption(fontSize: 12, lineLimit: 1)
     }
@@ -36,18 +36,23 @@ private struct MediumStreakWidgetView: View {
       Image("meup_widget_streak_medium_art")
         .resizable()
         .scaledToFit()
-        .frame(width: 150, height: 88)
-        .offset(x: 5, y: 5)
-      VStack(alignment: .leading, spacing: 14) {
+        .frame(width: 160, height: 94)
+        .offset(x: 8, y: 6)
+      VStack(alignment: .leading, spacing: 12) {
         HStack(spacing: 12) {
-          WidgetImageView(type: .streak, payload: payload, size: 46)
+          WidgetImageView(type: .streak, payload: payload, width: 44, height: 47)
           VStack(alignment: .leading, spacing: 1) {
-            StreakCountText(streak: payload.int("currentStreak"), fontSize: 24)
+            StreakCountText(payload: payload, fontSize: 24)
             Text(payload.string("subtitle", fallback: "Start your streak today"))
               .widgetCaption(fontSize: 12, lineLimit: 1)
           }
         }
-        StreakWeekStudyRow(days: payload.boolArray("weekStudy", size: 7), daySize: 22, gap: 8)
+        StreakWeekStudyRow(
+          days: payload.boolArray("weekStudy", size: 7),
+          labels: payload.stringArray("weekLabels", fallback: ["M", "T", "W", "T", "F", "S", "S"], size: 7),
+          daySize: 24,
+          gap: 16
+        )
         Spacer(minLength: 0)
       }
       .padding(.top, 16)
@@ -60,9 +65,9 @@ private struct MediumStreakWidgetView: View {
 
 private struct StreakWeekStudyRow: View {
   let days: [Bool]
+  let labels: [String]
   let daySize: CGFloat
   let gap: CGFloat
-  private let labels = ["M", "T", "W", "T", "F", "S", "S"]
 
   var body: some View {
     HStack(spacing: gap) {

@@ -69,21 +69,23 @@ private fun StreakContent(
 ) {
     val data = payload.data
     val days = data.boolList("weekStudy", 7)
+    val weekLabels = data.stringList("weekLabels", listOf("M", "T", "W", "T", "F", "S", "S"), 7)
     val currentStreak = data.intValue("currentStreak")
+    val countText = data.stringValue("countText", "$currentStreak day${if (currentStreak == 1) "" else "s"}")
     val subtitle = data.stringValue("subtitle", "Start your streak today")
     val flame = state.preferences.imageProviderFor(MeupWidgetType.Streak, data)
 
     if (isMedium) {
-        MediumStreakContent(flame, currentStreak, subtitle, days, isCompact)
+        MediumStreakContent(flame, countText, subtitle, days, weekLabels, isCompact)
     } else {
-        SmallStreakContent(flame, currentStreak, subtitle, isCompact)
+        SmallStreakContent(flame, countText, subtitle, isCompact)
     }
 }
 
 @Composable
 private fun SmallStreakContent(
     flame: androidx.glance.ImageProvider,
-    currentStreak: Int,
+    countText: String,
     subtitle: String,
     isCompact: Boolean,
 ) {
@@ -99,7 +101,7 @@ private fun SmallStreakContent(
     ) {
         WidgetImage(flame, sizeDp = imageSize)
         Spacer(GlanceModifier.height(if (isCompact) 2.dp else 6.dp))
-        StreakCountText(currentStreak, fontSizeSp = titleSize)
+        StreakCountText(countText, fontSizeSp = titleSize)
         WidgetCaption(subtitle, maxLines = 1, fontSizeSp = captionSize)
     }
 }
@@ -107,9 +109,10 @@ private fun SmallStreakContent(
 @Composable
 private fun MediumStreakContent(
     flame: androidx.glance.ImageProvider,
-    currentStreak: Int,
+    countText: String,
     subtitle: String,
     days: List<Boolean>,
+    weekLabels: List<String>,
     isCompact: Boolean,
 ) {
     val verticalPadding = if (isCompact) 12 else 16
@@ -141,24 +144,24 @@ private fun MediumStreakContent(
                 WidgetImage(flame, sizeDp = flameSize)
                 Spacer(GlanceModifier.width(12.dp))
                 Column {
-                    StreakCountText(currentStreak, fontSizeSp = 24)
+                    StreakCountText(countText, fontSizeSp = 24)
                     WidgetCaption(subtitle, maxLines = 1, fontSizeSp = 12)
                 }
             }
 
             Spacer(GlanceModifier.height(spacerHeight.dp))
-            StreakWeekStudyRow(days, gapDp = if (isCompact) 7 else 8, daySizeDp = daySize)
+            StreakWeekStudyRow(days, weekLabels, gapDp = if (isCompact) 7 else 8, daySizeDp = daySize)
         }
     }
 }
 
 @Composable
 private fun StreakCountText(
-    currentStreak: Int,
+    countText: String,
     fontSizeSp: Int,
 ) {
     Text(
-        text = "$currentStreak day${if (currentStreak == 1) "" else "s"}",
+        text = countText,
         maxLines = 1,
         style = TextStyle(
             color = StreakTitleText,

@@ -37,13 +37,13 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
         case 0:
           await _debugApplyHomeWidgetPayloads(
             message: 'Home widget fake: no started course',
-            payloads: _debugNoStartedCoursePayloads(),
+            payloads: await _buildDebugNoStartedHomeWidgetPayloads(),
           );
           break;
         case 1:
           await _debugApplyHomeWidgetPayloads(
             message: 'Home widget fake: done all courses',
-            payloads: _debugDoneAllCoursesPayloads(),
+            payloads: await _buildDebugDoneAllHomeWidgetPayloads(),
           );
           break;
         default:
@@ -75,65 +75,6 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
     }
 
     _showDebugSnackBar(message);
-  }
-
-  List<HomeWidgetPayload> _debugNoStartedCoursePayloads() {
-    final now = DateTime.now();
-    final localeCode = _debugLocaleCode();
-    return [
-      HomeWidgetPayloadBuilder.buildInProgress(
-        null,
-        localeCode: localeCode,
-        updatedAt: now,
-      ),
-      HomeWidgetPayloadBuilder.buildStreak(
-        const HomeWidgetStreakEntity(),
-        updatedAt: now,
-      ),
-      HomeWidgetPayloadBuilder.buildSuggestCourse(
-        const HomeWidgetCourseEntity(
-          courseId: 'debug-suggest-course',
-          title: BaseMultiLanguage(en: 'Try a course today'),
-          description: BaseMultiLanguage(en: 'Pick a lesson and start building your streak.'),
-        ),
-        localeCode: localeCode,
-        updatedAt: now,
-        suggestionDate: now,
-      ),
-    ];
-  }
-
-  List<HomeWidgetPayload> _debugDoneAllCoursesPayloads() {
-    final now = DateTime.now();
-    final localeCode = _debugLocaleCode();
-    return [
-      HomeWidgetPayloadBuilder.buildInProgress(
-        null,
-        localeCode: localeCode,
-        updatedAt: now,
-      ),
-      HomeWidgetPayloadBuilder.buildStreak(
-        const HomeWidgetStreakEntity(
-          weekStudy: [true, true, true, true, true, false, false],
-          currentStreak: 5,
-          bestStreak: 12,
-        ),
-        updatedAt: now,
-      ),
-      HomeWidgetPayloadBuilder.buildSuggestCourse(
-        null,
-        localeCode: localeCode,
-        updatedAt: now,
-        suggestionDate: now,
-      ),
-    ];
-  }
-
-  String _debugLocaleCode() {
-    if (AppDI.injector.isRegistered<LocaleCubit>()) {
-      return AppDI.injector.get<LocaleCubit>().state.languageCode;
-    }
-    return AppLocale.en.languageCode;
   }
 
   void _showDebugSnackBar(String message, {MessageType type = MessageType.success}) {

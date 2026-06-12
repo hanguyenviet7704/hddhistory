@@ -17,6 +17,7 @@ struct MeupHomeWidgetView: View {
       }
     }
     .widgetURL(URL(string: entry.payload.deeplink))
-    .widgetBackground(entry.payload.isReady ? WidgetColor.card : WidgetColor.fallbackCard)
+    .unredacted()
+    .meupWidgetBackground(isReady: entry.payload.isReady)
   }
 }

@@ -1,6 +1,8 @@
 part of '../../home_widget.dart';
 
 abstract class HomeWidgetBridge {
+  Future<void> saveLocaleCode(String localeCode);
+
   Future<void> savePayload(HomeWidgetPayload payload);
 
   Future<void> saveImage({required String key, required String imageUrl});
@@ -15,6 +17,16 @@ abstract class HomeWidgetBridge {
 @LazySingleton(as: HomeWidgetBridge)
 class HomeWidgetBridgeImpl implements HomeWidgetBridge {
   String get _appGroupId => HomeWidgetAppGroups.current();
+
+  @override
+  Future<void> saveLocaleCode(String localeCode) async {
+    await home_widget_plugin.HomeWidget.setAppGroupId(_appGroupId);
+    await home_widget_plugin.HomeWidget.saveWidgetData<String>(
+      HomeWidgetStorageKeys.localeCode,
+      localeCode,
+      appGroupId: _appGroupId,
+    );
+  }
 
   @override
   Future<void> savePayload(HomeWidgetPayload payload) async {

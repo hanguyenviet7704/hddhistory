@@ -5,6 +5,7 @@ class HomeWidgetPayloadBuilder {
     HomeWidgetCourseEntity? course, {
     required String localeCode,
     required DateTime updatedAt,
+    HomeWidgetTextDefaults textDefaults = const HomeWidgetTextDefaults(),
   }) {
     if (course == null || course.courseId.isEmpty || course.totalLesson <= 0) {
       return HomeWidgetPayload(
@@ -15,7 +16,7 @@ class HomeWidgetPayloadBuilder {
         staticAssetKey: HomeWidgetStorageKeys.bookAsset,
         data: {
           'localeCode': localeCode,
-          'title': 'Pick a course and stay in the loop',
+          'title': textDefaults.inProgressEmptyTitle,
           'staticAssetKey': HomeWidgetStorageKeys.bookAsset,
         },
       );
@@ -35,6 +36,7 @@ class HomeWidgetPayloadBuilder {
         'imagePathKey': HomeWidgetStorageKeys.inProgressImage,
         'completedLessons': course.completedLesson,
         'totalLessons': course.totalLesson,
+        'progressText': textDefaults.progressText(completed: course.completedLesson, total: course.totalLesson),
         'progress': progress,
       },
     );
@@ -42,7 +44,9 @@ class HomeWidgetPayloadBuilder {
 
   static HomeWidgetPayload buildStreak(
     HomeWidgetStreakEntity streak, {
+    String localeCode = 'en',
     required DateTime updatedAt,
+    HomeWidgetTextDefaults textDefaults = const HomeWidgetTextDefaults(),
   }) {
     final weekStudy = List<bool>.from(streak.weekStudy.take(7));
     while (weekStudy.length < 7) {
@@ -56,9 +60,12 @@ class HomeWidgetPayloadBuilder {
       deeplink: 'meup://course-roadmap?source=home_widget&widgetType=${HomeWidgetType.weeklyStreak.value}',
       staticAssetKey: HomeWidgetStorageKeys.flameAsset,
       data: {
+        'localeCode': localeCode,
         'currentStreak': streak.currentStreak,
-        'subtitle': streak.currentStreak > 0 ? 'Keep going!' : 'Start your streak today',
+        'countText': textDefaults.streakCountText(streak.currentStreak),
+        'subtitle': streak.currentStreak > 0 ? textDefaults.streakActiveSubtitle : textDefaults.streakEmptySubtitle,
         'weekStudy': weekStudy,
+        'weekLabels': textDefaults.weekLabels.take(7).toList(growable: false),
         'weekStartDate': _dateOnly(streak.weekStartDate ?? updatedAt),
         'studyTime': streak.studyTime,
         'bestStreak': streak.bestStreak,
@@ -72,6 +79,7 @@ class HomeWidgetPayloadBuilder {
     required String localeCode,
     required DateTime updatedAt,
     required DateTime suggestionDate,
+    HomeWidgetTextDefaults textDefaults = const HomeWidgetTextDefaults(),
   }) {
     if (course == null || course.courseId.isEmpty) {
       return HomeWidgetPayload(
@@ -82,8 +90,8 @@ class HomeWidgetPayloadBuilder {
         staticAssetKey: HomeWidgetStorageKeys.certificateAsset,
         data: {
           'localeCode': localeCode,
-          'title': 'You crushed every course!',
-          'subtitle': 'More coming soon!',
+          'title': textDefaults.suggestExhaustedTitle,
+          'subtitle': textDefaults.suggestExhaustedSubtitle,
           'staticAssetKey': HomeWidgetStorageKeys.certificateAsset,
         },
       );
@@ -98,7 +106,7 @@ class HomeWidgetPayloadBuilder {
       data: {
         'courseId': course.courseId,
         'localeCode': localeCode,
-        'label': "Today's suggestion",
+        'label': textDefaults.suggestLabel,
         'title': _localizedText(course.title, localeCode),
         'description': _localizedText(course.description, localeCode),
         'imagePathKey': HomeWidgetStorageKeys.suggestCourseImage,

@@ -23,6 +23,89 @@ abstract class HomeWidgetStreakEntity with _$HomeWidgetStreakEntity {
   }) = _HomeWidgetStreakEntity;
 }
 
+@freezed
+abstract class HomeWidgetTextDefaults with _$HomeWidgetTextDefaults {
+  const HomeWidgetTextDefaults._();
+
+  const factory HomeWidgetTextDefaults({
+    @Default('Pick a course and stay in the loop') String inProgressEmptyTitle,
+    @Default('Keep going!') String streakActiveSubtitle,
+    @Default('Start your streak today') String streakEmptySubtitle,
+    @Default("Today's suggestion") String suggestLabel,
+    @Default('You crushed every course!') String suggestExhaustedTitle,
+    @Default('More coming soon!') String suggestExhaustedSubtitle,
+    @Default('{completed}/{total} lesson') String progressTextTemplate,
+    @Default('{count} day') String streakCountSingularTemplate,
+    @Default('{count} days') String streakCountPluralTemplate,
+    @Default(['M', 'T', 'W', 'T', 'F', 'S', 'S']) List<String> weekLabels,
+  }) = _HomeWidgetTextDefaults;
+
+  static Future<HomeWidgetTextDefaults> load(String localeCode) => Future.value(HomeWidgetTextDefaults.forLocaleCode(localeCode));
+
+  factory HomeWidgetTextDefaults.forLocaleCode(String localeCode) {
+    return switch (AppLocaleUtils.parse(localeCode)) {
+      AppLocale.vi => const HomeWidgetTextDefaults(
+        inProgressEmptyTitle: 'Chọn khóa học để bắt đầu',
+        streakActiveSubtitle: 'Tiếp tục nhé!',
+        streakEmptySubtitle: 'Bắt đầu chuỗi hôm nay',
+        suggestLabel: 'Gợi ý hôm nay',
+        suggestExhaustedTitle: 'Bạn đã hoàn thành mọi khóa học!',
+        suggestExhaustedSubtitle: 'Sắp có thêm!',
+        progressTextTemplate: '{completed}/{total} bài học',
+        streakCountSingularTemplate: '{count} ngày',
+        streakCountPluralTemplate: '{count} ngày',
+        weekLabels: ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'],
+      ),
+      AppLocale.zh => const HomeWidgetTextDefaults(
+        inProgressEmptyTitle: '选择课程，继续学习',
+        streakActiveSubtitle: '继续加油！',
+        streakEmptySubtitle: '今天开始连续学习',
+        suggestLabel: '今日推荐',
+        suggestExhaustedTitle: '你已完成所有课程！',
+        suggestExhaustedSubtitle: '更多内容即将推出！',
+        progressTextTemplate: '{completed}/{total} 课',
+        streakCountSingularTemplate: '{count} 天',
+        streakCountPluralTemplate: '{count} 天',
+        weekLabels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+      ),
+      AppLocale.ja => const HomeWidgetTextDefaults(
+        inProgressEmptyTitle: 'コースを選んで学習を続けよう',
+        streakActiveSubtitle: 'その調子！',
+        streakEmptySubtitle: '今日から連続記録を始めよう',
+        suggestLabel: '今日のおすすめ',
+        suggestExhaustedTitle: 'すべてのコースを完了しました！',
+        suggestExhaustedSubtitle: '近日追加予定！',
+        progressTextTemplate: '{completed}/{total} レッスン',
+        streakCountSingularTemplate: '{count} 日',
+        streakCountPluralTemplate: '{count} 日',
+        weekLabels: ['月', '火', '水', '木', '金', '土', '日'],
+      ),
+      AppLocale.ko => const HomeWidgetTextDefaults(
+        inProgressEmptyTitle: '코스를 골라 학습을 이어가세요',
+        streakActiveSubtitle: '잘하고 있어요!',
+        streakEmptySubtitle: '오늘 연속 학습을 시작하세요',
+        suggestLabel: '오늘의 추천',
+        suggestExhaustedTitle: '모든 코스를 완료했어요!',
+        suggestExhaustedSubtitle: '곧 더 추가돼요!',
+        progressTextTemplate: '{completed}/{total} 레슨',
+        streakCountSingularTemplate: '{count}일',
+        streakCountPluralTemplate: '{count}일',
+        weekLabels: ['월', '화', '수', '목', '금', '토', '일'],
+      ),
+      AppLocale.en => const HomeWidgetTextDefaults(),
+    };
+  }
+
+  String progressText({required int completed, required int total}) {
+    return progressTextTemplate.replaceAll('{completed}', completed.toString()).replaceAll('{total}', total.toString());
+  }
+
+  String streakCountText(int count) {
+    final template = count == 1 ? streakCountSingularTemplate : streakCountPluralTemplate;
+    return template.replaceAll('{count}', count.toString());
+  }
+}
+
 class HomeWidgetPayload {
   const HomeWidgetPayload({
     required this.widgetType,
@@ -87,15 +170,27 @@ class HomeWidgetSyncParams {
   HomeWidgetSyncParams({
     required this.localeCode,
     DateTime? now,
+    this.textDefaults,
   }) : now = now ?? DateTime.now();
 
   final String localeCode;
   final DateTime now;
+  final HomeWidgetTextDefaults? textDefaults;
 
   DateTime get currentTime => now.toUtc();
 
   String get localDateKey {
     return '${now.year.toString().padLeft(4, '0')}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  }
+
+  Future<HomeWidgetTextDefaults> resolveTextDefaults() => textDefaults == null ? HomeWidgetTextDefaults.load(localeCode) : Future.value(textDefaults);
+
+  HomeWidgetSyncParams withTextDefaults(HomeWidgetTextDefaults value) {
+    return HomeWidgetSyncParams(
+      localeCode: localeCode,
+      now: now,
+      textDefaults: value,
+    );
   }
 }
 

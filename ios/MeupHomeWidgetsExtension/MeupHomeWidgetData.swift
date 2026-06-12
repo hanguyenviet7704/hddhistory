@@ -27,7 +27,7 @@ enum MeupWidgetType {
     switch self {
     case .inProgress: "Pick a course and stay in the loop"
     case .streak: "Start your streak today"
-    case .suggestCourse: "Today's suggestion"
+    case .suggestCourse: "You crushed every course!"
     }
   }
 
@@ -67,6 +67,14 @@ struct MeupWidgetPayload {
     (data[key] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).nonEmpty ?? fallback
   }
 
+  func title(for type: MeupWidgetType) -> String {
+    let value = string("title", fallback: type.defaultTitle)
+    if type == .suggestCourse && !isReady && legacySuggestLabels.contains(value) {
+      return type.defaultTitle
+    }
+    return value
+  }
+
   func int(_ key: String, fallback: Int = 0) -> Int {
     if let value = data[key] as? Int { return value }
     if let value = data[key] as? NSNumber { return value.intValue }
@@ -83,6 +91,22 @@ struct MeupWidgetPayload {
     var values = (data[key] as? [Bool]) ?? []
     while values.count < size { values.append(false) }
     return Array(values.prefix(size))
+  }
+
+  func stringArray(_ key: String, fallback: [String], size: Int) -> [String] {
+    var values = (data[key] as? [String]) ?? fallback
+    while values.count < size { values.append(fallback[safe: values.count] ?? "") }
+    return Array(values.prefix(size))
+  }
+
+  private var legacySuggestLabels: Set<String> {
+    [
+      "Today's suggestion",
+      "Gợi ý hôm nay",
+      "今日推荐",
+      "今日のおすすめ",
+      "오늘의 추천",
+    ]
   }
 }
 
@@ -122,10 +146,21 @@ struct MeupWidgetProvider: TimelineProvider {
 
   private func fallbackPayload() -> MeupWidgetPayload {
     let state = type == .suggestCourse ? "exhausted" : "empty"
+    var data: [String: Any] = ["title": type.defaultTitle, "staticAssetKey": type.fallbackImageKey]
+    if type == .suggestCourse {
+      data["subtitle"] = "More coming soon!"
+    }
+    if type == .streak {
+      data["currentStreak"] = 0
+      data["countText"] = "0 days"
+      data["subtitle"] = type.defaultTitle
+      data["weekStudy"] = Array(repeating: false, count: 7)
+      data["weekLabels"] = ["M", "T", "W", "T", "F", "S", "S"]
+    }
     return MeupWidgetPayload(
       state: state,
       deeplink: type.defaultDeeplink,
-      data: ["title": type.defaultTitle, "staticAssetKey": type.fallbackImageKey]
+      data: data
     )
   }
 }
