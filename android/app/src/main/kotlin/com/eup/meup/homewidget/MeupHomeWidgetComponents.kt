@@ -6,14 +6,11 @@ import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
 import androidx.glance.Image
 import androidx.glance.ImageProvider
-import androidx.glance.background
 import androidx.glance.layout.Alignment
 import androidx.glance.layout.Box
 import androidx.glance.layout.ContentScale
-import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
@@ -26,16 +23,13 @@ import com.eup.meup.R
 
 private val BrandText = androidx.compose.ui.graphics.Color(0xFF362F82)
 private val MutedText = androidx.compose.ui.graphics.Color(0xFF8A86A8)
-private val BrandPrimary = androidx.compose.ui.graphics.Color(0xFF4B44CA)
-private val SoftDot = androidx.compose.ui.graphics.Color(0xFFD8D5EA)
 internal val BrandTextProvider = ColorProvider(BrandText)
 internal val MutedTextProvider = ColorProvider(MutedText)
-private val WhiteProvider = ColorProvider(androidx.compose.ui.graphics.Color.White)
 
 @Composable
 internal fun WidgetCard(
     modifier: GlanceModifier = GlanceModifier,
-    backgroundResId: Int = R.drawable.meup_widget_card_background,
+    backgroundResId: Int = R.drawable.meup_widget_card_shape,
     paddingDp: Int = 16,
     content: @Composable () -> Unit,
 ) {
@@ -110,66 +104,49 @@ internal fun WidgetImage(
 internal fun ProgressSegments(
     completed: Int,
     total: Int,
-    widthDp: Int = 126,
+    widthDp: Int = 52,
+    heightDp: Int = 8,
 ) {
     val safeTotal = total.coerceAtLeast(1)
     val safeCompleted = completed.coerceIn(0, safeTotal)
-    val activeWidth = ((widthDp * safeCompleted) / safeTotal).coerceAtLeast(if (safeCompleted > 0) 6 else 0)
+    val activeWidth = ((widthDp * safeCompleted) / safeTotal).coerceAtLeast(if (safeCompleted > 0) heightDp else 0)
 
     Box(
         modifier = GlanceModifier
             .width(widthDp.dp)
-            .height(6.dp)
-            .background(SoftDot),
+            .height(heightDp.dp),
         contentAlignment = Alignment.CenterStart,
     ) {
+        Image(
+            provider = ImageProvider(R.drawable.meup_widget_progress_track_shape),
+            contentDescription = null,
+            modifier = GlanceModifier.fillMaxSize(),
+            contentScale = ContentScale.FillBounds,
+        )
         if (activeWidth > 0) {
-            Box(
+            Image(
+                provider = ImageProvider(R.drawable.meup_widget_progress_active_shape),
+                contentDescription = null,
                 modifier = GlanceModifier
                     .width(activeWidth.dp)
-                    .height(6.dp)
-                    .background(BrandPrimary),
-            ) {}
+                    .height(heightDp.dp),
+                contentScale = ContentScale.FillBounds,
+            )
         }
     }
 }
 
 @Composable
-internal fun WeekStudyRow(days: List<Boolean>) {
-    val labels = listOf("M", "T", "W", "T", "F", "S", "S")
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-    ) {
-        days.take(7).forEachIndexed { index, active ->
-            Box(
-                modifier = GlanceModifier
-                    .size(24.dp)
-                    .background(if (active) BrandPrimary else SoftDot),
-                contentAlignment = Alignment.Center,
-            ) {
-                Text(
-                    text = if (active) "✓" else labels[index],
-                    style = TextStyle(
-                        color = if (active) WhiteProvider else MutedTextProvider,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                    ),
-                )
-            }
-            if (index < 6) Spacer(GlanceModifier.width(8.dp))
-        }
-    }
-}
-
-@Composable
-internal fun SuggestLabel(text: String) {
+internal fun SuggestLabel(
+    text: String,
+    fontSizeSp: Int,
+) {
     Text(
         text = text,
         maxLines = 1,
         style = TextStyle(
             color = MutedTextProvider,
-            fontSize = 12.sp,
+            fontSize = fontSizeSp.sp,
             fontWeight = FontWeight.Medium,
         ),
     )

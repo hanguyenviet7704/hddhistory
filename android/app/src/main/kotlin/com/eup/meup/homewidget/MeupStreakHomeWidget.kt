@@ -7,24 +7,27 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceId
 import androidx.glance.GlanceModifier
+import androidx.glance.Image
+import androidx.glance.ImageProvider
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
 import androidx.glance.currentState
 import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
 import androidx.glance.layout.Column
+import androidx.glance.layout.ContentScale
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
 import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
 import androidx.glance.layout.padding
 import androidx.glance.layout.width
 import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import com.eup.meup.R
 import com.eup.meup.MainActivity
 import es.antonborri.home_widget.HomeWidgetGlanceState
@@ -35,20 +38,23 @@ private val StreakTitleText = BrandTextProvider
 
 class StreakHomeWidget : GlanceAppWidget() {
     override val stateDefinition = HomeWidgetGlanceStateDefinition()
+    override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             val state = currentState<HomeWidgetGlanceState>()
             val payload = state.preferences.readMeupPayload(MeupWidgetType.Streak)
-            val isMedium = LocalSize.current.width >= 240.dp
+            val widgetSize = LocalSize.current
+            val isMedium = widgetSize.width >= 190.dp
+            val isCompact = widgetSize.width < 170.dp || widgetSize.height < 145.dp
             WidgetCard(
                 modifier = GlanceModifier.clickable(
                     onClick = actionStartActivity<MainActivity>(context, Uri.parse(payload.deeplink)),
                 ),
-                backgroundResId = R.drawable.meup_widget_card_background,
+                backgroundResId = R.drawable.meup_widget_card_shape,
                 paddingDp = 0,
             ) {
-                StreakContent(state, payload, isMedium)
+                StreakContent(state, payload, isMedium, isCompact)
             }
         }
     }
@@ -59,6 +65,7 @@ private fun StreakContent(
     state: HomeWidgetGlanceState,
     payload: MeupHomeWidgetPayload,
     isMedium: Boolean,
+    isCompact: Boolean,
 ) {
     val data = payload.data
     val days = data.boolList("weekStudy", 7)
@@ -67,9 +74,9 @@ private fun StreakContent(
     val flame = state.preferences.imageProviderFor(MeupWidgetType.Streak, data)
 
     if (isMedium) {
-        MediumStreakContent(flame, currentStreak, subtitle, days)
+        MediumStreakContent(flame, currentStreak, subtitle, days, isCompact)
     } else {
-        SmallStreakContent(flame, currentStreak, subtitle)
+        SmallStreakContent(flame, currentStreak, subtitle, isCompact)
     }
 }
 
@@ -78,17 +85,22 @@ private fun SmallStreakContent(
     flame: androidx.glance.ImageProvider,
     currentStreak: Int,
     subtitle: String,
+    isCompact: Boolean,
 ) {
+    val imageSize = if (isCompact) 54 else 68
+    val titleSize = if (isCompact) 22 else 26
+    val captionSize = if (isCompact) 10 else 12
+
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
-            .padding(start = 16.dp, top = 18.dp, end = 16.dp, bottom = 14.dp),
+            .padding(start = 14.dp, top = if (isCompact) 10.dp else 18.dp, end = 14.dp, bottom = 10.dp),
         horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
     ) {
-        WidgetImage(flame, sizeDp = 68)
-        Spacer(GlanceModifier.height(6.dp))
-        StreakCountText(currentStreak, fontSizeSp = 26)
-        WidgetCaption(subtitle, maxLines = 2, fontSizeSp = 12)
+        WidgetImage(flame, sizeDp = imageSize)
+        Spacer(GlanceModifier.height(if (isCompact) 2.dp else 6.dp))
+        StreakCountText(currentStreak, fontSizeSp = titleSize)
+        WidgetCaption(subtitle, maxLines = 1, fontSizeSp = captionSize)
     }
 }
 
@@ -98,27 +110,45 @@ private fun MediumStreakContent(
     currentStreak: Int,
     subtitle: String,
     days: List<Boolean>,
+    isCompact: Boolean,
 ) {
-    Column(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .padding(start = 20.dp, top = 14.dp, end = 20.dp, bottom = 14.dp),
-        horizontalAlignment = Alignment.Horizontal.CenterHorizontally,
-    ) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.Vertical.CenterVertically,
-        ) {
-            WidgetImage(flame, sizeDp = 44)
-            Spacer(GlanceModifier.width(8.dp))
-            Column {
-                StreakCountText(currentStreak, fontSizeSp = 24)
-                WidgetCaption(subtitle, maxLines = 1, fontSizeSp = 12)
-            }
-        }
+    val verticalPadding = if (isCompact) 12 else 16
+    val flameSize = if (isCompact) 42 else 48
+    val artWidth = if (isCompact) 112 else 148
+    val artHeight = if (isCompact) 68 else 90
+    val spacerHeight = if (isCompact) 10 else 20
+    val daySize = if (isCompact) 20 else 22
 
-        Spacer(GlanceModifier.height(18.dp))
-        WeekStudyRow(days)
+    Box(modifier = GlanceModifier.fillMaxSize()) {
+        Row(
+            modifier = GlanceModifier.fillMaxSize(),
+            horizontalAlignment = Alignment.Horizontal.End,
+            verticalAlignment = Alignment.Vertical.Bottom,
+        ) {
+            Image(
+                provider = ImageProvider(R.drawable.meup_widget_streak_medium_art),
+                contentDescription = null,
+                modifier = GlanceModifier.width(artWidth.dp).height(artHeight.dp),
+                contentScale = ContentScale.Fit,
+            )
+        }
+        Column(
+            modifier = GlanceModifier
+                .fillMaxSize()
+                .padding(start = 16.dp, top = verticalPadding.dp, end = 16.dp, bottom = 10.dp),
+        ) {
+            Row(verticalAlignment = Alignment.Vertical.CenterVertically) {
+                WidgetImage(flame, sizeDp = flameSize)
+                Spacer(GlanceModifier.width(12.dp))
+                Column {
+                    StreakCountText(currentStreak, fontSizeSp = 24)
+                    WidgetCaption(subtitle, maxLines = 1, fontSizeSp = 12)
+                }
+            }
+
+            Spacer(GlanceModifier.height(spacerHeight.dp))
+            StreakWeekStudyRow(days, gapDp = if (isCompact) 7 else 8, daySizeDp = daySize)
+        }
     }
 }
 
@@ -129,6 +159,7 @@ private fun StreakCountText(
 ) {
     Text(
         text = "$currentStreak day${if (currentStreak == 1) "" else "s"}",
+        maxLines = 1,
         style = TextStyle(
             color = StreakTitleText,
             fontSize = fontSizeSp.sp,

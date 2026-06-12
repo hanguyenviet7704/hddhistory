@@ -8,6 +8,7 @@ import androidx.glance.GlanceModifier
 import androidx.glance.LocalSize
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.GlanceAppWidget
+import androidx.glance.appwidget.SizeMode
 import androidx.glance.appwidget.provideContent
 import androidx.glance.currentState
 import androidx.glance.layout.Column
@@ -39,24 +40,27 @@ abstract class CourseHomeWidget(
     private val type: MeupWidgetType,
 ) : GlanceAppWidget() {
     override val stateDefinition = HomeWidgetGlanceStateDefinition()
+    override val sizeMode = SizeMode.Exact
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         provideContent {
             val state = currentState<HomeWidgetGlanceState>()
             val payload = state.preferences.readMeupPayload(type)
-            val isMedium = LocalSize.current.width >= 240.dp
+            val widgetSize = LocalSize.current
+            val isMedium = widgetSize.width >= 190.dp
+            val isCompact = widgetSize.width < 170.dp || widgetSize.height < 145.dp
             WidgetCard(
                 modifier = GlanceModifier.clickable(
                     onClick = actionStartActivity<MainActivity>(context, Uri.parse(payload.deeplink)),
                 ),
                 backgroundResId = if (payload.isReady) {
-                    R.drawable.meup_widget_card_background
+                    R.drawable.meup_widget_card_shape
                 } else {
-                    R.drawable.meup_widget_card_fallback_background
+                    R.drawable.meup_widget_card_fallback_shape
                 },
                 paddingDp = 0,
             ) {
-                CourseContent(type, state, payload, isMedium)
+                CourseContent(type, state, payload, isMedium, isCompact)
             }
         }
     }
@@ -68,6 +72,7 @@ private fun CourseContent(
     state: HomeWidgetGlanceState,
     payload: MeupHomeWidgetPayload,
     isMedium: Boolean,
+    isCompact: Boolean,
 ) {
     val data = payload.data
     val image = state.preferences.imageProviderFor(type, data)
@@ -80,7 +85,7 @@ private fun CourseContent(
     if (isMedium) {
         MediumCourseContent(type, payload, image, title, mainText)
     } else {
-        SmallCourseContent(type, payload, image, title, mainText)
+        SmallCourseContent(type, payload, image, title, mainText, isCompact)
     }
 }
 
@@ -104,18 +109,18 @@ private fun MediumCourseContent(
         Spacer(GlanceModifier.width(24.dp))
         Column(modifier = GlanceModifier.fillMaxWidth()) {
             if (type == MeupWidgetType.SuggestCourse) {
-                SuggestLabel(data.stringValue("label", "Today's suggestion"))
+                SuggestLabel(data.stringValue("label", "Today's suggestion"), fontSizeSp = 12)
                 Spacer(GlanceModifier.height(4.dp))
                 WidgetTitle(if (payload.isReady) mainText else title, maxLines = 3, fontSizeSp = 16)
                 if (!payload.isReady) {
                     WidgetCaption(data.stringValue("subtitle", "More coming soon!"), maxLines = 1, fontSizeSp = 12)
                 }
             } else {
-                WidgetTitle(title, maxLines = 2, fontSizeSp = if (payload.isReady) 20 else 18)
                 if (payload.isReady) {
-                    Spacer(GlanceModifier.height(12.dp))
-                    CourseProgress(payload)
+                    CourseProgress(payload, rowWidthDp = 168, trackWidthDp = 76)
+                    Spacer(GlanceModifier.height(4.dp))
                 }
+                WidgetTitle(title, maxLines = 2, fontSizeSp = if (payload.isReady) 20 else 18)
             }
         }
     }
@@ -128,45 +133,63 @@ private fun SmallCourseContent(
     image: androidx.glance.ImageProvider,
     title: String,
     mainText: String,
+    isCompact: Boolean,
 ) {
     val data = payload.data
+    val imageSize = if (isCompact) 44 else if (type == MeupWidgetType.SuggestCourse && !payload.isReady) 76 else 52
 
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
             .padding(16.dp),
     ) {
-        WidgetImage(image, sizeDp = if (type == MeupWidgetType.SuggestCourse && !payload.isReady) 76 else 52)
+        WidgetImage(image, sizeDp = imageSize)
         if (type == MeupWidgetType.SuggestCourse) {
             Spacer(GlanceModifier.height(8.dp))
-            SuggestLabel(data.stringValue("label", "Today's suggestion"))
+            SuggestLabel(data.stringValue("label", "Today's suggestion"), fontSizeSp = 9)
             Spacer(GlanceModifier.height(4.dp))
-            WidgetTitle(if (payload.isReady) mainText else title, maxLines = 3, fontSizeSp = 14)
+            WidgetTitle(if (payload.isReady) mainText else title, maxLines = if (isCompact) 2 else 4, fontSizeSp = 12)
             if (!payload.isReady) {
                 WidgetCaption(data.stringValue("subtitle", "More coming soon!"), maxLines = 1, fontSizeSp = 10)
             }
         } else {
             Spacer(GlanceModifier.height(8.dp))
             if (payload.isReady) {
-                CourseProgress(payload)
+                CourseProgress(
+                    payload,
+                    rowWidthDp = if (isCompact) 116 else 126,
+                    trackWidthDp = if (isCompact) 42 else 52,
+                    fontSizeSp = if (isCompact) 11 else 12,
+                )
                 Spacer(GlanceModifier.height(8.dp))
             }
-            WidgetTitle(title, maxLines = 3, fontSizeSp = 14)
+            WidgetTitle(title, maxLines = if (isCompact) 2 else 3, fontSizeSp = if (isCompact) 13 else 14)
         }
     }
 }
 
 @Composable
-private fun CourseProgress(payload: MeupHomeWidgetPayload) {
+private fun CourseProgress(
+    payload: MeupHomeWidgetPayload,
+    rowWidthDp: Int,
+    trackWidthDp: Int,
+    fontSizeSp: Int = 12,
+) {
     val data = payload.data
     val completed = data.intValue("completedLessons")
     val total = data.intValue("totalLessons")
     if (total <= 0) return
 
-    ProgressSegments(completed, total)
-    Spacer(GlanceModifier.height(6.dp))
-    Text(
-        text = "$completed/$total lesson",
-        style = TextStyle(color = CourseMutedText, fontSize = 12.sp),
-    )
+    Row(
+        modifier = GlanceModifier.width(rowWidthDp.dp),
+        verticalAlignment = androidx.glance.layout.Alignment.Vertical.CenterVertically,
+    ) {
+        ProgressSegments(completed, total, widthDp = trackWidthDp)
+        Spacer(GlanceModifier.width(8.dp))
+        Text(
+            text = "$completed/$total lesson",
+            maxLines = 1,
+            style = TextStyle(color = CourseMutedText, fontSize = fontSizeSp.sp),
+        )
+    }
 }
