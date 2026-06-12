@@ -11,6 +11,7 @@ class LocaleCubit extends HydratedCubit<AppLocale> {
     LocaleSettings.setLocale(locale);
     emit(locale);
     LogDev.trace('Change locale to ${locale.languageCode}');
+    HomeWidgetSyncTrigger.requestSync(localeCode: locale.languageCode);
   }
 
   @override

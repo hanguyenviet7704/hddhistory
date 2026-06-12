@@ -11,8 +11,8 @@ void main() {
       final cached = HomeWidgetPayloadBuilder.buildSuggestCourse(
         HomeWidgetCourseEntity(
           courseId: 'cached-course',
-          title: const {'en': 'Cached course'},
-          description: const {'en': 'Cached description'},
+          title: const BaseMultiLanguage(en: 'Cached course'),
+          description: const BaseMultiLanguage(en: 'Cached description'),
           image: 'https://cdn.example.com/cached.jpg',
         ),
         localeCode: 'en',
@@ -36,11 +36,47 @@ void main() {
       expect(result.getRight().toNullable()?.status, HomeWidgetSyncStatus.preserved);
     });
 
+    test('refetches same-day suggest payload when locale changes', () async {
+      final cached = HomeWidgetPayloadBuilder.buildSuggestCourse(
+        HomeWidgetCourseEntity(
+          courseId: 'cached-course',
+          title: const BaseMultiLanguage(en: 'Cached course', vi: 'Khoa hoc da luu'),
+          description: const BaseMultiLanguage(en: 'Cached description', vi: 'Mo ta da luu'),
+          image: 'https://cdn.example.com/cached.jpg',
+        ),
+        localeCode: 'en',
+        updatedAt: now,
+        suggestionDate: now,
+      );
+      final api = FakeHomeWidgetApi(
+        suggest: const HomeWidgetCourseModel(
+          courseId: 'cached-course',
+          title: BaseMultiLanguage(en: 'Cached course', vi: 'Khoa hoc da luu'),
+          description: BaseMultiLanguage(en: 'Cached description', vi: 'Mo ta da luu'),
+          image: 'https://cdn.example.com/cached.jpg',
+        ),
+      );
+      final local = FakeHomeWidgetLocalDataSource(
+        suggestionDate: '2026-06-09',
+        cachedPayloads: {HomeWidgetStorageKeys.suggestCoursePayload: cached},
+      );
+      final bridge = FakeHomeWidgetBridge();
+      final repository = HomeWidgetRepository(api, local, bridge);
+
+      final result = await repository.syncSuggestCourse(HomeWidgetSyncParams(localeCode: 'vi', now: now)).run();
+
+      expect(result.isRight(), isTrue);
+      expect(api.suggestCalls, 1);
+      expect(bridge.savedPayloads.single.data['localeCode'], 'vi');
+      expect(bridge.savedPayloads.single.data['title'], 'Khoa hoc da luu');
+      expect(result.getRight().toNullable()?.status, HomeWidgetSyncStatus.updated);
+    });
+
     test('preserves previous in-progress payload when API fails', () async {
       final cached = HomeWidgetPayloadBuilder.buildInProgress(
         HomeWidgetCourseEntity(
           courseId: 'course-old',
-          title: const {'en': 'Old course'},
+          title: const BaseMultiLanguage(en: 'Old course'),
           image: 'https://cdn.example.com/old.jpg',
           completedLesson: 1,
           totalLesson: 4,
@@ -67,7 +103,7 @@ void main() {
       final cached = HomeWidgetPayloadBuilder.buildInProgress(
         HomeWidgetCourseEntity(
           courseId: 'course-old',
-          title: const {'en': 'Old course'},
+          title: const BaseMultiLanguage(en: 'Old course'),
           image: 'https://cdn.example.com/old.jpg',
           completedLesson: 1,
           totalLesson: 4,
@@ -78,7 +114,7 @@ void main() {
       final api = FakeHomeWidgetApi(
         inProgress: HomeWidgetCourseModel(
           courseId: 'course-new',
-          title: const {'en': 'New course'},
+          title: const BaseMultiLanguage(en: 'New course'),
           image: 'https://cdn.example.com/new.jpg',
           completedLesson: 2,
           totalLesson: 4,
@@ -140,8 +176,8 @@ void main() {
       final cached = HomeWidgetPayloadBuilder.buildSuggestCourse(
         HomeWidgetCourseEntity(
           courseId: 'course-old',
-          title: const {'en': 'Old suggestion'},
-          description: const {'en': 'Old description'},
+          title: const BaseMultiLanguage(en: 'Old suggestion'),
+          description: const BaseMultiLanguage(en: 'Old description'),
           image: 'https://cdn.example.com/old.jpg',
         ),
         localeCode: 'en',
@@ -167,8 +203,8 @@ void main() {
       final cached = HomeWidgetPayloadBuilder.buildSuggestCourse(
         HomeWidgetCourseEntity(
           courseId: 'course-old',
-          title: const {'en': 'Old suggestion'},
-          description: const {'en': 'Old description'},
+          title: const BaseMultiLanguage(en: 'Old suggestion'),
+          description: const BaseMultiLanguage(en: 'Old description'),
           image: 'https://cdn.example.com/old.jpg',
         ),
         localeCode: 'en',
@@ -178,8 +214,8 @@ void main() {
       final api = FakeHomeWidgetApi(
         suggest: const HomeWidgetCourseModel(
           courseId: 'course-new',
-          title: {'en': 'New suggestion'},
-          description: {'en': 'New description'},
+          title: BaseMultiLanguage(en: 'New suggestion'),
+          description: BaseMultiLanguage(en: 'New description'),
           image: 'https://cdn.example.com/new.jpg',
         ),
       );
@@ -211,8 +247,8 @@ void main() {
         suggestDelay: const Duration(milliseconds: 10),
         suggest: const HomeWidgetCourseModel(
           courseId: 'course-new',
-          title: {'en': 'New suggestion'},
-          description: {'en': 'New description'},
+          title: BaseMultiLanguage(en: 'New suggestion'),
+          description: BaseMultiLanguage(en: 'New description'),
           image: 'https://cdn.example.com/new.jpg',
         ),
       );
@@ -280,7 +316,7 @@ void main() {
       final api = FakeHomeWidgetApi(
         inProgress: HomeWidgetCourseModel(
           courseId: 'course-new',
-          title: const {'en': 'New course'},
+          title: const BaseMultiLanguage(en: 'New course'),
           image: 'https://cdn.example.com/new.jpg',
           completedLesson: 2,
           totalLesson: 4,

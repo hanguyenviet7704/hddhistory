@@ -124,6 +124,9 @@ class LearningStreakCubit extends HydratedCubit<LearningStreakState> with CubitU
             errorMessage: null,
           ),
         );
+        if (fetch.origin == LearningStreakDataOrigin.remote) {
+          HomeWidgetSyncTrigger.requestDebouncedSync();
+        }
         return LearningStreakRequestResult(
           requestId: requestId,
           requestedUserId: normalizedUserId,

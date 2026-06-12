@@ -117,7 +117,7 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
     try {
       return await action();
     } catch (error) {
-      final cached = await _localDataSource.getCachedPayload(_storageKeyFor(widgetType));
+      final cached = await _localDataSource.getCachedPayload(widgetType.storageKey);
       await _updateWidgetQuietly(widgetType);
       if (cached != null) {
         return HomeWidgetSyncResult(widgetType: widgetType, status: HomeWidgetSyncStatus.preserved, payload: cached, message: error.toString());
@@ -164,7 +164,7 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
     final today = params.localDateKey;
     final cachedDate = await _localDataSource.getSuggestionDate();
     final cachedPayload = await _localDataSource.getCachedPayload(HomeWidgetStorageKeys.suggestCoursePayload);
-    if (cachedDate == today && cachedPayload != null) {
+    if (cachedDate == today && cachedPayload != null && _payloadLocaleMatches(cachedPayload, params.localeCode)) {
       await _bridge.updateWidget(HomeWidgetType.suggestCourse);
       return HomeWidgetSyncResult(widgetType: HomeWidgetType.suggestCourse, status: HomeWidgetSyncStatus.preserved, payload: cachedPayload);
     }
@@ -189,11 +189,7 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
     } catch (_) {}
   }
 
-  static String _storageKeyFor(HomeWidgetType widgetType) {
-    return switch (widgetType) {
-      HomeWidgetType.inProgressCourse => HomeWidgetStorageKeys.inProgressPayload,
-      HomeWidgetType.weeklyStreak => HomeWidgetStorageKeys.streakPayload,
-      HomeWidgetType.suggestCourse => HomeWidgetStorageKeys.suggestCoursePayload,
-    };
+  static bool _payloadLocaleMatches(HomeWidgetPayload payload, String localeCode) {
+    return payload.data['localeCode']?.toString() == localeCode;
   }
 }

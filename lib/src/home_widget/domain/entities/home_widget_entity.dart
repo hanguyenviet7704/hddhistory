@@ -1,37 +1,26 @@
 part of '../../home_widget.dart';
 
-class HomeWidgetCourseEntity {
-  const HomeWidgetCourseEntity({
-    this.courseId = '',
-    this.title = const {},
-    this.description = const {},
-    this.image = '',
-    this.completedLesson = 0,
-    this.totalLesson = 0,
-  });
-
-  final String courseId;
-  final Map<String, String> title;
-  final Map<String, String> description;
-  final String image;
-  final int completedLesson;
-  final int totalLesson;
+@freezed
+abstract class HomeWidgetCourseEntity with _$HomeWidgetCourseEntity {
+  const factory HomeWidgetCourseEntity({
+    @Default('') String courseId,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+    @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    @Default('') String image,
+    @Default(0) int completedLesson,
+    @Default(0) int totalLesson,
+  }) = _HomeWidgetCourseEntity;
 }
 
-class HomeWidgetStreakEntity {
-  const HomeWidgetStreakEntity({
-    this.weekStartDate,
-    this.weekStudy = const [],
-    this.studyTime = 0,
-    this.currentStreak = 0,
-    this.bestStreak = 0,
-  });
-
-  final DateTime? weekStartDate;
-  final List<bool> weekStudy;
-  final int studyTime;
-  final int currentStreak;
-  final int bestStreak;
+@freezed
+abstract class HomeWidgetStreakEntity with _$HomeWidgetStreakEntity {
+  const factory HomeWidgetStreakEntity({
+    DateTime? weekStartDate,
+    @Default([]) List<bool> weekStudy,
+    @Default(0) int studyTime,
+    @Default(0) int currentStreak,
+    @Default(0) int bestStreak,
+  }) = _HomeWidgetStreakEntity;
 }
 
 class HomeWidgetPayload {
@@ -52,22 +41,6 @@ class HomeWidgetPayload {
   final Map<String, dynamic> data;
   final String? imageUrl;
   final String? staticAssetKey;
-
-  String get storageKey {
-    return switch (widgetType) {
-      HomeWidgetType.inProgressCourse => HomeWidgetStorageKeys.inProgressPayload,
-      HomeWidgetType.weeklyStreak => HomeWidgetStorageKeys.streakPayload,
-      HomeWidgetType.suggestCourse => HomeWidgetStorageKeys.suggestCoursePayload,
-    };
-  }
-
-  String? get imageKey {
-    return switch (widgetType) {
-      HomeWidgetType.inProgressCourse => HomeWidgetStorageKeys.inProgressImage,
-      HomeWidgetType.suggestCourse => HomeWidgetStorageKeys.suggestCourseImage,
-      HomeWidgetType.weeklyStreak => null,
-    };
-  }
 
   Map<String, dynamic> toJson() {
     return {
@@ -93,6 +66,18 @@ class HomeWidgetPayload {
       data: data,
       staticAssetKey: staticAssetKey == null || staticAssetKey.isEmpty ? null : staticAssetKey,
     );
+  }
+}
+
+extension HomeWidgetPayloadX on HomeWidgetPayload {
+  String get storageKey => widgetType.storageKey;
+
+  String? get imageKey {
+    return switch (widgetType) {
+      HomeWidgetType.inProgressCourse => HomeWidgetStorageKeys.inProgressImage,
+      HomeWidgetType.suggestCourse => HomeWidgetStorageKeys.suggestCourseImage,
+      HomeWidgetType.weeklyStreak => null,
+    };
   }
 
   String toJsonString() => jsonEncode(toJson());

@@ -21,6 +21,16 @@ enum HomeWidgetType {
   }
 }
 
+extension HomeWidgetTypeX on HomeWidgetType {
+  String get storageKey {
+    return switch (this) {
+      HomeWidgetType.inProgressCourse => HomeWidgetStorageKeys.inProgressPayload,
+      HomeWidgetType.weeklyStreak => HomeWidgetStorageKeys.streakPayload,
+      HomeWidgetType.suggestCourse => HomeWidgetStorageKeys.suggestCoursePayload,
+    };
+  }
+}
+
 enum HomeWidgetPayloadState {
   ready('ready'),
   empty('empty'),

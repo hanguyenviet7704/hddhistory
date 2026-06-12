@@ -9,7 +9,7 @@ void main() {
       final payload = HomeWidgetPayloadBuilder.buildInProgress(
         HomeWidgetCourseEntity(
           courseId: 'course-1',
-          title: const {'vi': '', 'en': 'Habit formation'},
+          title: const BaseMultiLanguage(vi: '', en: 'Habit formation'),
           image: 'https://cdn.example.com/course.jpg',
           completedLesson: 7,
           totalLesson: 6,
@@ -38,7 +38,7 @@ void main() {
       final invalidPayload = HomeWidgetPayloadBuilder.buildInProgress(
         HomeWidgetCourseEntity(
           courseId: 'course-1',
-          title: const {'en': 'Invalid'},
+          title: const BaseMultiLanguage(en: 'Invalid'),
           image: 'https://cdn.example.com/course.jpg',
           completedLesson: 1,
           totalLesson: 0,
@@ -81,8 +81,8 @@ void main() {
       final ready = HomeWidgetPayloadBuilder.buildSuggestCourse(
         HomeWidgetCourseEntity(
           courseId: 'course-2',
-          title: const {'vi': '', 'en': 'Suggested course'},
-          description: const {'vi': '', 'en': 'Try this next'},
+          title: const BaseMultiLanguage(vi: '', en: 'Suggested course'),
+          description: const BaseMultiLanguage(vi: '', en: 'Try this next'),
           image: 'https://cdn.example.com/suggest.jpg',
         ),
         localeCode: 'vi',
@@ -99,6 +99,7 @@ void main() {
       expect(ready.state, HomeWidgetPayloadState.ready);
       expect(ready.storageKey, HomeWidgetStorageKeys.suggestCoursePayload);
       expect(ready.imageKey, HomeWidgetStorageKeys.suggestCourseImage);
+      expect(ready.data['localeCode'], 'vi');
       expect(ready.data['title'], 'Suggested course');
       expect(ready.data['description'], 'Try this next');
       expect(ready.data['suggestionDate'], '2026-06-09');

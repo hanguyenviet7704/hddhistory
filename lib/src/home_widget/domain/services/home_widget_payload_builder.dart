@@ -13,7 +13,8 @@ class HomeWidgetPayloadBuilder {
         updatedAt: updatedAt,
         deeplink: 'meup://home?source=home_widget&widgetType=${HomeWidgetType.inProgressCourse.value}&state=${HomeWidgetPayloadState.empty.value}',
         staticAssetKey: HomeWidgetStorageKeys.bookAsset,
-        data: const {
+        data: {
+          'localeCode': localeCode,
           'title': 'Pick a course and stay in the loop',
           'staticAssetKey': HomeWidgetStorageKeys.bookAsset,
         },
@@ -29,6 +30,7 @@ class HomeWidgetPayloadBuilder {
       imageUrl: course.image.isEmpty ? null : course.image,
       data: {
         'courseId': course.courseId,
+        'localeCode': localeCode,
         'title': _localizedText(course.title, localeCode),
         'imagePathKey': HomeWidgetStorageKeys.inProgressImage,
         'completedLessons': course.completedLesson,
@@ -78,7 +80,8 @@ class HomeWidgetPayloadBuilder {
         updatedAt: updatedAt,
         deeplink: 'meup://home?source=home_widget&widgetType=${HomeWidgetType.suggestCourse.value}&state=${HomeWidgetPayloadState.exhausted.value}',
         staticAssetKey: HomeWidgetStorageKeys.certificateAsset,
-        data: const {
+        data: {
+          'localeCode': localeCode,
           'title': 'You crushed every course!',
           'subtitle': 'More coming soon!',
           'staticAssetKey': HomeWidgetStorageKeys.certificateAsset,
@@ -94,6 +97,7 @@ class HomeWidgetPayloadBuilder {
       imageUrl: course.image.isEmpty ? null : course.image,
       data: {
         'courseId': course.courseId,
+        'localeCode': localeCode,
         'label': "Today's suggestion",
         'title': _localizedText(course.title, localeCode),
         'description': _localizedText(course.description, localeCode),
@@ -103,18 +107,21 @@ class HomeWidgetPayloadBuilder {
     );
   }
 
-  static String _localizedText(Map<String, String> values, String localeCode) {
-    final localeValue = values[localeCode]?.trim();
-    if (localeValue != null && localeValue.isNotEmpty) return localeValue;
+  static String _localizedText(BaseMultiLanguage values, String localeCode) {
+    final localeValue = switch (localeCode) {
+      'en' => values.en,
+      'vi' => values.vi,
+      'zh' => values.zh,
+      'ja' => values.ja,
+      'ko' => values.ko,
+      _ => '',
+    }.trim();
+    if (localeValue.isNotEmpty) return localeValue;
 
-    final englishValue = values['en']?.trim();
-    if (englishValue != null && englishValue.isNotEmpty) return englishValue;
+    final englishValue = values.en.trim();
+    if (englishValue.isNotEmpty) return englishValue;
 
-    for (final value in values.values) {
-      final trimmed = value.trim();
-      if (trimmed.isNotEmpty) return trimmed;
-    }
-    return '';
+    return values.text.trim();
   }
 
   static String _dateOnly(DateTime dateTime) {

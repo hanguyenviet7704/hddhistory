@@ -1,27 +1,20 @@
 part of '../../home_widget.dart';
 
-@JsonSerializable(createToJson: false)
-class HomeWidgetCourseModel {
-  const HomeWidgetCourseModel({
-    this.courseId = '',
-    this.title = const {},
-    this.description = const {},
-    this.image = '',
-    this.completedLesson = 0,
-    this.totalLesson = 0,
-  });
-
-  final String courseId;
-  @JsonKey(fromJson: _stringMapFromJson)
-  final Map<String, String> title;
-  @JsonKey(fromJson: _stringMapFromJson)
-  final Map<String, String> description;
-  final String image;
-  final int completedLesson;
-  final int totalLesson;
+@freezed
+abstract class HomeWidgetCourseModel with _$HomeWidgetCourseModel {
+  const factory HomeWidgetCourseModel({
+    @Default('') String courseId,
+    @JsonKey(fromJson: _multiLanguageFromJson) @Default(BaseMultiLanguage()) BaseMultiLanguage title,
+    @JsonKey(fromJson: _multiLanguageFromJson) @Default(BaseMultiLanguage()) BaseMultiLanguage description,
+    @Default('') String image,
+    @Default(0) int completedLesson,
+    @Default(0) int totalLesson,
+  }) = _HomeWidgetCourseModel;
 
   factory HomeWidgetCourseModel.fromJson(Map<String, dynamic> json) => _$HomeWidgetCourseModelFromJson(json);
+}
 
+extension HomeWidgetCourseModelX on HomeWidgetCourseModel {
   HomeWidgetCourseEntity toEntity() {
     return HomeWidgetCourseEntity(
       courseId: courseId,
@@ -34,26 +27,20 @@ class HomeWidgetCourseModel {
   }
 }
 
-@JsonSerializable(createToJson: false)
-class HomeWidgetStreakModel {
-  const HomeWidgetStreakModel({
-    this.weekStartDate,
-    this.weekStudy = const [],
-    this.studyTime = 0,
-    this.currentStreak = 0,
-    this.bestStreak = 0,
-  });
-
-  @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson)
-  final DateTime? weekStartDate;
-  @JsonKey(fromJson: _boolListFromJson)
-  final List<bool> weekStudy;
-  final int studyTime;
-  final int currentStreak;
-  final int bestStreak;
+@freezed
+abstract class HomeWidgetStreakModel with _$HomeWidgetStreakModel {
+  const factory HomeWidgetStreakModel({
+    @JsonKey(fromJson: _dateTimeFromJson, toJson: _dateTimeToJson) DateTime? weekStartDate,
+    @JsonKey(fromJson: _boolListFromJson) @Default([]) List<bool> weekStudy,
+    @Default(0) int studyTime,
+    @Default(0) int currentStreak,
+    @Default(0) int bestStreak,
+  }) = _HomeWidgetStreakModel;
 
   factory HomeWidgetStreakModel.fromJson(Map<String, dynamic> json) => _$HomeWidgetStreakModelFromJson(json);
+}
 
+extension HomeWidgetStreakModelX on HomeWidgetStreakModel {
   HomeWidgetStreakEntity toEntity() {
     return HomeWidgetStreakEntity(
       weekStartDate: weekStartDate,
@@ -65,9 +52,9 @@ class HomeWidgetStreakModel {
   }
 }
 
-Map<String, String> _stringMapFromJson(Object? json) {
-  if (json is! Map) return const {};
-  return json.map((key, value) => MapEntry(key.toString(), value?.toString() ?? ''));
+BaseMultiLanguage _multiLanguageFromJson(Object? json) {
+  if (json is! Map) return const BaseMultiLanguage();
+  return BaseMultiLanguage.fromJson(Map<String, dynamic>.from(json));
 }
 
 List<bool> _boolListFromJson(Object? json) {
