@@ -44,9 +44,8 @@ internal data class MeupHomeWidgetPayload(
 }
 
 internal fun SharedPreferences.readMeupPayload(type: MeupWidgetType): MeupHomeWidgetPayload {
-    val localeCode = widgetLocaleCode().ifBlank { "en" }
     val rawPayload = getString(type.payloadKey, null).orEmpty()
-    if (rawPayload.isBlank()) return type.fallbackPayload(localeCode)
+    if (rawPayload.isBlank()) return type.fallbackPayload()
 
     return runCatching {
         val root = JSONObject(rawPayload)
@@ -55,31 +54,24 @@ internal fun SharedPreferences.readMeupPayload(type: MeupWidgetType): MeupHomeWi
             deeplink = root.optString("deeplink", type.defaultDeeplink),
             data = root.optJSONObject("data") ?: JSONObject(),
         )
-    }.getOrElse { type.fallbackPayload(localeCode) }
+    }.getOrElse { type.fallbackPayload() }
 }
 
-internal fun MeupWidgetType.fallbackPayload(localeCode: String = "en"): MeupHomeWidgetPayload {
-    val defaults = meupWidgetTextDefaults(localeCode)
-    val title = when (this) {
-        MeupWidgetType.InProgress -> defaults.inProgressEmptyTitle
-        MeupWidgetType.Streak -> defaultTitle
-        MeupWidgetType.SuggestCourse -> defaults.suggestExhaustedTitle
-    }
+internal fun MeupWidgetType.fallbackPayload(): MeupHomeWidgetPayload {
     val data = JSONObject()
-        .put("localeCode", localeCode)
-        .put("title", title)
+        .put("title", defaultTitle)
         .put("staticAssetKey", fallbackImageKey)
 
     if (this == MeupWidgetType.Streak) {
         data.put("currentStreak", 0)
-        data.put("countText", defaults.streakCountText(0))
-        data.put("subtitle", defaults.streakEmptySubtitle)
+        data.put("countText", "0 days")
+        data.put("subtitle", defaultTitle)
         data.put("weekStudy", JSONArray(listOf(false, false, false, false, false, false, false)))
-        data.put("weekLabels", JSONArray(defaults.weekLabels))
+        data.put("weekLabels", JSONArray(listOf("M", "T", "W", "T", "F", "S", "S")))
     }
 
     if (this == MeupWidgetType.SuggestCourse) {
-        data.put("subtitle", defaults.suggestExhaustedSubtitle)
+        data.put("subtitle", "More coming soon!")
     }
 
     return MeupHomeWidgetPayload(
@@ -89,18 +81,10 @@ internal fun MeupWidgetType.fallbackPayload(localeCode: String = "en"): MeupHome
     )
 }
 
-internal fun MeupWidgetType.titleFor(data: JSONObject, isReady: Boolean, defaults: MeupWidgetTextDefaults): String {
-    if (!isReady) {
-        return when (this) {
-            MeupWidgetType.InProgress -> defaults.inProgressEmptyTitle
-            MeupWidgetType.Streak -> defaultTitle
-            MeupWidgetType.SuggestCourse -> defaults.suggestExhaustedTitle
-        }
-    }
-
+internal fun MeupWidgetType.titleFor(data: JSONObject, isReady: Boolean): String {
     val value = data.stringValue("title", defaultTitle)
-    return if (this == MeupWidgetType.SuggestCourse && value in legacySuggestLabels) {
-        defaults.suggestExhaustedTitle
+    return if (this == MeupWidgetType.SuggestCourse && !isReady && value in legacySuggestLabels) {
+        defaultTitle
     } else {
         value
     }
@@ -116,16 +100,6 @@ private val legacySuggestLabels = setOf(
 
 internal fun JSONObject.stringValue(key: String, fallback: String = ""): String {
     return optString(key, fallback).ifBlank { fallback }
-}
-
-internal fun JSONObject.localizedString(translationsKey: String, localeCode: String, fallback: String): String {
-    val translations = optJSONObject(translationsKey) ?: return fallback
-    val keys = listOf(normalizedWidgetLanguageCode(localeCode), "en", "text").distinct()
-    for (key in keys) {
-        val value = translations.optString(key, "").trim()
-        if (value.isNotEmpty()) return value
-    }
-    return fallback
 }
 
 internal fun JSONObject.intValue(key: String, fallback: Int = 0): Int {

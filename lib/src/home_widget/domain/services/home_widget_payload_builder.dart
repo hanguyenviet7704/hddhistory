@@ -33,7 +33,6 @@ class HomeWidgetPayloadBuilder {
         'courseId': course.courseId,
         'localeCode': localeCode,
         'title': _localizedText(course.title, localeCode),
-        'titleTranslations': _localizedTextMap(course.title),
         'imagePathKey': HomeWidgetStorageKeys.inProgressImage,
         'completedLessons': course.completedLesson,
         'totalLessons': course.totalLesson,
@@ -109,9 +108,7 @@ class HomeWidgetPayloadBuilder {
         'localeCode': localeCode,
         'label': textDefaults.suggestLabel,
         'title': _localizedText(course.title, localeCode),
-        'titleTranslations': _localizedTextMap(course.title),
         'description': _localizedText(course.description, localeCode),
-        'descriptionTranslations': _localizedTextMap(course.description),
         'imagePathKey': HomeWidgetStorageKeys.suggestCourseImage,
         'suggestionDate': _dateOnly(suggestionDate),
       },
@@ -129,17 +126,10 @@ class HomeWidgetPayloadBuilder {
     }.trim();
     if (localeValue.isNotEmpty) return localeValue;
 
-    return [values.en, values.vi, values.zh, values.ja, values.ko].map((value) => value.trim()).firstWhere((value) => value.isNotEmpty, orElse: () => '');
-  }
+    final englishValue = values.en.trim();
+    if (englishValue.isNotEmpty) return englishValue;
 
-  static Map<String, String> _localizedTextMap(BaseMultiLanguage values) {
-    return {
-      'en': values.en,
-      'vi': values.vi,
-      'zh': values.zh,
-      'ja': values.ja,
-      'ko': values.ko,
-    }.map((key, value) => MapEntry(key, value.trim()))..removeWhere((_, value) => value.isEmpty);
+    return values.text.trim();
   }
 
   static String _dateOnly(DateTime dateTime) {

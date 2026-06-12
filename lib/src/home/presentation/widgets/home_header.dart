@@ -66,11 +66,9 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
     required List<HomeWidgetPayload> payloads,
   }) async {
     final bridge = AppDI.injector.get<HomeWidgetBridge>();
-    final localeCode = payloads.map((payload) => payload.data['localeCode']?.toString() ?? '').firstWhere((value) => value.isNotEmpty, orElse: _debugLocaleCode);
 
     await AppDI.injector.get<ClearHomeWidgetsUseCase>()(unit).run();
     await bridge.prepareStaticAssets();
-    await bridge.saveLocaleCode(localeCode);
     for (final payload in payloads) {
       await bridge.savePayload(payload);
       await bridge.updateWidget(payload.widgetType);

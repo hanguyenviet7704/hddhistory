@@ -22,12 +22,12 @@ private struct MediumCourseWidgetView: View {
       VStack(alignment: .leading, spacing: 5) {
         if entry.type == .suggestCourse {
           if entry.payload.isReady {
-            SuggestLabel(text: textDefaults.suggestLabel, fontSize: 12)
+            SuggestLabel(text: entry.payload.string("label", fallback: "Today's suggestion"), fontSize: 12)
           }
           Text(entry.payload.isReady ? mainText : title)
             .widgetTitle(fontSize: 16, lineLimit: 3)
           if !entry.payload.isReady {
-            Text(textDefaults.suggestExhaustedSubtitle)
+            Text(entry.payload.string("subtitle", fallback: "More coming soon!"))
               .widgetCaption(fontSize: 12, lineLimit: 1)
           }
         } else {
@@ -48,17 +48,8 @@ private struct MediumCourseWidgetView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
   }
 
-  private var localeCode: String { storedWidgetLocaleCode ?? entry.payload.string("localeCode", fallback: "en") }
-  private var textDefaults: MeupWidgetTextDefaults { MeupWidgetTextDefaults.forLocale(localeCode) }
-  private var title: String {
-    let fallback = entry.payload.title(for: entry.type, defaults: textDefaults)
-    guard entry.payload.isReady else { return fallback }
-    return entry.payload.localizedString("titleTranslations", localeCode: localeCode, fallback: fallback)
-  }
-  private var mainText: String {
-    let fallback = entry.payload.string("description", fallback: entry.payload.string("subtitle", fallback: title))
-    return entry.payload.localizedString("descriptionTranslations", localeCode: localeCode, fallback: fallback)
-  }
+  private var title: String { entry.payload.title(for: entry.type) }
+  private var mainText: String { entry.payload.string("description", fallback: entry.payload.string("subtitle", fallback: title)) }
   private var imageWidth: CGFloat { 110 }
   private var imageHeight: CGFloat {
     entry.type == .suggestCourse && !entry.payload.isReady ? 75 : 110
@@ -73,12 +64,12 @@ private struct SmallCourseWidgetView: View {
       WidgetImageView(type: entry.type, payload: entry.payload, width: imageWidth, height: imageHeight)
       if entry.type == .suggestCourse {
         if entry.payload.isReady {
-          SuggestLabel(text: textDefaults.suggestLabel, fontSize: 10)
+          SuggestLabel(text: entry.payload.string("label", fallback: "Today's suggestion"), fontSize: 10)
         }
         Text(entry.payload.isReady ? mainText : title)
           .widgetTitle(fontSize: 14, lineLimit: entry.payload.isReady ? 3 : 2)
         if !entry.payload.isReady {
-          Text(textDefaults.suggestExhaustedSubtitle)
+          Text(entry.payload.string("subtitle", fallback: "More coming soon!"))
             .widgetCaption(fontSize: 10, lineLimit: 1)
         }
       } else {
@@ -94,17 +85,8 @@ private struct SmallCourseWidgetView: View {
     .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
   }
 
-  private var localeCode: String { storedWidgetLocaleCode ?? entry.payload.string("localeCode", fallback: "en") }
-  private var textDefaults: MeupWidgetTextDefaults { MeupWidgetTextDefaults.forLocale(localeCode) }
-  private var title: String {
-    let fallback = entry.payload.title(for: entry.type, defaults: textDefaults)
-    guard entry.payload.isReady else { return fallback }
-    return entry.payload.localizedString("titleTranslations", localeCode: localeCode, fallback: fallback)
-  }
-  private var mainText: String {
-    let fallback = entry.payload.string("description", fallback: entry.payload.string("subtitle", fallback: title))
-    return entry.payload.localizedString("descriptionTranslations", localeCode: localeCode, fallback: fallback)
-  }
+  private var title: String { entry.payload.title(for: entry.type) }
+  private var mainText: String { entry.payload.string("description", fallback: entry.payload.string("subtitle", fallback: title)) }
   private var imageWidth: CGFloat {
     if entry.type == .suggestCourse && !entry.payload.isReady { return 76 }
     if entry.type == .inProgress && !entry.payload.isReady { return 70 }

@@ -71,23 +71,16 @@ private fun CourseContent(
 ) {
     val data = payload.data
     val image = state.preferences.imageProviderFor(type, data)
-    val localeCode = state.preferences.widgetLocaleCode().ifBlank { data.stringValue("localeCode", "en") }
-    val textDefaults = meupWidgetTextDefaults(localeCode)
-    val fallbackTitle = type.titleFor(data, payload.isReady, textDefaults)
-    val title = if (payload.isReady) {
-        data.localizedString("titleTranslations", localeCode, fallbackTitle)
-    } else {
-        fallbackTitle
-    }
+    val title = type.titleFor(data, payload.isReady)
     val mainText = when (type) {
-        MeupWidgetType.SuggestCourse -> data.localizedString("descriptionTranslations", localeCode, data.stringValue("description", data.stringValue("subtitle", title)))
+        MeupWidgetType.SuggestCourse -> data.stringValue("description", data.stringValue("subtitle", title))
         else -> title
     }
 
     if (isMedium) {
-        MediumCourseContent(type, payload, image, title, mainText, textDefaults)
+        MediumCourseContent(type, payload, image, title, mainText)
     } else {
-        SmallCourseContent(type, payload, image, title, mainText, textDefaults, isCompact)
+        SmallCourseContent(type, payload, image, title, mainText, isCompact)
     }
 }
 
@@ -98,8 +91,9 @@ private fun MediumCourseContent(
     image: androidx.glance.ImageProvider,
     title: String,
     mainText: String,
-    textDefaults: MeupWidgetTextDefaults,
 ) {
+    val data = payload.data
+
     Row(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -116,12 +110,12 @@ private fun MediumCourseContent(
         Column(modifier = GlanceModifier.fillMaxWidth()) {
             if (type == MeupWidgetType.SuggestCourse) {
                 if (payload.isReady) {
-                    SuggestLabel(textDefaults.suggestLabel, fontSizeSp = 12)
+                    SuggestLabel(data.stringValue("label", "Today's suggestion"), fontSizeSp = 12)
                     Spacer(GlanceModifier.height(4.dp))
                 }
                 WidgetTitle(if (payload.isReady) mainText else title, maxLines = 3, fontSizeSp = 16)
                 if (!payload.isReady) {
-                    WidgetCaption(textDefaults.suggestExhaustedSubtitle, maxLines = 1, fontSizeSp = 12)
+                    WidgetCaption(data.stringValue("subtitle", "More coming soon!"), maxLines = 1, fontSizeSp = 12)
                 }
             } else {
                 if (payload.isReady) {
@@ -141,9 +135,9 @@ private fun SmallCourseContent(
     image: androidx.glance.ImageProvider,
     title: String,
     mainText: String,
-    textDefaults: MeupWidgetTextDefaults,
     isCompact: Boolean,
 ) {
+    val data = payload.data
     val imageWidth = if (isCompact) 44 else if (type == MeupWidgetType.SuggestCourse && !payload.isReady) 76 else if (type == MeupWidgetType.InProgress && !payload.isReady) 70 else 52
     val imageHeight = if (isCompact) 44 else if (type == MeupWidgetType.SuggestCourse && !payload.isReady) 52 else if (type == MeupWidgetType.InProgress && !payload.isReady) 70 else 52
 
@@ -161,12 +155,12 @@ private fun SmallCourseContent(
         if (type == MeupWidgetType.SuggestCourse) {
             Spacer(GlanceModifier.height(8.dp))
             if (payload.isReady) {
-                SuggestLabel(textDefaults.suggestLabel, fontSizeSp = 10)
+                SuggestLabel(data.stringValue("label", "Today's suggestion"), fontSizeSp = 10)
                 Spacer(GlanceModifier.height(4.dp))
             }
             WidgetTitle(if (payload.isReady) mainText else title, maxLines = if (payload.isReady && !isCompact) 3 else 2, fontSizeSp = 14)
             if (!payload.isReady) {
-                WidgetCaption(textDefaults.suggestExhaustedSubtitle, maxLines = 1, fontSizeSp = 10)
+                WidgetCaption(data.stringValue("subtitle", "More coming soon!"), maxLines = 1, fontSizeSp = 10)
             }
         } else {
             Spacer(GlanceModifier.height(if (payload.isReady) 8.dp else 6.dp))
