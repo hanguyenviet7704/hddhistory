@@ -23,6 +23,7 @@ void main() {
       expect(payload.storageKey, HomeWidgetStorageKeys.inProgressPayload);
       expect(payload.imageUrl, 'https://cdn.example.com/course.jpg');
       expect(payload.data['title'], 'Habit formation');
+      expect(payload.data['titleTranslations'], {'en': 'Habit formation'});
       expect(payload.data['completedLessons'], 7);
       expect(payload.data['totalLessons'], 6);
       expect(payload.data['progress'], 1);
@@ -125,7 +126,9 @@ void main() {
       expect(ready.data['localeCode'], 'vi');
       expect(ready.data['label'], 'Gợi ý hôm nay');
       expect(ready.data['title'], 'Suggested course');
+      expect(ready.data['titleTranslations'], {'en': 'Suggested course'});
       expect(ready.data['description'], 'Try this next');
+      expect(ready.data['descriptionTranslations'], {'en': 'Try this next'});
       expect(ready.data['suggestionDate'], '2026-06-09');
       expect(ready.deeplink, 'meup://course-roadmap?courseId=course-2&source=home_widget&widgetType=suggest_course');
 

@@ -67,10 +67,18 @@ struct MeupWidgetPayload {
     (data[key] as? String)?.trimmingCharacters(in: .whitespacesAndNewlines).nonEmpty ?? fallback
   }
 
-  func title(for type: MeupWidgetType) -> String {
+  func title(for type: MeupWidgetType, defaults: MeupWidgetTextDefaults) -> String {
+    if !isReady {
+      switch type {
+      case .inProgress: return defaults.inProgressEmptyTitle
+      case .streak: return type.defaultTitle
+      case .suggestCourse: return defaults.suggestExhaustedTitle
+      }
+    }
+
     let value = string("title", fallback: type.defaultTitle)
-    if type == .suggestCourse && !isReady && legacySuggestLabels.contains(value) {
-      return type.defaultTitle
+    if type == .suggestCourse && legacySuggestLabels.contains(value) {
+      return defaults.suggestExhaustedTitle
     }
     return value
   }
@@ -99,15 +107,6 @@ struct MeupWidgetPayload {
     return Array(values.prefix(size))
   }
 
-  private var legacySuggestLabels: Set<String> {
-    [
-      "Today's suggestion",
-      "Gợi ý hôm nay",
-      "今日推荐",
-      "今日のおすすめ",
-      "오늘의 추천",
-    ]
-  }
 }
 
 struct MeupWidgetEntry: TimelineEntry {
@@ -145,17 +144,28 @@ struct MeupWidgetProvider: TimelineProvider {
   }
 
   private func fallbackPayload() -> MeupWidgetPayload {
+    let localeCode = currentWidgetLocaleCode
+    let defaults = MeupWidgetTextDefaults.forLocale(localeCode)
     let state = type == .suggestCourse ? "exhausted" : "empty"
-    var data: [String: Any] = ["title": type.defaultTitle, "staticAssetKey": type.fallbackImageKey]
+    let title: String
+    switch type {
+    case .inProgress:
+      title = defaults.inProgressEmptyTitle
+    case .streak:
+      title = type.defaultTitle
+    case .suggestCourse:
+      title = defaults.suggestExhaustedTitle
+    }
+    var data: [String: Any] = ["localeCode": localeCode, "title": title, "staticAssetKey": type.fallbackImageKey]
     if type == .suggestCourse {
-      data["subtitle"] = "More coming soon!"
+      data["subtitle"] = defaults.suggestExhaustedSubtitle
     }
     if type == .streak {
       data["currentStreak"] = 0
-      data["countText"] = "0 days"
-      data["subtitle"] = type.defaultTitle
+      data["countText"] = defaults.streakCountText(0)
+      data["subtitle"] = defaults.streakEmptySubtitle
       data["weekStudy"] = Array(repeating: false, count: 7)
-      data["weekLabels"] = ["M", "T", "W", "T", "F", "S", "S"]
+      data["weekLabels"] = defaults.weekLabels
     }
     return MeupWidgetPayload(
       state: state,

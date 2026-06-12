@@ -17,22 +17,11 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
   TaskEither<AppException, List<HomeWidgetSyncResult>> syncAll(HomeWidgetSyncParams params) {
     return TaskEither(() async {
       final localizedParams = params.withTextDefaults(await params.resolveTextDefaults());
+      await _saveLocaleCodeQuietly(localizedParams.localeCode);
       final results = <HomeWidgetSyncResult>[];
-      results.add(
-        (await syncInProgress(
-          localizedParams,
-        ).run()).getOrElse((error) => HomeWidgetSyncResult(widgetType: HomeWidgetType.inProgressCourse, status: HomeWidgetSyncStatus.failed, message: error.message ?? '')),
-      );
-      results.add(
-        (await syncStreak(
-          localizedParams,
-        ).run()).getOrElse((error) => HomeWidgetSyncResult(widgetType: HomeWidgetType.weeklyStreak, status: HomeWidgetSyncStatus.failed, message: error.message ?? '')),
-      );
-      results.add(
-        (await syncSuggestCourse(
-          localizedParams,
-        ).run()).getOrElse((error) => HomeWidgetSyncResult(widgetType: HomeWidgetType.suggestCourse, status: HomeWidgetSyncStatus.failed, message: error.message ?? '')),
-      );
+      results.add(await _syncOrFailed(syncInProgress(localizedParams), HomeWidgetType.inProgressCourse));
+      results.add(await _syncOrFailed(syncStreak(localizedParams), HomeWidgetType.weeklyStreak));
+      results.add(await _syncOrFailed(syncSuggestCourse(localizedParams), HomeWidgetType.suggestCourse));
       return right(results);
     });
   }
@@ -41,6 +30,7 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
   TaskEither<AppException, HomeWidgetSyncResult> syncInProgress(HomeWidgetSyncParams params) {
     return _bestEffort(() async {
       final textDefaults = await params.resolveTextDefaults();
+      await _saveLocaleCodeQuietly(params.localeCode);
       final response = await _api.getInProgressWidget();
       final payload = HomeWidgetPayloadBuilder.buildInProgress(
         response.data?.toEntity(),
@@ -56,6 +46,7 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
   TaskEither<AppException, HomeWidgetSyncResult> syncStreak(HomeWidgetSyncParams params) {
     return _bestEffort(() async {
       final textDefaults = await params.resolveTextDefaults();
+      await _saveLocaleCodeQuietly(params.localeCode);
       final response = await _api.getLearningStreak();
       if (response.data == null) {
         throw StateError('Streak widget response data is null');
@@ -79,7 +70,10 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
 
     return TaskEither(() async {
       final future = _runBestEffort(
-        () => _syncSuggestCourse(params),
+        () async {
+          await _saveLocaleCodeQuietly(params.localeCode);
+          return _syncSuggestCourse(params);
+        },
         HomeWidgetType.suggestCourse,
       );
       _suggestSyncInFlight = future;
@@ -195,6 +189,21 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
     try {
       await _bridge.updateWidget(widgetType);
     } catch (_) {}
+  }
+
+  Future<void> _saveLocaleCodeQuietly(String localeCode) async {
+    try {
+      await _bridge.saveLocaleCode(localeCode);
+    } catch (_) {}
+  }
+
+  static Future<HomeWidgetSyncResult> _syncOrFailed(
+    TaskEither<AppException, HomeWidgetSyncResult> task,
+    HomeWidgetType widgetType,
+  ) async {
+    return (await task.run()).getOrElse(
+      (error) => HomeWidgetSyncResult(widgetType: widgetType, status: HomeWidgetSyncStatus.failed, message: error.message ?? ''),
+    );
   }
 
   static bool _payloadLocaleMatches(HomeWidgetPayload payload, String localeCode) {

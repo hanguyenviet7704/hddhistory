@@ -94,9 +94,15 @@ class FakeHomeWidgetBridge implements HomeWidgetBridge {
   final Set<String> failImageKeys;
   final Set<String> failClearKeys;
   final List<HomeWidgetPayload> savedPayloads = [];
+  final List<String> savedLocaleCodes = [];
   final List<String> savedImageKeys = [];
   final List<HomeWidgetType> updatedTypes = [];
   final List<String> clearedKeys = [];
+
+  @override
+  Future<void> saveLocaleCode(String localeCode) async {
+    savedLocaleCodes.add(localeCode);
+  }
 
   @override
   Future<void> savePayload(HomeWidgetPayload payload) async {

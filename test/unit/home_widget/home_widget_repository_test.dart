@@ -67,6 +67,7 @@ void main() {
 
       expect(result.isRight(), isTrue);
       expect(api.suggestCalls, 1);
+      expect(bridge.savedLocaleCodes, contains('vi'));
       expect(bridge.savedPayloads.single.data['localeCode'], 'vi');
       expect(bridge.savedPayloads.single.data['title'], 'Khoa hoc da luu');
       expect(result.getRight().toNullable()?.status, HomeWidgetSyncStatus.updated);
@@ -91,9 +92,10 @@ void main() {
       final bridge = FakeHomeWidgetBridge();
       final repository = HomeWidgetRepository(api, local, bridge);
 
-      final result = await repository.syncInProgress(HomeWidgetSyncParams(localeCode: 'en', now: now)).run();
+      final result = await repository.syncInProgress(HomeWidgetSyncParams(localeCode: 'vi', now: now)).run();
 
       expect(result.isRight(), isTrue);
+      expect(bridge.savedLocaleCodes, contains('vi'));
       expect(bridge.savedPayloads, isEmpty);
       expect(bridge.updatedTypes, [HomeWidgetType.inProgressCourse]);
       expect(result.getRight().toNullable()?.status, HomeWidgetSyncStatus.preserved);
@@ -263,6 +265,7 @@ void main() {
       ]);
 
       expect(results.every((result) => result.isRight()), isTrue);
+      expect(bridge.savedLocaleCodes, everyElement('en'));
       expect(api.suggestCalls, 1);
       expect(bridge.savedPayloads.length, 1);
       expect(local.suggestionDate, '2026-06-09');
