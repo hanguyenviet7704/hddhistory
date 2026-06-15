@@ -18,10 +18,10 @@ interface Props {
 
 const LANG_OPTIONS: { code: LangCode; label: string }[] = [
   { code: LangCode.VI, label: "Tiếng Việt" },
-  { code: LangCode.EN, label: "English" },
-  { code: LangCode.ZH, label: "中文" },
-  { code: LangCode.JA, label: "日本語" },
-  { code: LangCode.KO, label: "한국어" },
+  { code: LangCode.EN, label: "Tiếng Anh" },
+  { code: LangCode.ZH, label: "Tiếng Trung" },
+  { code: LangCode.JA, label: "Tiếng Nhật" },
+  { code: LangCode.KO, label: "Tiếng Hàn" },
 ];
 
 const InAppSurveyConfigForm = ({
