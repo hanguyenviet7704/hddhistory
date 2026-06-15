@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { PlusIcon } from "@heroicons/react/24/outline";
 import { LangCode } from "../../../types/enum/common.enum";
 import {
@@ -15,12 +16,22 @@ interface Props {
   setFormData: React.Dispatch<React.SetStateAction<InAppSurveyConfigPayload>>;
 }
 
+const LANG_OPTIONS: { code: LangCode; label: string }[] = [
+  { code: LangCode.VI, label: "Tiếng Việt" },
+  { code: LangCode.EN, label: "English" },
+  { code: LangCode.ZH, label: "中文" },
+  { code: LangCode.JA, label: "日本語" },
+  { code: LangCode.KO, label: "한국어" },
+];
+
 const InAppSurveyConfigForm = ({
   lang,
   formData,
   onSubmit,
   setFormData,
 }: Props) => {
+  const [editLang, setEditLang] = useState<LangCode>(lang);
+
   const updateBranch = (
     branchIndex: number,
     nextBranch: InAppSurveyBranchPayload,
@@ -39,12 +50,32 @@ const InAppSurveyConfigForm = ({
       onSubmit={onSubmit}
       className="space-y-6"
     >
+      <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white p-3 shadow-sm">
+        <span className="mr-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+          Ngôn ngữ đang sửa
+        </span>
+        {LANG_OPTIONS.map((option) => (
+          <button
+            key={option.code}
+            type="button"
+            onClick={() => setEditLang(option.code)}
+            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+              editLang === option.code
+                ? "bg-indigo-600 text-white shadow-sm"
+                : "text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
+
       <InAppSurveyQuestionFields
         title="Intro Question"
         tone="intro"
         compactQuestion
         questionNumber="Q1"
-        lang={lang}
+        lang={editLang}
         value={formData.introQuestion}
         onChange={(introQuestion) =>
           setFormData((prev) => ({ ...prev, introQuestion }))
@@ -58,7 +89,7 @@ const InAppSurveyConfigForm = ({
               key={branch.id || branchIndex}
               branch={branch}
               branchIndex={branchIndex}
-              lang={lang}
+              lang={editLang}
               onChange={updateBranch}
               onRemove={(index) =>
                 setFormData((prev) => ({
@@ -78,7 +109,7 @@ const InAppSurveyConfigForm = ({
             onClick={() =>
               setFormData((prev) => ({
                 ...prev,
-                branches: [...prev.branches, emptySurveyBranch(lang)],
+                branches: [...prev.branches, emptySurveyBranch(editLang)],
               }))
             }
             className="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm hover:bg-indigo-700"
