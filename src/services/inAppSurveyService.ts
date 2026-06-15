@@ -91,4 +91,19 @@ export const inAppSurveyService = {
     });
     return res.data;
   },
+
+  async downloadImportTemplate() {
+    return axiosClient.get(`${basePath}/config/import/template`, {
+      responseType: "blob",
+    });
+  },
+
+  async importExcel(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    return axiosClient.post(`${basePath}/config/import`, formData, {
+      responseType: "blob",
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+  },
 };

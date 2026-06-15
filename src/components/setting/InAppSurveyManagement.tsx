@@ -5,6 +5,7 @@ import { LangCode } from "../../types/enum/common.enum";
 import { InAppSurveyConfigPayload } from "../../types/interface/in-app-survey.interface";
 import { inAppSurveyService } from "../../services/inAppSurveyService";
 import { useNotification } from "../../utils/hooks/useNotification";
+import ExcelImportButton from "../imports/ExcelImportButton";
 import InAppSurveyConfigForm from "./in-app-survey/InAppSurveyConfigForm";
 import InAppSurveyFeedbackList from "./in-app-survey/InAppSurveyFeedbackList";
 import {
@@ -90,14 +91,48 @@ const InAppSurveyManagement = () => {
         </div>
 
         {activeTab === "editor" ? (
-          <button
-            type="submit"
-            form="in-app-survey-config-form"
-            disabled={saving || loading}
-            className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
-          >
-            Save Survey
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res =
+                    await inAppSurveyService.downloadImportTemplate();
+                  const url = URL.createObjectURL(res.data);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "in-app-survey-import-template.xlsx";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  showError("Tải template thất bại");
+                }
+              }}
+              className="inline-flex items-center gap-2 rounded-lg border border-slate-400 px-3 py-2 text-sm text-slate-600 transition hover:bg-slate-50"
+            >
+              Template
+            </button>
+
+            <ExcelImportButton
+              label="Import"
+              fileName="in-app-survey-import-result.xlsx"
+              importExcel={inAppSurveyService.importExcel}
+              onSuccess={() => {
+                showSuccess("Import survey thành công");
+                fetchConfig();
+              }}
+              onError={showError}
+            />
+
+            <button
+              type="submit"
+              form="in-app-survey-config-form"
+              disabled={saving || loading}
+              className="rounded-xl bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:bg-emerald-300"
+            >
+              Save Survey
+            </button>
+          </div>
         ) : null}
       </div>
 
