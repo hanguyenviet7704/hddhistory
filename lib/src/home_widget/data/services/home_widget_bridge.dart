@@ -16,6 +16,10 @@ abstract class HomeWidgetBridge {
 
 @LazySingleton(as: HomeWidgetBridge)
 class HomeWidgetBridgeImpl implements HomeWidgetBridge {
+  HomeWidgetBridgeImpl(@Named(DIKey.thirdPartyDio) this._dio);
+
+  final Dio _dio;
+
   String get _appGroupId => HomeWidgetAppGroups.current();
 
   @override
@@ -41,9 +45,25 @@ class HomeWidgetBridgeImpl implements HomeWidgetBridge {
   @override
   Future<void> saveImage({required String key, required String imageUrl}) async {
     await home_widget_plugin.HomeWidget.setAppGroupId(_appGroupId);
-    await home_widget_plugin.HomeWidget.saveImage(
+
+    // Download the bytes explicitly instead of resolving a NetworkImage.
+    // On iOS the plugin's NetworkImage resolution can fail silently (never
+    // firing onError) and write no file, so the widget loses its remote image
+    // while Android works. A direct, timeout-bounded fetch writes a real file
+    // the widget extension can read. AssetImage stays on the plugin path.
+    final response = await _dio.get<List<int>>(
+      imageUrl,
+      options: Options(responseType: ResponseType.bytes),
+    );
+    final bytes = response.data;
+    if (bytes == null || bytes.isEmpty) {
+      throw StateError('Empty image bytes for "$imageUrl"');
+    }
+
+    await home_widget_plugin.HomeWidget.saveFile(
       key,
-      NetworkImage(imageUrl),
+      Uint8List.fromList(bytes),
+      extension: 'png',
       appGroupId: _appGroupId,
     );
   }

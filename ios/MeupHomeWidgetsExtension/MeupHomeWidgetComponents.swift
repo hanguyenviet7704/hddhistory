@@ -1,3 +1,4 @@
+import ImageIO
 import SwiftUI
 import UIKit
 
@@ -54,11 +55,17 @@ struct WidgetImageView: View {
   private var image: Image {
     if let key = payload.string("imagePathKey").nonEmpty,
       let path = widgetDefaults.string(forKey: key),
-      let uiImage = UIImage(contentsOfFile: path) {
+      let uiImage = meupDownsampledImage(atPath: path, maxPixel: 600) {
       return Image(uiImage: uiImage)
     }
     if let path = widgetDefaults.string(forKey: payload.string("staticAssetKey", fallback: type.fallbackImageKey)),
-      let uiImage = UIImage(contentsOfFile: path) {
+      let uiImage = meupDownsampledImage(atPath: path, maxPixel: 600) {
+      return Image(uiImage: uiImage)
+    }
+    // Bundled fallback ships as loose PNGs (no asset catalog), so resolve via
+    // UIImage(named:) which finds them; SwiftUI Image(name:) reads only catalogs
+    // and would render blank.
+    if let uiImage = UIImage(named: type.fallbackImageName) {
       return Image(uiImage: uiImage)
     }
     return Image(type.fallbackImageName)
@@ -180,4 +187,21 @@ extension Array {
   subscript(safe index: Int) -> Element? {
     indices.contains(index) ? self[index] : nil
   }
+}
+
+// Loads an image as a downsampled thumbnail via ImageIO so a full-resolution
+// course image can't exceed the widget extension's tight memory budget (which
+// jetsam-kills the process and forces the placeholder). Decodes only the
+// thumbnail, never the full bitmap.
+private func meupDownsampledImage(atPath path: String, maxPixel: CGFloat) -> UIImage? {
+  let url = URL(fileURLWithPath: path)
+  guard let source = CGImageSourceCreateWithURL(url as CFURL, nil) else { return nil }
+  let options: [CFString: Any] = [
+    kCGImageSourceCreateThumbnailFromImageAlways: true,
+    kCGImageSourceCreateThumbnailWithTransform: true,
+    kCGImageSourceShouldCacheImmediately: true,
+    kCGImageSourceThumbnailMaxPixelSize: maxPixel,
+  ]
+  guard let cgImage = CGImageSourceCreateThumbnailAtIndex(source, 0, options as CFDictionary) else { return nil }
+  return UIImage(cgImage: cgImage)
 }

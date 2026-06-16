@@ -95,12 +95,12 @@
 		5B3EBA1641C50EC22B4AB873 /* Pods-Runner.debug-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.debug-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.debug-prod.xcconfig"; sourceTree = "<group>"; };
 		5D8B6EF0A5F8D314BF2FC8FD /* Pods-Runner.release-prod.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.release-prod.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.release-prod.xcconfig"; sourceTree = "<group>"; };
 		5E2E60D8870AA7824F053B4C /* Pods-Runner.profile-dev.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-dev.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-dev.xcconfig"; sourceTree = "<group>"; };
-		647D756F6F0CFD222C7FDD60 /* Pods-Runner.profile-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-stg.xcconfig"; sourceTree = "<group>"; };
-		65E23F26A922F07922C2A883 /* MeupHomeWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetViews.swift; sourceTree = "<group>"; };
 		61C7A3B7E2D14F8FA7C23B90 /* meup_widget_streak_medium_art.png */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = image.png; path = meup_widget_streak_medium_art.png; sourceTree = "<group>"; };
 		61C7A3B9E2D14F8FA7C23B90 /* MeupHomeWidgetComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetComponents.swift; sourceTree = "<group>"; };
 		61C7A3BBE2D14F8FA7C23B90 /* MeupCourseHomeWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupCourseHomeWidgetView.swift; sourceTree = "<group>"; };
 		61C7A3BDE2D14F8FA7C23B90 /* MeupStreakHomeWidgetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupStreakHomeWidgetView.swift; sourceTree = "<group>"; };
+		647D756F6F0CFD222C7FDD60 /* Pods-Runner.profile-stg.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile-stg.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile-stg.xcconfig"; sourceTree = "<group>"; };
+		65E23F26A922F07922C2A883 /* MeupHomeWidgetViews.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MeupHomeWidgetViews.swift; sourceTree = "<group>"; };
 		69A3F2235F5DB86A985FAF19 /* Pods_RunnerTests.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_RunnerTests.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		6AC627A29C8DB3725D93A751 /* Pods-Runner.profile.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Runner.profile.xcconfig"; path = "Target Support Files/Pods-Runner/Pods-Runner.profile.xcconfig"; sourceTree = "<group>"; };
 		6E5DAF292E5DCBA8AEE639CA /* Pods-RunnerTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-RunnerTests.release.xcconfig"; path = "Target Support Files/Pods-RunnerTests/Pods-RunnerTests.release.xcconfig"; sourceTree = "<group>"; };
@@ -246,7 +246,6 @@
 				2521B090DFF46AD4FFD0A835 /* Info.plist */,
 				98883C5B76DB7F3C3051FD79 /* MeupHomeWidgetsExtension.entitlements */,
 			);
-			name = MeupHomeWidgetsExtension;
 			path = MeupHomeWidgetsExtension;
 			sourceTree = "<group>";
 		};

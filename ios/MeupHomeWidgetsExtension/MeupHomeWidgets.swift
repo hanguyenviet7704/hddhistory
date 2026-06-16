@@ -16,7 +16,7 @@ struct MeupInProgressWidget: Widget {
       MeupHomeWidgetView(entry: entry)
     }
     .configurationDisplayName("Continue course")
-    .description("Shows your active Meup course.")
+    .description("Your next lesson is ready when you are.")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
@@ -26,8 +26,8 @@ struct MeupStreakWidget: Widget {
     StaticConfiguration(kind: MeupWidgetType.streak.kind, provider: MeupWidgetProvider(type: .streak)) { entry in
       MeupHomeWidgetView(entry: entry)
     }
-    .configurationDisplayName("Weekly streak")
-    .description("Shows your weekly Meup learning streak.")
+    .configurationDisplayName("Daily Streak")
+    .description("Every day you learn counts. Keep it going!")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
@@ -37,8 +37,8 @@ struct MeupSuggestCourseWidget: Widget {
     StaticConfiguration(kind: MeupWidgetType.suggestCourse.kind, provider: MeupWidgetProvider(type: .suggestCourse)) { entry in
       MeupHomeWidgetView(entry: entry)
     }
-    .configurationDisplayName("Course suggestion")
-    .description("Shows today's suggested Meup course.")
+    .configurationDisplayName("Today's Course")
+    .description("A new pick for you, every day.")
     .supportedFamilies([.systemSmall, .systemMedium])
   }
 }
