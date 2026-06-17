@@ -36,6 +36,7 @@ import VideoCreate from "../pages/video/VideoCreate";
 import VideoDetail from "../pages/video/VideoDetail";
 import DriveUploadPage from "../pages/drive-upload/DriveUploadPage";
 import CourseImportJobDetail from "../pages/imports/CourseImportJobDetail";
+import ReportList from "../pages/reports/ReportList";
 
 export default function AppRouter() {
   return (
@@ -99,6 +100,8 @@ export default function AppRouter() {
                 path="progress/user/:userId/course/:courseId"
                 element={<UserProgressDetail />}
               />
+
+              <Route path="reports" element={<ReportList />} />
 
               <Route path="settings" element={<SettingsPage />} />
 
