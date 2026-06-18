@@ -11,6 +11,7 @@ abstract class IapProductEntity with _$IapProductEntity {
     @Default('') String description,
     @Default('') String price,
     @Default(0) double rawPrice,
+    @Default(0) double salePercent,
     @Default('') String currencyCode,
     @Default('') String currencySymbol,
     @Default(false) bool bestDeal,
@@ -22,9 +23,7 @@ abstract class IapProductEntity with _$IapProductEntity {
 extension IapProductEntityX on IapProductEntity {
   bool get hasDiscount => rawPrice > 0 && rawPrice * saleScale > rawPrice + 0.01;
 
-  double get saleScale => 2;
-
-  int get salePercent => ((1 / saleScale) * 100).round();
+  double get saleScale => (salePercent / 100);
 
   String get originalPriceString {
     final original = rawPrice * saleScale;

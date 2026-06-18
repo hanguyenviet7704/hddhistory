@@ -11,6 +11,7 @@ abstract class IapProductModel with _$IapProductModel {
     @Default('') String description,
     @DefaultString() @Default('') String price,
     @Default(0) double rawPrice,
+    @Default(0) double salePercent,
     @Default('') String currencyCode,
     @Default('') String currencySymbol,
     @Default(false) bool bestDeal,
@@ -48,8 +49,6 @@ extension IapProductModelExtension on IapProductModel {
 
   double get saleScale => 2;
 
-  int get salePercent => ((1 / saleScale) * 100).toInt();
-
   String period(BuildContext context) {
     return switch (id) {
       String _ when id.contains('monthly') => context.l10n.monetization.pricePerMonth,
@@ -79,6 +78,7 @@ extension IapProductModelExtension on IapProductModel {
     description: description,
     price: price,
     rawPrice: rawPrice,
+    salePercent: salePercent,
     currencyCode: currencyCode,
     currencySymbol: currencySymbol,
     bestDeal: bestDeal,
