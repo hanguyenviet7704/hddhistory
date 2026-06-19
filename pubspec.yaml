@@ -62,7 +62,7 @@ dependencies:
   popover: ^0.4.0
   flutter_staggered_grid_view: ^0.7.0
   scrollable_positioned_list: ^0.3.8
-  record: ^7.0.0
+  record: ^7.1.0
   dotted_border: ^3.1.0
   timeline_tile_plus: ^0.1.0
   fl_chart: ^1.2.0
@@ -98,7 +98,7 @@ dependencies:
   # App Localizations
   flutter_localizations:
     sdk: flutter
-  slang_flutter: ^4.15.0
+  slang_flutter: ^4.16.0
 
   # App State Management
   bloc: ^9.2.1
@@ -109,7 +109,7 @@ dependencies:
   # App Storage Services
   hydrated_bloc: ^11.0.0
   flutter_secure_storage: ^10.3.1
-  path_provider: ^2.1.5
+  path_provider: ^2.1.6
   
   # Supabase Services
   # supabase_flutter: ^2.10.3
@@ -131,13 +131,13 @@ dependencies:
   # App Purchases Services
   in_app_purchase: ^3.3.0
   in_app_purchase_storekit: ^0.4.10
-  in_app_purchase_android: ^0.5.0
+  in_app_purchase_android: ^0.5.1
   # purchases_flutter: ^8.2.2
 
   # App Ads Services
   # google_mobile_ads: ^3.0.0
   # unity_ads_plugin: ^0.3.7
-  facebook_app_events: ^0.28.0
+  facebook_app_events: ^0.30.1
 
   # App Map Services
 #  google_maps_flutter: ^2.12.1
@@ -145,17 +145,17 @@ dependencies:
 #  geocoding: ^3.0.0
 
   # App Firebase Services
-  firebase_core: ^4.10.0
-  firebase_auth: ^6.5.2
-  firebase_remote_config: ^6.5.2
+  firebase_core: ^4.11.0
+  firebase_auth: ^6.5.3
+  firebase_remote_config: ^6.5.3
 
   # SSO Auth
   google_sign_in: ^7.2.0
   sign_in_with_apple: ^8.1.0
 
   # App Notification Services
-  firebase_messaging: ^16.3.0
-  awesome_notifications: ^0.11.0
+  firebase_messaging: ^16.4.0
+  awesome_notifications: ^0.12.0
 
   # App Models and Utils
   json_annotation: ^4.12.0
@@ -183,17 +183,17 @@ dependencies:
 #  open_settings_plus: ^0.4.0
 
   # App Tracking Services
-  sentry_flutter: ^9.20.0
-  firebase_crashlytics: ^5.2.3
-  firebase_analytics: ^12.4.2
+  sentry_flutter: ^9.22.0
+  firebase_crashlytics: ^5.2.4
+  firebase_analytics: ^12.4.3
 
   # ffmpeg_kit_flutter_new: ^1.1.0
 
   # App Socket Services
-  socket_io_client: ^3.1.4
+  socket_io_client: ^3.1.6
 
   # App Deep Links Services
-  app_links: ^7.1.1
+  app_links: ^7.1.2
 
   # App Isolate Services
   flutter_isolate: ^2.1.0
@@ -251,7 +251,7 @@ dev_dependencies:
   # flutter pub run build_runner build --delete-conflicting-outputs
   # or this command
   # dart run build_runner build --delete-conflicting-outputs
-  retrofit_generator: ^10.2.6
+  retrofit_generator: ^10.2.7
   build_runner: ^2.15.0
   flutter_gen_runner: ^5.14.1
   json_serializable: ^6.14.0
@@ -260,7 +260,7 @@ dev_dependencies:
   freezed: ^3.2.5
   flutter_gen: ^5.14.1
   # graphql_codegen: ^3.0.1
-  slang: ^4.15.0
+  slang: ^4.16.0
   slang_build_runner: ^4.15.0
   mockito: ^5.6.4
 
