@@ -12,9 +12,12 @@ import { useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
+import ExcelImportButton from "../../components/imports/ExcelImportButton";
+import { useNotification } from "../../utils/hooks/useNotification";
 
 export default function CourseList() {
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
 
   const [courses, setCourses] = useState<ICourse[]>([]);
   const [loading, setLoading] = useState(false);
@@ -196,6 +199,35 @@ export default function CourseList() {
                 </svg>
               </div>
             </div>
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await courseService.downloadTemplate();
+                  const url = URL.createObjectURL(res.data);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "course-import-template.xlsx";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  showError("Download template failed");
+                }
+              }}
+              className="inline-flex items-center gap-2 border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition text-sm"
+            >
+              Template
+            </button>
+            <ExcelImportButton
+              label="Import"
+              fileName="course-import-result.xlsx"
+              importExcel={courseService.importExcel}
+              onSuccess={() => {
+                showSuccess("Import courses successfully");
+                fetchCourses(searchTerm.trim(), 1, false);
+              }}
+              onError={showError}
+            />
             <button
               onClick={openCreate}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"

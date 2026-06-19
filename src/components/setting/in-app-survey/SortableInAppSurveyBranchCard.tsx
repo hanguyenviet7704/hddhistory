@@ -65,6 +65,14 @@ const SortableInAppSurveyBranchCard = ({
             <div className="text-lg font-semibold text-slate-950">
               {branch.emoji.name || "Unnamed emoji branch"}
             </div>
+            {branch.id ? (
+              <div className="mt-1 flex items-center gap-1 text-xs text-slate-500">
+                <span className="font-medium">branch_key:</span>
+                <code className="select-all rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-700">
+                  {branch.id}
+                </code>
+              </div>
+            ) : null}
           </div>
         </div>
         <button

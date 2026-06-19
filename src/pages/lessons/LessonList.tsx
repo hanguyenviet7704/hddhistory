@@ -12,6 +12,8 @@ import { PlusIcon } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getTranslationValue } from "../../utils/translation";
 import CloudflareAssetPreview from "../../components/files/CloudflareAssetPreview";
+import ExcelImportButton from "../../components/imports/ExcelImportButton";
+import { useNotification } from "../../utils/hooks/useNotification";
 
 export default function LessonList() {
   const [lessons, setLessons] = useState<ILesson[]>([]);
@@ -29,6 +31,7 @@ export default function LessonList() {
   const observer = useRef<IntersectionObserver | null>(null);
   const lang = useSelector((state: RootState) => state.lang.code);
   const navigate = useNavigate();
+  const { showSuccess, showError } = useNotification();
 
   // fetch courses (with search)
   const fetchCourses = async (query = "") => {
@@ -199,6 +202,35 @@ export default function LessonList() {
               </div>
             </div>
 
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  const res = await lessonService.downloadTemplate();
+                  const url = URL.createObjectURL(res.data);
+                  const a = document.createElement("a");
+                  a.href = url;
+                  a.download = "lesson-import-template.xlsx";
+                  a.click();
+                  URL.revokeObjectURL(url);
+                } catch {
+                  showError("Download template failed");
+                }
+              }}
+              className="inline-flex items-center gap-2 border border-slate-400 text-slate-600 hover:bg-slate-50 px-3 py-2 rounded-lg transition text-sm"
+            >
+              Template
+            </button>
+            <ExcelImportButton
+              label="Import"
+              fileName="lesson-import-result.xlsx"
+              importExcel={lessonService.importExcel}
+              onSuccess={() => {
+                showSuccess("Import lessons successfully");
+                fetchLessons(searchTerm.trim(), selectedCourse?._id, 1, false);
+              }}
+              onError={showError}
+            />
             <button
               onClick={() => navigate("/lesson/create")}
               className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-700 hover:to-indigo-700 transition-all shadow-md hover:shadow-lg"
