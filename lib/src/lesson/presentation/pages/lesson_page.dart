@@ -123,6 +123,7 @@ class _LessonPageState extends State<LessonPage> {
               readBody: readSurface,
               audioBody: const SizedBox.shrink(),
               bottom: bottomButton,
+              trailing: _buildReportFlagButton(context),
               isLoading: state.status == LessonStatus.loading,
             );
           }
@@ -142,7 +143,7 @@ class _LessonPageState extends State<LessonPage> {
             readBody: readSurface,
             audioBody: const LessonAudioSurface(),
             bottom: selectedMode.isRead ? bottomButton : null,
-            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : null,
+            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : _buildReportFlagButton(context),
             isLoading: state.status == LessonStatus.loading,
           );
         },
@@ -225,6 +226,33 @@ class _LessonPageState extends State<LessonPage> {
     );
 
     await _lessonAudioCubit.restoreAfterSpeedSheet(resumePlayback: shouldResume);
+  }
+
+  Widget _buildReportFlagButton(BuildContext context) {
+    return GestureDetector(
+      key: const ValueKey('lesson-shell-report-button'),
+      behavior: HitTestBehavior.opaque,
+      onTap: () {
+        final courseState = context.read<CourseLessonCubit>().state;
+        showIssueReportBottomSheet(
+          context,
+          lessonId: courseState.selectedLesson.id,
+          courseId: courseState.selectedLesson.courseId,
+          keypoint: courseState.resolvedCurrentKeypoint,
+        );
+      },
+      child: SizedBox(
+        width: 36.w,
+        height: 36.w,
+        child: Center(
+          child: Icon(
+            Icons.outlined_flag,
+            size: 22.w,
+            color: AppCustomColor.textQuaternary,
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _buildAudioSpeedPill() {
