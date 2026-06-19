@@ -582,10 +582,7 @@ abstract interface class ITrackingService {
   Future<void> trackPremiumRestoreClick();
   Future<void> trackPremiumPurchase();
   Future<void> trackPremiumScrExit();
-  Future<void> trackPremiumAllpackClick();
-  Future<void> trackPremiumAllpackScrView();
   Future<void> trackPremiumAllpackPick(String premiumId);
-  Future<void> trackPremiumAllpackPurchase();
   Future<void> trackSettingBadgeClick(CourseTrackingData trackingData);
   Future<void> trackSettingBadgeSlide(CourseTrackingData trackingData);
   Future<void> trackSettingBadgeDetailView(CourseTrackingData trackingData);

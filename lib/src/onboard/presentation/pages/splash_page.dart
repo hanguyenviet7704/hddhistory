@@ -91,10 +91,18 @@ class _SplashPageState extends State<SplashPage> {
 
       final deeplinkCubit = context.read<DeeplinkCubit>();
       final hasHandledPendingLink = deeplinkCubit.setIsPassSplashScreen(true);
-      if (!mounted || hasHandledPendingLink) return;
+      if (!mounted) return;
+      if (hasHandledPendingLink) {
+        context.read<IapCubit>().suppressPaywallAutoOpenForSession();
+        return;
+      }
 
       final hasHandledInitialLink = await deeplinkCubit.initialLink();
-      if (!mounted || hasHandledInitialLink) return;
+      if (!mounted) return;
+      if (hasHandledInitialLink) {
+        context.read<IapCubit>().suppressPaywallAutoOpenForSession();
+        return;
+      }
       await splashDelay;
       if (!mounted) return;
 

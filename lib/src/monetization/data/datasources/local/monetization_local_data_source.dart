@@ -31,12 +31,17 @@ abstract class MonetizationLocalDataSource {
 
   /// Clear all cached data
   Future<void> clearCache();
+
+  Future<int> getNewUserPaywallImpressionCount();
+
+  Future<void> setNewUserPaywallImpressionCount(int count);
 }
 
 @LazySingleton(as: MonetizationLocalDataSource)
 class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
   static const String _cacheKey = 'monetization_cache';
   static const String _cacheListKey = 'monetization_list_cache';
+  static const String _newUserPaywallImpressionKey = 'monetization_new_user_paywall_impressions';
 
   final ILocalStoreService _localStoreService;
 
@@ -49,9 +54,7 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
       if (data.isEmpty) return [];
 
       final List<dynamic> jsonList = data['items'] ?? [];
-      return jsonList
-          .map((json) => IapProductModel.fromJson(json as Map<String, dynamic>))
-          .toList();
+      return jsonList.map((json) => IapProductModel.fromJson(json as Map<String, dynamic>)).toList();
     } catch (e) {
       return [];
     }
@@ -121,5 +124,25 @@ class MonetizationLocalDataSourceImpl implements MonetizationLocalDataSource {
       // Handle error silently or log
     }
   }
-}
 
+  @override
+  Future<int> getNewUserPaywallImpressionCount() async {
+    try {
+      final value = await _localStoreService.getString(key: _newUserPaywallImpressionKey);
+      final count = int.tryParse(value) ?? 0;
+      return count < 0 ? 0 : count;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  @override
+  Future<void> setNewUserPaywallImpressionCount(int count) async {
+    try {
+      final safeCount = count < 0 ? 0 : count;
+      await _localStoreService.setString(key: _newUserPaywallImpressionKey, value: safeCount.toString());
+    } catch (_) {
+      // Ignore local behavioral counter failures.
+    }
+  }
+}

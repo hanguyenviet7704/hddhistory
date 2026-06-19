@@ -101,3 +101,4 @@ android/vendor/
 .bundle/
 ios/build/
 tmp/
+coverage/

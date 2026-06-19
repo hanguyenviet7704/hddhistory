@@ -23,6 +23,9 @@ class CourseRoute extends BaseTransitionRouteData with $CourseRoute {
       BlocProvider.value(value: AppDI.injector.get<CourseCubit>()),
       BlocProvider.value(value: AppDI.injector.get<ProgressCubit>()),
       BlocProvider.value(value: AppDI.injector.get<CourseRoadmapCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<UserCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<ProfileCubit>()),
+      BlocProvider.value(value: AppDI.injector.get<IapCubit>()),
     ],
     child: CoursePage(selectedTabIndex: selectedTabIndex),
   );

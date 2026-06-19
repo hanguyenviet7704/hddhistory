@@ -10,7 +10,7 @@ enum PaywallEntryPoint {
   settingPre,
   profile,
   manageSubscription,
-  firstTimeUser,
+  autoOpen,
   courseRoadmap,
   other,
 }
@@ -22,6 +22,9 @@ abstract class IapState with _$IapState {
     @Default(false) bool isAvailable,
     @Default([]) List<IapProductEntity> iapProducts,
     @Default('') String selectedProductId,
+    ResolvedPaywallStrategyEntity? resolvedPaywallStrategy,
+    @Default(PaywallContentEntity()) PaywallContentEntity paywallContent,
+    @Default('') String paywallStrategySignature,
     @Default(PurchaseAction.none) PurchaseAction lastAction,
     @Default(PurchaseOrigin.none) PurchaseOrigin lastOrigin,
     String? errorMessage,
@@ -37,13 +40,13 @@ extension IapStateX on IapState {
     for (final item in iapProducts) {
       if (item.bestDeal) return item;
     }
-    return iapProducts.first;
+    return iapProducts.isEmpty ? const IapProductEntity() : iapProducts.first;
   }
 
   IapProductEntity get selectedProduct {
     for (final item in iapProducts) {
       if (item.id == selectedProductId) return item;
     }
-    return iapProducts.first;
+    return iapProducts.isEmpty ? const IapProductEntity() : iapProducts.first;
   }
 }

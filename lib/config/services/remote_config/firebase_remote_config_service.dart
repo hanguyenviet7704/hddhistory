@@ -132,11 +132,7 @@ class FirebaseRemoteConfigService implements IRemoteConfigService {
   PaywallConfigEntity get paywallConfig {
     try {
       final jsonString = _remoteConfig.getString(RemoteConfigKey.paywallConfig);
-      if (jsonString.isEmpty) {
-        return PaywallConfigEntity();
-      }
-      final Map<String, dynamic> jsonMap = jsonDecode(jsonString);
-      return PaywallConfigEntity.fromJson(jsonMap);
+      return PaywallConfigEntity.fromRawConfig(jsonString);
     } catch (e) {
       LogDev.error('Error parsing PaywallConfigEntity from Remote Config: $e');
       return PaywallConfigEntity();

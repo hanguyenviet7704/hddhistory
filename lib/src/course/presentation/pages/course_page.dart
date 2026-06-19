@@ -15,6 +15,7 @@ class _CoursePageState extends State<CoursePage> {
   void initState() {
     super.initState();
     _initializeSelection();
+    WidgetsBinding.instance.addPostFrameCallback((_) => _tryOpenPaywallAutoOpen());
   }
 
   void _initializeSelection() {
@@ -25,6 +26,29 @@ class _CoursePageState extends State<CoursePage> {
 
   void _trackMyCourseView() {
     AppService.instance.appTrackingService.trackCourseSelectMyCourseView(source: 'course_selection');
+  }
+
+  Future<void> _tryOpenPaywallAutoOpen() async {
+    if (!mounted) return;
+    final userState = context.read<UserCubit>().state;
+    final user = userState.user;
+    final profileCubit = context.read<ProfileCubit>();
+    final didPrepare = await context.read<IapCubit>().prepareAutoOpenPaywall(
+      userId: user.id,
+      accessToken: userState.accessToken,
+      hasCompletedOnboarding: !userState.isUserPassOnboarding,
+      isPremium: profileCubit.state.user.isPremium,
+      refreshPremiumStatus: () async {
+        if (profileCubit.state.user.id.isEmpty && user.id.isNotEmpty) {
+          profileCubit.setUser(user);
+        }
+        await profileCubit.loadUserIapSubscriptions();
+        if (profileCubit.state.status == ProfileStatus.failure) return null;
+        return profileCubit.state.user.isPremium;
+      },
+    );
+    if (!mounted || !didPrepare) return;
+    await const PaywallRoute().push(context);
   }
 
   @override
@@ -38,8 +62,7 @@ class _CoursePageState extends State<CoursePage> {
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
         child: BlocListener<CourseCubit, CourseState>(
-          listenWhen: (previous, current) =>
-              previous.selectedTabIndex != current.selectedTabIndex && current.selectedTabIndex == 0,
+          listenWhen: (previous, current) => previous.selectedTabIndex != current.selectedTabIndex && current.selectedTabIndex == 0,
           listener: (context, state) => _trackMyCourseView(),
           child: Column(
             children: [

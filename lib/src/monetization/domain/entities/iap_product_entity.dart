@@ -21,16 +21,20 @@ abstract class IapProductEntity with _$IapProductEntity {
 }
 
 extension IapProductEntityX on IapProductEntity {
-  bool get hasDiscount => rawPrice > 0 && rawPrice * saleScale > rawPrice + 0.01;
+  bool get hasDiscount => rawPrice > 0 && salePercent > 0 && salePercent < 100;
 
   double get saleScale => (salePercent / 100);
 
+  double get originalPrice {
+    if (!hasDiscount) return rawPrice;
+    return rawPrice / (1 - saleScale);
+  }
+
   String get originalPriceString {
-    final original = rawPrice * saleScale;
     if (currencySymbol.isNotEmpty) {
-      return '$currencySymbol${original.currency}';
+      return '$currencySymbol${originalPrice.currency}';
     }
-    return original.currency;
+    return originalPrice.currency;
   }
 
   String get periodLabel {
@@ -40,24 +44,26 @@ extension IapProductEntityX on IapProductEntity {
     // if (productId.contains('week')) return t.monetization.pricePerWeek;
     // if (productId.contains('day')) return t.monetization.pricePerDay;
 
-    return l10n.monetization.pricePerDay;
+    final idLower = productId.toLowerCase();
+    if (idLower.contains('year') || idLower.contains('annual') || idLower.contains('1y')) return l10n.monetization.pricePerMonth;
+    if (idLower.contains('quarter') || idLower.contains('3m')) return l10n.monetization.pricePerMonth;
+    if (idLower.contains('month')) return l10n.monetization.pricePerMonth;
+    if (idLower.contains('week')) return l10n.monetization.pricePerWeek;
+    return l10n.monetization.pricePerMonth;
   }
 
   double get _perPeriodValue {
     final idLower = productId.toLowerCase();
 
-    if (idLower.contains('year') || idLower.contains('annual') || productId.contains('1y')) return rawPrice / 12;
-    if (idLower.contains('quarter') || productId.contains('3m')) return rawPrice / 3;
-    if (idLower.contains('week') || productId.contains('week')) return rawPrice / 4;
-    if (idLower.contains('day') || productId.contains('day')) return rawPrice / 30;
+    if (idLower.contains('year') || idLower.contains('annual') || idLower.contains('1y')) return rawPrice / 12;
+    if (idLower.contains('quarter') || idLower.contains('3m')) return rawPrice / 3;
 
     return rawPrice;
   }
 
   String get pricePerPeriodString {
     if (rawPrice <= 0) return price.isNotEmpty ? price : '--';
-    final value = (_perPeriodValue / 30).toStringAsFixed(2).toDouble;
-    return currencySymbol.isNotEmpty ? '$currencySymbol${value.currency}' : value.currency;
+    return currencySymbol.isNotEmpty ? '$currencySymbol${_perPeriodValue.currency}' : _perPeriodValue.currency;
   }
 
   double get perPeriodValue => _perPeriodValue;

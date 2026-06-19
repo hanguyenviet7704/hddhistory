@@ -34,44 +34,6 @@ void main() {
     });
   });
 
-  group('resolvePaywallFlowDestination', () {
-    test('returns back for standard paywall close', () {
-      final destination = resolvePaywallFlowDestination(
-        firstTimeUserFlow: false,
-        action: PaywallFlowAction.close,
-      );
-
-      expect(destination, PaywallFlowDestination.back);
-    });
-
-    test('returns back for standard paywall success dismissal', () {
-      final destination = resolvePaywallFlowDestination(
-        firstTimeUserFlow: false,
-        action: PaywallFlowAction.purchaseSuccess,
-      );
-
-      expect(destination, PaywallFlowDestination.back);
-    });
-
-    test('returns course for first-time paywall close', () {
-      final destination = resolvePaywallFlowDestination(
-        firstTimeUserFlow: true,
-        action: PaywallFlowAction.close,
-      );
-
-      expect(destination, PaywallFlowDestination.course);
-    });
-
-    test('returns course for first-time paywall success dismissal', () {
-      final destination = resolvePaywallFlowDestination(
-        firstTimeUserFlow: true,
-        action: PaywallFlowAction.purchaseSuccess,
-      );
-
-      expect(destination, PaywallFlowDestination.course);
-    });
-  });
-
   group('paywall close delay contract', () {
     test('delays close button for all paywall entries', () {
       expect(shouldDelayPaywallCloseButton(), isTrue);
@@ -82,10 +44,10 @@ void main() {
   group('resolvePremiumTrackingSource', () {
     final trackingService = AppTrackingService(NoOpTrackingService());
 
-    test('returns onboarding for onboarding paywall entry', () {
+    test('returns auto_open for automatic paywall entry', () {
       expect(
-        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.firstTimeUser),
-        'onboarding',
+        trackingService.resolvePremiumTrackingSource(PaywallEntryPoint.autoOpen),
+        'auto_open',
       );
     });
 

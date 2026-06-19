@@ -1,5 +1,27 @@
 part of '../../monetization.dart';
 
+@visibleForTesting
+bool shouldPreparePaywallAutoOpen({
+  required bool enabled,
+  required int sessionRolloutPercent,
+  required int rolloutBucket,
+  required bool isSuppressed,
+  required bool hasCompletedOnboarding,
+  required String userId,
+  required String accessToken,
+  required bool isPremium,
+}) {
+  if (isSuppressed) return false;
+  if (!enabled) return false;
+  if (sessionRolloutPercent <= 0 || sessionRolloutPercent > 100) return false;
+  if (rolloutBucket < 0 || rolloutBucket > 99) return false;
+  if (rolloutBucket >= sessionRolloutPercent) return false;
+  if (!hasCompletedOnboarding) return false;
+  if (userId.trim().isEmpty || accessToken.trim().isEmpty) return false;
+  if (isPremium) return false;
+  return true;
+}
+
 @lazySingleton
 class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final IMonetizationRepository _iapRepository;
@@ -9,11 +31,17 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
   final PurchaseUsecase _purchaseUsecase;
   final RestoreUsecase _restoreUsecase;
   final VerifyUsecase _verifyUsecase;
+  final ResolvePaywallStrategyUsecase _resolvePaywallStrategyUsecase;
+  final IRemoteConfigService _remoteConfigService;
 
   final IPackageInfoService _packageInfoService;
 
   PaywallEntryPoint _paywallEntryPoint = PaywallEntryPoint.other;
   CourseTrackingData? _paywallCourseTrackingData;
+  bool _autoOpenSuppressed = false;
+  bool _autoOpenEvaluated = false;
+  int? _autoOpenRolloutBucket;
+  Future<bool>? _autoOpenPrepareFuture;
 
   IapCubit(
     this._iapRepository,
@@ -23,6 +51,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     this._purchaseUsecase,
     this._restoreUsecase,
     this._verifyUsecase,
+    this._resolvePaywallStrategyUsecase,
+    this._remoteConfigService,
     this._packageInfoService,
   ) : super(IapState.initial());
 
@@ -45,16 +75,102 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     setPaywallEntryPoint(PaywallEntryPoint.other);
   }
 
+  @visibleForTesting
+  void debugSetAutoOpenRolloutBucket(int bucket) {
+    _autoOpenRolloutBucket = bucket.clamp(0, 99);
+  }
+
+  void suppressPaywallAutoOpenForSession() {
+    _autoOpenSuppressed = true;
+  }
+
   StreamSubscription<PurchaseDetails>? _purchaseDetailSubscription;
   final Set<String> _processedTransactionIds = {};
   final Set<String> _verifyingTransactionIds = {};
   final Map<String, List<PurchaseDetails>> _pendingReceiptQueue = {};
+  Future<bool>? _loadIapProductsFuture;
+  String? _loadIapProductsSignature;
+  int _loadIapProductsGeneration = 0;
   Timer? _restoreTimeout;
   bool _ignoreHandledOnce = false; // bypass dedup once for user-triggered flows
 
   void setSelectedProductId(String productId) {
     emit(state.copyWith(selectedProductId: productId));
     // purchaseProduct();
+  }
+
+  Future<void> recordPaywallRenderedImpression() async {
+    final strategy = state.resolvedPaywallStrategy;
+    if (strategy == null || !strategy.isValid || state.iapProducts.isEmpty) return;
+    if (strategy.segment != ResolvedPaywallSegment.newUser) return;
+
+    final currentCount = await _iapRepository.getNewUserPaywallImpressionCount();
+    final renderedCount = strategy.impressionNumber ?? currentCount + 1;
+    if (renderedCount <= currentCount) return;
+    await _iapRepository.setNewUserPaywallImpressionCount(renderedCount);
+  }
+
+  Future<bool> prepareAutoOpenPaywall({
+    required String userId,
+    required String accessToken,
+    required bool hasCompletedOnboarding,
+    required bool isPremium,
+    required Future<bool?> Function() refreshPremiumStatus,
+  }) {
+    final inFlight = _autoOpenPrepareFuture;
+    if (inFlight != null) return inFlight;
+    if (_autoOpenSuppressed || _autoOpenEvaluated) return Future.value(false);
+
+    _autoOpenEvaluated = true;
+    final task = _prepareAutoOpenPaywall(
+      userId: userId,
+      accessToken: accessToken,
+      hasCompletedOnboarding: hasCompletedOnboarding,
+      isPremium: isPremium,
+      refreshPremiumStatus: refreshPremiumStatus,
+    );
+    _autoOpenPrepareFuture = task;
+    return task.whenComplete(() {
+      if (identical(_autoOpenPrepareFuture, task)) {
+        _autoOpenPrepareFuture = null;
+      }
+    });
+  }
+
+  Future<bool> _prepareAutoOpenPaywall({
+    required String userId,
+    required String accessToken,
+    required bool hasCompletedOnboarding,
+    required bool isPremium,
+    required Future<bool?> Function() refreshPremiumStatus,
+  }) async {
+    final config = _remoteConfigService.paywallConfig.autoOpen;
+    final bucket = _autoOpenRolloutBucket ??= Random().nextInt(100);
+    if (!shouldPreparePaywallAutoOpen(
+      enabled: config.enabled,
+      sessionRolloutPercent: config.sessionRolloutPercent,
+      rolloutBucket: bucket,
+      isSuppressed: _autoOpenSuppressed,
+      hasCompletedOnboarding: hasCompletedOnboarding,
+      userId: userId,
+      accessToken: accessToken,
+      isPremium: isPremium,
+    )) {
+      return false;
+    }
+
+    bool? refreshedPremium;
+    try {
+      refreshedPremium = await refreshPremiumStatus();
+    } catch (_) {
+      refreshedPremium = null;
+    }
+    if (refreshedPremium != false) return false;
+
+    final isReady = await loadIapProducts();
+    if (!isReady || state.iapProducts.isEmpty) return false;
+    setPaywallEntryPoint(PaywallEntryPoint.autoOpen);
+    return true;
   }
 
   Future<void> init() async {
@@ -67,17 +183,134 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     _purchaseDetailSubscription = null;
   }
 
-  void loadIapProducts() async {
-    if (state.iapProducts.isNotEmpty) return;
-    await runUseCase<List<IapProductEntity>>(
-      usecase: () => _getPackagesUsecase.call(GetPackagesParams(platform: PaymentPlatform.fromDevicePlatform)),
-      onSuccess: (products) {
-        if (products.isEmpty) return;
-        String largestProductPriceId = products.reduce((a, b) => a.rawPrice > b.rawPrice ? a : b).id;
-        emit(state.copyWith(iapProducts: products, selectedProductId: largestProductPriceId));
-      },
-      onFailure: (error) => emit(state.copyWith(status: MonetizationStatus.failure, errorMessage: error.toString())),
+  Future<bool> loadIapProducts({bool forceRetry = false}) async {
+    final platform = PaymentPlatform.fromDevicePlatform;
+    final storedImpressionCount = await _iapRepository.getNewUserPaywallImpressionCount();
+    final resolvedStrategy = _resolvePaywallStrategyUsecase(
+      ResolvePaywallStrategyParams(
+        config: _remoteConfigService.paywallConfig,
+        platform: platform,
+        nowUtc: DateTime.now().toUtc(),
+        installTime: _installTime,
+        storedImpressionCount: storedImpressionCount,
+      ),
     );
+
+    if (!resolvedStrategy.isValid) {
+      emit(
+        state.copyWith(
+          status: MonetizationStatus.failure,
+          iapProducts: [],
+          selectedProductId: '',
+          resolvedPaywallStrategy: resolvedStrategy,
+          paywallContent: resolvedStrategy.content,
+          paywallStrategySignature: resolvedStrategy.signature,
+          errorMessage: resolvedStrategy.invalidReason,
+        ),
+      );
+      return false;
+    }
+
+    if (!forceRetry && state.iapProducts.isNotEmpty && state.paywallStrategySignature == resolvedStrategy.signature) {
+      return true;
+    }
+
+    final loadingSignature = resolvedStrategy.signature;
+    if (!forceRetry && _loadIapProductsFuture != null && _loadIapProductsSignature == loadingSignature) {
+      return _loadIapProductsFuture!;
+    }
+
+    final generation = ++_loadIapProductsGeneration;
+    _loadIapProductsSignature = loadingSignature;
+    _loadIapProductsFuture = _loadResolvedIapProducts(
+      platform: platform,
+      resolvedStrategy: resolvedStrategy,
+      loadingSignature: loadingSignature,
+      generation: generation,
+    );
+
+    try {
+      return await _loadIapProductsFuture!;
+    } finally {
+      if (_loadIapProductsSignature == loadingSignature && _loadIapProductsGeneration == generation) {
+        _loadIapProductsSignature = null;
+        _loadIapProductsFuture = null;
+      }
+    }
+  }
+
+  Future<bool> _loadResolvedIapProducts({
+    required PaymentPlatform platform,
+    required ResolvedPaywallStrategyEntity resolvedStrategy,
+    required String loadingSignature,
+    required int generation,
+  }) async {
+    emit(state.copyWith(status: MonetizationStatus.loading, errorMessage: null, paywallStrategySignature: loadingSignature));
+    final result = await _getPackagesUsecase.call(GetPackagesParams(platform: platform, selectedProductIds: resolvedStrategy.productIds)).run();
+    return result.match(
+      (error) {
+        if (!_isCurrentLoad(loadingSignature, generation)) return false;
+        emit(
+          state.copyWith(
+            status: MonetizationStatus.failure,
+            iapProducts: [],
+            selectedProductId: '',
+            resolvedPaywallStrategy: resolvedStrategy,
+            paywallContent: resolvedStrategy.content,
+            errorMessage: error.toString(),
+          ),
+        );
+        return false;
+      },
+      (products) {
+        if (!_isCurrentLoad(loadingSignature, generation)) return false;
+        if (products.isEmpty) {
+          emit(
+            state.copyWith(
+              status: MonetizationStatus.failure,
+              iapProducts: [],
+              selectedProductId: '',
+              resolvedPaywallStrategy: resolvedStrategy,
+              paywallContent: resolvedStrategy.content,
+              errorMessage: 'empty_products',
+            ),
+          );
+          return false;
+        }
+        final selectedProduct = _defaultSelectedProduct(products);
+        emit(
+          state.copyWith(
+            status: MonetizationStatus.success,
+            iapProducts: products,
+            selectedProductId: selectedProduct.id,
+            resolvedPaywallStrategy: resolvedStrategy,
+            paywallContent: resolvedStrategy.content,
+            paywallStrategySignature: loadingSignature,
+            errorMessage: null,
+          ),
+        );
+        return true;
+      },
+    );
+  }
+
+  bool _isCurrentLoad(String signature, int generation) {
+    return state.paywallStrategySignature == signature && _loadIapProductsSignature == signature && _loadIapProductsGeneration == generation;
+  }
+
+  DateTime? get _installTime {
+    try {
+      return (_packageInfoService.packageInfo as dynamic).installTime as DateTime?;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  IapProductEntity _defaultSelectedProduct(List<IapProductEntity> products) {
+    for (final product in products) {
+      if (product.bestDeal) return product;
+    }
+    return products.first;
   }
 
   Future<void> purchaseProduct({bool isHighlight = false, PurchaseOrigin origin = PurchaseOrigin.paywall}) async {
@@ -87,7 +320,8 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
     }
 
     if (state.status == MonetizationStatus.purchasing) return;
-    String productId = isHighlight ? state.bestDealProduct.productId : state.selectedProduct.productId;
+    final product = isHighlight ? state.bestDealProduct : state.selectedProduct;
+    String productId = product.productId;
     _ignoreHandledOnce = true; // user-initiated purchase; allow next receipt even if duplicate
     emit(
       state.copyWith(
@@ -97,7 +331,7 @@ class IapCubit extends Cubit<IapState> with CubitUseCaseHandlerMixin<IapState> {
       ),
     );
     await runUseCase<IapVerifyEntity>(
-      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: productId, type: state.selectedProduct.type)),
+      usecase: () => _purchaseUsecase.call(PurchaseParams(productId: productId, type: product.type)),
       onSuccess: (verify) {
         emit(state.copyWith(status: MonetizationStatus.initial));
       },

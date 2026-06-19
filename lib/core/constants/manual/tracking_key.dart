@@ -321,10 +321,7 @@ mixin TrackingKey {
   static const String premiumRestoreClick = 'premium_restore_click';
   static const String premiumPurchase = 'premium_purchase';
   static const String premiumScrExit = 'premium_scr_exit';
-  static const String premiumAllpackClick = 'premium_allpack_click';
-  static const String premiumAllpackScrView = 'premium_allpack_scr_view';
   static const String premiumAllpackPick = 'premium_allpack_pick';
-  static const String premiumAllpackPurchase = 'premium_allpack_purchase';
   static const String settingBadgeClick = 'setting_badge_click';
   static const String settingBadgeSlide = 'setting_badge_slide';
   static const String settingBadgeDetailView = 'setting_badge_detail_view';

@@ -1,9 +1,5 @@
 part of '../../monetization.dart';
 
-enum PaywallFlowAction { close, purchaseSuccess }
-
-enum PaywallFlowDestination { back, course }
-
 @visibleForTesting
 const paywallCloseButtonDelay = Duration(seconds: 5);
 
@@ -18,29 +14,8 @@ bool shouldHandlePaywallSuccess({
 @visibleForTesting
 bool shouldDelayPaywallCloseButton() => true;
 
-@visibleForTesting
-PaywallFlowDestination resolvePaywallFlowDestination({
-  required bool firstTimeUserFlow,
-  required PaywallFlowAction action,
-}) {
-  if (!firstTimeUserFlow) {
-    return PaywallFlowDestination.back;
-  }
-
-  switch (action) {
-    case PaywallFlowAction.close:
-    case PaywallFlowAction.purchaseSuccess:
-      return PaywallFlowDestination.course;
-  }
-}
-
 class PaywallPage extends StatefulWidget {
-  final bool firstTimeUserFlow;
-
-  const PaywallPage({
-    super.key,
-    this.firstTimeUserFlow = false,
-  });
+  const PaywallPage({super.key});
 
   @override
   State<PaywallPage> createState() => _PaywallPageState();
@@ -63,17 +38,19 @@ class _PaywallPageState extends State<PaywallPage> {
 
     final cubit = context.read<IapCubit>();
     cubit.init();
-    if (widget.firstTimeUserFlow) {
-      cubit.setPaywallEntryPoint(PaywallEntryPoint.firstTimeUser);
-    }
     cubit.loadIapProducts();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _trackView());
   }
 
-  void _trackView() {
+  void _trackValidRender(IapState state) {
     if (_hasTrackedView) return;
-    AppService.instance.appTrackingService.trackPremiumScrView();
+    if (state.status != MonetizationStatus.success || state.iapProducts.isEmpty) return;
+
     _hasTrackedView = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      context.read<IapCubit>().recordPaywallRenderedImpression();
+    });
+    AppService.instance.appTrackingService.trackPremiumScrView();
   }
 
   void _showCloseButton() {
@@ -85,7 +62,8 @@ class _PaywallPageState extends State<PaywallPage> {
 
   Future<void> _handleClose() async {
     AppService.instance.appTrackingService.trackPremiumScrExit();
-    await _navigateAfterFlowAction(PaywallFlowAction.close);
+    if (!mounted) return;
+    context.pop();
   }
 
   Future<void> _handlePurchaseSuccess() async {
@@ -97,35 +75,11 @@ class _PaywallPageState extends State<PaywallPage> {
       if (!mounted) return;
 
       context.read<IapCubit>().consumePurchaseSuccess();
-      await _navigateAfterFlowAction(PaywallFlowAction.purchaseSuccess);
+      if (!mounted) return;
+      context.pop();
     } finally {
       _isHandlingPurchaseSuccess = false;
     }
-  }
-
-  Future<void> _navigateAfterFlowAction(PaywallFlowAction action) async {
-    final destination = resolvePaywallFlowDestination(
-      firstTimeUserFlow: widget.firstTimeUserFlow,
-      action: action,
-    );
-
-    switch (destination) {
-      case PaywallFlowDestination.back:
-        if (!mounted) return;
-        context.back();
-        return;
-      case PaywallFlowDestination.course:
-        await _goToFirstTimeCourse();
-        return;
-    }
-  }
-
-  Future<void> _goToFirstTimeCourse() async {
-    final homeCubit = AppDI.injector.get<HomeCubit>();
-    await homeCubit.initializeData(isInit: true);
-    homeCubit.resetSelection(skillsetIndex: 0);
-    if (!mounted) return;
-    CourseRoute(selectedTabIndex: 0).go(context);
   }
 
   @override
@@ -152,7 +106,7 @@ class _PaywallPageState extends State<PaywallPage> {
         ),
         child: SafeArea(
           bottom: false,
-          child: BlocListener<IapCubit, IapState>(
+          child: BlocConsumer<IapCubit, IapState>(
             listenWhen: (previous, current) => previous.status != current.status && current.status == MonetizationStatus.purchaseSuccess,
             listener: (context, state) async {
               if (!shouldHandlePaywallSuccess(
@@ -163,15 +117,32 @@ class _PaywallPageState extends State<PaywallPage> {
               }
               await _handlePurchaseSuccess();
             },
-            child: Column(
-              children: [
-                PaywallPageDecoration(
-                  onClose: _handleClose,
-                  showCloseButton: _isCloseButtonVisible,
-                ),
-                const PaywallHighlightPackageInfo(),
-              ],
-            ),
+            builder: (context, state) {
+              _trackValidRender(state);
+              return Stack(
+                children: [
+                  Positioned.fill(
+                    child: PaywallPageDecoration(
+                      state: state,
+                      bottomPadding: PaywallBottomPurchaseBar.totalReservedHeight(context),
+                      onClose: _handleClose,
+                      showCloseButton: _isCloseButtonVisible,
+                    ),
+                  ),
+                  Align(
+                    alignment: Alignment.bottomCenter,
+                    child: PaywallBottomPurchaseBar(
+                      state: state,
+                      onPurchase: () {
+                        AppService.instance.appTrackingService.trackPremiumPurchase();
+                        context.read<IapCubit>().purchaseProduct();
+                      },
+                      onRetry: () => context.read<IapCubit>().loadIapProducts(forceRetry: true),
+                    ),
+                  ),
+                ],
+              );
+            },
           ),
         ),
       ),

@@ -1,5 +1,20 @@
 # Project Changelog
 
+## 2026-06-18
+
+### Added
+- Added Remote Config paywall schema v2 parsing with sale-event, new-user impression, and default-user strategy resolution.
+- Added strategy-driven BE/store product loading, inline paywall plan rendering, auto-open entry tracking, and session-scoped Home/Course auto-open orchestration.
+- Added regression tests for parser fail-closed behavior, strategy selection, product mapping, auto-open arbitration, route cleanup, tracking, and paywall UI components.
+
+### Changed
+- Retired direct post-auth first-time paywall routing; auth now consumes legacy intent and routes to stable Course/Home before any eligible auto-open push.
+- Replaced old all-package paywall bottom sheet references with inline product cards and stable close/purchase-success dismissal back to the source route.
+- Avoided no-op home-widget debounce timers when widget sync cannot run, preventing pending-timer failures in learning-streak widget tests.
+
+### Verification
+- Passed `flutter analyze --no-pub`, focused monetization/auth/onboard/route regressions, broad Phase 5 focused suite, full `flutter test --no-pub`, static grep gates, and `git diff --check`.
+
 ## 2026-06-11
 
 ### Added

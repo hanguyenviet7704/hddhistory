@@ -26,8 +26,7 @@ enum PaymentPlatform {
   @JsonValue('apple')
   apple,
   @JsonValue('unknown')
-  unknown
-  ;
+  unknown;
 
   static PaymentPlatform get fromDevicePlatform {
     if (Platform.isIOS) return apple;
@@ -87,15 +86,15 @@ extension IapProductModelExtension on IapProductModel {
 
 extension IapProductModelListExtension on List<IapProductModel> {
   List<IapProductModel> mapStoreData(List<IapProductModel> storeData) {
-    List<IapProductModel> result = [];
+    final storeByProductId = {for (final item in storeData) item.productId: item};
+    final result = <IapProductModel>[];
 
-    for (var index = 0; index < length; index++) {
-      final item = this[index];
-      final storeDataIndex = storeData.indexWhere((element) => element.productId == item.productId);
-      if (storeDataIndex == -1) continue;
-      final storeDataItem = storeData[storeDataIndex];
+    for (final item in this) {
+      final storeDataItem = storeByProductId[item.productId];
+      if (storeDataItem == null) continue;
       result.add(
         item.copyWith(
+          title: storeDataItem.title,
           description: storeDataItem.description,
           price: storeDataItem.price,
           rawPrice: storeDataItem.rawPrice,
@@ -105,8 +104,6 @@ extension IapProductModelListExtension on List<IapProductModel> {
       );
     }
 
-    result.sort((a, b) => a.rawPrice.compareTo(b.rawPrice));
-    result.sort((a, b) => b.bestDeal ? 1 : -1);
     return result;
   }
 }

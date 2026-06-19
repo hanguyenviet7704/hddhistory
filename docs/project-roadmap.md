@@ -1,6 +1,6 @@
 # Project Roadmap
 
-**Last Updated:** 2026-06-11
+**Last Updated:** 2026-06-18
 **Scope:** product and engineering roadmap tracked from current repository state
 
 ## 1. Current Status
@@ -15,7 +15,7 @@ The current product surface includes first-time onboarding V2, disabled-onboardi
 | Core learning flows | In progress | Course roadmap, lesson runtime, read/listen branching, daily warm-up review flow, native home widgets, exercise completion, progress sync. |
 | Onboarding and activation | In progress | Onboard V2 path/symptom/course picker, notification gate, disabled-onboarding course-entry gate, branching onboarding fallback. |
 | Practice expansion | In progress | Output-practice socket conversation flow, roleplay feedback, video lesson player/notes/quiz states. |
-| Monetization | In progress | Paywall, IAP package load, purchase verification, first-time paywall routing. |
+| Monetization | In progress | Remote-config paywall strategy, inline plan UI, IAP package load, purchase verification, and stable-route auto-open. |
 | Operations and release | In progress | Cross-platform build scripts, GitHub/GitLab CI, localization tooling, symbol upload policy. |
 | Test coverage and hardening | Needs focus | Unit tests exist under `test/unit`; broaden coverage for newer onboarding, output practice, video lesson, and survey-adjacent Home flows. |
 

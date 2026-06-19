@@ -5,10 +5,11 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
   final MonetizationApi _monetizationApi;
   final IIapService _iapService;
   final UserSubscriptionLocalDataSource _userSubscriptionLocalDataSource;
+  final MonetizationLocalDataSource _monetizationLocalDataSource;
   late final StreamSubscription<List<PurchaseDetails>> _subscription;
   final StreamController<PurchaseDetails> _purchaseDetailController = StreamController<PurchaseDetails>.broadcast();
 
-  MonetizationRepository(this._monetizationApi, this._iapService, this._userSubscriptionLocalDataSource) {
+  MonetizationRepository(this._monetizationApi, this._iapService, this._userSubscriptionLocalDataSource, this._monetizationLocalDataSource) {
     _setupSubscription();
   }
 
@@ -39,25 +40,56 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
 
   @override
   TaskEither<AppException, List<IapProductEntity>> getProducts(GetPackagesParams params) {
-    return callApiListWithTransform(
-      apiCall: () async {
-        final response = await _monetizationApi.getPackages(PageBreakRequest<GetPackagesParams>(page: 1, limit: 10, filter: params));
-
-        final Set<String> productIds = response.data?.items.map((e) => e.productId).toSet() ?? {};
-        List<ProductDetails> productDetails = await _iapService.getProducts(productIds: productIds);
-        List<IapProductModel> storeProducts = productDetails.toIapProducts();
-        List<IapProductModel> remoteProducts = response.data?.items ?? [];
-        List<IapProductModel> products = remoteProducts.mapStoreData(storeProducts);
-        
-
-        return BaseResponseList(
-          data: products,
-          code: 200,
-          message: 'Success',
-        );
+    return TaskEither.tryCatch(
+      () async {
+        final selectedIds = _validatedSelectedProductIds(params.selectedProductIds);
+        final remoteProducts = await _loadSelectedRemoteProducts(params, selectedIds);
+        final productDetails = await _iapService.getProducts(productIds: selectedIds.toSet());
+        final storeProducts = productDetails.toIapProducts();
+        final products = remoteProducts.mapStoreData(storeProducts);
+        if (products.length != selectedIds.length) {
+          throw StateError('Configured store product is missing');
+        }
+        return products.map((product) => product.toEntity()).toList();
       },
-      transform: (data) => data.toEntity(),
+      (error, stackTrace) => AppException.unexpected(error.toString()),
     );
+  }
+
+  List<String> _validatedSelectedProductIds(List<String> selectedProductIds) {
+    final ids = selectedProductIds.map((id) => id.trim()).toList();
+    if (ids.isEmpty || ids.any((id) => id.isEmpty) || ids.toSet().length != ids.length) {
+      throw ArgumentError('Invalid selected product ids');
+    }
+    return ids;
+  }
+
+  Future<List<IapProductModel>> _loadSelectedRemoteProducts(GetPackagesParams params, List<String> selectedIds) async {
+    final selectedSet = selectedIds.toSet();
+    final foundByProductId = <String, IapProductModel>{};
+    var page = 1;
+    var totalPages = 1;
+
+    while (page <= totalPages && foundByProductId.length < selectedIds.length) {
+      final response = await _monetizationApi.getPackages(
+        PageBreakRequest<GetPackagesParams>(page: page, limit: 10, filter: params),
+      );
+      final pageData = response.data;
+      if (pageData == null) break;
+      totalPages = pageData.totalPages <= 0 ? page : pageData.totalPages;
+      for (final item in pageData.items) {
+        if (selectedSet.contains(item.productId)) {
+          foundByProductId[item.productId] = item;
+        }
+      }
+      if (pageData.items.isEmpty || page >= totalPages) break;
+      page++;
+    }
+
+    if (foundByProductId.length != selectedIds.length) {
+      throw StateError('Configured BE product is missing');
+    }
+    return [for (final id in selectedIds) foundByProductId[id]!];
   }
 
   @override
@@ -116,6 +148,12 @@ class MonetizationRepository with RestfulRequestHandlerMixin implements IMonetiz
       LogDev.warning('Failed to cache processed transaction ids: $e');
     }
   }
+
+  @override
+  Future<int> getNewUserPaywallImpressionCount() => _monetizationLocalDataSource.getNewUserPaywallImpressionCount();
+
+  @override
+  Future<void> setNewUserPaywallImpressionCount(int count) => _monetizationLocalDataSource.setNewUserPaywallImpressionCount(count);
 
   @override
   void dispose() {

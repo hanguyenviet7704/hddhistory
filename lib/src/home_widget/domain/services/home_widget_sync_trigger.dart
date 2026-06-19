@@ -13,6 +13,8 @@ class HomeWidgetSyncTrigger {
     _pendingSync?.cancel();
     _pendingSync = null;
 
+    if (!_canSync()) return;
+
     if (delay <= Duration.zero) {
       _syncNow(resolvedLocaleCode);
       return;
@@ -32,11 +34,14 @@ class HomeWidgetSyncTrigger {
   }
 
   static void _syncNow(String localeCode) {
-    if (AppGlobalValue.accessToken.isEmpty) return;
-    if (!AppDI.injector.isRegistered<SyncHomeWidgetsUseCase>()) return;
+    if (!_canSync()) return;
 
     final useCase = AppDI.injector.get<SyncHomeWidgetsUseCase>();
     unawaited(useCase(HomeWidgetSyncParams(localeCode: localeCode)).run());
+  }
+
+  static bool _canSync() {
+    return AppGlobalValue.accessToken.isNotEmpty && AppDI.injector.isRegistered<SyncHomeWidgetsUseCase>();
   }
 
   static String _currentLocaleCode() {

@@ -1,11 +1,15 @@
 part of '../../../monetization.dart';
 
 class PaywallPageDecoration extends StatefulWidget {
+  final IapState state;
+  final double bottomPadding;
   final Future<void> Function() onClose;
   final bool showCloseButton;
 
   const PaywallPageDecoration({
     super.key,
+    required this.state,
+    required this.bottomPadding,
     required this.onClose,
     required this.showCloseButton,
   });
@@ -19,22 +23,10 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
   bool _hasTrackedScroll = false;
   bool _hasTrackedInfoSwipe = false;
 
-  List<_PaywallBenefitItem> get _benefits => [
-    _PaywallBenefitItem(
-      asset: AppAsset.images.app.openBook,
-      title: l10n.monetization.benefit1Title,
-      description: l10n.monetization.benefit1Desc,
-    ),
-    _PaywallBenefitItem(
-      asset: AppAsset.images.app.statistic,
-      title: l10n.monetization.benefit2Title,
-      description: l10n.monetization.benefit2Desc,
-    ),
-    _PaywallBenefitItem(
-      asset: AppAsset.images.app.chart,
-      title: l10n.monetization.benefit3Title,
-      description: l10n.monetization.benefit3Desc,
-    ),
+  List<AssetGenImage> get _fallbackBenefitAssets => [
+    AppAsset.images.app.openBook,
+    AppAsset.images.app.statistic,
+    AppAsset.images.app.chart,
   ];
 
   @override
@@ -69,129 +61,107 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
     context.read<IapCubit>().restorePurchases();
   }
 
+  void _handlePlanTap(IapProductEntity product) {
+    if (product.id == widget.state.selectedProductId) return;
+    AppService.instance.appTrackingService.trackPremiumAllpackPick(product.productId);
+    context.read<IapCubit>().setSelectedProductId(product.id);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: SingleChildScrollView(
-        controller: _scrollController,
-        physics: const BouncingScrollPhysics(),
-        padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, 24.h),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            PaywallTopBar(
-              showCloseButton: widget.showCloseButton,
-              onClose: () => unawaited(widget.onClose()),
+    final content = widget.state.paywallContent;
+    final heading = _fallbackText(content.heading.text, l10n.monetization.paywallHeroTitle);
+    final subheading = _fallbackText(content.subheading.text, l10n.monetization.paywallHeroSubtitle);
+    final benefits = content.benefits.where((benefit) => benefit.title.text.isNotEmpty).toList();
+
+    return SingleChildScrollView(
+      controller: _scrollController,
+      physics: const BouncingScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(20.w, 12.h, 20.w, widget.bottomPadding),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          PaywallTopBar(
+            showCloseButton: widget.showCloseButton,
+            onClose: () => unawaited(widget.onClose()),
+          ),
+          30.verticalSpace,
+          AppText(
+            subheading,
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            style: AppStyle.textBold14.copyWith(
+              color: AppCustomColor.textBrand.withValues(alpha: 0.45),
+              height: 1.7,
             ),
-            36.verticalSpace,
-            AppText(
-              l10n.monetization.paywallHeroEyebrow,
-              textAlign: TextAlign.center,
-              style: AppStyle.textBold24.copyWith(
-                color: AppCustomColor.textBrand.withValues(alpha: 0.4),
-                height: 1.5,
+          ),
+          6.verticalSpace,
+          AppText(
+            heading,
+            textAlign: TextAlign.center,
+            maxLines: 4,
+            style: AppStyle.textBold32.copyWith(
+              color: AppCustomColor.textBrand,
+              height: 1.18,
+            ),
+          ),
+          22.verticalSpace,
+          _PaywallInlinePlans(
+            state: widget.state,
+            onPlanTap: _handlePlanTap,
+          ),
+          18.verticalSpace,
+          if (benefits.isEmpty)
+            ..._defaultBenefits()
+          else
+            for (var index = 0; index < benefits.length; index++)
+              Padding(
+                padding: EdgeInsets.only(top: index == 0 ? 0 : 12.h),
+                child: _PaywallRemoteBenefitRow(
+                  benefit: benefits[index],
+                  fallbackAsset: _fallbackBenefitAssets[index % _fallbackBenefitAssets.length],
+                ),
               ),
-            ),
-            4.verticalSpace,
-            AppText(
-              l10n.monetization.paywallHeroTitle,
+          36.verticalSpace,
+          PaywallFeedbackList(onFirstScroll: _handleInfoSwipe),
+          30.verticalSpace,
+          GestureDetector(
+            onTap: _handleRestore,
+            child: AppText(
+              l10n.monetization.restore,
               textAlign: TextAlign.center,
-              maxLines: 3,
-              style: AppStyle.textBold32.copyWith(
-                color: AppCustomColor.textBrand,
-                height: 1.25,
-              ),
-            ),
-            20.verticalSpace,
-            AppText(
-              l10n.monetization.paywallHeroSubtitle,
-              textAlign: TextAlign.center,
-              style: AppStyle.textBold14.copyWith(
-                color: AppCustomColor.textBrand.withValues(alpha: 0.4),
+              style: AppStyle.text14.copyWith(
+                color: AppCustomColor.textBrand.withValues(alpha: 0.45),
+                fontWeight: FontWeight.w500,
                 height: 1.75,
               ),
             ),
-            16.verticalSpace,
-            ..._benefits.map(
-              (benefit) => Padding(
-                padding: EdgeInsets.only(top: 12.h),
-                child: _PaywallBenefitRow(item: benefit),
-              ),
-            ),
-            36.verticalSpace,
-            PaywallFeedbackList(onFirstScroll: _handleInfoSwipe),
-            36.verticalSpace,
-            GestureDetector(
-              onTap: _handleRestore,
-              child: AppText(
-                l10n.monetization.restore,
-                textAlign: TextAlign.center,
-                style: AppStyle.text14.copyWith(
-                  color: AppCustomColor.textBrand.withValues(alpha: 0.4),
-                  fontWeight: FontWeight.w500,
-                  height: 1.75,
-                ),
-              ),
-            ),
-          ],
-        ),
+          ),
+          14.verticalSpace,
+          const PaywallLegalLinks(),
+        ],
       ),
     );
   }
-}
 
-class _PaywallBenefitItem {
-  final AssetGenImage asset;
-  final String title;
-  final String description;
+  String _fallbackText(String value, String fallback) => value.isEmpty ? fallback : value;
 
-  const _PaywallBenefitItem({
-    required this.asset,
-    required this.title,
-    required this.description,
-  });
-}
-
-class _PaywallBenefitRow extends StatelessWidget {
-  final _PaywallBenefitItem item;
-
-  const _PaywallBenefitRow({required this.item});
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: [
-        Image.asset(
-          item.asset.path,
-          width: 32.w,
-          height: 32.w,
-          fit: BoxFit.contain,
-        ),
-        12.horizontalSpace,
-        Expanded(
-          child: Text.rich(
-            TextSpan(
-              children: [
-                TextSpan(
-                  text: item.title,
-                  style: AppStyle.textBold14.copyWith(
-                    color: AppCustomColor.textBrand,
-                    height: 1.75,
-                  ),
-                ),
-                TextSpan(
-                  text: ' ${item.description}',
-                  style: AppStyle.text14.copyWith(
-                    color: AppCustomColor.textBrand,
-                    height: 1.75,
-                  ),
-                ),
-              ],
-            ),
+  List<Widget> _defaultBenefits() {
+    final fallback = [
+      (AppAsset.images.app.openBook, l10n.monetization.benefit1Title, l10n.monetization.benefit1Desc),
+      (AppAsset.images.app.statistic, l10n.monetization.benefit2Title, l10n.monetization.benefit2Desc),
+      (AppAsset.images.app.chart, l10n.monetization.benefit3Title, l10n.monetization.benefit3Desc),
+    ];
+    return [
+      for (var index = 0; index < fallback.length; index++)
+        Padding(
+          padding: EdgeInsets.only(top: index == 0 ? 0 : 12.h),
+          child: _PaywallLocalBenefitRow(
+            asset: fallback[index].$1,
+            title: fallback[index].$2,
+            description: fallback[index].$3,
           ),
         ),
-      ],
-    );
+    ];
   }
 }

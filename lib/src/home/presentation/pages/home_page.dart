@@ -8,15 +8,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDailyWarmUpMixin {
-  void _loadIapProducts(BuildContext context) {
-    // AppDI.injector.get<UserCubit>()
-    //   ..setIsFirstTimeUserChooseCourse(true)
-    //   ..setIsFirstTimeLessonNavigationGuide(true);
-    List<IapProductEntity> iapProducts = context.read<IapCubit>().state.iapProducts;
-    if (iapProducts.isNotEmpty) return;
-    context.read<IapCubit>().loadIapProducts();
-  }
-
   void _trackHomeScrView() {
     AppService.instance.appTrackingService.trackHomeScrView();
   }
@@ -38,6 +29,8 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       _trackHomeScrView();
       await _prefetchLearningStreak();
+      final didOpenPaywall = await _tryOpenPaywallAutoOpen();
+      if (didOpenPaywall) return;
       final didOpenWarmUp = await _tryOpenDailyWarmUp();
       if (!didOpenWarmUp) {
         await _loadInAppSurveyConfig();
@@ -48,7 +41,6 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
 
   @override
   Widget build(BuildContext context) {
-    _loadIapProducts(context);
     return BlocListener<PageCubit, PageState>(
       listenWhen: (previous, current) => previous.currentIndex != current.currentIndex,
       listener: (context, state) {
@@ -67,6 +59,8 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                   onRefresh: () async {
                     context.read<HomeCubit>().initializeData(isInit: true);
                     await _prefetchLearningStreak();
+                    final didOpenPaywall = await _tryOpenPaywallAutoOpen();
+                    if (didOpenPaywall) return;
                     final didOpenWarmUp = await _tryOpenDailyWarmUp();
                     if (!didOpenWarmUp) await _loadInAppSurveyConfig();
                   },
@@ -200,5 +194,29 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
         ),
       ),
     );
+  }
+
+  Future<bool> _tryOpenPaywallAutoOpen() async {
+    if (!mounted) return false;
+    final userState = context.read<UserCubit>().state;
+    final user = userState.user;
+    final profileCubit = context.read<ProfileCubit>();
+    final didPrepare = await context.read<IapCubit>().prepareAutoOpenPaywall(
+      userId: user.id,
+      accessToken: userState.accessToken,
+      hasCompletedOnboarding: !userState.isUserPassOnboarding,
+      isPremium: profileCubit.state.user.isPremium,
+      refreshPremiumStatus: () async {
+        if (profileCubit.state.user.id.isEmpty && user.id.isNotEmpty) {
+          profileCubit.setUser(user);
+        }
+        await profileCubit.loadUserIapSubscriptions();
+        if (profileCubit.state.status == ProfileStatus.failure) return null;
+        return profileCubit.state.user.isPremium;
+      },
+    );
+    if (!mounted || !didPrepare) return false;
+    await const PaywallRoute().push(context);
+    return true;
   }
 }

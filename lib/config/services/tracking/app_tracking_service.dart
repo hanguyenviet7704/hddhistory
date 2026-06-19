@@ -229,10 +229,20 @@ final class AppTrackingService extends ITrackingService {
 
   Map<String, dynamic> _premiumParams() {
     try {
-      final entryPoint = AppDI.injector.get<IapCubit>().paywallEntryPoint;
-      return {
+      final cubit = AppDI.injector.get<IapCubit>();
+      final entryPoint = cubit.paywallEntryPoint;
+      final strategy = cubit.state.resolvedPaywallStrategy;
+      final params = <String, dynamic>{
         'source': resolvePremiumTrackingSource(entryPoint),
+        'paywall_auto_open': entryPoint == PaywallEntryPoint.autoOpen,
       };
+      if (strategy != null && strategy.isValid) {
+        params['paywall_strategy_type'] = strategy.strategyType.name;
+        params['paywall_segment'] = strategy.segment.name;
+        if (strategy.campaignId.isNotEmpty) params['paywall_campaign_id'] = strategy.campaignId;
+        if (strategy.impressionNumber != null) params['paywall_impression_number'] = strategy.impressionNumber;
+      }
+      return params;
     } catch (_) {
       return {};
     }
@@ -241,8 +251,8 @@ final class AppTrackingService extends ITrackingService {
   @visibleForTesting
   String resolvePremiumTrackingSource(PaywallEntryPoint entryPoint) {
     switch (entryPoint) {
-      case PaywallEntryPoint.firstTimeUser:
-        return 'onboarding';
+      case PaywallEntryPoint.autoOpen:
+        return 'auto_open';
       case PaywallEntryPoint.courseRoadmap:
         return 'course_roadmap';
       case PaywallEntryPoint.settingPre:
@@ -2858,44 +2868,11 @@ final class AppTrackingService extends ITrackingService {
   }
 
   @override
-  Future<void> trackPremiumAllpackClick() async {
-    _appTrackingService.trackEvent(
-      TrackingKey.premiumAllpackClick,
-      parameters: {
-        ..._premiumParams(),
-        ..._courseParamsForPaywall(),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPremiumAllpackScrView() async {
-    _appTrackingService.trackEvent(
-      TrackingKey.premiumAllpackScrView,
-      parameters: {
-        ..._premiumParams(),
-        ..._courseParamsForPaywall(),
-      },
-    );
-  }
-
-  @override
   Future<void> trackPremiumAllpackPick(String premiumId) async {
     _appTrackingService.trackEvent(
       TrackingKey.premiumAllpackPick,
       parameters: {
         'premium_id': premiumId,
-        ..._premiumParams(),
-        ..._courseParamsForPaywall(),
-      },
-    );
-  }
-
-  @override
-  Future<void> trackPremiumAllpackPurchase() async {
-    _appTrackingService.trackEvent(
-      TrackingKey.premiumAllpackPurchase,
-      parameters: {
         ..._premiumParams(),
         ..._courseParamsForPaywall(),
       },

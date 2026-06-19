@@ -4,6 +4,7 @@ part of '../../monetization.dart';
 abstract class GetPackagesParams with _$GetPackagesParams implements JsonRequestConvertible {
   const factory GetPackagesParams({
     @Default(PaymentPlatform.google) PaymentPlatform platform,
+    @JsonKey(includeToJson: false, includeFromJson: false) @Default([]) List<String> selectedProductIds,
   }) = _GetPackagesParams;
 
   factory GetPackagesParams.fromJson(Map<String, dynamic> json) => _$GetPackagesParamsFromJson(json);
