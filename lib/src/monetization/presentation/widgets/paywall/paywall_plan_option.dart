@@ -22,6 +22,7 @@ class PaywallPlanOption extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(16.r),
           child: Container(
+            constraints: BoxConstraints(minHeight: 84.h),
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
               color: selected ? AppCustomColor.backgroundWhite : const Color(0xFFF2F1FE),
@@ -41,90 +42,88 @@ class PaywallPlanOption extends StatelessWidget {
                   : null,
             ),
             child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                _RadioIndicator(selected: selected),
-                12.horizontalSpace,
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                Flexible(
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: AppText(
-                              _displayTitle.toUpperCase(),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppStyle.text12.copyWith(
-                                color: AppCustomColor.textSecondary,
-                                fontWeight: FontWeight.w700,
-                                height: 1.75,
-                              ),
-                            ),
+                      _RadioIndicator(selected: selected),
+                      8.horizontalSpace,
+                      Flexible(
+                        child: AppText(
+                          _planTitle.toUpperCase(),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppStyle.text12.copyWith(
+                            color: AppCustomColor.textSecondary,
+                            fontWeight: FontWeight.w700,
+                            height: 1.75,
                           ),
-                          if (product.hasDiscount) ...[
-                            8.horizontalSpace,
-                            _DiscountPill(label: '-${product.salePercent.toInt()}%'),
-                          ],
-                        ],
+                        ),
                       ),
-                      8.verticalSpace,
-                      Row(
-                        children: [
-                          Flexible(
-                            child: AppText(
-                              _displayPeriodPrice,
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: AppStyle.text20.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppCustomColor.textPrimary,
-                                height: 1.25,
-                              ),
-                            ),
-                          ),
-                          4.horizontalSpace,
-                          if (product.periodLabel.isNotEmpty)
-                            AppText(
-                              '/${product.periodLabel}',
-                              maxLines: 1,
-                              style: AppStyle.text10.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: AppCustomColor.textTertiary,
-                                height: 1.75,
-                              ),
-                            ),
-                        ],
-                      ),
+                      if (product.hasDiscount) ...[
+                        8.horizontalSpace,
+                        _DiscountPill(label: '-${product.salePercent.toInt()}%'),
+                      ],
                     ],
                   ),
                 ),
                 12.horizontalSpace,
                 Column(
+                  mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.end,
                   children: [
                     AppText(
                       _displayPrice,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: AppStyle.text14.copyWith(
+                      style: AppStyle.text20.copyWith(
                         fontWeight: FontWeight.w700,
-                        color: AppCustomColor.textSecondary,
+                        color: selected ? AppCustomColor.textPrimary : AppCustomColor.textTertiary,
                         height: 1.5,
                       ),
                     ),
-                    if (product.hasDiscount) ...[
-                      4.verticalSpace,
+                    4.verticalSpace,
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AppText(
+                          _displayPeriodPrice,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppStyle.text10.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppCustomColor.textSecondary,
+                            height: 1.75,
+                          ),
+                        ),
+                        if (product.periodLabel.isNotEmpty) ...[
+                          4.horizontalSpace,
+                          AppText(
+                            '/${_periodUnit(product)}',
+                            maxLines: 1,
+                            style: AppStyle.text10.copyWith(
+                              fontWeight: FontWeight.w500,
+                              color: AppCustomColor.textTertiary,
+                              height: 1.75,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                    if (product.hasDiscount && product.originalPriceString.isNotEmpty) ...[
+                      2.verticalSpace,
                       AppText(
                         product.originalPriceString,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppStyle.text12.copyWith(
+                        style: AppStyle.text10.copyWith(
                           color: AppCustomColor.textTertiary,
                           fontWeight: FontWeight.w600,
                           decoration: TextDecoration.lineThrough,
-                          height: 1.75,
+                          height: 1.5,
                         ),
                       ),
                     ],
@@ -136,8 +135,8 @@ class PaywallPlanOption extends StatelessWidget {
         ),
         if (product.bestDeal)
           Positioned(
-            right: 14.w,
-            top: -8.h,
+            right: 16.w,
+            top: -6.h,
             child: _BestDealBadge(label: l10n.monetization.mostPopularBadge.toUpperCase()),
           ),
       ],
@@ -146,7 +145,23 @@ class PaywallPlanOption extends StatelessWidget {
 
   String get _displayTitle => product.title.isEmpty ? product.productId : product.title;
 
+  String get _planTitle {
+    final idLower = product.productId.toLowerCase();
+    if (idLower.contains('year') || idLower.contains('annual') || idLower.contains('1y')) return l10n.monetization.paywallPlanAnnual;
+    if (idLower.contains('quarter') || idLower.contains('3m')) return l10n.monetization.paywallPlanQuarterly;
+    if (idLower.contains('month')) return l10n.monetization.paywallPlanMonthly;
+    if (idLower.contains('week')) return l10n.monetization.paywallPlanWeekly;
+    if (idLower.contains('life')) return l10n.monetization.paywallPlanLifetime;
+    return _displayTitle;
+  }
+
   String get _displayPrice => product.price.isEmpty ? product.pricePerPeriodString : product.price;
 
   String get _displayPeriodPrice => product.pricePerPeriodString.isEmpty ? _displayPrice : product.pricePerPeriodString;
+
+  String _periodUnit(IapProductEntity product) {
+    final label = product.periodLabel.trim();
+    if (label.toLowerCase().startsWith('per ')) return label.substring(4);
+    return label;
+  }
 }

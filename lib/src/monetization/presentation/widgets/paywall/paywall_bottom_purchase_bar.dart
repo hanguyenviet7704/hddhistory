@@ -62,7 +62,7 @@ class PaywallBottomPurchaseBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 _PurchaseButton(
-                  label: isFailure ? l10n.monetization.retry : l10n.monetization.paywallTitle,
+                  label: isFailure ? l10n.monetization.retry : l10n.monetization.paywallCtaUpgrade,
                   busy: state.status == MonetizationStatus.purchasing || state.status == MonetizationStatus.restoring,
                   enabled: !isBusy && (hasProducts || isFailure),
                   onTap: isFailure ? onRetry : onPurchase,

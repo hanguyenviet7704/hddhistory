@@ -139,6 +139,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
           ),
           14.verticalSpace,
           const PaywallLegalLinks(),
+          50.verticalSpace,
         ],
       ),
     );

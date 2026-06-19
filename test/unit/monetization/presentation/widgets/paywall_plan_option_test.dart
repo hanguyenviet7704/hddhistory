@@ -41,8 +41,9 @@ void main() {
       expect(_hasBorderColor(tester, const Color(0xFF4B44CA)), isTrue);
     });
 
-    testWidgets('uses product id fallback and calls onTap', (tester) async {
+    testWidgets('uses localized period label from product id and calls onTap', (tester) async {
       var tapped = false;
+      LocaleSettings.setLocaleSync(AppLocale.en);
 
       await tester.pumpWidget(
         _wrap(
@@ -59,8 +60,8 @@ void main() {
         ),
       );
 
-      expect(find.text('MEUP_PREMIUM_MONTHLY'), findsOneWidget);
-      await tester.tap(find.text('MEUP_PREMIUM_MONTHLY'));
+      expect(find.text('MONTHLY'), findsOneWidget);
+      await tester.tap(find.text('MONTHLY'));
       await tester.pump();
       expect(tapped, isTrue);
     });
