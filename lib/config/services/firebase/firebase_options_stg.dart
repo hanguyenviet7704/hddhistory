@@ -56,7 +56,6 @@ class DefaultFirebaseOptions {
     projectId: 'meup-bf64f',
     storageBucket: 'meup-bf64f.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
     apiKey: 'AIzaSyDE3wi6CxcjBwvELNJf9zpocxmaMI3TOR0',
     appId: '1:116378588635:ios:0b465590e47f1285de43fe',
@@ -67,5 +66,4 @@ class DefaultFirebaseOptions {
     iosClientId: '116378588635-sv2pe9vmjarvp1srff7bc8v34bt37di4.apps.googleusercontent.com',
     iosBundleId: 'com.eup.meup.stg',
   );
-
 }
