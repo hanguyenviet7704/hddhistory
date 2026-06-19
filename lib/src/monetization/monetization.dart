@@ -1,5 +1,7 @@
 library;
 
+import 'dart:math' as math;
+
 //* Package imports
 import 'package:dio/dio.dart';
 import 'package:fpdart/fpdart.dart' hide State;

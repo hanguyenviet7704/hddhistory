@@ -1,9 +1,38 @@
 part of '../../../monetization.dart';
 
+@visibleForTesting
+class PaywallCountdownParts {
+  final String hours;
+  final String minutes;
+  final String seconds;
+
+  const PaywallCountdownParts({
+    required this.hours,
+    required this.minutes,
+    required this.seconds,
+  });
+}
+
+@visibleForTesting
+PaywallCountdownParts resolvePaywallCountdownParts(DateTime endAtUtc, DateTime nowUtc) {
+  final remaining = endAtUtc.toUtc().difference(nowUtc.toUtc());
+  final clamped = remaining.isNegative ? Duration.zero : remaining;
+
+  return PaywallCountdownParts(
+    hours: clamped.inHours.toString().padLeft(2, '0'),
+    minutes: clamped.inMinutes.remainder(60).toString().padLeft(2, '0'),
+    seconds: clamped.inSeconds.remainder(60).toString().padLeft(2, '0'),
+  );
+}
+
 class _CountdownStrip extends StatefulWidget {
   final ResolvedPaywallStrategyEntity? strategy;
+  final bool compact;
 
-  const _CountdownStrip({required this.strategy});
+  const _CountdownStrip({
+    required this.strategy,
+    this.compact = false,
+  });
 
   @override
   State<_CountdownStrip> createState() => _CountdownStripState();
@@ -44,11 +73,30 @@ class _CountdownStripState extends State<_CountdownStrip> {
     final endAtUtc = widget.strategy?.endAtUtc;
     if (widget.strategy?.hasSaleCountdown != true || endAtUtc == null) return const SizedBox.shrink();
 
-    final remaining = endAtUtc.difference(DateTime.now().toUtc());
-    final clamped = remaining.isNegative ? Duration.zero : remaining;
-    final hours = clamped.inHours.toString().padLeft(2, '0');
-    final minutes = clamped.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final seconds = clamped.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final countdown = resolvePaywallCountdownParts(endAtUtc, DateTime.now().toUtc());
+
+    if (widget.compact) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          AppText(
+            l10n.monetization.saleCountdownEndsIn,
+            maxLines: 1,
+            style: AppStyle.text10.copyWith(
+              color: AppCustomColor.textBrand.withValues(alpha: 0.7),
+              fontWeight: FontWeight.w700,
+              height: 1.75,
+            ),
+          ),
+          6.horizontalSpace,
+          _CountdownSegment(value: countdown.hours),
+          _CountdownColon(),
+          _CountdownSegment(value: countdown.minutes),
+          _CountdownColon(),
+          _CountdownSegment(value: countdown.seconds),
+        ],
+      );
+    }
 
     return Container(
       width: double.infinity,
@@ -59,13 +107,59 @@ class _CountdownStripState extends State<_CountdownStrip> {
         border: Border.all(color: AppCustomColor.backgroundWhite.withValues(alpha: 0.65)),
       ),
       child: AppText(
-        '$hours:$minutes:$seconds',
+        '${countdown.hours}:${countdown.minutes}:${countdown.seconds}',
         textAlign: TextAlign.center,
         maxLines: 1,
         style: AppStyle.text12.copyWith(
           color: AppCustomColor.textBrand,
           fontWeight: FontWeight.w700,
           height: 1.5,
+        ),
+      ),
+    );
+  }
+}
+
+class _CountdownSegment extends StatelessWidget {
+  final String value;
+
+  const _CountdownSegment({required this.value});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: BoxConstraints(minWidth: 27.w),
+      padding: EdgeInsets.symmetric(horizontal: 6.w),
+      decoration: BoxDecoration(
+        color: const Color(0xFF4B44CA),
+        borderRadius: BorderRadius.circular(8.r),
+      ),
+      child: AppText(
+        value,
+        textAlign: TextAlign.center,
+        maxLines: 1,
+        style: AppStyle.text14.copyWith(
+          color: AppCustomColor.backgroundWhite,
+          fontWeight: FontWeight.w700,
+          height: 1.75,
+        ),
+      ),
+    );
+  }
+}
+
+class _CountdownColon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 5.w),
+      child: AppText(
+        ':',
+        maxLines: 1,
+        style: AppStyle.text12.copyWith(
+          color: AppCustomColor.textBrand.withValues(alpha: 0.7),
+          fontWeight: FontWeight.w700,
+          height: 1.75,
         ),
       ),
     );

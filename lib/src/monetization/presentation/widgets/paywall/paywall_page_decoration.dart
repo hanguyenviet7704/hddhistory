@@ -90,7 +90,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             subheading,
             textAlign: TextAlign.center,
             maxLines: 3,
-            style: AppStyle.textBold14.copyWith(
+            style: AppStyle.textBold16.copyWith(
               color: AppCustomColor.textBrand.withValues(alpha: 0.45),
               height: 1.7,
             ),
@@ -100,7 +100,7 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             heading,
             textAlign: TextAlign.center,
             maxLines: 4,
-            style: AppStyle.textBold32.copyWith(
+            style: AppStyle.textBold24.copyWith(
               color: AppCustomColor.textBrand,
               height: 1.18,
             ),

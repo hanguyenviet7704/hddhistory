@@ -124,7 +124,7 @@ class _PaywallPageState extends State<PaywallPage> {
                   Positioned.fill(
                     child: PaywallPageDecoration(
                       state: state,
-                      bottomPadding: PaywallBottomPurchaseBar.totalReservedHeight(context),
+                      bottomPadding: PaywallBottomPurchaseBar.totalReservedHeight(context, state),
                       onClose: _handleClose,
                       showCloseButton: _isCloseButtonVisible,
                     ),
