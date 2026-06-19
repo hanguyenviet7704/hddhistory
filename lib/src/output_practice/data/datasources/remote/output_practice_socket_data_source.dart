@@ -25,13 +25,13 @@ class OutputPracticeSocketDataSource {
   void connect({
     Map<String, dynamic>? query,
     Map<String, dynamic>? auth,
-    Map<String, dynamic>? extraHeaders,
+    Map<String, String>? extraHeaders,
     String? path,
   }) {
     _disposeSocket();
 
     final token = AppGlobalValue.accessToken.trim();
-    final headers = <String, dynamic>{
+    final headers = <String, String>{
       NetworkConstant.contentType: NetworkConstant.contentTypeJson,
       if (token.isNotEmpty) NetworkConstant.authorization: 'Bearer $token',
       ...?extraHeaders,

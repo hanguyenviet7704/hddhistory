@@ -43,7 +43,7 @@ class FacebookAppEventsService implements IAppEventService {
 
         // For iOS < 17, we need to explicitly set the tracking status
         if (version < 17.0) {
-          await _facebookAppEvents.setAdvertiserTracking(enabled: isGranted);
+          await _facebookAppEvents.setAdvertiserIdCollectionEnabled(isGranted);
         }
 
         LogDev.data('ATT permission request completed. Status: $status');

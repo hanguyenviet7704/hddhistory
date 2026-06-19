@@ -1,5 +1,4 @@
 {
-  "originHash" : "26212baa8b85c26cdab0a03debc82355e1f18527c4027f07ab586651ce57d22f",
   "pins" : [
     {
       "identity" : "abseil-cpp-binary",
@@ -15,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/app-check.git",
       "state" : {
-        "revision" : "61b85103a1aeed8218f17c794687781505fbbef5",
-        "version" : "11.2.0"
+        "revision" : "bb4002485ff867768dec13bf904a2ddb050bd1b1",
+        "version" : "11.3.0"
       }
     },
     {
@@ -69,8 +68,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/firebase-ios-sdk",
       "state" : {
-        "revision" : "8d5b4189f1f482df8d5c58c9985ea70491ef5382",
-        "version" : "12.14.0"
+        "revision" : "42e81d245e30e49ea6a5830cf2842d44a1591270",
+        "version" : "12.15.0"
       }
     },
     {
@@ -87,8 +86,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/google/GoogleAppMeasurement.git",
       "state" : {
-        "revision" : "219e564a8510e983e675c94f77f7f7c50049f22d",
-        "version" : "12.14.0"
+        "revision" : "144855f40d8668927f256a3045f7fdc4c3f4338b",
+        "version" : "12.15.0"
       }
     },
     {
@@ -155,6 +154,15 @@
       }
     },
     {
+      "identity" : "iosawncore",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/rafaelsetragni/IosAwnCore.git",
+      "state" : {
+        "revision" : "b37f17d46efd990c6ccb41ae9201242098c58adf",
+        "version" : "0.12.0"
+      }
+    },
+    {
       "identity" : "leveldb",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/firebase/leveldb.git",
@@ -195,8 +203,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/getsentry/sentry-cocoa",
       "state" : {
-        "revision" : "cf44aa8cb4147f39e698c1f28be0b6b2c89f79d2",
-        "version" : "8.58.2"
+        "revision" : "dad229c665bfd043c5d80ac7aa77717cbd19a1c3",
+        "version" : "8.58.3"
       }
     },
     {
@@ -218,5 +226,5 @@
       }
     }
   ],
-  "version" : 3
+  "version" : 2
 }
