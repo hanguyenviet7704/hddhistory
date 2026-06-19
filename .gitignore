@@ -90,6 +90,8 @@ repomix-output.xml
 # AI
 .claude/
 plans/
+.codex/
+.cursor/
 
 # Mason
 bricks/**/hooks/build/
