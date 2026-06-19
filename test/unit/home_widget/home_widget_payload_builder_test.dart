@@ -145,5 +145,18 @@ void main() {
       expect(defaults.streakCountText(2), '2 ngày');
       expect(defaults.weekLabels, ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN']);
     });
+
+    test('preserves changed course id when applying text defaults to sync params', () {
+      final params = HomeWidgetSyncParams(
+        localeCode: 'en',
+        now: updatedAt,
+        changedCourseId: 'course-1',
+      );
+
+      final localized = params.withTextDefaults(const HomeWidgetTextDefaults());
+
+      expect(localized.changedCourseId, 'course-1');
+      expect(localized.localDateKey, '2026-06-09');
+    });
   });
 }

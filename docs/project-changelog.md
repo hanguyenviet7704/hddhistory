@@ -1,5 +1,14 @@
 # Project Changelog
 
+## 2026-06-19
+
+### Fixed
+- Fixed home-widget suggest-course sync so same-day cache is bypassed when the user makes progress in the currently cached suggested course.
+- Added course-id-aware home-widget sync triggers for lesson, keypoint, exercise, and video lesson progress updates.
+
+### Verification
+- Passed `flutter analyze`, `flutter test test/unit/home_widget test/unit/video_lesson/presentation/video_lesson_cubit_test.dart test/unit/progress/presentation/cubits/progress_cubit_course_progress_test.dart`, full `flutter test`, and `git diff --check`.
+
 ## 2026-06-18
 
 ### Added

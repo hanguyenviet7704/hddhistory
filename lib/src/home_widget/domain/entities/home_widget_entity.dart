@@ -171,11 +171,13 @@ class HomeWidgetSyncParams {
     required this.localeCode,
     DateTime? now,
     this.textDefaults,
+    this.changedCourseId = '',
   }) : now = now ?? DateTime.now();
 
   final String localeCode;
   final DateTime now;
   final HomeWidgetTextDefaults? textDefaults;
+  final String changedCourseId;
 
   DateTime get currentTime => now.toUtc();
 
@@ -190,6 +192,7 @@ class HomeWidgetSyncParams {
       localeCode: localeCode,
       now: now,
       textDefaults: value,
+      changedCourseId: changedCourseId,
     );
   }
 }

@@ -72,6 +72,93 @@ void main() {
       expect(result.getRight().toNullable()?.status, HomeWidgetSyncStatus.updated);
     });
 
+    test('refetches same-day suggest payload when changed course matches cached suggestion', () async {
+      final cached = HomeWidgetPayloadBuilder.buildSuggestCourse(
+        HomeWidgetCourseEntity(
+          courseId: 'course-active',
+          title: const BaseMultiLanguage(en: 'Current suggestion'),
+          description: const BaseMultiLanguage(en: 'Current description'),
+          image: 'https://cdn.example.com/current.jpg',
+        ),
+        localeCode: 'en',
+        updatedAt: now,
+        suggestionDate: now,
+      );
+      final api = FakeHomeWidgetApi(
+        suggest: const HomeWidgetCourseModel(
+          courseId: 'course-next',
+          title: BaseMultiLanguage(en: 'Next suggestion'),
+          description: BaseMultiLanguage(en: 'Next description'),
+          image: 'https://cdn.example.com/next.jpg',
+        ),
+      );
+      final local = FakeHomeWidgetLocalDataSource(
+        suggestionDate: '2026-06-09',
+        cachedPayloads: {HomeWidgetStorageKeys.suggestCoursePayload: cached},
+      );
+      final bridge = FakeHomeWidgetBridge();
+      final repository = HomeWidgetRepository(api, local, bridge);
+
+      final result = await repository
+          .syncSuggestCourse(
+            HomeWidgetSyncParams(
+              localeCode: 'en',
+              now: now,
+              changedCourseId: 'course-active',
+            ),
+          )
+          .run();
+
+      expect(result.isRight(), isTrue);
+      expect(api.suggestCalls, 1);
+      expect(bridge.savedPayloads.single.data['courseId'], 'course-next');
+      expect(local.cachedPayloads[HomeWidgetStorageKeys.suggestCoursePayload]?.data['courseId'], 'course-next');
+      expect(result.getRight().toNullable()?.status, HomeWidgetSyncStatus.updated);
+    });
+
+    test('keeps same-day suggest payload when changed course differs from cached suggestion', () async {
+      final cached = HomeWidgetPayloadBuilder.buildSuggestCourse(
+        HomeWidgetCourseEntity(
+          courseId: 'course-cached',
+          title: const BaseMultiLanguage(en: 'Cached suggestion'),
+          description: const BaseMultiLanguage(en: 'Cached description'),
+          image: 'https://cdn.example.com/cached.jpg',
+        ),
+        localeCode: 'en',
+        updatedAt: now,
+        suggestionDate: now,
+      );
+      final api = FakeHomeWidgetApi(
+        suggest: const HomeWidgetCourseModel(
+          courseId: 'course-next',
+          title: BaseMultiLanguage(en: 'Next suggestion'),
+          description: BaseMultiLanguage(en: 'Next description'),
+        ),
+      );
+      final local = FakeHomeWidgetLocalDataSource(
+        suggestionDate: '2026-06-09',
+        cachedPayloads: {HomeWidgetStorageKeys.suggestCoursePayload: cached},
+      );
+      final bridge = FakeHomeWidgetBridge();
+      final repository = HomeWidgetRepository(api, local, bridge);
+
+      final result = await repository
+          .syncSuggestCourse(
+            HomeWidgetSyncParams(
+              localeCode: 'en',
+              now: now,
+              changedCourseId: 'course-other',
+            ),
+          )
+          .run();
+
+      expect(result.isRight(), isTrue);
+      expect(api.suggestCalls, 0);
+      expect(bridge.savedPayloads, isEmpty);
+      expect(bridge.updatedTypes, [HomeWidgetType.suggestCourse]);
+      expect(result.getRight().toNullable()?.status, HomeWidgetSyncStatus.preserved);
+    });
+
     test('preserves previous in-progress payload when API fails', () async {
       final cached = HomeWidgetPayloadBuilder.buildInProgress(
         HomeWidgetCourseEntity(

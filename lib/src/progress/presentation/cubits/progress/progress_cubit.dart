@@ -173,7 +173,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         if (courseId.isNotEmpty) {
           unawaited(loadAllUserProgresss(courseId: courseId, silent: true));
         }
-        HomeWidgetSyncTrigger.requestDebouncedSync();
+        HomeWidgetSyncTrigger.requestDebouncedSync(changedCourseId: courseId);
       },
     );
   }
@@ -240,7 +240,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
         _courseRoadmapCubit.loadRoadmap(courseId: courseId);
         unawaited(loadAllUserProgresss(courseId: courseId, silent: true));
         loadUserProgressMyCourses(isInit: true, recent: true);
-        HomeWidgetSyncTrigger.requestDebouncedSync();
+        HomeWidgetSyncTrigger.requestDebouncedSync(changedCourseId: courseId);
 
         AppDI.injector.get<AchievenmentProgressCubit>()
           ..loadCourseLevelProgress(courseId)
@@ -258,6 +258,7 @@ class ProgressCubit extends Cubit<ProgressState> with CubitUseCaseHandlerMixin<P
       },
       onSuccess: (item) {
         emit(state.copyWith(status: ProgressStatus.success));
+        HomeWidgetSyncTrigger.requestDebouncedSync(changedCourseId: params.courseId ?? '');
       },
     );
   }

@@ -171,7 +171,10 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
     final today = params.localDateKey;
     final cachedDate = await _localDataSource.getSuggestionDate();
     final cachedPayload = await _localDataSource.getCachedPayload(HomeWidgetStorageKeys.suggestCoursePayload);
-    if (cachedDate == today && cachedPayload != null && _payloadLocaleMatches(cachedPayload, params.localeCode)) {
+    if (cachedDate == today &&
+        cachedPayload != null &&
+        _payloadLocaleMatches(cachedPayload, params.localeCode) &&
+        !_isChangedCourseCachedSuggestion(cachedPayload, params.changedCourseId)) {
       await _bridge.updateWidget(HomeWidgetType.suggestCourse);
       return HomeWidgetSyncResult(widgetType: HomeWidgetType.suggestCourse, status: HomeWidgetSyncStatus.preserved, payload: cachedPayload);
     }
@@ -199,5 +202,11 @@ class HomeWidgetRepository implements IHomeWidgetRepository {
 
   static bool _payloadLocaleMatches(HomeWidgetPayload payload, String localeCode) {
     return payload.data['localeCode']?.toString() == localeCode;
+  }
+
+  static bool _isChangedCourseCachedSuggestion(HomeWidgetPayload payload, String changedCourseId) {
+    final normalizedChangedCourseId = changedCourseId.trim();
+    if (normalizedChangedCourseId.isEmpty) return false;
+    return payload.data['courseId']?.toString().trim() == normalizedChangedCourseId;
   }
 }

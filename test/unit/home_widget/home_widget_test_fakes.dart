@@ -1,4 +1,35 @@
+import 'package:fpdart/fpdart.dart' hide State;
 import 'package:meup/meup.dart';
+
+class FakeHomeWidgetRepository implements IHomeWidgetRepository {
+  final List<HomeWidgetSyncParams> syncAllParams = [];
+
+  @override
+  TaskEither<AppException, List<HomeWidgetSyncResult>> syncAll(HomeWidgetSyncParams params) {
+    syncAllParams.add(params);
+    return TaskEither.right(const []);
+  }
+
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> syncInProgress(HomeWidgetSyncParams params) {
+    return TaskEither.right(const HomeWidgetSyncResult(widgetType: HomeWidgetType.inProgressCourse, status: HomeWidgetSyncStatus.updated));
+  }
+
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> syncStreak(HomeWidgetSyncParams params) {
+    return TaskEither.right(const HomeWidgetSyncResult(widgetType: HomeWidgetType.weeklyStreak, status: HomeWidgetSyncStatus.updated));
+  }
+
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> syncSuggestCourse(HomeWidgetSyncParams params) {
+    return TaskEither.right(const HomeWidgetSyncResult(widgetType: HomeWidgetType.suggestCourse, status: HomeWidgetSyncStatus.updated));
+  }
+
+  @override
+  TaskEither<AppException, HomeWidgetSyncResult> clearStoredWidgets() {
+    return TaskEither.right(const HomeWidgetSyncResult(widgetType: null, status: HomeWidgetSyncStatus.cleared));
+  }
+}
 
 class FakeHomeWidgetApi implements HomeWidgetApi {
   FakeHomeWidgetApi({

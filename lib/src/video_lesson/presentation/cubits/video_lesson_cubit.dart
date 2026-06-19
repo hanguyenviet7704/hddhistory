@@ -642,6 +642,7 @@ class VideoLessonCubit extends Cubit<VideoLessonState> {
       },
       (_) {
         _courseRoadmapCubit.loadRoadmap(courseId: state.courseId);
+        HomeWidgetSyncTrigger.requestDebouncedSync(changedCourseId: state.courseId);
         emit(state.copyWith(completionStatus: VideoLessonCompletionStatus.success));
       },
     );
