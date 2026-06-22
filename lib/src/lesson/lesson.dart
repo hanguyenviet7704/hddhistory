@@ -59,12 +59,14 @@ part 'domain/entities/scoring_criteria_entity.dart';
 part 'domain/entities/tag_entity.dart';
 part 'domain/entities/voice_feedback_entity.dart';
 part 'domain/entities/voice_score_entity.dart';
+part 'domain/entities/issue_report_entity.dart';
 part 'domain/repositories/i_lesson_repository.dart';
 part 'domain/usecases/get_all_learning_items_usecase.dart';
 part 'domain/usecases/get_learning_item_usecase.dart';
 part 'domain/usecases/send_score_record_usecase.dart';
 part 'domain/usecases/send_voice_feedback_stream_usecase.dart';
 part 'domain/usecases/send_voice_feedback_usecase.dart';
+part 'domain/usecases/report_issue_usecase.dart';
 //* Parts for generated files
 part 'lesson.freezed.dart';
 part 'lesson.g.dart';
@@ -89,6 +91,8 @@ part 'presentation/cubits/speaking/speaking_cubit.dart';
 part 'presentation/cubits/speaking/speaking_state.dart';
 part 'presentation/cubits/theory/theory_cubit.dart';
 part 'presentation/cubits/theory/theory_state.dart';
+part 'presentation/cubits/issue_report/issue_report_state.dart';
+part 'presentation/cubits/issue_report/issue_report_cubit.dart';
 //* Presentation Layer - Helpers
 part 'presentation/helper/choice_correctness_rules.dart';
 part 'presentation/helper/choice_progress_mapper.dart';
@@ -108,6 +112,7 @@ part 'presentation/pages/lesson_page.dart';
 part 'presentation/pages/no_correct_answer_document_page.dart';
 part 'presentation/pages/review_time_page.dart';
 //* Presentation Layer - Widgets
+part 'presentation/widgets/report_issue/issue_report_bottom_sheet.dart';
 part 'presentation/widgets/body/lesson_body_widget.dart';
 part 'presentation/widgets/body/arrange_the_sequense_lesson_body.dart';
 part 'presentation/widgets/body/cues_placement_lesson_body.dart';
