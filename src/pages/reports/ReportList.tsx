@@ -204,22 +204,22 @@ export default function ReportList() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
+              <table className="w-full table-fixed divide-y divide-gray-200">
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[120px]">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[110px]">
                       User ID
                     </th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[260px]">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[220px]">
                       Course / Lesson
                     </th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[220px]">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[200px]">
                       Reasons
                     </th>
                     <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                       Comment / Feedback
                     </th>
-                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[160px]">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[150px]">
                       Date Reported
                     </th>
                     <th className="px-4 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[80px]">
@@ -236,29 +236,29 @@ export default function ReportList() {
                     return (
                       <tr key={item._id} className="hover:bg-amber-50/30 transition-colors align-top">
                         {/* User ID */}
-                        <td className="px-4 py-4 w-[120px]">
+                        <td className="px-4 py-3 w-[110px]">
                           <Tooltip title={item.userId} arrow placement="right">
-                            <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-default select-all">
+                            <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-default select-all block truncate">
                               {shortUserId}
                             </span>
                           </Tooltip>
                         </td>
 
                         {/* Course / Lesson */}
-                        <td className="px-4 py-4 w-[260px] max-w-[260px]">
+                        <td className="px-4 py-3 w-[220px]">
                           <Tooltip title={lessonName} arrow placement="top">
                             <p className="text-sm font-semibold text-gray-900 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                               📖 {lessonName}
                             </p>
                           </Tooltip>
                           <Tooltip title={courseName} arrow placement="top">
-                            <p className="text-xs text-gray-400 mt-1 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                            <p className="text-xs text-gray-400 mt-0.5 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
                               📦 {courseName}
                             </p>
                           </Tooltip>
                           {keypointName && (
                             <Tooltip title={keypointName} arrow placement="top">
-                              <p className="text-xs text-indigo-500 mt-1 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                              <p className="text-xs text-indigo-500 mt-0.5 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
                                 🔑 {keypointName}
                               </p>
                             </Tooltip>
@@ -266,8 +266,8 @@ export default function ReportList() {
                         </td>
 
                         {/* Reasons */}
-                        <td className="px-4 py-4 w-[220px]">
-                          <div className="flex flex-wrap gap-1.5">
+                        <td className="px-4 py-3 w-[200px]">
+                          <div className="flex flex-wrap gap-1">
                             {item.reasons.map((r, idx) => (
                               <span
                                 key={`${r}-${idx}`}
@@ -280,23 +280,25 @@ export default function ReportList() {
                         </td>
 
                         {/* Comment */}
-                        <td className="px-4 py-4 min-w-[200px]">
+                        <td className="px-4 py-3">
                           {item.comment ? (
-                            <p className="text-xs text-gray-700 leading-relaxed break-words whitespace-pre-wrap bg-slate-50 border border-slate-100 rounded-md px-3 py-2">
-                              {item.comment}
-                            </p>
+                            <div className="max-h-[88px] overflow-y-auto bg-slate-50 border border-slate-100 rounded-md px-3 py-2 scrollbar-thin">
+                              <p className="text-xs text-gray-700 leading-relaxed break-all whitespace-pre-wrap">
+                                {item.comment}
+                              </p>
+                            </div>
                           ) : (
                             <span className="text-gray-400 italic text-xs">No description</span>
                           )}
                         </td>
 
                         {/* Date */}
-                        <td className="px-4 py-4 w-[160px] text-xs text-gray-500 whitespace-nowrap">
+                        <td className="px-4 py-3 w-[150px] text-xs text-gray-500 whitespace-nowrap">
                           {formatDate(item.createdAt)}
                         </td>
 
                         {/* Action */}
-                        <td className="px-4 py-4 w-[80px] text-right">
+                        <td className="px-4 py-3 w-[80px] text-right">
                           <button
                             onClick={() => setConfirmDeleteId(item._id)}
                             className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition text-xs"
