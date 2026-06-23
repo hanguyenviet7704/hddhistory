@@ -79,17 +79,14 @@ const ProductModal: React.FC<ProductModalProps> = ({
         initial.rawPrice ?? initial.price
       );
       setRawPrice(initialRaw);
-      const initSalePrice =
+      setSalePrice(
         initial.salePrice !== undefined && initial.salePrice !== null
           ? String(initial.salePrice)
-          : "";
-      setSalePrice(initSalePrice);
-      // Derive discount % from rawPrice/salePrice for display only
-      const initRaw = Number(normalizeNumberInput(initial.rawPrice ?? initial.price));
-      const initSale = Number(initSalePrice);
+          : ""
+      );
       setDiscountPercent(
-        initRaw > 0 && initSale > 0 && initSale < initRaw
-          ? String(Math.round((1 - initSale / initRaw) * 100))
+        initial.discountPercent !== undefined && initial.discountPercent !== null
+          ? String(initial.discountPercent)
           : ""
       );
       setIsActive(initial.isActive ?? true);
@@ -149,6 +146,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
       currency,
       rawPrice: numberOrUndefined(rawPrice),
       salePrice: numberOrUndefined(salePrice),
+      discountPercent: numberOrUndefined(discountPercent),
       isActive,
       bestDeal,
     };
