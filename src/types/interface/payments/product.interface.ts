@@ -16,6 +16,7 @@ export interface IProduct {
   rawPrice?: number;
   price?: string;
   salePrice?: number;
+  salePercent?: number | null;
   isActive: boolean;
   bestDeal: boolean;
 }

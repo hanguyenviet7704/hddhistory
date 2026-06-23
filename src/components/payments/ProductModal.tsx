@@ -60,6 +60,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
   );
   const [rawPrice, setRawPrice] = useState("");
   const [salePrice, setSalePrice] = useState("");
+  const [discountPercent, setDiscountPercent] = useState("");
   const [isActive, setIsActive] = useState(true);
   const [bestDeal, setBestDeal] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
@@ -78,9 +79,17 @@ const ProductModal: React.FC<ProductModalProps> = ({
         initial.rawPrice ?? initial.price
       );
       setRawPrice(initialRaw);
-      setSalePrice(
+      const initSalePrice =
         initial.salePrice !== undefined && initial.salePrice !== null
           ? String(initial.salePrice)
+          : "";
+      setSalePrice(initSalePrice);
+      // Derive discount % from rawPrice/salePrice for display only
+      const initRaw = Number(normalizeNumberInput(initial.rawPrice ?? initial.price));
+      const initSale = Number(initSalePrice);
+      setDiscountPercent(
+        initRaw > 0 && initSale > 0 && initSale < initRaw
+          ? String(Math.round((1 - initSale / initRaw) * 100))
           : ""
       );
       setIsActive(initial.isActive ?? true);
@@ -94,11 +103,32 @@ const ProductModal: React.FC<ProductModalProps> = ({
       setCurrency(PaymentCurrency.USD);
       setRawPrice("");
       setSalePrice("");
+      setDiscountPercent("");
       setIsActive(true);
       setBestDeal(false);
     }
     setFormError(null);
   }, [initial, isOpen]);
+
+  const handleRawPriceChange = (value: string) => {
+    setRawPrice(value);
+    const raw = numberOrUndefined(value);
+    const pct = Number(discountPercent);
+    if (raw && pct > 0 && pct < 100) {
+      setSalePrice(String(+(raw * (1 - pct / 100)).toFixed(2)));
+    }
+  };
+
+  const handleDiscountChange = (value: string) => {
+    setDiscountPercent(value);
+    const raw = numberOrUndefined(rawPrice);
+    const pct = Number(value);
+    if (raw && pct > 0 && pct < 100) {
+      setSalePrice(String(+(raw * (1 - pct / 100)).toFixed(2)));
+    } else if (!value) {
+      setSalePrice("");
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -223,7 +253,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
             </label>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <label className="flex flex-col gap-1 text-sm text-slate-700">
               <span className="font-medium">Raw price</span>
               <input
@@ -231,7 +261,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 min="0"
                 step="0.01"
                 value={rawPrice}
-                onChange={(e) => setRawPrice(e.target.value)}
+                onChange={(e) => handleRawPriceChange(e.target.value)}
                 placeholder="9.99"
                 className="rounded-lg border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               />
@@ -248,6 +278,28 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 placeholder="7.99"
                 className="rounded-lg border border-slate-200 px-3 py-2 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
               />
+            </label>
+
+            <label className="flex flex-col gap-1 text-sm text-slate-700">
+              <span className="font-medium">Giảm giá % (optional)</span>
+              <div className="relative">
+                <input
+                  type="number"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value={discountPercent}
+                  onChange={(e) => handleDiscountChange(e.target.value)}
+                  placeholder="50"
+                  className="w-full rounded-lg border border-slate-200 px-3 py-2 pr-8 focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                />
+                <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm pointer-events-none">
+                  %
+                </span>
+              </div>
+              <p className="text-xs text-slate-400">
+                Badge "-50%" hiển thị trên paywall app
+              </p>
             </label>
           </div>
 
