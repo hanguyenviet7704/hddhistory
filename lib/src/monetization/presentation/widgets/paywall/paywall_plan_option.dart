@@ -63,7 +63,7 @@ class PaywallPlanOption extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (product.hasDiscount) ...[
+                      if (_showDiscountPill) ...[
                         8.horizontalSpace,
                         _DiscountPill(label: '-${product.salePercent.toInt()}%'),
                       ],
@@ -86,47 +86,46 @@ class PaywallPlanOption extends StatelessWidget {
                       ),
                     ),
                     4.verticalSpace,
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        AppText(
-                          _displayPeriodPrice,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppStyle.text10.copyWith(
-                            fontWeight: FontWeight.w700,
-                            color: AppCustomColor.textSecondary,
-                            height: 1.75,
-                          ),
-                        ),
-                        if (product.periodLabel.isNotEmpty) ...[
-                          4.horizontalSpace,
-                          AppText(
-                            '/${_periodUnit(product)}',
-                            maxLines: 1,
-                            style: AppStyle.text10.copyWith(
-                              fontWeight: FontWeight.w500,
-                              color: AppCustomColor.textTertiary,
-                              height: 1.75,
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
-                    if (product.hasDiscount && product.originalPriceString.isNotEmpty) ...[
-                      2.verticalSpace,
+                    if (_showOriginalPrice)
                       AppText(
                         product.originalPriceString,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppStyle.text10.copyWith(
-                          color: AppCustomColor.textTertiary,
-                          fontWeight: FontWeight.w600,
+                        style: AppStyle.text12.copyWith(
+                          color: const Color(0xFF95A7C2),
+                          fontWeight: FontWeight.w700,
                           decoration: TextDecoration.lineThrough,
-                          height: 1.5,
+                          height: 1.75,
                         ),
+                      )
+                    else
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          AppText(
+                            _displayPeriodPrice,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: AppStyle.text12.copyWith(
+                              fontWeight: FontWeight.w700,
+                              color: AppCustomColor.textSecondary,
+                              height: 1.75,
+                            ),
+                          ),
+                          if (product.periodLabel.isNotEmpty) ...[
+                            4.horizontalSpace,
+                            AppText(
+                              '/${_periodUnit(product)}',
+                              maxLines: 1,
+                              style: AppStyle.text12.copyWith(
+                                fontWeight: FontWeight.w500,
+                                color: AppCustomColor.textTertiary,
+                                height: 1.75,
+                              ),
+                            ),
+                          ],
+                        ],
                       ),
-                    ],
                   ],
                 ),
               ],
@@ -158,6 +157,10 @@ class PaywallPlanOption extends StatelessWidget {
   String get _displayPrice => product.price.isEmpty ? product.pricePerPeriodString : product.price;
 
   String get _displayPeriodPrice => product.pricePerPeriodString.isEmpty ? _displayPrice : product.pricePerPeriodString;
+
+  bool get _showDiscountPill => !selected && product.hasDiscount;
+
+  bool get _showOriginalPrice => !selected && product.hasDiscount && product.originalPriceString.isNotEmpty;
 
   String _periodUnit(IapProductEntity product) {
     final label = product.periodLabel.trim();

@@ -13,7 +13,7 @@ void main() {
   });
 
   group('PaywallPlanOption', () {
-    testWidgets('renders selected styling, discount, best-deal badge, and prices', (tester) async {
+    testWidgets('renders selected styling, hides discount pill, and keeps best-deal badge', (tester) async {
       LocaleSettings.setLocaleSync(AppLocale.en);
 
       await tester.pumpWidget(
@@ -36,9 +36,35 @@ void main() {
 
       expect(find.text('ANNUAL'), findsOneWidget);
       expect(find.text(r'$59.99'), findsOneWidget);
-      expect(find.text('-50%'), findsOneWidget);
+      expect(find.text('-50%'), findsNothing);
       expect(find.text(l10n.monetization.mostPopularBadge.toUpperCase()), findsOneWidget);
       expect(_hasBorderColor(tester, const Color(0xFF4B44CA)), isTrue);
+    });
+
+    testWidgets('renders unselected discounted card with discount pill and original price', (tester) async {
+      LocaleSettings.setLocaleSync(AppLocale.en);
+
+      await tester.pumpWidget(
+        _wrap(
+          PaywallPlanOption(
+            product: const IapProductEntity(
+              id: 'annual-row',
+              productId: 'meup_premium_annual',
+              price: r'$50',
+              rawPrice: 50,
+              currencySymbol: r'$',
+              salePercent: 50,
+              bestDeal: true,
+            ),
+          ),
+        ),
+      );
+
+      expect(find.text('ANNUAL'), findsOneWidget);
+      expect(find.text(r'$50'), findsOneWidget);
+      expect(find.text(r'$100'), findsOneWidget);
+      expect(find.text('-50%'), findsOneWidget);
+      expect(find.text(l10n.monetization.mostPopularBadge.toUpperCase()), findsOneWidget);
     });
 
     testWidgets('uses localized period label from product id and calls onTap', (tester) async {

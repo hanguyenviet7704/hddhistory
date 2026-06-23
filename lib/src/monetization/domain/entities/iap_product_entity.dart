@@ -31,10 +31,7 @@ extension IapProductEntityX on IapProductEntity {
   }
 
   String get originalPriceString {
-    if (currencySymbol.isNotEmpty) {
-      return '$currencySymbol${originalPrice.currency}';
-    }
-    return originalPrice.currency;
+    return _formatPriceWithCurrency(originalPrice);
   }
 
   String get periodLabel {
@@ -63,8 +60,15 @@ extension IapProductEntityX on IapProductEntity {
 
   String get pricePerPeriodString {
     if (rawPrice <= 0) return price.isNotEmpty ? price : '--';
-    return currencySymbol.isNotEmpty ? '$currencySymbol${_perPeriodValue.currency}' : _perPeriodValue.currency;
+    return _formatPriceWithCurrency(_perPeriodValue);
   }
 
   double get perPeriodValue => _perPeriodValue;
+
+  String _formatPriceValue(double value) => value.round().currency;
+
+  String _formatPriceWithCurrency(double value) {
+    if (currencySymbol.isEmpty) return _formatPriceValue(value);
+    return '$currencySymbol${_formatPriceValue(value)}';
+  }
 }
