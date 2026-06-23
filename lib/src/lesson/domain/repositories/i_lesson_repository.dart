@@ -8,5 +8,4 @@ abstract class ILessonRepository {
   TaskEither<AppException, VoiceFeedbackEntity> sendVoiceFeedback(VoiceFeedbackRequest request);
   TaskEither<AppException, ResponseBody> sendVoiceFeedbackStream(VoiceFeedbackRequest request);
   TaskEither<AppException, VoiceScoreEntity> sendScoreRecord(Map<String, dynamic> params);
-  TaskEither<AppException, Unit> reportIssue(IssueReportEntity entity);
 }

@@ -13,7 +13,4 @@ abstract class LessonApi {
 
   @GET(AppEndpoint.coursesLearningItemsById)
   Future<BaseResponse<LearningItemModel>> getLearningItem(@Path('id') String id);
-
-  @POST(AppEndpoint.coursesReports)
-  Future<BaseResponse<void>> reportIssue(@Body() Map<String, dynamic> body);
 }

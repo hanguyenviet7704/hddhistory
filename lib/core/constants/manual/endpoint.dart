@@ -109,9 +109,6 @@ mixin AppEndpoint {
   static const String inAppSurveyConfigs = '/api/v1/courses-in-app-survey/config';
   static const String inAppSurveyResponses = '/api/v1/courses-in-app-survey/responses';
 
-  //* Issue Report API
-  static const String coursesReports = '/api/v1/courses-reports';
-
   //* Skillsets API
   static const String skillsets = '/api/v1/skillsets';
   static const String skillsetsById = '/api/v1/skillsets/{id}';
