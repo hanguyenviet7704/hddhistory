@@ -42,5 +42,18 @@ void main() {
       expect(annual.pricePerPeriodString, r'$10');
       expect(quarterly.pricePerPeriodString, r'$20');
     });
+
+    test('Given annual price that does not divide evenly, When formatting per-period price, Then rounds display value with currency symbol', () {
+      const annual = IapProductEntity(productId: 'meup_premium_annual', rawPrice: 599000, currencyCode: 'VND', currencySymbol: '₫');
+
+      expect(annual.perPeriodValue, closeTo(49916.6667, 0.0001));
+      expect(annual.pricePerPeriodString, '₫49,917');
+    });
+
+    test('Given discounted price, When formatting original price, Then rounds display value with currency symbol', () {
+      const annual = IapProductEntity(productId: 'meup_premium_annual', rawPrice: 50000, salePercent: 50, currencyCode: 'VND', currencySymbol: '₫');
+
+      expect(annual.originalPriceString, '₫100,000');
+    });
   });
 }
