@@ -27,6 +27,8 @@ interface IReport {
   lessonTitle?: any;
   courseId?: string;
   courseTitle?: any;
+  keypointId?: string;
+  keypointTitle?: any;
   reasons: string[];
   comment?: string;
   createdAt: string;
@@ -203,75 +205,95 @@ export default function ReportList() {
           ) : (
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+                <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[120px]">
                       User ID
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[260px]">
                       Course / Lesson
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[220px]">
                       Reasons
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider">
                       Comment / Feedback
                     </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-left text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[160px]">
                       Date Reported
                     </th>
-                    <th className="px-6 py-4 text-right text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                    <th className="px-4 py-3 text-right text-[11px] font-semibold text-gray-400 uppercase tracking-wider w-[80px]">
                       Action
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white divide-y divide-gray-100">
                   {items.map((item) => {
                     const lessonName = getTranslationValue(item.lessonTitle, lang) || item.lessonId;
                     const courseName = getTranslationValue(item.courseTitle, lang) || item.courseId || "-";
+                    const keypointName = item.keypointId ? (getTranslationValue(item.keypointTitle, lang) || item.keypointId) : null;
+                    const shortUserId = item.userId.length > 10 ? `${item.userId.slice(0, 8)}…` : item.userId;
                     return (
-                      <tr key={item._id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 text-sm font-mono text-gray-600 max-w-[150px] truncate" title={item.userId}>
-                          {item.userId}
+                      <tr key={item._id} className="hover:bg-amber-50/30 transition-colors align-top">
+                        {/* User ID */}
+                        <td className="px-4 py-4 w-[120px]">
+                          <Tooltip title={item.userId} arrow placement="right">
+                            <span className="font-mono text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded cursor-default select-all">
+                              {shortUserId}
+                            </span>
+                          </Tooltip>
                         </td>
-                        <td className="px-6 py-4 text-sm">
-                          <div className="font-semibold text-gray-900 max-w-[240px] truncate" title={lessonName}>
+
+                        {/* Course / Lesson */}
+                        <td className="px-4 py-4 w-[260px]">
+                          <p className="text-sm font-semibold text-gray-900 leading-snug break-words">
                             📖 {lessonName}
-                          </div>
-                          <div className="text-xs text-gray-400 mt-1 max-w-[240px] truncate" title={courseName}>
-                            📦 Course: {courseName}
-                          </div>
+                          </p>
+                          <p className="text-xs text-gray-400 mt-1 leading-snug break-words">
+                            📦 {courseName}
+                          </p>
+                          {keypointName && (
+                            <p className="text-xs text-indigo-500 mt-1 leading-snug break-words">
+                              🔑 {keypointName}
+                            </p>
+                          )}
                         </td>
-                        <td className="px-6 py-4 text-sm">
-                          <div className="flex flex-wrap gap-1.5 max-w-[280px]">
+
+                        {/* Reasons */}
+                        <td className="px-4 py-4 w-[220px]">
+                          <div className="flex flex-wrap gap-1.5">
                             {item.reasons.map((r, idx) => (
                               <span
                                 key={`${r}-${idx}`}
-                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wider border ${getReasonColor(r)}`}
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-semibold uppercase tracking-wide border ${getReasonColor(r)}`}
                               >
                                 {getReasonLabel(r)}
                               </span>
                             ))}
                           </div>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-600 max-w-[300px]">
+
+                        {/* Comment */}
+                        <td className="px-4 py-4 min-w-[200px]">
                           {item.comment ? (
-                            <Tooltip title={<span className="whitespace-pre-wrap">{item.comment}</span>} arrow placement="top">
-                              <div className="truncate cursor-help bg-slate-50 border border-slate-100 rounded p-1.5 text-gray-700 text-xs">
-                                {item.comment}
-                              </div>
-                            </Tooltip>
+                            <p className="text-xs text-gray-700 leading-relaxed break-words whitespace-pre-wrap bg-slate-50 border border-slate-100 rounded-md px-3 py-2">
+                              {item.comment}
+                            </p>
                           ) : (
                             <span className="text-gray-400 italic text-xs">No description</span>
                           )}
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-500 whitespace-nowrap">
+
+                        {/* Date */}
+                        <td className="px-4 py-4 w-[160px] text-xs text-gray-500 whitespace-nowrap">
                           {formatDate(item.createdAt)}
                         </td>
-                        <td className="px-6 py-4 text-right text-sm">
+
+                        {/* Action */}
+                        <td className="px-4 py-4 w-[80px] text-right">
                           <button
                             onClick={() => setConfirmDeleteId(item._id)}
-                            className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition"
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded-md text-rose-600 hover:bg-rose-50 border border-transparent hover:border-rose-200 transition text-xs"
                             title="Delete report log"
                           >
                             <TrashIcon className="h-4 w-4" />
