@@ -245,17 +245,23 @@ export default function ReportList() {
                         </td>
 
                         {/* Course / Lesson */}
-                        <td className="px-4 py-4 w-[260px]">
-                          <p className="text-sm font-semibold text-gray-900 leading-snug break-words">
-                            📖 {lessonName}
-                          </p>
-                          <p className="text-xs text-gray-400 mt-1 leading-snug break-words">
-                            📦 {courseName}
-                          </p>
-                          {keypointName && (
-                            <p className="text-xs text-indigo-500 mt-1 leading-snug break-words">
-                              🔑 {keypointName}
+                        <td className="px-4 py-4 w-[260px] max-w-[260px]">
+                          <Tooltip title={lessonName} arrow placement="top">
+                            <p className="text-sm font-semibold text-gray-900 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                              📖 {lessonName}
                             </p>
+                          </Tooltip>
+                          <Tooltip title={courseName} arrow placement="top">
+                            <p className="text-xs text-gray-400 mt-1 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                              📦 {courseName}
+                            </p>
+                          </Tooltip>
+                          {keypointName && (
+                            <Tooltip title={keypointName} arrow placement="top">
+                              <p className="text-xs text-indigo-500 mt-1 leading-snug overflow-hidden" style={{ display: '-webkit-box', WebkitLineClamp: 1, WebkitBoxOrient: 'vertical' }}>
+                                🔑 {keypointName}
+                              </p>
+                            </Tooltip>
                           )}
                         </td>
 
