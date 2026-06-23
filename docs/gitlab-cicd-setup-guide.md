@@ -44,18 +44,20 @@ GitLab project settings enforce:
 - Squash merge defaults on, and source branches are removed after merge.
 
 Branch naming is enforced by `quality:merge-request-policy` for merge requests:
-- `feature/MEUP-123-description`
-- `fix/MEUP-123-description`
-- `refactor/MEUP-123-description`
-- `style/MEUP-123-description`
-- `docs/MEUP-123-description`
-- `test/MEUP-123-description`
-- `chore/MEUP-123-description`
-- `perf/MEUP-123-description`
-- `hotfix/MEUP-123-description`
+- `feature/TICKET-123-description`
+- `fix/TICKET-123-description`
+- `refactor/TICKET-123-description`
+- `style/TICKET-123-description`
+- `docs/TICKET-123-description`
+- `test/TICKET-123-description`
+- `chore/TICKET-123-description`
+- `perf/TICKET-123-description`
+- `hotfix/TICKET-123-description`
 - `release/v1.2.3`
 - `develop`
 - `main`
+
+`TICKET` accepts uppercase project keys such as `MEUP` and `KB`.
 
 ## 4. Bootstrap and Secret Injection
 Bootstrap script:
