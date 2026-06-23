@@ -83,11 +83,4 @@ class LessonRepository with RestfulRequestHandlerMixin implements ILessonReposit
       apiCall: () async => await _voiceStreamAIApi.sendScoreRecord(params),
     ).map((model) => model.toEntity());
   }
-
-  @override
-  TaskEither<AppException, Unit> reportIssue(IssueReportEntity entity) {
-    return executeApiAction(
-      apiCall: () => _api.reportIssue(entity.toJson()),
-    );
-  }
 }
