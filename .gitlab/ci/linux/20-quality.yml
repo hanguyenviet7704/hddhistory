@@ -8,6 +8,25 @@
   - slang.yaml
   - assets/i18n/**/*.yaml
 
+quality:merge-request-policy:
+  stage: quality
+  script:
+    - |
+      set -eu
+      branch="${CI_MERGE_REQUEST_SOURCE_BRANCH_NAME:-${CI_COMMIT_BRANCH:-}}"
+      allowed_regex='^(main|develop|release/v?[0-9]+(\.[0-9]+)*|hotfix/MEUP-[0-9]+-[a-z0-9][a-z0-9-]*|(feature|fix|refactor|style|docs|test|chore|perf)/MEUP-[0-9]+-[a-z0-9][a-z0-9-]*)$'
+
+      if ! printf '%s' "$branch" | grep -Eq "$allowed_regex"; then
+        echo "Branch name '$branch' is not allowed."
+        echo "Use type/MEUP-123-description, hotfix/MEUP-123-description, release/v1.2.3, develop, or main."
+        exit 1
+      fi
+
+      echo "Merge request policy checks passed."
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - when: never
+
 quality:analyze:
   extends: .linux_job_base
   stage: quality

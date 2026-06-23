@@ -1,6 +1,6 @@
 # GitLab CI/CD Setup Guide
 
-**Last Updated:** 2026-02-27  
+**Last Updated:** 2026-06-23
 **Scope:** `.gitlab/ci/*` pipelines and required variable contracts
 
 ## 1. Pipeline Topology
@@ -26,6 +26,7 @@ Defined stages:
 
 Typical flow:
 - prepare generated artifacts -> analyze/test -> conditional build jobs -> optional release skeleton/distribution jobs.
+- merge requests also run `quality:merge-request-policy`, a lightweight always-present policy job.
 
 ## 3. Trigger Rules
 Workflow rules run on:
@@ -33,6 +34,28 @@ Workflow rules run on:
 - `develop` branch
 - `main` branch
 - tags matching `v*`
+
+## 3.1 Merge Protection Policy
+GitLab project settings enforce:
+- `develop` and `main` are protected branches.
+- Direct pushes to `develop` and `main` are disabled.
+- Merges into protected branches require Maintainer permission.
+- Merge requests require successful pipeline, resolved discussions, and one approval.
+- Squash merge defaults on, and source branches are removed after merge.
+
+Branch naming is enforced by `quality:merge-request-policy` for merge requests:
+- `feature/MEUP-123-description`
+- `fix/MEUP-123-description`
+- `refactor/MEUP-123-description`
+- `style/MEUP-123-description`
+- `docs/MEUP-123-description`
+- `test/MEUP-123-description`
+- `chore/MEUP-123-description`
+- `perf/MEUP-123-description`
+- `hotfix/MEUP-123-description`
+- `release/v1.2.3`
+- `develop`
+- `main`
 
 ## 4. Bootstrap and Secret Injection
 Bootstrap script:
