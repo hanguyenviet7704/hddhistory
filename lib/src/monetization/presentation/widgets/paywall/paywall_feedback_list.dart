@@ -128,12 +128,15 @@ class _FeedbackCard extends StatelessWidget {
             ),
           ),
           8.verticalSpace,
-          AppText(
-            feedback.description,
-            maxLines: 5,
-            style: AppStyle.text12.copyWith(
-              color: AppCustomColor.textSecondary,
-              height: 1.75,
+          Expanded(
+            child: AppText(
+              feedback.description,
+              maxLines: 5,
+              overflow: TextOverflow.ellipsis,
+              style: AppStyle.text12.copyWith(
+                color: AppCustomColor.textSecondary,
+                height: 1.75,
+              ),
             ),
           ),
         ],

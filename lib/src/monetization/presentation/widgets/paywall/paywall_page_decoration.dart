@@ -110,7 +110,18 @@ class _PaywallPageDecorationState extends State<PaywallPageDecoration> {
             state: widget.state,
             onPlanTap: _handlePlanTap,
           ),
-          18.verticalSpace,
+          25.verticalSpace,
+          AppText(
+            l10n.monetization.paywallHeroSubtitle,
+            textAlign: TextAlign.center,
+            maxLines: 2,
+            style: AppStyle.text14.copyWith(
+              color: AppCustomColor.textBrand.withValues(alpha: 0.4),
+              fontWeight: FontWeight.w600,
+              height: 1.75,
+            ),
+          ),
+          12.verticalSpace,
           if (benefits.isEmpty)
             ..._defaultBenefits()
           else
