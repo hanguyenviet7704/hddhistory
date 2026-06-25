@@ -78,6 +78,9 @@ mixin AppEndpoint {
   static const String coursesFeedbacks = '/api/v1/courses-feedback';
   static const String coursesFeedbacksOfUser = '/api/v1/courses-feedback/me';
 
+  //* Courses Reports API
+  static const String coursesReports = '/api/v1/courses-reports';
+
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/{lessonId}';
