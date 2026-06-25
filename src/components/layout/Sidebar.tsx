@@ -115,7 +115,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         `}
         >
           <img
-            src="https://cdn.meup.training/onboarding/IMG_5442.jpeg"
+            src="https://i.pinimg.com/736x/f9/5d/b0/f95db029418c8d27375b6851060d6f0c.jpg"
             alt="Logo"
             className={`
               transition-all duration-300
