@@ -7,6 +7,7 @@ class CourseSearchView extends StatelessWidget {
   const CourseSearchView({super.key});
 
   void _navigateToCourse(BuildContext context, CourseEntity course) {
+    context.read<PageCubit>().setCurrentIndex(1);
     context.read<CourseRoadmapCubit>().setRoadmapSource('search');
     context.read<HomeCubit>().selectCourseFromCourseId(course.id);
     CourseRoadmapRoute().go(context);
@@ -25,10 +26,7 @@ class CourseSearchView extends StatelessWidget {
         final allCourses = state.courses;
 
         if (state.searchQuery.isEmpty) {
-          return _RecentSearchList(
-            courses: allCourses.take(5).toList(),
-            onCourseTap: (course) => _navigateToCourse(context, course),
-          );
+          return _SearchPromptView();
         }
 
         final query = state.searchQuery.toLowerCase();
@@ -49,56 +47,33 @@ class CourseSearchView extends StatelessWidget {
   }
 }
 
-class _RecentSearchList extends StatelessWidget {
-  const _RecentSearchList({
-    required this.courses,
-    required this.onCourseTap,
-  });
-
-  final List<CourseEntity> courses;
-  final ValueChanged<CourseEntity> onCourseTap;
+class _SearchPromptView extends StatelessWidget {
+  const _SearchPromptView();
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Padding(
-          padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              AppText(
-                context.l10n.allcourse.searchRecent,
-                style: AppStyle.textBold16
-                    .copyWith(color: AppCustomColor.textPrimary),
-              ),
-              Semantics(
-                label: context.l10n.allcourse.searchClearSemanticLabel,
-                button: true,
-                child: GestureDetector(
-                  onTap: () => context.read<CourseCubit>().clearSearch(),
-                  child: AppText(
-                    context.l10n.allcourse.searchClearAll,
-                    style: AppStyle.text14
-                        .copyWith(color: AppCustomColor.brandPrimary),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        ...courses.map(
-          (course) => Padding(
-            padding:
-                EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
-            child: CourseListTile(
-              course: course,
-              onTap: () => onCourseTap(course),
+    return Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(vertical: 48.h, horizontal: 32.w),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.search_rounded,
+              size: 48.w,
+              color: AppCustomColor.textTertiary,
             ),
-          ),
+            16.verticalSpace,
+            AppText(
+              context.l10n.allcourse.searchTypeToSearch,
+              textAlign: TextAlign.center,
+              style: AppStyle.text14.copyWith(
+                color: AppCustomColor.textSecondary,
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

@@ -96,7 +96,7 @@ class _CourseProgressChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final progressState = context.read<ProgressCubit>().state;
+    final progressState = context.watch<ProgressCubit>().state;
     final userProgress = progressState.userProgresses
         .firstWhereOrNull((p) => p.courseId == course.id);
 
@@ -137,7 +137,7 @@ class _CourseProgressChip extends StatelessWidget {
             height: 14.w,
             child: CircularProgressIndicator(
               value: total > 0 ? completed / total : 0,
-              strokeWidth: 2,
+              strokeWidth: 2.w,
               backgroundColor: AppCustomColor.borderDefault,
               color: AppCustomColor.brandPrimary,
             ),
