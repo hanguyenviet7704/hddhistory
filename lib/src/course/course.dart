@@ -65,6 +65,8 @@ part 'presentation/widgets/course/all_course_tab.dart';
 part 'presentation/widgets/course/all_course_tab_controller.dart';
 //* Presentation Layer - Widgets
 part 'presentation/widgets/course/course_card.dart';
+part 'presentation/widgets/course/course_list_tile.dart';
+part 'presentation/widgets/course/course_search_view.dart';
 part 'presentation/widgets/course/course_category_bar.dart';
 part 'presentation/widgets/course/course_category_chip.dart';
 part 'presentation/widgets/course/course_empty_state.dart';
