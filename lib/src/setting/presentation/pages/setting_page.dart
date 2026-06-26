@@ -142,7 +142,7 @@ class _SettingPageState extends State<SettingPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppCustomColor.backgroundGray,
+      backgroundColor: AppCustomColor.backgroundWhite,
       body: CupertinoScaffold(
         topRadius: const Radius.circular(24),
         transitionBackgroundColor: AppCustomColor.backgroundWhite,
@@ -262,7 +262,7 @@ class SettingHeader extends StatelessWidget {
         ),
         AppText(
           context.l10n.setting.settingTitle,
-          style: AppStyle.textBold16.copyWith(
+          style: AppStyle.textBold18.copyWith(
             color: AppCustomColor.textPrimary,
             height: 1.25,
           ),
