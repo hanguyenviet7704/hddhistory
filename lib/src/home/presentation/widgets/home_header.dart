@@ -86,11 +86,8 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
     );
   }
 
-  String _greetingPrefix() {
-    final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good morning';
-    if (hour < 18) return 'Good afternoon';
-    return 'Good evening';
+  String _greetingPrefix(BuildContext context) {
+    return context.l10n.home.homeGreetingPrefix;
   }
 
   @override
@@ -125,7 +122,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         AppText(
-                          '${_greetingPrefix()}, $firstName',
+                          '${_greetingPrefix(context)}, $firstName',
                           style: AppStyle.text14.copyWith(
                             color: AppCustomColor.textPrimary.withValues(alpha: 0.8),
                           ),
@@ -191,10 +188,18 @@ class _HomeInlineQuoteCard extends StatelessWidget {
           label: context.l10n.home.homeQuoteLabel,
           child: Container(
             width: double.infinity,
-            padding: EdgeInsets.all(16.w),
+            constraints: const BoxConstraints(minHeight: 44),
+            padding: EdgeInsets.symmetric(horizontal: 12.w, vertical: 16.h),
             decoration: BoxDecoration(
               color: const Color(0xFFB7B4F2),
               borderRadius: BorderRadius.circular(16.r),
+              boxShadow: const [
+                BoxShadow(
+                  color: Color(0x14000000),
+                  offset: Offset(0, 1),
+                  blurRadius: 1.5,
+                ),
+              ],
             ),
             child: Stack(
               children: [
@@ -211,20 +216,16 @@ class _HomeInlineQuoteCard extends StatelessWidget {
                     ),
                   ),
                 ),
-                // Quote text — centered, padded away from icon
-                Padding(
-                  padding: EdgeInsets.only(right: 32.w),
-                  child: AppText(
-                    quoteText,
-                    textAlign: TextAlign.center,
-                    style: AppStyle.text14.copyWith(
-                      color: AppCustomColor.textPrimary,
-                      fontStyle: FontStyle.italic,
-                      height: 1.5,
-                    ),
-                    maxLines: 4,
-                    overflow: TextOverflow.ellipsis,
+                // Quote text — fully centered, icon is absolutely positioned
+                AppText(
+                  quoteText,
+                  textAlign: TextAlign.center,
+                  style: AppStyle.text14.copyWith(
+                    color: AppCustomColor.textPrimary,
+                    height: 1.75,
                   ),
+                  maxLines: 4,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),

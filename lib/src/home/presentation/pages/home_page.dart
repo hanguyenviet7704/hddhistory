@@ -56,95 +56,91 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
           // Extend gradient behind status bar
           backgroundColor: const Color(0xFFBEBCF6),
           body: SafeBody(
-            child: Stack(
+            child: Column(
               children: [
-                // ── Gradient background extends behind status bar ─────────
-                Container(
-                  color: const Color(0xFFBEBCF6),
-                ),
+                // ── Zone 1: Fixed purple header — never scrolls ────────────
+                const HomeHeaderWidget(),
 
-                RefreshIndicator(
-                  onRefresh: () async {
-                    context.read<HomeCubit>().initializeData(isInit: true);
-                    await _prefetchLearningStreak();
-                    final didOpenPaywall = await _tryOpenPaywallAutoOpen();
-                    if (didOpenPaywall) return;
-                    final didOpenWarmUp = await _tryOpenDailyWarmUp();
-                    if (!didOpenWarmUp) await _loadInAppSurveyConfig();
-                  },
-                  child: SingleChildScrollView(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // ── Zone 1: Purple gradient header ─────────────────
-                        const HomeHeaderWidget(),
+                // ── Zone 2: Scrollable white content area ─────────────────
+                Expanded(
+                  child: Stack(
+                    children: [
+                      RefreshIndicator(
+                        onRefresh: () async {
+                          context.read<HomeCubit>().initializeData(isInit: true);
+                          await _prefetchLearningStreak();
+                          final didOpenPaywall = await _tryOpenPaywallAutoOpen();
+                          if (didOpenPaywall) return;
+                          final didOpenWarmUp = await _tryOpenDailyWarmUp();
+                          if (!didOpenWarmUp) await _loadInAppSurveyConfig();
+                        },
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          child: Container(
+                            width: double.infinity,
+                            decoration: BoxDecoration(
+                              color: AppCustomColor.backgroundWhite,
+                              borderRadius: BorderRadius.only(
+                                topLeft: Radius.circular(20.r),
+                                topRight: Radius.circular(20.r),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                24.verticalSpace,
 
-                        // ── Zone 2: White content area (rounded top) ───────
-                        Container(
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: AppCustomColor.backgroundWhite,
-                            borderRadius: BorderRadius.only(
-                              topLeft: Radius.circular(20.r),
-                              topRight: Radius.circular(20.r),
+                                // ── Continue learning ────────────────────
+                                BlocBuilder<ProgressCubit, ProgressState>(
+                                  builder: (context, state) {
+                                    if (state.myCourses.isEmpty) return const SizedBox.shrink();
+                                    return _ContinueLearningSection(courses: state.myCourses);
+                                  },
+                                ),
+
+                                // ── Got ideas? banner ────────────────────
+                                20.verticalSpace,
+                                GotIdeasBanner(
+                                  onTap: () => const DataCollectFeedbackRoute().push(context),
+                                ),
+                                20.verticalSpace,
+
+                                // ── Recommended courses ──────────────────
+                                _RecommendedSection(
+                                  onSeeAll: () {
+                                    context.read<CourseCubit>().setAllCourseSource('home_recommend_view');
+                                    CourseRoute().push(context);
+                                  },
+                                ),
+
+                                // Bottom padding
+                                96.verticalSpace,
+                              ],
                             ),
                           ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              24.verticalSpace,
-
-                              // ── Continue learning ──────────────────────
-                              BlocBuilder<ProgressCubit, ProgressState>(
-                                builder: (context, state) {
-                                  if (state.myCourses.isEmpty) return const SizedBox.shrink();
-                                  return _ContinueLearningSection(courses: state.myCourses);
-                                },
-                              ),
-
-                              // ── Got ideas? banner ──────────────────────
-                              20.verticalSpace,
-                              GotIdeasBanner(
-                                onTap: () => const DataCollectFeedbackRoute().push(context),
-                              ),
-                              20.verticalSpace,
-
-                              // ── Recommended courses ────────────────────
-                              _RecommendedSection(
-                                onSeeAll: () {
-                                  context.read<CourseCubit>().setAllCourseSource('home_recommend_view');
-                                  CourseRoute().push(context);
-                                },
-                              ),
-
-                              // Bottom padding
-                              96.verticalSpace,
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // ── Floating InAppSurvey pill ──────────────────────────────
-                BlocSelector<InAppSurveyCubit, InAppSurveyState, bool>(
-                  selector: (state) => state.isEntryVisible,
-                  builder: (context, isEntryVisible) {
-                    if (!isEntryVisible) return const SizedBox.shrink();
-
-                    return Positioned(
-                      left: 20.w,
-                      right: 20.w,
-                      bottom: 20.h,
-                      child: Center(
-                        child: InAppSurveyEntryPill(
-                          onTap: _openInAppSurveyDialog,
                         ),
                       ),
-                    );
-                  },
+
+                      // ── Floating InAppSurvey pill ──────────────────────
+                      BlocSelector<InAppSurveyCubit, InAppSurveyState, bool>(
+                        selector: (state) => state.isEntryVisible,
+                        builder: (context, isEntryVisible) {
+                          if (!isEntryVisible) return const SizedBox.shrink();
+
+                          return Positioned(
+                            left: 20.w,
+                            right: 20.w,
+                            bottom: 20.h,
+                            child: Center(
+                              child: InAppSurveyEntryPill(
+                                onTap: _openInAppSurveyDialog,
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),
