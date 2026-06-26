@@ -92,6 +92,8 @@ mixin AppEndpoint {
   static const String coursesUserProgressStreak = '/api/v1/courses-user-progress/streak';
   static const String coursesUserProgressWidgetInProgress = '/api/v1/courses-user-progress/widget/in-progress';
   static const String coursesUserProgressWidgetSuggestCourse = '/api/v1/courses-user-progress/widget/suggest-course';
+  static const String coursesQuotesRandom = '/api/v1/courses-quotes/random';
+  static const String coursesUserProgressSuggestCourses = '/api/v1/courses-user-progress/suggest-courses';
   static const String coursesUserProgressCompletedLevelAdditionalContentRequest = '/api/v1/courses-user-progress/completed-level/additional-content-request';
 
   //* Courses Output Practice API

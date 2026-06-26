@@ -72,6 +72,10 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                         // Header
                         const HomeHeaderWidget(),
 
+                        // Quote of the day
+                        20.verticalSpace,
+                        const HomeQuoteCard(),
+
                         // Courses section
                         BlocBuilder<ProgressCubit, ProgressState>(
                           builder: (context, state) {
@@ -114,59 +118,43 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                         ),
                         20.verticalSpace,
 
-                        // Skillsets section
+                        // Recommended courses section header
                         SectionHeaderWidget(
                           title: context.l10n.home.homeRecommendCourse,
-                          actionText: context.l10n.home.homeSeeAllLearningListButton,
+                          actionText: context.l10n.home.homeRecommendedSeeAll,
                           onActionTap: () {
-                            context.read<CourseCubit>().setAllCourseSource('home_skill_view');
+                            context.read<CourseCubit>().setAllCourseSource('home_recommend_view');
                             CourseRoute().push(context);
                           },
                         ),
                         16.verticalSpace,
 
-                        // Skillsets grid
-                        BlocSelector<HomeCubit, HomeState, List<SkillsetEntity>>(
-                          selector: (state) => state.skillsets,
-                          builder: (context, skillsets) {
-                            return GridView.builder(
+                        // Recommended courses horizontal scroll
+                        BlocSelector<HomeCubit, HomeState, List<SuggestedCourseEntity>>(
+                          selector: (state) => state.suggestedCourses,
+                          builder: (context, suggestedCourses) {
+                            if (suggestedCourses.isEmpty) return const SizedBox.shrink();
+
+                            final cards = suggestedCourses
+                                .map(
+                                  (s) => CourseEntity(
+                                    id: s.id,
+                                    title: s.title,
+                                    description: s.description,
+                                    image: s.image,
+                                    skillsetId: s.skillsetId,
+                                    numberOfLesson: s.numberOfLesson,
+                                  ).withSkillset,
+                                )
+                                .toList();
+
+                            return SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
                               padding: EdgeInsets.symmetric(horizontal: 20.w),
-                              shrinkWrap: true,
-                              physics: const NeverScrollableScrollPhysics(),
-                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount: 2,
-                                crossAxisSpacing: 12.w,
-                                mainAxisSpacing: 12.h,
-                                childAspectRatio: 161.w / 234.h,
-                              ),
-                              itemCount: skillsets.length,
-                              itemBuilder: (context, index) {
-                                final skillset = skillsets[index];
-                                return SkillsetCardWidget(
-                                  skillset: skillset,
-                                  onTap: () {
-                                    context.read<CourseCubit>().setAllCourseSource('home_skill_view');
-                                    AppService.instance.appTrackingService.trackHomeSkillClick(skillset);
-                                    CourseRoute(selectedTabIndex: index).push(context);
-                                  },
-                                );
-                              },
-                            );
-                          },
-                        ),
-
-                        // Loading indicator for skillsets
-                        BlocSelector<HomeCubit, HomeState, bool>(
-                          selector: (state) => state.status == HomeStatus.loading,
-                          builder: (context, isLoading) {
-                            if (!isLoading) return const SizedBox.shrink();
-
-                            return Padding(
-                              padding: EdgeInsets.all(20.w),
-                              child: Center(
-                                child: CircularProgressIndicator(
-                                  color: AppCustomColor.brandPrimary,
-                                ),
+                              child: Row(
+                                children: cards
+                                    .map((course) => CourseCardWidget(course: course))
+                                    .toList(),
                               ),
                             );
                           },

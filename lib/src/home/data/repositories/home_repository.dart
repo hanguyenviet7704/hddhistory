@@ -4,8 +4,9 @@ part of '../../home.dart';
 class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository {
   final SkillsetApi _skillsetApi;
   final HomeLocalDataSource _localDataSource;
+  final HomeApi _homeApi;
 
-  HomeRepository(this._skillsetApi, this._localDataSource);
+  HomeRepository(this._skillsetApi, this._localDataSource, this._homeApi);
 
   @override
   TaskEither<AppException, SkillsetEntity> getSkillset(String id) {
@@ -18,6 +19,24 @@ class HomeRepository with RestfulRequestHandlerMixin implements IHomeRepository 
         return cachedModel?.toEntity();
       },
       defaultValue: SkillsetEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, QuoteEntity> getRandomQuote() {
+    return callApiWithTransform<QuoteModel, QuoteEntity>(
+      apiCall: () => _homeApi.getRandomQuote(),
+      transform: (model) => model.toEntity(),
+      defaultValue: const QuoteEntity(),
+    );
+  }
+
+  @override
+  TaskEither<AppException, List<SuggestedCourseEntity>> getSuggestCourses(int limit) {
+    return callApiWithTransform<List<SuggestedCourseModel>, List<SuggestedCourseEntity>>(
+      apiCall: () => _homeApi.getSuggestCourses(limit),
+      transform: (models) => models.map((m) => m.toEntity()).toList(),
+      defaultValue: const [],
     );
   }
 
