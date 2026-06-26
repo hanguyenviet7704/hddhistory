@@ -81,6 +81,9 @@ mixin AppEndpoint {
   //* Courses Reports API
   static const String coursesReports = '/api/v1/courses-reports';
 
+  //* Courses Search History API
+  static const String coursesSearchHistory = '/api/v1/courses-search-history';
+
   //* Courses User Progress API
   static const String coursesUserProgress = '/api/v1/courses-user-progress';
   static const String coursesUserProgressLesson = '/api/v1/courses-user-progress/lesson/{lessonId}';

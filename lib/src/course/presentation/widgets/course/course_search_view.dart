@@ -19,14 +19,26 @@ class CourseSearchView extends StatelessWidget {
       buildWhen: (prev, curr) =>
           prev.searchQuery != curr.searchQuery ||
           prev.isSearchActive != curr.isSearchActive ||
-          prev.courses != curr.courses,
+          prev.courses != curr.courses ||
+          prev.searchHistory != curr.searchHistory ||
+          prev.isLoadingHistory != curr.isLoadingHistory,
       builder: (context, state) {
         if (!state.isSearchActive) return const SizedBox.shrink();
 
         final allCourses = state.courses;
 
         if (state.searchQuery.isEmpty) {
-          return _SearchPromptView();
+          if (state.isLoadingHistory) {
+            return const _HistoryLoadingView();
+          }
+          if (state.searchHistory.isEmpty) {
+            return const _SearchPromptView();
+          }
+          return _RecentSection(
+            history: state.searchHistory,
+            onTap: (query) => context.read<CourseCubit>().updateSearch(query),
+            onClearAll: () => context.read<CourseCubit>().clearSearchHistory(),
+          );
         }
 
         final query = state.searchQuery.toLowerCase();
@@ -43,6 +55,151 @@ class CourseSearchView extends StatelessWidget {
           onCourseTap: (course) => _navigateToCourse(context, course),
         );
       },
+    );
+  }
+}
+
+class _HistoryLoadingView extends StatelessWidget {
+  const _HistoryLoadingView();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            height: 16.h,
+            width: 80.w,
+            decoration: BoxDecoration(
+              color: AppCustomColor.backgroundGray,
+              borderRadius: BorderRadius.circular(4.r),
+            ),
+          ),
+          12.verticalSpace,
+          ...List.generate(
+            4,
+            (_) => Padding(
+              padding: EdgeInsets.only(bottom: 12.h),
+              child: Container(
+                height: 20.h,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.backgroundGray,
+                  borderRadius: BorderRadius.circular(4.r),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _RecentSection extends StatelessWidget {
+  const _RecentSection({
+    required this.history,
+    required this.onTap,
+    required this.onClearAll,
+  });
+
+  final List<String> history;
+  final ValueChanged<String> onTap;
+  final VoidCallback onClearAll;
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              AppText(
+                context.l10n.allcourse.searchRecent,
+                style: AppStyle.textBold14.copyWith(
+                  color: AppCustomColor.textPrimary,
+                ),
+              ),
+              const Spacer(),
+              Semantics(
+                button: true,
+                label: context.l10n.allcourse.searchClearAll,
+                child: TextButton(
+                  key: const Key('search-history-clear-all-button'),
+                  onPressed: onClearAll,
+                  style: TextButton.styleFrom(
+                    padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                    minimumSize: Size(48.w, 36.h),
+                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                  child: AppText(
+                    context.l10n.allcourse.searchClearAll,
+                    style: AppStyle.text14.copyWith(
+                      color: AppCustomColor.brandPrimary,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          8.verticalSpace,
+          ListView.separated(
+            key: const Key('search-history-list'),
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: history.length,
+            separatorBuilder: (_, _) => Divider(
+              height: 1,
+              color: AppCustomColor.borderDefault,
+            ),
+            itemBuilder: (context, index) {
+              final query = history[index];
+              return Semantics(
+                button: true,
+                label: query,
+                child: InkWell(
+                  key: ValueKey('search-history-item-$index'),
+                  onTap: () => onTap(query),
+                  borderRadius: BorderRadius.circular(8.r),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12.h),
+                    child: Row(
+                      children: [
+                        Icon(
+                          Icons.history_rounded,
+                          size: 16.w,
+                          color: AppCustomColor.textTertiary,
+                        ),
+                        10.horizontalSpace,
+                        Expanded(
+                          child: AppText(
+                            query,
+                            style: AppStyle.text14.copyWith(
+                              color: AppCustomColor.textPrimary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        8.horizontalSpace,
+                        Icon(
+                          Icons.north_west_rounded,
+                          size: 14.w,
+                          color: AppCustomColor.textTertiary,
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }

@@ -16,4 +16,13 @@ abstract class CourseApi {
 
   @GET(AppEndpoint.coursesRoadmap)
   Future<BaseResponse<RoadmapModel>> getRoadmap(@Path('id') String id);
+
+  @GET(AppEndpoint.coursesSearchHistory)
+  Future<BaseResponse<List<SearchHistoryModel>>> getSearchHistory();
+
+  @POST(AppEndpoint.coursesSearchHistory)
+  Future<void> saveSearchQuery(@Body() Map<String, dynamic> body);
+
+  @DELETE(AppEndpoint.coursesSearchHistory)
+  Future<void> clearSearchHistory();
 }

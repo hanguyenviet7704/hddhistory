@@ -60,7 +60,10 @@ class CourseHeader extends StatelessWidget {
                               isDense: true,
                               contentPadding: EdgeInsets.zero,
                             ),
+                            textInputAction: TextInputAction.search,
                             onChanged: context.read<CourseCubit>().onSearchChanged,
+                            onSubmitted: (query) =>
+                                context.read<CourseCubit>().saveSearchQuery(query),
                           )
                         : AppText(
                             context.l10n.allcourse.searchPlaceholder,
