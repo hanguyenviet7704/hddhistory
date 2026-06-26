@@ -21,6 +21,7 @@ class RoadmapNodeContent extends StatelessWidget {
     if (lesson.type == LessonType.roleplay || lesson.type == LessonType.output || lesson.type == LessonType.video) {
       return RoadmapLessonCard(
         lesson: lesson,
+        isLocked: isLocked,
         onTap: () => _handleTap(context),
       );
     }
@@ -29,6 +30,7 @@ class RoadmapNodeContent extends StatelessWidget {
       if (lesson.keypoints.isEmpty) return const SizedBox.shrink();
       return LessonKeypointCard(
         lesson: lesson,
+        isLocked: isLocked,
         onTap: () => _handleTap(context),
       );
     }
