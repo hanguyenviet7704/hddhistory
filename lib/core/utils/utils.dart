@@ -90,6 +90,8 @@ part 'text/gradient_text.dart';
 part 'text/high_light_text.dart';
 part 'text/icon_text.dart';
 part 'text/title_and_text.dart';
+//* Export all tab files
+part 'tab/filter_tab_bar.dart';
 //* Export all timer files
 part 'timer/count_down.dart';
 part 'timer/stop_watch.dart';
