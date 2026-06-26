@@ -11,6 +11,7 @@ abstract class CourseState with _$CourseState {
     @Default('unknown') String allCourseSource,
     @Default(false) bool isSearchActive,
     @Default('') String searchQuery,
+    @Default(-1) int selectedCategoryIndex,
     CourseEntity? selectedItem,
     String? errorMessage,
   }) = _CourseState;

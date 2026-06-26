@@ -21,6 +21,8 @@ class CourseCubit extends Cubit<CourseState> with CubitUseCaseHandlerMixin<Cours
 
   void onSearchChanged(String query) => emit(state.copyWith(searchQuery: query));
 
+  void selectCategory(int index) => emit(state.copyWith(selectedCategoryIndex: index));
+
   @override
   Future<void> close() {
     searchController.dispose();

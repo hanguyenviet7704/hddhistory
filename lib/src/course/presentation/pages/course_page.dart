@@ -19,14 +19,12 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   void _initializeSelection() {
-    HomeState homeState = context.read<HomeCubit>().state;
+    final homeState = context.read<HomeCubit>().state;
     _initialCategoryIndex = widget.selectedTabIndex ?? homeState.selectedSkillsetIndex;
-    context.read<CourseCubit>().selectTab(1);
-    context.read<CourseCubit>().clearSearch();
-  }
-
-  void _trackMyCourseView() {
-    AppService.instance.appTrackingService.trackCourseSelectMyCourseView(source: 'course_selection');
+    context.read<CourseCubit>()
+      ..selectTab(1)
+      ..clearSearch()
+      ..selectCategory(-1);
   }
 
   Future<void> _tryOpenPaywallAutoOpen() async {
@@ -53,43 +51,83 @@ class _CoursePageState extends State<CoursePage> {
   }
 
   @override
-  void dispose() {
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: const Key('course-page'),
       backgroundColor: AppCustomColor.backgroundWhite,
       body: SafeArea(
-        child: BlocListener<CourseCubit, CourseState>(
-          listenWhen: (previous, current) => previous.selectedTabIndex != current.selectedTabIndex && current.selectedTabIndex == 0,
-          listener: (context, state) => _trackMyCourseView(),
-          child: Column(
-            children: [
-              const CourseHeader(),
-              Expanded(
-                child: BlocBuilder<CourseCubit, CourseState>(
-                  buildWhen: (previous, current) => previous.selectedTabIndex != current.selectedTabIndex,
-                  builder: (context, state) {
-                    final selectedIndex = state.selectedTabIndex == 1 ? 1 : 0;
-                    return IndexedStack(
-                      index: selectedIndex,
-                      children: [
-                        const MyCourseTab(),
-                        AllCourseTab(
+        child: Column(
+          children: [
+            16.verticalSpace,
+            const CourseHeader(),
+            12.verticalSpace,
+            BlocBuilder<CourseCubit, CourseState>(
+              buildWhen: (prev, curr) => prev.isSearchActive != curr.isSearchActive,
+              builder: (context, state) {
+                if (state.isSearchActive) {
+                  return const Expanded(child: CourseSearchView());
+                }
+                return Expanded(
+                  child: Column(
+                    children: [
+                      _CourseFilterTabBar(initialCategoryIndex: _initialCategoryIndex),
+                      12.verticalSpace,
+                      Expanded(
+                        child: AllCourseTab(
                           initialCategoryIndex: _initialCategoryIndex,
-                          isVisible: selectedIndex == 1,
+                          isVisible: true,
                         ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ],
         ),
       ),
     );
+  }
+}
+
+class _CourseFilterTabBar extends StatelessWidget {
+  final int initialCategoryIndex;
+
+  const _CourseFilterTabBar({required this.initialCategoryIndex});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<HomeCubit, HomeState>(
+      buildWhen: (prev, curr) => prev.skillsets != curr.skillsets,
+      builder: (context, homeState) {
+        final skillsets = homeState.skillsets;
+        final allLabel = context.l10n.allcourse.allcourseAllCourses;
+        final tabs = [allLabel, ...skillsets.map((s) => s.title.text)];
+
+        return BlocBuilder<CourseCubit, CourseState>(
+          buildWhen: (prev, curr) => prev.selectedCategoryIndex != curr.selectedCategoryIndex,
+          builder: (context, courseState) {
+            final tabIndex = _categoryIndexToTabIndex(courseState.selectedCategoryIndex, skillsets.length);
+            return Semantics(
+              label: context.l10n.allcourse.allcourseExploreSkillsets,
+              child: FilterTabBar(
+                key: const Key('course-filter-tab-bar'),
+                tabs: tabs,
+                selectedIndex: tabIndex,
+                onTabSelected: (i) {
+                  final categoryIndex = i == 0 ? -1 : i - 1;
+                  context.read<CourseCubit>().selectCategory(categoryIndex);
+                },
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  int _categoryIndexToTabIndex(int categoryIndex, int skillsetCount) {
+    if (categoryIndex < 0) return 0;
+    return (categoryIndex + 1).clamp(0, skillsetCount);
   }
 }
