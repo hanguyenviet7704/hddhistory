@@ -102,22 +102,17 @@ class HomeLargePortraitCourseCard extends StatelessWidget {
                 ],
               ),
 
-              // ── Progress badge — absolute top-right ────────────────────
+              // ── Progress badge — absolute top-right corner ─────────────
               Positioned(
-                top: 12.h,
-                right: 12.w,
+                top: 0,
+                right: 0,
                 child: Container(
-                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
                   decoration: BoxDecoration(
                     color: AppCustomColor.backgroundWhite,
-                    borderRadius: BorderRadius.circular(50.r),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppCustomColor.textPrimary.withValues(alpha: 0.06),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(8.r),
+                    ),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,

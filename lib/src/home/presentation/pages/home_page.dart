@@ -111,43 +111,10 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                               20.verticalSpace,
 
                               // ── Recommended courses ────────────────────
-                              SectionHeaderWidget(
-                                title: context.l10n.home.homeRecommendCourse,
-                                actionText: context.l10n.home.homeRecommendedSeeAll,
-                                onActionTap: () {
+                              _RecommendedSection(
+                                onSeeAll: () {
                                   context.read<CourseCubit>().setAllCourseSource('home_recommend_view');
                                   CourseRoute().push(context);
-                                },
-                              ),
-                              16.verticalSpace,
-
-                              BlocSelector<HomeCubit, HomeState, List<SuggestedCourseEntity>>(
-                                selector: (state) => state.suggestedCourses,
-                                builder: (context, suggestedCourses) {
-                                  if (suggestedCourses.isEmpty) return const SizedBox.shrink();
-
-                                  final cards = suggestedCourses
-                                      .map(
-                                        (s) => CourseEntity(
-                                          id: s.id,
-                                          title: s.title,
-                                          description: s.description,
-                                          image: s.image,
-                                          skillsetId: s.skillsetId,
-                                          numberOfLesson: s.numberOfLesson,
-                                        ).withSkillset,
-                                      )
-                                      .toList();
-
-                                  return SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    padding: EdgeInsets.symmetric(horizontal: 20.w),
-                                    child: Row(
-                                      children: cards
-                                          .map((course) => CourseCardWidget(course: course))
-                                          .toList(),
-                                    ),
-                                  );
                                 },
                               ),
 
@@ -231,8 +198,8 @@ class _ContinueLearningSectionState extends State<_ContinueLearningSection> {
   void initState() {
     super.initState();
     _pageController = PageController(
-      // Show a sliver of the next card to signal swipeability
-      viewportFraction: 0.92,
+      // Full-width card — one card fills the viewport
+      viewportFraction: 1.0,
     );
   }
 
@@ -264,11 +231,12 @@ class _ContinueLearningSectionState extends State<_ContinueLearningSection> {
             onPageChanged: (i) => setState(() => _currentIndex = i),
             itemCount: widget.courses.length,
             itemBuilder: (ctx, i) {
-              return Padding(
-                // Horizontal gutter between cards and from screen edge
-                padding: EdgeInsets.symmetric(horizontal: 8.w),
-                child: HomeLargePortraitCourseCard(
-                  course: widget.courses[i].withSkillset,
+              return Center(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 20.w),
+                  child: HomeLargePortraitCourseCard(
+                    course: widget.courses[i].withSkillset,
+                  ),
                 ),
               );
             },
@@ -299,6 +267,173 @@ class _ContinueLearningSectionState extends State<_ContinueLearningSection> {
         ] else
           12.verticalSpace,
       ],
+    );
+  }
+}
+
+/// Recommended courses section: heading row + horizontal scroll of 160px cards.
+class _RecommendedSection extends StatelessWidget {
+  final VoidCallback? onSeeAll;
+
+  const _RecommendedSection({this.onSeeAll});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header row — "Recommended" + "See all"
+        Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20.w),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              AppText(
+                context.l10n.home.homeRecommended,
+                style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+              ),
+              Semantics(
+                button: true,
+                label: context.l10n.home.homeRecommendedSeeAll,
+                child: GestureDetector(
+                  onTap: onSeeAll,
+                  child: AppText(
+                    context.l10n.home.homeRecommendedSeeAll,
+                    style: AppStyle.textBold12.copyWith(color: AppCustomColor.brandPrimary),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        12.verticalSpace,
+
+        // Horizontal scroll of compact course cards
+        BlocSelector<HomeCubit, HomeState, List<SuggestedCourseEntity>>(
+          selector: (state) => state.suggestedCourses,
+          builder: (context, courses) {
+            if (courses.isEmpty) return const SizedBox.shrink();
+
+            return SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: EdgeInsets.only(left: 20.w, right: 4.w),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (int i = 0; i < courses.length; i++) ...[
+                    _RecommendedCard(course: courses[i]),
+                    if (i < courses.length - 1) 16.horizontalSpace,
+                  ],
+                ],
+              ),
+            );
+          },
+        ),
+        20.verticalSpace,
+      ],
+    );
+  }
+}
+
+/// Compact 160×160 course card for the Recommended horizontal scroll.
+class _RecommendedCard extends StatelessWidget {
+  final SuggestedCourseEntity course;
+
+  const _RecommendedCard({required this.course});
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      button: true,
+      label: course.title.text,
+      child: GestureDetector(
+        onTap: () {
+          // Navigate: resolve the course in HomeCubit then go to roadmap
+          final didSelect = context.read<HomeCubit>().trySelectCourseFromCourseId(course.id);
+          if (didSelect) {
+            context.read<CourseRoadmapCubit>().setRoadmapSource('home_recommended');
+            CourseRoadmapRoute().go(context);
+            context.read<PageCubit>().setCurrentIndex(1);
+          } else {
+            context.read<CourseCubit>().setAllCourseSource('home_recommended');
+            CourseRoute().push(context);
+          }
+        },
+        child: SizedBox(
+          width: 160.w,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Thumbnail container with badge overlay
+              Container(
+                width: 160.w,
+                height: 160.h,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.backgroundWhite,
+                  borderRadius: BorderRadius.circular(12.r),
+                  border: Border.all(color: AppCustomColor.borderDefault),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Stack(
+                  children: [
+                    // Course image fills the container
+                    Positioned.fill(
+                      child: CacheNetworkGraphic(
+                        url: course.image,
+                        fit: BoxFit.cover,
+                      ),
+                    ),
+
+                    // "New course" badge — top-left corner
+                    Positioned(
+                      top: 0,
+                      left: 0,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: AppCustomColor.backgroundWhite,
+                          borderRadius: BorderRadius.only(
+                            bottomRight: Radius.circular(12.r),
+                          ),
+                        ),
+                        padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 12.sp,
+                              color: const Color(0xFF2B604E),
+                            ),
+                            4.horizontalSpace,
+                            AppText(
+                              context.l10n.home.homeRecommendedNewCourse,
+                              style: AppStyle.textBold12.copyWith(
+                                color: const Color(0xFF2B604E),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              8.verticalSpace,
+
+              // Course title — 2 lines max
+              AppText(
+                course.title.text,
+                style: AppStyle.textBold12.copyWith(
+                  color: AppCustomColor.textPrimary,
+                  fontWeight: FontWeight.w600,
+                ),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

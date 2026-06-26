@@ -16,8 +16,8 @@ class GotIdeasBanner extends StatelessWidget {
           margin: EdgeInsets.symmetric(horizontal: 20.w),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
-            // Figma: medium purple #847FE2
-            color: const Color(0xFF847FE2),
+            // Figma node 10725:31646: #6964DB
+            color: const Color(0xFF6964DB),
             borderRadius: BorderRadius.circular(16.r),
           ),
           child: Row(
