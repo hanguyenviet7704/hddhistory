@@ -107,6 +107,13 @@ class _HomePageState extends State<HomePage> with _HomeInAppSurveyMixin, _HomeDa
                           },
                         ),
 
+                        // Got ideas banner
+                        20.verticalSpace,
+                        GotIdeasBanner(
+                          onTap: () => const DataCollectFeedbackRoute().push(context),
+                        ),
+                        20.verticalSpace,
+
                         // Skillsets section
                         SectionHeaderWidget(
                           title: context.l10n.home.homeRecommendCourse,
