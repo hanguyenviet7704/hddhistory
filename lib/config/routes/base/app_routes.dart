@@ -75,6 +75,7 @@ mixin RoutePath {
   static const String manageSubscription = 'manage-subscription';
   static const String profileDeleteDialog = 'profile-delete-dialog';
   static const String userAchievementBottomSheet = 'user-achievement-bottom-sheet';
+  static const String reportIssueSheet = 'report-issue-sheet';
 }
 
 mixin RouteNamed {
@@ -158,4 +159,5 @@ mixin RouteNamed {
   static const String manageSubscription = 'Manage Subscription';
   static const String profileDeleteDialog = 'Profile Delete Dialog';
   static const String userAchievementBottomSheet = 'User Achievement Bottom Sheet';
+  static const String reportIssueSheet = 'Report Issue Sheet';
 }

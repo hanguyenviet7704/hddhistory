@@ -114,6 +114,8 @@ class _LessonPageState extends State<LessonPage> {
           );
           final bottomButton = _bodyFactory.buildBottomButton(context, activeBody);
 
+          final flagButton = _buildFlagButton(context, currentKeypoint);
+
           if (!currentKeypoint.hasUsableAudio) {
             return LessonShellLayout(
               selectedMode: LessonEntryMode.read,
@@ -123,6 +125,7 @@ class _LessonPageState extends State<LessonPage> {
               readBody: readSurface,
               audioBody: const SizedBox.shrink(),
               bottom: bottomButton,
+              trailing: flagButton,
               isLoading: state.status == LessonStatus.loading,
             );
           }
@@ -142,7 +145,7 @@ class _LessonPageState extends State<LessonPage> {
             readBody: readSurface,
             audioBody: const LessonAudioSurface(),
             bottom: selectedMode.isRead ? bottomButton : null,
-            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : null,
+            trailing: selectedMode.isAudio ? _buildAudioSpeedPill() : flagButton,
             isLoading: state.status == LessonStatus.loading,
           );
         },
@@ -237,6 +240,35 @@ class _LessonPageState extends State<LessonPage> {
           onTap: _handleOpenAudioSpeedSheet,
         );
       },
+    );
+  }
+
+  Widget _buildFlagButton(BuildContext context, KeypointEntity keypoint) {
+    return GestureDetector(
+      onTap: () => _openReportIssueSheet(context, keypoint),
+      behavior: HitTestBehavior.opaque,
+      child: SizedBox(
+        width: 36.w,
+        height: 36.w,
+        child: Center(
+          child: Icon(
+            Icons.flag_outlined,
+            size: 20.sp,
+            color: AppCustomColor.textQuaternary,
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openReportIssueSheet(BuildContext context, KeypointEntity keypoint) {
+    final lessonId = context.read<CourseLessonCubit>().state.selectedLesson.id;
+    ReportIssueSheet.show(
+      context,
+      lessonId: lessonId,
+      keypointId: keypoint.id,
+      keypointTitle: keypoint.title.text,
+      keypointImage: keypoint.image,
     );
   }
 

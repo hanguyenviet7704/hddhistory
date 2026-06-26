@@ -148,9 +148,9 @@ class PaywallPlanOption extends StatelessWidget {
     final idLower = product.productId.toLowerCase();
     if (idLower.contains('year') || idLower.contains('annual') || idLower.contains('1y')) return l10n.monetization.paywallPlanAnnual;
     if (idLower.contains('quarter') || idLower.contains('3m')) return l10n.monetization.paywallPlanQuarterly;
-    if (idLower.contains('month')) return l10n.monetization.paywallPlanMonthly;
-    if (idLower.contains('week')) return l10n.monetization.paywallPlanWeekly;
-    if (idLower.contains('life')) return l10n.monetization.paywallPlanLifetime;
+    if (idLower.contains('month')|| idLower.contains('1m')) return l10n.monetization.paywallPlanMonthly;
+    if (idLower.contains('week')|| idLower.contains('1w')) return l10n.monetization.paywallPlanWeekly;
+    if (idLower.contains('lifetime')) return l10n.monetization.paywallPlanLifetime;
     return _displayTitle;
   }
 
@@ -158,7 +158,7 @@ class PaywallPlanOption extends StatelessWidget {
 
   String get _displayPeriodPrice => product.pricePerPeriodString.isEmpty ? _displayPrice : product.pricePerPeriodString;
 
-  bool get _showDiscountPill => !selected && product.hasDiscount;
+  bool get _showDiscountPill => product.hasDiscount;
 
   bool get _showOriginalPrice => !selected && product.hasDiscount && product.originalPriceString.isNotEmpty;
 

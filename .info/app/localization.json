@@ -19,7 +19,8 @@
         "788845920",
         "28582107",
         "441323918",
-        "1969327410"
+        "1969327410",
+        "81388309"
       ],
       "tabs": [
         {
@@ -111,6 +112,11 @@
           "module": "daily_warm_up",
           "title": "daily_warm_up",
           "gid": "1969327410"
+        },
+        {
+          "module": "lesson_report",
+          "title": "lesson_report",
+          "gid": "81388309"
         }
       ],
       "columns": {
