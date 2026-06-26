@@ -12,16 +12,19 @@ class CourseCardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final progress = _getCourseProgress(context);
 
-    return GestureDetector(
-      onTap: () {
-        context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
-        context.read<HomeCubit>()
-          ..selectSkillset(course.skillset)
-          ..selectCourse(course);
-        CourseRoadmapRoute().go(context);
-        context.read<PageCubit>().setCurrentIndex(1);
-      },
-      child: Container(
+    return Semantics(
+      button: true,
+      label: course.title.text,
+      child: GestureDetector(
+        onTap: () {
+          context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
+          context.read<HomeCubit>()
+            ..selectSkillset(course.skillset)
+            ..selectCourse(course);
+          CourseRoadmapRoute().go(context);
+          context.read<PageCubit>().setCurrentIndex(1);
+        },
+        child: Container(
         width: 220.w,
         margin: EdgeInsets.only(right: 16.w),
         decoration: BoxDecoration(
@@ -137,6 +140,7 @@ class CourseCardWidget extends StatelessWidget {
             ),
           ],
         ),
+      ),
       ),
     );
   }
