@@ -99,7 +99,13 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
 
     return Container(
       width: double.infinity,
-      color: AppCustomColor.brandPrimary,
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFFBEBCF6), Color(0xFFDFDDF8)],
+        ),
+      ),
       padding: EdgeInsets.fromLTRB(20.w, 16.h, 20.w, 24.h),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +127,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                         AppText(
                           '${_greetingPrefix()}, $firstName',
                           style: AppStyle.text14.copyWith(
-                            color: AppCustomColor.backgroundWhite.withValues(alpha: 0.85),
+                            color: AppCustomColor.textPrimary.withValues(alpha: 0.8),
                           ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -130,7 +136,7 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
                         AppText(
                           context.l10n.home.homeGreetingQuestion,
                           style: AppStyle.textBold20.copyWith(
-                            color: AppCustomColor.backgroundWhite,
+                            color: AppCustomColor.textPrimary,
                           ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
@@ -158,33 +164,61 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
           ),
           16.verticalSpace,
           // Quote card
-          Container(
+          _HomeInlineQuoteCard(),
+        ],
+      ),
+    );
+  }
+}
+
+/// Inline quote card rendered inside the purple header.
+///
+/// Shows the dynamic quote from [HomeCubit] when available, otherwise renders
+/// nothing so the header collapses gracefully.
+class _HomeInlineQuoteCard extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<HomeCubit, HomeState, QuoteEntity?>(
+      selector: (state) => state.quote,
+      builder: (context, quote) {
+        final quoteText = (quote != null && quote.content.text.isNotEmpty)
+            ? quote.content.text
+            : null;
+
+        if (quoteText == null) return const SizedBox.shrink();
+
+        return Semantics(
+          label: context.l10n.home.homeQuoteLabel,
+          child: Container(
             width: double.infinity,
             padding: EdgeInsets.all(16.w),
             decoration: BoxDecoration(
-              color: AppCustomColor.backgroundWhite.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12.r),
+              color: const Color(0xFFB7B4F2),
+              borderRadius: BorderRadius.circular(16.r),
             ),
             child: Stack(
               children: [
+                // Quote mark — top-right, 30% opacity, size 28, rotated 180°
                 Positioned(
                   top: 0,
                   right: 0,
-                  child: AppText(
-                    '"',
-                    style: AppStyle.text30.copyWith(
-                      color: AppCustomColor.backgroundWhite.withValues(alpha: 0.4),
-                      height: 1,
+                  child: Transform.rotate(
+                    angle: 3.14159, // 180° in radians
+                    child: Icon(
+                      Icons.format_quote_rounded,
+                      size: 28.w,
+                      color: AppCustomColor.textPrimary.withValues(alpha: 0.30),
                     ),
                   ),
                 ),
+                // Quote text — centered, padded away from icon
                 Padding(
-                  padding: EdgeInsets.only(right: 24.w),
+                  padding: EdgeInsets.only(right: 32.w),
                   child: AppText(
-                    'Life isn\'t about finding yourself.\nLife is about creating yourself.',
+                    quoteText,
                     textAlign: TextAlign.center,
                     style: AppStyle.text14.copyWith(
-                      color: AppCustomColor.backgroundWhite,
+                      color: AppCustomColor.textPrimary,
                       fontStyle: FontStyle.italic,
                       height: 1.5,
                     ),
@@ -195,8 +229,8 @@ class _HomeHeaderWidgetState extends State<HomeHeaderWidget> {
               ],
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

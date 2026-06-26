@@ -16,8 +16,9 @@ class GotIdeasBanner extends StatelessWidget {
           margin: EdgeInsets.symmetric(horizontal: 20.w),
           padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 14.h),
           decoration: BoxDecoration(
-            color: AppCustomColor.brandPrimary,
-            borderRadius: BorderRadius.circular(12.r),
+            // Figma: medium purple #847FE2
+            color: const Color(0xFF847FE2),
+            borderRadius: BorderRadius.circular(16.r),
           ),
           child: Row(
             children: [
@@ -28,30 +29,39 @@ class GotIdeasBanner extends StatelessWidget {
               ),
               12.horizontalSpace,
               Expanded(
-                child: RichText(
-                  text: TextSpan(
-                    children: [
-                      TextSpan(
-                        text: '${context.l10n.home.inAppSurveyEntryTitle} ',
-                        style: AppStyle.textBold14.copyWith(
-                          color: AppCustomColor.backgroundWhite,
-                        ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    AppText(
+                      context.l10n.home.inAppSurveyEntryTitle,
+                      style: AppStyle.textBold16.copyWith(
+                        color: AppCustomColor.backgroundWhite,
                       ),
-                      TextSpan(
-                        text: context.l10n.home.inAppSurveyEntrySubtitle,
-                        style: AppStyle.text14.copyWith(
-                          color: AppCustomColor.backgroundWhite.withValues(alpha: 0.85),
-                        ),
+                    ),
+                    2.verticalSpace,
+                    AppText(
+                      context.l10n.home.inAppSurveyEntrySubtitle,
+                      style: AppStyle.text12.copyWith(
+                        color: AppCustomColor.backgroundWhite.withValues(alpha: 0.70),
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               ),
               8.horizontalSpace,
-              Icon(
-                Icons.arrow_forward_ios_rounded,
-                color: AppCustomColor.backgroundWhite,
-                size: 16.w,
+              Container(
+                width: 36.w,
+                height: 36.w,
+                decoration: BoxDecoration(
+                  color: AppCustomColor.backgroundWhite.withValues(alpha: 0.20),
+                  borderRadius: BorderRadius.circular(50.r),
+                ),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: AppCustomColor.backgroundWhite,
+                  size: 18.w,
+                ),
               ),
             ],
           ),

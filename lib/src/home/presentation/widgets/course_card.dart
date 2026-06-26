@@ -1,5 +1,158 @@
 part of '../../home.dart';
 
+/// Large portrait course card (335×380) for the Home "Continue learning" PageView.
+///
+/// Matches the Figma design: mint background, circular course image centred in
+/// the top half, skillset label + course title in the bottom section, and an
+/// absolute-positioned progress badge in the top-right corner.
+class HomeLargePortraitCourseCard extends StatelessWidget {
+  final CourseEntity course;
+  final double? progressPercentage;
+
+  const HomeLargePortraitCourseCard({
+    super.key,
+    required this.course,
+    this.progressPercentage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = progressPercentage ?? 0.0;
+
+    return Semantics(
+      button: true,
+      label: course.title.text,
+      child: GestureDetector(
+        onTap: () {
+          context.read<CourseRoadmapCubit>().setRoadmapSource('home_continue_learning');
+          context.read<HomeCubit>()
+            ..selectSkillset(course.skillset)
+            ..selectCourse(course);
+          CourseRoadmapRoute().go(context);
+          context.read<PageCubit>().setCurrentIndex(1);
+        },
+        child: Container(
+          width: 335.w,
+          height: 380.h,
+          decoration: BoxDecoration(
+            // Figma: light mint background
+            color: const Color(0xFFECF2F3),
+            borderRadius: BorderRadius.circular(16.r),
+          ),
+          child: Stack(
+            children: [
+              // ── Main content ───────────────────────────────────────────
+              Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // Course image — centred in the top half
+                  Expanded(
+                    child: Center(
+                      child: Container(
+                        width: 200.w,
+                        height: 200.w,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(22.r),
+                          border: Border.all(color: AppCustomColor.backgroundWhite, width: 2),
+                          boxShadow: [
+                            BoxShadow(
+                              color: const Color(0xFFEBF0F7).withValues(alpha: 0.26),
+                              blurRadius: 30,
+                            ),
+                          ],
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(20.r),
+                          child: CacheNetworkGraphic(
+                            url: course.image,
+                            width: 200.w,
+                            height: 200.w,
+                            fit: BoxFit.cover,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  // Skillset label + course title
+                  Padding(
+                    padding: EdgeInsets.fromLTRB(12.w, 0, 12.w, 24.h),
+                    child: Column(
+                      children: [
+                        AppText(
+                          course.skillset.title.text.toUpperCase(),
+                          style: AppStyle.textBold12.copyWith(
+                            color: AppCustomColor.textPrimary.withValues(alpha: 0.50),
+                          ),
+                          textAlign: TextAlign.center,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        4.verticalSpace,
+                        AppText(
+                          course.title.text,
+                          style: AppStyle.textBold20.copyWith(color: AppCustomColor.textPrimary),
+                          textAlign: TextAlign.center,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+
+              // ── Progress badge — absolute top-right ────────────────────
+              Positioned(
+                top: 12.h,
+                right: 12.w,
+                child: Container(
+                  padding: EdgeInsets.symmetric(horizontal: 10.w, vertical: 5.h),
+                  decoration: BoxDecoration(
+                    color: AppCustomColor.backgroundWhite,
+                    borderRadius: BorderRadius.circular(50.r),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppCustomColor.textPrimary.withValues(alpha: 0.06),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      SizedBox(
+                        width: 14.w,
+                        height: 14.w,
+                        child: CircularProgressIndicator(
+                          value: progress / 100,
+                          strokeWidth: 2,
+                          backgroundColor: AppCustomColor.borderDefault,
+                          color: AppCustomColor.brandPrimary,
+                        ),
+                      ),
+                      4.horizontalSpace,
+                      AppText(
+                        '${progress.toInt()}% complete',
+                        style: AppStyle.textBold12.copyWith(
+                          color: AppCustomColor.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Compact horizontal course card used in "Recommended courses" and similar
+/// horizontal scroll lists.
 class CourseCardWidget extends StatelessWidget {
   final CourseEntity course;
 
